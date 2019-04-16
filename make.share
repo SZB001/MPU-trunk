@@ -1,0 +1,167 @@
+##################################################################################################
+##################################################################################################
+
+# The source file types (headers excluded).
+# At least one type should be specified.
+# The valid suffixes are among of .c, .C, .cc, .cpp, .CPP, .c++, .cp, or .cxx.
+SRCEXTS :=.c
+
+# DONT Modify.
+SRCDIR :=./
+
+# The include dirs.
+INCLUDES_ALL  := $(GLOBAL_INCLUDES)
+INCLUDES_ALL  += $(INCLUDES)
+
+# The flags used for c and c++.
+# Wall -Werror # show all warnings and take them as errors
+# -fvisibility=hidden # hide the so's export functions
+CCXXFLAGS_ALL := $(GLOBAL_CCXXFLAGS)
+CCXXFLAGS_ALL += $(CCXXFLAGS)
+
+# The compiling flags used only for C.
+# If it is a C++ program, no need to set these flags.
+# If it is a C and C++ merging program, set these flags for the C parts.
+CFLAGS_ALL    :=
+CFLAGS_ALL    += $(CFLAGS)
+
+# The compiling flags used only for C++.
+# If it is a C program, no need to set these flags.
+# If it is a C and C++ merging program, set these flags for the C++ parts.
+CXXFLAGS_ALL  := 
+CXXFLAGS_ALL  += $(CXXFLAGS)
+
+# The library and the link options ( C and C++ common).
+OFLAGS_ALL    :=
+OFLAGS_ALL    += $(OFLAGS)
+
+# The EXT-OBJS that include to the target.
+EXOBJS_ALL    :=
+EXOBJS_ALL    += $(EXOBJS)
+
+
+# The target file name
+TARGET := $(TARGETNAME)
+
+ifeq ($(TYPE), exe)
+TARGET := $(TARGETNAME).bin
+endif
+
+ifeq ($(TYPE), staticlib)
+TARGET := lib$(TARGETNAME).a
+endif
+
+ifeq ($(TYPE), dynamiclib)
+TARGET 	   := lib$(TARGETNAME).so
+OFLAGS_ALL += -shared -fPIC
+endif
+
+TARGET :=  $(TARGET_PATH_R)/$(TARGET)
+
+# Modify for different paltform.
+## arm linux
+ifeq ($(PLATFORM), EC20)
+CCXXFLAGS_ALL += -DEC20
+endif
+## X86 Linux
+ifeq ($(PLATFORM), X86)
+CCXXFLAGS_ALL += -DX86
+endif
+
+# Stable Section: usually no need to be changed. But you can add more.
+#=============================================================================
+SHELL    = /bin/sh
+
+SOURCES1 = $(foreach d, $(SRCDIR),$(wildcard $(addprefix $(d)*,$(SRCEXTS))))
+SOURCES  = $(filter-out $(EXCLUDESRCS), $(SOURCES1))
+OBJS     = $(foreach x,$(SRCEXTS), $(patsubst %$(x),%.o,$(filter %$(x),$(SOURCES))))
+DEPS     = $(patsubst %.o,%.d,$(OBJS))
+
+.PHONY : SUPPORTCMDS
+
+all : $(TARGET)
+
+# Rules for creating the dependency files (.d).
+#---------------------------------------------------
+%.d : %.c
+	@$(CC) -MM -MD $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CFLAGS_ALL) $<
+
+%.d : %.C
+	@$(CC) -MM -MD $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+%.d : %.cc
+	@$(CC) -MM -MD $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+%.d : %.cpp
+	@$(CC) -MM -MD $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+%.d : %.CPP
+	@$(CC) -MM -MD $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+%.d : %.c++
+	@$(CC) -MM -MD $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+%.d : %.cp
+	@$(CC) -MM -MD $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+%.d : %.cxx
+	@$(CC) -MM -MD $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+# Rules for producing the objects.
+#---------------------------------------------------
+objs : $(OBJS)
+
+%.o : %.c
+	$(CC) -c $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CFLAGS_ALL) $<
+
+%.o : %.C
+	$(CXX) -c $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+%.o : %.cc
+	$(CXX) -c $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+%.o : %.cpp
+	$(CXX) -c $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+%.o : %.CPP
+	$(CXX) -c $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+%.o : %.c++
+	$(CXX) -c $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+%.o : %.cp
+	$(CXX) -c $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+%.o : %.cxx
+	$(CXX) -c $(INCLUDES_ALL) $(CCXXFLAGS_ALL) $(CXXFLAGS_ALL) $<
+
+# Rules for producing the executable.
+#----------------------------------------------
+$(TARGET) : $(OBJS)
+	echo $(TARGET_PATH_R)
+	-mkdir -p $(TARGET_PATH_R)
+ifeq ($(TYPE), staticlib)
+	for a in $(EXOBJS_ALL); do \
+		$(AR) -x $$a; \
+	done;
+	ls *.o | xargs $(AR) $(ARFLAGS) $(TARGET)
+else
+ifeq ($(strip $(SRCEXTS)), .c)  # C file
+	$(CC)  -o $(TARGET) $(OBJS) $(EXOBJS_ALL) $(OFLAGS_ALL) -T$(ROOTDIR)/appinit.lds
+else                            # C++ file
+	$(CXX) -o $(TARGET) $(OBJS) $(EXOBJS_ALL) $(OFLAGS_ALL)
+endif
+endif
+
+-include $(DEPS)
+
+rebuild: clean all
+
+clean :
+	-$(RM) *.o *.d
+
+cleanall: clean
+	-@$(RM) $(TARGET)
+	-@$(RM) "__.SYMDEF" "__.SYMDEF SORTED"
+	-@$(RM) *.so *.a
+	-@$(RM) -r $(TARGET_PATH)

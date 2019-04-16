@@ -1,0 +1,17 @@
+##################################################################################################
+##################################################################################################
+
+
+
+#ifneq ($(ARCH), "")
+
+TARGET_PATH_R :=  $(TARGET_PATH)
+LIB_PATH_R    :=  $(LIB_PATH)
+
+INCLUDES =	-I $(ROOTDIR)/app/base/scom \
+		    -I $(ROOTDIR)/app/base/uds \
+		    -I $(ROOTDIR)/app/base/uds/server \
+   	            -I $(ROOTDIR)/app/base/uds/server/foton \
+#endif
+
+

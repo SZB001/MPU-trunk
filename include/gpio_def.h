@@ -1,0 +1,77 @@
+#ifndef __GPIO_DEF_H__
+#define __GPIO_DEF_H__
+
+typedef enum
+{
+    /*PIN-1*/  PINNAME_GPIO1 = 1,
+    /*PIN-2*/  PINNAME_GPIO2 = 2,
+    /*PIN-3*/  PINNAME_GPIO3 = 3,
+    /*PIN-4*/  PINNAME_GPIO4 = 4,
+    /*PIN-5*/  PINNAME_GPIO5 = 5,
+    /*PIN-6*/  PINNAME_NET_STATUS = 6,
+    /*PIN-13*/ PINNAME_USIM_PRESENCE = 13,
+    /*PIN-23*/ PINNAME_SD_INT_DET = 23,
+    /*PIN-24*/ PINNAME_PCM_IN = 24,
+    /*PIN-25*/ PINNAME_PCM_OUT = 25,
+    /*PIN-26*/ PINNAME_PCM_SYNC = 26,
+    /*PIN-27*/ PINNAME_PCM_CLK = 27,
+    /*PIN-37*/ PINNAME_SPI_CS_N = 37,
+    /*PIN-38*/ PINNAME_SPI_MOSI = 38,
+    /*PIN-39*/ PINNAME_SPI_MISO = 39,
+    /*PIN-40*/ PINNAME_SPI_CLK = 40,
+    /*PIN-41*/ PINNAME_I2C1_SCL = 41,
+    /*PIN-42*/ PINNAME_I2C1_SDA = 42,
+    /*PIN-61*/ PINNAME_STATUS = 61,
+    /*PIN-62*/ PINNAME_GPIO6 = 62,
+    /*PIN-63*/ PINNAME_UART1_TX = 63,
+    /*PIN-64*/ PINNAME_MAIN_CTS = 64,
+    /*PIN-65*/ PINNAME_MAIN_RTS = 65,
+    /*PIN-66*/ PINNAME_UART1_RX = 66,
+    /*PIN-67*/ PINNAME_MAIN_TX = 67,
+    /*PIN-68*/ PINNAME_MAIN_RX = 68,
+    /*PIN-73*/ PINNAME_GPIO7 = 73,
+    /*PIN-118*/ PINNAME_WLAN_SLP_CLK = 118,
+    /*PIN-119*/ PINNAME_EPHY_RST_N = 119,
+    /*PIN-120*/ PINNAME_EPHY_INT_N = 120,
+    /*PIN-121*/ PINNAME_SGMII_DATA = 121,
+    /*PIN-122*/ PINNAME_SGMII_CLK = 122,
+    /*PIN-127*/ PINNAME_PM_ENABLE_WIFI = 127,
+    /*PIN-129*/ PINNAME_SDC1_DATA3 = 129,
+    /*PIN-130*/ PINNAME_SDC1_DATA2 = 130,
+    /*PIN-131*/ PINNAME_SDC1_DATA1 = 131,
+    /*PIN-132*/ PINNAME_SDC1_DATA0 = 132,
+    /*PIN-133*/ PINNAME_SDC1_CLK = 133,
+    /*PIN-134*/ PINNAME_SDC1_CMD = 134,
+    /*PIN-135*/ PINNAME_WAKE_WLAN = 135,
+    /*PIN-136*/ PINNAME_WLAN_EN = 136,
+    /*PIN-137*/ PINNAME_COEX_UART_RX = 137,
+    /*PIN-138*/ PINNAME_COEX_UART_TX = 138,
+    /*PIN-139*/ PINNAME_BT_EN = 139,
+    /*PIN-141*/PINNAME_I2C2_SCL = 141,
+    /*PIN-142*/PINNAME_I2C2_SDA = 142,
+    /*PIN-143*/PINNAME_GPIO8 = 143,
+    /*PIN-144*/PINNAME_GPIO9 = 144,
+    PINNAME_END
+} Enum_PinName;
+
+typedef enum
+{
+    PINDIRECTION_IN  = 0,
+    PINDIRECTION_OUT = 1
+} Enum_PinDirection;
+
+typedef enum
+{
+    PINLEVEL_LOW  = 0,
+    PINLEVEL_HIGH = 1
+} Enum_PinLevel;
+
+typedef enum
+{
+    PINPULLSEL_DISABLE  = 0,    // Disable pull selection
+    PINPULLSEL_PULLDOWN = 1,    // Pull-down
+    PINPULLSEL_PULLUP   = 2     // Pull-up
+} Enum_PinPullSel;
+
+
+#endif //__QL_GPIO_DEF_H__
