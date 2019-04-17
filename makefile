@@ -63,10 +63,10 @@ SUBDIRS := \
     ./app/interface/fota \
     ./app/interface/geelyhu \
 	./app/interface/gb32960 \
-	./app/interface/foton \
+	./app/interface/hozon/hozonGB \
 	./app/interface/ftp \
 	./app/interface/autopilot \
-	./app/interface/hozon \
+	./app/interface/hozon/PrvtPortocol \
 	./app \
 	./appl \
 	./shell
