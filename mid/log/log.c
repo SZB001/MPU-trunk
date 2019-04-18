@@ -45,7 +45,8 @@ log_info_t log_cfg_table[LOG_MAX] =
     { LOG_ERROR, "FOTON"    },
 	{ LOG_ERROR, "FOTA"     },
     { LOG_ERROR, "FOTONHU"  },
-    { LOG_ERROR, "AUTO" 	}
+    { LOG_ERROR, "AUTO" 	},
+	{ LOG_ERROR, "PRVT_PROT" 	}
 };
 
 /*********************************************

@@ -105,6 +105,12 @@ static int        gb_allow_sleep;
 
 //static gb_stat_t *socket_st = NULL;
 static gb_stat_t state;
+#if GB32960_SHARE_LINK
+static gb_rcvCb_t  gb_rcvCb[GB_MAX_OBJ] = 
+{
+	{"0",NULL}
+};
+#endif
 
 static void gb_reset(gb_stat_t *state)
 {
@@ -844,6 +850,22 @@ static int gb_do_receive(gb_stat_t *state)
         gb_reset(state);
         return -1;
     }
+	
+#if GB32960_SHARE_LINK
+	char obj;
+	if((rlen > 0) && (state->rcvstep == -1))
+	{
+		for(obj = 0;obj < GB_MAX_OBJ;obj++)
+		{
+			if((rcvbuf[0] == gb_rcvCb[obj].startChar[0]) && \
+					(rcvbuf[1] == gb_rcvCb[obj].startChar[1]))
+			{
+				gb_rcvCb[obj].rcvCallback(rcvbuf,rlen);
+				return 0;
+			}
+		}
+	}
+#endif	
 
     while (ret == 0 && rlen > 0)
     {
@@ -1604,10 +1626,6 @@ int gb_set_timeout(uint16_t timeout)
 
 
 #if GB32960_SHARE_LINK
-static gb_rcvCb_t  gb_rcvCb[GB_MAX_OBJ] = 
-{
-	{"0",NULL}
-};
 
 /******************************************************
 *º¯ÊýÃû£ºgb32960_ServiceMsgSend
@@ -1622,9 +1640,8 @@ int gb32960_ServiceMsgSend(char* objDescri,char *Msg,int len)
 {
 	int res;
 
-	log_i(LOG_GB32960, "%s start to send report to server",objDescri);
+	log_e(LOG_GB32960, "%s start to send report to server",objDescri);
 	res = sock_send(state.socket, Msg, len, NULL);
-	//protocol_dump(LOG_GB32960, "GB32960", buf, len, 1);
 
 	if (res < 0)
 	{

@@ -4,7 +4,7 @@
 include $(ROOTDIR)/make.include
 
 TYPE := staticlib
-TARGETNAME := hozon
+TARGETNAME := prvtprot
 
 #INCLUDES =
 CCXXFLAGS = -Wall

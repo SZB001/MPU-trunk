@@ -5,11 +5,11 @@
 #define GB32960_SHARE_LINK 1 //定义该宏，说明有其他服务需要跟gb32960共用数据收/发链路
 #if GB32960_SHARE_LINK
 /***********Щㄧ?***********/
-typedef void (*gb32960_RcvCallback)(void);
+typedef void (*gb32960_RcvCallback)(char *msg,int len);
 
 typedef enum
 {
-    GB_HZ_USER_DEFONED = 0,//合众
+    GB_HZ_PRIV = 0,//合众私有协议
 	GB_MAX_OBJ,
 } GB_RCV_OBJ;
 
