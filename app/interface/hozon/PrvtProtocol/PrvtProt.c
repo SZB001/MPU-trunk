@@ -167,7 +167,7 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 		pack_Header.sign[0] = 0x2A;
 		pack_Header.sign[1] = 0x2A;
 		pack_Header.ver.Byte = 0x30;
-		*((uint32_t*)pack_Header.nonce)  = PrvtPro_BSEndianReverse((uint32_t)0);;
+		*((uint32_t*)pack_Header.nonce)  = PrvtPro_BSEndianReverse((uint32_t)0);
 		pack_Header.commtype.Byte = 0x70;
 		pack_Header.safetype.Byte = 0x00;
 		pack_Header.opera = 0x01;

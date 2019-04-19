@@ -67,6 +67,7 @@ SUBDIRS := \
 	./app/interface/ftp \
 	./app/interface/autopilot \
 	./app/interface/hozon \
+	./app/interface/hozon/PrvtProtocol \
 	./app \
 	./appl \
 	./shell
