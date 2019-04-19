@@ -59,6 +59,7 @@ int main(int argc , char **argv)
         hu_init,
         ap_init,
 		PrvtProt_init,
+		sockproxy_init,
     };
 
     static module_run_fn run_tbl[] =
@@ -83,6 +84,7 @@ int main(int argc , char **argv)
         hu_run,
         ap_run,
 		PrvtProt_run,
+		sockproxy_run,
     };
 
     log_init();

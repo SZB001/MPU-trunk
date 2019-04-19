@@ -243,7 +243,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* Msg,int l
 	{
 		case 1://接收到心跳包
 		{
-			log_e(LOG_HOZON, "心跳正常!");
+			log_i(LOG_HOZON, "心跳正常!");
 			task->heartbeat.state = 1;//正常心跳
 			task->waitSt = 0;
 		}

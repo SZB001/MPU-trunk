@@ -1640,7 +1640,7 @@ int gb32960_ServiceMsgSend(char* objDescri,char *Msg,int len)
 {
 	int res;
 
-	log_e(LOG_GB32960, "%s start to send report to server",objDescri);
+	log_i(LOG_GB32960, "%s start to send report to server",objDescri);
 	res = sock_send(state.socket, Msg, len, NULL);
 
 	if (res < 0)
