@@ -2,24 +2,6 @@
 #define __GB32960_H__
 
 #define GB32960_THREAD   0//定义是否单独创建线程 1-需要 0-不需要
-#define GB32960_SHARE_LINK 0 //定义该宏，说明有其他服务需要跟gb32960共用数据收/发链路
-#if GB32960_SHARE_LINK
-/***********Щㄧ?***********/
-typedef void (*gb32960_RcvCallback)(char *msg,int len);
-
-typedef enum
-{
-    GB_HZ_PRIV = 0,//合众私有协议
-	GB_MAX_OBJ,
-} GB_RCV_OBJ;
-
-
-typedef struct
-{
-    char  startChar[2];
-    gb32960_RcvCallback rcvCallback;
-} gb_rcvCb_t;
-#endif
 
 #define HZ_GB	0//SP_GB
 

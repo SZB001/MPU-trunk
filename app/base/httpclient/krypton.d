@@ -1,1 +1,0 @@
-krypton.o: krypton.c

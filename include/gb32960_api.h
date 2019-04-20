@@ -9,12 +9,10 @@ extern int gb_set_timeout(uint16_t timeout);
 extern int gb_init(INIT_PHASE phase);
 extern int gb_run(void);
 
-//#if GB32960_SHARE_LINK
-//extern int gb32960_ServiceMsgSend(char* objDescri,char *Msg,int len);
-//extern void gb32960_ServiceRxConfig(char objType,char *startChar,void* rx_callback_fn);
+
 extern int gb32960_getNetworkSt(void);
 extern void gb32960_getURL(void* ipaddr);
 extern int gb32960_getAllowSleepSt(void);
 extern int gb32960_getsuspendSt(void);
-//#endif
+
 #endif

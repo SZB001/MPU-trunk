@@ -106,12 +106,6 @@ static int        gb_allow_sleep;
 //static gb_stat_t *socket_st = NULL;
 static gb_stat_t state;
 static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void));
-#if GB32960_SHARE_LINK
-static gb_rcvCb_t  gb_rcvCb[GB_MAX_OBJ] = 
-{
-	{"0",NULL}
-};
-#endif
 
 static void gb_reset(gb_stat_t *state)
 {
@@ -875,21 +869,6 @@ static int gb_do_receive(gb_stat_t *state)
         return 0;
     }
 #endif
-#if GB32960_SHARE_LINK
-	char obj;
-	if((rlen > 0) && (state->rcvstep == -1))
-	{
-		for(obj = 0;obj < GB_MAX_OBJ;obj++)
-		{
-			if((rcvbuf[0] == gb_rcvCb[obj].startChar[0]) && \
-					(rcvbuf[1] == gb_rcvCb[obj].startChar[1]))
-			{
-				gb_rcvCb[obj].rcvCallback(rcvbuf,rlen);
-				return 0;
-			}
-		}
-	}
-#endif	
 
     while (ret == 0 && rlen > 0)
     {
@@ -1774,63 +1753,6 @@ static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void))
 #endif
 	return res;
 }
-
-#if GB32960_SHARE_LINK
-
-/******************************************************
-*函数名：gb32960_ServiceMsgSend
-*形  参：objDescri -- 发送数据方描述信息
-		Msg -- 数据
-		len -- 数据长度
-*返回值：
-*描  述：同gb服务共用数据收/发链路的外部服务发送数据
-*备  注：
-******************************************************/
-int gb32960_ServiceMsgSend(char* objDescri,char *Msg,int len)
-{
-	int res;
-
-	log_i(LOG_GB32960, "%s start to send report to server",objDescri);
-	res = sock_send(state.socket, Msg, len, NULL);
-
-	if (res < 0)
-	{
-		log_e(LOG_GB32960, "%s send error, reset protocol",objDescri);
-		//gb_reset(state);
-		return -1;
-	}
-	else if (res == 0)
-	{
-		log_e(LOG_GB32960, "%s unack list is full, send is canceled",objDescri);
-	}
-	else
-	{
-		 //state->waittime = tm_get_time();//发送成功
-	}
-	return res;
-}
-
-
-/******************************************************
-*函数名：gb32960_ServiceRxConfig
-*形  参：objType -- 服务类型
-		startChar -- 起始符
-		rx_callback_fn -- 数据接收回调接口
-*返回值：
-*描  述：同gb服务共用数据收/发链路的外部服务数据接收回调接口注册
-*备  注：
-******************************************************/
-void gb32960_ServiceRxConfig(char objType,char *startChar,void* rx_callback_fn)
-{
-	if(objType < GB_MAX_OBJ)
-	{	
-		gb_rcvCb[objType].startChar[0] = startChar[0];
-		gb_rcvCb[objType].startChar[1] = startChar[1];
-		gb_rcvCb[objType].rcvCallback = (gb32960_RcvCallback)rx_callback_fn;
-	}
-}
-
-#endif
 
 /******************************************************
 *函数名：gb32960_getNetworkSt
