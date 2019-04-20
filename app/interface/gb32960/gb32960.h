@@ -21,6 +21,7 @@ typedef struct
 } gb_rcvCb_t;
 #endif
 
+#define HZ_GB	0//SP_GB
 
 typedef enum
 {

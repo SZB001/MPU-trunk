@@ -860,8 +860,8 @@ static int gb_makeup_pack(gb_stat_t *state, uint8_t *input, int len, int *uselen
 static int gb_do_receive(gb_stat_t *state)
 {
     int ret = 0, rlen;
-    uint8_t rcvbuf[1024], *input = rcvbuf;
-
+    uint8_t rcvbuf[1456] = {0}, *input = rcvbuf;
+#if GB32960_THREAD
     if ((rlen = sock_recv(state->socket, rcvbuf, sizeof(rcvbuf))) < 0)
     {
         log_e(LOG_GB32960, "socket recv error: %s", strerror(errno));
@@ -869,7 +869,12 @@ static int gb_do_receive(gb_stat_t *state)
         gb_reset(state);
         return -1;
     }
-	
+#else
+	if ((rlen = RdSockproxyData_Queue(HZ_GB,rcvbuf,1456)) <= 0)
+    {
+        return 0;
+    }
+#endif
 #if GB32960_SHARE_LINK
 	char obj;
 	if((rlen > 0) && (state->rcvstep == -1))

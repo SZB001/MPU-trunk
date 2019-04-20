@@ -27,6 +27,8 @@ description： macro definitions
 
 #define PP_WAIT_TIMEOUT 	(2*1000)//等待超时时间
 #define PP_MSG_DATA_LEN 1024//message data 长度
+
+#define PP_PRIV		 1//SP_PRIV
 /***********宏函数***********/
 
 
@@ -91,7 +93,7 @@ typedef struct
 {		
 	PrvtProt_pack_Header_t packHeader;/* */
 	unsigned char msgdata[PP_MSG_DATA_LEN];/* 消息体 */
-}PrvtProt_pack_t; /*报文结构体*/
+}__attribute__((packed)) PrvtProt_pack_t; /*报文结构体*/
 
 typedef struct 
 {		

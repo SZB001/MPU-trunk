@@ -23,8 +23,8 @@ description： include the header file
 #include "list.h"
 //#include "gb32960.h"
 #include "PrvtProt.h"
-#include "hozon_SP_api.h"
 #include "../../support/protocol.h"
+
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -44,7 +44,7 @@ description： function declaration
 #if PP_THREAD
 static void *PrvtProt_main(void);
 #endif
-//static void PrvtPro_rcvMsgCallback(char* Msg,int len);
+static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task);
 static int PrvtProt_do_heartbeat(PrvtProt_task_t *task);
 static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* Msg,int len);
 static int PrvtPro_do_wait(PrvtProt_task_t *task);
@@ -122,7 +122,8 @@ int PrvtProt_run(void)
         return ret;
     }
 #else
-	res = 	PrvtPro_do_wait(&pp_task) || 
+	res = 	PrvtPro_do_rcvMsg(&pp_task) ||
+			PrvtPro_do_wait(&pp_task) || 
 			PrvtProt_do_heartbeat(&pp_task);
 #endif
     return res;
@@ -203,38 +204,41 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 
 *返回值：void
 
-*描  述：接收数据回调函数
+*描  述：接收数据函数
 
 *备  注：
 ******************************************************/
-/*
-static void PrvtPro_rcvMsgCallback(char* Msg,int len)
-{
-	int rlen = 0;
-	//char rcvstep = 0U;
+static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
+{	
+	int i,rlen = 0;
 	char *ptr;
-	
-	protocol_dump(LOG_HOZON, "PRVT_PROT", Msg, len, 0);
-	if((Msg[0] != 0x2A) || (Msg[1] != 0x2A) || \
-			(len < 18))//判断数据帧头有误或者数据长度不对
-	{
-		return;
-	}
-	
-	if(len > (18 + PP_MSG_DATA_LEN))//接收数据长度超出缓存buffer长度
-	{
-		return;
-	}
-	
-	ptr = (char*)PP_RxPack.packHeader.sign;
-	for(rlen =0;rlen < len;rlen++)
+	uint8_t rcvbuf[1456U] = {0};
+	if ((rlen = RdSockproxyData_Queue(PP_PRIV,rcvbuf,1456)) > 0)
     {
-		ptr[rlen] = Msg[rlen];
+		protocol_dump(LOG_HOZON, "PRVT_PROT", rcvbuf, rlen, 0);
+		if((rcvbuf[0] != 0x2A) || (rcvbuf[1] != 0x2A) || \
+				(rlen < 18))//判断数据帧头有误或者数据长度不对
+		{
+			return 0;
+		}
+		
+		if(rlen > (18 + PP_MSG_DATA_LEN))//接收数据长度超出缓存buffer长度
+		{
+			return 0;
+		}
+		
+		ptr = (char*)PP_RxPack.packHeader.sign;
+		for(i =0;i < rlen;i++)
+		{
+			ptr[i] = rcvbuf[i];
+		}
+		
+		PrvtPro_RxMsgHandle(task,&PP_RxPack,rlen);
     }
-	
-	PrvtPro_RxMsgHandle(&pp_task,&PP_RxPack,rlen);
+
+	return 0;
 }
-*/
+
 /******************************************************
 *函数名：PrvtPro_rcvMsgCallback
 
