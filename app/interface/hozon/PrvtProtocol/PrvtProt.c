@@ -16,15 +16,15 @@ description： include the header file
 #include <unistd.h>
 #include  <errno.h>
 #include <sys/times.h>
-
+#include "timer.h"
 #include <sys/prctl.h>
-//#include "com_app_def.h"
 #include "init.h"
 #include "log.h"
 #include "list.h"
 //#include "gb32960.h"
 #include "PrvtProt.h"
-
+#include "hozon_SP_api.h"
+#include "../../support/protocol.h"
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -41,8 +41,10 @@ description： function declaration
 /*Global function declaration*/
 
 /*Static function declaration*/
+#if PP_THREAD
 static void *PrvtProt_main(void);
-static void PrvtPro_rcvMsgCallback(char* Msg,int len);
+#endif
+//static void PrvtPro_rcvMsgCallback(char* Msg,int len);
 static int PrvtProt_do_heartbeat(PrvtProt_task_t *task);
 static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* Msg,int len);
 static int PrvtPro_do_wait(PrvtProt_task_t *task);
@@ -64,8 +66,8 @@ description： function code
 int PrvtProt_init(INIT_PHASE phase)
 {
     int ret = 0;
-    uint32_t reginf = 0, cfglen;
-	char startchar[2U] = {0x2A,0x2A};
+    //uint32_t reginf = 0, cfglen;
+	//char startchar[2U] = {0x2A,0x2A};
     switch (phase)
     {
         case INIT_PHASE_INSIDE:
@@ -81,7 +83,7 @@ int PrvtProt_init(INIT_PHASE phase)
         break;
         case INIT_PHASE_OUTSIDE:
 		{
-			gb32960_ServiceRxConfig(0,startchar,PrvtPro_rcvMsgCallback);
+			//gb32960_ServiceRxConfig(0,startchar,PrvtPro_rcvMsgCallback);
 		}
         break;
     }
@@ -102,8 +104,10 @@ int PrvtProt_init(INIT_PHASE phase)
 *备  注：
 ******************************************************/
 int PrvtProt_run(void)
-{
-    int ret = 0;
+{ 	
+	int res = 0;
+#if PP_THREAD
+	int ret = 0;
     pthread_t tid;
     pthread_attr_t ta;
 
@@ -117,11 +121,14 @@ int PrvtProt_run(void)
         log_e(LOG_HOZON, "pthread_create failed, error: %s", strerror(errno));
         return ret;
     }
-
-    return 0;
+#else
+	res = 	PrvtPro_do_wait(&pp_task) || 
+			PrvtProt_do_heartbeat(&pp_task);
+#endif
+    return res;
 }
 
-
+#if PP_THREAD
 /******************************************************
 *函数名：PrvtProt_main
 
@@ -146,6 +153,7 @@ static void *PrvtProt_main(void)
 
     return NULL;
 }
+#endif
 
 /******************************************************
 *函数名：PrvtProt_do_heartbeat
@@ -167,14 +175,14 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 		pack_Header.sign[0] = 0x2A;
 		pack_Header.sign[1] = 0x2A;
 		pack_Header.ver.Byte = 0x30;
-		*((uint32_t*)pack_Header.nonce)  = PrvtPro_BSEndianReverse((uint32_t)0);
+		pack_Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)0);
 		pack_Header.commtype.Byte = 0x70;
 		pack_Header.safetype.Byte = 0x00;
 		pack_Header.opera = 0x01;
-		*((uint32_t*)pack_Header.msglen) = PrvtPro_BSEndianReverse((uint32_t)18);
-		*((uint32_t*)pack_Header.tboxid) = PrvtPro_BSEndianReverse((uint32_t)204);
+		pack_Header.msglen = PrvtPro_BSEndianReverse((uint32_t)18);
+		pack_Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)204);
 		
-		if(gb32960_ServiceMsgSend("HOZON privatal protocol",pack_Header.sign, 18) > 0)//发送成功
+		if(sockproxy_MsgSend(pack_Header.sign, 18,NULL) > 0)//发送成功
 		{
 			protocol_dump(LOG_HOZON, "PRVT_PROT", pack_Header.sign, 18, 1);
 			task->waitSt = PP_HEARTBEAT;
@@ -199,10 +207,11 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 
 *备  注：
 ******************************************************/
+/*
 static void PrvtPro_rcvMsgCallback(char* Msg,int len)
 {
 	int rlen = 0;
-	char rcvstep = 0U;
+	//char rcvstep = 0U;
 	char *ptr;
 	
 	protocol_dump(LOG_HOZON, "PRVT_PROT", Msg, len, 0);
@@ -225,7 +234,7 @@ static void PrvtPro_rcvMsgCallback(char* Msg,int len)
 	
 	PrvtPro_RxMsgHandle(&pp_task,&PP_RxPack,rlen);
 }
-
+*/
 /******************************************************
 *函数名：PrvtPro_rcvMsgCallback
 

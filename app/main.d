@@ -37,4 +37,5 @@ main.o: main.c /home/intest/Hz/MPU-trunk/include/com_app_def.h \
  /home/intest/Hz/MPU-trunk/include/fota_api.h \
  /home/intest/Hz/MPU-trunk/include/geelyhu_api.h \
  /home/intest/Hz/MPU-trunk/include/ap_api.h \
- /home/intest/Hz/MPU-trunk/include/hozon_api.h
+ /home/intest/Hz/MPU-trunk/include/hozon_SP_api.h \
+ /home/intest/Hz/MPU-trunk/include/hozon_PP_api.h

@@ -25,7 +25,8 @@
 #include "fota_api.h"
 #include "geelyhu_api.h"
 #include "ap_api.h"
-#include "hozon_api.h"
+#include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 
 int main(int argc , char **argv)
 {
@@ -75,7 +76,7 @@ int main(int argc , char **argv)
         dev_run,
         pm_run,
         assist_run,
-        gb_run,
+        //gb_run,
         ft_run,
         dsu_run,
         uds_run,
@@ -83,7 +84,7 @@ int main(int argc , char **argv)
         fota_run,
         hu_run,
         ap_run,
-		PrvtProt_run,
+		//PrvtProt_run,
 		sockproxy_run,
     };
 

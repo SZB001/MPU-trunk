@@ -20,4 +20,5 @@ gb32960_prot.o: gb32960_prot.c \
  /home/intest/Hz/MPU-trunk/include/nm_api.h \
  /home/intest/Hz/MPU-trunk/include/sock_api.h ../support/protocol.h \
  /home/intest/Hz/MPU-trunk/include/pm_api.h \
- /home/intest/Hz/MPU-trunk/include/at.h
+ /home/intest/Hz/MPU-trunk/include/at.h \
+ /home/intest/Hz/MPU-trunk/include/hozon_SP_api.h

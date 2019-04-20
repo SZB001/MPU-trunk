@@ -17,6 +17,7 @@ description： include the header file
 description： macro definitions
 *******************************************************/
 /**********宏开关定义*********/
+#define PP_THREAD   0//定义是否单独创建线程 1-需要 0-不需要
 
 /**********宏常量定义*********/
 #define PP_HEART_BEAT_TIME (30*1000)//心跳周期
@@ -39,7 +40,7 @@ description： typedef definitions
 /******enum definitions******/
 typedef enum
 {
-	PP_IDLE,//
+	PP_IDLE = 0,//
     PP_HEARTBEAT,//等待心跳响应状态
 } PP_WAIT_STATE;
 
@@ -56,7 +57,7 @@ typedef struct
 			unsigned char mjr : 4;/* 大版本(由TSP平台定义)*/
 		}bits; /**/
 	}ver;
-	unsigned char nonce[4U];/* TCP会话ID 由TSP平台产生 */
+	unsigned long int nonce;/* TCP会话ID 由TSP平台产生 */
 	
 	union
 	{
@@ -82,9 +83,9 @@ typedef struct
 	}safetype;
 	
 	unsigned char opera;/* 操作类型:0 -- national standard ;1 -- heartbeat;2 -- ngtp ;3 -- OTA */
-	unsigned char msglen[4U];/* 报文长度 */
-	unsigned char tboxid[4U];/* 平台通过tboxID与tboxSN映射 */
-}PrvtProt_pack_Header_t; /*报文头结构体*/ 
+	unsigned long int msglen;/* 报文长度 */
+	unsigned long int tboxid;/* 平台通过tboxID与tboxSN映射 */
+}__attribute__((packed)) PrvtProt_pack_Header_t; /*报文头结构体*/ 
 
 typedef struct 
 {		

@@ -16,11 +16,16 @@ description： include the header file
 #include  <errno.h>
 #include <sys/times.h>
 #include <sys/prctl.h>
-//#include "com_app_def.h"
+#include "timer.h"
 #include "init.h"
 #include "log.h"
 #include "list.h"
 #include "sock_api.h"
+#include "gb32960_api.h"
+#include "nm_api.h"
+#include "../../support/protocol.h"
+#include "hozon_PP_api.h"
+#include "sockproxy_data.h"
 #include "sockproxy.h"
 
 /*******************************************************
@@ -30,7 +35,7 @@ description： global variable definitions
 /*******************************************************
 description： static variable definitions
 *******************************************************/
-
+static sockproxy_stat_t sockSt;
 
 /*******************************************************
 description： function declaration
@@ -39,7 +44,8 @@ description： function declaration
 
 /*Static function declaration*/
 static void *sockproxy_main(void);
-
+static int sockproxy_do_checksock(sockproxy_stat_t *state);
+static int sockproxy_do_receive(sockproxy_stat_t *state);
 /******************************************************
 description： function code
 ******************************************************/
@@ -53,20 +59,29 @@ description： function code
 int sockproxy_init(INIT_PHASE phase)
 {
     int ret = 0;
-    uint32_t reginf = 0, cfglen;
+    //uint32_t reginf = 0, cfglen;
 
     switch (phase)
     {
         case INIT_PHASE_INSIDE:
-
-            break;
-
+		{
+			sockSt.socket = 0;
+			sockSt.state = PP_CLOSED;
+			sockSt.sock_addr.port = 0;
+			sockSt.sock_addr.url[0] = 0;
+			SockproxyData_Init();
+		}
+        break;
         case INIT_PHASE_RESTORE:
-            break;
-
+		{
+			
+		}
+        break;
         case INIT_PHASE_OUTSIDE:
-
-            break;
+		{
+			
+		}
+        break;
     }
 
     return ret;
@@ -95,11 +110,10 @@ int sockproxy_run(void)
     {
         log_e(LOG_SOCK_PROXY, "pthread_create failed, error: %s", strerror(errno));
         return ret;
-    }
+    } 
 
-    return 0;
+	return 0;
 }
-
 
 /******************************************************
 *函数名：sockproxy_main
@@ -110,12 +124,11 @@ int sockproxy_run(void)
 ******************************************************/
 static void *sockproxy_main(void)
 {
-	sockproxy_stat_t state;
-	
+	int res = 0;
 	log_o(LOG_SOCK_PROXY, "socket proxy  of hozon thread running");
     prctl(PR_SET_NAME, "SOCK_PROXY");
-	memset(&state, 0, sizeof(hz_stat_t));
-	if ((state.socket = sock_create("sockproxy", SOCK_TYPE_SYNCTCP)) < 0)
+
+	if ((sockSt.socket = sock_create("sockproxy", SOCK_TYPE_SYNCTCP)) < 0)
     {
         log_e(LOG_SOCK_PROXY, "create socket failed, thread exit");
         return NULL;
@@ -123,12 +136,185 @@ static void *sockproxy_main(void)
 	
     while (1)
     {
-        res = gb_do_checksock(&state) ||	//检查socket连接
-              gb_do_receive(&state);		//socket数据接收
-
+        res = sockproxy_do_checksock(&sockSt) ||	//检查socket连接,正常返回0
+             sockproxy_do_receive(&sockSt);		//socket数据接收
+		gb_run();
+		PrvtProt_run();
     }
-
+	
+	sock_delete(sockSt.socket);
     return NULL;
 }
 
+/******************************************************
+*函数名：sockproxy_socketState
+*形  参：
+*返回值：
+*描  述：socket open/colse state
+*备  注：同步操作
+******************************************************/
+void sockproxy_socketclose(void)
+{
+	sockSt.state = PP_CLOSED;
+	sock_close(sockSt.socket);
+}
 
+/******************************************************
+*函数名：sockproxy_do_checksock
+*形  参：void
+*返回值：void
+*描  述：检查socket连接
+*备  注：
+******************************************************/
+static int sockproxy_do_checksock(sockproxy_stat_t *state)
+{
+	sockproxy_getURL(&state->sock_addr);
+    if(sockproxy_SkipSockCheck() || !state->sock_addr.port || !state->sock_addr.url[0])
+    {
+        return -1;
+    }
+
+    if (sock_status(state->socket) == SOCK_STAT_CLOSED)
+    {
+        static uint64_t time = 0;
+
+        if(sockproxy_getsuspendSt() &&	\
+				(time == 0 || tm_get_time() - time > SOCK_SERVR_TIMEOUT))
+        {
+            log_i(LOG_SOCK_PROXY, "start to connect with server");
+
+            if (sock_open(NM_PUBLIC_NET,state->socket, state->sock_addr.url, state->sock_addr.port) != 0)
+            {
+                log_i(LOG_SOCK_PROXY, "open socket failed, retry later");
+            }
+
+            time = tm_get_time();
+        }
+    }
+    else if (sock_status(state->socket) == SOCK_STAT_OPENED)
+    {
+		state->state = PP_OPEN;
+        if (sock_error(state->socket) || sock_sync(state->socket))
+        {
+            log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
+			sockproxy_socketclose();
+        }
+        else
+        {
+            return 0;
+        }
+    }
+	else
+	{}
+
+    return -1;
+}
+
+/******************************************************
+*函数名：sockproxy_do_receive
+*形  参：void
+*返回值：void
+*描  述：接收数据
+*备  注：
+******************************************************/
+static int sockproxy_do_receive(sockproxy_stat_t *state)
+{
+    int ret = 0, rlen;
+    uint8_t rcvbuf[1456] = {0};
+
+    if ((rlen = sock_recv(state->socket, rcvbuf, sizeof(rcvbuf))) < 0)
+    {
+        log_e(LOG_SOCK_PROXY, "socket recv error: %s", strerror(errno));
+        log_e(LOG_SOCK_PROXY, "socket recv error, reset protocol");
+        sockproxy_socketclose();
+        return -1;
+    }
+	
+	protocol_dump(LOG_SOCK_PROXY, "sockproxy", rcvbuf, rlen, 0);//打印接收的数据
+#if SOCKPROXY_SHELL_PROTOCOL
+    while (ret == 0 && rlen > 0)
+    {
+        int uselen, type, ack, dlen;
+
+        if (gb_makeup_pack(state, input, rlen, &uselen) != 0)
+        {
+            break;
+        }
+
+        rlen  -= uselen;
+        input += uselen;
+    }
+#else
+	if((0x2A == rcvbuf[0]) && (0x2A == rcvbuf[1]))//国标数据
+	{
+		if(WrSockproxyData_Queue(SP_GB,rcvbuf,rlen) < 0)
+		{
+			 log_e(LOG_SOCK_PROXY, "WrSockproxyData_Queue(SP_GB,rcvbuf,rlen) error");
+		}
+	}
+	else if((0x23 == rcvbuf[0]) && (0x23 == rcvbuf[1]))//HOZON 企业私有协议数据
+	{
+		if(WrSockproxyData_Queue(SP_PRIV,rcvbuf,rlen) < 0)
+		{
+			log_e(LOG_SOCK_PROXY, "WrSockproxyData_Queue(SP_PRIV,rcvbuf,rlen) error");
+		}
+	}
+	else
+	{
+		log_i(LOG_SOCK_PROXY, "sockproxy_do_receive unknow package");
+	}
+#endif
+
+    return ret;
+}
+
+/******************************************************
+*函数名：sockproxy_MsgSend
+*形  参：
+*返回值：
+*描  述：数据发送
+*备  注：
+******************************************************/
+int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
+{
+	int res;
+	static uint8_t sendbusy = 0U;
+	
+	if((sendbusy == 1U) || (sockSt.state == PP_CLOSED))	return 0;
+	
+	sendbusy = 1U;
+	res = sock_send(sockSt.socket, msg, len, sync);
+
+	if (res < 0)
+	{
+		log_e(LOG_SOCK_PROXY, "send error, reset protocol");
+		sockproxy_socketclose();
+		return -1;
+	}
+	else if (res == 0)
+	{
+		log_e(LOG_SOCK_PROXY, "unack list is full, send is canceled");
+		return 0;
+	}
+	else
+	{
+		if(res != len)//实际需要发送出去的数据跟需要发送的数据不一致
+		{
+			return 0;
+		}
+	}
+	sendbusy = 0U;
+	return res;
+}
+
+/******************************************************
+*函数名：sockproxy_socketState
+*形  参：
+*返回值：
+*描  述：socket open/colse state
+*备  注：
+******************************************************/
+int sockproxy_socketState(void)
+{
+	return sockSt.state;
+}

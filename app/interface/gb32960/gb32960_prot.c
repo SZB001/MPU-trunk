@@ -20,7 +20,7 @@
 #include "../support/protocol.h"
 #include "pm_api.h"
 #include "at.h"
-
+#include "hozon_SP_api.h"
 
 #define PROT_LOGIN      0x01
 #define PROT_REPORT     0x02
@@ -105,6 +105,7 @@ static int        gb_allow_sleep;
 
 //static gb_stat_t *socket_st = NULL;
 static gb_stat_t state;
+static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void));
 #if GB32960_SHARE_LINK
 static gb_rcvCb_t  gb_rcvCb[GB_MAX_OBJ] = 
 {
@@ -114,7 +115,8 @@ static gb_rcvCb_t  gb_rcvCb[GB_MAX_OBJ] =
 
 static void gb_reset(gb_stat_t *state)
 {
-    sock_close(state->socket);
+    //sock_close(state->socket);
+	sockproxy_socketclose();
     state->wait     = 0;
     state->online   = 0;
     state->retry    = 0;
@@ -563,6 +565,7 @@ static int gb_handle_control(gb_stat_t *state, uint8_t *data, int len)
 
 static int gb_do_checksock(gb_stat_t *state)
 {
+#if GB32960_THREAD
     if (!state->network || !gb_addr.port || !gb_addr.url[0] || gb_allow_sleep)
     {
         return -1;
@@ -597,8 +600,24 @@ static int gb_do_checksock(gb_stat_t *state)
             return 0;
         }
     }
+	else
+	{}
+#else
+	if(1 == sockproxy_socketState())//socket open
+	{
+		
+		 return 0;
+	}
 
-    return -1;
+	state->wait     = 0;
+    state->online   = 0;
+    state->retry    = 0;
+    state->waittime = 0;
+    state->rcvstep  = -1;
+    state->rcvlen   = 0;
+    state->datalen  = 0;
+#endif
+	return -1;
 }
 
 static int gb_do_wait(gb_stat_t *state)
@@ -635,7 +654,7 @@ static int gb_do_wait(gb_stat_t *state)
             log_e(LOG_GB32960, "logout time out, retry [%d]", state->retry);
 
             len = gb_pack_logout(buf);
-            res = sock_send(state->socket, buf, len, NULL);
+            res = gb32960_MsgSend(buf, len, NULL);
             protocol_dump(LOG_GB32960, "GB32960", buf, len, 1);
 
             if (res < 0)
@@ -673,7 +692,7 @@ static int gb_do_login(gb_stat_t *state)
         log_e(LOG_GB32960, "start to log into server");
 
         len = gb_pack_login(buf);
-        res = sock_send(state->socket, buf, len, NULL);
+        res = gb32960_MsgSend(buf, len, NULL);
         protocol_dump(LOG_GB32960, "GB32960", buf, len, 1);
 
         if (res < 0)
@@ -717,7 +736,7 @@ static int gb_do_logout(gb_stat_t *state)
         log_i(LOG_GB32960, "start to log out from server");
 
         len = gb_pack_logout(buf);
-        res = sock_send(state->socket, buf, len, NULL);
+        res = gb32960_MsgSend(buf, len, NULL);
         protocol_dump(LOG_GB32960, "GB32960", buf, len, 1);
 
         if (res < 0)
@@ -755,7 +774,7 @@ static int gb_do_report(gb_stat_t *state)
         log_i(LOG_GB32960, "start to send report to server");
 
         len = gb_pack_report(buf, rpt);
-        res = sock_send(state->socket, buf, len, gb_data_ack_pack);
+        res = gb32960_MsgSend(buf, len, gb_data_ack_pack);
         protocol_dump(LOG_GB32960, "GB32960", buf, len, 1);
 
         if (res < 0)
@@ -1316,6 +1335,7 @@ static void gb_show_status(gb_stat_t *state)
     shellprintf("  batt code   : %s\r\n", gb_battcode);
 }
 
+#if GB32960_THREAD
 static void *gb_main(void)
 {
     int tcomfd;
@@ -1437,6 +1457,132 @@ static void *gb_main(void)
     sock_delete(state.socket);
     return NULL;
 }
+#endif
+
+int gb_run(void)
+{
+#if GB32960_THREAD
+    int ret = 0;
+    pthread_t tid;
+    pthread_attr_t ta;
+
+    pthread_attr_init(&ta);
+    pthread_attr_setdetachstate(&ta, PTHREAD_CREATE_DETACHED);
+
+    ret = pthread_create(&tid, &ta, (void *)gb_main, NULL);
+
+    if (ret != 0)
+    {
+        log_e(LOG_GB32960, "pthread_create failed, error: %s", strerror(errno));
+        return ret;
+    }
+
+    return 0;
+#else
+	static int tcomfd = -1;
+	TCOM_MSG_HEADER msg;
+	gb_msg_t msgdata;
+	int res;
+	
+    log_o(LOG_GB32960, "GB32960 running");
+
+    if ((tcomfd < 0) && ((tcomfd = tcom_get_read_fd(MPU_MID_GB32960)) < 0))
+    {
+        log_e(LOG_GB32960, "get module pipe failed, running exit");
+        return -1;
+    }
+
+	res = protocol_wait_msg(MPU_MID_GB32960, tcomfd, &msg, &msgdata, 200);
+
+	if (res < 0)
+	{
+		log_e(LOG_GB32960, "running exit unexpectedly, error:%s", strerror(errno));
+		return -1;
+	}
+
+	switch (msg.msgid)
+	{
+		case GB_MSG_NETWORK:
+			log_i(LOG_GB32960, "get NETWORK message: %d", msgdata.network);
+
+			if (state.network != msgdata.network)
+			{
+				gb_reset(&state);
+				state.network = msgdata.network;
+			}
+
+			break;
+
+		case PM_MSG_EMERGENCY:
+			gb_data_emergence(1);
+			break;
+
+		case PM_MSG_RUNNING:
+		case PM_MSG_OFF:
+			gb_data_emergence(0);
+			break;
+
+		case GB_MSG_CANON:
+			log_i(LOG_GB32960, "get CANON message");
+			state.can = 1;
+			gb_allow_sleep = 0;
+			break;
+
+		case GB_MSG_CANOFF:
+			log_i(LOG_GB32960, "get CANOFF message");
+			state.can = 0;
+			gb_allow_sleep = !state.online;
+			break;
+
+		case GB_MSG_SUSPEND:
+			log_i(LOG_GB32960, "get SUSPEND message");
+			state.suspend = 1;
+			gb_data_set_pendflag(1);
+			break;
+
+		case GB_MSG_RESUME:
+			state.suspend = 0;
+			log_i(LOG_GB32960, "get RESUME message");
+			gb_data_set_pendflag(0);
+			break;
+
+		case GB_MSG_STATUS:
+			log_i(LOG_GB32960, "get STATUS message");
+			gb_show_status(&state);
+			break;
+
+		case GB_MSG_ERRON:
+			log_i(LOG_GB32960, "get ERRON message");
+			state.errtrig = 1;
+			break;
+
+		case GB_MSG_ERROFF:
+			log_i(LOG_GB32960, "get ERROFF message");
+			state.errtrig = 0;
+			break;
+
+		case GB_MSG_CONFIG:
+			log_i(LOG_GB32960, "get CONFIG message");
+			gb_do_config(&state, &msgdata.cfg);
+			break;
+
+		case MPU_MID_MID_PWDG:
+			pwdg_feed(MPU_MID_GB32960);
+			break;
+	}
+
+	res = gb_do_checksock(&state) ||	//检查socket连接
+		  gb_do_receive(&state) ||		//socket数据接收
+		  gb_do_wait(&state) ||			//超时等待（登入或登出）
+		  gb_do_login(&state) ||		//登入
+		  gb_do_suspend(&state) ||		//通信暂停
+		  gb_do_report(&state) ||		//发生实时信息
+		  gb_do_logout(&state);			//登出
+
+	return res;
+#endif
+}
+
 
 static int gb_allow_sleep_handler(PM_EVT_ID id)
 {
@@ -1456,6 +1602,7 @@ int gb_init(INIT_PHASE phase)
             memset(gb_vin, 0, sizeof(gb_vin));
             memset(gb_iccid, 0, sizeof(gb_iccid));
             memset(gb_battcode, 0, sizeof(gb_battcode));
+			memset(&state, 0, sizeof(gb_stat_t));
             gb_addr.url[0] = 0;
             gb_addr.port   = 0;
             gb_timeout   = 5;
@@ -1506,28 +1653,6 @@ int gb_init(INIT_PHASE phase)
 
     return ret;
 }
-
-
-int gb_run(void)
-{
-    int ret = 0;
-    pthread_t tid;
-    pthread_attr_t ta;
-
-    pthread_attr_init(&ta);
-    pthread_attr_setdetachstate(&ta, PTHREAD_CREATE_DETACHED);
-
-    ret = pthread_create(&tid, &ta, (void *)gb_main, NULL);
-
-    if (ret != 0)
-    {
-        log_e(LOG_GB32960, "pthread_create failed, error: %s", strerror(errno));
-        return ret;
-    }
-
-    return 0;
-}
-
 
 
 int gb_set_addr(const char *url, uint16_t port)
@@ -1624,6 +1749,26 @@ int gb_set_timeout(uint16_t timeout)
     return tcom_send_msg(&msg, &cfg);
 }
 
+/******************************************************
+*函数名：gb32960_MsgSend
+*形  参：
+		Msg -- 数据
+		len -- 数据长度
+		sync -- 回调函数
+*返回值：
+*描  述：发送数据
+*备  注：
+******************************************************/
+static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void))
+{
+	int res;
+#if GB32960_THREAD
+	res = sock_send(state.socket, Msg, len, sync);
+#else
+	res = sockproxy_MsgSend(Msg,len, sync);
+#endif
+	return res;
+}
 
 #if GB32960_SHARE_LINK
 
@@ -1681,3 +1826,62 @@ void gb32960_ServiceRxConfig(char objType,char *startChar,void* rx_callback_fn)
 }
 
 #endif
+
+/******************************************************
+*函数名：gb32960_getNetworkSt
+*形  参：
+		
+		
+*返回值：
+*描  述：获取网络状态
+*备  注：
+******************************************************/
+int gb32960_getNetworkSt(void)
+{
+	return state.network;
+}
+
+/******************************************************
+*函数名：gb32960_getURL
+*形  参：
+		
+		
+*返回值：
+*描  述：获取url
+*备  注：
+******************************************************/
+void gb32960_getURL(void* ipaddr)
+{
+	strcpy(((svr_addr_t*)ipaddr)->url, gb_addr.url);
+    ((svr_addr_t*)ipaddr)->port = gb_addr.port;
+}
+
+/******************************************************
+*函数名：gb32960_getAllowSleepSt
+*形  参：
+		
+		
+*返回值：
+*描  述：获取允许睡眠标志
+*备  注：
+******************************************************/
+int gb32960_getAllowSleepSt(void)
+{
+	return gb_allow_sleep;
+}
+
+/******************************************************
+*函数名：gb32960_getsuspendSt
+*形  参：
+		
+		
+*返回值：ture -- tcp暂停
+*描  述：获取暂停状态
+*备  注：
+******************************************************/
+int gb32960_getsuspendSt(void)
+{
+	return (!state.suspend && !gb_data_noreport());
+}
+ 
+ 

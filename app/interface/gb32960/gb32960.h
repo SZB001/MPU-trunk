@@ -1,8 +1,8 @@
 #ifndef __GB32960_H__
 #define __GB32960_H__
 
-
-#define GB32960_SHARE_LINK 1 //定义该宏，说明有其他服务需要跟gb32960共用数据收/发链路
+#define GB32960_THREAD   0//定义是否单独创建线程 1-需要 0-不需要
+#define GB32960_SHARE_LINK 0 //定义该宏，说明有其他服务需要跟gb32960共用数据收/发链路
 #if GB32960_SHARE_LINK
 /***********Щㄧ?***********/
 typedef void (*gb32960_RcvCallback)(char *msg,int len);

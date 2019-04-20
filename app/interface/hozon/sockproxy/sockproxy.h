@@ -10,17 +10,20 @@ Data			  Vasion			author
 description： include the header file
 *******************************************************/
 
-
 /*******************************************************
 description： macro definitions
 *******************************************************/
 /**********宏开关定义*********/
+#define SOCKPROXY_SHELL_PROTOCOL  0//该宏说明是否添加外壳协议:1-是 ; 0-否
 
 /**********宏常量定义*********/
-
+#define SOCK_SERVR_TIMEOUT    (1000 * 5)
 
 
 /***********宏函数***********/
+#define sockproxy_getURL(x)			gb32960_getURL(x)
+#define sockproxy_SkipSockCheck() 	(!gb32960_getNetworkSt() || gb32960_getAllowSleepSt())
+#define sockproxy_getsuspendSt() 	gb32960_getsuspendSt()
 
 /*******************************************************
 description： struct definitions
@@ -29,16 +32,21 @@ description： struct definitions
 /*******************************************************
 description： typedef definitions
 *******************************************************/
+/******enum definitions******/
+typedef enum
+{
+	PP_CLOSED = 0,//
+    PP_OPEN,
+} PP_SOCK_STATE;
 /*****struct definitions*****/
 typedef struct
 {
     /* protocol status */
     int socket;
-   
+    int state;//
+	svr_addr_t sock_addr;
 }sockproxy_stat_t;
 
-
-/******enum definitions******/
 
 /******union definitions*****/
 

@@ -68,6 +68,7 @@ SUBDIRS := \
 	./app/interface/autopilot \
 	./app/interface/hozon \
 	./app/interface/hozon/PrvtProtocol \
+	./app/interface/hozon/sockproxy \
 	./app \
 	./appl \
 	./shell
