@@ -234,9 +234,12 @@ static int PrvtPro_do_checksock(PrvtProt_task_t *task)
 ******************************************************/
 static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 {	
-	int i,rlen = 0;
-	char *ptr;
+	//int i;
+	int rlen = 0;
+	//char *ptr;
 	uint8_t rcvbuf[1456U] = {0};
+	
+	//ptr = rcvbuf;
 	if ((rlen = PrvtProt_rcvMsg(rcvbuf,1456)) > 0)
     {
 		protocol_dump(LOG_HOZON, "PRVT_PROT", rcvbuf, rlen, 0);
@@ -250,14 +253,13 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 		{
 			return 0;
 		}
-		
-		ptr = (char*)PP_RxPack.packHeader.sign;
+/*	
 		for(i =0;i < rlen;i++)
 		{
 			ptr[i] = rcvbuf[i];
 		}
-		
-		PrvtPro_RxMsgHandle(task,&PP_RxPack,rlen);
+*/
+		PrvtPro_RxMsgHandle(task,(PrvtProt_pack_t*)rcvbuf,rlen);
     }
 
 	return 0;

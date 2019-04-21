@@ -26,7 +26,7 @@ description： macro definitions
 #define PP_ACK_SUCCESS 	0x02//应答成功
 
 #define PP_WAIT_TIMEOUT 	(2*1000)//等待超时时间
-#define PP_MSG_DATA_LEN 1024//message data 长度
+#define PP_MSG_DATA_LEN 	1438//message data 长度
 
 /***********宏函数***********/
 #define PrvtProt_rcvMsg(buf,buflen) RdSockproxyData_Queue(SP_PRIV,buf,buflen)
