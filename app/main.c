@@ -76,7 +76,7 @@ int main(int argc , char **argv)
         dev_run,
         pm_run,
         assist_run,
-        //gb_run,
+        gb_run,
         ft_run,
         dsu_run,
         uds_run,
@@ -84,7 +84,7 @@ int main(int argc , char **argv)
         fota_run,
         hu_run,
         ap_run,
-		//PrvtProt_run,
+		PrvtProt_run,
 		sockproxy_run,
     };
 

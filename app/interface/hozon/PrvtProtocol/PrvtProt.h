@@ -11,14 +11,14 @@ Data			  Vasion			author
 /*******************************************************
 description： include the header file
 *******************************************************/
-//#include "PrvtProt.h"
+#include "../sockproxy/sockproxy_data.h"
 
 /*******************************************************
 description： macro definitions
 *******************************************************/
 /**********宏开关定义*********/
-#define PP_THREAD   0//定义是否单独创建线程 1-需要 0-不需要
-
+#define PP_THREAD   1//定义是否单独创建线程 1-是 0-不是
+#define PP_SOCKPROXY   1//定义是否使用socket代理(是否由其他模块创建socket链路) 1-是 0-不是
 /**********宏常量定义*********/
 #define PP_HEART_BEAT_TIME (30*1000)//心跳周期
 
@@ -28,9 +28,8 @@ description： macro definitions
 #define PP_WAIT_TIMEOUT 	(2*1000)//等待超时时间
 #define PP_MSG_DATA_LEN 1024//message data 长度
 
-#define PP_PRIV		 1//SP_PRIV
 /***********宏函数***********/
-
+#define PrvtProt_rcvMsg(buf,buflen) RdSockproxyData_Queue(SP_PRIV,buf,buflen)
 
 /*******************************************************
 description： struct definitions

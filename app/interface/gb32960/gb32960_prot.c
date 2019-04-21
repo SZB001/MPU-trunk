@@ -559,7 +559,7 @@ static int gb_handle_control(gb_stat_t *state, uint8_t *data, int len)
 
 static int gb_do_checksock(gb_stat_t *state)
 {
-#if GB32960_THREAD
+#if !GB32960_SOCKPROXY
     if (!state->network || !gb_addr.port || !gb_addr.url[0] || gb_allow_sleep)
     {
         return -1;
@@ -855,7 +855,7 @@ static int gb_do_receive(gb_stat_t *state)
 {
     int ret = 0, rlen;
     uint8_t rcvbuf[1456] = {0}, *input = rcvbuf;
-#if GB32960_THREAD
+#if !GB32960_SOCKPROXY
     if ((rlen = sock_recv(state->socket, rcvbuf, sizeof(rcvbuf))) < 0)
     {
         log_e(LOG_GB32960, "socket recv error: %s", strerror(errno));
@@ -864,7 +864,7 @@ static int gb_do_receive(gb_stat_t *state)
         return -1;
     }
 #else
-	if ((rlen = RdSockproxyData_Queue(HZ_GB,rcvbuf,1456)) <= 0)
+	if ((rlen = gb32960_rcvMsg(rcvbuf,1456)) <= 0)
     {
         return 0;
     }
@@ -1746,7 +1746,7 @@ int gb_set_timeout(uint16_t timeout)
 static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void))
 {
 	int res;
-#if GB32960_THREAD
+#if !GB32960_SOCKPROXY
 	res = sock_send(state.socket, Msg, len, sync);
 #else
 	res = sockproxy_MsgSend(Msg,len, sync);

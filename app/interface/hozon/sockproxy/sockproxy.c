@@ -36,7 +36,8 @@ description： global variable definitions
 description： static variable definitions
 *******************************************************/
 static sockproxy_stat_t sockSt;
-
+static pthread_mutex_t sendmtx = PTHREAD_MUTEX_INITIALIZER;//初始化静态锁
+static pthread_mutex_t closemtx = PTHREAD_MUTEX_INITIALIZER;//初始化静态锁
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -67,6 +68,8 @@ int sockproxy_init(INIT_PHASE phase)
 		{
 			sockSt.socket = 0;
 			sockSt.state = PP_CLOSED;
+			sockSt.sendbusy = 0;
+			sockSt.asynCloseFlg = 0;
 			sockSt.sock_addr.port = 0;
 			sockSt.sock_addr.url[0] = 0;
 			SockproxyData_Init();
@@ -138,8 +141,6 @@ static void *sockproxy_main(void)
     {
         res = sockproxy_do_checksock(&sockSt) ||	//检查socket连接,正常返回0
              sockproxy_do_receive(&sockSt);		//socket数据接收
-		gb_run();
-		PrvtProt_run();
     }
 	
 	sock_delete(sockSt.socket);
@@ -155,8 +156,22 @@ static void *sockproxy_main(void)
 ******************************************************/
 void sockproxy_socketclose(void)
 {
-	sockSt.state = PP_CLOSED;
-	sock_close(sockSt.socket);
+	if(pthread_mutex_trylock(&closemtx) == 0)//(非阻塞互斥锁)获取互斥锁成功
+	{//(非阻塞互斥锁)若获取互斥锁失败，说明此时有其他线程在执行关闭
+		if(sockSt.state != PP_CLOSED)
+		{
+			sockSt.state = PP_CLOSED;
+			if(sockSt.sendbusy == 1)//当前有数据正在发送
+			{//异步关闭socket
+				sockSt.asynCloseFlg = 1;
+			}
+			else
+			{//直接关闭socket
+				sock_close(sockSt.socket);
+			}
+		}
+		pthread_mutex_unlock(&closemtx);
+	}
 }
 
 /******************************************************
@@ -168,6 +183,17 @@ void sockproxy_socketclose(void)
 ******************************************************/
 static int sockproxy_do_checksock(sockproxy_stat_t *state)
 {
+	if(1 == sockSt.asynCloseFlg) 
+	{
+		if(pthread_mutex_trylock(&sendmtx) == 0)//(非阻塞互斥锁)获取互斥锁成功，说明当前发送空闲，同时锁住发送
+		{
+			sockSt.asynCloseFlg = 0;
+			sock_close(sockSt.socket);
+			pthread_mutex_unlock(&sendmtx);
+		}
+		return -1;	
+	}
+	
 	sockproxy_getURL(&state->sock_addr);
     if(sockproxy_SkipSockCheck() || !state->sock_addr.port || !state->sock_addr.url[0])
     {
@@ -278,32 +304,22 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
 int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 {
 	int res;
-	static uint8_t sendbusy = 0U;
 	
-	if((sendbusy == 1U) || (sockSt.state == PP_CLOSED))	return 0;
-	
-	sendbusy = 1U;
+	if(pthread_mutex_trylock(&sendmtx) != 0) return 0;//(非阻塞互斥锁)获取互斥锁失败
+	if((sockSt.sendbusy == 1U) || (sockSt.state == PP_CLOSED))	
+	{
+		pthread_mutex_unlock(&sendmtx);//解锁互斥锁
+		return 0;	
+	}
+	sockSt.sendbusy = 1U;
 	res = sock_send(sockSt.socket, msg, len, sync);
 
-	if (res < 0)
+	if(res != len)//实际需要发送出去的数据跟需要发送的数据不一致
 	{
-		log_e(LOG_SOCK_PROXY, "send error, reset protocol");
-		sockproxy_socketclose();
-		return -1;
+		res = 0;
 	}
-	else if (res == 0)
-	{
-		log_e(LOG_SOCK_PROXY, "unack list is full, send is canceled");
-		return 0;
-	}
-	else
-	{
-		if(res != len)//实际需要发送出去的数据跟需要发送的数据不一致
-		{
-			return 0;
-		}
-	}
-	sendbusy = 0U;
+	sockSt.sendbusy = 0U;
+	pthread_mutex_unlock(&sendmtx);//解锁互斥锁
 	return res;
 }
 

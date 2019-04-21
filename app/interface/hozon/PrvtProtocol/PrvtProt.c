@@ -24,7 +24,7 @@ description： include the header file
 //#include "gb32960.h"
 #include "PrvtProt.h"
 #include "../../support/protocol.h"
-
+#include "hozon_SP_api.h"
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -44,6 +44,7 @@ description： function declaration
 #if PP_THREAD
 static void *PrvtProt_main(void);
 #endif
+static int PrvtPro_do_checksock(PrvtProt_task_t *task);
 static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task);
 static int PrvtProt_do_heartbeat(PrvtProt_task_t *task);
 static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* Msg,int len);
@@ -148,7 +149,9 @@ static void *PrvtProt_main(void)
     prctl(PR_SET_NAME, "HZ_PRVT_PROT");
     while (1)
     {
-		res = 	PrvtPro_do_wait(&pp_task) || 
+		res = 	PrvtPro_do_checksock(&pp_task) ||
+				PrvtPro_do_rcvMsg(&pp_task) ||
+				PrvtPro_do_wait(&pp_task) || 
 				PrvtProt_do_heartbeat(&pp_task);
     }
 
@@ -196,9 +199,30 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 	return 0;
 }
 
+/******************************************************
+*函数名：PrvtPro_do_checksock
+
+*形  参：void
+
+*返回值：void
+
+*描  述：检查socket连接
+
+*备  注：
+******************************************************/
+static int PrvtPro_do_checksock(PrvtProt_task_t *task)
+{
+	if(1 == sockproxy_socketState())//socket open
+	{
+		
+		return 0;
+	}
+
+	return -1;
+}
 
 /******************************************************
-*函数名：PrvtPro_rcvMsgCallback
+*函数名：PrvtPro_do_rcvMsg
 
 *形  参：void
 
@@ -213,7 +237,7 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 	int i,rlen = 0;
 	char *ptr;
 	uint8_t rcvbuf[1456U] = {0};
-	if ((rlen = RdSockproxyData_Queue(PP_PRIV,rcvbuf,1456)) > 0)
+	if ((rlen = PrvtProt_rcvMsg(rcvbuf,1456)) > 0)
     {
 		protocol_dump(LOG_HOZON, "PRVT_PROT", rcvbuf, rlen, 0);
 		if((rcvbuf[0] != 0x2A) || (rcvbuf[1] != 0x2A) || \

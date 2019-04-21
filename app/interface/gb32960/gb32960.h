@@ -1,9 +1,11 @@
 #ifndef __GB32960_H__
 #define __GB32960_H__
+#include "../hozon/sockproxy/sockproxy_data.h"
 
-#define GB32960_THREAD   0//定义是否单独创建线程 1-需要 0-不需要
+#define GB32960_THREAD   1//定义是否单独创建线程 1-是 0-不是
+#define GB32960_SOCKPROXY   1//定义是否使用socket代理(是否由其他模块创建socket链路) 1-是 0-不是
 
-#define HZ_GB	0//SP_GB
+#define gb32960_rcvMsg(buf,buflen) RdSockproxyData_Queue(SP_GB,buf,buflen)
 
 typedef enum
 {
