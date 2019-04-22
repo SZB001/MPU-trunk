@@ -36,6 +36,7 @@ description£º typedef definitions
 typedef enum
 {
 	PP_CLOSED = 0,//
+	PP_CLOSE_WAIT,//
     PP_OPEN,
 } PP_SOCK_STATE;
 /*****struct definitions*****/

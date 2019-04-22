@@ -158,17 +158,10 @@ void sockproxy_socketclose(void)
 {
 	if(pthread_mutex_trylock(&closemtx) == 0)//(非阻塞互斥锁)获取互斥锁成功
 	{//(非阻塞互斥锁)若获取互斥锁失败，说明此时有其他线程在执行关闭
-		if(sockSt.state != PP_CLOSED)
+		if(sockSt.state == PP_OPEN)
 		{
-			sockSt.state = PP_CLOSED;
-			if(sockSt.sendbusy == 1)//当前有数据正在发送
-			{//异步关闭socket
-				sockSt.asynCloseFlg = 1;
-			}
-			else
-			{//直接关闭socket
-				sock_close(sockSt.socket);
-			}
+			sockSt.state = PP_CLOSE_WAIT;//等待关闭状态
+			sockSt.asynCloseFlg = 1;
 		}
 		pthread_mutex_unlock(&closemtx);
 	}
@@ -187,9 +180,13 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	{
 		if(pthread_mutex_trylock(&sendmtx) == 0)//(非阻塞互斥锁)获取互斥锁成功，说明当前发送空闲，同时锁住发送
 		{
+			if(sockSt.state != PP_CLOSED)
+			{
+				sock_close(sockSt.socket);
+				sockSt.state = PP_CLOSED;
+				pthread_mutex_unlock(&sendmtx);
+			}
 			sockSt.asynCloseFlg = 0;
-			sock_close(sockSt.socket);
-			pthread_mutex_unlock(&sendmtx);
 		}
 		return -1;	
 	}
