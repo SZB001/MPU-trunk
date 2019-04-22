@@ -20,7 +20,7 @@ description： macro definitions
 #define PP_THREAD   1//定义是否单独创建线程 1-是 0-不是
 #define PP_SOCKPROXY   1//定义是否使用socket代理(是否由其他模块创建socket链路) 1-是 0-不是
 /**********宏常量定义*********/
-#define PP_HEART_BEAT_TIME (30*1000)//心跳周期
+#define PP_HEART_BEAT_TIME (10)//心跳周期
 
 #define PP_ACK_WAIT 	0x01//应答成功
 #define PP_ACK_SUCCESS 	0x02//应答成功
@@ -99,14 +99,16 @@ typedef struct
 	uint64_t  timer;/* 心跳计时器 */
 	uint8_t ackFlag;/* 应答标志:2-等待应答；1-成功应答 */
 	uint8_t state;/* 心跳状态 1- 正常 */
-}PrvtProt_heartbeat_t; /*心跳结构体*/
+	uint8_t period;/* 心跳周期uints：秒*/
+}__attribute__((packed))  PrvtProt_heartbeat_t; /*心跳结构体*/
 
 typedef struct 
 {	
 	PrvtProt_heartbeat_t heartbeat;
 	PP_WAIT_STATE waitSt;/* 等待响应的状态 */
 	uint64_t waittime;/* 等待响应的时间 */
-}PrvtProt_task_t; /* 任务参数结构体*/
+	char suspend;/* 暂停 */
+}__attribute__((packed))  PrvtProt_task_t; /* 任务参数结构体*/
 
 /******union definitions*****/
 

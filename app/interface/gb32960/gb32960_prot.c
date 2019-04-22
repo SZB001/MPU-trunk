@@ -102,11 +102,11 @@ static uint16_t   gb_regseq;
 static char       gb_iccid[21];
 static char       gb_battcode[64];
 static int        gb_allow_sleep;
-
+static char gbnosend = 0;
 //static gb_stat_t *socket_st = NULL;
 static gb_stat_t state;
 static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void));
-
+static int gb_shell_nosend(int argc, const char **argv);
 static void gb_reset(gb_stat_t *state)
 {
     //sock_close(state->socket);
@@ -1121,6 +1121,21 @@ static int gb_shell_setaddr(int argc, const char **argv)
     return 0;
 }
 
+static int gb_shell_nosend(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: gbnosend <suspend> \r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%hu", &gbnosend);
+    sleep(1);
+
+    return 0;
+}
+
+
 static int gb_shell_settmout(int argc, const const char **argv)
 {
     uint16_t timeout;
@@ -1428,6 +1443,8 @@ static void *gb_main(void)
                 break;
         }
 
+		if(gbnosend != 0) continue;
+		
         res = gb_do_checksock(&state) ||	//检查socket连接
               gb_do_receive(&state) ||		//socket数据接收
               gb_do_wait(&state) ||			//超时等待（登入或登出）
@@ -1632,6 +1649,8 @@ int gb_init(INIT_PHASE phase)
 
             ret |= can_register_callback(gb_can_callback);
             ret |= nm_reg_status_changed(NM_PUBLIC_NET, gb_nm_callback);
+			
+			ret |= shell_cmd_register("gbnosend", gb_shell_nosend, "GB32960 don't send data");
             break;
     }
 

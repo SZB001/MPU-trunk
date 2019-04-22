@@ -25,6 +25,7 @@ description： include the header file
 #include "PrvtProt.h"
 #include "../../support/protocol.h"
 #include "hozon_SP_api.h"
+#include "shell_api.h"
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -47,9 +48,11 @@ static void *PrvtProt_main(void);
 static int PrvtPro_do_checksock(PrvtProt_task_t *task);
 static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task);
 static int PrvtProt_do_heartbeat(PrvtProt_task_t *task);
-static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* Msg,int len);
+static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len);
 static int PrvtPro_do_wait(PrvtProt_task_t *task);
 static uint32_t PrvtPro_BSEndianReverse(uint32_t value);
+static int PP_shell_setCtrlParameter(int argc, const char **argv);
+static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len);
 /******************************************************
 description： function code
 ******************************************************/
@@ -67,24 +70,25 @@ description： function code
 int PrvtProt_init(INIT_PHASE phase)
 {
     int ret = 0;
-    //uint32_t reginf = 0, cfglen;
-	//char startchar[2U] = {0x2A,0x2A};
+
     switch (phase)
     {
         case INIT_PHASE_INSIDE:
 		{
 			pp_task.heartbeat.ackFlag = 0;
 			pp_task.heartbeat.state = 0;//
+			pp_task.heartbeat.period = PP_HEART_BEAT_TIME;//
 			pp_task.heartbeat.timer = tm_get_time();
 			pp_task.waitSt = PP_IDLE;
 			pp_task.waittime = 0;
+			pp_task.suspend = 0;
 		}
         break;
         case INIT_PHASE_RESTORE:
         break;
         case INIT_PHASE_OUTSIDE:
 		{
-			//gb32960_ServiceRxConfig(0,startchar,PrvtPro_rcvMsgCallback);
+			 ret |= shell_cmd_register("HOZON_PP_SET", PP_shell_setCtrlParameter, "set HOZON PrvtProt control parameter");
 		}
         break;
     }
@@ -149,6 +153,11 @@ static void *PrvtProt_main(void)
     prctl(PR_SET_NAME, "HZ_PRVT_PROT");
     while (1)
     {
+		if(pp_task.suspend != 0)
+		{
+			continue;
+		}
+		
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
 				PrvtPro_do_wait(&pp_task) || 
@@ -174,7 +183,7 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 {
 	PrvtProt_pack_Header_t pack_Header;
 
-	if((tm_get_time() - task->heartbeat.timer) > PP_HEART_BEAT_TIME)
+	if((tm_get_time() - task->heartbeat.timer) > (task->heartbeat.period*1000))
 	{
 		pack_Header.sign[0] = 0x2A;
 		pack_Header.sign[1] = 0x2A;
@@ -234,12 +243,9 @@ static int PrvtPro_do_checksock(PrvtProt_task_t *task)
 ******************************************************/
 static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 {	
-	//int i;
 	int rlen = 0;
-	//char *ptr;
 	uint8_t rcvbuf[1456U] = {0};
 	
-	//ptr = rcvbuf;
 	if ((rlen = PrvtProt_rcvMsg(rcvbuf,1456)) > 0)
     {
 		protocol_dump(LOG_HOZON, "PRVT_PROT", rcvbuf, rlen, 0);
@@ -253,16 +259,91 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 		{
 			return 0;
 		}
-/*	
-		for(i =0;i < rlen;i++)
-		{
-			ptr[i] = rcvbuf[i];
-		}
-*/
-		PrvtPro_RxMsgHandle(task,(PrvtProt_pack_t*)rcvbuf,rlen);
+		PrvtPro_makeUpPack(&PP_RxPack,rcvbuf,rlen);
+		protocol_dump(LOG_HOZON, "PRVT_PROT", PP_RxPack.packHeader.sign, 18, 0);
+		PrvtPro_RxMsgHandle(task,&PP_RxPack,rlen);
     }
 
 	return 0;
+}
+
+/******************************************************
+*函数名：PrvtPro_makeUpPack
+
+*形  参：void
+
+*返回值：void
+
+*描  述：接收数据解包
+
+*备  注：
+******************************************************/
+static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len)
+{
+	int rlen = 0;
+	uint8_t rcvstep = 0;
+
+	RxPack->packHeader.sign[0] = input[rlen++];
+	RxPack->packHeader.sign[1] = input[rlen++];
+	len = len-2;
+	while(len--)
+	{
+		switch(rcvstep)
+		{
+			case 0://接收版本号
+			{
+				RxPack->packHeader.ver.Byte = input[rlen++];
+				rcvstep = 1;
+			}
+			break;
+			case 1://接收tcp会话id
+			{
+				RxPack->packHeader.nonce = PrvtPro_BSEndianReverse(*((uint32_t*)(&input[rlen])));
+				rlen += 4;
+				rcvstep = 2;
+			}
+			break;	
+			case 2://编码、连接等方式
+			{
+				RxPack->packHeader.commtype.Byte = input[rlen++];
+				rcvstep = 3;
+			}
+			break;	
+			case 3://加密、签名方式
+			{
+				RxPack->packHeader.safetype.Byte = input[rlen++];
+				rcvstep = 4;
+			}
+			break;
+			case 4://操作类型
+			{
+				RxPack->packHeader.opera = input[rlen++];
+				rcvstep = 5;
+			}
+			break;
+			case 5://报文长度
+			{
+				RxPack->packHeader.msglen = PrvtPro_BSEndianReverse(*((uint32_t*)(&input[rlen])));
+				rlen += 4;
+				rcvstep = 6;
+			}
+			break;
+			case 6://tboxid
+			{
+				RxPack->packHeader.tboxid = PrvtPro_BSEndianReverse(*((uint32_t*)(&input[rlen])));
+				rlen += 4;
+				rcvstep = 7;
+			}
+			break;
+			case 7://message data
+			{
+				RxPack->msgdata[rlen-18] = input[rlen++];
+			}
+			break;
+			default:
+			break;
+		}
+	}
 }
 
 /******************************************************
@@ -276,9 +357,9 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 
 *备  注：
 ******************************************************/
-static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* Msg,int len)
+static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len)
 {
-	switch(Msg->packHeader.opera)
+	switch(rxPack->packHeader.opera)
 	{
 		case 1://接收到心跳包
 		{
@@ -344,4 +425,41 @@ static uint32_t PrvtPro_BSEndianReverse(uint32_t value)
 {
 	return (value & 0x000000FFU) << 24 | (value & 0x0000FF00U) << 8 | \
 			(value & 0x00FF0000U) >> 8 | (value & 0xFF000000U) >> 24;
+}
+
+/******************************************************
+*函数名：PP_shell_setCtrlParamter
+
+*形  参：
+argv[0] - 心跳周期 ，单位:秒
+argv[1] - ：是否暂停
+
+
+*返回值：void
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PP_shell_setCtrlParameter(int argc, const char **argv)
+{
+	char period;
+    if (argc != 2)
+    {
+        shellprintf(" usage: HOZON_PP_SET <heartbeat period> <suspend>\r\n");
+        return -1;
+    }
+	
+	sscanf(argv[0], "%hu", &period);
+	if(period == 0)
+	{
+		 shellprintf(" usage: heartbeat period invalid\r\n");
+		 return -1;
+	}	
+	pp_task.heartbeat.period = period;
+	
+	sscanf(argv[1], "%hu", &pp_task.suspend);
+    sleep(1);
+
+    return 0;
 }

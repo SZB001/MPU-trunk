@@ -25,7 +25,7 @@ author        liuzhongwen
 #include <ctype.h>
 
 #define SHELL_MAX_ARG_NUM   7
-#define SHELL_MAX_CMD_NUM   164
+#define SHELL_MAX_CMD_NUM   169
 #define SHELL_MAX_CMD_LEN   TCOM_MAX_MSG_LEN
 
 
