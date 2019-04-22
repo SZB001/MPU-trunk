@@ -246,24 +246,26 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 	int rlen = 0;
 	uint8_t rcvbuf[1456U] = {0};
 	
-	if ((rlen = PrvtProt_rcvMsg(rcvbuf,1456)) > 0)
+	if ((rlen = PrvtProt_rcvMsg(rcvbuf,1456)) <= 0)
     {
-		log_i(LOG_HOZON, "HOZON private protocol receive message");
-		protocol_dump(LOG_HOZON, "PRVT_PROT", rcvbuf, rlen, 0);
-		if((rcvbuf[0] != 0x2A) || (rcvbuf[1] != 0x2A) || \
-				(rlen < 18))//判断数据帧头有误或者数据长度不对
-		{
-			return 0;
-		}
-		
-		if(rlen > (18 + PP_MSG_DATA_LEN))//接收数据长度超出缓存buffer长度
-		{
-			return 0;
-		}
-		PrvtPro_makeUpPack(&PP_RxPack,rcvbuf,rlen);
-		protocol_dump(LOG_HOZON, "PRVT_PROT", PP_RxPack.packHeader.sign, 18, 0);
-		PrvtPro_RxMsgHandle(task,&PP_RxPack,rlen);
-    }
+		return 0;
+	}
+	
+	log_i(LOG_HOZON, "HOZON private protocol receive message");
+	protocol_dump(LOG_HOZON, "PRVT_PROT", rcvbuf, rlen, 0);
+	if((rcvbuf[0] != 0x2A) || (rcvbuf[1] != 0x2A) || \
+			(rlen < 18))//判断数据帧头有误或者数据长度不对
+	{
+		return 0;
+	}
+	
+	if(rlen > (18 + PP_MSG_DATA_LEN))//接收数据长度超出缓存buffer长度
+	{
+		return 0;
+	}
+	PrvtPro_makeUpPack(&PP_RxPack,rcvbuf,rlen);
+	protocol_dump(LOG_HOZON, "PRVT_PROT", PP_RxPack.packHeader.sign, 18, 0);
+	PrvtPro_RxMsgHandle(task,&PP_RxPack,rlen);
 
 	return 0;
 }
@@ -401,7 +403,7 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
         {
             task->waitSt = PP_IDLE;
 			task->heartbeat.state = 0;//心跳不正常
-            log_e(LOG_GB32960, "heartbeat time out");
+            log_e(LOG_HOZON, "heartbeat time out");
         }
         else
         {

@@ -46,7 +46,7 @@ typedef struct
     /* protocol status */
     int socket;
     char state;//
-	char sendbusy;//发送忙状态
+	//char sendbusy;//发送忙状态
 	char asynCloseFlg;//异步关闭socket标志
 	svr_addr_t sock_addr;
 }__attribute__ ((packed)) sockproxy_stat_t;

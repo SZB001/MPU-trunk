@@ -68,7 +68,7 @@ int sockproxy_init(INIT_PHASE phase)
 		{
 			sockSt.socket = 0;
 			sockSt.state = PP_CLOSED;
-			sockSt.sendbusy = 0;
+
 			sockSt.asynCloseFlg = 0;
 			sockSt.sock_addr.port = 0;
 			sockSt.sock_addr.url[0] = 0;
@@ -236,7 +236,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 			}
 			else
 			{
-				log_i(LOG_SOCK_PROXY, "PP_OPEN_WAIT timeout,socket close");
+				log_e(LOG_SOCK_PROXY, "PP_OPEN_WAIT timeout,socket close");
 				sock_close(sockSt.socket);
 				sockSt.state = PP_CLOSED;
 			}
@@ -333,23 +333,29 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
 ******************************************************/
 int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 {
-	int res;
+	int res = 0;
 	
-	if(pthread_mutex_trylock(&sendmtx) != 0) return 0;//(非阻塞互斥锁)获取互斥锁失败
-	if((sockSt.sendbusy == 1U) || (sockSt.state != PP_OPENED))	
+	if(pthread_mutex_trylock(&sendmtx) == 0)//(非阻塞互斥锁)获取互斥锁
 	{
+		if(sockSt.state == PP_OPENED)
+		{
+			res = sock_send(sockSt.socket, msg, len, sync);
+			if((res > 0) && (res != len))//实际发送出去的数据跟需要发送的数据不一致
+			{
+				res = 0;
+			}	
+		}
+		else
+		{
+			log_e(LOG_SOCK_PROXY, "socket is not open");
+		}
+		
 		pthread_mutex_unlock(&sendmtx);//解锁互斥锁
-		return 0;	
 	}
-	sockSt.sendbusy = 1U;
-	res = sock_send(sockSt.socket, msg, len, sync);
-
-	if(res != len)//实际需要发送出去的数据跟需要发送的数据不一致
+	else
 	{
-		res = 0;
+		log_e(LOG_SOCK_PROXY, "send busy");
 	}
-	sockSt.sendbusy = 0U;
-	pthread_mutex_unlock(&sendmtx);//解锁互斥锁
 	return res;
 }
 
@@ -362,7 +368,8 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 ******************************************************/
 int sockproxy_socketState(void)
 {
-	if(sockSt.state == SOCK_STAT_OPENED)
+	if((sockSt.state == PP_OPENED) && \
+			(sock_status(sockSt.socket) == SOCK_STAT_OPENED))
 	{
 		return 1;
 	}
