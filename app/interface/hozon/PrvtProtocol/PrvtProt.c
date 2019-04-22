@@ -248,6 +248,7 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 	
 	if ((rlen = PrvtProt_rcvMsg(rcvbuf,1456)) > 0)
     {
+		log_i(LOG_HOZON, "HOZON private protocol receive message");
 		protocol_dump(LOG_HOZON, "PRVT_PROT", rcvbuf, rlen, 0);
 		if((rcvbuf[0] != 0x2A) || (rcvbuf[1] != 0x2A) || \
 				(rlen < 18))//判断数据帧头有误或者数据长度不对

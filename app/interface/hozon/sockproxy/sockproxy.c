@@ -158,7 +158,7 @@ void sockproxy_socketclose(void)
 {
 	if(pthread_mutex_trylock(&closemtx) == 0)//(非阻塞互斥锁)获取互斥锁成功
 	{//(非阻塞互斥锁)若获取互斥锁失败，说明此时有其他线程在执行关闭
-		if(sockSt.state == PP_OPEN)
+		if(sockSt.state == PP_OPENED)
 		{
 			sockSt.state = PP_CLOSE_WAIT;//等待关闭状态
 			sockSt.asynCloseFlg = 1;
@@ -176,12 +176,14 @@ void sockproxy_socketclose(void)
 ******************************************************/
 static int sockproxy_do_checksock(sockproxy_stat_t *state)
 {
+	static uint64_t time = 0;
 	if(1 == sockSt.asynCloseFlg) 
 	{
 		if(pthread_mutex_trylock(&sendmtx) == 0)//(非阻塞互斥锁)获取互斥锁成功，说明当前发送空闲，同时锁住发送
 		{
 			if(sockSt.state != PP_CLOSED)
 			{
+				log_i(LOG_SOCK_PROXY, "socket closed");
 				sock_close(sockSt.socket);
 				sockSt.state = PP_CLOSED;
 				pthread_mutex_unlock(&sendmtx);
@@ -197,39 +199,67 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
         return -1;
     }
 
-    if (sock_status(state->socket) == SOCK_STAT_CLOSED)
-    {
-        static uint64_t time = 0;
+	switch(state->state)
+	{
+		case PP_CLOSED:
+		{
+			if(sock_status(state->socket) == SOCK_STAT_CLOSED)
+			{
+				if(sockproxy_getsuspendSt() &&	\
+						(time == 0 || tm_get_time() - time > SOCK_SERVR_TIMEOUT))
+				{
+					log_i(LOG_SOCK_PROXY, "start to connect with server");
 
-        if(sockproxy_getsuspendSt() &&	\
-				(time == 0 || tm_get_time() - time > SOCK_SERVR_TIMEOUT))
-        {
-            log_i(LOG_SOCK_PROXY, "start to connect with server");
+					if (sock_open(NM_PUBLIC_NET,state->socket, state->sock_addr.url, state->sock_addr.port) != 0)
+					{
+						log_e(LOG_SOCK_PROXY, "open socket failed, retry later");
+					}
+					else
+					{
+						state->state = PP_OPEN_WAIT;
+					}
 
-            if (sock_open(NM_PUBLIC_NET,state->socket, state->sock_addr.url, state->sock_addr.port) != 0)
-            {
-                log_i(LOG_SOCK_PROXY, "open socket failed, retry later");
-            }
-
-            time = tm_get_time();
-        }
-    }
-    else if (sock_status(state->socket) == SOCK_STAT_OPENED)
-    {
-		state->state = PP_OPEN;
-        if (sock_error(state->socket) || sock_sync(state->socket))
-        {
-            log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
-			sockproxy_socketclose();
-        }
-        else
-        {
-            return 0;
-        }
-    }
-	else
-	{}
-
+					time = tm_get_time();
+				}
+			}
+		}
+		break;
+		case PP_OPEN_WAIT:
+		{
+			if((tm_get_time() - time) < 2000)
+			{
+				if(sock_status(state->socket) == SOCK_STAT_OPENED)
+				{
+					log_i(LOG_SOCK_PROXY, "socket is open success");
+					state->state = PP_OPENED;
+				}
+			}
+			else
+			{
+				log_i(LOG_SOCK_PROXY, "PP_OPEN_WAIT timeout,socket close");
+				sock_close(sockSt.socket);
+				sockSt.state = PP_CLOSED;
+			}
+		}
+		break;
+		default:
+		{
+			if(sock_status(state->socket) == SOCK_STAT_OPENED)
+			{
+				if (sock_error(state->socket) || sock_sync(state->socket))
+				{
+					log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
+					sockproxy_socketclose();
+				}
+				else
+				{
+					return 0;
+				}
+			}
+		}
+		break;
+	}
+	
     return -1;
 }
 
@@ -253,7 +283,7 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
         return -1;
     }
 	
-	protocol_dump(LOG_SOCK_PROXY, "sockproxy", rcvbuf, rlen, 0);//打印接收的数据
+	protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY", rcvbuf, rlen, 0);//打印接收的数据
 #if SOCKPROXY_SHELL_PROTOCOL
     while (ret == 0 && rlen > 0)
     {
@@ -268,14 +298,14 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
         input += uselen;
     }
 #else
-	if((0x2A == rcvbuf[0]) && (0x2A == rcvbuf[1]))//国标数据
+	if((0x23 == rcvbuf[0]) && (0x23 == rcvbuf[1]))//国标数据
 	{
 		if(WrSockproxyData_Queue(SP_GB,rcvbuf,rlen) < 0)
 		{
 			 log_e(LOG_SOCK_PROXY, "WrSockproxyData_Queue(SP_GB,rcvbuf,rlen) error");
 		}
 	}
-	else if((0x23 == rcvbuf[0]) && (0x23 == rcvbuf[1]))//HOZON 企业私有协议数据
+	else if((0x2A == rcvbuf[0]) && (0x2A == rcvbuf[1]))//HOZON 企业私有协议数据
 	{
 		if(WrSockproxyData_Queue(SP_PRIV,rcvbuf,rlen) < 0)
 		{
@@ -284,7 +314,10 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
 	}
 	else
 	{
-		log_i(LOG_SOCK_PROXY, "sockproxy_do_receive unknow package");
+		if(rlen > 0)
+		{
+			log_e(LOG_SOCK_PROXY, "sockproxy_do_receive unknow package");
+		}
 	}
 #endif
 
@@ -303,7 +336,7 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 	int res;
 	
 	if(pthread_mutex_trylock(&sendmtx) != 0) return 0;//(非阻塞互斥锁)获取互斥锁失败
-	if((sockSt.sendbusy == 1U) || (sockSt.state != PP_OPEN))	
+	if((sockSt.sendbusy == 1U) || (sockSt.state != PP_OPENED))	
 	{
 		pthread_mutex_unlock(&sendmtx);//解锁互斥锁
 		return 0;	
@@ -329,5 +362,9 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 ******************************************************/
 int sockproxy_socketState(void)
 {
-	return sockSt.state;
+	if(sockSt.state == SOCK_STAT_OPENED)
+	{
+		return 1;
+	}
+	return 0;
 }

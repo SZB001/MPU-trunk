@@ -37,7 +37,8 @@ typedef enum
 {
 	PP_CLOSED = 0,//
 	PP_CLOSE_WAIT,//
-    PP_OPEN,
+	PP_OPEN_WAIT,//
+    PP_OPENED,
 } PP_SOCK_STATE;
 /*****struct definitions*****/
 typedef struct
