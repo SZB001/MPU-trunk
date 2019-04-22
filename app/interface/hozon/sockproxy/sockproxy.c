@@ -303,7 +303,7 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 	int res;
 	
 	if(pthread_mutex_trylock(&sendmtx) != 0) return 0;//(·Ç×èÈû»¥³âËø)»ñÈ¡»¥³âËøÊ§°Ü
-	if((sockSt.sendbusy == 1U) || (sockSt.state == PP_CLOSED))	
+	if((sockSt.sendbusy == 1U) || (sockSt.state != PP_OPEN))	
 	{
 		pthread_mutex_unlock(&sendmtx);//½âËø»¥³âËø
 		return 0;	
