@@ -1129,7 +1129,7 @@ static int gb_shell_nosend(int argc, const char **argv)
         return -1;
     }
 
-	sscanf(argv[0], "%hu", &gbnosend);
+	sscanf(argv[0], "%c", &gbnosend);
     sleep(1);
 
     return 0;

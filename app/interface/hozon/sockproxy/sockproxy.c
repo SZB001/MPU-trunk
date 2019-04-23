@@ -186,6 +186,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				log_i(LOG_SOCK_PROXY, "socket closed");
 				sock_close(sockSt.socket);
 				sockSt.state = PP_CLOSED;
+				time = tm_get_time();
 				pthread_mutex_unlock(&sendmtx);
 			}
 			sockSt.asynCloseFlg = 0;
@@ -209,7 +210,6 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 						(time == 0 || tm_get_time() - time > SOCK_SERVR_TIMEOUT))
 				{
 					log_i(LOG_SOCK_PROXY, "start to connect with server");
-
 					if (sock_open(NM_PUBLIC_NET,state->socket, state->sock_addr.url, state->sock_addr.port) != 0)
 					{
 						log_e(LOG_SOCK_PROXY, "open socket failed, retry later");

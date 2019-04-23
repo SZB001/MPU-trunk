@@ -264,7 +264,7 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 		return 0;
 	}
 	PrvtPro_makeUpPack(&PP_RxPack,rcvbuf,rlen);
-	protocol_dump(LOG_HOZON, "PRVT_PROT", PP_RxPack.packHeader.sign, 18, 0);
+	protocol_dump(LOG_HOZON, "PRVT_PROT", PP_RxPack.packHeader.sign, rlen, 0);
 	PrvtPro_RxMsgHandle(task,&PP_RxPack,rlen);
 
 	return 0;
@@ -366,7 +366,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 	{
 		case 1://接收到心跳包
 		{
-			log_i(LOG_HOZON, "心跳正常!");
+			log_i(LOG_HOZON, "heart beat is ok");
 			task->heartbeat.state = 1;//正常心跳
 			task->waitSt = 0;
 		}
@@ -453,7 +453,7 @@ static int PP_shell_setCtrlParameter(int argc, const char **argv)
         return -1;
     }
 	
-	sscanf(argv[0], "%hu", &period);
+	sscanf(argv[0], "%c", &period);
 	if(period == 0)
 	{
 		 shellprintf(" usage: heartbeat period invalid\r\n");
@@ -461,7 +461,7 @@ static int PP_shell_setCtrlParameter(int argc, const char **argv)
 	}	
 	pp_task.heartbeat.period = period;
 	
-	sscanf(argv[1], "%hu", &pp_task.suspend);
+	sscanf(argv[1], "%c", &pp_task.suspend);
     sleep(1);
 
     return 0;
