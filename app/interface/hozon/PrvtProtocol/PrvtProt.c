@@ -18,6 +18,18 @@ description： include the header file
 #include <sys/times.h>
 #include "timer.h"
 #include <sys/prctl.h>
+
+#include <sys/types.h>
+#include <sysexits.h>	/* for EX_* exit codes */
+#include <assert.h>	/* for assert(3) */
+#include "constr_TYPE.h"
+#include "asn_codecs.h"
+#include "asn_application.h"
+#include "asn_internal.h"	/* for _ASN_DEFAULT_STACK_MAX */
+#include "MessageData.h"
+#include "per_encoder.h"
+#include "per_decoder.h"
+
 #include "init.h"
 #include "log.h"
 #include "list.h"
@@ -36,6 +48,9 @@ description： static variable definitions
 //static PrvtProt_heartbeat_t heartbeat;
 static PrvtProt_task_t pp_task;
 static PrvtProt_pack_t PP_RxPack;
+
+static uint8_t tboxMsgData[PP_MSG_DATA_LEN];
+static int tboxMsgLen;
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -53,6 +68,9 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task);
 static uint32_t PrvtPro_BSEndianReverse(uint32_t value);
 static int PP_shell_setCtrlParameter(int argc, const char **argv);
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len);
+
+static int PrvtPro_XcallReq(PrvtProt_task_t *task);
+static int PrvtPro_writeout(const void *buffer,size_t size,void *key);
 /******************************************************
 description： function code
 ******************************************************/
@@ -82,6 +100,9 @@ int PrvtProt_init(INIT_PHASE phase)
 			pp_task.waitSt = PP_IDLE;
 			pp_task.waittime = 0;
 			pp_task.suspend = 0;
+			pp_task.nonce = 0;/* TCP会话ID 由TSP平台产生 */
+			pp_task.version = 0x30;/* 大/小版本(由TSP平台定义)*/
+			pp_task.tboxid = 204;/* 平台通过tboxID与tboxSN映射 */
 		}
         break;
         case INIT_PHASE_RESTORE:
@@ -161,9 +182,11 @@ static void *PrvtProt_main(void)
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
 				PrvtPro_do_wait(&pp_task) || 
-				PrvtProt_do_heartbeat(&pp_task);
+				PrvtProt_do_heartbeat(&pp_task) ||
+				PrvtPro_XcallReq(&pp_task);
+		
     }
-
+	(void)res;
     return NULL;
 }
 #endif
@@ -187,13 +210,13 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 	{
 		pack_Header.sign[0] = 0x2A;
 		pack_Header.sign[1] = 0x2A;
-		pack_Header.ver.Byte = 0x30;
-		pack_Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)0);
+		pack_Header.ver.Byte = task->version;
+		pack_Header.nonce  = PrvtPro_BSEndianReverse(task->nonce);
 		pack_Header.commtype.Byte = 0x70;
 		pack_Header.safetype.Byte = 0x00;
 		pack_Header.opera = 0x01;
 		pack_Header.msglen = PrvtPro_BSEndianReverse((uint32_t)18);
-		pack_Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)204);
+		pack_Header.tboxid = PrvtPro_BSEndianReverse(task->tboxid);
 		
 		if(sockproxy_MsgSend(pack_Header.sign, 18,NULL) > 0)//发送成功
 		{
@@ -283,9 +306,10 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 ******************************************************/
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len)
 {
-	int rlen = 0;
+	static int rlen = 0;
 	uint8_t rcvstep = 0;
 
+	rlen = 0;
 	RxPack->packHeader.sign[0] = input[rlen++];
 	RxPack->packHeader.sign[1] = input[rlen++];
 	len = len-2;
@@ -340,7 +364,8 @@ static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len)
 			break;
 			case 7://message data
 			{
-				RxPack->msgdata[rlen-18] = input[rlen++];
+				RxPack->msgdata[rlen-18] = input[rlen];
+				rlen += 1;
 			}
 			break;
 			default:
@@ -364,11 +389,21 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 {
 	switch(rxPack->packHeader.opera)
 	{
-		case 1://接收到心跳包
+		case PP_NATIONALSTANDARD_TYPE:
+		{
+			
+		}
+		break;
+		case PP_HEARTBEAT_TYPE://接收到心跳包
 		{
 			log_i(LOG_HOZON, "heart beat is ok");
 			task->heartbeat.state = 1;//正常心跳
 			task->waitSt = 0;
+		}
+		break;
+		case PP_NGTP_TYPE://ngtp
+		{
+			
 		}
 		break;
 		default:
@@ -465,4 +500,117 @@ static int PP_shell_setCtrlParameter(int argc, const char **argv)
     sleep(1);
 
     return 0;
+}
+
+/******************************************************
+*函数名：static void PrvtPro_XcallReq
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PrvtPro_XcallReq(PrvtProt_task_t *task)
+{
+	static asn_TYPE_descriptor_t *pduType = &asn_DEF_MessageData;
+	PrvtProt_pack_t pack;
+	MessageData_t MsgData;
+	Appdatainfo_t Appdata;
+	IA5String_t tboxID,tboxSN;
+	uint8_t tsptboxID[12] = {1,1,1,1,1,1,1,1,1,1,1,1};
+	uint8_t tsptboxSN[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+	uint8_t AID[3] = {'1','7','0'};
+	//XcallReqinfo_t XcallReq;
+	static uint64_t timeout = 0;
+	
+	(void)tboxSN;
+	(void)tsptboxSN;
+	if((tm_get_time() - timeout) > (10*1000))
+	{
+		memset(&MsgData,0 , sizeof(MessageData_t));
+		memset(&tboxID,0 , sizeof(IA5String_t));
+		memset(&Appdata,0 , sizeof(Appdatainfo_t));
+		pack.packHeader.sign[0] = 0x2A;
+		pack.packHeader.sign[1] = 0x2A;
+		pack.packHeader.ver.Byte = task->version;
+		pack.packHeader.nonce  = PrvtPro_BSEndianReverse(task->nonce);
+		pack.packHeader.commtype.Byte = 0x70;
+		pack.packHeader.safetype.Byte = 0x00;
+		pack.packHeader.opera = 0x02;
+		pack.packHeader.msglen = PrvtPro_BSEndianReverse((uint32_t)18);
+		pack.packHeader.tboxid = PrvtPro_BSEndianReverse(task->tboxid);
+		
+		MsgData.disHeader.protocolVer = 0x30;
+		MsgData.disHeader.disMsgLen = 24;
+		MsgData.disHeader.disBodyEncode = 0;
+		MsgData.disHeader.tboxIdType = 0;
+		tboxID.buf = tsptboxID;
+		tboxID.size = 12;
+		MsgData.disHeader.tboxid = &tboxID;
+		
+		MsgData.disBody.aID.buf = AID;
+		MsgData.disBody.aID.size = 3;
+		//MsgData.disBody.aID = &aID;
+		MsgData.disBody.mID = 1;
+		MsgData.disBody.eventTime = 100;
+		
+		Appdata.choice.xcallReq.xcallType = 1;
+		MsgData.appdata = &Appdata;
+		
+		log_i(LOG_HOZON, "uper encode");
+		uper_encode(pduType,(void *)&MsgData,PrvtPro_writeout,0);
+		protocol_dump(LOG_HOZON, "PRVT_PROT", tboxMsgData, tboxMsgLen, 0);
+		log_i(LOG_HOZON, "uper encode end");
+		
+		log_i(LOG_HOZON, "uper decode");
+		asn_codec_ctx_t *asn_codec_ctx = 0 ;
+		MessageData_t RxMsgData;
+		memset(&RxMsgData,0 , sizeof(MessageData_t));
+		uper_decode(asn_codec_ctx,pduType,(void *)&RxMsgData,tboxMsgData,tboxMsgLen,0,0);
+		protocol_dump(LOG_HOZON, "PRVT_PROT", (uint8_t*)(&RxMsgData.disHeader.protocolVer), 4, 0);
+		protocol_dump(LOG_HOZON, "PRVT_PROT", MsgData.disHeader.tboxid->buf, 12, 0);
+		log_i(LOG_HOZON, "uper decode end");
+		
+		int i;
+		for(i = 0;i < tboxMsgLen;i++)
+		{
+			pack.msgdata[i]= tboxMsgData[i];
+		}
+		
+		if(sockproxy_MsgSend(pack.packHeader.sign, 18 + tboxMsgLen,NULL) > 0)//发送成功
+		{
+			protocol_dump(LOG_HOZON, "PRVT_PROT", pack.packHeader.sign, 18 + tboxMsgLen, 1);
+			//task->waitSt = PP_HEARTBEAT;
+			//task->heartbeat.ackFlag = PP_ACK_WAIT;
+			//task->waittime = tm_get_time();		
+		}	
+		timeout = tm_get_time();
+	}
+	
+	return 0;
+}
+
+/******************************************************
+*函数名：static void PrvtPro_writeout
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PrvtPro_writeout(const void *buffer,size_t size,void *key)
+{
+	int i;
+	for(i = 0;i < size;i++)
+	{
+		tboxMsgData[i] = ((unsigned char *)buffer)[i];
+	}
+	tboxMsgLen = size;
+	return 0;
 }

@@ -66,7 +66,7 @@ SUBDIRS := \
 	./app/interface/foton \
 	./app/interface/ftp \
 	./app/interface/autopilot \
-	./app/interface/hozon \
+	./app/interface/hozon/asn \
 	./app/interface/hozon/PrvtProtocol \
 	./app/interface/hozon/sockproxy \
 	./app \

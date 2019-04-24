@@ -28,6 +28,10 @@ description： macro definitions
 #define PP_WAIT_TIMEOUT 	(2*1000)//等待超时时间
 #define PP_MSG_DATA_LEN 	1438//message data 长度
 
+
+#define	PP_NATIONALSTANDARD_TYPE	0//操作类型：国标类型
+#define	PP_HEARTBEAT_TYPE			1//心跳类型
+#define	PP_NGTP_TYPE				2//NGTP类型
 /***********宏函数***********/
 #define PrvtProt_rcvMsg(buf,buflen) RdSockproxyData_Queue(SP_PRIV,buf,buflen)
 
@@ -108,6 +112,9 @@ typedef struct
 	PP_WAIT_STATE waitSt;/* 等待响应的状态 */
 	uint64_t waittime;/* 等待响应的时间 */
 	char suspend;/* 暂停 */
+	uint32_t nonce;/* TCP会话ID 由TSP平台产生 */
+	unsigned char version;/* 大/小版本(由TSP平台定义)*/
+	uint32_t tboxid;/* 平台通过tboxID与tboxSN映射 */
 }__attribute__((packed))  PrvtProt_task_t; /* 任务参数结构体*/
 
 /******union definitions*****/

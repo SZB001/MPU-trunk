@@ -11,7 +11,8 @@ LIB_PATH_R    :=  $(LIB_PATH)
 INCLUDES =	-I $(ROOTDIR)/app/base/scom \
 		    -I $(ROOTDIR)/app/base/uds \
 		    -I $(ROOTDIR)/app/base/uds/server \
-   	            -I $(ROOTDIR)/app/base/uds/server/foton \
+   	        -I $(ROOTDIR)/app/base/uds/server/foton \
+			-I $(ROOTDIR)/app/interface/hozon/asn
 #endif
 
 

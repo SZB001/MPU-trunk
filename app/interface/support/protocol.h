@@ -2,8 +2,9 @@
 #define __PROTOCOL_H__
 #include "tcom_api.h"
 
-
+#ifndef	MIN
 #define MIN(a, b)           ((a) < (b) ? (a) : (b))
+#endif
 #define MAX(a, b)           ((a) > (b) ? (a) : (b))
 #define ABS(d)              ((d) < 0 ? -(d) : (d))
 #define GET_WORD(data)      GET_HWBE(data)

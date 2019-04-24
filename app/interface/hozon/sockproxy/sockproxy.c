@@ -142,7 +142,7 @@ static void *sockproxy_main(void)
         res = sockproxy_do_checksock(&sockSt) ||	//检查socket连接,正常返回0
              sockproxy_do_receive(&sockSt);		//socket数据接收
     }
-	
+	(void)res;
 	sock_delete(sockSt.socket);
     return NULL;
 }
