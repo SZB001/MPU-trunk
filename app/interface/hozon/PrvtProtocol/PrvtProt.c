@@ -178,7 +178,7 @@ static void *PrvtProt_main(void)
 		{
 			continue;
 		}
-		
+		log_set_level(LOG_HOZON, LOG_DEBUG);
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
 				PrvtPro_do_wait(&pp_task) || 
@@ -518,74 +518,70 @@ static int PrvtPro_XcallReq(PrvtProt_task_t *task)
 	static asn_TYPE_descriptor_t *pduType = &asn_DEF_MessageData;
 	PrvtProt_pack_t pack;
 	MessageData_t MsgData;
-	Appdatainfo_t Appdata;
-	IA5String_t tboxID,tboxSN;
-	uint8_t tsptboxID[12] = {1,1,1,1,1,1,1,1,1,1,1,1};
-	uint8_t tsptboxSN[16] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+	//Appdatainfo_t Appdata;
 	uint8_t AID[3] = {'1','7','0'};
-	//XcallReqinfo_t XcallReq;
 	static uint64_t timeout = 0;
 	
-	(void)tboxSN;
-	(void)tsptboxSN;
-	if((tm_get_time() - timeout) > (10*1000))
+	if((tm_get_time() - timeout) > (5*1000))
 	{
 		memset(&MsgData,0 , sizeof(MessageData_t));
-		memset(&tboxID,0 , sizeof(IA5String_t));
-		memset(&Appdata,0 , sizeof(Appdatainfo_t));
+		//memset(&Appdata,0 , sizeof(Appdatainfo_t));
+
 		pack.packHeader.sign[0] = 0x2A;
 		pack.packHeader.sign[1] = 0x2A;
 		pack.packHeader.ver.Byte = task->version;
 		pack.packHeader.nonce  = PrvtPro_BSEndianReverse(task->nonce);
-		pack.packHeader.commtype.Byte = 0x70;
+		pack.packHeader.commtype.Byte = 0xe1;
 		pack.packHeader.safetype.Byte = 0x00;
 		pack.packHeader.opera = 0x02;
 		pack.packHeader.msglen = PrvtPro_BSEndianReverse((uint32_t)18);
 		pack.packHeader.tboxid = PrvtPro_BSEndianReverse(task->tboxid);
 		
-		MsgData.disHeader.protocolVer = 0x30;
-		MsgData.disHeader.disMsgLen = 24;
-		MsgData.disHeader.disBodyEncode = 0;
-		MsgData.disHeader.tboxIdType = 0;
-		tboxID.buf = tsptboxID;
-		tboxID.size = 12;
-		MsgData.disHeader.tboxid = &tboxID;
-		
 		MsgData.disBody.aID.buf = AID;
 		MsgData.disBody.aID.size = 3;
-		//MsgData.disBody.aID = &aID;
 		MsgData.disBody.mID = 1;
-		MsgData.disBody.eventTime = 100;
+		MsgData.disBody.eventTime = 1556171208;
 		
-		Appdata.choice.xcallReq.xcallType = 1;
-		MsgData.appdata = &Appdata;
-		
+		//Appdata.present = Appdatainfo_PR_xcallReq;
+		//Appdata.choice.xcallReq.xcallType = 1;
+		//MsgData.appdata = &Appdata;
 		log_i(LOG_HOZON, "uper encode");
-		uper_encode(pduType,(void *)&MsgData,PrvtPro_writeout,0);
-		protocol_dump(LOG_HOZON, "PRVT_PROT", tboxMsgData, tboxMsgLen, 0);
+		uper_encode(pduType,(void *) &MsgData,PrvtPro_writeout,NULL);
+		protocol_dump(LOG_HOZON, "uper encode", tboxMsgData, tboxMsgLen, 0);
 		log_i(LOG_HOZON, "uper encode end");
 		
 		log_i(LOG_HOZON, "uper decode");
 		asn_codec_ctx_t *asn_codec_ctx = 0 ;
 		MessageData_t RxMsgData;
+		MessageData_t *RxMsgData_ptr = &RxMsgData;
+		uint8_t decodeBuff[50U];
 		memset(&RxMsgData,0 , sizeof(MessageData_t));
-		uper_decode(asn_codec_ctx,pduType,(void *)&RxMsgData,tboxMsgData,tboxMsgLen,0,0);
-		protocol_dump(LOG_HOZON, "PRVT_PROT", (uint8_t*)(&RxMsgData.disHeader.protocolVer), 4, 0);
-		protocol_dump(LOG_HOZON, "PRVT_PROT", MsgData.disHeader.tboxid->buf, 12, 0);
+		uper_decode(asn_codec_ctx,pduType,(void *) &RxMsgData_ptr,tboxMsgData,tboxMsgLen,0,0);
+
+		decodeBuff[0] = RxMsgData.disBody.aID.buf[0];
+		decodeBuff[1] = RxMsgData.disBody.aID.buf[1];
+		decodeBuff[2] = RxMsgData.disBody.aID.buf[2];
+		decodeBuff[3] = RxMsgData.disBody.mID;
+		//decodeBuff[4] = RxMsgData.disBody.eventTime;
+		//decodeBuff[5] = RxMsgData.disBody.eventTime >> 8;
+		//decodeBuff[6] = RxMsgData.disBody.eventTime >> 16;
+		//decodeBuff[7] = RxMsgData.disBody.eventTime >> 24;
+		//decodeBuff[9] = (uint8_t*)(&RxMsgData.appdata->choice.xcallReq.xcallType);
+		
+		protocol_dump(LOG_HOZON, "uper decode", decodeBuff, 4, 0);
+		log_i(LOG_HOZON, "%d",RxMsgData.disBody.eventTime);
 		log_i(LOG_HOZON, "uper decode end");
 		
 		int i;
+		pack.msgdata[0] = tboxMsgLen;
 		for(i = 0;i < tboxMsgLen;i++)
 		{
-			pack.msgdata[i]= tboxMsgData[i];
+			pack.msgdata[i+1]= tboxMsgData[i];
 		}
-		
-		if(sockproxy_MsgSend(pack.packHeader.sign, 18 + tboxMsgLen,NULL) > 0)//发送成功
+		pack.packHeader.msglen = PrvtPro_BSEndianReverse((uint32_t)(18 + 1 + tboxMsgLen));
+		if(sockproxy_MsgSend(pack.packHeader.sign, 18 + 1 + tboxMsgLen ,NULL) > 0)//发送成功
 		{
-			protocol_dump(LOG_HOZON, "PRVT_PROT", pack.packHeader.sign, 18 + tboxMsgLen, 1);
-			//task->waitSt = PP_HEARTBEAT;
-			//task->heartbeat.ackFlag = PP_ACK_WAIT;
-			//task->waittime = tm_get_time();		
+			protocol_dump(LOG_HOZON, "PRVT_PROT", pack.packHeader.sign, 18 + 1 + tboxMsgLen , 1);	
 		}	
 		timeout = tm_get_time();
 	}
@@ -607,6 +603,12 @@ static int PrvtPro_XcallReq(PrvtProt_task_t *task)
 static int PrvtPro_writeout(const void *buffer,size_t size,void *key)
 {
 	int i;
+	log_i(LOG_HOZON, "PrvtPro_writeout >>>");
+	if(size > PP_MSG_DATA_LEN)
+	{
+		log_i(LOG_HOZON, "the size of data greater than PP_MSG_DATA_LEN");
+		return 0;
+	}
 	for(i = 0;i < size;i++)
 	{
 		tboxMsgData[i] = ((unsigned char *)buffer)[i];

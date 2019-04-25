@@ -12,7 +12,6 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include "Headinfo.h"
 #include "Bodyinfo.h"
 #include <constr_SEQUENCE.h>
 
@@ -20,14 +19,9 @@
 extern "C" {
 #endif
 
-/* Forward declarations */
-struct Appdatainfo;
-
 /* MessageData */
 typedef struct MessageData {
-	Headinfo_t	 disHeader;
 	Bodyinfo_t	 disBody;
-	struct Appdatainfo	*appdata	/* OPTIONAL */;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
@@ -39,8 +33,5 @@ extern asn_TYPE_descriptor_t asn_DEF_MessageData;
 #ifdef __cplusplus
 }
 #endif
-
-/* Referred external types */
-#include "Appdatainfo.h"
 
 #endif	/* _MessageData_H_ */

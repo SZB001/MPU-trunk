@@ -4,7 +4,6 @@
  */
 #ifndef	_BER_TLV_LENGTH_H_
 #define	_BER_TLV_LENGTH_H_
-#include "asn_codecs.h"
 
 #ifdef __cplusplus
 extern "C" {

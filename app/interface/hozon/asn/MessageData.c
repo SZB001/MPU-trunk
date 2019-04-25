@@ -10,17 +10,8 @@
 #include "MessageData.h"
 
 static asn_TYPE_member_t asn_MBR_MessageData_1[] = {
-	{ ATF_NOFLAGS, 0, offsetof(struct MessageData, disHeader),
-		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_Headinfo,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
-		0,
-		"disHeader"
-		},
 	{ ATF_NOFLAGS, 0, offsetof(struct MessageData, disBody),
-		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_Bodyinfo,
 		0,	/* Defer constraints checking to the member type */
@@ -28,32 +19,19 @@ static asn_TYPE_member_t asn_MBR_MessageData_1[] = {
 		0,
 		"disBody"
 		},
-	{ ATF_POINTER, 1, offsetof(struct MessageData, appdata),
-		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
-		+1,	/* EXPLICIT tag at current level */
-		&asn_DEF_Appdatainfo,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
-		0,
-		"appdata"
-		},
 };
-static int asn_MAP_MessageData_oms_1[] = { 2 };
 static ber_tlv_tag_t asn_DEF_MessageData_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
 static asn_TYPE_tag2member_t asn_MAP_MessageData_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* disHeader at 7 */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* disBody at 8 */
-    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* appdata at 9 */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 } /* disBody at 8 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_MessageData_specs_1 = {
 	sizeof(struct MessageData),
 	offsetof(struct MessageData, _asn_ctx),
 	asn_MAP_MessageData_tag2el_1,
-	3,	/* Count of tags in the map */
-	asn_MAP_MessageData_oms_1,	/* Optional members */
-	1, 0,	/* Root/Additions */
+	1,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
 	-1,	/* Start extensions */
 	-1	/* Stop extensions */
 };
@@ -78,7 +56,7 @@ asn_TYPE_descriptor_t asn_DEF_MessageData = {
 		/sizeof(asn_DEF_MessageData_tags_1[0]), /* 1 */
 	0,	/* No PER visible constraints */
 	asn_MBR_MessageData_1,
-	3,	/* Elements count */
+	1,	/* Elements count */
 	&asn_SPC_MessageData_specs_1	/* Additional specs */
 };
 

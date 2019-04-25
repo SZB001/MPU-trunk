@@ -12,9 +12,8 @@
 #include <asn_application.h>
 
 /* Including external dependencies */
-#include <IA5String.h>
+#include <OCTET_STRING.h>
 #include <NativeInteger.h>
-#include <BOOLEAN.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
@@ -23,19 +22,9 @@ extern "C" {
 
 /* Bodyinfo */
 typedef struct Bodyinfo {
-	IA5String_t	 aID;
+	OCTET_STRING_t	 aID;
 	long	 mID;
 	long	 eventTime;
-	long	*eventId	/* OPTIONAL */;
-	long	*ulMsgCnt	/* OPTIONAL */;
-	long	*dlMsgCnt	/* OPTIONAL */;
-	long	*msgCntAcked	/* OPTIONAL */;
-	BOOLEAN_t	*ackReq	/* OPTIONAL */;
-	long	*appDataLen	/* OPTIONAL */;
-	long	*appDataEncode	/* OPTIONAL */;
-	long	*appDataProVer	/* OPTIONAL */;
-	long	*testFlag	/* OPTIONAL */;
-	long	*result	/* OPTIONAL */;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

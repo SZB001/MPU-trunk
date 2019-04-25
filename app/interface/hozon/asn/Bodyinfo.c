@@ -10,6 +10,32 @@
 #include "Bodyinfo.h"
 
 static int
+memb_aID_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
+	size_t size;
+	
+	if(!sptr) {
+		_ASN_CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	size = st->size;
+	
+	if((size == 3)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		_ASN_CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
 memb_mID_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	long value;
@@ -59,231 +85,10 @@ memb_eventTime_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static int
-memb_eventId_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
-	long value;
-	
-	if(!sptr) {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: value not given (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-	
-	value = *(const long *)sptr;
-	
-	if((value >= 0 && value <= 2147483647)) {
-		/* Constraint check succeeded */
-		return 0;
-	} else {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: constraint failed (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-}
-
-static int
-memb_ulMsgCnt_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
-	long value;
-	
-	if(!sptr) {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: value not given (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-	
-	value = *(const long *)sptr;
-	
-	if((value >= 0 && value <= 65535)) {
-		/* Constraint check succeeded */
-		return 0;
-	} else {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: constraint failed (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-}
-
-static int
-memb_dlMsgCnt_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
-	long value;
-	
-	if(!sptr) {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: value not given (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-	
-	value = *(const long *)sptr;
-	
-	if((value >= 0 && value <= 65535)) {
-		/* Constraint check succeeded */
-		return 0;
-	} else {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: constraint failed (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-}
-
-static int
-memb_msgCntAcked_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
-	long value;
-	
-	if(!sptr) {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: value not given (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-	
-	value = *(const long *)sptr;
-	
-	if((value >= 0 && value <= 65535)) {
-		/* Constraint check succeeded */
-		return 0;
-	} else {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: constraint failed (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-}
-
-static int
-memb_appDataLen_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
-	long value;
-	
-	if(!sptr) {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: value not given (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-	
-	value = *(const long *)sptr;
-	
-	if((value >= 0 && value <= 65535)) {
-		/* Constraint check succeeded */
-		return 0;
-	} else {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: constraint failed (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-}
-
-static int
-memb_appDataEncode_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
-	long value;
-	
-	if(!sptr) {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: value not given (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-	
-	value = *(const long *)sptr;
-	
-	if((value >= 0 && value <= 2)) {
-		/* Constraint check succeeded */
-		return 0;
-	} else {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: constraint failed (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-}
-
-static int
-memb_appDataProVer_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
-	long value;
-	
-	if(!sptr) {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: value not given (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-	
-	value = *(const long *)sptr;
-	
-	if((value >= 0 && value <= 65535)) {
-		/* Constraint check succeeded */
-		return 0;
-	} else {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: constraint failed (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-}
-
-static int
-memb_testFlag_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
-	long value;
-	
-	if(!sptr) {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: value not given (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-	
-	value = *(const long *)sptr;
-	
-	if((value >= 1 && value <= 3)) {
-		/* Constraint check succeeded */
-		return 0;
-	} else {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: constraint failed (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-}
-
-static int
-memb_result_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
-			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
-	long value;
-	
-	if(!sptr) {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: value not given (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-	
-	value = *(const long *)sptr;
-	
-	if((value >= 0 && value <= 65535)) {
-		/* Constraint check succeeded */
-		return 0;
-	} else {
-		_ASN_CTFAIL(app_key, td, sptr,
-			"%s: constraint failed (%s:%d)",
-			td->name, __FILE__, __LINE__);
-		return -1;
-	}
-}
-
+static asn_per_constraints_t asn_PER_memb_aID_constr_2 = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 0,  0,  3,  3 }	/* (SIZE(3..3)) */
+};
 static asn_per_constraints_t asn_PER_memb_mID_constr_3 = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
@@ -292,49 +97,13 @@ static asn_per_constraints_t asn_PER_memb_eventTime_constr_4 = {
 	{ APC_CONSTRAINED,	 31, -1,  0,  2147483647 }	/* (0..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
 };
-static asn_per_constraints_t asn_PER_memb_eventId_constr_5 = {
-	{ APC_CONSTRAINED,	 31, -1,  0,  2147483647 }	/* (0..2147483647) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
-};
-static asn_per_constraints_t asn_PER_memb_ulMsgCnt_constr_6 = {
-	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
-};
-static asn_per_constraints_t asn_PER_memb_dlMsgCnt_constr_7 = {
-	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
-};
-static asn_per_constraints_t asn_PER_memb_msgCntAcked_constr_8 = {
-	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
-};
-static asn_per_constraints_t asn_PER_memb_appDataLen_constr_10 = {
-	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
-};
-static asn_per_constraints_t asn_PER_memb_appDataEncode_constr_11 = {
-	{ APC_CONSTRAINED,	 2,  2,  0,  2 }	/* (0..2) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
-};
-static asn_per_constraints_t asn_PER_memb_appDataProVer_constr_12 = {
-	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
-};
-static asn_per_constraints_t asn_PER_memb_testFlag_constr_13 = {
-	{ APC_CONSTRAINED,	 2,  2,  1,  3 }	/* (1..3) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
-};
-static asn_per_constraints_t asn_PER_memb_result_constr_14 = {
-	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 }
-};
 static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Bodyinfo, aID),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_IA5String,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
+		&asn_DEF_OCTET_STRING,
+		memb_aID_constraint_1,
+		&asn_PER_memb_aID_constr_2,
 		0,
 		"aID"
 		},
@@ -356,123 +125,21 @@ static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 		0,
 		"eventTime"
 		},
-	{ ATF_POINTER, 10, offsetof(struct Bodyinfo, eventId),
-		(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_NativeInteger,
-		memb_eventId_constraint_1,
-		&asn_PER_memb_eventId_constr_5,
-		0,
-		"eventId"
-		},
-	{ ATF_POINTER, 9, offsetof(struct Bodyinfo, ulMsgCnt),
-		(ASN_TAG_CLASS_CONTEXT | (4 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_NativeInteger,
-		memb_ulMsgCnt_constraint_1,
-		&asn_PER_memb_ulMsgCnt_constr_6,
-		0,
-		"ulMsgCnt"
-		},
-	{ ATF_POINTER, 8, offsetof(struct Bodyinfo, dlMsgCnt),
-		(ASN_TAG_CLASS_CONTEXT | (5 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_NativeInteger,
-		memb_dlMsgCnt_constraint_1,
-		&asn_PER_memb_dlMsgCnt_constr_7,
-		0,
-		"dlMsgCnt"
-		},
-	{ ATF_POINTER, 7, offsetof(struct Bodyinfo, msgCntAcked),
-		(ASN_TAG_CLASS_CONTEXT | (6 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_NativeInteger,
-		memb_msgCntAcked_constraint_1,
-		&asn_PER_memb_msgCntAcked_constr_8,
-		0,
-		"msgCntAcked"
-		},
-	{ ATF_POINTER, 6, offsetof(struct Bodyinfo, ackReq),
-		(ASN_TAG_CLASS_CONTEXT | (7 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_BOOLEAN,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
-		0,
-		"ackReq"
-		},
-	{ ATF_POINTER, 5, offsetof(struct Bodyinfo, appDataLen),
-		(ASN_TAG_CLASS_CONTEXT | (8 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_NativeInteger,
-		memb_appDataLen_constraint_1,
-		&asn_PER_memb_appDataLen_constr_10,
-		0,
-		"appDataLen"
-		},
-	{ ATF_POINTER, 4, offsetof(struct Bodyinfo, appDataEncode),
-		(ASN_TAG_CLASS_CONTEXT | (9 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_NativeInteger,
-		memb_appDataEncode_constraint_1,
-		&asn_PER_memb_appDataEncode_constr_11,
-		0,
-		"appDataEncode"
-		},
-	{ ATF_POINTER, 3, offsetof(struct Bodyinfo, appDataProVer),
-		(ASN_TAG_CLASS_CONTEXT | (10 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_NativeInteger,
-		memb_appDataProVer_constraint_1,
-		&asn_PER_memb_appDataProVer_constr_12,
-		0,
-		"appDataProVer"
-		},
-	{ ATF_POINTER, 2, offsetof(struct Bodyinfo, testFlag),
-		(ASN_TAG_CLASS_CONTEXT | (11 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_NativeInteger,
-		memb_testFlag_constraint_1,
-		&asn_PER_memb_testFlag_constr_13,
-		0,
-		"testFlag"
-		},
-	{ ATF_POINTER, 1, offsetof(struct Bodyinfo, result),
-		(ASN_TAG_CLASS_CONTEXT | (12 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_NativeInteger,
-		memb_result_constraint_1,
-		&asn_PER_memb_result_constr_14,
-		0,
-		"result"
-		},
 };
-static int asn_MAP_Bodyinfo_oms_1[] = { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
 static ber_tlv_tag_t asn_DEF_Bodyinfo_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
 static asn_TYPE_tag2member_t asn_MAP_Bodyinfo_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* aID at 24 */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* mID at 25 */
-    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* eventTime at 26 */
-    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* eventId at 27 */
-    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* ulMsgCnt at 28 */
-    { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 }, /* dlMsgCnt at 29 */
-    { (ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0, 0 }, /* msgCntAcked at 30 */
-    { (ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0 }, /* ackReq at 31 */
-    { (ASN_TAG_CLASS_CONTEXT | (8 << 2)), 8, 0, 0 }, /* appDataLen at 32 */
-    { (ASN_TAG_CLASS_CONTEXT | (9 << 2)), 9, 0, 0 }, /* appDataEncode at 33 */
-    { (ASN_TAG_CLASS_CONTEXT | (10 << 2)), 10, 0, 0 }, /* appDataProVer at 34 */
-    { (ASN_TAG_CLASS_CONTEXT | (11 << 2)), 11, 0, 0 }, /* testFlag at 35 */
-    { (ASN_TAG_CLASS_CONTEXT | (12 << 2)), 12, 0, 0 } /* result at 36 */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* aID at 12 */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* mID at 13 */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* eventTime at 14 */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_Bodyinfo_specs_1 = {
 	sizeof(struct Bodyinfo),
 	offsetof(struct Bodyinfo, _asn_ctx),
 	asn_MAP_Bodyinfo_tag2el_1,
-	13,	/* Count of tags in the map */
-	asn_MAP_Bodyinfo_oms_1,	/* Optional members */
-	10, 0,	/* Root/Additions */
+	3,	/* Count of tags in the map */
+	0, 0, 0,	/* Optional elements (not needed) */
 	-1,	/* Start extensions */
 	-1	/* Stop extensions */
 };
@@ -497,7 +164,7 @@ asn_TYPE_descriptor_t asn_DEF_Bodyinfo = {
 		/sizeof(asn_DEF_Bodyinfo_tags_1[0]), /* 1 */
 	0,	/* No PER visible constraints */
 	asn_MBR_Bodyinfo_1,
-	13,	/* Elements count */
+	3,	/* Elements count */
 	&asn_SPC_Bodyinfo_specs_1	/* Additional specs */
 };
 

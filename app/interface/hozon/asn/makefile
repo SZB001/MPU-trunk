@@ -7,7 +7,7 @@ TYPE := staticlib
 TARGETNAME := asn
 
 #INCLUDES += 
-#CCXXFLAGS = -Wall
+CCXXFLAGS = -Wall
 #CFLAGS =
 #CXXFLAGS =
 #OFLAGS =
