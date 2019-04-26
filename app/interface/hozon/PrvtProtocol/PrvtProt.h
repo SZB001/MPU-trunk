@@ -28,6 +28,8 @@ description： macro definitions
 #define PP_WAIT_TIMEOUT 	(2*1000)//等待超时时间
 #define PP_MSG_DATA_LEN 	1438//message data 长度
 
+#define PP_ENCODE_DISBODY 	0x01//编码dispatcher header
+#define PP_ENCODE_APPDATA 	0x02//编码app data
 
 #define	PP_NATIONALSTANDARD_TYPE	0//操作类型：国标类型
 #define	PP_HEARTBEAT_TYPE			1//心跳类型
@@ -92,6 +94,24 @@ typedef struct
 	unsigned long int tboxid;/* 平台通过tboxID与tboxSN映射 */
 }__attribute__((packed)) PrvtProt_pack_Header_t; /*报文头结构体*/ 
 
+/* Dispatcher Body struct */
+typedef struct 
+{
+	uint8_t	 	aID[3];
+	uint8_t	 	mID;
+	uint32_t	eventTime;
+	long	eventId	/* OPTIONAL */;
+	long	ulMsgCnt	/* OPTIONAL */;
+	long	dlMsgCnt	/* OPTIONAL */;
+	long	msgCntAcked	/* OPTIONAL */;
+	int		ackReq	/* OPTIONAL */;
+	long	appDataLen	/* OPTIONAL */;
+	long		appDataEncode	/* OPTIONAL */;
+	long	appDataProVer	/* OPTIONAL */;
+	long		testFlag	/* OPTIONAL */;
+	long	result	/* OPTIONAL */;
+}PrvtProt_DisptrBody_t;
+
 typedef struct 
 {		
 	PrvtProt_pack_Header_t packHeader;/* */
@@ -116,7 +136,6 @@ typedef struct
 	unsigned char version;/* 大/小版本(由TSP平台定义)*/
 	uint32_t tboxid;/* 平台通过tboxID与tboxSN映射 */
 }__attribute__((packed))  PrvtProt_task_t; /* 任务参数结构体*/
-
 /******union definitions*****/
 
 /*******************************************************
