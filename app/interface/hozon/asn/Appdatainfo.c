@@ -8,7 +8,7 @@
 #include "Appdatainfo.h"
 
 static asn_per_constraints_t asn_PER_type_Appdatainfo_constr_1 GCC_NOTUSED = {
-	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
+	{ APC_CONSTRAINED | APC_EXTENSIBLE,  1,  1,  0,  1 }	/* (0..1,...) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
@@ -44,7 +44,7 @@ static asn_CHOICE_specifics_t asn_SPC_Appdatainfo_specs_1 = {
 	asn_MAP_Appdatainfo_tag2el_1,
 	2,	/* Count of tags in the map */
 	0,
-	-1	/* Extensions start */
+	2	/* Extensions start */
 };
 asn_TYPE_descriptor_t asn_DEF_Appdatainfo = {
 	"Appdatainfo",

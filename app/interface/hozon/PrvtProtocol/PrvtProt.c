@@ -40,6 +40,7 @@ description： include the header file
 #include "../../support/protocol.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
+#include "PrvtProt_shell.h"
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -72,11 +73,12 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task);
 static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len);
 static int PrvtPro_do_wait(PrvtProt_task_t *task);
 static uint32_t PrvtPro_BSEndianReverse(uint32_t value);
-static int PP_shell_setCtrlParameter(int argc, const char **argv);
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len);
-
-static int PrvtPro_XcallReq(PrvtProt_task_t *task);
+static int PrvtPro_msgPackage(uint8_t type,PrvtProt_pack_t *pack,PrvtProt_DisptrBody_t *DisptrBody,PrvtProt_appData_t *Appchoice);
+static int PrvtPro_do_checkXcall(PrvtProt_task_t *task);
 static int PrvtPro_writeout(const void *buffer,size_t size,void *key);
+static long PrvtPro_getTimestamp(void);
+static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,Appdatainfo_t *RxAppdata);
 /******************************************************
 description： function code
 ******************************************************/
@@ -106,6 +108,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			pp_task.waitSt = PP_IDLE;
 			pp_task.waittime = 0;
 			pp_task.suspend = 0;
+			pp_task.ecall.req = 0;
 			pp_task.nonce = 0;/* TCP会话ID 由TSP平台产生 */
 			pp_task.version = 0x30;/* 大/小版本(由TSP平台定义)*/
 			pp_task.tboxid = 204;/* 平台通过tboxID与tboxSN映射 */
@@ -115,7 +118,7 @@ int PrvtProt_init(INIT_PHASE phase)
         break;
         case INIT_PHASE_OUTSIDE:
 		{
-			 ret |= shell_cmd_register("HOZON_PP_SET", PP_shell_setCtrlParameter, "set HOZON PrvtProt control parameter");
+			PrvtProt_shell_init();
 		}
         break;
     }
@@ -189,7 +192,7 @@ static void *PrvtProt_main(void)
 				PrvtPro_do_rcvMsg(&pp_task) ||
 				PrvtPro_do_wait(&pp_task) || 
 				PrvtProt_do_heartbeat(&pp_task) ||
-				PrvtPro_XcallReq(&pp_task);
+				PrvtPro_do_checkXcall(&pp_task);
 		
     }
 	(void)res;
@@ -472,69 +475,24 @@ static uint32_t PrvtPro_BSEndianReverse(uint32_t value)
 }
 
 /******************************************************
-*函数名：PP_shell_setCtrlParamter
-
-*形  参：
-argv[0] - 心跳周期 ，单位:秒
-argv[1] - ：是否暂停
-
-
-*返回值：void
-
-*描  述：
-
-*备  注：
-******************************************************/
-static int PP_shell_setCtrlParameter(int argc, const char **argv)
-{
-	char period;
-    if (argc != 2)
-    {
-        shellprintf(" usage: HOZON_PP_SET <heartbeat period> <suspend>\r\n");
-        return -1;
-    }
-	
-	sscanf(argv[0], "%c", &period);
-	if(period == 0)
-	{
-		 shellprintf(" usage: heartbeat period invalid\r\n");
-		 return -1;
-	}	
-	pp_task.heartbeat.period = period;
-	
-	sscanf(argv[1], "%c", &pp_task.suspend);
-    sleep(1);
-
-    return 0;
-}
-
-/******************************************************
-*函数名：static void PrvtPro_XcallReq
+*函数名：PrvtPro_do_checkXcall
 
 *形  参：
 
 *返回值：
 
-*描  述：
+*描  述：检查ecall等请求
 
 *备  注：
 ******************************************************/
-static int PrvtPro_XcallReq(PrvtProt_task_t *task)
+static int PrvtPro_do_checkXcall(PrvtProt_task_t *task)
 {
-	static asn_TYPE_descriptor_t *pduType_Body = &asn_DEF_Bodyinfo;
-	static asn_TYPE_descriptor_t *pduType_appData = &asn_DEF_Appdatainfo;
 	PrvtProt_pack_t pack;
 	PrvtProt_DisptrBody_t	PP_DisptrBody;
-	Bodyinfo_t Bodydata;
-	Appdatainfo_t Appdata;
+	PrvtProt_appData_t PP_appData;
 
-	static uint64_t timeout = 0;
-	int i;
-	if((tm_get_time() - timeout) > (5*1000))
+	if(1 == pp_task.ecall.req)
 	{
-		memset(&Bodydata,0 , sizeof(Bodyinfo_t));
-		memset(&Appdata,0 , sizeof(Appdatainfo_t));
-
 		pack.packHeader.sign[0] = 0x2A;
 		pack.packHeader.sign[1] = 0x2A;
 		pack.packHeader.ver.Byte = task->version;
@@ -550,6 +508,7 @@ static int PrvtPro_XcallReq(PrvtProt_task_t *task)
 		PP_DisptrBody.aID[2] = '0';
 		PP_DisptrBody.eventId = 100;
 		PP_DisptrBody.ulMsgCnt = 1;	/* OPTIONAL */
+		PP_DisptrBody.dlMsgCnt = 0;	/* OPTIONAL */
 		PP_DisptrBody.msgCntAcked	= 0;/* OPTIONAL */
 		PP_DisptrBody.ackReq = 1;	/* OPTIONAL */
 		PP_DisptrBody.appDataLen = 0;	/* OPTIONAL */
@@ -558,97 +517,15 @@ static int PrvtPro_XcallReq(PrvtProt_task_t *task)
 		PP_DisptrBody.testFlag	= 0;/* OPTIONAL */
 		PP_DisptrBody.result = 0;	/* OPTIONAL */
 		
-		Bodydata.aID.buf = PP_DisptrBody.aID;
-		Bodydata.aID.size = 3;
-		Bodydata.mID = 1;
-		Bodydata.eventTime = 1556171208;
-		Bodydata.eventId = &(PP_DisptrBody.eventId);
-		Bodydata.ulMsgCnt = &(PP_DisptrBody.ulMsgCnt);	/* OPTIONAL */
-		//Bodydata.dlMsgCnt = NULL;
-		Bodydata.msgCntAcked	= &(PP_DisptrBody.msgCntAcked);/* OPTIONAL */
-		Bodydata.ackReq	= &(PP_DisptrBody.ackReq);/* OPTIONAL */
-		Bodydata.appDataLen = &(PP_DisptrBody.appDataLen);
-		Bodydata.appDataEncode	= &(PP_DisptrBody.appDataEncode);/* OPTIONAL */
-		Bodydata.appDataProVer	= &(PP_DisptrBody.appDataProVer);/* OPTIONAL */
-		Bodydata.testFlag	= &(PP_DisptrBody.testFlag);/* OPTIONAL */
-		Bodydata.result	= &(PP_DisptrBody.result);/* OPTIONAL */
-		
-		static uint8_t key;
-		asn_enc_rval_t ec;
-		Appdata.present = Appdatainfo_PR_xcallReq;
-		Appdata.choice.xcallReq.xcallType = 1;
-		log_i(LOG_HOZON, "uper encode:appdata");
-		key = PP_ENCODE_APPDATA;
-		ec = uper_encode(pduType_appData,(void *) &Appdata,PrvtPro_writeout,&key);
-		if(ec.encoded  == -1) 
+		PP_appData.xcallType = 1;
+		if(0 == PrvtPro_msgPackage(PP_ECALL_REQ,&pack,&PP_DisptrBody,&PP_appData))
 		{
-			log_e(LOG_HOZON, "Could not encode MessageFrame");
+			if(sockproxy_MsgSend(pack.packHeader.sign, 18 + 1 + tboxDisBodydataLen + tboxAppdataLen ,NULL) > 0)//发送成功
+			{
+				pp_task.ecall.req = 0;
+				protocol_dump(LOG_HOZON, "PRVT_PROT", pack.packHeader.sign, 18 + 1 + tboxDisBodydataLen + tboxAppdataLen , 1);	
+			}
 		}
-		PP_DisptrBody.appDataLen = tboxAppdataLen;
-		protocol_dump(LOG_HOZON, "uper encode:appdata", tboxAppdata,tboxAppdataLen, 0);
-		log_i(LOG_HOZON, "uper encode appdata end");
-		
-		log_i(LOG_HOZON, "uper encode:dis body");
-		Bodydata.appDataLen = &(PP_DisptrBody.appDataLen);
-		key = PP_ENCODE_DISBODY;
-		ec = uper_encode(pduType_Body,(void *) &Bodydata,PrvtPro_writeout,&key);
-		if(ec.encoded  == -1) 
-		{
-			log_e(LOG_HOZON, "Could not encode MessageFrame");
-		}
-		protocol_dump(LOG_HOZON, "uper encode:dis body", tboxDisBodydata, tboxDisBodydataLen, 0);
-		log_i(LOG_HOZON, "uper encode dis body end");
-		
-		log_i(LOG_HOZON, "uper decode");
-		asn_codec_ctx_t *asn_codec_ctx = 0 ;
-		Bodyinfo_t RxBodydata;
-		Bodyinfo_t *RxBodydata_ptr = &RxBodydata;
-		Appdatainfo_t RxAppdata;
-		Appdatainfo_t *RxAppdata_ptr = &RxAppdata;
-		uint8_t decodeBuff[50U];
-		memset(&RxBodydata,0 , sizeof(Bodyinfo_t));
-		memset(&RxAppdata,0 , sizeof(Appdatainfo_t));
-		log_i(LOG_HOZON, "uper decode:appdata");
-		uper_decode(asn_codec_ctx,pduType_appData,(void *) &RxAppdata_ptr,tboxAppdata,tboxAppdataLen,0,0);
-		log_i(LOG_HOZON, "uper decode:bodydata");
-		uper_decode(asn_codec_ctx,pduType_Body,(void *) &RxBodydata_ptr,tboxDisBodydata,tboxDisBodydataLen,0,0);
-		decodeBuff[0] = RxBodydata.aID.buf[0];
-		decodeBuff[1] = RxBodydata.aID.buf[1];
-		decodeBuff[2] = RxBodydata.aID.buf[2];
-		decodeBuff[3] = RxBodydata.mID;
-
-		protocol_dump(LOG_HOZON, "uper decode", decodeBuff, 4, 0);
-		log_i(LOG_HOZON, "RxBodydata.eventTime = %d",RxBodydata.eventTime);
-		log_i(LOG_HOZON, "RxBodydata.eventId = %d",*RxBodydata.eventId);
-		log_i(LOG_HOZON, "RxBodydata.ulMsgCnt = %d",(uint16_t)(*(RxBodydata.ulMsgCnt)));
-		log_i(LOG_HOZON, "RxBodydata.msgCntAcked = %d",(uint16_t)(*(RxBodydata.msgCntAcked)));
-		log_i(LOG_HOZON, "RxBodydata.ackReq = %d",(uint8_t)(*(RxBodydata.ackReq)));
-		log_i(LOG_HOZON, "RxBodydata.appDataLen = %d",(uint16_t)(*(RxBodydata.appDataLen)));
-		log_i(LOG_HOZON, "RxBodydata.appDataEncode = %d",(uint8_t)(*(RxBodydata.appDataEncode)));
-		log_i(LOG_HOZON, "RxBodydata.appDataProVer = %d",(uint16_t)(*(RxBodydata.appDataProVer)));
-		log_i(LOG_HOZON, "RxBodydata.testFlag = %d",(uint8_t)(*(RxBodydata.testFlag)));
-		log_i(LOG_HOZON, "RxBodydata.result = %d",(uint16_t)(*(RxBodydata.result)));
-		
-		log_i(LOG_HOZON, "RxAppdata.present = %d",(uint8_t)(RxAppdata.present));
-		log_i(LOG_HOZON, "xcallReq.xcallType = %d",(uint8_t)(RxAppdata.choice.xcallReq.xcallType));
-		log_i(LOG_HOZON, "uper decode end");
-		
-		int tboxmsglen = 0;
-		pack.msgdata[tboxmsglen++] = tboxDisBodydataLen +1;
-		for(i = 0;i < tboxDisBodydataLen;i++)
-		{
-			pack.msgdata[tboxmsglen++]= tboxDisBodydata[i];
-		}
-		for(i = 0;i < tboxAppdataLen;i++)
-		{
-			pack.msgdata[tboxmsglen++]= tboxAppdata[i];
-		}
-		pack.packHeader.msglen = PrvtPro_BSEndianReverse((uint32_t)(18 + 1 + tboxDisBodydataLen + tboxAppdataLen));
-		if(sockproxy_MsgSend(pack.packHeader.sign, 18 + 1 + tboxDisBodydataLen + tboxAppdataLen ,NULL) > 0)//发送成功
-		{
-			protocol_dump(LOG_HOZON, "PRVT_PROT", pack.packHeader.sign, 18 + 1 + tboxDisBodydataLen + tboxAppdataLen , 1);	
-		}	
-		timeout = tm_get_time();
 	}
 	
 	return 0;
@@ -701,4 +578,286 @@ static int PrvtPro_writeout(const void *buffer,size_t size,void *key)
 		break;
 	}
 	return 0;
+}
+
+/******************************************************
+*函数名：
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：
+******************************************************/
+static long PrvtPro_getTimestamp(void)
+{
+	struct timeval timestamp;
+	gettimeofday(&timestamp, NULL);
+	
+	return (long)timestamp.tv_sec;
+	
+}
+
+/******************************************************
+*函数名：PrvtPro_SetHeartBeatPeriod
+
+*形  参：
+
+*返回值：
+
+*描  述：设置心跳周期
+
+*备  注：
+******************************************************/
+void PrvtPro_SetHeartBeatPeriod(unsigned char period)
+{
+	pp_task.heartbeat.period = period;
+}
+
+/******************************************************
+*函数名：PrvtPro_Setsuspend
+
+*形  参：
+
+*返回值：
+
+*描  述：设置暂停
+
+*备  注：
+******************************************************/
+void PrvtPro_Setsuspend(unsigned char suspend)
+{
+	pp_task.suspend = suspend;
+}
+
+/******************************************************
+*函数名：PrvtPro_SetEcallReq
+
+*形  参：
+
+*返回值：
+
+*描  述：设置ecall 请求
+
+*备  注：
+******************************************************/
+void PrvtPro_SetEcallReq(unsigned char req)
+{
+	pp_task.ecall.req = req;
+}
+
+/******************************************************
+*函数名：PrvtPro_msgPackage
+
+*形  参：
+
+*返回值：
+
+*描  述：数据打包
+
+*备  注：
+******************************************************/
+static int PrvtPro_msgPackage(uint8_t type,PrvtProt_pack_t *pack,PrvtProt_DisptrBody_t \
+							  *DisptrBody, PrvtProt_appData_t *Appchoice)
+{
+	static asn_TYPE_descriptor_t *pduType_Body = &asn_DEF_Bodyinfo;
+	static asn_TYPE_descriptor_t *pduType_appData = &asn_DEF_Appdatainfo;
+	static uint8_t key;
+	Bodyinfo_t Bodydata;
+	Appdatainfo_t Appdata;
+	int i;
+	
+	memset(&Bodydata,0 , sizeof(Bodyinfo_t));
+	memset(&Appdata,0 , sizeof(Appdatainfo_t));
+/*********************************************
+	填充 dispatcher body和application data
+*********************************************/	
+	Bodydata.aID.buf = DisptrBody->aID;
+	Bodydata.aID.size = 3;
+	Bodydata.mID = DisptrBody->mID;
+	Bodydata.eventTime 		= PrvtPro_getTimestamp();
+	Bodydata.eventId 		= &(DisptrBody->eventId);
+	Bodydata.ulMsgCnt 		= &(DisptrBody->ulMsgCnt);	/* OPTIONAL */
+	Bodydata.dlMsgCnt 		= &(DisptrBody->dlMsgCnt);	/* OPTIONAL */
+	Bodydata.msgCntAcked 	= &(DisptrBody->msgCntAcked);/* OPTIONAL */
+	Bodydata.ackReq			= &(DisptrBody->ackReq);/* OPTIONAL */
+	Bodydata.appDataLen 	= &(DisptrBody->appDataLen);
+	Bodydata.appDataEncode	= &(DisptrBody->appDataEncode);/* OPTIONAL */
+	Bodydata.appDataProVer	= &(DisptrBody->appDataProVer);/* OPTIONAL */
+	Bodydata.testFlag		= &(DisptrBody->testFlag);/* OPTIONAL */
+	Bodydata.result			= &(DisptrBody->result);/* OPTIONAL */
+	
+	switch(type)
+	{
+		case PP_ECALL_REQ:
+		{
+			Bodydata.dlMsgCnt = NULL;	/* OPTIONAL */
+			Appdata.present = Appdatainfo_PR_xcallReq;
+			Appdata.choice.xcallReq.xcallType = Appchoice->xcallType;
+		}
+		break;
+		case PP_ECALL_RESP:
+		{
+			
+		}
+		break;
+		default:
+		break;
+	}
+	
+/*********************************************
+				编码
+*********************************************/	
+	asn_enc_rval_t ec;
+	log_i(LOG_HOZON, "uper encode:appdata");
+	key = PP_ENCODE_APPDATA;
+	ec = uper_encode(pduType_appData,(void *) &Appdata,PrvtPro_writeout,&key);
+	if(ec.encoded  == -1) 
+	{
+		log_e(LOG_HOZON, "Could not encode MessageFrame");
+		return -1;
+	}
+	DisptrBody->appDataLen = tboxAppdataLen;
+	protocol_dump(LOG_HOZON, "uper encode:appdata", tboxAppdata,tboxAppdataLen, 0);
+	log_i(LOG_HOZON, "uper encode appdata end");
+	
+	log_i(LOG_HOZON, "uper encode:dis body");
+	Bodydata.appDataLen = &(DisptrBody->appDataLen);
+	key = PP_ENCODE_DISBODY;
+	ec = uper_encode(pduType_Body,(void *) &Bodydata,PrvtPro_writeout,&key);
+	if(ec.encoded  == -1) 
+	{
+		log_e(LOG_HOZON, "Could not encode MessageFrame");
+		return -1;
+	}
+	protocol_dump(LOG_HOZON, "uper encode:dis body", tboxDisBodydata, tboxDisBodydataLen, 0);
+	log_i(LOG_HOZON, "uper encode dis body end");
+	
+/*********************************************
+				解码
+*********************************************/	
+#if 1
+	log_i(LOG_HOZON, "uper decode");
+	asn_codec_ctx_t *asn_codec_ctx = 0 ;
+	Bodyinfo_t RxBodydata;
+	Bodyinfo_t *RxBodydata_ptr = &RxBodydata;
+	Appdatainfo_t RxAppdata;
+	Appdatainfo_t *RxAppdata_ptr = &RxAppdata;
+	memset(&RxBodydata,0 , sizeof(Bodyinfo_t));
+	memset(&RxAppdata,0 , sizeof(Appdatainfo_t));
+	log_i(LOG_HOZON, "uper decode:appdata");
+	asn_dec_rval_t dc;
+	dc = uper_decode(asn_codec_ctx,pduType_appData,(void *) &RxAppdata_ptr,tboxAppdata,tboxAppdataLen,0,0);
+	if(dc.code  != RC_OK) 
+	{
+		log_e(LOG_HOZON, "Could not decode MessageFrame");
+		return -1;
+	}
+	log_i(LOG_HOZON, "uper decode:bodydata");
+	dc = uper_decode(asn_codec_ctx,pduType_Body,(void *) &RxBodydata_ptr,tboxDisBodydata,tboxDisBodydataLen,0,0);
+	if(dc.code  != RC_OK) 
+	{
+		log_e(LOG_HOZON, "Could not decode MessageFrame");
+		return -1;
+	}
+	
+/*********************************************
+				解码后显示
+*********************************************/	
+	PrvtPro_showMsgData(type,RxBodydata_ptr,RxAppdata_ptr);
+	log_i(LOG_HOZON, "uper decode end");
+#endif
+	
+/*********************************************
+				填充 message data
+*********************************************/	
+	int tboxmsglen = 0;
+	pack->msgdata[tboxmsglen++] = tboxDisBodydataLen +1;//填充 dispatcher header
+	for(i = 0;i < tboxDisBodydataLen;i++)
+	{
+		pack->msgdata[tboxmsglen++]= tboxDisBodydata[i];
+	}
+	for(i = 0;i < tboxAppdataLen;i++)
+	{
+		pack->msgdata[tboxmsglen++]= tboxAppdata[i];
+	}
+	pack->packHeader.msglen = PrvtPro_BSEndianReverse((uint32_t)(18 + 1 + \
+							 tboxDisBodydataLen + tboxAppdataLen));//填充 message lengtn
+	return 0;
+}
+
+/******************************************************
+*函数名：PrvtPro_showMsgData
+
+*形  参：
+
+*返回值：
+
+*描  述：message data 打印
+
+*备  注：
+******************************************************/
+static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,Appdatainfo_t *RxAppdata)
+{
+	uint16_t aid;
+	
+	aid = (RxBodydata->aID.buf[0] - 0x30)*100 +  (RxBodydata->aID.buf[1] - 0x30)*10 + \
+		  (RxBodydata->aID.buf[2] - 0x30);
+	log_i(LOG_HOZON, "RxBodydata.aid = %d",aid);
+	log_i(LOG_HOZON, "RxBodydata.mID = %d",RxBodydata->mID);
+	log_i(LOG_HOZON, "RxBodydata.eventTime = %d",RxBodydata->eventTime);
+	if(NULL != RxBodydata->eventId)
+	{
+		log_i(LOG_HOZON, "RxBodydata.eventId = %d",(*(RxBodydata->eventId)));
+	}
+	if(NULL != RxBodydata->ulMsgCnt)
+	{
+		log_i(LOG_HOZON, "RxBodydata.ulMsgCnt = %d",(*(RxBodydata->ulMsgCnt)));
+	}
+	if(NULL != RxBodydata->dlMsgCnt)
+	{
+		log_i(LOG_HOZON, "RxBodydata.dlMsgCnt = %d",(*(RxBodydata->dlMsgCnt)));
+	}
+	if(NULL != RxBodydata->msgCntAcked)
+	{
+		log_i(LOG_HOZON, "RxBodydata.msgCntAcked = %d",(*(RxBodydata->msgCntAcked)));
+	}
+	if(NULL != RxBodydata->ackReq)
+	{
+		log_i(LOG_HOZON, "RxBodydata.ackReq = %d",(*(RxBodydata->ackReq)));
+	}
+	if(NULL != RxBodydata->appDataLen)
+	{
+		log_i(LOG_HOZON, "RxBodydata.appDataLen = %d",(*(RxBodydata->appDataLen)));
+	}
+	if(NULL != RxBodydata->appDataEncode)
+	{
+		log_i(LOG_HOZON, "RxBodydata.appDataEncode = %d",(*(RxBodydata->appDataEncode)));
+	}
+	if(NULL != RxBodydata->appDataProVer)
+	{
+		log_i(LOG_HOZON, "RxBodydata.appDataProVer = %d",(*(RxBodydata->appDataProVer)));
+	}
+	if(NULL != RxBodydata->testFlag)
+	{
+		log_i(LOG_HOZON, "RxBodydata.testFlag = %d",(*(RxBodydata->testFlag)));
+	}
+	if(NULL != RxBodydata->result)
+	{
+		log_i(LOG_HOZON, "RxBodydata.result = %d",(*(RxBodydata->result)));
+	}
+	
+	log_i(LOG_HOZON, "RxAppdata.present = %d",RxAppdata->present);
+	switch(type)
+	{
+		case PP_ECALL_REQ:
+		{
+			log_i(LOG_HOZON, "xcallReq.xcallType = %d",RxAppdata->choice.xcallReq.xcallType);
+		}
+		break;
+		default:
+		break;
+	}
 }

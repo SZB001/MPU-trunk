@@ -24,7 +24,9 @@ extern "C" {
 typedef enum Appdatainfo_PR {
 	Appdatainfo_PR_NOTHING,	/* No components present */
 	Appdatainfo_PR_xcallReq,
-	Appdatainfo_PR_xcallResp
+	Appdatainfo_PR_xcallResp,
+	/* Extensions may appear below */
+	
 } Appdatainfo_PR;
 
 /* Appdatainfo */
@@ -33,6 +35,10 @@ typedef struct Appdatainfo {
 	union Appdatainfo_u {
 		XcallReqinfo_t	 xcallReq;
 		XcallRespinfo_t	 xcallResp;
+		/*
+		 * This type is extensible,
+		 * possible extensions are below.
+		 */
 	} choice;
 	
 	/* Context for parsing across buffer boundaries */
