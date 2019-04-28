@@ -51,7 +51,8 @@ description： static variable definitions
 //static PrvtProt_heartbeat_t heartbeat;
 static PrvtProt_task_t pp_task;
 static PrvtProt_pack_t PP_RxPack;
-
+static asn_TYPE_descriptor_t *pduType_Body = &asn_DEF_Bodyinfo;
+static asn_TYPE_descriptor_t *pduType_appData = &asn_DEF_Appdatainfo;
 //static uint8_t tboxEncodeData[PP_MSG_DATA_LEN];
 //static int tboxEncodeLen;
 static uint8_t tboxAppdata[PP_MSG_DATA_LEN];
@@ -79,6 +80,9 @@ static int PrvtPro_do_checkXcall(PrvtProt_task_t *task);
 static int PrvtPro_writeout(const void *buffer,size_t size,void *key);
 static long PrvtPro_getTimestamp(void);
 static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,Appdatainfo_t *RxAppdata);
+
+static void PrvtPro_decodeMsgData(Bodyinfo_t *RxBodydata_ptr,Appdatainfo_t *RxAppdata_ptr, \
+								  uint8_t *LeMessageData,int LeMessageDataLen);
 /******************************************************
 description： function code
 ******************************************************/
@@ -493,6 +497,8 @@ static int PrvtPro_do_checkXcall(PrvtProt_task_t *task)
 
 	if(1 == pp_task.ecall.req)
 	{
+		//PrvtPro_decodeMsgData();
+		
 		pack.packHeader.sign[0] = 0x2A;
 		pack.packHeader.sign[1] = 0x2A;
 		pack.packHeader.ver.Byte = task->version;
@@ -662,8 +668,6 @@ void PrvtPro_SetEcallReq(unsigned char req)
 static int PrvtPro_msgPackage(uint8_t type,PrvtProt_pack_t *pack,PrvtProt_DisptrBody_t \
 							  *DisptrBody, PrvtProt_appData_t *Appchoice)
 {
-	static asn_TYPE_descriptor_t *pduType_Body = &asn_DEF_Bodyinfo;
-	static asn_TYPE_descriptor_t *pduType_appData = &asn_DEF_Appdatainfo;
 	static uint8_t key;
 	Bodyinfo_t Bodydata;
 	Appdatainfo_t Appdata;
@@ -736,41 +740,6 @@ static int PrvtPro_msgPackage(uint8_t type,PrvtProt_pack_t *pack,PrvtProt_Disptr
 	log_i(LOG_HOZON, "uper encode dis body end");
 	
 /*********************************************
-				解码
-*********************************************/	
-#if 1
-	log_i(LOG_HOZON, "uper decode");
-	asn_codec_ctx_t *asn_codec_ctx = 0 ;
-	Bodyinfo_t RxBodydata;
-	Bodyinfo_t *RxBodydata_ptr = &RxBodydata;
-	Appdatainfo_t RxAppdata;
-	Appdatainfo_t *RxAppdata_ptr = &RxAppdata;
-	memset(&RxBodydata,0 , sizeof(Bodyinfo_t));
-	memset(&RxAppdata,0 , sizeof(Appdatainfo_t));
-	log_i(LOG_HOZON, "uper decode:appdata");
-	asn_dec_rval_t dc;
-	dc = uper_decode(asn_codec_ctx,pduType_appData,(void *) &RxAppdata_ptr,tboxAppdata,tboxAppdataLen,0,0);
-	if(dc.code  != RC_OK) 
-	{
-		log_e(LOG_HOZON, "Could not decode MessageFrame");
-		return -1;
-	}
-	log_i(LOG_HOZON, "uper decode:bodydata");
-	dc = uper_decode(asn_codec_ctx,pduType_Body,(void *) &RxBodydata_ptr,tboxDisBodydata,tboxDisBodydataLen,0,0);
-	if(dc.code  != RC_OK) 
-	{
-		log_e(LOG_HOZON, "Could not decode MessageFrame");
-		return -1;
-	}
-	
-/*********************************************
-				解码后显示
-*********************************************/	
-	PrvtPro_showMsgData(type,RxBodydata_ptr,RxAppdata_ptr);
-	log_i(LOG_HOZON, "uper decode end");
-#endif
-	
-/*********************************************
 				填充 message data
 *********************************************/	
 	int tboxmsglen = 0;
@@ -785,6 +754,20 @@ static int PrvtPro_msgPackage(uint8_t type,PrvtProt_pack_t *pack,PrvtProt_Disptr
 	}
 	pack->packHeader.msglen = PrvtPro_BSEndianReverse((uint32_t)(18 + 1 + \
 							 tboxDisBodydataLen + tboxAppdataLen));//填充 message lengtn
+	
+/*********************************************
+				解码
+*********************************************/	
+#if 1
+	log_i(LOG_HOZON, "uper decode");
+	Bodyinfo_t RxBodydata;
+	Bodyinfo_t *RxBodydata_ptr = &RxBodydata;
+	Appdatainfo_t RxAppdata;
+	Appdatainfo_t *RxAppdata_ptr = &RxAppdata;
+	memset(&RxBodydata,0 , sizeof(Bodyinfo_t));
+	memset(&RxAppdata,0 , sizeof(Appdatainfo_t));
+	PrvtPro_decodeMsgData(RxBodydata_ptr,RxAppdata_ptr,pack->msgdata,tboxDisBodydataLen+1+tboxAppdataLen);
+#endif	
 	return 0;
 }
 
@@ -803,6 +786,7 @@ static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,Appdatainfo_
 {
 	uint16_t aid;
 	
+	(void)type;
 	aid = (RxBodydata->aID.buf[0] - 0x30)*100 +  (RxBodydata->aID.buf[1] - 0x30)*10 + \
 		  (RxBodydata->aID.buf[2] - 0x30);
 	log_i(LOG_HOZON, "RxBodydata.aid = %d",aid);
@@ -849,15 +833,67 @@ static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,Appdatainfo_
 		log_i(LOG_HOZON, "RxBodydata.result = %d",(*(RxBodydata->result)));
 	}
 	
-	log_i(LOG_HOZON, "RxAppdata.present = %d",RxAppdata->present);
-	switch(type)
+	if(NULL != RxAppdata)
 	{
-		case PP_ECALL_REQ:
+		log_i(LOG_HOZON, "RxAppdata.present = %d",RxAppdata->present);
+		switch(RxAppdata->present)
 		{
-			log_i(LOG_HOZON, "xcallReq.xcallType = %d",RxAppdata->choice.xcallReq.xcallType);
+			case Appdatainfo_PR_xcallReq:
+			{
+				log_i(LOG_HOZON, "xcallReq.xcallType = %d",RxAppdata->choice.xcallReq.xcallType);
+			}
+			break;
+			default:
+			break;
 		}
-		break;
-		default:
-		break;
 	}
 }
+
+/******************************************************
+*函数名：PrvtPro_decodeMsgData
+
+*形  参：
+
+*返回值：
+
+*描  述：解码message data
+
+*备  注：
+******************************************************/
+static void PrvtPro_decodeMsgData(Bodyinfo_t *RxBodydata_ptr,Appdatainfo_t *RxAppdata_ptr, \
+								 uint8_t *LeMessageData,int LeMessageDataLen)
+{
+	//uint8_t LetboxDisBodydata = {0x4f,0xd8,0xb7,0x60,0x03,0x26,0x58,0x0b,0x48, \
+								 0x00,0x04,0x00,0x02,0x00,0x80,0x00,0x00};
+	//int LetboxDisBodydataLen = 17;
+	asn_dec_rval_t dc;
+	asn_codec_ctx_t *asn_codec_ctx = 0 ;
+	//Bodyinfo_t RxBodydata;
+	//Bodyinfo_t *RxBodydata_ptr = &RxBodydata;
+	//Appdatainfo_t RxAppdata;
+	//Appdatainfo_t *RxAppdata_ptr = &RxAppdata;
+	//memset(&RxBodydata,0 , sizeof(Bodyinfo_t));
+	//memset(&RxAppdata,0 , sizeof(Appdatainfo_t));
+	log_i(LOG_HOZON, "uper decode");
+	log_i(LOG_HOZON, "uper decode:bodydata");
+	log_i(LOG_HOZON, "dis header length = %d",LeMessageData[0]);
+	dc = uper_decode(asn_codec_ctx,pduType_Body,(void *) &RxBodydata_ptr,&LeMessageData[1],LeMessageData[0] -1,0,0);
+	if(dc.code  != RC_OK)
+	{
+		log_e(LOG_HOZON, "Could not decode dispatcher header Frame");
+		return;
+	}
+	log_i(LOG_HOZON, "uper decode:appdata");
+	log_i(LOG_HOZON, "application data length = %d",LeMessageDataLen-LeMessageData[0]);
+	dc = uper_decode(asn_codec_ctx,pduType_appData,(void *) &RxAppdata_ptr,&LeMessageData[LeMessageData[0]], \
+					 LeMessageDataLen - LeMessageData[0],0,0);
+	if(dc.code  != RC_OK) 
+	{
+		log_e(LOG_HOZON, "Could not decode application data Frame");
+		return;
+	}
+	
+	PrvtPro_showMsgData(PP_ECALL_REQ,RxBodydata_ptr,RxAppdata_ptr);
+	log_i(LOG_HOZON, "uper decode end");
+}
+
