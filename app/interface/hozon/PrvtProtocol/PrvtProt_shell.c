@@ -79,7 +79,7 @@ argv[0] - 心跳周期 ，单位:秒
 ******************************************************/
 static int PP_shell_setHeartBeatPeriod(int argc, const char **argv)
 {
-	unsigned char period;
+	unsigned int period;
     if (argc != 1)
     {
         shellprintf(" usage: HOZON_PP_SetheartbeatPeriod <heartbeat period>\r\n");
@@ -93,7 +93,7 @@ static int PP_shell_setHeartBeatPeriod(int argc, const char **argv)
 		 shellprintf(" usage: heartbeat period invalid\r\n");
 		 return -1;
 	}	
-	PrvtPro_SetHeartBeatPeriod(period);
+	PrvtPro_SetHeartBeatPeriod((uint8_t)period);
 	
 	sleep(1);
     return 0;
@@ -114,7 +114,7 @@ static int PP_shell_setHeartBeatPeriod(int argc, const char **argv)
 ******************************************************/
 static int PP_shell_setSuspend(int argc, const char **argv)
 {
-	unsigned char suspend;
+	unsigned int suspend;
     if (argc != 1)
     {
         shellprintf(" usage: HOZON_PP_Setsuspend <suspend>\r\n");
@@ -123,7 +123,7 @@ static int PP_shell_setSuspend(int argc, const char **argv)
 	
 	sscanf(argv[0], "%u", &suspend);
 	log_o(LOG_HOZON, "suspend = %d",suspend);
-	PrvtPro_Setsuspend(suspend);
+	PrvtPro_Setsuspend((uint8_t)suspend);
 	
     sleep(1);
     return 0;
@@ -143,7 +143,7 @@ static int PP_shell_setSuspend(int argc, const char **argv)
 ******************************************************/
 static int PP_shell_setEcallReq(int argc, const char **argv)
 {
-	unsigned char EcallReq;
+	unsigned int EcallReq;
     if (argc != 1)
     {
         shellprintf(" usage: HOZON_PP_Setsuspend <ecall req>\r\n");
@@ -152,7 +152,7 @@ static int PP_shell_setEcallReq(int argc, const char **argv)
 	
 	sscanf(argv[0], "%u", &EcallReq);
 	log_o(LOG_HOZON, "EcallReq = %d",EcallReq);
-	PrvtPro_SetEcallReq(EcallReq);
+	PrvtPro_SetEcallReq((uint8_t)EcallReq);
 	
     sleep(1);
     return 0;

@@ -11,7 +11,6 @@ Data			  Vasion			author
 /*******************************************************
 description： include the header file
 *******************************************************/
-#include "../sockproxy/sockproxy_data.h"
 
 /*******************************************************
 description： macro definitions
@@ -26,10 +25,7 @@ description： macro definitions
 #define PP_ACK_SUCCESS 	0x02//应答成功
 
 #define PP_WAIT_TIMEOUT 	(2*1000)//等待超时时间
-#define PP_MSG_DATA_LEN 	512//message data 长度
-
-#define PP_ENCODE_DISBODY 	0x01//编码dispatcher header
-#define PP_ENCODE_APPDATA 	0x02//编码app data
+#define PP_MSG_DATA_LEN 	1024//message data 长度
 
 #define	PP_NATIONALSTANDARD_TYPE	0//操作类型：国标类型
 #define	PP_HEARTBEAT_TYPE			1//心跳类型
@@ -51,12 +47,6 @@ typedef enum
 	PP_IDLE = 0,//
     PP_HEARTBEAT,//等待心跳响应状态
 } PP_WAIT_STATE;
-
-typedef enum
-{
-	PP_ECALL_REQ = 1,//ecall request
-    PP_ECALL_RESP//ecall response
-} PP_APP_TYPE;//应用类型
 
 /*****struct definitions*****/
 typedef struct 
@@ -100,30 +90,6 @@ typedef struct
 	unsigned long int msglen;/* 报文长度 */
 	unsigned long int tboxid;/* 平台通过tboxID与tboxSN映射 */
 }__attribute__((packed)) PrvtProt_pack_Header_t; /*报文头结构体*/ 
-
-/* Dispatcher Body struct */
-typedef struct 
-{
-	uint8_t	 	aID[3];
-	uint8_t	 	mID;
-	uint32_t	eventTime;
-	long	eventId	/* OPTIONAL */;
-	long	ulMsgCnt	/* OPTIONAL */;
-	long	dlMsgCnt	/* OPTIONAL */;
-	long	msgCntAcked	/* OPTIONAL */;
-	int		ackReq	/* OPTIONAL */;
-	long	appDataLen	/* OPTIONAL */;
-	long	appDataEncode	/* OPTIONAL */;
-	long	appDataProVer	/* OPTIONAL */;
-	long	testFlag	/* OPTIONAL */;
-	long	result	/* OPTIONAL */;
-}PrvtProt_DisptrBody_t;
-
-/* application data struct */
-typedef struct 
-{
-	long	xcallType;
-}PrvtProt_appData_t;
 
 typedef struct 
 {		
