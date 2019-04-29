@@ -7,10 +7,23 @@
 
 #include "Bodyinfo.h"
 
+static int check_permitted_alphabet_2(const void *sptr) {
+	/* The underlying type is IA5String */
+	const IA5String_t *st = (const IA5String_t *)sptr;
+	const uint8_t *ch = st->buf;
+	const uint8_t *end = ch + st->size;
+	
+	for(; ch < end; ch++) {
+		uint8_t cv = *ch;
+		if(!(cv <= 127)) return -1;
+	}
+	return 0;
+}
+
 static int
 memb_aID_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
-	const OCTET_STRING_t *st = (const OCTET_STRING_t *)sptr;
+	const IA5String_t *st = (const IA5String_t *)sptr;
 	size_t size;
 	
 	if(!sptr) {
@@ -22,7 +35,8 @@ memb_aID_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size == 3)) {
+	if((size == 3)
+		 && !check_permitted_alphabet_2(st)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -83,10 +97,235 @@ memb_eventTime_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
+static int
+memb_eventId_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 2147483647)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_ulMsgCnt_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 65535)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_dlMsgCnt_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 65535)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_msgCntAcked_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 65535)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_appDataLen_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 65535)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_appDataEncode_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 2)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_appDataProVer_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 65535)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_testFlag_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 1 && value <= 3)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_result_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 65535)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
 static asn_per_constraints_t asn_PER_memb_aID_constr_2 GCC_NOTUSED = {
-	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 7,  7,  0,  127 }	/* (0..127) */,
 	{ APC_CONSTRAINED,	 0,  0,  3,  3 }	/* (SIZE(3..3)) */,
-	0, 0	/* No PER value map */
+	0, 0	/* No PER character map necessary */
 };
 static asn_per_constraints_t asn_PER_memb_mID_constr_3 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
@@ -98,11 +337,56 @@ static asn_per_constraints_t asn_PER_memb_eventTime_constr_4 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+static asn_per_constraints_t asn_PER_memb_eventId_constr_5 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 31, -1,  0,  2147483647 }	/* (0..2147483647) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_ulMsgCnt_constr_6 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_dlMsgCnt_constr_7 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_msgCntAcked_constr_8 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_appDataLen_constr_10 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_appDataEncode_constr_11 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0,  2 }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_appDataProVer_constr_12 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_testFlag_constr_13 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  1,  3 }	/* (1..3) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_result_constr_14 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
 static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Bodyinfo, aID),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_OCTET_STRING,
+		&asn_DEF_IA5String,
 		memb_aID_constraint_1,
 		&asn_PER_memb_aID_constr_2,
 		0,
@@ -130,8 +414,8 @@ static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 		(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
+		memb_eventId_constraint_1,
+		&asn_PER_memb_eventId_constr_5,
 		0,
 		"eventId"
 		},
@@ -139,8 +423,8 @@ static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 		(ASN_TAG_CLASS_CONTEXT | (4 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
+		memb_ulMsgCnt_constraint_1,
+		&asn_PER_memb_ulMsgCnt_constr_6,
 		0,
 		"ulMsgCnt"
 		},
@@ -148,8 +432,8 @@ static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 		(ASN_TAG_CLASS_CONTEXT | (5 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
+		memb_dlMsgCnt_constraint_1,
+		&asn_PER_memb_dlMsgCnt_constr_7,
 		0,
 		"dlMsgCnt"
 		},
@@ -157,8 +441,8 @@ static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 		(ASN_TAG_CLASS_CONTEXT | (6 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
+		memb_msgCntAcked_constraint_1,
+		&asn_PER_memb_msgCntAcked_constr_8,
 		0,
 		"msgCntAcked"
 		},
@@ -175,8 +459,8 @@ static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 		(ASN_TAG_CLASS_CONTEXT | (8 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
+		memb_appDataLen_constraint_1,
+		&asn_PER_memb_appDataLen_constr_10,
 		0,
 		"appDataLen"
 		},
@@ -184,8 +468,8 @@ static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 		(ASN_TAG_CLASS_CONTEXT | (9 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
+		memb_appDataEncode_constraint_1,
+		&asn_PER_memb_appDataEncode_constr_11,
 		0,
 		"appDataEncode"
 		},
@@ -193,8 +477,8 @@ static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 		(ASN_TAG_CLASS_CONTEXT | (10 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
+		memb_appDataProVer_constraint_1,
+		&asn_PER_memb_appDataProVer_constr_12,
 		0,
 		"appDataProVer"
 		},
@@ -202,8 +486,8 @@ static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 		(ASN_TAG_CLASS_CONTEXT | (11 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
+		memb_testFlag_constraint_1,
+		&asn_PER_memb_testFlag_constr_13,
 		0,
 		"testFlag"
 		},
@@ -211,8 +495,8 @@ static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 		(ASN_TAG_CLASS_CONTEXT | (12 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
+		memb_result_constraint_1,
+		&asn_PER_memb_result_constr_14,
 		0,
 		"result"
 		},
@@ -243,8 +527,8 @@ static asn_SEQUENCE_specifics_t asn_SPC_Bodyinfo_specs_1 = {
 	13,	/* Count of tags in the map */
 	asn_MAP_Bodyinfo_oms_1,	/* Optional members */
 	10, 0,	/* Root/Additions */
-	12,	/* Start extensions */
-	14	/* Stop extensions */
+	-1,	/* Start extensions */
+	-1	/* Stop extensions */
 };
 asn_TYPE_descriptor_t asn_DEF_Bodyinfo = {
 	"Bodyinfo",

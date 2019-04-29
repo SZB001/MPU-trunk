@@ -1,0 +1,51 @@
+HOZON 
+DEFINITIONS AUTOMATIC TAGS ::= 
+BEGIN
+
+-- generate .c/.hFile: code$../asn1c/asn1c -gen-PER HOZON_PRIV_v1.0.asn --
+Bodyinfo ::= SEQUENCE
+{
+	aID         		IA5String(SIZE(3)), -- application id
+	mID          		INTEGER(0..255), -- message id
+	eventTime			INTEGER(0..2147483647), -- event creation time
+	eventId		 		INTEGER(0..2147483647) OPTIONAL, -- event id
+	ulMsgCnt       		INTEGER(0..65535) OPTIONAL, -- uplink message counter
+	dlMsgCnt       		INTEGER(0..65535) OPTIONAL, -- downlink message counter
+	msgCntAcked       	INTEGER(0..65535) OPTIONAL, -- acked message counter
+	ackReq				BOOLEAN OPTIONAL, -- ack required
+	appDataLen       	INTEGER(0..65535) OPTIONAL, -- application data length
+	appDataEncode       INTEGER(0..2) OPTIONAL, -- application data encoding
+	appDataProVer       INTEGER(0..65535) OPTIONAL, -- application data protocol version
+	testFlag			INTEGER(1..3) OPTIONAL, -- test flag
+	result       		INTEGER(0..65535) OPTIONAL --  result
+}
+
+XcallReqinfo ::= SEQUENCE
+{
+    xcallType          INTEGER(0..255) -- 救援类型
+}
+
+XcallRespinfo ::= SEQUENCE
+{
+    xcallType          	INTEGER(0..255), -- 救援类型
+	engineSt			INTEGER(0..255), -- 启动状态
+	ttOdoMeter			INTEGER(0..1000000), --  里程
+	gpsPos				RvsposInfo, -- 车辆救援位置
+	srsSt				INTEGER(0..255), -- 安全气囊状态
+	updataTime			INTEGER(0..2147483647), -- timestamp时间戳
+	battSOCEx			INTEGER(0..10000) -- 车辆电池剩余电量
+}
+
+RvsposInfo ::= SEQUENCE
+{
+	gpsSt          		BOOLEAN, --
+	gpsTimestamp		INTEGER(0..2147483647), -- GPS时间戳
+	latitude			INTEGER(-90000000..90000000), -- 纬度x1000000
+	longitude			INTEGER(-180000000..180000000), -- 经度x1000000
+	altitude			INTEGER(-100..10000), -- 高度
+	heading				INTEGER(0..359), -- 车头方向角度			
+	gpsSpeed			INTEGER(-1000..4500), -- 速度x10
+	hdop				INTEGER(0..1000) -- 水平精度因子x10
+}
+
+END

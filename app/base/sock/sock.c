@@ -287,6 +287,7 @@ int sock_recv(int sid, uint8_t *buf, int len)
 
     if (sock->stat != SOCK_STAT_OPENED)
     {
+		log_e(LOG_SOCK_PROXY, "socket state != open");
         return -1;
     }
 
@@ -294,6 +295,7 @@ int sock_recv(int sid, uint8_t *buf, int len)
 
     if (res == 0)
     {
+		log_e(LOG_SOCK_PROXY, "res == 0");
         res = -1;
     }
     else if (res < 0 && (errno == EINTR || errno == EAGAIN))

@@ -54,7 +54,7 @@ typedef enum
 
 typedef enum
 {
-	PP_ECALL_REQ = 0,//ecall request
+	PP_ECALL_REQ = 1,//ecall request
     PP_ECALL_RESP//ecall response
 } PP_APP_TYPE;//应用类型
 
