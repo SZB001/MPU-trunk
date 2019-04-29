@@ -91,10 +91,13 @@ bool nm_diag_chk_ota_link(void)
     /* at least one ota link is connected */
     for( i = 0; i < nm_diag_tbl.used_num; i++ )
     {
-        if( NM_OTA_LINK_NORMAL == nm_diag_tbl.get[i]() )
-        {
-            return true;
-        } 
+		if(NULL != nm_diag_tbl.get[i])//by liujian
+		{
+			if( NM_OTA_LINK_NORMAL == nm_diag_tbl.get[i]() )
+			{
+				return true;
+			} 
+		}
     }
 
     return false;

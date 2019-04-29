@@ -114,14 +114,17 @@ int pm_is_sleep_ready(PM_EVT_ID id)
 
     for (i = 0; i < pm_regtbl.used_num; i++)
     {
-        if (1 == pm_regtbl.pmtbl[i].handler(id))
-        {
-            count++;
-        }
-        else
-        {
-            log_i(LOG_PM, "moudle %u is not ready for sleep", pm_regtbl.pmtbl[i].mid);
-        }
+		if(pm_regtbl.pmtbl[i].handler != NULL)//by liujian ,调用函数指针一定判断是否为NULL
+		{
+			if (1 == pm_regtbl.pmtbl[i].handler(id))
+			{
+				count++;
+			}
+			else
+			{
+				log_i(LOG_PM, "moudle %u is not ready for sleep", pm_regtbl.pmtbl[i].mid);
+			}
+		}
     }
 
     if (count == pm_regtbl.used_num)

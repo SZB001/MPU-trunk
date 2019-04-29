@@ -83,7 +83,10 @@ static void can_do_callback(uint32_t event, uint32_t arg1, uint32_t arg2)
 
     for (i = 0; i < CAN_MAX_CALLBACK && can_cb_lst[i]; i++)
     {
-        can_cb_lst[i](event, arg1, arg2);
+		if(can_cb_lst[i] != NULL)
+		{
+			can_cb_lst[i](event, arg1, arg2);
+		}
     }
 }
 

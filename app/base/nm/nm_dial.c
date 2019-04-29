@@ -70,13 +70,16 @@ static int  nm_notify_changed(NET_TYPE type, NM_STATE_MSG status)
     {
         if (nm_tbl.item[i].type == type)
         {
-            ret = nm_tbl.item[i].changed(type, status);
+			if(NULL != nm_tbl.item[i].changed)//by liujian
+			{
+				ret = nm_tbl.item[i].changed(type, status);
 
-            if (ret != 0)
-            {
-                log_e(LOG_NM, "send net changed msg failed,ret:%d,type:%u", ret, type);
-                return NM_SEND_MSG_FAILED;
-            }
+				if (ret != 0)
+				{
+					log_e(LOG_NM, "send net changed msg failed,ret:%d,type:%u", ret, type);
+					return NM_SEND_MSG_FAILED;
+				}
+			}
         }
     }
 

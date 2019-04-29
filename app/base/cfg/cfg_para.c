@@ -213,15 +213,18 @@ int cfg_notify_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para, unsigned in
                       para_len, new_para_len, ret);
                 return ret;
             }
+			
+			if(cfg_regtbl.cfgtbl[j].onchanged != NULL)//by liujian
+			{
+				/* notify the data is changed */
+				ret = cfg_regtbl.cfgtbl[j].onchanged(id, old_para, newpara, para_len);
 
-            /* notify the data is changed */
-            ret = cfg_regtbl.cfgtbl[j].onchanged(id, old_para, newpara, para_len);
-
-            if (ret != 0)
-            {
-                log_e(LOG_CFG, "onchanged failed, ret:0x%08x", ret);
-                continue;
-            }
+				if (ret != 0)
+				{
+					log_e(LOG_CFG, "onchanged failed, ret:0x%08x", ret);
+					continue;
+				}
+			}
         }
     }
 
