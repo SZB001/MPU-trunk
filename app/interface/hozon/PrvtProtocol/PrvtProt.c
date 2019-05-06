@@ -53,6 +53,7 @@ description： static variable definitions
 static PrvtProt_task_t pp_task;
 static PrvtProt_pack_t PP_RxPack;
 
+static uint8_t Se_ecall_resp = 1;
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -69,6 +70,8 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 static int PrvtPro_do_wait(PrvtProt_task_t *task);
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len);
 static int PrvtPro_do_checkXcall(PrvtProt_task_t *task);
+static int PrvtPro_ecallReq(PrvtProt_task_t *task);
+static int PrvtPro_ecallResponse(PrvtProt_task_t *task);
 static long PrvtPro_getTimestamp(void);
 static long PrvtPro_BSEndianReverse(long value);
 /******************************************************
@@ -463,6 +466,117 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 static int PrvtPro_do_checkXcall(PrvtProt_task_t *task)
 {
+	PrvtPro_ecallReq(task);
+	PrvtPro_ecallResponse(task);
+	return 0;
+}
+
+/******************************************************
+*函数名：PrvtPro_ecallResponse
+
+*形  参：
+
+*返回值：
+
+*描  述：ecall response
+
+*备  注：
+******************************************************/
+static int PrvtPro_ecallResponse(PrvtProt_task_t *task)
+{
+	PrvtProt_pack_t pack;
+	PrvtProt_DisptrBody_t	PP_DisptrBody;
+	PrvtProt_appData_t PP_appData;
+	long msgdatalen;
+	//if(1 == sockproxy_socketState())//socket open
+	{
+		if(1 == Se_ecall_resp)
+		{
+			uint8_t LeMsgdata[48] = {0X14,0X4F,  \
+									 0XD8,0XB7,0X60,0X05,0X73,0X20,0X3F,0X10,0X00,0X04, \
+									 0X00,0X3A,0X00,0X80,0X00,0X00,0X20,0X80,0X80,0X80, \
+									 0X1F,0X40,0X0D,0XCC,0X80,0XFC,0X45,0X5D,0X71,0X90, \
+									 0X55,0XD5,0XE0,0X80,0X89,0X86,0X42,0X30,0X0C,0X8C, \
+									 0X97,0X32,0X03,0XF1,0X00,0X32};
+			int LeMsgdataLen = 48;
+			fprintf(stdout,"\r\n");
+			fprintf(stdout, "/* decode server response data: */\n");
+			PrvtPro_decodeMsgData(LeMsgdata,LeMsgdataLen,NULL);
+			Se_ecall_resp = 0;
+		}
+		pp_task.ecall.resp = 1;
+		if(1 == pp_task.ecall.resp)
+		{
+			pack.packHeader.sign[0] = 0x2A;
+			pack.packHeader.sign[1] = 0x2A;
+			pack.packHeader.ver.Byte = task->version;
+			pack.packHeader.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+			pack.packHeader.commtype.Byte = 0xe1;
+			pack.packHeader.safetype.Byte = 0x00;
+			pack.packHeader.opera = 0x02;
+			pack.packHeader.msglen = 0;
+			pack.packHeader.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+
+			PP_DisptrBody.aID[0] = '1';
+			PP_DisptrBody.aID[1] = '7';
+			PP_DisptrBody.aID[2] = '0';
+			PP_DisptrBody.mID = 2;
+			PP_DisptrBody.eventTime = 155672735;
+			PP_DisptrBody.eventId = 1000;
+			PP_DisptrBody.ulMsgCnt = 1;	/* OPTIONAL */
+			PP_DisptrBody.dlMsgCnt = 0;	/* OPTIONAL */
+			PP_DisptrBody.msgCntAcked	= 0;/* OPTIONAL */
+			PP_DisptrBody.ackReq = 1;	/* OPTIONAL */
+			PP_DisptrBody.appDataLen = 0;	/* OPTIONAL */
+			PP_DisptrBody.appDataEncode = 0;	/* OPTIONAL */
+			PP_DisptrBody.appDataProVer = 1;	/* OPTIONAL */
+			PP_DisptrBody.testFlag	= 1;/* OPTIONAL */
+			PP_DisptrBody.result = 0;	/* OPTIONAL */
+
+			PP_appData.xcallType = 1;
+			PP_appData.engineSt = 1;//启动状态；1-熄火；2-启动
+			PP_appData.totalOdoMr = 100;//里程有效范围：0 - 1000000（km）
+			PP_appData.gpsPos.gpsSt = 0;//gps状态 0-无效；1-有效
+			PP_appData.gpsPos.gpsTimestamp = 0;//gps时间戳
+			PP_appData.gpsPos.latitude = 0;//纬度 x 1000000,当GPS信号无效时，值为0
+			PP_appData.gpsPos.longitude = 0;//经度 x 1000000,当GPS信号无效时，值为0
+			PP_appData.gpsPos.altitude = 1;//高度（m）
+			PP_appData.gpsPos.heading = 0;//车头方向角度，0为正北方向
+			PP_appData.gpsPos.gpsSpeed = 0;//速度 x 10，单位km/h
+			PP_appData.gpsPos.hdop = 0;//水平精度因子 x 10
+
+			PP_appData.srsSt = 1;//安全气囊状态 1- 正常；2 - 弹出
+			PP_appData.updataTime = 0;//数据时间戳
+			PP_appData.battSOCEx = 10;//车辆电池剩余电量：0-10000（0%-100%）
+			pp_task.ecall.resp = 0;
+			if(0 == PrvtPro_msgPackage(PP_ECALL_RESP,pack.msgdata,&msgdatalen,&PP_DisptrBody,&PP_appData))
+			{
+				pack.packHeader.msglen = PrvtPro_BSEndianReverse(18 + msgdatalen);
+				if(sockproxy_MsgSend(pack.packHeader.sign,18 + msgdatalen,NULL) > 0)//发送成功
+				{
+					pp_task.ecall.req = 0;
+					protocol_dump(LOG_HOZON, "PRVT_PROT", pack.packHeader.sign, \
+							18 + msgdatalen,1);
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+/******************************************************
+*函数名：PrvtPro_ecallReq
+
+*形  参：
+
+*返回值：
+
+*描  述：检查ecall等请求
+
+*备  注：
+******************************************************/
+static int PrvtPro_ecallReq(PrvtProt_task_t *task)
+{
 	PrvtProt_pack_t pack;
 	PrvtProt_DisptrBody_t	PP_DisptrBody;
 	PrvtProt_appData_t PP_appData;
@@ -502,24 +616,26 @@ static int PrvtPro_do_checkXcall(PrvtProt_task_t *task)
 		PP_DisptrBody.appDataLen = 0;	/* OPTIONAL */
 		PP_DisptrBody.appDataEncode = 0;	/* OPTIONAL */
 		PP_DisptrBody.appDataProVer = 1;	/* OPTIONAL */
-		PP_DisptrBody.testFlag	= 0;/* OPTIONAL */
+		PP_DisptrBody.testFlag	= 1;/* OPTIONAL */
 		PP_DisptrBody.result = 0;	/* OPTIONAL */
 		
 		PP_appData.xcallType = 1;
 		if(0 == PrvtPro_msgPackage(PP_ECALL_REQ,pack.msgdata,&msgdatalen,&PP_DisptrBody,&PP_appData))
 		{
-			pack.packHeader.msglen = 18 + msgdatalen;
-			if(sockproxy_MsgSend(pack.packHeader.sign,PrvtPro_BSEndianReverse(pack.packHeader.msglen),NULL) > 0)//发送成功
+			pack.packHeader.msglen = PrvtPro_BSEndianReverse(18 + msgdatalen);
+			if(sockproxy_MsgSend(pack.packHeader.sign,(18 + msgdatalen),NULL) > 0)//发送成功
 			{
 				pp_task.ecall.req = 0;
 				protocol_dump(LOG_HOZON, "PRVT_PROT", pack.packHeader.sign, \
-							  PrvtPro_BSEndianReverse(pack.packHeader.msglen),1);	
+							  (18 + msgdatalen),1);
 			}
 		}
 	}
 	
 	return 0;
 }
+
+
 
 /******************************************************
 *函数名：

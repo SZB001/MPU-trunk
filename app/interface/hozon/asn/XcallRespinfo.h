@@ -13,19 +13,28 @@
 
 /* Including external dependencies */
 #include <NativeInteger.h>
-#include "RvsposInfo.h"
+#include <asn_SEQUENCE_OF.h>
+#include <constr_SEQUENCE_OF.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* Forward declarations */
+struct RvsposInfo;
+
 /* XcallRespinfo */
 typedef struct XcallRespinfo {
 	long	 xcallType;
 	long	 engineSt;
 	long	 ttOdoMeter;
-	RvsposInfo_t	 gpsPos;
+	struct gpsPos {
+		A_SEQUENCE_OF(struct RvsposInfo) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} gpsPos;
 	long	 srsSt;
 	long	 updataTime;
 	long	 battSOCEx;
@@ -40,6 +49,9 @@ extern asn_TYPE_descriptor_t asn_DEF_XcallRespinfo;
 #ifdef __cplusplus
 }
 #endif
+
+/* Referred external types */
+#include "RvsposInfo.h"
 
 #endif	/* _XcallRespinfo_H_ */
 #include <asn_internal.h>

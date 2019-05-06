@@ -95,6 +95,7 @@ typedef struct
 {		
 	PrvtProt_pack_Header_t packHeader;/* */
 	unsigned char msgdata[PP_MSG_DATA_LEN];/* 消息体 */
+	unsigned char msgtype;/* 消息类型 */
 }__attribute__((packed)) PrvtProt_pack_t; /*报文结构体*/
 
 typedef struct 
@@ -107,7 +108,8 @@ typedef struct
 
 typedef struct 
 {		
-	uint8_t req;/* 请求*/
+	uint8_t req;/* 请求:box to tsp */
+	uint8_t resp;/* 响应:box to tsp */
 }__attribute__((packed))  PrvtProt_xcall_t; /*xcall结构体*/
 
 typedef struct 

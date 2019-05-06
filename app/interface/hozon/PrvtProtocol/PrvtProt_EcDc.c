@@ -24,7 +24,9 @@ description： include the header file
 #include "asn_application.h"
 #include "asn_internal.h"	/* for _ASN_DEFAULT_STACK_MAX */
 #include "XcallReqinfo.h"
+#include "XcallRespinfo.h"
 #include "Bodyinfo.h"
+#include "RvsposInfo.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
 
@@ -43,6 +45,7 @@ description： static variable definitions
 *******************************************************/
 static asn_TYPE_descriptor_t *pduType_Body = &asn_DEF_Bodyinfo;
 static asn_TYPE_descriptor_t *pduType_XcallReq = &asn_DEF_XcallReqinfo;
+static asn_TYPE_descriptor_t *pduType_XcallResp = &asn_DEF_XcallRespinfo;
 static uint8_t tboxAppdata[PP_ECDC_DATA_LEN];
 static int tboxAppdataLen;
 static uint8_t tboxDisBodydata[PP_ECDC_DATA_LEN];
@@ -133,7 +136,58 @@ int PrvtPro_msgPackage(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 		break;
 		case PP_ECALL_RESP:
 		{
+			XcallRespinfo_t XcallResp;
+			RvsposInfo_t Rvspos;
+			RvsposInfo_t *Rvspos_ptr = &Rvspos;
+			//RvsposInfo_t **Rvspos_duptr = Rvspos_ptr;
+			memset(&XcallResp,0 , sizeof(XcallRespinfo_t));
+			memset(&Rvspos,0 , sizeof(RvsposInfo_t));
+
+			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+
+			XcallResp.xcallType = Appchoice->xcallType;
+			XcallResp.engineSt = Appchoice->engineSt;
+			XcallResp.ttOdoMeter = Appchoice->totalOdoMr;
+			/*XcallResp.gpsPos.gpsSt = Appchoice->gpsPos.gpsSt;//gps状态 0-无效；1-有效
+			XcallResp.gpsPos.gpsTimestamp = Appchoice->gpsPos.gpsTimestamp;//gps时间戳
+			XcallResp.gpsPos.latitude = Appchoice->gpsPos.latitude;//纬度 x 1000000,当GPS信号无效时，值为0
+			XcallResp.gpsPos.longitude = Appchoice->gpsPos.longitude;//经度 x 1000000,当GPS信号无效时，值为0
+			XcallResp.gpsPos.altitude = Appchoice->gpsPos.altitude;//高度（m）
+			XcallResp.gpsPos.heading = Appchoice->gpsPos.heading;//车头方向角度，0为正北方向
+			XcallResp.gpsPos.gpsSpeed = Appchoice->gpsPos.gpsSpeed;//速度 x 10，单位km/h
+			XcallResp.gpsPos.hdop = Appchoice->gpsPos.hdop;//水平精度因子 x 10*/
+			/*XcallResp.gpsSt = Appchoice->gpsPos.gpsSt;//gps状态 0-无效；1-有效
+			XcallResp.gpsTimestamp = Appchoice->gpsPos.gpsTimestamp;//gps时间戳
+			XcallResp.latitude = Appchoice->gpsPos.latitude;//纬度 x 1000000,当GPS信号无效时，值为0
+			XcallResp.longitude = Appchoice->gpsPos.longitude;//经度 x 1000000,当GPS信号无效时，值为0
+			XcallResp.altitude = Appchoice->gpsPos.altitude;//高度（m）
+			XcallResp.heading = Appchoice->gpsPos.heading;//车头方向角度，0为正北方向
+			XcallResp.gpsSpeed = Appchoice->gpsPos.gpsSpeed;//速度 x 10，单位km/h
+			XcallResp.hdop = Appchoice->gpsPos.hdop;//水平精度因子 x 10*/
 			
+			Rvspos.gpsSt = Appchoice->gpsPos.gpsSt;//gps状态 0-无效；1-有效
+			Rvspos.gpsTimestamp = Appchoice->gpsPos.gpsTimestamp;//gps时间戳
+			Rvspos.latitude = Appchoice->gpsPos.latitude;//纬度 x 1000000,当GPS信号无效时，值为0
+			Rvspos.longitude = Appchoice->gpsPos.longitude;//经度 x 1000000,当GPS信号无效时，值为0
+			Rvspos.altitude = Appchoice->gpsPos.altitude;//高度（m）
+			Rvspos.heading = Appchoice->gpsPos.heading;//车头方向角度，0为正北方向
+			Rvspos.gpsSpeed = Appchoice->gpsPos.gpsSpeed;//速度 x 10，单位km/h
+			Rvspos.hdop = Appchoice->gpsPos.hdop;//水平精度因子 x 10
+			XcallResp.gpsPos.list.array = &Rvspos_ptr;
+			XcallResp.gpsPos.list.size =0;
+			XcallResp.gpsPos.list.count =1;
+
+			XcallResp.srsSt = Appchoice->srsSt;
+			XcallResp.updataTime = Appchoice->updataTime;
+			XcallResp.battSOCEx = Appchoice->battSOCEx;
+
+			ec = uper_encode(pduType_XcallResp,(void *) &XcallResp,PrvtPro_writeout,&key);
+
+			if(ec.encoded  == -1)
+			{
+				log_e(LOG_HOZON, "encode:appdata XcallResp fail\n");
+				return -1;
+			}
 		}
 		break;
 		default:
@@ -151,7 +205,6 @@ int PrvtPro_msgPackage(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 	log_i(LOG_HOZON, "uper encode appdata end");
 	
 	log_i(LOG_HOZON, "uper encode:dis body");
-	Bodydata.appDataLen = &(DisptrBody->appDataLen);
 	key = PP_ENCODE_DISBODY;
 	ec = uper_encode(pduType_Body,(void *) &Bodydata,PrvtPro_writeout,&key);
 	log_i(LOG_HOZON, "uper encode dis body ec.encoded = %d",ec.encoded);
@@ -167,7 +220,7 @@ int PrvtPro_msgPackage(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 				填充 message data
 *********************************************/	
 	int tboxmsglen = 0;
-	msgData[tboxmsglen++] = tboxDisBodydataLen;//填充 dispatcher header
+	msgData[tboxmsglen++] = tboxDisBodydataLen +1;//填充 dispatcher header
 	for(i = 0;i < tboxDisBodydataLen;i++)
 	{
 		msgData[tboxmsglen++]= tboxDisBodydata[i];
@@ -211,7 +264,7 @@ void PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,PrvtProt_
 	log_i(LOG_HOZON, "uper decode:bodydata");
 	log_i(LOG_HOZON, "dis header length = %d",LeMessageData[0]);
 	dc = uper_decode(asn_codec_ctx,pduType_Body,(void *) &RxBodydata_ptr, \
-					 &LeMessageData[1],LeMessageData[0],0,0);
+					 &LeMessageData[1],LeMessageData[0] -1,0,0);
 	if(dc.code  != RC_OK)
 	{
 		log_e(LOG_HOZON, "Could not decode dispatcher header Frame");
@@ -244,7 +297,19 @@ void PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,PrvtProt_
 			}
 			else if(PP_MID_ECALL_RESP == MID)//ecall response
 			{
-				
+				XcallRespinfo_t RxXcallResp;
+				XcallRespinfo_t *RxXcallResp_ptr = &RxXcallResp;
+				memset(&RxXcallResp,0 , sizeof(XcallRespinfo_t));
+				dc = uper_decode(asn_codec_ctx,pduType_XcallResp,(void *) &RxXcallResp_ptr, \
+								 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+				if(dc.code  != RC_OK)
+				{
+					log_e(LOG_HOZON, "Could not decode xcall application data Frame\n");
+				}
+				if(NULL == msgData)
+				{
+					PrvtPro_showMsgData(PP_ECALL_RESP,RxBodydata_ptr,RxXcallResp_ptr);
+				}
 			}
 			else
 			{}
@@ -386,6 +451,46 @@ static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,void *RxAppd
 			case PP_ECALL_REQ:
 			{
 				log_i(LOG_HOZON, "xcallReq.xcallType = %d",((XcallReqinfo_t *)(RxAppdata))->xcallType);
+			}
+			break;
+			case PP_ECALL_RESP:
+			{
+				log_i(LOG_HOZON,"RxAppdata.xcallType = %d\n",((XcallRespinfo_t *)(RxAppdata))->xcallType);
+				log_i(LOG_HOZON,"RxAppdata.engineSt = %d\n",((XcallRespinfo_t *)(RxAppdata))->engineSt);
+				log_i(LOG_HOZON,"RxAppdata.ttOdoMeter = %d\n",((XcallRespinfo_t *)(RxAppdata))->ttOdoMeter);
+				/*log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsSt = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.gpsSt);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsTimestamp = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.gpsTimestamp);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.latitude = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.latitude);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.longitude = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.longitude);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.altitude = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.altitude);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.heading = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.heading);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsSpeed = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.gpsSpeed);
+				log_i(LOG_HOZON,,"RxBodydata.gpsPos.gpsTimestamp = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.gpsTimestamp);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.hdop = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.hdop);	//*/
+
+				/*log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsSt = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsSt);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsTimestamp = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsTimestamp);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.latitude = %d\n",((XcallRespinfo_t *)(RxAppdata))->latitude);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.longitude = %d\n",((XcallRespinfo_t *)(RxAppdata))->longitude);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.altitude = %d\n",((XcallRespinfo_t *)(RxAppdata))->altitude);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.heading = %d\n",((XcallRespinfo_t *)(RxAppdata))->heading);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsSpeed = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsSpeed);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsTimestamp = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsTimestamp);
+				log_i(LOG_HOZON,"RxBodydata.gpsPos.hdop = %d\n",((XcallRespinfo_t *)(RxAppdata))->hdop);*/
+
+				log_i(LOG_HOZON,"RxAppdata.gpsPos.gpsSt = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).gpsSt);
+				log_i(LOG_HOZON,"RxAppdata.gpsPos.gpsTimestamp = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).gpsTimestamp);
+				log_i(LOG_HOZON,"RxAppdata.gpsPos.latitude = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).latitude);
+				log_i(LOG_HOZON,"RxAppdata.gpsPos.longitude = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).longitude);
+				log_i(LOG_HOZON,"RxAppdata.gpsPos.altitude = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).altitude);
+				log_i(LOG_HOZON,"RxAppdata.gpsPos.heading = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).heading);
+				log_i(LOG_HOZON,"RxAppdata.gpsPos.gpsSpeed = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).gpsSpeed);
+				log_i(LOG_HOZON,"RxAppdata.gpsPos.gpsTimestamp = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).gpsTimestamp);
+				log_i(LOG_HOZON,"RxAppdata.gpsPos.hdop = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).hdop);	//
+				//*/
+				log_i(LOG_HOZON,"RxAppdata.srsSt = %d\n",((XcallRespinfo_t *)(RxAppdata))->srsSt);
+				log_i(LOG_HOZON,"RxAppdata.updataTime = %d\n",((XcallRespinfo_t *)(RxAppdata))->updataTime);
+				log_i(LOG_HOZON,"RxAppdata.battSOCEx = %d\n",((XcallRespinfo_t *)(RxAppdata))->battSOCEx);
 			}
 			break;
 			default:

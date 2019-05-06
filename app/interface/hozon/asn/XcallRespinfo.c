@@ -83,6 +83,32 @@ memb_ttOdoMeter_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 static int
+memb_gpsPos_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	size_t size;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	/* Determine the number of elements */
+	size = _A_CSEQUENCE_FROM_VOID(sptr)->count;
+	
+	if((size == 1)) {
+		/* Perform validation of the inner elements */
+		return td->check_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
 memb_srsSt_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	long value;
@@ -157,6 +183,11 @@ memb_battSOCEx_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
+static asn_per_constraints_t asn_PER_type_gpsPos_constr_5 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
+	0, 0	/* No PER value map */
+};
 static asn_per_constraints_t asn_PER_memb_xcallType_constr_2 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
@@ -172,21 +203,72 @@ static asn_per_constraints_t asn_PER_memb_ttOdoMeter_constr_4 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_srsSt_constr_6 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_gpsPos_constr_5 GCC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_srsSt_constr_7 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_updataTime_constr_7 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_updataTime_constr_8 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 31, -1,  0,  2147483647 }	/* (0..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_battSOCEx_constr_8 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_battSOCEx_constr_9 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 14,  14,  0,  10000 }	/* (0..10000) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+static asn_TYPE_member_t asn_MBR_gpsPos_5[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_RvsposInfo,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_gpsPos_tags_5[] = {
+	(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_gpsPos_specs_5 = {
+	sizeof(struct gpsPos),
+	offsetof(struct gpsPos, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+static /* Use -fall-defs-global to expose */
+asn_TYPE_descriptor_t asn_DEF_gpsPos_5 = {
+	"gpsPos",
+	"gpsPos",
+	SEQUENCE_OF_free,
+	SEQUENCE_OF_print,
+	SEQUENCE_OF_constraint,
+	SEQUENCE_OF_decode_ber,
+	SEQUENCE_OF_encode_der,
+	SEQUENCE_OF_decode_xer,
+	SEQUENCE_OF_encode_xer,
+	SEQUENCE_OF_decode_uper,
+	SEQUENCE_OF_encode_uper,
+	0,	/* Use generic outmost tag fetcher */
+	asn_DEF_gpsPos_tags_5,
+	sizeof(asn_DEF_gpsPos_tags_5)
+		/sizeof(asn_DEF_gpsPos_tags_5[0]) - 1, /* 1 */
+	asn_DEF_gpsPos_tags_5,	/* Same as above */
+	sizeof(asn_DEF_gpsPos_tags_5)
+		/sizeof(asn_DEF_gpsPos_tags_5[0]), /* 2 */
+	&asn_PER_type_gpsPos_constr_5,
+	asn_MBR_gpsPos_5,
+	1,	/* Single element */
+	&asn_SPC_gpsPos_specs_5	/* Additional specs */
+};
+
 static asn_TYPE_member_t asn_MBR_XcallRespinfo_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct XcallRespinfo, xcallType),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
@@ -217,10 +299,10 @@ static asn_TYPE_member_t asn_MBR_XcallRespinfo_1[] = {
 		},
 	{ ATF_NOFLAGS, 0, offsetof(struct XcallRespinfo, gpsPos),
 		(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
-		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_RvsposInfo,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
+		0,
+		&asn_DEF_gpsPos_5,
+		memb_gpsPos_constraint_1,
+		&asn_PER_memb_gpsPos_constr_5,
 		0,
 		"gpsPos"
 		},
@@ -229,7 +311,7 @@ static asn_TYPE_member_t asn_MBR_XcallRespinfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_srsSt_constraint_1,
-		&asn_PER_memb_srsSt_constr_6,
+		&asn_PER_memb_srsSt_constr_7,
 		0,
 		"srsSt"
 		},
@@ -238,7 +320,7 @@ static asn_TYPE_member_t asn_MBR_XcallRespinfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_updataTime_constraint_1,
-		&asn_PER_memb_updataTime_constr_7,
+		&asn_PER_memb_updataTime_constr_8,
 		0,
 		"updataTime"
 		},
@@ -247,7 +329,7 @@ static asn_TYPE_member_t asn_MBR_XcallRespinfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_battSOCEx_constraint_1,
-		&asn_PER_memb_battSOCEx_constr_8,
+		&asn_PER_memb_battSOCEx_constr_9,
 		0,
 		"battSOCEx"
 		},

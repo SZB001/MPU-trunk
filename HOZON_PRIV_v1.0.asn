@@ -2,7 +2,6 @@ HOZON
 DEFINITIONS AUTOMATIC TAGS ::= 
 BEGIN
 
--- generate .c/.hFile: code$../asn1c/asn1c -gen-PER HOZON_PRIV_v1.0.asn --
 Bodyinfo ::= SEQUENCE
 {
 	aID         		IA5String(SIZE(3)), -- application id
@@ -25,12 +24,13 @@ XcallReqinfo ::= SEQUENCE
     xcallType          INTEGER(0..255) -- 救援类型
 }
 
+
 XcallRespinfo ::= SEQUENCE
 {
     xcallType          	INTEGER(0..255), -- 救援类型
 	engineSt			INTEGER(0..255), -- 启动状态
 	ttOdoMeter			INTEGER(0..1000000), --  里程
-	gpsPos				RvsposInfo, -- 车辆救援位置
+	gpsPos				SEQUENCE(SIZE(1)) OF RvsposInfo, -- 车辆救援位置
 	srsSt				INTEGER(0..255), -- 安全气囊状态
 	updataTime			INTEGER(0..2147483647), -- timestamp时间戳
 	battSOCEx			INTEGER(0..10000) -- 车辆电池剩余电量
@@ -38,7 +38,7 @@ XcallRespinfo ::= SEQUENCE
 
 RvsposInfo ::= SEQUENCE
 {
-	gpsSt          		BOOLEAN, --
+	gpsSt          		BOOLEAN, -- gps状态
 	gpsTimestamp		INTEGER(0..2147483647), -- GPS时间戳
 	latitude			INTEGER(-90000000..90000000), -- 纬度x1000000
 	longitude			INTEGER(-180000000..180000000), -- 经度x1000000
