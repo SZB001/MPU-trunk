@@ -77,7 +77,7 @@ int main(int argc , char **argv)
         pm_run,
         assist_run,
         gb_run,
-        ft_run,
+        //ft_run,
         dsu_run,
         uds_run,
         fct_run,

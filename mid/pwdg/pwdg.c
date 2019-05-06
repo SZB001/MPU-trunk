@@ -21,7 +21,8 @@ static unsigned short mid_filter_table[] = \
     MPU_MID_SCOM,  \
     MPU_MID_FCT,   \
     MPU_MID_FOTA,  \
-    MPU_MID_GEELYHU,
+    MPU_MID_GEELYHU,\
+	MPU_MID_FOTON,
 };
 
 /****************************************************************

@@ -53,7 +53,7 @@ description： static variable definitions
 static PrvtProt_task_t pp_task;
 static PrvtProt_pack_t PP_RxPack;
 
-static uint8_t Se_ecall_resp = 1;
+//static uint8_t Se_ecall_resp = 1;
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -490,21 +490,19 @@ static int PrvtPro_ecallResponse(PrvtProt_task_t *task)
 	long msgdatalen;
 	//if(1 == sockproxy_socketState())//socket open
 	{
-		if(1 == Se_ecall_resp)
+		if(1 == pp_task.ecall.resp)
 		{
-			uint8_t LeMsgdata[48] = {0X14,0X4F,  \
-									 0XD8,0XB7,0X60,0X05,0X73,0X20,0X3F,0X10,0X00,0X04, \
-									 0X00,0X3A,0X00,0X80,0X00,0X00,0X20,0X80,0X80,0X80, \
-									 0X1F,0X40,0X0D,0XCC,0X80,0XFC,0X45,0X5D,0X71,0X90, \
-									 0X55,0XD5,0XE0,0X80,0X89,0X86,0X42,0X30,0X0C,0X8C, \
-									 0X97,0X32,0X03,0XF1,0X00,0X32};
-			int LeMsgdataLen = 48;
-			fprintf(stdout,"\r\n");
-			fprintf(stdout, "/* decode server response data: */\n");
+			uint8_t LeMsgdata[47] = {0X13,0X4F,0XD8,0XB7,0X60,0X05,0X73,0X3E,0XC5,0X0C, \
+									 0X00,0X04,0X00,0X38,0X00,0X80,0X00,0X00,0X20,0X01, \
+									 0X01,0X00,0X3E,0X8D,0XCC,0XFB,0X14,0X35,0X5D,0X71, \
+									 0X90,0X55,0XD5,0XE0,0X80,0X89,0X86,0X42,0X30,0X0C, \
+									 0X8C,0X97,0X33,0XEC,0X50,0XC0,0X32};
+			int LeMsgdataLen = 47;
+			log_i(LOG_HOZON,"/* decode server response data: */\n");
 			PrvtPro_decodeMsgData(LeMsgdata,LeMsgdataLen,NULL);
-			Se_ecall_resp = 0;
+			//Se_ecall_resp = 0;
 		}
-		pp_task.ecall.resp = 1;
+
 		if(1 == pp_task.ecall.resp)
 		{
 			pack.packHeader.sign[0] = 0x2A;
@@ -554,11 +552,12 @@ static int PrvtPro_ecallResponse(PrvtProt_task_t *task)
 				pack.packHeader.msglen = PrvtPro_BSEndianReverse(18 + msgdatalen);
 				if(sockproxy_MsgSend(pack.packHeader.sign,18 + msgdatalen,NULL) > 0)//发送成功
 				{
-					pp_task.ecall.req = 0;
+					//pp_task.ecall.req = 0;
 					protocol_dump(LOG_HOZON, "PRVT_PROT", pack.packHeader.sign, \
 							18 + msgdatalen,1);
 				}
 			}
+			pp_task.ecall.req = 0;
 		}
 	}
 	return 0;
@@ -703,6 +702,22 @@ void PrvtPro_Setsuspend(unsigned char suspend)
 void PrvtPro_SetEcallReq(unsigned char req)
 {
 	pp_task.ecall.req = req;
+}
+
+/******************************************************
+*函数名：PrvtPro_SetEcallResp
+
+*形  参：
+
+*返回值：
+
+*描  述：设置ecall response
+
+*备  注：
+******************************************************/
+void PrvtPro_SetEcallResp(unsigned char resp)
+{
+	pp_task.ecall.resp = resp;
 }
 
 /******************************************************

@@ -274,7 +274,7 @@ void PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,PrvtProt_
 		  (RxBodydata.aID.buf[2] - 0x30);
 	MID = RxBodydata.mID;
 	log_i(LOG_HOZON, "uper decode:appdata");
-	log_i(LOG_HOZON, "application data length = %d",LeMessageDataLen-LeMessageData[0]-1);
+	log_i(LOG_HOZON, "application data length = %d",LeMessageDataLen-LeMessageData[0]);
 	switch(AID)
 	{
 		case PP_AID_ECALL:
@@ -285,7 +285,7 @@ void PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,PrvtProt_
 				XcallReqinfo_t *RxXcallReq_ptr = &RxXcallReq;
 				memset(&RxXcallReq,0 , sizeof(XcallReqinfo_t));
 				dc = uper_decode(asn_codec_ctx,pduType_XcallReq,(void *) &RxXcallReq_ptr, \
-						 &LeMessageData[LeMessageData[0] +1],LeMessageDataLen - LeMessageData[0]-1,0,0);
+						 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
 				if(dc.code  != RC_OK) 
 				{
 					log_e(LOG_HOZON, "Could not decode application data Frame");
