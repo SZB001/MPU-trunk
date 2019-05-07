@@ -76,6 +76,8 @@ typedef struct
     double kms;         // 1km/h = 0.5399kn
     unsigned int stateUsed;
     double msl;
+    double hdop;
+    double vdop;
 } GPS_DATA;
 
 typedef void (*gps_cb_t)(unsigned int, unsigned int, unsigned int);

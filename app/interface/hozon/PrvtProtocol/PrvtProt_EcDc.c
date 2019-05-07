@@ -34,6 +34,7 @@ description： include the header file
 #include "log.h"
 #include "list.h"
 #include "../../support/protocol.h"
+#include "PrvtProt_cfg.h"
 #include "PrvtProt_EcDc.h"
 
 /*******************************************************
@@ -70,20 +71,28 @@ description： function code
 
 *返回值：
 
-*描  述：数据打包
+*描  述：数据打包编码
 
 *备  注：
 ******************************************************/
-int PrvtPro_msgPackage(uint8_t type,uint8_t *msgData,long *msgDataLen, \
+int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 					   PrvtProt_DisptrBody_t *DisptrBody, PrvtProt_appData_t *Appchoice)
 {
 	static uint8_t key;
 	Bodyinfo_t Bodydata;
-	//Appdatainfo_t Appdata;
-	
 	int i;
 	
 	memset(&Bodydata,0 , sizeof(Bodyinfo_t));
+	Bodydata.eventId 		= NULL;/* OPTIONAL */
+	Bodydata.ulMsgCnt 		= NULL;	/* OPTIONAL */
+	Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+	Bodydata.msgCntAcked 	= NULL;/* OPTIONAL */
+	Bodydata.ackReq			= NULL;/* OPTIONAL */
+	Bodydata.appDataLen 	= NULL;/* OPTIONAL */
+	Bodydata.appDataEncode	= NULL;/* OPTIONAL */
+	Bodydata.appDataProVer	= NULL;/* OPTIONAL */
+	Bodydata.testFlag		= NULL;/* OPTIONAL */
+	Bodydata.result			= NULL;/* OPTIONAL */
 /*********************************************
 	填充 dispatcher body和application data
 *********************************************/	
@@ -91,7 +100,10 @@ int PrvtPro_msgPackage(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 	Bodydata.aID.size = 3;
 	Bodydata.mID = DisptrBody->mID;
 	Bodydata.eventTime 		= DisptrBody->eventTime;
-	Bodydata.eventId 		= &(DisptrBody->eventId);/* OPTIONAL */
+	if(DisptrBody->eventId != PP_INVALID)//event ID初始化为0xFFFFFFFF-无效
+	{
+		Bodydata.eventId 		= &(DisptrBody->eventId);/* OPTIONAL */
+	}
 	Bodydata.ulMsgCnt 		= &(DisptrBody->ulMsgCnt);	/* OPTIONAL */
 	Bodydata.dlMsgCnt 		= &(DisptrBody->dlMsgCnt);	/* OPTIONAL */
 	Bodydata.msgCntAcked 	= &(DisptrBody->msgCntAcked);/* OPTIONAL */
@@ -113,17 +125,7 @@ int PrvtPro_msgPackage(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 		{
 			XcallReqinfo_t XcallReq;	
 			memset(&XcallReq,0 , sizeof(XcallReqinfo_t));
-			Bodydata.eventId 		= NULL;/* OPTIONAL */
-			Bodydata.ulMsgCnt 		= NULL;	/* OPTIONAL */
-			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
-			Bodydata.msgCntAcked 	= NULL;/* OPTIONAL */
-			Bodydata.ackReq			= NULL;/* OPTIONAL */
-			Bodydata.appDataLen 	= NULL;/* OPTIONAL */
-			Bodydata.appDataEncode	= NULL;/* OPTIONAL */
-			Bodydata.appDataProVer	= NULL;/* OPTIONAL */
-			Bodydata.testFlag		= NULL;/* OPTIONAL */
-			Bodydata.result			= NULL;/* OPTIONAL */	
-			XcallReq.xcallType = Appchoice->xcallType;
+			XcallReq.xcallType = Appchoice->Xcall.xcallType;
 			
 			ec = uper_encode(pduType_XcallReq,(void *) &XcallReq,PrvtPro_writeout,&key);
 			log_i(LOG_HOZON, "uper encode appdata ec.encoded = %d",ec.encoded);
@@ -139,47 +141,28 @@ int PrvtPro_msgPackage(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 			XcallRespinfo_t XcallResp;
 			RvsposInfo_t Rvspos;
 			RvsposInfo_t *Rvspos_ptr = &Rvspos;
-			//RvsposInfo_t **Rvspos_duptr = Rvspos_ptr;
+
 			memset(&XcallResp,0 , sizeof(XcallRespinfo_t));
 			memset(&Rvspos,0 , sizeof(RvsposInfo_t));
 
-			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
-
-			XcallResp.xcallType = Appchoice->xcallType;
-			XcallResp.engineSt = Appchoice->engineSt;
-			XcallResp.ttOdoMeter = Appchoice->totalOdoMr;
-			/*XcallResp.gpsPos.gpsSt = Appchoice->gpsPos.gpsSt;//gps状态 0-无效；1-有效
-			XcallResp.gpsPos.gpsTimestamp = Appchoice->gpsPos.gpsTimestamp;//gps时间戳
-			XcallResp.gpsPos.latitude = Appchoice->gpsPos.latitude;//纬度 x 1000000,当GPS信号无效时，值为0
-			XcallResp.gpsPos.longitude = Appchoice->gpsPos.longitude;//经度 x 1000000,当GPS信号无效时，值为0
-			XcallResp.gpsPos.altitude = Appchoice->gpsPos.altitude;//高度（m）
-			XcallResp.gpsPos.heading = Appchoice->gpsPos.heading;//车头方向角度，0为正北方向
-			XcallResp.gpsPos.gpsSpeed = Appchoice->gpsPos.gpsSpeed;//速度 x 10，单位km/h
-			XcallResp.gpsPos.hdop = Appchoice->gpsPos.hdop;//水平精度因子 x 10*/
-			/*XcallResp.gpsSt = Appchoice->gpsPos.gpsSt;//gps状态 0-无效；1-有效
-			XcallResp.gpsTimestamp = Appchoice->gpsPos.gpsTimestamp;//gps时间戳
-			XcallResp.latitude = Appchoice->gpsPos.latitude;//纬度 x 1000000,当GPS信号无效时，值为0
-			XcallResp.longitude = Appchoice->gpsPos.longitude;//经度 x 1000000,当GPS信号无效时，值为0
-			XcallResp.altitude = Appchoice->gpsPos.altitude;//高度（m）
-			XcallResp.heading = Appchoice->gpsPos.heading;//车头方向角度，0为正北方向
-			XcallResp.gpsSpeed = Appchoice->gpsPos.gpsSpeed;//速度 x 10，单位km/h
-			XcallResp.hdop = Appchoice->gpsPos.hdop;//水平精度因子 x 10*/
-			
-			Rvspos.gpsSt = Appchoice->gpsPos.gpsSt;//gps状态 0-无效；1-有效
-			Rvspos.gpsTimestamp = Appchoice->gpsPos.gpsTimestamp;//gps时间戳
-			Rvspos.latitude = Appchoice->gpsPos.latitude;//纬度 x 1000000,当GPS信号无效时，值为0
-			Rvspos.longitude = Appchoice->gpsPos.longitude;//经度 x 1000000,当GPS信号无效时，值为0
-			Rvspos.altitude = Appchoice->gpsPos.altitude;//高度（m）
-			Rvspos.heading = Appchoice->gpsPos.heading;//车头方向角度，0为正北方向
-			Rvspos.gpsSpeed = Appchoice->gpsPos.gpsSpeed;//速度 x 10，单位km/h
-			Rvspos.hdop = Appchoice->gpsPos.hdop;//水平精度因子 x 10
+			XcallResp.xcallType = Appchoice->Xcall.xcallType;
+			XcallResp.engineSt = Appchoice->Xcall.engineSt;
+			XcallResp.ttOdoMeter = Appchoice->Xcall.totalOdoMr;
+			Rvspos.gpsSt = Appchoice->Xcall.gpsPos.gpsSt;//gps状态 0-无效；1-有效
+			Rvspos.gpsTimestamp = Appchoice->Xcall.gpsPos.gpsTimestamp;//gps时间戳
+			Rvspos.latitude = Appchoice->Xcall.gpsPos.latitude;//纬度 x 1000000,当GPS信号无效时，值为0
+			Rvspos.longitude = Appchoice->Xcall.gpsPos.longitude;//经度 x 1000000,当GPS信号无效时，值为0
+			Rvspos.altitude = Appchoice->Xcall.gpsPos.altitude;//高度（m）
+			Rvspos.heading = Appchoice->Xcall.gpsPos.heading;//车头方向角度，0为正北方向
+			Rvspos.gpsSpeed = Appchoice->Xcall.gpsPos.gpsSpeed;//速度 x 10，单位km/h
+			Rvspos.hdop = Appchoice->Xcall.gpsPos.hdop;//水平精度因子 x 10
 			XcallResp.gpsPos.list.array = &Rvspos_ptr;
 			XcallResp.gpsPos.list.size =0;
 			XcallResp.gpsPos.list.count =1;
 
-			XcallResp.srsSt = Appchoice->srsSt;
-			XcallResp.updataTime = Appchoice->updataTime;
-			XcallResp.battSOCEx = Appchoice->battSOCEx;
+			XcallResp.srsSt = Appchoice->Xcall.srsSt;
+			XcallResp.updataTime = Appchoice->Xcall.updataTime;
+			XcallResp.battSOCEx = Appchoice->Xcall.battSOCEx;
 
 			ec = uper_encode(pduType_XcallResp,(void *) &XcallResp,PrvtPro_writeout,&key);
 

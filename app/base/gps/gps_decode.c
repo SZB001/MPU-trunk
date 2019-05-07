@@ -493,6 +493,16 @@ static unsigned int gps_decode_rmc(unsigned char *buf)
     return 0;
 }
 
+void gps_update_snap_by_gsa(double Hdop, double Vdop)
+{
+    pthread_mutex_lock(&gps_snap_mutex);
+
+    gps_snap.hdop = Hdop;
+    gps_snap.vdop = Vdop;
+
+    pthread_mutex_unlock(&gps_snap_mutex);
+}
+
 /****************************************************************
  function:     gps_decode_gga
  description:  decode the message which begin with "$GPGGA"
@@ -519,6 +529,33 @@ static void gps_decode_gga(unsigned char *buf)
         {
             log_i(LOG_GPS, " msl = %lf", msl);
             gps_update_snap_by_gga(state, msl);
+        }
+    }
+
+    return;
+}
+
+static void gps_decode_gsa(unsigned char *buf)
+{
+    double Hdop,Vdop;
+	unsigned int fs = 1;
+
+    if (gps_time_not_change)
+    {
+        log_i(LOG_GPS, "ignore GPGSA!");
+        return;
+    }
+
+    if (sscanf((char const *) &buf[3], "GSA,%*c,%d",&fs) == 1)
+    {
+        log_i(LOG_GPS, " fs = %d", fs);
+        if (fs != 1)
+        {
+			if (sscanf((char const *) &buf[strlen((const char *) buf)-14], "%lf,%lf",&Hdop,&Vdop) == 2)
+			{
+				log_i(LOG_GPS, " Hdop = %lf", Hdop);
+            	gps_update_snap_by_gsa(Hdop, Vdop);
+			}
         }
     }
 
@@ -585,6 +622,11 @@ int gps_decode(unsigned char *buf)
         gps_decode_gga(buf);
         return 0;
     }
+    else if((memcmp(buf, "$GPGSA", 6) == 0) || (memcmp(buf, "$GNGSA", 6) == 0))
+	{
+		gps_decode_gsa(buf);
+		return 0;
+	}
     else
     {
         return 0;

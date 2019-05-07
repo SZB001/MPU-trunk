@@ -16,15 +16,11 @@ description： include the header file
 description： macro definitions
 *******************************************************/
 /**********宏开关定义*********/
-#define PP_THREAD   1//定义是否单独创建线程 1-是 0-不是
-#define PP_SOCKPROXY   1//定义是否使用socket代理(是否由其他模块创建socket链路) 1-是 0-不是
-/**********宏常量定义*********/
-#define PP_HEART_BEAT_TIME (10)//心跳周期
 
+/**********宏常量定义*********/
 #define PP_ACK_WAIT 	0x01//应答成功
 #define PP_ACK_SUCCESS 	0x02//应答成功
 
-#define PP_WAIT_TIMEOUT 	(2*1000)//等待超时时间
 #define PP_MSG_DATA_LEN 	1024//message data 长度
 
 #define	PP_NATIONALSTANDARD_TYPE	0//操作类型：国标类型
@@ -32,7 +28,6 @@ description： macro definitions
 #define	PP_NGTP_TYPE				2//NGTP类型
 
 /***********宏函数***********/
-#define PrvtProt_rcvMsg(buf,buflen) RdSockproxyData_Queue(SP_PRIV,buf,buflen)
 
 /*******************************************************
 description： struct definitions
@@ -47,6 +42,14 @@ typedef enum
 	PP_IDLE = 0,//
     PP_HEARTBEAT,//等待心跳响应状态
 } PP_WAIT_STATE;
+
+typedef enum
+{
+	PP_ECALL = 0,//
+    PP_BCALL,//
+	PP_ICALL,
+	PP_XCALL_MAX
+} PP_Xcall_TYPE;
 
 /*****struct definitions*****/
 typedef struct 
@@ -93,7 +96,7 @@ typedef struct
 
 typedef struct 
 {		
-	PrvtProt_pack_Header_t packHeader;/* */
+	PrvtProt_pack_Header_t Header;/* */
 	unsigned char msgdata[PP_MSG_DATA_LEN];/* 消息体 */
 	unsigned char msgtype;/* 消息类型 */
 }__attribute__((packed)) PrvtProt_pack_t; /*报文结构体*/
@@ -115,7 +118,7 @@ typedef struct
 typedef struct 
 {	
 	PrvtProt_heartbeat_t heartbeat;
-	PrvtProt_xcall_t ecall;
+	PrvtProt_xcall_t xcall[PP_XCALL_MAX];
 	PP_WAIT_STATE waitSt;/* 等待响应的状态 */
 	uint64_t waittime;/* 等待响应的时间 */
 	char suspend;/* 暂停 */

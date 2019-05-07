@@ -25,11 +25,11 @@ description： macro definitions
 #define PP_ENCODE_APPDATA 	0x02//编码app data
 
 //AID类型
-#define PP_AID_ECALL 	170//ecall
+#define PP_AID_ECALL 	170//Xcall
 
 //MID类型
-#define PP_MID_ECALL_REQ 	1//ecall request
-#define PP_MID_ECALL_RESP 	2//ecall response
+#define PP_MID_ECALL_REQ 	1//Xcall request
+#define PP_MID_ECALL_RESP 	2//Xcall response
 
 /***********宏函数***********/
 
@@ -43,8 +43,10 @@ description： typedef definitions
 /******enum definitions******/
 typedef enum
 {
-	PP_ECALL_REQ = 1,//ecall request
-    PP_ECALL_RESP//ecall response
+	PP_APP_HEARTBEAT = 0,//心跳
+	PP_ECALL_REQ,//ecall request
+    PP_ECALL_RESP,//ecall response
+	PP_APP_MAX
 } PP_APP_TYPE;//应用类型
 
 /*****struct definitions*****/
@@ -82,14 +84,18 @@ typedef struct
 /* application data struct */
 typedef struct 
 {
-	uint8_t  parents;
-	long xcallType;//类型
+	long xcallType;//类型  1-道路救援   2-紧急救援（ecall）  3-400电话进线
 	long engineSt;//启动状态；1-熄火；2-启动
 	long totalOdoMr;//里程有效范围：0 - 1000000（km）
 	PrvtProt_Rvsposition_t gpsPos;//车辆救援位置
 	long srsSt;//安全气囊状态 1- 正常；2 - 弹出
 	long updataTime;//数据时间戳
 	long battSOCEx;//车辆电池剩余电量：0-10000（0%-100%）
+}PrvtProt_EcDc_Xcall_t;
+
+typedef struct
+{
+	PrvtProt_EcDc_Xcall_t Xcall;//xcall
 }PrvtProt_appData_t;
 
 /* message data struct */
@@ -108,7 +114,7 @@ description： variable External declaration
 /*******************************************************
 description： function External declaration
 *******************************************************/
-extern int PrvtPro_msgPackage(uint8_t type,uint8_t *msgData,long *msgDataLen, \
+extern int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 							  PrvtProt_DisptrBody_t *DisptrBody, PrvtProt_appData_t *Appchoice);
 extern void PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen, \
 								  PrvtProt_msgData_t *msgData);

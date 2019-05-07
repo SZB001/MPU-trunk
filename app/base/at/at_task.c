@@ -32,7 +32,7 @@ static AT_CMD_SEND at_init_cmd[] =
 {
     {ATE,           "ATE0\r\n" }, /* disable echo */
     {AT_QGPSCFG,    "AT+QGPSCFG=\"outport\",\"linuxsmd\"\r\n" }, /*GNSS*/
-    {AT_QGPSCFG,    "AT+QGPSCFG=\"gpsnmeatype\",3\r\n" },
+    {AT_QGPSCFG,    "AT+QGPSCFG=\"gpsnmeatype\",31\r\n" },
     {AT_QGPSCFG,    "AT+QGPSCFG=\"glonassnmeatype\",0\r\n" },
     {AT_QGPS,       "AT+QGPS=1,30,50,0,1\r\n" },
     {AT_QGPS,       "AT+QGPS?\r\n" },
