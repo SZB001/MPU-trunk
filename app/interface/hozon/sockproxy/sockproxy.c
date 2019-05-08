@@ -38,6 +38,7 @@ description： static variable definitions
 static sockproxy_stat_t sockSt;
 static pthread_mutex_t sendmtx = PTHREAD_MUTEX_INITIALIZER;//初始化静态锁
 static pthread_mutex_t closemtx = PTHREAD_MUTEX_INITIALIZER;//初始化静态锁
+
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -47,6 +48,8 @@ description： function declaration
 static void *sockproxy_main(void);
 static int sockproxy_do_checksock(sockproxy_stat_t *state);
 static int sockproxy_do_receive(sockproxy_stat_t *state);
+static void sockproxy_gbMakeupMsg(uint8_t *data,int len);
+static void sockproxy_privMakeupMsg(uint8_t *data,int len);
 /******************************************************
 description： function code
 ******************************************************/
@@ -68,10 +71,12 @@ int sockproxy_init(INIT_PHASE phase)
 		{
 			sockSt.socket = 0;
 			sockSt.state = PP_CLOSED;
-
 			sockSt.asynCloseFlg = 0;
 			sockSt.sock_addr.port = 0;
 			sockSt.sock_addr.url[0] = 0;
+			sockSt.rcvType = PP_RCV_UNRCV;
+			sockSt.rcvstep = PP_RCV_IDLE;//接收空闲
+			sockSt.rcvlen = 0;//接收数据帧总长度
 			SockproxyData_Init();
 		}
         break;
@@ -273,9 +278,9 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 static int sockproxy_do_receive(sockproxy_stat_t *state)
 {
     int ret = 0, rlen;
-    uint8_t rcvbuf[1456] = {0};
+    uint8_t rbuf[1456] = {0};
 
-    if ((rlen = sock_recv(state->socket, rcvbuf, sizeof(rcvbuf))) < 0)
+    if ((rlen = sock_recv(state->socket, rbuf, sizeof(rbuf))) < 0)
     {
         log_e(LOG_SOCK_PROXY, "socket recv error: %s", strerror(errno));
         log_e(LOG_SOCK_PROXY, "socket recv error, reset protocol");
@@ -283,7 +288,7 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
         return -1;
     }
 	
-	protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY", rcvbuf, rlen, 0);//打印接收的数据
+	protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_RCV", rbuf, rlen, 0);//打印接收的数据
 #if SOCKPROXY_SHELL_PROTOCOL
     while (ret == 0 && rlen > 0)
     {
@@ -298,27 +303,47 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
         input += uselen;
     }
 #else
-	if((0x23 == rcvbuf[0]) && (0x23 == rcvbuf[1]))//国标数据
-	{
-		if(WrSockproxyData_Queue(SP_GB,rcvbuf,rlen) < 0)
+
+    switch(sockSt.rcvType)
+    {
+    	case PP_RCV_UNRCV:
+    	{
+    		sockSt.rcvstep = PP_RCV_IDLE;//接收空闲
+    		sockSt.rcvlen = 0;//接收数据帧总长度
+    		if((0x23 == rbuf[0]) && (0x23 == rbuf[1]))//国标数据
+			{
+    			sockSt.rcvType = PP_RCV_GB;
+				sockproxy_gbMakeupMsg(rbuf,rlen);
+
+			}
+			else if((0x2A == rbuf[0]) && (0x2A == rbuf[1]))//HOZON 企业私有协议数据
+			{
+				sockSt.rcvType = PP_RCV_PRIV;
+				sockproxy_privMakeupMsg(rbuf,rlen);
+			}
+			else
+			{
+				if(rlen > 0)
+				{
+					log_e(LOG_SOCK_PROXY, "sockproxy_do_receive unknow package");
+				}
+			}
+    	}
+    	break;
+    	case PP_RCV_GB:
 		{
-			 log_e(LOG_SOCK_PROXY, "WrSockproxyData_Queue(SP_GB,rcvbuf,rlen) error");
+			sockproxy_gbMakeupMsg(rbuf,rlen);
 		}
-	}
-	else if((0x2A == rcvbuf[0]) && (0x2A == rcvbuf[1]))//HOZON 企业私有协议数据
-	{
-		if(WrSockproxyData_Queue(SP_PRIV,rcvbuf,rlen) < 0)
+		break;
+    	case PP_RCV_PRIV:
 		{
-			log_e(LOG_SOCK_PROXY, "WrSockproxyData_Queue(SP_PRIV,rcvbuf,rlen) error");
+			sockproxy_privMakeupMsg(rbuf,rlen);
 		}
-	}
-	else
-	{
-		if(rlen > 0)
-		{
-			log_e(LOG_SOCK_PROXY, "sockproxy_do_receive unknow package");
-		}
-	}
+		break;
+    	default:
+    	break;
+    }
+
 #endif
 
     return ret;
@@ -374,4 +399,160 @@ int sockproxy_socketState(void)
 		return 1;
 	}
 	return 0;
+}
+
+/******************************************************
+*函数名：sockproxy_gbMakeupMsg
+*形  参：
+*返回值：
+*描  述：gb协议数据组包
+*备  注：
+******************************************************/
+static void sockproxy_gbMakeupMsg(uint8_t *data,int len)
+{
+	int rlen = 0;
+	while(len--)
+	{
+		switch(sockSt.rcvstep)
+		{
+			case PP_GB_RCV_IDLE:
+			{
+				sockSt.rcvstep =PP_GB_RCV_SIGN;
+				sockSt.rcvlen = 0;
+			}
+			break;
+			case PP_GB_RCV_SIGN:
+			{
+				sockSt.rcvbuf[sockSt.rcvlen++] = data[rlen++];
+				sockSt.rcvbuf[sockSt.rcvlen++] = data[rlen++];
+				sockSt.rcvstep = PP_GB_RCV_CTRL;
+			}
+			break;
+			case PP_GB_RCV_CTRL:
+			{
+				sockSt.rcvbuf[sockSt.rcvlen++] = data[rlen++];
+				if(22 == sockSt.rcvlen)
+				{
+					sockSt.rcvstep = PP_GB_RCV_DATALEN;
+				}
+			}
+			break;
+			case PP_GB_RCV_DATALEN:
+			{
+				sockSt.rcvbuf[sockSt.rcvlen++] = data[rlen++];
+				if(24 == sockSt.rcvlen)
+				{
+					sockSt.datalen = sockSt.rcvbuf[22]*256 + sockSt.rcvbuf[23];
+					sockSt.rcvstep = PP_GB_RCV_DATA;
+				}
+			}
+			break;
+			case PP_GB_RCV_DATA:
+			{
+				sockSt.rcvbuf[sockSt.rcvlen++] = data[rlen++];
+				if((24 + sockSt.datalen) == sockSt.rcvlen)
+				{
+					sockSt.rcvstep = PP_GB_RCV_CHECKCODE;
+				}
+			}
+			break;
+			case PP_GB_RCV_CHECKCODE:
+			{
+				sockSt.rcvbuf[sockSt.rcvlen++] = data[rlen++];
+				if(WrSockproxyData_Queue(SP_GB,sockSt.rcvbuf,sockSt.rcvlen) < 0)
+				{
+					 log_e(LOG_SOCK_PROXY, "WrSockproxyData_Queue(SP_GB,rcvbuf,rlen) error");
+				}
+				sockSt.rcvstep = PP_RCV_IDLE;
+				sockSt.rcvType = PP_RCV_UNRCV;
+				protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_GB_RCV", sockSt.rcvbuf, sockSt.rcvlen, 0);//打印gb接收的数据
+			}
+			break;
+			default:
+			{
+				sockSt.rcvstep = PP_RCV_IDLE;
+				sockSt.rcvlen = 0;
+				sockSt.rcvType = PP_RCV_UNRCV;
+			}
+			break;
+		}
+	}
+}
+
+/******************************************************
+*函数名：sockproxy_privMakeupMsg
+*形  参：
+*返回值：
+*描  述：企业私有协议数据组包
+*备  注：
+******************************************************/
+static void sockproxy_privMakeupMsg(uint8_t *data,int len)
+{
+	int rlen = 0;
+	while(len--)
+	{
+		switch(sockSt.rcvstep)
+		{
+			case PP_PRIV_RCV_IDLE:
+			{
+				sockSt.rcvstep = PP_PRIV_RCV_SIGN;
+				sockSt.rcvlen = 0;
+			}
+			break;
+			case PP_PRIV_RCV_SIGN:
+			{
+				sockSt.rcvbuf[sockSt.rcvlen++] = data[rlen++];
+				sockSt.rcvbuf[sockSt.rcvlen++] = data[rlen++];
+				sockSt.rcvstep = PP_PRIV_RCV_CTRL;
+			}
+			break;
+			case PP_PRIV_RCV_CTRL:
+			{
+				sockSt.rcvbuf[sockSt.rcvlen++] = data[rlen++];
+				if(18 == sockSt.rcvlen)
+				{
+					sockSt.datalen = (((long)sockSt.rcvbuf[10]) << 24) + (((long)sockSt.rcvbuf[11]) << 16) + \
+									 (((long)sockSt.rcvbuf[12]) << 8) + ((long)sockSt.rcvbuf[13]);
+					if(sockSt.datalen == 18)//说明没有message data
+					{
+						if(WrSockproxyData_Queue(SP_PRIV,sockSt.rcvbuf,sockSt.rcvlen) < 0)
+						{
+							log_e(LOG_SOCK_PROXY, "WrSockproxyData_Queue(SP_PRIV,rcvbuf,rlen) error");
+						}
+						sockSt.rcvstep = PP_RCV_IDLE;
+						sockSt.rcvType = PP_RCV_UNRCV;
+						protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);//打印私有协议接收的数据
+
+					}
+					else
+					{
+						sockSt.rcvstep = PP_PRIV_RCV_DATA;
+					}
+				}
+			}
+			break;
+			case PP_PRIV_RCV_DATA:
+			{
+				sockSt.rcvbuf[sockSt.rcvlen++] = data[rlen++];
+				if((sockSt.datalen) == sockSt.rcvlen)
+				{
+					if(WrSockproxyData_Queue(SP_PRIV,sockSt.rcvbuf,sockSt.rcvlen) < 0)
+					{
+						log_e(LOG_SOCK_PROXY, "WrSockproxyData_Queue(SP_PRIV,rcvbuf,rlen) error");
+					}
+					sockSt.rcvstep = PP_RCV_IDLE;
+					sockSt.rcvType = PP_RCV_UNRCV;
+					protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);//打印私有协议接收的数据
+				}
+			}
+			break;
+			default:
+			{
+				sockSt.rcvstep = PP_RCV_IDLE;
+				sockSt.rcvlen = 0;
+				sockSt.rcvType = PP_RCV_UNRCV;
+			}
+			break;
+		}
+	}
 }

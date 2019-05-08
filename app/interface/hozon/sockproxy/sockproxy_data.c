@@ -104,7 +104,7 @@ int RdSockproxyData_Queue(unsigned char  obj,unsigned char* data,int len)
 	{
 		SPObj[obj].TialLabel = 0U;
 	}
-	return SPObj[obj].SPCache[SPObj[obj].TialLabel].len;
+	return Lng;
 }
 
 /******************************************************

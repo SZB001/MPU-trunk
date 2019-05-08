@@ -40,6 +40,32 @@ typedef enum
 	PP_OPEN_WAIT,//
     PP_OPENED,
 } PP_SOCK_STATE;
+
+typedef enum
+{
+	PP_RCV_UNRCV = 0,//接收空闲
+	PP_RCV_GB,//接收国标数据
+	PP_RCV_PRIV//接收私有协议数据
+} PP_SOCK_RCV_TYPE;
+
+#define PP_RCV_IDLE 0
+typedef enum
+{
+	PP_GB_RCV_IDLE = 0,//接收空闲
+	PP_GB_RCV_SIGN,//接收起始符
+	PP_GB_RCV_CTRL,//接收命令控制字段：命令标志..数据单元加密方式等
+	PP_GB_RCV_DATALEN,//接收数据单元长度
+	PP_GB_RCV_DATA,//接收数据
+	PP_GB_RCV_CHECKCODE//接收校验码
+} PP_SOCK_GB_RCV_STEP;
+
+typedef enum
+{
+	PP_PRIV_RCV_IDLE = 0,//接收空闲
+	PP_PRIV_RCV_SIGN,//接收起始符
+	PP_PRIV_RCV_CTRL,//接收命令控制字段：命令标志..数据单元加密方式等
+	PP_PRIV_RCV_DATA,//接收数据
+} PP_SOCK_PRIV_RCV_STEP;
 /*****struct definitions*****/
 typedef struct
 {
@@ -49,7 +75,14 @@ typedef struct
 	//char sendbusy;//发送忙状态
 	char asynCloseFlg;//异步关闭socket标志
 	svr_addr_t sock_addr;
+	/* rcv */
+	char rcvType;//接收类型
+	uint8_t rcvstep;//接收空闲
+	int rcvlen;//接收数据帧总长度
+	uint8_t rcvbuf[1456];//接收数据帧buf
+	long datalen;
 }__attribute__ ((packed)) sockproxy_stat_t;
+
 
 
 /******union definitions*****/

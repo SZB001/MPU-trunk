@@ -67,7 +67,7 @@ static PrvtProt_DisptrBody_t	PP_DisptrBody[PP_APP_MAX] =
 {/*   AID  MID  EventTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
 	{"000",	0,		0,		PP_INVALID,	   0,	   0,		0,       0,       0,      0,     0,		 0,         0   },//ecall req
 	{"170",	1,		0,		PP_INVALID,	   0,	   0,		0,       0,       0,      0,     1,		 1,         0   },//ecall req
-	{"170", 2,      0,      PP_INVALID,    0,      0,		0,		 1,		  0,	  0,	 1,		 1,			0   } //ecall response
+	{"170", 2,      0,      PP_INVALID,    0,      0,		0,		 1,		  0,	  0,	 256,		 1,			0   } //ecall response
 };
 static PrvtProt_appData_t 		PP_appData;
 
