@@ -14,5 +14,4 @@ extern int gb32960_getNetworkSt(void);
 extern void gb32960_getURL(void* ipaddr);
 extern int gb32960_getAllowSleepSt(void);
 extern int gb32960_getsuspendSt(void);
-
 #endif

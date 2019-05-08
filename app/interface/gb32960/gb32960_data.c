@@ -1800,3 +1800,47 @@ void gb_data_set_pendflag(int flag)
 {
     gb_pendflag = flag;
 }
+
+/*
+ 	 读取车辆状态
+*/
+char gb_data_vehicleState(void)
+{
+	uint32_t tmp;
+	char vehicleState;
+/* vehicle state */
+   if (gb_inf->vehi.info[GB_VINF_STATE])
+   {
+       tmp = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_STATE])->value;
+       vehicleState = gb_inf->vehi.state_tbl[tmp] ? gb_inf->vehi.state_tbl[tmp] : 0xff;
+   }
+   else
+   {
+	   vehicleState = 0xff;
+   }
+   return vehicleState;
+}
+
+/*
+ 	 读取车辆剩余电量
+*/
+char gb_data_vehicleSOC(void)
+{
+	char vehicleSOC;
+	 /* total SOC */
+	vehicleSOC = gb_inf->vehi.info[GB_VINF_SOC] ?
+		  dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_SOC])->value : 0xff;
+	return  vehicleSOC;
+}
+
+/*
+ 	 读取车辆总里程
+*/
+long gb_data_vehicleOdograph(void)
+{
+	long tmp;
+    /* odograph, scale 0.1km */
+    tmp = gb_inf->vehi.info[GB_VINF_ODO] ?
+          dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_ODO])->value * 10 : 0xffffffff;
+    return tmp;
+}

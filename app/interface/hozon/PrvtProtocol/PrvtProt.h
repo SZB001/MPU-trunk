@@ -27,6 +27,9 @@ description： macro definitions
 #define	PP_HEARTBEAT_TYPE			1//心跳类型
 #define	PP_NGTP_TYPE				2//NGTP类型
 
+#define	PP_ECALL_TYPE 	2//ecall
+#define PP_BCALL_TYPE	1//bcall
+#define	PP_ICALL_TYPE	3//icall
 /***********宏函数***********/
 
 /*******************************************************
@@ -49,7 +52,7 @@ typedef enum
     PP_BCALL,//
 	PP_ICALL,
 	PP_XCALL_MAX
-} PP_Xcall_TYPE;
+} PP_Xcall_INDEX;
 
 /*****struct definitions*****/
 typedef struct 
@@ -113,6 +116,7 @@ typedef struct
 {		
 	uint8_t req;/* 请求:box to tsp */
 	uint8_t resp;/* 响应:box to tsp */
+	//uint8_t CCreq;/* 拨打救援中心请求 */
 }__attribute__((packed))  PrvtProt_xcall_t; /*xcall结构体*/
 
 typedef struct 

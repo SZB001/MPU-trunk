@@ -62,9 +62,21 @@ int PrvtProtCfg_ecallTriggerEvent(void)
 *描  述：读取发动机状态:1-熄火;2-启动
 *备  注：
 ******************************************************/
-int PrvtProtCfg_engineSt(void)
+long PrvtProtCfg_engineSt(void)
 {
-	return 2;
+	long st = 0xFF;
+	st = gb_data_vehicleState();
+	if(1 ==  st)//国标1对应启动
+	{
+		st = 2;
+	}
+	else if(2 ==  st)//国标1对应熄火
+	{
+		st = 1;
+	}
+	else
+	{}
+	return st;
 }
 
 /******************************************************
@@ -74,9 +86,20 @@ int PrvtProtCfg_engineSt(void)
 *描  述：读取里程
 *备  注：
 ******************************************************/
-int PrvtProtCfg_totalOdoMr(void)
+long PrvtProtCfg_totalOdoMr(void)
 {
-	return 100;
+	return gb_data_vehicleOdograph();
+}
+/******************************************************
+*函数名：PrvtProtCfg_vehicleSOC
+*形  参：
+*返回值：
+*描  述：读取电量
+*备  注：
+******************************************************/
+long PrvtProtCfg_vehicleSOC(void)
+{
+	return (long)gb_data_vehicleSOC();
 }
 
 /******************************************************

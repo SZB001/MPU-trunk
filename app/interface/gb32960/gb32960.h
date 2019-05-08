@@ -47,5 +47,7 @@ extern int gb_data_noreport(void);
 extern void gb_data_set_intv(uint16_t intv);
 extern int gb_data_get_intv(void);
 extern void gb_data_set_pendflag(int flag);
-
+extern char gb_data_vehicleState(void);
+extern char gb_data_vehicleSOC(void);
+extern long gb_data_vehicleOdograph(void);
 #endif

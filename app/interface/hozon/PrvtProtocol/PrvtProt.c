@@ -36,14 +36,14 @@ description： include the header file
 #include "init.h"
 #include "log.h"
 #include "list.h"
-#include "PrvtProt.h"
 #include "../../support/protocol.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
 #include "PrvtProt_shell.h"
 #include "PrvtProt_EcDc.h"
 #include "PrvtProt_cfg.h"
-
+#include "PrvtProt_callCenter.h"
+#include "PrvtProt.h"
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -91,6 +91,7 @@ static int PrvtPro_ecallReq(PrvtProt_task_t *task);
 static int PrvtPro_ecallResponse(PrvtProt_task_t *task);
 static long PrvtPro_getTimestamp(void);
 static long PrvtPro_BSEndianReverse(long value);
+//static int PrvtPro_xcallCCreq(PrvtProt_task_t *task);
 /******************************************************
 description： function code
 ******************************************************/
@@ -122,6 +123,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			pp_task.suspend = 0;
 			pp_task.xcall[PP_ECALL].req = 0;
 			pp_task.xcall[PP_ECALL].resp = 0;
+			//pp_task.xcall[PP_ECALL].CCreq = 0;
 			pp_task.nonce = 0;/* TCP会话ID 由TSP平台产生 */
 			pp_task.version = 0x30;/* 大/小版本(由TSP平台定义)*/
 			pp_task.tboxid = 204;/* 平台通过tboxID与tboxSN映射 */
@@ -131,6 +133,7 @@ int PrvtProt_init(INIT_PHASE phase)
         break;
         case INIT_PHASE_OUTSIDE:
 		{
+			PrvtProt_CC_init();
 			PrvtProt_shell_init();
 		}
         break;
@@ -207,7 +210,8 @@ static void *PrvtProt_main(void)
 				PrvtPro_do_wait(&pp_task) || 
 				PrvtProt_do_heartbeat(&pp_task) ||
 				PrvtPro_do_checkXcall(&pp_task);
-		
+
+		PrvtProt_CC_mainfunction();/* CC request:拨打救援电话*/
     }
 	(void)res;
     return NULL;
@@ -517,7 +521,7 @@ static int PrvtPro_ecallResponse(PrvtProt_task_t *task)
 			PP_DisptrBody[PP_ECALL_RESP].ulMsgCnt++;	/* OPTIONAL */
 
 			PrvtProtcfg_gpsData_t gpsDt;
-			PP_appData.Xcall.xcallType = 2;//紧急救援ecall
+			PP_appData.Xcall.xcallType = PP_ECALL_TYPE;//紧急救援ecall
 			PP_appData.Xcall.engineSt = PrvtProtCfg_engineSt();//启动状态；1-熄火；2-启动
 			PP_appData.Xcall.totalOdoMr = PrvtProtCfg_totalOdoMr();//里程有效范围：0 - 1000000（km）
 			PP_appData.Xcall.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps状态 0-无效；1-有效
@@ -564,7 +568,7 @@ static int PrvtPro_ecallResponse(PrvtProt_task_t *task)
 
 			PP_appData.Xcall.srsSt = 1;//安全气囊状态 1- 正常；2 - 弹出
 			PP_appData.Xcall.updataTime = PrvtPro_getTimestamp();//数据时间戳
-			PP_appData.Xcall.battSOCEx = 10;//车辆电池剩余电量：0-10000（0%-100%）
+			PP_appData.Xcall.battSOCEx = PrvtProtCfg_vehicleSOC();//车辆电池剩余电量：0-10000（0%-100%）
 
 			if(0 == PrvtPro_msgPackageEncoding(PP_ECALL_RESP,PP_Pack[PP_ECALL_RESP].msgdata,&msgdatalen,\
 									   	   	   &PP_DisptrBody[PP_ECALL_RESP],&PP_appData))
@@ -608,7 +612,7 @@ static int PrvtPro_ecallReq(PrvtProt_task_t *task)
 		PP_DisptrBody[PP_ECALL_REQ].eventTime = PrvtPro_getTimestamp();
 		PP_DisptrBody[PP_ECALL_REQ].ulMsgCnt++;	/* OPTIONAL */
 		
-		PP_appData.Xcall.xcallType = 2;//紧急救援
+		PP_appData.Xcall.xcallType = PP_ECALL_TYPE;//紧急救援
 		if(0 == PrvtPro_msgPackageEncoding(PP_ECALL_REQ,PP_Pack[PP_ECALL_REQ].msgdata,&msgdatalen, \
 											&PP_DisptrBody[PP_ECALL_REQ],&PP_appData))
 		{
@@ -708,6 +712,7 @@ void PrvtPro_SetEcallReq(unsigned char req)
 void PrvtPro_SetEcallResp(unsigned char resp)
 {
 	pp_task.xcall[PP_ECALL].resp = resp;
+	//pp_task.xcall[PP_ECALL].CCreq = resp;
 }
 
 /******************************************************

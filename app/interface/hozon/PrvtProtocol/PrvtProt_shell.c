@@ -20,7 +20,7 @@ description£º include the header file
 #include "shell_api.h"
 #include "PrvtProt_shell.h"
 #include "hozon_PP_api.h"
-
+#include "PrvtProt_callCenter.h"
 /*******************************************************
 description£º global variable definitions
 *******************************************************/
@@ -184,7 +184,7 @@ static int PP_shell_setEcallResp(int argc, const char **argv)
 	sscanf(argv[0], "%u", &EcallResp);
 	log_o(LOG_HOZON, "EcallReq = %d",EcallResp);
 	PrvtPro_SetEcallResp((uint8_t)EcallResp);
-
+	PrvtPro_SetcallCCReq((uint8_t)EcallResp);
     sleep(1);
     return 0;
 }
