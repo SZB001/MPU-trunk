@@ -87,7 +87,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 static int PrvtPro_do_wait(PrvtProt_task_t *task);
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len);
 static int PrvtPro_do_checkXcall(PrvtProt_task_t *task);
-static int PrvtPro_ecallReq(PrvtProt_task_t *task);
+//static int PrvtPro_ecallReq(PrvtProt_task_t *task);
 static int PrvtPro_ecallResponse(PrvtProt_task_t *task);
 static long PrvtPro_getTimestamp(void);
 static long PrvtPro_BSEndianReverse(long value);
@@ -219,42 +219,6 @@ static void *PrvtProt_main(void)
 #endif
 
 /******************************************************
-*函数名：PrvtProt_do_heartbeat
-
-*形  参：void
-
-*返回值：void
-
-*描  述：心跳任务
-
-*备  注：
-******************************************************/
-static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
-{
-	PrvtProt_pack_Header_t pack_Header;
-
-	if((tm_get_time() - task->heartbeat.timer) > (task->heartbeat.period*1000))
-	{
-		PP_PackHeader[PP_APP_HEARTBEAT].ver.Byte = task->version;
-		PP_PackHeader[PP_APP_HEARTBEAT].nonce  = PrvtPro_BSEndianReverse(task->nonce);
-		PP_PackHeader[PP_APP_HEARTBEAT].msglen = PrvtPro_BSEndianReverse((long)18);
-		PP_PackHeader[PP_APP_HEARTBEAT].tboxid = PrvtPro_BSEndianReverse(task->tboxid);
-		memcpy(&pack_Header, &PP_PackHeader[PP_APP_HEARTBEAT], sizeof(PrvtProt_pack_Header_t));
-
-		if(sockproxy_MsgSend(pack_Header.sign, 18,NULL) > 0)//发送成功
-		{
-			protocol_dump(LOG_HOZON, "PRVT_PROT", pack_Header.sign, 18, 1);
-			task->waitSt = PP_HEARTBEAT;
-			task->heartbeat.ackFlag = PP_ACK_WAIT;
-			task->waittime = tm_get_time();		
-		}	
-		task->heartbeat.timer = tm_get_time();
-		return -1;
-	}
-	return 0;
-}
-
-/******************************************************
 *函数名：PrvtPro_do_checksock
 
 *形  参：void
@@ -269,10 +233,9 @@ static int PrvtPro_do_checksock(PrvtProt_task_t *task)
 {
 	if(1 == sockproxy_socketState())//socket open
 	{
-		
+
 		return 0;
 	}
-	PrvtPro_do_checkXcall(task);
 	return -1;
 }
 
@@ -471,6 +434,58 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
 }
 
 /******************************************************
+*函数名：PrvtProt_do_heartbeat
+
+*形  参：void
+
+*返回值：void
+
+*描  述：心跳任务
+
+*备  注：
+******************************************************/
+static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
+{
+	PrvtProt_pack_Header_t pack_Header;
+
+	if((tm_get_time() - task->heartbeat.timer) > (task->heartbeat.period*1000))
+	{
+		PP_PackHeader[PP_APP_HEARTBEAT].ver.Byte = task->version;
+		PP_PackHeader[PP_APP_HEARTBEAT].nonce  = PrvtPro_BSEndianReverse(task->nonce);
+		PP_PackHeader[PP_APP_HEARTBEAT].msglen = PrvtPro_BSEndianReverse((long)18);
+		PP_PackHeader[PP_APP_HEARTBEAT].tboxid = PrvtPro_BSEndianReverse(task->tboxid);
+		memcpy(&pack_Header, &PP_PackHeader[PP_APP_HEARTBEAT], sizeof(PrvtProt_pack_Header_t));
+
+		if(sockproxy_MsgSend(pack_Header.sign, 18,NULL) > 0)//发送成功
+		{
+			protocol_dump(LOG_HOZON, "PRVT_PROT", pack_Header.sign, 18, 1);
+			task->waitSt = PP_HEARTBEAT;
+			task->heartbeat.ackFlag = PP_ACK_WAIT;
+			task->waittime = tm_get_time();
+		}
+		task->heartbeat.timer = tm_get_time();
+		return -1;
+	}
+	return 0;
+}
+
+/******************************************************
+*函数名：PrvtPro_SetHeartBeatPeriod
+
+*形  参：
+
+*返回值：
+
+*描  述：设置心跳周期
+
+*备  注：
+******************************************************/
+void PrvtPro_SetHeartBeatPeriod(unsigned char period)
+{
+	pp_task.heartbeat.period = period;
+}
+
+/******************************************************
 *函数名：PrvtPro_do_checkXcall
 
 *形  参：
@@ -484,7 +499,7 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
 static int PrvtPro_do_checkXcall(PrvtProt_task_t *task)
 {
 	/* ecall */
-	PrvtPro_ecallReq(task);
+	//PrvtPro_ecallReq(task);
 	PrvtPro_ecallResponse(task);
 
 	/* bcall */
@@ -524,6 +539,10 @@ static int PrvtPro_ecallResponse(PrvtProt_task_t *task)
 			PP_appData.Xcall.xcallType = PP_ECALL_TYPE;//紧急救援ecall
 			PP_appData.Xcall.engineSt = PrvtProtCfg_engineSt();//启动状态；1-熄火；2-启动
 			PP_appData.Xcall.totalOdoMr = PrvtProtCfg_totalOdoMr();//里程有效范围：0 - 1000000（km）
+			if(PP_appData.Xcall.totalOdoMr > 1000000)
+			{
+				PP_appData.Xcall.totalOdoMr = 1000000;
+			}
 			PP_appData.Xcall.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps状态 0-无效；1-有效
 			PP_appData.Xcall.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gps时间戳:系统时间(通过gps校时)
 
@@ -562,10 +581,17 @@ static int PrvtPro_ecallResponse(PrvtProt_task_t *task)
 				PP_appData.Xcall.gpsPos.longitude = 0;
 			}
 			PP_appData.Xcall.gpsPos.altitude = (long)gpsDt.height;//高度（m）
+			if(PP_appData.Xcall.gpsPos.altitude > 10000)
+			{
+				PP_appData.Xcall.gpsPos.altitude = 10000;
+			}
 			PP_appData.Xcall.gpsPos.heading = (long)gpsDt.direction;//车头方向角度，0为正北方向
 			PP_appData.Xcall.gpsPos.gpsSpeed = (long)gpsDt.kms*10;//速度 x 10，单位km/h
 			PP_appData.Xcall.gpsPos.hdop = (long)gpsDt.hdop*10;//水平精度因子 x 10
-
+			if(PP_appData.Xcall.gpsPos.hdop > 1000)
+			{
+				PP_appData.Xcall.gpsPos.hdop = 1000;
+			}
 			PP_appData.Xcall.srsSt = 1;//安全气囊状态 1- 正常；2 - 弹出
 			PP_appData.Xcall.updataTime = PrvtPro_getTimestamp();//数据时间戳
 			PP_appData.Xcall.battSOCEx = PrvtProtCfg_vehicleSOC();//车辆电池剩余电量：0-10000（0%-100%）
@@ -585,7 +611,7 @@ static int PrvtPro_ecallResponse(PrvtProt_task_t *task)
 	}
 	return 0;
 }
-
+#if 0
 /******************************************************
 *函数名：PrvtPro_ecallReq
 
@@ -629,15 +655,15 @@ static int PrvtPro_ecallReq(PrvtProt_task_t *task)
 	
 	return 0;
 }
-
+#endif
 /******************************************************
-*函数名：
+*函数名：PrvtPro_getTimestamp
 
 *形  参：
 
 *返回值：
 
-*描  述：
+*描  述：获取时间戳
 
 *备  注：
 ******************************************************/
@@ -647,23 +673,6 @@ static long PrvtPro_getTimestamp(void)
 	gettimeofday(&timestamp, NULL);
 	
 	return (long)timestamp.tv_sec;
-	
-}
-
-/******************************************************
-*函数名：PrvtPro_SetHeartBeatPeriod
-
-*形  参：
-
-*返回值：
-
-*描  述：设置心跳周期
-
-*备  注：
-******************************************************/
-void PrvtPro_SetHeartBeatPeriod(unsigned char period)
-{
-	pp_task.heartbeat.period = period;
 }
 
 /******************************************************
@@ -732,18 +741,3 @@ static long PrvtPro_BSEndianReverse(long value)
 		   (value & 0x00FF0000U) >> 8 | (value & 0xFF000000U) >> 24;
 }
 
-/******************************************************
-*函数名：PrvtProt_FieldPadding
-
-*形  参：
-
-*返回值：
-
-*描  述：字段填充
-
-*备  注：
-******************************************************/
-//static int PrvtProt_FieldPadding(PrvtProt_task_t *task)
-//{
-
-//}

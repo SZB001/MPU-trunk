@@ -99,7 +99,13 @@ long PrvtProtCfg_totalOdoMr(void)
 ******************************************************/
 long PrvtProtCfg_vehicleSOC(void)
 {
-	return (long)gb_data_vehicleSOC();
+	long soc;
+	soc = gb_data_vehicleSOC();
+	if(soc > 100)
+	{
+		soc = 100;
+	}
+	return (long)(soc*100);
 }
 
 /******************************************************

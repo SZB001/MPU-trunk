@@ -1457,7 +1457,7 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
                 log_e(LOG_GB32960, "warnning triggered");
                 gb_inf->warntrig = 1;
             }
-
+        break;
         default:
             break;
     }
@@ -1804,10 +1804,10 @@ void gb_data_set_pendflag(int flag)
 /*
  	 读取车辆状态
 */
-char gb_data_vehicleState(void)
+uint8_t gb_data_vehicleState(void)
 {
 	uint32_t tmp;
-	char vehicleState;
+	uint8_t vehicleState;
 /* vehicle state */
    if (gb_inf->vehi.info[GB_VINF_STATE])
    {
@@ -1824,9 +1824,9 @@ char gb_data_vehicleState(void)
 /*
  	 读取车辆剩余电量
 */
-char gb_data_vehicleSOC(void)
+long gb_data_vehicleSOC(void)
 {
-	char vehicleSOC;
+	long vehicleSOC;
 	 /* total SOC */
 	vehicleSOC = gb_inf->vehi.info[GB_VINF_SOC] ?
 		  dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_SOC])->value : 0xff;

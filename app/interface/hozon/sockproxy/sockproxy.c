@@ -50,6 +50,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state);
 static int sockproxy_do_receive(sockproxy_stat_t *state);
 static void sockproxy_gbMakeupMsg(uint8_t *data,int len);
 static void sockproxy_privMakeupMsg(uint8_t *data,int len);
+
 /******************************************************
 description： function code
 ******************************************************/
@@ -359,7 +360,7 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
 int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 {
 	int res = 0;
-	
+	log_i(LOG_SOCK_PROXY, "sockproxy_MsgSend <<<<<");
 	if(pthread_mutex_trylock(&sendmtx) == 0)//(非阻塞互斥锁)获取互斥锁
 	{
 		if(sockSt.state == PP_OPENED)
@@ -381,6 +382,7 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 	{
 		log_e(LOG_SOCK_PROXY, "send busy");
 	}
+	log_i(LOG_SOCK_PROXY, "sockproxy_MsgSend >>>>>");
 	return res;
 }
 
@@ -443,7 +445,17 @@ static void sockproxy_gbMakeupMsg(uint8_t *data,int len)
 				if(24 == sockSt.rcvlen)
 				{
 					sockSt.datalen = sockSt.rcvbuf[22]*256 + sockSt.rcvbuf[23];
-					sockSt.rcvstep = PP_GB_RCV_DATA;
+					if((sockSt.datalen + 24) < SOCK_PROXY_RCVLEN)
+					{
+						sockSt.rcvstep = PP_GB_RCV_DATA;
+					}
+					else//数据长度溢出
+					{
+						sockSt.rcvstep = PP_RCV_IDLE;
+						sockSt.rcvlen = 0;
+						sockSt.rcvType = PP_RCV_UNRCV;
+						return;
+					}
 				}
 			}
 			break;
@@ -523,6 +535,13 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 						sockSt.rcvType = PP_RCV_UNRCV;
 						protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);//打印私有协议接收的数据
 
+					}
+					else if(sockSt.datalen > SOCK_PROXY_RCVLEN)//数据长度溢出
+					{
+						sockSt.rcvstep = PP_RCV_IDLE;
+						sockSt.rcvlen = 0;
+						sockSt.rcvType = PP_RCV_UNRCV;
+						return;
 					}
 					else
 					{

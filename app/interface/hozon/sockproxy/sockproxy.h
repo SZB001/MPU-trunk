@@ -67,6 +67,7 @@ typedef enum
 	PP_PRIV_RCV_DATA,//接收数据
 } PP_SOCK_PRIV_RCV_STEP;
 /*****struct definitions*****/
+#define SOCK_PROXY_RCVLEN	1456
 typedef struct
 {
     /* protocol status */
@@ -79,7 +80,7 @@ typedef struct
 	char rcvType;//接收类型
 	uint8_t rcvstep;//接收空闲
 	int rcvlen;//接收数据帧总长度
-	uint8_t rcvbuf[1456];//接收数据帧buf
+	uint8_t rcvbuf[SOCK_PROXY_RCVLEN];//接收数据帧buf
 	long datalen;
 }__attribute__ ((packed)) sockproxy_stat_t;
 
