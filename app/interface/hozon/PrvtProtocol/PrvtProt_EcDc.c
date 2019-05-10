@@ -427,6 +427,10 @@ static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,void *RxAppd
 	log_i(LOG_HOZON, "RxBodydata.aid = %d",aid);
 	log_i(LOG_HOZON, "RxBodydata.mID = %d",RxBodydata->mID);
 	log_i(LOG_HOZON, "RxBodydata.eventTime = %d",RxBodydata->eventTime);
+	if(NULL != RxBodydata->expirationTime)
+	{
+		log_i(LOG_HOZON, "RxBodydata.expirationTime = %d",(*(RxBodydata->expirationTime)));
+	}
 	if(NULL != RxBodydata->eventId)
 	{
 		log_i(LOG_HOZON, "RxBodydata.eventId = %d",(*(RxBodydata->eventId)));

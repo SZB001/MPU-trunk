@@ -220,33 +220,22 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					{
 						log_e(LOG_SOCK_PROXY, "open socket failed, retry later");
 					}
-					else
-					{
-						state->state = PP_OPEN_WAIT;
-					}
 
 					time = tm_get_time();
 				}
 			}
-			log_e(LOG_SOCK_PROXY, "socket status : %d\r\n",sock_status(state->socket));
-		}
-		break;
-		case PP_OPEN_WAIT:
-		{
-			if((tm_get_time() - time) < 2000)
+			else if(sock_status(state->socket) == SOCK_STAT_OPENED)
 			{
-				if(sock_status(state->socket) == SOCK_STAT_OPENED)
+				log_i(LOG_SOCK_PROXY, "socket is open success");
+				state->state = PP_OPENED;
+				if (sock_error(state->socket) || sock_sync(state->socket))
 				{
-					log_i(LOG_SOCK_PROXY, "socket is open success");
-					state->state = PP_OPENED;
+					log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
+					sockproxy_socketclose();
 				}
 			}
 			else
-			{
-				log_e(LOG_SOCK_PROXY, "PP_OPEN_WAIT timeout,socket close");
-				sock_close(sockSt.socket);
-				sockSt.state = PP_CLOSED;
-			}
+			{}
 		}
 		break;
 		default:

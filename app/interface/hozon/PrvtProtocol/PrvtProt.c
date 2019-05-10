@@ -403,7 +403,6 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 				default:
 				break;
 			}
-
 		}
 		break;
 		default:
