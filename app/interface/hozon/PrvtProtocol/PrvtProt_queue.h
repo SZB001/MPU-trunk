@@ -1,13 +1,11 @@
 /******************************************************
-文件名：	PrvtProt_EcDc.h
-
-描述：	企业私有协议（浙江合众）	
-
+文件名：	
+描述：
 Data			  Vasion			author
-2019/4/29		V1.0			liujian
+2019/04/17		   V1.0			    liujian
 *******************************************************/
-#ifndef		_PRVTPROT_ECDC_H
-#define		_PRVTPROT_ECDC_H
+#ifndef		__PRVT_PROT_QUEUE_H
+#define		__PRVT_PROT_QUEUE_H
 /*******************************************************
 description： include the header file
 *******************************************************/
@@ -18,18 +16,10 @@ description： macro definitions
 *******************************************************/
 /**********宏开关定义*********/
 
+
 /**********宏常量定义*********/
-#define PP_ECDC_DATA_LEN 	512//长度
-
-#define PP_ENCODE_DISBODY 	0x01//编码dispatcher header
-#define PP_ENCODE_APPDATA 	0x02//编码app data
-
-//AID类型
-#define PP_AID_XCALL 	170//Xcall
-
-//MID类型
-#define PP_MID_XCALL_REQ 	1//Xcall request
-#define PP_MID_XCALL_RESP 	2//Xcall response
+#define PP_DATA_LNG  1456U/*数据队列中数据长*/
+#define PP_QUEUE_LNG  1U/*数据队列长*/
 
 /***********宏函数***********/
 
@@ -41,8 +31,26 @@ description： struct definitions
 description： typedef definitions
 *******************************************************/
 /******enum definitions******/
+typedef enum
+{
+	PP_XCALL = 0,//
+	PP_MAX
+}PP_RX_OBJ;
 
 /*****struct definitions*****/
+typedef struct
+{
+	unsigned char  NonEmptyFlg;	/*数据非空标志*/
+	int	  len;/*数据长*/
+	unsigned char  data[PP_DATA_LNG];/*数据*/
+}PPCache_t;/*数据队列结构体*/
+
+typedef struct
+{
+	unsigned char  HeadLabel;/*头标签*/
+	unsigned char  TialLabel;/*尾标签*/
+	PPCache_t PPCache[PP_DATA_LNG];
+}PPObj_t;/*接收对象结构体*/
 
 /******union definitions*****/
 
@@ -53,8 +61,8 @@ description： variable External declaration
 /*******************************************************
 description： function External declaration
 *******************************************************/
-extern int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
-							  void *disptrBody, void *appchoice);
-extern void PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen, \
-								  void *MsgData,int isdecodeAppdata);
-#endif 
+extern void PP_queue_Init(void);
+extern int WrPP_queue(unsigned char  obj,unsigned char* data,int len);
+extern int RdPP_queue(unsigned char  obj,unsigned char* data,int len);
+
+#endif

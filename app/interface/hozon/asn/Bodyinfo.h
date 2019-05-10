@@ -26,6 +26,7 @@ typedef struct Bodyinfo {
 	IA5String_t	 aID;
 	long	 mID;
 	long	 eventTime;
+	long	*expirationTime	/* OPTIONAL */;
 	long	*eventId	/* OPTIONAL */;
 	long	*ulMsgCnt	/* OPTIONAL */;
 	long	*dlMsgCnt	/* OPTIONAL */;

@@ -1,0 +1,86 @@
+HOZON 
+DEFINITIONS AUTOMATIC TAGS ::= 
+BEGIN
+
+Bodyinfo ::= SEQUENCE
+{
+	aID         		IA5String(SIZE(3)), -- application id
+	mID          		INTEGER(0..255), -- message id
+	eventTime			INTEGER(0..2147483647), -- event creation time
+	expirationTime		INTEGER(0..2147483647) OPTIONAL, -- expiration Time
+	eventId		 		INTEGER(0..2147483647) OPTIONAL, -- event id
+	ulMsgCnt       		INTEGER(0..65535) OPTIONAL, -- uplink message counter
+	dlMsgCnt       		INTEGER(0..65535) OPTIONAL, -- downlink message counter
+	msgCntAcked       	INTEGER(0..65535) OPTIONAL, -- acked message counter
+	ackReq				BOOLEAN OPTIONAL, -- ack required
+	appDataLen       	INTEGER(0..65535) OPTIONAL, -- application data length
+	appDataEncode       INTEGER(0..2) OPTIONAL, -- application data encoding
+	appDataProVer       INTEGER(0..65535) OPTIONAL, -- application data protocol version
+	testFlag			INTEGER(1..3) OPTIONAL, -- test flag
+	result       		INTEGER(0..65535) OPTIONAL --  result
+}
+
+XcallReqinfo ::= SEQUENCE
+{
+    xcallType          INTEGER(0..255) -- 救援类型
+}
+
+
+XcallRespinfo ::= SEQUENCE
+{
+    xcallType          	INTEGER(0..255), -- 救援类型
+	engineSt			INTEGER(0..255), -- 启动状态
+	ttOdoMeter			INTEGER(0..1000000), --  里程
+	gpsPos				SEQUENCE(SIZE(1)) OF RvsposInfo, -- 车辆救援位置
+	srsSt				INTEGER(0..255), -- 安全气囊状态
+	updataTime			INTEGER(0..2147483647), -- timestamp时间戳
+	battSOCEx			INTEGER(0..10000) -- 车辆电池剩余电量
+}
+
+RvsposInfo ::= SEQUENCE
+{
+	gpsSt          		BOOLEAN, -- gps状态
+	gpsTimestamp		INTEGER(0..2147483647), -- GPS时间戳
+	latitude			INTEGER(-90000000..90000000), -- 纬度x1000000
+	longitude			INTEGER(-180000000..180000000), -- 经度x1000000
+	altitude			INTEGER(-100..10000), -- 高度
+	heading				INTEGER(0..359), -- 车头方向角度			
+	gpsSpeed			INTEGER(-1000..4500), -- 速度x10
+	hdop				INTEGER(0..1000) -- 水平精度因子x10
+}
+
+CfgCheckReqInfo ::= SEQUENCE -- 用于 TCU 向 TAP 检查是否当前有配置需
+{
+	mcuSw				OCTET STRING(SIZE(1..5)), -- mcu零件号和软件版本
+	mpuSw				OCTET STRING(SIZE(1..5)), -- mpu零件号和软件版本
+	vehicleVIN         	IA5String(SIZE(17)), -- vehicle vin code as transmit on the can bus
+	iccID				IA5String(SIZE(20)), -- ICCID of the currently installed SIM card
+	btMacAddr			IA5String(SIZE(12)), -- MAC address of the Bluetooth Module
+	configSw			OCTET STRING(SIZE(1..5)), -- TCU 的零件号和软件版本
+	cfgVersion			OCTET STRING(SIZE(32)) -- 针对当前ConfigSetting 包进行版本管理,代表包的版本号
+}
+
+CfgCheckRespInfo ::= SEQUENCE -- 用于 TAP 向 TCU 返回是否有配置需要更新
+{
+	needUpdate			BOOLEAN, -- 
+	cfgVersion			OCTET STRING(SIZE(32)) OPTIONAL -- 更新后的配置版本号
+}
+
+CfgGetReqInfo ::= SEQUENCE -- 用于 TCU 向 TAP 请求配置更新包
+{
+	cfgVersion			OCTET STRING(SIZE(32)) -- 要更新的版本号
+}
+
+CfgGetRespInfo ::= SEQUENCE -- 用于 TAP 向 TCU 返回配置更新包
+{
+	result			BOOLEAN, -- 
+	ficmCfg			SEQUENCE(SIZE(0..1)) OF FICMConfigSettings OPTIONAL -- gb配置项
+}
+
+FICMConfigSettings ::= SEQUENCE
+{
+	token			OCTET STRING(SIZE(1..32)), -- 
+	userID			OCTET STRING(SIZE(1..32)) -- 
+}
+
+END

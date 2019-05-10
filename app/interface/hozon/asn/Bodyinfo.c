@@ -98,6 +98,31 @@ memb_eventTime_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 static int
+memb_expirationTime_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 2147483647)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
 memb_eventId_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	long value;
@@ -337,47 +362,52 @@ static asn_per_constraints_t asn_PER_memb_eventTime_constr_4 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_eventId_constr_5 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_expirationTime_constr_5 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 31, -1,  0,  2147483647 }	/* (0..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ulMsgCnt_constr_6 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_eventId_constr_6 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 31, -1,  0,  2147483647 }	/* (0..2147483647) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_ulMsgCnt_constr_7 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_dlMsgCnt_constr_7 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_dlMsgCnt_constr_8 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_msgCntAcked_constr_8 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_msgCntAcked_constr_9 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_appDataLen_constr_10 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_appDataLen_constr_11 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_appDataEncode_constr_11 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_appDataEncode_constr_12 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 2,  2,  0,  2 }	/* (0..2) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_appDataProVer_constr_12 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_appDataProVer_constr_13 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_testFlag_constr_13 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_testFlag_constr_14 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 2,  2,  1,  3 }	/* (1..3) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_result_constr_14 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_result_constr_15 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -410,44 +440,53 @@ static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 		0,
 		"eventTime"
 		},
-	{ ATF_POINTER, 10, offsetof(struct Bodyinfo, eventId),
+	{ ATF_POINTER, 11, offsetof(struct Bodyinfo, expirationTime),
 		(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
+		memb_expirationTime_constraint_1,
+		&asn_PER_memb_expirationTime_constr_5,
+		0,
+		"expirationTime"
+		},
+	{ ATF_POINTER, 10, offsetof(struct Bodyinfo, eventId),
+		(ASN_TAG_CLASS_CONTEXT | (4 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_NativeInteger,
 		memb_eventId_constraint_1,
-		&asn_PER_memb_eventId_constr_5,
+		&asn_PER_memb_eventId_constr_6,
 		0,
 		"eventId"
 		},
 	{ ATF_POINTER, 9, offsetof(struct Bodyinfo, ulMsgCnt),
-		(ASN_TAG_CLASS_CONTEXT | (4 << 2)),
+		(ASN_TAG_CLASS_CONTEXT | (5 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_ulMsgCnt_constraint_1,
-		&asn_PER_memb_ulMsgCnt_constr_6,
+		&asn_PER_memb_ulMsgCnt_constr_7,
 		0,
 		"ulMsgCnt"
 		},
 	{ ATF_POINTER, 8, offsetof(struct Bodyinfo, dlMsgCnt),
-		(ASN_TAG_CLASS_CONTEXT | (5 << 2)),
+		(ASN_TAG_CLASS_CONTEXT | (6 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_dlMsgCnt_constraint_1,
-		&asn_PER_memb_dlMsgCnt_constr_7,
+		&asn_PER_memb_dlMsgCnt_constr_8,
 		0,
 		"dlMsgCnt"
 		},
 	{ ATF_POINTER, 7, offsetof(struct Bodyinfo, msgCntAcked),
-		(ASN_TAG_CLASS_CONTEXT | (6 << 2)),
+		(ASN_TAG_CLASS_CONTEXT | (7 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_msgCntAcked_constraint_1,
-		&asn_PER_memb_msgCntAcked_constr_8,
+		&asn_PER_memb_msgCntAcked_constr_9,
 		0,
 		"msgCntAcked"
 		},
 	{ ATF_POINTER, 6, offsetof(struct Bodyinfo, ackReq),
-		(ASN_TAG_CLASS_CONTEXT | (7 << 2)),
+		(ASN_TAG_CLASS_CONTEXT | (8 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_BOOLEAN,
 		0,	/* Defer constraints checking to the member type */
@@ -456,52 +495,52 @@ static asn_TYPE_member_t asn_MBR_Bodyinfo_1[] = {
 		"ackReq"
 		},
 	{ ATF_POINTER, 5, offsetof(struct Bodyinfo, appDataLen),
-		(ASN_TAG_CLASS_CONTEXT | (8 << 2)),
+		(ASN_TAG_CLASS_CONTEXT | (9 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_appDataLen_constraint_1,
-		&asn_PER_memb_appDataLen_constr_10,
+		&asn_PER_memb_appDataLen_constr_11,
 		0,
 		"appDataLen"
 		},
 	{ ATF_POINTER, 4, offsetof(struct Bodyinfo, appDataEncode),
-		(ASN_TAG_CLASS_CONTEXT | (9 << 2)),
+		(ASN_TAG_CLASS_CONTEXT | (10 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_appDataEncode_constraint_1,
-		&asn_PER_memb_appDataEncode_constr_11,
+		&asn_PER_memb_appDataEncode_constr_12,
 		0,
 		"appDataEncode"
 		},
 	{ ATF_POINTER, 3, offsetof(struct Bodyinfo, appDataProVer),
-		(ASN_TAG_CLASS_CONTEXT | (10 << 2)),
+		(ASN_TAG_CLASS_CONTEXT | (11 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_appDataProVer_constraint_1,
-		&asn_PER_memb_appDataProVer_constr_12,
+		&asn_PER_memb_appDataProVer_constr_13,
 		0,
 		"appDataProVer"
 		},
 	{ ATF_POINTER, 2, offsetof(struct Bodyinfo, testFlag),
-		(ASN_TAG_CLASS_CONTEXT | (11 << 2)),
+		(ASN_TAG_CLASS_CONTEXT | (12 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_testFlag_constraint_1,
-		&asn_PER_memb_testFlag_constr_13,
+		&asn_PER_memb_testFlag_constr_14,
 		0,
 		"testFlag"
 		},
 	{ ATF_POINTER, 1, offsetof(struct Bodyinfo, result),
-		(ASN_TAG_CLASS_CONTEXT | (12 << 2)),
+		(ASN_TAG_CLASS_CONTEXT | (13 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		memb_result_constraint_1,
-		&asn_PER_memb_result_constr_14,
+		&asn_PER_memb_result_constr_15,
 		0,
 		"result"
 		},
 };
-static const int asn_MAP_Bodyinfo_oms_1[] = { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+static const int asn_MAP_Bodyinfo_oms_1[] = { 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 };
 static const ber_tlv_tag_t asn_DEF_Bodyinfo_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
@@ -509,24 +548,25 @@ static const asn_TYPE_tag2member_t asn_MAP_Bodyinfo_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* aID */
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* mID */
     { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* eventTime */
-    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* eventId */
-    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* ulMsgCnt */
-    { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 }, /* dlMsgCnt */
-    { (ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0, 0 }, /* msgCntAcked */
-    { (ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0 }, /* ackReq */
-    { (ASN_TAG_CLASS_CONTEXT | (8 << 2)), 8, 0, 0 }, /* appDataLen */
-    { (ASN_TAG_CLASS_CONTEXT | (9 << 2)), 9, 0, 0 }, /* appDataEncode */
-    { (ASN_TAG_CLASS_CONTEXT | (10 << 2)), 10, 0, 0 }, /* appDataProVer */
-    { (ASN_TAG_CLASS_CONTEXT | (11 << 2)), 11, 0, 0 }, /* testFlag */
-    { (ASN_TAG_CLASS_CONTEXT | (12 << 2)), 12, 0, 0 } /* result */
+    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* expirationTime */
+    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* eventId */
+    { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 }, /* ulMsgCnt */
+    { (ASN_TAG_CLASS_CONTEXT | (6 << 2)), 6, 0, 0 }, /* dlMsgCnt */
+    { (ASN_TAG_CLASS_CONTEXT | (7 << 2)), 7, 0, 0 }, /* msgCntAcked */
+    { (ASN_TAG_CLASS_CONTEXT | (8 << 2)), 8, 0, 0 }, /* ackReq */
+    { (ASN_TAG_CLASS_CONTEXT | (9 << 2)), 9, 0, 0 }, /* appDataLen */
+    { (ASN_TAG_CLASS_CONTEXT | (10 << 2)), 10, 0, 0 }, /* appDataEncode */
+    { (ASN_TAG_CLASS_CONTEXT | (11 << 2)), 11, 0, 0 }, /* appDataProVer */
+    { (ASN_TAG_CLASS_CONTEXT | (12 << 2)), 12, 0, 0 }, /* testFlag */
+    { (ASN_TAG_CLASS_CONTEXT | (13 << 2)), 13, 0, 0 } /* result */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_Bodyinfo_specs_1 = {
 	sizeof(struct Bodyinfo),
 	offsetof(struct Bodyinfo, _asn_ctx),
 	asn_MAP_Bodyinfo_tag2el_1,
-	13,	/* Count of tags in the map */
+	14,	/* Count of tags in the map */
 	asn_MAP_Bodyinfo_oms_1,	/* Optional members */
-	10, 0,	/* Root/Additions */
+	11, 0,	/* Root/Additions */
 	-1,	/* Start extensions */
 	-1	/* Stop extensions */
 };
@@ -551,7 +591,7 @@ asn_TYPE_descriptor_t asn_DEF_Bodyinfo = {
 		/sizeof(asn_DEF_Bodyinfo_tags_1[0]), /* 1 */
 	0,	/* No PER visible constraints */
 	asn_MBR_Bodyinfo_1,
-	13,	/* Elements count */
+	14,	/* Elements count */
 	&asn_SPC_Bodyinfo_specs_1	/* Additional specs */
 };
 

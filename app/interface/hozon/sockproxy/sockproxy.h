@@ -22,8 +22,8 @@ description£º macro definitions
 
 /***********ºêº¯Êý***********/
 #define sockproxy_getURL(x)			gb32960_getURL(x)
-#define sockproxy_SkipSockCheck() 	(!gb32960_getNetworkSt() || gb32960_getAllowSleepSt())
-#define sockproxy_getsuspendSt() 	gb32960_getsuspendSt()
+#define sockproxy_SkipSockCheck() 	(!gb32960_getNetworkSt() )//|| gb32960_getAllowSleepSt())
+#define sockproxy_getsuspendSt() 	0//gb32960_getsuspendSt()
 
 /*******************************************************
 description£º struct definitions

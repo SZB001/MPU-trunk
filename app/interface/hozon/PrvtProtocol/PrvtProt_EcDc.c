@@ -35,6 +35,7 @@ description： include the header file
 #include "list.h"
 #include "../../support/protocol.h"
 #include "PrvtProt_cfg.h"
+#include "PrvtProt.h"
 #include "PrvtProt_EcDc.h"
 
 /*******************************************************
@@ -76,13 +77,16 @@ description： function code
 *备  注：
 ******************************************************/
 int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
-					   PrvtProt_DisptrBody_t *DisptrBody, PrvtProt_appData_t *Appchoice)
+					   void *disptrBody, void *appchoice)
 {
 	static uint8_t key;
 	Bodyinfo_t Bodydata;
+	PrvtProt_DisptrBody_t 	*DisptrBody = (PrvtProt_DisptrBody_t*)disptrBody;
+	PrvtProt_appData_t		*Appchoice	= (PrvtProt_appData_t*)appchoice;
 	int i;
 	
 	memset(&Bodydata,0 , sizeof(Bodyinfo_t));
+	Bodydata.expirationTime = NULL;/* OPTIONAL */
 	Bodydata.eventId 		= NULL;/* OPTIONAL */
 	Bodydata.ulMsgCnt 		= NULL;	/* OPTIONAL */
 	Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
@@ -100,9 +104,10 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 	Bodydata.aID.size = 3;
 	Bodydata.mID = DisptrBody->mID;
 	Bodydata.eventTime 		= DisptrBody->eventTime;
+	Bodydata.expirationTime = &(DisptrBody->expTime);	/* OPTIONAL */;
 	if(DisptrBody->eventId != PP_INVALID)//event ID初始化为0xFFFFFFFF-无效
 	{
-		Bodydata.eventId 		= &(DisptrBody->eventId);/* OPTIONAL */
+		Bodydata.eventId 	= &(DisptrBody->eventId);/* OPTIONAL */
 	}
 	Bodydata.ulMsgCnt 		= &(DisptrBody->ulMsgCnt);	/* OPTIONAL */
 	Bodydata.dlMsgCnt 		= &(DisptrBody->dlMsgCnt);	/* OPTIONAL */
@@ -121,7 +126,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 	tboxAppdataLen = 0;
 	switch(type)
 	{
-		case PP_ECALL_REQ:
+		case PP_XCALL_REQ:
 		{
 			XcallReqinfo_t XcallReq;	
 			memset(&XcallReq,0 , sizeof(XcallReqinfo_t));
@@ -136,7 +141,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 			}
 		}
 		break;
-		case PP_ECALL_RESP:
+		case PP_XCALL_RESP:
 		{
 			XcallRespinfo_t XcallResp;
 			RvsposInfo_t Rvspos;
@@ -218,7 +223,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 				解码
 *********************************************/	
 #if 1
-	PrvtPro_decodeMsgData(msgData,tboxDisBodydataLen+1+tboxAppdataLen,NULL);
+	PrvtPro_decodeMsgData(msgData,tboxDisBodydataLen+1+tboxAppdataLen,NULL,1);
 #endif	
 	return 0;
 }
@@ -234,8 +239,9 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 
 *备  注：
 ******************************************************/
-void PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,PrvtProt_msgData_t *msgData)
+void PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *MsgData,int isdecodeAppdata)
 {
+	PrvtProt_msgData_t *msgData = (PrvtProt_msgData_t*)MsgData;
 	asn_dec_rval_t dc;
 	asn_codec_ctx_t *asn_codec_ctx = 0 ;
 	Bodyinfo_t RxBodydata;
@@ -251,58 +257,9 @@ void PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,PrvtProt_
 	if(dc.code  != RC_OK)
 	{
 		log_e(LOG_HOZON, "Could not decode dispatcher header Frame");
+		return;
 	}
 	
-	AID = (RxBodydata.aID.buf[0] - 0x30)*100 +  (RxBodydata.aID.buf[1] - 0x30)*10 + \
-		  (RxBodydata.aID.buf[2] - 0x30);
-	MID = RxBodydata.mID;
-	log_i(LOG_HOZON, "uper decode:appdata");
-	log_i(LOG_HOZON, "application data length = %d",LeMessageDataLen-LeMessageData[0]);
-	switch(AID)
-	{
-		case PP_AID_ECALL:
-		{
-			if(PP_MID_ECALL_REQ == MID)//ecall req
-			{
-				XcallReqinfo_t RxXcallReq;
-				XcallReqinfo_t *RxXcallReq_ptr = &RxXcallReq;
-				memset(&RxXcallReq,0 , sizeof(XcallReqinfo_t));
-				dc = uper_decode(asn_codec_ctx,pduType_XcallReq,(void *) &RxXcallReq_ptr, \
-						 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
-				if(dc.code  != RC_OK) 
-				{
-					log_e(LOG_HOZON, "Could not decode application data Frame");
-				}
-				if(NULL == msgData)
-				{
-					PrvtPro_showMsgData(PP_ECALL_REQ,RxBodydata_ptr,RxXcallReq_ptr);
-				}
-			}
-			else if(PP_MID_ECALL_RESP == MID)//ecall response
-			{
-				XcallRespinfo_t RxXcallResp;
-				XcallRespinfo_t *RxXcallResp_ptr = &RxXcallResp;
-				memset(&RxXcallResp,0 , sizeof(XcallRespinfo_t));
-				dc = uper_decode(asn_codec_ctx,pduType_XcallResp,(void *) &RxXcallResp_ptr, \
-								 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
-				if(dc.code  != RC_OK)
-				{
-					log_e(LOG_HOZON, "Could not decode xcall application data Frame\n");
-				}
-				if(NULL == msgData)
-				{
-					PrvtPro_showMsgData(PP_ECALL_RESP,RxBodydata_ptr,RxXcallResp_ptr);
-				}
-			}
-			else
-			{}
-		}
-		break;
-		default:
-		break;
-	}
-	
-	log_i(LOG_HOZON, "uper decode end");
 	if(msgData != NULL)
 	{
 		msgData->DisBody.aID[0] = RxBodydata.aID.buf[0];
@@ -310,9 +267,14 @@ void PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,PrvtProt_
 		msgData->DisBody.aID[2] = RxBodydata.aID.buf[2];
 		msgData->DisBody.mID 	= RxBodydata.mID;
 		msgData->DisBody.eventTime 	= RxBodydata.eventTime;
-		log_i(LOG_HOZON, "RxBodydata.aid = %d",AID);
+		log_i(LOG_HOZON, "RxBodydata.aid = %s",msgData->DisBody.aID);
 		log_i(LOG_HOZON, "RxBodydata.mID = %d",RxBodydata.mID);
 		log_i(LOG_HOZON, "RxBodydata.eventTime = %d",RxBodydata.eventTime);
+		if(NULL != RxBodydata.expirationTime)
+		{
+			log_i(LOG_HOZON, "RxBodydata.expirationTime = %d",(*(RxBodydata.expirationTime)));
+			msgData->DisBody.expTime = *(RxBodydata.expirationTime);/* OPTIONAL */
+		}
 		if(NULL != RxBodydata.eventId)
 		{
 			log_i(LOG_HOZON, "RxBodydata.eventId = %d",(*(RxBodydata.eventId)));
@@ -364,6 +326,85 @@ void PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,PrvtProt_
 			msgData->DisBody.result	= *(RxBodydata.result);/* OPTIONAL */
 		}
 	}
+
+	if((isdecodeAppdata == 1) && ((LeMessageDataLen-LeMessageData[0]) > 0))
+	{
+		AID = (RxBodydata.aID.buf[0] - 0x30)*100 +  (RxBodydata.aID.buf[1] - 0x30)*10 + \
+			  (RxBodydata.aID.buf[2] - 0x30);
+		MID = RxBodydata.mID;
+		log_i(LOG_HOZON, "uper decode:appdata");
+		log_i(LOG_HOZON, "application data length = %d",LeMessageDataLen-LeMessageData[0]);
+		switch(AID)
+		{
+			case PP_AID_XCALL:
+			{
+				if(PP_MID_XCALL_REQ == MID)//xcall req
+				{
+					XcallReqinfo_t RxXcallReq;
+					XcallReqinfo_t *RxXcallReq_ptr = &RxXcallReq;
+					memset(&RxXcallReq,0 , sizeof(XcallReqinfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_XcallReq,(void *) &RxXcallReq_ptr, \
+							 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_e(LOG_HOZON, "Could not decode application data Frame");
+						return;
+					}
+
+					if(NULL != msgData)
+					{
+						msgData->appData.Xcall.xcallType = RxXcallReq.xcallType;
+					}
+					else
+					{
+						PrvtPro_showMsgData(PP_XCALL_REQ,RxBodydata_ptr,RxXcallReq_ptr);
+					}
+				}
+				else if(PP_MID_XCALL_RESP == MID)//xcall response
+				{
+					XcallRespinfo_t RxXcallResp;
+					XcallRespinfo_t *RxXcallResp_ptr = &RxXcallResp;
+					memset(&RxXcallResp,0 , sizeof(XcallRespinfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_XcallResp,(void *) &RxXcallResp_ptr, \
+									 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_e(LOG_HOZON, "Could not decode xcall application data Frame\n");
+						return;
+					}
+
+					if(NULL != msgData)
+					{
+						msgData->appData.Xcall.xcallType 	= RxXcallResp.xcallType;
+						msgData->appData.Xcall.updataTime 	= RxXcallResp.updataTime;
+						msgData->appData.Xcall.battSOCEx 	= RxXcallResp.battSOCEx;
+						msgData->appData.Xcall.engineSt 	= RxXcallResp.engineSt;
+						msgData->appData.Xcall.srsSt 		= RxXcallResp.srsSt;
+						msgData->appData.Xcall.totalOdoMr 	= RxXcallResp.ttOdoMeter;
+						msgData->appData.Xcall.gpsPos.altitude 	= 	 (**(RxXcallResp.gpsPos.list.array)).altitude;
+						msgData->appData.Xcall.gpsPos.gpsSpeed 	=	 (**(RxXcallResp.gpsPos.list.array)).gpsSpeed;
+						msgData->appData.Xcall.gpsPos.gpsSt 	=	 (**(RxXcallResp.gpsPos.list.array)).gpsSt;
+						msgData->appData.Xcall.gpsPos.gpsTimestamp = (**(RxXcallResp.gpsPos.list.array)).gpsTimestamp;
+						msgData->appData.Xcall.gpsPos.hdop 		=	 (**(RxXcallResp.gpsPos.list.array)).hdop;
+						msgData->appData.Xcall.gpsPos.heading 	=	 (**(RxXcallResp.gpsPos.list.array)).heading;
+						msgData->appData.Xcall.gpsPos.latitude 	=	 (**(RxXcallResp.gpsPos.list.array)).latitude;
+						msgData->appData.Xcall.gpsPos.longitude =	 (**(RxXcallResp.gpsPos.list.array)).longitude;
+					}
+					else
+					{
+						PrvtPro_showMsgData(PP_XCALL_RESP,RxBodydata_ptr,RxXcallResp_ptr);
+					}
+				}
+				else
+				{}
+			}
+			break;
+			default:
+			break;
+		}
+	}
+	
+	log_i(LOG_HOZON, "uper decode end");
 }
 
 /******************************************************
@@ -431,36 +472,16 @@ static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,void *RxAppd
 	{
 		switch(type)
 		{
-			case PP_ECALL_REQ:
+			case PP_XCALL_REQ:
 			{
 				log_i(LOG_HOZON, "xcallReq.xcallType = %d",((XcallReqinfo_t *)(RxAppdata))->xcallType);
 			}
 			break;
-			case PP_ECALL_RESP:
+			case PP_XCALL_RESP:
 			{
 				log_i(LOG_HOZON,"RxAppdata.xcallType = %d\n",((XcallRespinfo_t *)(RxAppdata))->xcallType);
 				log_i(LOG_HOZON,"RxAppdata.engineSt = %d\n",((XcallRespinfo_t *)(RxAppdata))->engineSt);
 				log_i(LOG_HOZON,"RxAppdata.ttOdoMeter = %d\n",((XcallRespinfo_t *)(RxAppdata))->ttOdoMeter);
-				/*log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsSt = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.gpsSt);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsTimestamp = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.gpsTimestamp);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.latitude = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.latitude);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.longitude = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.longitude);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.altitude = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.altitude);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.heading = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.heading);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsSpeed = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.gpsSpeed);
-				log_i(LOG_HOZON,,"RxBodydata.gpsPos.gpsTimestamp = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.gpsTimestamp);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.hdop = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsPos.hdop);	//*/
-
-				/*log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsSt = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsSt);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsTimestamp = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsTimestamp);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.latitude = %d\n",((XcallRespinfo_t *)(RxAppdata))->latitude);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.longitude = %d\n",((XcallRespinfo_t *)(RxAppdata))->longitude);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.altitude = %d\n",((XcallRespinfo_t *)(RxAppdata))->altitude);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.heading = %d\n",((XcallRespinfo_t *)(RxAppdata))->heading);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsSpeed = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsSpeed);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.gpsTimestamp = %d\n",((XcallRespinfo_t *)(RxAppdata))->gpsTimestamp);
-				log_i(LOG_HOZON,"RxBodydata.gpsPos.hdop = %d\n",((XcallRespinfo_t *)(RxAppdata))->hdop);*/
-
 				log_i(LOG_HOZON,"RxAppdata.gpsPos.gpsSt = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).gpsSt);
 				log_i(LOG_HOZON,"RxAppdata.gpsPos.gpsTimestamp = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).gpsTimestamp);
 				log_i(LOG_HOZON,"RxAppdata.gpsPos.latitude = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).latitude);
@@ -470,7 +491,6 @@ static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,void *RxAppd
 				log_i(LOG_HOZON,"RxAppdata.gpsPos.gpsSpeed = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).gpsSpeed);
 				log_i(LOG_HOZON,"RxAppdata.gpsPos.gpsTimestamp = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).gpsTimestamp);
 				log_i(LOG_HOZON,"RxAppdata.gpsPos.hdop = %d\n",(**(((XcallRespinfo_t *)(RxAppdata))->gpsPos.list.array)).hdop);	//
-				//*/
 				log_i(LOG_HOZON,"RxAppdata.srsSt = %d\n",((XcallRespinfo_t *)(RxAppdata))->srsSt);
 				log_i(LOG_HOZON,"RxAppdata.updataTime = %d\n",((XcallRespinfo_t *)(RxAppdata))->updataTime);
 				log_i(LOG_HOZON,"RxAppdata.battSOCEx = %d\n",((XcallRespinfo_t *)(RxAppdata))->battSOCEx);

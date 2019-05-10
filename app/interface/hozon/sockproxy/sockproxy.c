@@ -203,6 +203,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	sockproxy_getURL(&state->sock_addr);
     if(sockproxy_SkipSockCheck() || !state->sock_addr.port || !state->sock_addr.url[0])
     {
+    	log_e(LOG_SOCK_PROXY, "state.network = %d",sockproxy_SkipSockCheck());
         return -1;
     }
 
@@ -212,8 +213,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		{
 			if(sock_status(state->socket) == SOCK_STAT_CLOSED)
 			{
-				if(sockproxy_getsuspendSt() &&	\
-						(time == 0 || tm_get_time() - time > SOCK_SERVR_TIMEOUT))
+				if((time == 0) || (tm_get_time() - time > SOCK_SERVR_TIMEOUT))
 				{
 					log_i(LOG_SOCK_PROXY, "start to connect with server");
 					if (sock_open(NM_PUBLIC_NET,state->socket, state->sock_addr.url, state->sock_addr.port) != 0)
@@ -228,6 +228,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					time = tm_get_time();
 				}
 			}
+			log_e(LOG_SOCK_PROXY, "socket status : %d\r\n",sock_status(state->socket));
 		}
 		break;
 		case PP_OPEN_WAIT:

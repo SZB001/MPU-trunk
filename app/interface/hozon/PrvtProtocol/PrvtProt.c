@@ -39,11 +39,14 @@ description： include the header file
 #include "../../support/protocol.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
+#include "PrvtProt_queue.h"
 #include "PrvtProt_shell.h"
 #include "PrvtProt_EcDc.h"
 #include "PrvtProt_cfg.h"
 #include "PrvtProt_callCenter.h"
+#include "PrvtProt_xcall.h"
 #include "PrvtProt.h"
+
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -53,23 +56,24 @@ description： static variable definitions
 *******************************************************/
 //static PrvtProt_heartbeat_t heartbeat;
 static PrvtProt_task_t 	pp_task;
-static PrvtProt_pack_t 	PP_RxPack;
-static PrvtProt_pack_Header_t 	PP_PackHeader[PP_APP_MAX] =
+//static PrvtProt_pack_t 	PP_RxPack[PP_APP_MAX];
+PrvtProt_pack_Header_t 	PP_PackHeader[PP_APP_MID_MAX] =
 {/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
 	{"**",	0x30,	0,		0x70,		0,			0x01,	18,		  0	  },//heart beat
 	{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  },//ecall req
 	{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  } //ecall response
 };
 
-static PrvtProt_pack_t 	PP_Pack[PP_APP_MAX];
+PrvtProt_pack_t 	PP_Pack[PP_APP_MID_MAX];
 
-static PrvtProt_DisptrBody_t	PP_DisptrBody[PP_APP_MAX] =
-{/*   AID  MID  EventTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-	{"000",	0,		0,		PP_INVALID,	   0,	   0,		0,       0,       0,      0,     0,		 0,         0   },//ecall req
-	{"170",	1,		0,		PP_INVALID,	   0,	   0,		0,       0,       0,      0,     1,		 1,         0   },//ecall req
-	{"170", 2,      0,      PP_INVALID,    0,      0,		0,		 1,		  0,	  0,	 256,		 1,			0   } //ecall response
+PrvtProt_DisptrBody_t	PP_DisptrBody[PP_APP_MID_MAX] =
+{/*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+	{"000",	0,		0,		  0,		PP_INVALID,	   0,	   0,		0,       0,       0,      0,     0,		 0,         0   },//ecall req
+	{"170",	1,		0,		  0,		PP_INVALID,	   0,	   0,		0,       0,       0,      0,     1,		 1,         0   },//ecall req
+	{"170", 2,      0,        0,		PP_INVALID,    0,      0,		0,		 1,		  0,	  0,	 256,	 1,			0   } //ecall response
 };
-static PrvtProt_appData_t 		PP_appData;
+
+PrvtProt_appData_t 		PP_appData;
 
 /*******************************************************
 description： function declaration
@@ -86,11 +90,7 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task);
 static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len);
 static int PrvtPro_do_wait(PrvtProt_task_t *task);
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len);
-static int PrvtPro_do_checkXcall(PrvtProt_task_t *task);
-//static int PrvtPro_ecallReq(PrvtProt_task_t *task);
-static int PrvtPro_ecallResponse(PrvtProt_task_t *task);
-static long PrvtPro_getTimestamp(void);
-static long PrvtPro_BSEndianReverse(long value);
+
 //static int PrvtPro_xcallCCreq(PrvtProt_task_t *task);
 /******************************************************
 description： function code
@@ -114,16 +114,13 @@ int PrvtProt_init(INIT_PHASE phase)
     {
         case INIT_PHASE_INSIDE:
 		{
-			pp_task.heartbeat.ackFlag = 0;
-			pp_task.heartbeat.state = 0;//
+			//pp_task.heartbeat.ackFlag = 0;
+			pp_task.heartbeat.state = 1;//
 			pp_task.heartbeat.period = PP_HEART_BEAT_TIME;//
 			pp_task.heartbeat.timer = tm_get_time();
-			pp_task.waitSt = PP_IDLE;
-			pp_task.waittime = 0;
+			pp_task.waitSt[PP_APP_HB] = 0;
+			pp_task.waittime[PP_APP_HB] = 0;
 			pp_task.suspend = 0;
-			pp_task.xcall[PP_ECALL].req = 0;
-			pp_task.xcall[PP_ECALL].resp = 0;
-			//pp_task.xcall[PP_ECALL].CCreq = 0;
 			pp_task.nonce = 0;/* TCP会话ID 由TSP平台产生 */
 			pp_task.version = 0x30;/* 大/小版本(由TSP平台定义)*/
 			pp_task.tboxid = 204;/* 平台通过tboxID与tboxSN映射 */
@@ -135,6 +132,7 @@ int PrvtProt_init(INIT_PHASE phase)
 		{
 			PrvtProt_CC_init();
 			PrvtProt_shell_init();
+			PP_xcall_init();
 		}
         break;
     }
@@ -208,8 +206,9 @@ static void *PrvtProt_main(void)
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
 				PrvtPro_do_wait(&pp_task) || 
-				PrvtProt_do_heartbeat(&pp_task) ||
-				PrvtPro_do_checkXcall(&pp_task);
+				PrvtProt_do_heartbeat(&pp_task);
+
+		(void)PP_xcall_mainfunction(&pp_task);//xcall
 
 		PrvtProt_CC_mainfunction();/* CC request:拨打救援电话*/
     }
@@ -254,6 +253,7 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 {	
 	int rlen = 0;
 	uint8_t rcvbuf[1456U] = {0};
+	static PrvtProt_pack_t 	PP_RxPack;
 	
 	if ((rlen = PrvtProtCfg_rcvMsg(rcvbuf,1456)) <= 0)
     {
@@ -372,6 +372,7 @@ static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len)
 ******************************************************/
 static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len)
 {
+	int aid;
 	switch(rxPack->Header.opera)
 	{
 		case PP_NATIONALSTANDARD_TYPE:
@@ -383,12 +384,26 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 		{
 			log_i(LOG_HOZON, "heart beat is ok");
 			task->heartbeat.state = 1;//正常心跳
-			task->waitSt = 0;
+			task->waitSt[PP_APP_HB] = 0;
 		}
 		break;
 		case PP_NGTP_TYPE://ngtp
-		{
-			
+		{//解码出数据，写入对应的队列
+			PrvtProt_msgData_t MsgData;
+			PrvtPro_decodeMsgData(rxPack->msgdata,(len - 18),&MsgData,0);
+			aid = (MsgData.DisBody.aID[0] - 0x30)*100 +  (MsgData.DisBody.aID[1] - 0x30)*10 + \
+					  (MsgData.DisBody.aID[2] - 0x30);
+			switch(aid)
+			{
+				case PP_AID_XCALL://XCALL
+				{
+					WrPP_queue(PP_XCALL,rxPack->Header.sign,len);
+				}
+				break;
+				default:
+				break;
+			}
+
 		}
 		break;
 		default:
@@ -412,23 +427,21 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 ******************************************************/
 static int PrvtPro_do_wait(PrvtProt_task_t *task)
 {
-    if (!task->waitSt)//没有事件等待应答
+    if (!task->waitSt[PP_APP_HB])//没有事件等待应答
     {
         return 0;
     }
 
-    if((tm_get_time() - task->waittime) > PP_WAIT_TIMEOUT)
+    if((tm_get_time() - task->waittime[PP_APP_HB]) > PP_HB_WAIT_TIMEOUT)
     {
-        if (task->waitSt == PP_HEARTBEAT)
+        if (task->waitSt[PP_APP_HB] == 1)
         {
-            task->waitSt = PP_IDLE;
+            task->waitSt[PP_APP_HB] = 0;
 			task->heartbeat.state = 0;//心跳不正常
             log_e(LOG_HOZON, "heartbeat time out");
         }
         else
-        {
-			
-		}
+        {}
     }
 	 return -1;
 }
@@ -447,7 +460,7 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
 static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 {
 	PrvtProt_pack_Header_t pack_Header;
-
+	int res;
 	if((tm_get_time() - task->heartbeat.timer) > (task->heartbeat.period*1000))
 	{
 		PP_PackHeader[PP_APP_HEARTBEAT].ver.Byte = task->version;
@@ -456,14 +469,24 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 		PP_PackHeader[PP_APP_HEARTBEAT].tboxid = PrvtPro_BSEndianReverse(task->tboxid);
 		memcpy(&pack_Header, &PP_PackHeader[PP_APP_HEARTBEAT], sizeof(PrvtProt_pack_Header_t));
 
-		if(sockproxy_MsgSend(pack_Header.sign, 18,NULL) > 0)//发送成功
+		res = sockproxy_MsgSend(pack_Header.sign, 18,NULL);
+		if(res > 0)//发送成功
 		{
 			protocol_dump(LOG_HOZON, "PRVT_PROT", pack_Header.sign, 18, 1);
-			task->waitSt = PP_HEARTBEAT;
-			task->heartbeat.ackFlag = PP_ACK_WAIT;
-			task->waittime = tm_get_time();
+			task->waitSt[PP_APP_HB] = 1;
+			//task->heartbeat.ackFlag = PP_ACK_WAIT;
+			task->waittime[PP_APP_HB] = tm_get_time();
+			task->heartbeat.timer = tm_get_time();
 		}
-		task->heartbeat.timer = tm_get_time();
+		else if(res < 0)
+		{
+			log_e(LOG_HOZON, "send heartbeat frame fail,close socket\r\n");
+			//task->heartbeat.timer = tm_get_time();
+			task->waitSt[PP_APP_HB] = 0;
+			sockproxy_socketclose();//by liujian 20190510
+		}
+		else
+		{}
 		return -1;
 	}
 	return 0;
@@ -486,177 +509,6 @@ void PrvtPro_SetHeartBeatPeriod(unsigned char period)
 }
 
 /******************************************************
-*函数名：PrvtPro_do_checkXcall
-
-*形  参：
-
-*返回值：
-
-*描  述：检查ecall等请求
-
-*备  注：
-******************************************************/
-static int PrvtPro_do_checkXcall(PrvtProt_task_t *task)
-{
-	/* ecall */
-	//PrvtPro_ecallReq(task);
-	PrvtPro_ecallResponse(task);
-
-	/* bcall */
-
-	/* icall */
-	return 0;
-}
-
-/******************************************************
-*函数名：PrvtPro_ecallResponse
-
-*形  参：
-
-*返回值：
-
-*描  述：ecall response
-
-*备  注：
-******************************************************/
-static int PrvtPro_ecallResponse(PrvtProt_task_t *task)
-{
-	long msgdatalen;
-
-	if(1 == sockproxy_socketState())//socket open
-	{
-		if((1 == pp_task.xcall[PP_ECALL].resp) || (PrvtProtCfg_ecallTriggerEvent()))//ecall触发
-		{
-			PP_PackHeader[PP_ECALL_RESP].ver.Byte = task->version;
-			PP_PackHeader[PP_ECALL_RESP].nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-			PP_PackHeader[PP_ECALL_RESP].tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-			memcpy(&PP_Pack[PP_ECALL_RESP], &PP_PackHeader[PP_ECALL_RESP], sizeof(PrvtProt_pack_Header_t));
-
-			PP_DisptrBody[PP_ECALL_RESP].eventTime = PrvtPro_getTimestamp();
-			PP_DisptrBody[PP_ECALL_RESP].ulMsgCnt++;	/* OPTIONAL */
-
-			PrvtProtcfg_gpsData_t gpsDt;
-			PP_appData.Xcall.xcallType = PP_ECALL_TYPE;//紧急救援ecall
-			PP_appData.Xcall.engineSt = PrvtProtCfg_engineSt();//启动状态；1-熄火；2-启动
-			PP_appData.Xcall.totalOdoMr = PrvtProtCfg_totalOdoMr();//里程有效范围：0 - 1000000（km）
-			if(PP_appData.Xcall.totalOdoMr > 1000000)
-			{
-				PP_appData.Xcall.totalOdoMr = 1000000;
-			}
-			PP_appData.Xcall.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps状态 0-无效；1-有效
-			PP_appData.Xcall.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gps时间戳:系统时间(通过gps校时)
-
-			PrvtProtCfg_gpsData(&gpsDt);
-			log_i(LOG_HOZON, "is_north = %d",gpsDt.is_north);
-			log_i(LOG_HOZON, "is_east = %d",gpsDt.is_east);
-			log_i(LOG_HOZON, "latitude = %lf",gpsDt.latitude);
-			log_i(LOG_HOZON, "longitude = %lf",gpsDt.longitude);
-			log_i(LOG_HOZON, "altitude = %lf",gpsDt.height);
-
-			if(PP_appData.Xcall.gpsPos.gpsSt == 1)
-			{
-				if(gpsDt.is_north)
-				{
-					PP_appData.Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000);//纬度 x 1000000,当GPS信号无效时，值为0
-				}
-				else
-				{
-					PP_appData.Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//纬度 x 1000000,当GPS信号无效时，值为0
-				}
-
-				if(gpsDt.is_east)
-				{
-					PP_appData.Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000);//经度 x 1000000,当GPS信号无效时，值为0
-				}
-				else
-				{
-					PP_appData.Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//经度 x 1000000,当GPS信号无效时，值为0
-				}
-				log_i(LOG_HOZON, "PP_appData.latitude = %lf",PP_appData.Xcall.gpsPos.latitude);
-				log_i(LOG_HOZON, "PP_appData.longitude = %lf",PP_appData.Xcall.gpsPos.longitude);
-			}
-			else
-			{
-				PP_appData.Xcall.gpsPos.latitude  = 0;
-				PP_appData.Xcall.gpsPos.longitude = 0;
-			}
-			PP_appData.Xcall.gpsPos.altitude = (long)gpsDt.height;//高度（m）
-			if(PP_appData.Xcall.gpsPos.altitude > 10000)
-			{
-				PP_appData.Xcall.gpsPos.altitude = 10000;
-			}
-			PP_appData.Xcall.gpsPos.heading = (long)gpsDt.direction;//车头方向角度，0为正北方向
-			PP_appData.Xcall.gpsPos.gpsSpeed = (long)gpsDt.kms*10;//速度 x 10，单位km/h
-			PP_appData.Xcall.gpsPos.hdop = (long)gpsDt.hdop*10;//水平精度因子 x 10
-			if(PP_appData.Xcall.gpsPos.hdop > 1000)
-			{
-				PP_appData.Xcall.gpsPos.hdop = 1000;
-			}
-			PP_appData.Xcall.srsSt = 1;//安全气囊状态 1- 正常；2 - 弹出
-			PP_appData.Xcall.updataTime = PrvtPro_getTimestamp();//数据时间戳
-			PP_appData.Xcall.battSOCEx = PrvtProtCfg_vehicleSOC();//车辆电池剩余电量：0-10000（0%-100%）
-
-			if(0 == PrvtPro_msgPackageEncoding(PP_ECALL_RESP,PP_Pack[PP_ECALL_RESP].msgdata,&msgdatalen,\
-									   	   	   &PP_DisptrBody[PP_ECALL_RESP],&PP_appData))
-			{
-				PP_Pack[PP_ECALL_RESP].Header.msglen = PrvtPro_BSEndianReverse(18 + msgdatalen);
-				if(sockproxy_MsgSend(PP_Pack[PP_ECALL_RESP].Header.sign,18 + msgdatalen,NULL) > 0)//发送成功
-				{
-					protocol_dump(LOG_HOZON, "PRVT_PROT", PP_Pack[PP_ECALL_RESP].Header.sign, \
-							18 + msgdatalen,1);
-				}
-			}
-			pp_task.xcall[PP_ECALL].resp = 0;
-		}
-	}
-	return 0;
-}
-#if 0
-/******************************************************
-*函数名：PrvtPro_ecallReq
-
-*形  参：
-
-*返回值：
-
-*描  述：检查ecall等请求
-
-*备  注：
-******************************************************/
-static int PrvtPro_ecallReq(PrvtProt_task_t *task)
-{
-
-	long msgdatalen;
-
-	if(1 == pp_task.xcall[PP_ECALL].req)
-	{	
-		PP_PackHeader[PP_ECALL_REQ].ver.Byte = task->version;
-		PP_PackHeader[PP_ECALL_REQ].nonce  = PrvtPro_BSEndianReverse(task->nonce);
-		PP_PackHeader[PP_ECALL_REQ].tboxid = PrvtPro_BSEndianReverse(task->tboxid);
-		memcpy(&PP_Pack[PP_ECALL_REQ], &PP_PackHeader[PP_ECALL_REQ], sizeof(PrvtProt_pack_Header_t));
-
-		PP_DisptrBody[PP_ECALL_REQ].eventTime = PrvtPro_getTimestamp();
-		PP_DisptrBody[PP_ECALL_REQ].ulMsgCnt++;	/* OPTIONAL */
-		
-		PP_appData.Xcall.xcallType = PP_ECALL_TYPE;//紧急救援
-		if(0 == PrvtPro_msgPackageEncoding(PP_ECALL_REQ,PP_Pack[PP_ECALL_REQ].msgdata,&msgdatalen, \
-											&PP_DisptrBody[PP_ECALL_REQ],&PP_appData))
-		{
-			PP_Pack[PP_ECALL_REQ].Header.msglen = PrvtPro_BSEndianReverse(18 + msgdatalen);
-			if(sockproxy_MsgSend(PP_Pack[PP_ECALL_REQ].Header.sign,(18 + msgdatalen),NULL) > 0)//发送成功
-			{
-				pp_task.xcall[PP_ECALL].req = 0;
-				protocol_dump(LOG_HOZON, "PRVT_PROT", PP_Pack[PP_ECALL_REQ].Header.sign, \
-							  (18 + msgdatalen),1);
-			}
-		}
-		pp_task.xcall[PP_ECALL].req = 0;
-	}
-	
-	return 0;
-}
-#endif
-/******************************************************
 *函数名：PrvtPro_getTimestamp
 
 *形  参：
@@ -667,12 +519,12 @@ static int PrvtPro_ecallReq(PrvtProt_task_t *task)
 
 *备  注：
 ******************************************************/
-static long PrvtPro_getTimestamp(void)
+long PrvtPro_getTimestamp(void)
 {
 	struct timeval timestamp;
 	gettimeofday(&timestamp, NULL);
 	
-	return (long)timestamp.tv_sec;
+	return (long)(timestamp.tv_sec);
 }
 
 /******************************************************
@@ -692,39 +544,6 @@ void PrvtPro_Setsuspend(unsigned char suspend)
 }
 
 /******************************************************
-*函数名：PrvtPro_SetEcallReq
-
-*形  参：
-
-*返回值：
-
-*描  述：设置ecall 请求
-
-*备  注：
-******************************************************/
-void PrvtPro_SetEcallReq(unsigned char req)
-{
-	pp_task.xcall[PP_ECALL].req = req;
-}
-
-/******************************************************
-*函数名：PrvtPro_SetEcallResp
-
-*形  参：
-
-*返回值：
-
-*描  述：设置ecall response
-
-*备  注：
-******************************************************/
-void PrvtPro_SetEcallResp(unsigned char resp)
-{
-	pp_task.xcall[PP_ECALL].resp = resp;
-	//pp_task.xcall[PP_ECALL].CCreq = resp;
-}
-
-/******************************************************
 *函数名：PrvtPro_BSEndianReverse
 
 *形  参：void
@@ -735,7 +554,7 @@ void PrvtPro_SetEcallResp(unsigned char resp)
 
 *备  注：
 ******************************************************/
-static long PrvtPro_BSEndianReverse(long value)
+long PrvtPro_BSEndianReverse(long value)
 {
 	return (value & 0x000000FFU) << 24 | (value & 0x0000FF00U) << 8 | \
 		   (value & 0x00FF0000U) >> 8 | (value & 0xFF000000U) >> 24;
