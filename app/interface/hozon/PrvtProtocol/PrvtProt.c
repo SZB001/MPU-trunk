@@ -54,24 +54,14 @@ description： global variable definitions
 /*******************************************************
 description： static variable definitions
 *******************************************************/
-//static PrvtProt_heartbeat_t heartbeat;
+static PrvtProt_heartbeat_t PP_heartbeat;
 static PrvtProt_task_t 	pp_task;
 //static PrvtProt_pack_t 	PP_RxPack[PP_APP_MAX];
-PrvtProt_pack_Header_t 	PP_PackHeader[PP_APP_MID_MAX] =
+static PrvtProt_pack_Header_t 	PP_PackHeader_HB =
 {/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-	{"**",	0x30,	0,		0x70,		0,			0x01,	18,		  0	  },//heart beat
-	{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  },//ecall req
-	{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  } //ecall response
+	"**",	0x30,	0,		0x70,		0,			0x01,	18,		  0	  //heart beat
 };
 
-PrvtProt_pack_t 	PP_Pack[PP_APP_MID_MAX];
-
-PrvtProt_DisptrBody_t	PP_DisptrBody[PP_APP_MID_MAX] =
-{/*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-	{"000",	0,		0,		  0,		PP_INVALID,	   0,	   0,		0,       0,       0,      0,     0,		 0,         0   },//ecall req
-	{"170",	1,		0,		  0,		PP_INVALID,	   0,	   0,		0,       0,       0,      0,     1,		 1,         0   },//ecall req
-	{"170", 2,      0,        0,		PP_INVALID,    0,      0,		0,		 1,		  0,	  0,	 256,	 1,			0   } //ecall response
-};
 
 PrvtProt_appData_t 		PP_appData;
 
@@ -115,11 +105,11 @@ int PrvtProt_init(INIT_PHASE phase)
         case INIT_PHASE_INSIDE:
 		{
 			//pp_task.heartbeat.ackFlag = 0;
-			pp_task.heartbeat.state = 1;//
-			pp_task.heartbeat.period = PP_HEART_BEAT_TIME;//
-			pp_task.heartbeat.timer = tm_get_time();
-			pp_task.waitSt[PP_APP_HB] = 0;
-			pp_task.waittime[PP_APP_HB] = 0;
+			PP_heartbeat.state = 1;//
+			PP_heartbeat.period = PP_HEART_BEAT_TIME;//
+			PP_heartbeat.timer = tm_get_time();
+			PP_heartbeat.waitSt = 0;
+			PP_heartbeat.waittime = 0;
 			pp_task.suspend = 0;
 			pp_task.nonce = 0;/* TCP会话ID 由TSP平台产生 */
 			pp_task.version = 0x30;/* 大/小版本(由TSP平台定义)*/
@@ -383,8 +373,8 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 		case PP_HEARTBEAT_TYPE://接收到心跳包
 		{
 			log_i(LOG_HOZON, "heart beat is ok");
-			task->heartbeat.state = 1;//正常心跳
-			task->waitSt[PP_APP_HB] = 0;
+			PP_heartbeat.state = 1;//正常心跳
+			PP_heartbeat.waitSt = 0;
 		}
 		break;
 		case PP_NGTP_TYPE://ngtp
@@ -401,6 +391,9 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 				}
 				break;
 				default:
+				{
+					log_e(LOG_HOZON, "rcv unknow ngtp package\r\n");
+				}
 				break;
 			}
 		}
@@ -426,17 +419,17 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 ******************************************************/
 static int PrvtPro_do_wait(PrvtProt_task_t *task)
 {
-    if (!task->waitSt[PP_APP_HB])//没有事件等待应答
+    if (!PP_heartbeat.waitSt)//没有事件等待应答
     {
         return 0;
     }
 
-    if((tm_get_time() - task->waittime[PP_APP_HB]) > PP_HB_WAIT_TIMEOUT)
+    if((tm_get_time() - PP_heartbeat.waittime) > PP_HB_WAIT_TIMEOUT)
     {
-        if (task->waitSt[PP_APP_HB] == 1)
+        if (PP_heartbeat.waitSt == 1)
         {
-            task->waitSt[PP_APP_HB] = 0;
-			task->heartbeat.state = 0;//心跳不正常
+        	PP_heartbeat.waitSt = 0;
+        	PP_heartbeat.state = 0;//心跳不正常
             log_e(LOG_HOZON, "heartbeat time out");
         }
         else
@@ -460,28 +453,28 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 {
 	PrvtProt_pack_Header_t pack_Header;
 	int res;
-	if((tm_get_time() - task->heartbeat.timer) > (task->heartbeat.period*1000))
+	if((tm_get_time() - PP_heartbeat.timer) > (PP_heartbeat.period*1000))
 	{
-		PP_PackHeader[PP_APP_HEARTBEAT].ver.Byte = task->version;
-		PP_PackHeader[PP_APP_HEARTBEAT].nonce  = PrvtPro_BSEndianReverse(task->nonce);
-		PP_PackHeader[PP_APP_HEARTBEAT].msglen = PrvtPro_BSEndianReverse((long)18);
-		PP_PackHeader[PP_APP_HEARTBEAT].tboxid = PrvtPro_BSEndianReverse(task->tboxid);
-		memcpy(&pack_Header, &PP_PackHeader[PP_APP_HEARTBEAT], sizeof(PrvtProt_pack_Header_t));
+		PP_PackHeader_HB.ver.Byte = task->version;
+		PP_PackHeader_HB.nonce  = PrvtPro_BSEndianReverse(task->nonce);
+		PP_PackHeader_HB.msglen = PrvtPro_BSEndianReverse((long)18);
+		PP_PackHeader_HB.tboxid = PrvtPro_BSEndianReverse(task->tboxid);
+		memcpy(&pack_Header, &PP_PackHeader_HB, sizeof(PrvtProt_pack_Header_t));
 
 		res = sockproxy_MsgSend(pack_Header.sign, 18,NULL);
 		if(res > 0)//发送成功
 		{
 			protocol_dump(LOG_HOZON, "PRVT_PROT", pack_Header.sign, 18, 1);
-			task->waitSt[PP_APP_HB] = 1;
+			PP_heartbeat.waitSt = 1;
 			//task->heartbeat.ackFlag = PP_ACK_WAIT;
-			task->waittime[PP_APP_HB] = tm_get_time();
-			task->heartbeat.timer = tm_get_time();
+			PP_heartbeat.waittime = tm_get_time();
+			PP_heartbeat.timer = tm_get_time();
 		}
 		else if(res < 0)
 		{
 			log_e(LOG_HOZON, "send heartbeat frame fail,close socket\r\n");
 			//task->heartbeat.timer = tm_get_time();
-			task->waitSt[PP_APP_HB] = 0;
+			PP_heartbeat.waitSt = 0;
 			sockproxy_socketclose();//by liujian 20190510
 		}
 		else
@@ -504,7 +497,7 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 ******************************************************/
 void PrvtPro_SetHeartBeatPeriod(unsigned char period)
 {
-	pp_task.heartbeat.period = period;
+	PP_heartbeat.period = period;
 }
 
 /******************************************************

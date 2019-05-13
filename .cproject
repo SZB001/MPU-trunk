@@ -3,9 +3,9 @@
     	
     <storageModule moduleId="org.eclipse.cdt.core.settings">
         		
-        <cconfiguration id="cdt.managedbuild.toolchain.gnu.cross.base.2037939321">
+        <cconfiguration id="cdt.managedbuild.toolchain.gnu.cross.base.1319120892">
             			
-            <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.cross.base.2037939321" moduleId="org.eclipse.cdt.core.settings" name="Default">
+            <storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.cross.base.1319120892" moduleId="org.eclipse.cdt.core.settings" name="Default">
                 				
                 <externalSettings/>
                 				
@@ -29,31 +29,31 @@
             			
             <storageModule moduleId="cdtBuildSystem" version="4.0.0">
                 				
-                <configuration artifactName="${ProjName}" buildProperties="" id="cdt.managedbuild.toolchain.gnu.cross.base.2037939321" name="Default" parent="org.eclipse.cdt.build.core.emptycfg">
+                <configuration buildProperties="" id="cdt.managedbuild.toolchain.gnu.cross.base.1319120892" name="Default" parent="org.eclipse.cdt.build.core.emptycfg">
                     					
-                    <folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.2037939321.325027502" name="/" resourcePath="">
+                    <folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.1319120892.710399697" name="/" resourcePath="">
                         						
-                        <toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.1138734583" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
+                        <toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.492098566" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
                             							
-                            <option id="cdt.managedbuild.option.gnu.cross.prefix.488178617" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
+                            <option id="cdt.managedbuild.option.gnu.cross.prefix.98962609" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
                             							
-                            <option id="cdt.managedbuild.option.gnu.cross.path.653996845" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path"/>
+                            <option id="cdt.managedbuild.option.gnu.cross.path.447315004" name="Path" superClass="cdt.managedbuild.option.gnu.cross.path"/>
                             							
-                            <targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1535901567" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
+                            <targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1513103981" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
                             							
-                            <builder id="cdt.managedbuild.builder.gnu.cross.1727855671" managedBuildOn="false" name="Gnu Make Builder.Default" superClass="cdt.managedbuild.builder.gnu.cross"/>
+                            <builder id="cdt.managedbuild.builder.gnu.cross.1682736464" managedBuildOn="false" name="Gnu Make Builder.Default" superClass="cdt.managedbuild.builder.gnu.cross"/>
                             							
-                            <tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1673796446" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler"/>
+                            <tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.406079049" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler"/>
                             							
-                            <tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.682509316" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler"/>
+                            <tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1775395373" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler"/>
                             							
-                            <tool id="cdt.managedbuild.tool.gnu.cross.c.linker.1400994379" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
+                            <tool id="cdt.managedbuild.tool.gnu.cross.c.linker.1023890466" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
                             							
-                            <tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.2056636955" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker"/>
+                            <tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.1461491825" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker"/>
                             							
-                            <tool id="cdt.managedbuild.tool.gnu.cross.archiver.2005209674" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
+                            <tool id="cdt.managedbuild.tool.gnu.cross.archiver.1838560344" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
                             							
-                            <tool id="cdt.managedbuild.tool.gnu.cross.assembler.1385331183" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler"/>
+                            <tool id="cdt.managedbuild.tool.gnu.cross.assembler.2121231298" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler"/>
                             						
                         </toolChain>
                         					
@@ -69,15 +69,15 @@
         	
     </storageModule>
     	
-    <storageModule moduleId="cdtBuildSystem" version="4.0.0">
-        		
-        <project id="HZ_MPU.null.236908409" name="HZ_MPU"/>
-        	
-    </storageModule>
-    	
     <storageModule moduleId="scannerConfiguration">
         		
         <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+        	
+    </storageModule>
+    	
+    <storageModule moduleId="cdtBuildSystem" version="4.0.0">
+        		
+        <project id="MPU-trunk.null.1829934690" name="MPU-trunk"/>
         	
     </storageModule>
     	

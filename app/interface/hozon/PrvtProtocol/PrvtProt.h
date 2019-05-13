@@ -27,6 +27,18 @@ description： macro definitions
 #define	PP_HEARTBEAT_TYPE			1//心跳类型
 #define	PP_NGTP_TYPE				2//NGTP类型
 
+/* xcall */
+//AID
+#define PP_AID_XCALL 	170//Xcall
+//MID
+#define PP_MID_XCALL_REQ 	1//Xcall request
+#define PP_MID_XCALL_RESP 	2//Xcall response
+
+/* remote config */
+//AID
+#define PP_AID_CFG_CHECK_REQ 	100//remote config
+//MID
+
 /***********宏函数***********/
 
 /*******************************************************
@@ -37,20 +49,13 @@ description： struct definitions
 description： typedef definitions
 *******************************************************/
 /******enum definitions******/
-typedef enum
+/*typedef enum
 {
 	PP_APP_HB = 0,//心跳
 	PP_APP_XCALL,//
 	PP_APP_MAX
 } PP_APP_INDEX;
-
-typedef enum
-{
-	PP_APP_HEARTBEAT = 0,//心跳
-	PP_XCALL_REQ,//xcall request
-    PP_XCALL_RESP,//xcall response
-	PP_APP_MID_MAX
-} PP_APP_MID_TYPE;//应用类型
+*/
 
 typedef enum
 {
@@ -114,14 +119,16 @@ typedef struct
 	//uint8_t ackFlag;/* 应答标志:2-等待应答；1-成功应答 */
 	uint8_t state;/* 心跳状态 1- 正常 */
 	uint8_t period;/* 心跳周期uints：秒*/
+	PP_WAIT_STATE waitSt;/* 等待响应的状态 */
+	uint64_t waittime;/* 等待响应的时间 */
 }__attribute__((packed))  PrvtProt_heartbeat_t; /*心跳结构体*/
 
 typedef struct 
 {	
-	PrvtProt_heartbeat_t heartbeat;
+	//PrvtProt_heartbeat_t heartbeat;
 	//PrvtProt_xcall_t xcall[PP_XCALL_MAX];
-	PP_WAIT_STATE waitSt[PP_APP_MAX];/* 等待响应的状态 */
-	uint64_t waittime[PP_APP_MAX];/* 等待响应的时间 */
+	//PP_WAIT_STATE waitSt[PP_APP_MID_MAX];/* 等待响应的状态 */
+	//uint64_t waittime[PP_APP_MID_MAX];/* 等待响应的时间 */
 	char suspend;/* 暂停 */
 	uint32_t nonce;/* TCP会话ID 由TSP平台产生 */
 	unsigned char version;/* 大/小版本(由TSP平台定义)*/
@@ -190,10 +197,10 @@ typedef struct
 description： variable External declaration
 *******************************************************/
 //extern PrvtProt_task_t 	pp_task;
-extern PrvtProt_pack_Header_t 	PP_PackHeader[PP_APP_MID_MAX];
-extern PrvtProt_pack_t 			PP_Pack[PP_APP_MID_MAX];
-extern PrvtProt_DisptrBody_t	PP_DisptrBody[PP_APP_MID_MAX];
-extern PrvtProt_appData_t 		PP_appData;
+//extern PrvtProt_pack_Header_t 	PP_PackHeader[PP_APP_MID_MAX];
+//extern PrvtProt_pack_t 			PP_Pack[PP_APP_MID_MAX];
+//extern PrvtProt_DisptrBody_t	PP_DisptrBody[PP_APP_MID_MAX];
+extern PrvtProt_appData_t 		PP_appData;//共用的结构体（app data数据打包时使用）
 /*******************************************************
 description： function External declaration
 *******************************************************/

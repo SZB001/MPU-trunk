@@ -24,12 +24,6 @@ description： macro definitions
 #define PP_ENCODE_DISBODY 	0x01//编码dispatcher header
 #define PP_ENCODE_APPDATA 	0x02//编码app data
 
-//AID类型
-#define PP_AID_XCALL 	170//Xcall
-
-//MID类型
-#define PP_MID_XCALL_REQ 	1//Xcall request
-#define PP_MID_XCALL_RESP 	2//Xcall response
 
 /***********宏函数***********/
 
@@ -41,7 +35,12 @@ description： struct definitions
 description： typedef definitions
 *******************************************************/
 /******enum definitions******/
-
+typedef enum
+{
+	PP_XCALL_REQ = 0,//xcall request
+    PP_XCALL_RESP,//xcall response
+	PP_APP_MID_MAX
+} PP_APP_MID_TYPE;//应用类型
 /*****struct definitions*****/
 
 /******union definitions*****/

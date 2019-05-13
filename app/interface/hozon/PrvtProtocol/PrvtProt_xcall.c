@@ -53,12 +53,84 @@ description： global variable definitions
 /*******************************************************
 description： static variable definitions
 *******************************************************/
-static PrvtProt_xcall_t PP_xcall[PP_XCALL_MAX];
-
-const char PP_xcallType[PP_XCALL_MAX] =
+typedef struct
 {
-	PP_BCALL_TYPE,PP_ECALL_TYPE,PP_ICALL_TYPE
+	PrvtProt_pack_Header_t	Header;
+	PrvtProt_DisptrBody_t	DisBody;
+}__attribute__((packed))  PrvtProt_xcall_pack_t; /**/
+
+typedef struct
+{
+	PrvtProt_xcall_pack_t 	packReq;
+	PrvtProt_xcall_pack_t 	packResp;
+	PrvtProt_xcallSt_t	 	state;
+	char 					Type;
+}__attribute__((packed))  PrvtProt_xcall_t; /*xcall结构体*/
+
+static PrvtProt_pack_t 		PP_Xcall_Pack;
+
+static PrvtProt_xcall_t	PP_xcall[PP_XCALL_MAX] =
+{
+		{
+			{
+					/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
+					 {"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  },//ecall req
+				  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+					 {"170",1,		0,		  0,	PP_INVALID,	   0,	   0,		 0,       0,       0,      0,     256,	 1,        0   },//bcall req
+
+			},
+			{
+					/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
+					{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  }, //ecall response
+				  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+					{"170", 2,      0,        0,		PP_INVALID,    0,      0,		0,		 1,		  0,	  0,	 256,	1,		0   } //bcall response
+			},
+			{0,0,0,0},
+			PP_BCALL_TYPE
+		},
+		{
+			{
+					/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
+					 {"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  },//ecall req
+				  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+					 {"170",1,		0,		  0,	PP_INVALID,	   0,	   0,		 0,       0,       0,      0,     256,	 1,        0   },//ecall req
+
+			},
+			{
+					/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
+					{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  }, //ecall response
+				  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+					{"170", 2,      0,        0,		PP_INVALID,    0,      0,		0,		 1,		  0,	  0,	 256,	1,		0   } //ecall response
+			},
+			{0,0,0,0},
+			PP_ECALL_TYPE
+		},
+		{
+			{
+					/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
+					 {"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  },//ecall req
+				  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+					 {"170",1,		0,		  0,	PP_INVALID,	   0,	   0,		 0,       0,       0,      0,     256,	 1,        0   },//icall req
+
+			},
+			{
+					/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
+					{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  }, //ecall response
+				  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+					{"170", 2,      0,        0,		PP_INVALID,    0,      0,		0,		 1,		  0,	  0,	 256,	1,		0   } //icall response
+			},
+			{0,0,0,0},
+			PP_ICALL_TYPE
+		},
+
 };
+
+//static PrvtProt_xcallSt_t PP_xcall[PP_XCALL_MAX];
+
+//const char PP_xcallType[PP_XCALL_MAX] =
+//{
+//	PP_BCALL_TYPE,PP_ECALL_TYPE,PP_ICALL_TYPE
+//};
 
 /*******************************************************
 description： function declaration
@@ -90,10 +162,10 @@ description： function code
 ******************************************************/
 void PP_xcall_init(void)
 {
-	PP_xcall[PP_ECALL].req = 0;
-	PP_xcall[PP_ECALL].resp = 0;
-	PP_xcall[PP_ECALL].waitSt = 0;
-	PP_xcall[PP_ECALL].waittime= 0;
+	PP_xcall[PP_ECALL].state.req = 0;
+	PP_xcall[PP_ECALL].state.resp = 0;
+	PP_xcall[PP_ECALL].state.waitSt = 0;
+	PP_xcall[PP_ECALL].state.waittime= 0;
 }
 
 /******************************************************
@@ -204,9 +276,9 @@ static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,i
 				{
 					if(PP_MID_XCALL_RESP == MsgData.DisBody.mID)//收到xcall response回复
 					{
-						if(PP_xcall[PP_ECALL].waitSt == 1)//接收到回复
+						if(PP_xcall[PP_ECALL].state.waitSt == 1)//接收到回复
 						{
-							PP_xcall[PP_ECALL].waitSt = 0;
+							PP_xcall[PP_ECALL].state.waitSt = 0;
 							log_i(LOG_HOZON, "\r\necall ok\r\n");
 						}
 					}
@@ -243,11 +315,11 @@ static int PP_xcall_do_wait(PrvtProt_task_t *task)
     //    return 0;
     //}
 
-    if(PP_xcall[PP_ECALL].waitSt == 1)
+    if(PP_xcall[PP_ECALL].state.waitSt == 1)
     {
-    	 if((tm_get_time() - PP_xcall[PP_ECALL].waittime) > PP_XCALL_WAIT_TIMEOUT)
+    	 if((tm_get_time() - PP_xcall[PP_ECALL].state.waittime) > PP_XCALL_WAIT_TIMEOUT)
     	 {
-    		 PP_xcall[PP_ECALL].waitSt = 0;
+    		 PP_xcall[PP_ECALL].state.waitSt = 0;
     		 log_e(LOG_HOZON, "ecall time out");
     		 return 0;
     	 }
@@ -274,9 +346,9 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 	/* ecall */
 	if(1 == sockproxy_socketState())//socket open
 	{
-		if((1 == PP_xcall[PP_ECALL].resp) || (PrvtProtCfg_ecallTriggerEvent()))//ecall触发
+		if((1 == PP_xcall[PP_ECALL].state.resp) || (PrvtProtCfg_ecallTriggerEvent()))//ecall触发
 		{
-			PP_xcall[PP_ECALL].resp = 0;
+			PP_xcall[PP_ECALL].state.resp = 0;
 			res = PP_xcall_xcallResponse(task,PP_ECALL);
 		}
 
@@ -303,17 +375,17 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 {
 	long msgdatalen;
 
-	PP_PackHeader[PP_XCALL_RESP].ver.Byte = task->version;
-	PP_PackHeader[PP_XCALL_RESP].nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-	PP_PackHeader[PP_XCALL_RESP].tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-	memcpy(&PP_Pack[PP_XCALL_RESP], &PP_PackHeader[PP_XCALL_RESP], sizeof(PrvtProt_pack_Header_t));
+	PP_xcall[XcallType].packResp.Header.ver.Byte = task->version;
+	PP_xcall[XcallType].packResp.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+	PP_xcall[XcallType].packResp.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	memcpy(&PP_Xcall_Pack, &PP_xcall[XcallType].packResp.Header, sizeof(PrvtProt_pack_Header_t));
 
-	PP_DisptrBody[PP_XCALL_RESP].eventTime = PrvtPro_getTimestamp();
-	PP_DisptrBody[PP_XCALL_RESP].expTime   = PrvtPro_getTimestamp();
-	PP_DisptrBody[PP_XCALL_RESP].ulMsgCnt++;	/* OPTIONAL */
+	PP_xcall[XcallType].packResp.DisBody.eventTime = PrvtPro_getTimestamp();
+	PP_xcall[XcallType].packResp.DisBody.expTime   = PrvtPro_getTimestamp();
+	PP_xcall[XcallType].packResp.DisBody.ulMsgCnt++;	/* OPTIONAL */
 
 	PrvtProtcfg_gpsData_t gpsDt;
-	PP_appData.Xcall.xcallType = (long)PP_xcallType[XcallType];//紧急救援ecall
+	PP_appData.Xcall.xcallType = (long)(PP_xcall[XcallType].Type);//xcall type:ecall/icall/bcall
 	PP_appData.Xcall.engineSt = PrvtProtCfg_engineSt();//启动状态；1-熄火；2-启动
 	PP_appData.Xcall.totalOdoMr = PrvtProtCfg_totalOdoMr();//里程有效范围：0 - 1000000（km）
 	if(PP_appData.Xcall.totalOdoMr > 1000000)
@@ -373,25 +445,25 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	PP_appData.Xcall.updataTime = PrvtPro_getTimestamp();//数据时间戳
 	PP_appData.Xcall.battSOCEx = PrvtProtCfg_vehicleSOC();//车辆电池剩余电量：0-10000（0%-100%）
 
-	if(0 != PrvtPro_msgPackageEncoding(PP_XCALL_RESP,PP_Pack[PP_XCALL_RESP].msgdata,&msgdatalen,\
-									   &PP_DisptrBody[PP_XCALL_RESP],&PP_appData))//数据编码打包是否完成
+	if(0 != PrvtPro_msgPackageEncoding(PP_XCALL_RESP,PP_Xcall_Pack.msgdata,&msgdatalen,\
+									   &PP_xcall[XcallType].packResp.DisBody,&PP_appData))//数据编码打包是否完成
 	{
 		return -1;
 	}
 
-	PP_Pack[PP_XCALL_RESP].Header.msglen = PrvtPro_BSEndianReverse(18 + msgdatalen);
-	if(sockproxy_MsgSend(PP_Pack[PP_XCALL_RESP].Header.sign,18 + msgdatalen,NULL) <= 0)//发送失败
+	PP_Xcall_Pack.Header.msglen = PrvtPro_BSEndianReverse(18 + msgdatalen);
+	if(sockproxy_MsgSend(PP_Xcall_Pack.Header.sign,18 + msgdatalen,NULL) <= 0)//发送失败
 	{
 		return -2;
 	}
 
-	if(1 == PP_DisptrBody[PP_XCALL_RESP].ackReq)
+	if(1 == PP_xcall[XcallType].packResp.DisBody.ackReq)
 	{
-		PP_xcall[XcallType].waitSt 		= 1;
-		PP_xcall[XcallType].waittime 	= tm_get_time();
-		task->waitSt[PP_APP_XCALL] 		= 1;
+		PP_xcall[XcallType].state.waitSt 		= 1;
+		PP_xcall[XcallType].state.waittime 	= tm_get_time();
+		//task->waitSt[PP_APP_XCALL] 		= 1;
 	}
-	protocol_dump(LOG_HOZON, "PRVT_PROT", PP_Pack[PP_XCALL_RESP].Header.sign, \
+	protocol_dump(LOG_HOZON, "PRVT_PROT", PP_Xcall_Pack.Header.sign, \
 					18 + msgdatalen,1);
 	return 0;
 }
@@ -454,7 +526,7 @@ static int PP_xcall_ecallReq(PrvtProt_task_t *task)
 ******************************************************/
 void PP_xcall_SetEcallReq(unsigned char req)
 {
-	PP_xcall[PP_ECALL].req = req;
+	PP_xcall[PP_ECALL].state.req = req;
 }
 
 /******************************************************
@@ -470,7 +542,7 @@ void PP_xcall_SetEcallReq(unsigned char req)
 ******************************************************/
 void PP_xcall_SetEcallResp(unsigned char resp)
 {
-	PP_xcall[PP_ECALL].resp = resp;
+	PP_xcall[PP_ECALL].state.resp = resp;
 }
 
 
