@@ -32,6 +32,7 @@ description£º include the header file
 #include "CfgGetRespInfo.h"
 #include "CfgCheckRespInfo.h"
 #include "CfgEndReqInfo.h"
+#include "CfgConnRespInfo.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
 
@@ -59,7 +60,7 @@ static asn_TYPE_descriptor_t *pduType_Cfg_check_resp = &asn_DEF_CfgCheckRespInfo
 static asn_TYPE_descriptor_t *pduType_Cfg_get_req = &asn_DEF_CfgGetReqInfo;
 static asn_TYPE_descriptor_t *pduType_Cfg_get_resp = &asn_DEF_CfgGetRespInfo;
 static asn_TYPE_descriptor_t *pduType_Cfg_end_req = &asn_DEF_CfgEndReqInfo;
-
+static asn_TYPE_descriptor_t *pduType_Cfg_conn_resp = &asn_DEF_CfgConnRespInfo;
 static uint8_t tboxAppdata[PP_ECDC_DATA_LEN];
 static int tboxAppdataLen;
 static uint8_t tboxDisBodydata[PP_ECDC_DATA_LEN];
@@ -260,6 +261,22 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 			if(ec.encoded  == -1)
 			{
 				log_e(LOG_HOZON,"encode:appdata Cfg_end_req fail\n");
+				return -1;
+			}
+		}
+		break;
+		case ECDC_RMTCFG_CONN_RESP:
+		{
+			log_i(LOG_HOZON, "encode Cfg_end_request\n");
+			CfgConnRespInfo_t CfgConnResp;
+			memset(&CfgConnResp,0 , sizeof(CfgConnRespInfo_t));
+
+			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+
+			ec = uper_encode(pduType_Cfg_conn_resp,(void *) &CfgConnResp,PrvtPro_writeout,&key);
+			if(ec.encoded  == -1)
+			{
+				log_e(LOG_HOZON,"encode:appdata Cfg_conn_req fail\n");
 				return -1;
 			}
 		}

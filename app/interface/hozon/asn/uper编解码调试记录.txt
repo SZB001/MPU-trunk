@@ -11,7 +11,8 @@
 .asn文件：
 XcallReqinfo ::= SEQUENCE -- （首字母大写）
 {
-    xcallType          INTEGER(0..255) -- （首字母小写）
+    xcallType       INTEGER(0..255) -- （首字母小写）
+	tt				INTEGER(0..255) -- xxx -- xx -- （注释以 -- 开始，以--结束。存在多余的会引起报错）
 	//... -- per编码时，要去掉
 }
 

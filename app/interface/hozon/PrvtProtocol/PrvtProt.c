@@ -45,6 +45,7 @@ description£º include the header file
 #include "PrvtProt_cfg.h"
 #include "PrvtProt_callCenter.h"
 #include "PrvtProt_xcall.h"
+#include "PrvtProt_remoteConfig.h"
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -94,7 +95,9 @@ PrvtProt_appData_t 		PP_appData =
 
 		/*configSuccess  mcuSw   mpuSw   configSw     cfgVersion */
 		{ 0,            "00000","00000","00000","00000000000000000000000000000000" \
-						,5,5,5,32,NULL,NULL,NULL,NULL}\
+						,5,5,5,32,NULL,NULL,NULL,NULL},\
+		/* configAccepted*/
+			{0}
 	}
 };
 

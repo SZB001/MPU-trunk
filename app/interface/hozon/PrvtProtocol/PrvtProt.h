@@ -38,9 +38,15 @@ description£º macro definitions
 //AID
 #define PP_AID_RMTCFG	100//remote config
 //MID
+#define PP_MID_CHECK_CFG_REQ 	1//check config req
 #define PP_MID_CHECK_CFG_RESP 	2//check config response
+#define PP_MID_GET_CFG_REQ 		3//get config req
 #define PP_MID_GET_CFG_RESP 	4//get config response
-
+#define PP_MID_READ_CFG_REQ 	5//read config req
+#define PP_MID_READ_CFG_RESP 	6//read config response
+#define PP_MID_CONN_CFG_REQ 	7//conn config req
+#define PP_MID_CONN_CFG_RESP 	8//conn config response
+#define PP_MID_CFG_END 	9//end config req
 
 /***********ºêº¯Êý***********/
 
@@ -306,6 +312,11 @@ typedef struct
 }App_rmtCfg_EndCfgReq_t;
 typedef struct
 {
+	int configAccepted;
+}App_rmtCfg_CfgconnReq_t;
+
+typedef struct
+{
 	/* check config request */
 	App_rmtCfg_checkReq_t checkCfgReq;
 
@@ -321,6 +332,8 @@ typedef struct
 	/* end config req */
 	App_rmtCfg_EndCfgReq_t EndCfgReq;
 
+	/* config  conn req */
+	App_rmtCfg_CfgconnReq_t connCfgReq;
 }PrvtProt_App_rmtCfg_t;
 
 typedef struct

@@ -92,6 +92,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task);
 static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task);
 static int PP_rmtCfg_getRequest(PrvtProt_task_t *task);
 static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task);
+static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task);
 
 /******************************************************
 description： function code
@@ -208,6 +209,7 @@ static int PP_rmtCfg_do_rcvMsg(PrvtProt_task_t *task)
 static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len)
 {
 	int aid;
+	int res;
 	if(PP_NGTP_TYPE != rxPack->Header.opera)
 	{
 		log_e(LOG_HOZON, "unknow package");
@@ -246,6 +248,23 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 				PP_rmtCfg.state.waitSt = 0;
 				log_i(LOG_HOZON, "\r\nget config req ok\r\n");
 			}
+		}
+		break;
+		case PP_MID_CONN_CFG_REQ://TAP 向 TCU 发送配置更新请求， TCU 选择合适的时机去后台请求数据
+		{
+			res = PP_rmtCfg_ConnResp(task);
+			if(res > 0)
+			{
+				PP_rmtCfg.state.req  = PP_appData.rmtCfg.connCfgReq.configAccepted;
+				PP_rmtCfg.state.period = tm_get_time();
+			}
+			else if(res < 0)
+			{
+				log_e(LOG_HOZON, "socket send error, reset protocol");
+				sockproxy_socketclose();//by liujian 20190514
+			}
+			else
+			{}
 		}
 		break;
 		default:
@@ -464,6 +483,7 @@ static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task)
 	PP_rmtCfg.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
 	memcpy(&PP_rmtCfg_Pack, &PP_rmtCfg.pack.Header, sizeof(PrvtProt_pack_Header_t));
 	/*body*/
+	PP_rmtCfg.pack.DisBody.mID = PP_MID_CHECK_CFG_REQ;
 	PP_rmtCfg.pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	PP_rmtCfg.pack.DisBody.expTime   = PrvtPro_getTimestamp();
 	PP_rmtCfg.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
@@ -506,6 +526,7 @@ static int PP_rmtCfg_getRequest(PrvtProt_task_t *task)
 	PP_rmtCfg.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
 	memcpy(&PP_rmtCfg_Pack, &PP_rmtCfg.pack.Header, sizeof(PrvtProt_pack_Header_t));
 	/*body*/
+	PP_rmtCfg.pack.DisBody.mID = PP_MID_GET_CFG_REQ;
 	PP_rmtCfg.pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	PP_rmtCfg.pack.DisBody.expTime   = PrvtPro_getTimestamp();
 	PP_rmtCfg.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
@@ -549,6 +570,7 @@ static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task)
 	PP_rmtCfg.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
 	memcpy(&PP_rmtCfg_Pack, &PP_rmtCfg.pack.Header, sizeof(PrvtProt_pack_Header_t));
 	/*body*/
+	PP_rmtCfg.pack.DisBody.mID = PP_MID_CFG_END;
 	PP_rmtCfg.pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	PP_rmtCfg.pack.DisBody.expTime   = PrvtPro_getTimestamp();
 	PP_rmtCfg.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
@@ -571,6 +593,50 @@ static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task)
 	res = sockproxy_MsgSend(PP_rmtCfg_Pack.Header.sign,18 + msgdatalen,NULL);//发送
 
 	protocol_dump(LOG_HOZON, "remote_config_end_request", PP_rmtCfg_Pack.Header.sign, \
+					18 + msgdatalen,1);
+	return res;
+}
+
+/******************************************************
+*函数名：PP_rmtCfg_ConnResp
+
+*形  参：
+
+*返回值：
+
+*描  述： response of remote config request
+
+*备  注：
+******************************************************/
+static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task)
+{
+	long msgdatalen;
+	int res;
+	/*header*/
+	PP_rmtCfg.pack.Header.ver.Byte = task->version;
+	PP_rmtCfg.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+	PP_rmtCfg.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	memcpy(&PP_rmtCfg_Pack, &PP_rmtCfg.pack.Header, sizeof(PrvtProt_pack_Header_t));
+	/*body*/
+	PP_rmtCfg.pack.DisBody.mID = PP_MID_CONN_CFG_RESP;
+	PP_rmtCfg.pack.DisBody.eventTime = PrvtPro_getTimestamp();
+	PP_rmtCfg.pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	PP_rmtCfg.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+
+	/*appdata*/
+	PP_appData.rmtCfg.connCfgReq.configAccepted = 1;
+
+	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_CONN_RESP,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
+									   &PP_rmtCfg.pack.DisBody,&PP_appData))//数据编码打包是否完成
+	{
+		log_e(LOG_HOZON, "uper error");
+		return 0;
+	}
+
+	PP_rmtCfg_Pack.Header.msglen = PrvtPro_BSEndianReverse(18 + msgdatalen);
+	res = sockproxy_MsgSend(PP_rmtCfg_Pack.Header.sign,18 + msgdatalen,NULL);
+
+	protocol_dump(LOG_HOZON, "remote_config_conn_resp", PP_rmtCfg_Pack.Header.sign, \
 					18 + msgdatalen,1);
 	return res;
 }

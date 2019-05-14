@@ -137,4 +137,31 @@ CfgEndReqInfo ::= SEQUENCE
 	cfgVersion			OCTET STRING(SIZE(32))    -- 针对当前ConfigSetting 包进行版本管理,代表包的版本号
 }
 
+CfgReadReqInfo ::= SEQUENCE -- 用于 TAP 向 TCU 读取TCU当前配置
+{
+	settingIds	SEQUENCE(SIZE(1..255)) OF SettingID -- 配置项ID的数组
+}
+
+SettingID ::= SEQUENCE
+{
+	id 		INTEGER(0..65535) -- 配置项id：1-ficm config;2-apn1;3-apn2;4-common config;5-extendConfig
+}
+
+CfgReadRespInfo ::= SEQUENCE --
+{
+	result			BOOLEAN, -- 
+	cfgVersion		OCTET STRING(SIZE(32)), -- 版本号
+	ficmCfg			SEQUENCE(SIZE(1)) OF FICMConfigSettings OPTIONAL, 	-- gb配置项
+	apn1Config		SEQUENCE(SIZE(1)) OF APN1ConfigSettings OPTIONAL, 	-- apn1配置项
+	apn2Config		SEQUENCE(SIZE(1)) OF APN2ConfigSettings OPTIONAL, 	-- apn2配置项
+	commonConfig	SEQUENCE(SIZE(1)) OF CommonConfigSettings OPTIONAL,	-- 常规配置项
+	extendConfig	SEQUENCE(SIZE(1)) OF ExtendConfigSettings OPTIONAL 	-- 扩展配置项
+}
+
+CfgConnRespInfo ::= SEQUENCE --
+{
+	configAccepted	BOOLEAN --
+}
+
+
 END
