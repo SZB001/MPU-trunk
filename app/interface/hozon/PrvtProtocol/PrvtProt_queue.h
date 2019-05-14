@@ -34,6 +34,7 @@ description£º typedef definitions
 typedef enum
 {
 	PP_XCALL = 0,//
+	PP_REMOTE_CFG,
 	PP_MAX
 }PP_RX_OBJ;
 

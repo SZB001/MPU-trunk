@@ -50,6 +50,7 @@ typedef struct
 {
 	uint8_t req;/* 请求:box to tsp */
 	uint8_t resp;/* 响应:box to tsp */
+	uint8_t retrans;/* retransmission */
 	uint8_t waitSt;
 	uint64_t waittime;
 }__attribute__((packed))  PrvtProt_xcallSt_t; /*xcall结构体*/

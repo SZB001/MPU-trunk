@@ -74,13 +74,67 @@ CfgGetReqInfo ::= SEQUENCE -- 用于 TCU 向 TAP 请求配置更新包
 CfgGetRespInfo ::= SEQUENCE -- 用于 TAP 向 TCU 返回配置更新包
 {
 	result			BOOLEAN, -- 
-	ficmCfg			SEQUENCE(SIZE(0..1)) OF FICMConfigSettings OPTIONAL -- gb配置项
+	ficmCfg			SEQUENCE(SIZE(1)) OF FICMConfigSettings OPTIONAL, 	-- gb配置项
+	apn1Config		SEQUENCE(SIZE(1)) OF APN1ConfigSettings OPTIONAL, 	-- apn1配置项
+	apn2Config		SEQUENCE(SIZE(1)) OF APN2ConfigSettings OPTIONAL, 	-- apn2配置项
+	commonConfig	SEQUENCE(SIZE(1)) OF CommonConfigSettings OPTIONAL,	-- 常规配置项
+	extendConfig	SEQUENCE(SIZE(1)) OF ExtendConfigSettings OPTIONAL 	-- 扩展配置项
 }
 
 FICMConfigSettings ::= SEQUENCE
 {
 	token			OCTET STRING(SIZE(1..32)), -- 
-	userID			OCTET STRING(SIZE(1..32)) -- 
+	userID			OCTET STRING(SIZE(1..32))  -- 
+}
+
+APN1ConfigSettings ::= SEQUENCE
+{
+	tspAddress		OCTET STRING(SIZE(1..32)), -- APN address
+	tspUser			OCTET STRING(SIZE(1..16)), -- APN user name
+	tspPass			OCTET STRING(SIZE(1..16)), -- ASCII string of APN Password
+	tspIp			OCTET STRING(SIZE(1..15)), -- ASCII String of TSP IP address
+	tspSms			OCTET STRING(SIZE(1..32)), -- ASCII string of TSP SMS Address
+	tspPort			OCTET STRING(SIZE(1..6))   -- ASCII String of TSP IP Port address Default 40004
+}
+
+APN2ConfigSettings ::= SEQUENCE
+{
+	tspAddress		OCTET STRING(SIZE(1..32)), -- APN address
+	tspUser			OCTET STRING(SIZE(1..16)), -- APN user name
+	tspPass			OCTET STRING(SIZE(1..16))  -- ASCII string of APN Password
+}
+
+CommonConfigSettings ::= SEQUENCE
+{
+	actived				BOOLEAN, -- 是否激活 Default false
+	rcEnabled			BOOLEAN, -- 远程控制使能 Default false
+	svtEnabled			BOOLEAN, -- Default false
+	vsEnabled			BOOLEAN, -- Default false
+	iCallEnabled		BOOLEAN, -- Default false
+	bCallEnabled		BOOLEAN, -- Default false
+	eCallEnabled		BOOLEAN, -- Default false
+	dcEnabled			BOOLEAN, -- Default false
+	dtcEnabled			BOOLEAN, -- Default false
+	journeysEnabled		BOOLEAN, -- Default false
+	onlineInfEnabled	BOOLEAN, -- Default false
+	rChargeEnabled		BOOLEAN, -- Default false
+	btKeyEntryEnabled	BOOLEAN  -- Default false
+}
+
+ExtendConfigSettings ::= SEQUENCE
+{
+	ecallNO			OCTET STRING(SIZE(1..16)), -- ecall 号码
+	bcallNO			OCTET STRING(SIZE(1..16)), -- bcall 号码
+	icallNO			OCTET STRING(SIZE(1..16))  -- icall 号码
+}
+
+CfgEndReqInfo ::= SEQUENCE
+{
+	configSuccess		BOOLEAN, 				  -- 配置是否成功
+	mcuSw				OCTET STRING(SIZE(1..5)), -- mcu零件号和软件版本
+	mpuSw				OCTET STRING(SIZE(1..5)), -- mpu零件号和软件版本
+	configSw			OCTET STRING(SIZE(1..5)), -- TCU 的零件号和软件版本
+	cfgVersion			OCTET STRING(SIZE(32))    -- 针对当前ConfigSetting 包进行版本管理,代表包的版本号
 }
 
 END

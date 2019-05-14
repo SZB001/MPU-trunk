@@ -1,0 +1,56 @@
+
+/*************************************************************************
+*
+*  asn.1编解码工具网址：http://lionet.info/asn1c/download.html
+*	1）Windows installer: asn1c-0.9.21.exe  //比较老，per编解码有问题，慎用！
+*	2）linux installer: asn1c-0.9.28.tar.gz //推荐使用
+*
+*************************************************************************/
+
+1、编写格式引起的错误：
+.asn文件：
+XcallReqinfo ::= SEQUENCE -- （首字母大写）
+{
+    xcallType          INTEGER(0..255) -- （首字母小写）
+	//... -- per编码时，要去掉
+}
+
+2、系统差异报错：
+asn.system.h：
+嵌入式环境下编译是，以下部分需要注释掉；linux系统下编译时，则不注释
+//#ifndef _BSD_SOURCE
+//#define _BSD_SOURCE /* for snprintf() on some linux systems  */
+//#endif
+3、消去告警：
+ber_tlv_length.h：
+增加 #include "asn_codecs.h"
+
+4、打印调试信息：
+asn_internal.h：
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#define ASN_DEBUG(fmt, args...)  fprintf(stderr,fmt,##args)
+
+5、编码后的长度少于预期长度，编码的原始数据字节长度超出某个临界值，解码失败：
+per_support.h:
+/*
+ * This structure supports forming PER output.
+ */
+typedef struct asn_per_outp_s {
+	...
+	uint8_t tmpspace[1024];	/* Preliminary storage to hold data *///这里修改大些
+	...
+} asn_per_outp_t;
+
+6、网友报出的bug
+per_opentype.c(182)
+增加1行：padding = padding % 8; //不加时，一些解码会出错
+
+7、另外，编解码出错时：
+1）注意是否是指针未初始化引起：如多重指针、结构体类型的指针同时该结构体中又包含指针成员
+2）数据类型是否对了，特别是复制粘贴部分的代码，需仔细检查
+3）有SIZE约束的，count和size是否有填写
+
+

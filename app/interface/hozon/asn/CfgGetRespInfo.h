@@ -23,6 +23,10 @@ extern "C" {
 
 /* Forward declarations */
 struct FICMConfigSettings;
+struct APN1ConfigSettings;
+struct APN2ConfigSettings;
+struct CommonConfigSettings;
+struct ExtendConfigSettings;
 
 /* CfgGetRespInfo */
 typedef struct CfgGetRespInfo {
@@ -33,6 +37,30 @@ typedef struct CfgGetRespInfo {
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
 	} *ficmCfg;
+	struct apn1Config {
+		A_SEQUENCE_OF(struct APN1ConfigSettings) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} *apn1Config;
+	struct apn2Config {
+		A_SEQUENCE_OF(struct APN2ConfigSettings) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} *apn2Config;
+	struct commonConfig {
+		A_SEQUENCE_OF(struct CommonConfigSettings) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} *commonConfig;
+	struct extendConfig {
+		A_SEQUENCE_OF(struct ExtendConfigSettings) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} *extendConfig;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
@@ -47,6 +75,10 @@ extern asn_TYPE_descriptor_t asn_DEF_CfgGetRespInfo;
 
 /* Referred external types */
 #include "FICMConfigSettings.h"
+#include "APN1ConfigSettings.h"
+#include "APN2ConfigSettings.h"
+#include "CommonConfigSettings.h"
+#include "ExtendConfigSettings.h"
 
 #endif	/* _CfgGetRespInfo_H_ */
 #include <asn_internal.h>

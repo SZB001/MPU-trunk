@@ -21,6 +21,7 @@ description： include the header file
 #include "hozon_PP_api.h"
 #include "PrvtProt_callCenter.h"
 #include "PrvtProt_xcall.h"
+#include "PrvtProt_remoteConfig.h"
 #include "PrvtProt_shell.h"
 /*******************************************************
 description： global variable definitions
@@ -41,6 +42,7 @@ static int PP_shell_setHeartBeatPeriod(int argc, const char **argv);
 static int PP_shell_setSuspend(int argc, const char **argv);
 static int PP_shell_setEcallReq(int argc, const char **argv);
 static int PP_shell_setEcallResp(int argc, const char **argv);
+static int PP_shell_SetRmtCfgReq(int argc, const char **argv);
 /******************************************************
 description： function code
 ******************************************************/
@@ -61,6 +63,7 @@ void PrvtProt_shell_init(void)
 	shell_cmd_register("HOZON_SetSuspend", PP_shell_setSuspend, "set HOZON PrvtProt suspend");
 	shell_cmd_register("HOZON_SetEcallReq", PP_shell_setEcallReq, "set HOZON PrvtProt ecall request");
 	shell_cmd_register("HOZON_SetEcallResp", PP_shell_setEcallResp, "set HOZON PrvtProt ecall response");
+	shell_cmd_register("HOZON_SetRmtCfgReq", PP_shell_SetRmtCfgReq, "set HOZON PrvtProt remote config request");
 }
 
 
@@ -186,6 +189,34 @@ static int PP_shell_setEcallResp(int argc, const char **argv)
 	log_o(LOG_HOZON, "EcallReq = %d",EcallResp);
 	PP_xcall_SetEcallResp((uint8_t)EcallResp);
 	PrvtPro_SetcallCCReq((uint8_t)EcallResp);
+    sleep(1);
+    return 0;
+}
+
+
+/******************************************************
+*函数名：PP_shell_SetRmtCfgReq
+
+*形  参：设置
+
+
+*返回值：void
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PP_shell_SetRmtCfgReq(int argc, const char **argv)
+{
+	unsigned int rmtCfgReq;
+    if (argc != 1)
+    {
+        shellprintf(" usage: HOZON_PP_SetRemoteCfgReq <remote config req>\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &rmtCfgReq);
+	PP_rmtCfg_SetCfgReq((uint8_t)rmtCfgReq);
     sleep(1);
     return 0;
 }
