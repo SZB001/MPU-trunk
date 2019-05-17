@@ -147,7 +147,7 @@ typedef struct
 /* Dispatcher Body struct */
 typedef struct
 {
-	uint8_t	 	aID[3];
+	uint8_t	 	aID[4];
 	uint8_t	 	mID;
 	long	eventTime;
 	long	expTime	/* OPTIONAL */;
@@ -163,201 +163,13 @@ typedef struct
 	long	result	/* OPTIONAL */;
 }PrvtProt_DisptrBody_t;
 
-/* application data struct */
-/***********************************
-			Xcall
-***********************************/
-typedef struct
-{
-	int  gpsSt;//gps状态 0-无效；1-有效
-	long gpsTimestamp;//gps时间戳
-	long latitude;//纬度 x 1000000,当GPS信号无效时，值为0
-	long longitude;//经度 x 1000000,当GPS信号无效时，值为0
-	long altitude;//高度（m）
-	long heading;//车头方向角度，0为正北方向
-	long gpsSpeed;//速度 x 10，单位km/h
-	long hdop;//水平精度因子 x 10
-}PrvtProt_Rvsposition_t;
-
-typedef struct
-{
-	long xcallType;//类型  1-道路救援   2-紧急救援（ecall）  3-400电话进线
-	long engineSt;//启动状态；1-熄火；2-启动
-	long totalOdoMr;//里程有效范围：0 - 1000000（km）
-	PrvtProt_Rvsposition_t gpsPos;//车辆救援位置
-	long srsSt;//安全气囊状态 1- 正常；2 - 弹出
-	long updataTime;//数据时间戳
-	long battSOCEx;//车辆电池剩余电量：0-10000（0%-100%）
-}PrvtProt_App_Xcall_t;
-
-/***********************************
-			remote config
-***********************************/
-typedef struct
-{
-	uint8_t mcuSw[5];
-	uint8_t mpuSw[5];
-	uint8_t vehicleVin[17];
-	uint8_t iccID[20];
-	uint8_t btMacAddr[12];
-	uint8_t configSw[5];
-	uint8_t cfgVersion[32];
-	uint8_t mcuSwlen;
-	uint8_t mpuSwlen;
-	uint8_t vehicleVinlen;
-	uint8_t iccIDlen;
-	uint8_t btMacAddrlen;
-	uint8_t configSwlen;
-	uint8_t cfgVersionlen;
-	uint8_t *mcuSw_ptr;
-	uint8_t *mpuSw_ptr;
-	uint8_t *vehicleVin_ptr;
-	uint8_t *iccID_ptr;
-	uint8_t *btMacAddr_ptr;
-	uint8_t *configSw_ptr;
-	uint8_t *cfgVersion_ptr;
-}App_rmtCfg_checkReq_t;
-typedef struct
-{
-	int needUpdate;
-	uint8_t cfgVersion[32];
-	uint8_t cfgVersionlen;
-	uint8_t *cfgVersion_ptr;
-}App_rmtCfg_checkResp_t;
-typedef struct
-{
-	uint8_t cfgVersion[32];
-	uint8_t cfgVersionlen;
-	uint8_t *cfgVersion_ptr;
-}App_rmtCfg_getReq_t;
-typedef struct
-{
-	int result;
-	uint8_t token[32];
-	uint8_t userID[32];
-	uint8_t tspAddr[32];
-	uint8_t tspUser[16];
-	uint8_t tspPass[16];
-	uint8_t tspIP[15];
-	uint8_t tspSms[32];
-	uint8_t tspPort[6];
-	uint8_t apn2Address[32];
-	uint8_t apn2User[16];
-	uint8_t apn2Pass[6];
-	int actived;
-	int rcEnabled;
-	int svtEnabled;
-	int vsEnabled;
-	int iCallEnabled;
-	int bCallEnabled;
-	int eCallEnabled;
-	int dcEnabled;
-	int dtcEnabled;
-	int journeysEnabled;
-	int onlineInfEnabled;
-	int rChargeEnabled;
-	int btKeyEntryEnabled;
-	uint8_t ecallNO[16];
-	uint8_t bcallNO[16];
-	uint8_t ccNO[16];
-	uint8_t tokenlen;
-	uint8_t userIDlen;
-	uint8_t tspAddrlen;
-	uint8_t tspUserlen;
-	uint8_t tspPasslen;
-	uint8_t tspIPlen;
-	uint8_t tspSmslen;
-	uint8_t tspPortlen;
-	uint8_t apn2Addresslen;
-	uint8_t apn2Userlen;
-	uint8_t apn2Passlen;
-	uint8_t ecallNOlen;
-	uint8_t bcallNOlen;
-	uint8_t ccNOlen;
-	uint8_t *token_ptr;
-	uint8_t *userID_ptr;
-	uint8_t *tspAddr_ptr;
-	uint8_t *tspUser_ptr;
-	uint8_t *tspPass_ptr;
-	uint8_t *tspIP_ptr;
-	uint8_t *tspSms_ptr;
-	uint8_t *tspPort_ptr;
-	uint8_t *apn2Address_ptr;
-	uint8_t *apn2User_ptr;
-	uint8_t *apn2Pass_ptr;
-	uint8_t *ecallNO_ptr;
-	uint8_t *bcallNO_ptr;
-	uint8_t *ccNO_ptr;
-	uint8_t ficmConfigValid;
-	uint8_t apn1ConfigValid;
-	uint8_t apn2ConfigValid;
-	uint8_t commonConfigValid;
-	uint8_t extendConfigValid;
-}App_rmtCfg_getResp_t;
-typedef struct
-{
-	int configSuccess;
-	uint8_t mcuSw[5];
-	uint8_t mpuSw[5];
-	uint8_t configSw[5];
-	uint8_t cfgVersion[32];
-	uint8_t mcuSwlen;
-	uint8_t mpuSwlen;
-	uint8_t configSwlen;
-	uint8_t cfgVersionlen;
-	uint8_t *mcuSw_ptr;
-	uint8_t *mpuSw_ptr;
-	uint8_t *configSw_ptr;
-	uint8_t *cfgVersion_ptr;
-}App_rmtCfg_EndCfgReq_t;
-typedef struct
-{
-	int configAccepted;
-}App_rmtCfg_CfgconnReq_t;
-
-typedef struct
-{
-	/* check config request */
-	App_rmtCfg_checkReq_t checkCfgReq;
-
-	/* check config response */
-	App_rmtCfg_checkResp_t checkCfgResp;
-
-	/* get config req */
-	App_rmtCfg_getReq_t getCfgReq;
-
-	/* get config response */
-	App_rmtCfg_getResp_t getCfgResp;
-
-	/* end config req */
-	App_rmtCfg_EndCfgReq_t EndCfgReq;
-
-	/* config  conn req */
-	App_rmtCfg_CfgconnReq_t connCfgReq;
-}PrvtProt_App_rmtCfg_t;
-
-typedef struct
-{
-	PrvtProt_App_Xcall_t Xcall;//xcall
-	PrvtProt_App_rmtCfg_t rmtCfg;//remote config
-}PrvtProt_appData_t;
-
-/* message data struct */
-typedef struct
-{
-	PrvtProt_DisptrBody_t	DisBody;
-	PrvtProt_appData_t 		appData;
-}PrvtProt_msgData_t;
 /******union definitions*****/
 
 /*******************************************************
 description： variable External declaration
 *******************************************************/
-//extern PrvtProt_task_t 	pp_task;
-//extern PrvtProt_pack_Header_t 	PP_PackHeader[PP_APP_MID_MAX];
-//extern PrvtProt_pack_t 			PP_Pack[PP_APP_MID_MAX];
-//extern PrvtProt_DisptrBody_t	PP_DisptrBody[PP_APP_MID_MAX];
-extern PrvtProt_appData_t 		PP_appData;//共用的结构体（app data数据打包时使用）
+//extern PrvtProt_appData_t 		PP_appData;//共用的结构体（app data数据打包时使用）
+
 /*******************************************************
 description： function External declaration
 *******************************************************/

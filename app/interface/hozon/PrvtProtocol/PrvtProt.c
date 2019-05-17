@@ -63,8 +63,21 @@ static PrvtProt_pack_Header_t 	PP_PackHeader_HB =
 	"**",	0x30,	0,		0x70,		0,			0x01,	18,		  0	  //heart beat
 };
 
+typedef struct
+{
+	PrvtProt_App_Xcall_t Xcall;//xcall
+	PrvtProt_App_rmtCfg_t rmtCfg;//remote config
+}PrvtProt_appData_t;
 
-PrvtProt_appData_t 		PP_appData =
+/* message data struct */
+typedef struct
+{
+	PrvtProt_DisptrBody_t	DisBody;
+	PrvtProt_appData_t 		appData;
+}PrvtProt_msgData_t;
+
+#if 0
+ PrvtProt_appData_t 		PP_appData =
 {
 	/*xcallType engineSt totalOdoMr	gps{gpsSt latitude longitude altitude heading gpsSpeed hdop}   srsSt  updataTime	battSOCEx*/
 	{	0,		0xff,	 0,		       {0,    0,       0,       0,        0,       0,       0  },	1,		0,			 0  },
@@ -100,7 +113,7 @@ PrvtProt_appData_t 		PP_appData =
 			{0}
 	}
 };
-
+#endif
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -149,7 +162,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			pp_task.suspend = 0;
 			pp_task.nonce = 0;/* TCP会话ID 由TSP平台产生 */
 			pp_task.version = 0x30;/* 大/小版本(由TSP平台定义)*/
-			pp_task.tboxid = 204;/* 平台通过tboxID与tboxSN映射 */
+			pp_task.tboxid = 27;/* 平台通过tboxID与tboxSN映射 */
 		}
         break;
         case INIT_PHASE_RESTORE:
@@ -282,8 +295,9 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 {	
 	int rlen = 0;
 	uint8_t rcvbuf[1456U] = {0};
-	static PrvtProt_pack_t 	PP_RxPack;
+	PrvtProt_pack_t 	RxPack;
 	
+	memset(&RxPack,0 , sizeof(PrvtProt_pack_t));
 	if ((rlen = PrvtProtCfg_rcvMsg(rcvbuf,1456)) <= 0)
     {
 		return 0;
@@ -301,8 +315,9 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 	{
 		return 0;
 	}
-	PrvtPro_makeUpPack(&PP_RxPack,rcvbuf,rlen);
-	PrvtPro_RxMsgHandle(task,&PP_RxPack,rlen);
+	PrvtPro_makeUpPack(&RxPack,rcvbuf,rlen);
+	//protocol_dump(LOG_HOZON, "PRVT_PROT after makeUpPack", PP_RxPack.Header.sign, rlen, 0);
+	PrvtPro_RxMsgHandle(task,&RxPack,rlen);
 
 	return 0;
 }
@@ -320,14 +335,13 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 ******************************************************/
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len)
 {
-	static int rlen = 0;
+	int rlen = 0;
+	int size = len;
 	uint8_t rcvstep = 0;
-
-	rlen = 0;
 	RxPack->Header.sign[0] = input[rlen++];
 	RxPack->Header.sign[1] = input[rlen++];
-	len = len-2;
-	while(len--)
+	size = size-2;
+	while(size--)
 	{
 		switch(rcvstep)
 		{
@@ -339,9 +353,11 @@ static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len)
 			break;
 			case 1://接收tcp会话id
 			{
-				RxPack->Header.nonce = PrvtPro_BSEndianReverse(*((long*)(&input[rlen])));
-				rlen += 4;
-				rcvstep = 2;
+				RxPack->Header.nonce = (RxPack->Header.nonce << 8) + input[rlen++];
+				if(7 == rlen)
+				{
+					rcvstep = 2;
+				}
 			}
 			break;	
 			case 2://编码、连接等方式
@@ -364,16 +380,20 @@ static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len)
 			break;
 			case 5://报文长度
 			{
-				RxPack->Header.msglen = PrvtPro_BSEndianReverse(*((long*)(&input[rlen])));
-				rlen += 4;
-				rcvstep = 6;
+				RxPack->Header.msglen = (RxPack->Header.msglen << 8) + input[rlen++];
+				if(14 == rlen)
+				{
+					rcvstep = 6;
+				}
 			}
 			break;
 			case 6://tboxid
 			{
-				RxPack->Header.tboxid = PrvtPro_BSEndianReverse(*((long*)(&input[rlen])));
-				rlen += 4;
-				rcvstep = 7;
+				RxPack->Header.tboxid = (RxPack->Header.tboxid << 8) + input[rlen++];
+				if(18 == rlen)
+				{
+					rcvstep = 7;
+				}
 			}
 			break;
 			case 7://message data
@@ -418,10 +438,10 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 		break;
 		case PP_NGTP_TYPE://ngtp
 		{//解码出数据，写入对应的队列
-			PrvtProt_msgData_t MsgData;
-			PrvtPro_decodeMsgData(rxPack->msgdata,(len - 18),&MsgData,0);
-			aid = (MsgData.DisBody.aID[0] - 0x30)*100 +  (MsgData.DisBody.aID[1] - 0x30)*10 + \
-					  (MsgData.DisBody.aID[2] - 0x30);
+			PrvtProt_DisptrBody_t MsgDataBody;
+			PrvtPro_decodeMsgData(rxPack->msgdata,(len - 18),&MsgDataBody,NULL);
+			aid = (MsgDataBody.aID[0] - 0x30)*100 +  (MsgDataBody.aID[1] - 0x30)*10 + \
+					  (MsgDataBody.aID[2] - 0x30);
 			switch(aid)
 			{
 				case PP_AID_XCALL://XCALL

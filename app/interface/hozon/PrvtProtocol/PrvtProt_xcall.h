@@ -55,7 +55,32 @@ typedef struct
 	uint64_t waittime;
 }__attribute__((packed))  PrvtProt_xcallSt_t; /*xcall结构体*/
 
+/* application data struct */
+/***********************************
+			Xcall
+***********************************/
+typedef struct
+{
+	int  gpsSt;//gps状态 0-无效；1-有效
+	long gpsTimestamp;//gps时间戳
+	long latitude;//纬度 x 1000000,当GPS信号无效时，值为0
+	long longitude;//经度 x 1000000,当GPS信号无效时，值为0
+	long altitude;//高度（m）
+	long heading;//车头方向角度，0为正北方向
+	long gpsSpeed;//速度 x 10，单位km/h
+	long hdop;//水平精度因子 x 10
+}PrvtProt_Rvsposition_t;
 
+typedef struct
+{
+	long xcallType;//类型  1-道路救援   2-紧急救援（ecall）  3-400电话进线
+	long engineSt;//启动状态；1-熄火；2-启动
+	long totalOdoMr;//里程有效范围：0 - 1000000（km）
+	PrvtProt_Rvsposition_t gpsPos;//车辆救援位置
+	long srsSt;//安全气囊状态 1- 正常；2 - 弹出
+	long updataTime;//数据时间戳
+	long battSOCEx;//车辆电池剩余电量：0-10000（0%-100%）
+}PrvtProt_App_Xcall_t;
 /******union definitions*****/
 
 /*******************************************************

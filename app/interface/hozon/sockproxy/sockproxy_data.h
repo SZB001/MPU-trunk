@@ -19,7 +19,7 @@ description： macro definitions
 
 /**********宏常量定义*********/
 #define SP_DATA_LNG  1456U/*数据队列中数据长*/
-#define SP_QUEUE_LNG  3U/*数据队列长*/
+#define SP_QUEUE_LNG  10U/*数据队列长*/
 
 /***********宏函数***********/
 

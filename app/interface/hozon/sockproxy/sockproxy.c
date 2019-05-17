@@ -203,7 +203,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	sockproxy_getURL(&state->sock_addr);
     if(sockproxy_SkipSockCheck() || !state->sock_addr.port || !state->sock_addr.url[0])
     {
-    	log_e(LOG_SOCK_PROXY, "state.network = %d",sockproxy_SkipSockCheck());
+    	//log_e(LOG_SOCK_PROXY, "state.network = %d",sockproxy_SkipSockCheck());
         return -1;
     }
 
@@ -442,7 +442,7 @@ static void sockproxy_gbMakeupMsg(uint8_t *data,int len)
 					else//数据长度溢出
 					{
 						sockSt.rcvstep = PP_RCV_IDLE;
-						sockSt.rcvlen = 0;
+						//sockSt.rcvlen = 0;
 						sockSt.rcvType = PP_RCV_UNRCV;
 						return;
 					}
@@ -529,7 +529,7 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 					else if(sockSt.datalen > SOCK_PROXY_RCVLEN)//数据长度溢出
 					{
 						sockSt.rcvstep = PP_RCV_IDLE;
-						sockSt.rcvlen = 0;
+						//sockSt.rcvlen = 0;
 						sockSt.rcvType = PP_RCV_UNRCV;
 						return;
 					}

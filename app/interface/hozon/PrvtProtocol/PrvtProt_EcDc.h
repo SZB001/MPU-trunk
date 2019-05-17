@@ -60,8 +60,8 @@ description£º variable External declaration
 /*******************************************************
 description£º function External declaration
 *******************************************************/
-extern int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
+extern int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 							  void *disptrBody, void *appchoice);
 extern int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen, \
-								  void *MsgData,int isdecodeAppdata);
+										void *DisBody,void *appData);
 #endif 

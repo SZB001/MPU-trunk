@@ -19,7 +19,7 @@ description： macro definitions
 
 /**********宏常量定义*********/
 #define PP_DATA_LNG  1456U/*数据队列中数据长*/
-#define PP_QUEUE_LNG  1U/*数据队列长*/
+#define PP_QUEUE_LNG  3U/*数据队列长*/
 
 /***********宏函数***********/
 
@@ -50,7 +50,7 @@ typedef struct
 {
 	unsigned char  HeadLabel;/*头标签*/
 	unsigned char  TialLabel;/*尾标签*/
-	PPCache_t PPCache[PP_DATA_LNG];
+	PPCache_t PPCache[PP_QUEUE_LNG];
 }PPObj_t;/*接收对象结构体*/
 
 /******union definitions*****/

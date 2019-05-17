@@ -41,6 +41,8 @@ description： include the header file
 #include "list.h"
 #include "../../support/protocol.h"
 #include "PrvtProt_cfg.h"
+#include "PrvtProt_xcall.h"
+#include "PrvtProt_remoteConfig.h"
 #include "PrvtProt.h"
 #include "PrvtProt_EcDc.h"
 
@@ -73,8 +75,9 @@ description： function declaration
 
 /*Static function declaration*/
 static int PrvtPro_writeout(const void *buffer,size_t size,void *key);
+#if 0
 static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,void *RxAppdata);
-
+#endif
 /******************************************************
 description： function code
 ******************************************************/
@@ -89,13 +92,13 @@ description： function code
 
 *备  注：
 ******************************************************/
-int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
+int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					   void *disptrBody, void *appchoice)
 {
 	static uint8_t key;
 	Bodyinfo_t Bodydata;
 	PrvtProt_DisptrBody_t 	*DisptrBody = (PrvtProt_DisptrBody_t*)disptrBody;
-	PrvtProt_appData_t		*Appchoice	= (PrvtProt_appData_t*)appchoice;
+	//PrvtProt_appData_t		*Appchoice	= (PrvtProt_appData_t*)appchoice;
 	int i;
 	
 	memset(&Bodydata,0 , sizeof(Bodyinfo_t));
@@ -142,8 +145,9 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 		case ECDC_XCALL_REQ:
 		{
 			XcallReqinfo_t XcallReq;	
+			PrvtProt_App_Xcall_t *XcallReq_ptr = (PrvtProt_App_Xcall_t*)appchoice;
 			memset(&XcallReq,0 , sizeof(XcallReqinfo_t));
-			XcallReq.xcallType = Appchoice->Xcall.xcallType;
+			XcallReq.xcallType = XcallReq_ptr->xcallType;
 			
 			ec = uper_encode(pduType_XcallReq,(void *) &XcallReq,PrvtPro_writeout,&key);
 			log_i(LOG_HOZON, "uper encode appdata ec.encoded = %d",ec.encoded);
@@ -159,28 +163,28 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 			XcallRespinfo_t XcallResp;
 			RvsposInfo_t Rvspos;
 			RvsposInfo_t *Rvspos_ptr = &Rvspos;
-
+			PrvtProt_App_Xcall_t *XcallResp_ptr = (PrvtProt_App_Xcall_t*)appchoice;
 			memset(&XcallResp,0 , sizeof(XcallRespinfo_t));
 			memset(&Rvspos,0 , sizeof(RvsposInfo_t));
 
-			XcallResp.xcallType = Appchoice->Xcall.xcallType;
-			XcallResp.engineSt = Appchoice->Xcall.engineSt;
-			XcallResp.ttOdoMeter = Appchoice->Xcall.totalOdoMr;
-			Rvspos.gpsSt = Appchoice->Xcall.gpsPos.gpsSt;//gps状态 0-无效；1-有效
-			Rvspos.gpsTimestamp = Appchoice->Xcall.gpsPos.gpsTimestamp;//gps时间戳
-			Rvspos.latitude = Appchoice->Xcall.gpsPos.latitude;//纬度 x 1000000,当GPS信号无效时，值为0
-			Rvspos.longitude = Appchoice->Xcall.gpsPos.longitude;//经度 x 1000000,当GPS信号无效时，值为0
-			Rvspos.altitude = Appchoice->Xcall.gpsPos.altitude;//高度（m）
-			Rvspos.heading = Appchoice->Xcall.gpsPos.heading;//车头方向角度，0为正北方向
-			Rvspos.gpsSpeed = Appchoice->Xcall.gpsPos.gpsSpeed;//速度 x 10，单位km/h
-			Rvspos.hdop = Appchoice->Xcall.gpsPos.hdop;//水平精度因子 x 10
+			XcallResp.xcallType = XcallResp_ptr->xcallType;
+			XcallResp.engineSt = XcallResp_ptr->engineSt;
+			XcallResp.ttOdoMeter = XcallResp_ptr->totalOdoMr;
+			Rvspos.gpsSt = XcallResp_ptr->gpsPos.gpsSt;//gps状态 0-无效；1-有效
+			Rvspos.gpsTimestamp = XcallResp_ptr->gpsPos.gpsTimestamp;//gps时间戳
+			Rvspos.latitude = XcallResp_ptr->gpsPos.latitude;//纬度 x 1000000,当GPS信号无效时，值为0
+			Rvspos.longitude = XcallResp_ptr->gpsPos.longitude;//经度 x 1000000,当GPS信号无效时，值为0
+			Rvspos.altitude = XcallResp_ptr->gpsPos.altitude;//高度（m）
+			Rvspos.heading = XcallResp_ptr->gpsPos.heading;//车头方向角度，0为正北方向
+			Rvspos.gpsSpeed = XcallResp_ptr->gpsPos.gpsSpeed;//速度 x 10，单位km/h
+			Rvspos.hdop = XcallResp_ptr->gpsPos.hdop;//水平精度因子 x 10
 			XcallResp.gpsPos.list.array = &Rvspos_ptr;
 			XcallResp.gpsPos.list.size =0;
 			XcallResp.gpsPos.list.count =1;
 
-			XcallResp.srsSt = Appchoice->Xcall.srsSt;
-			XcallResp.updataTime = Appchoice->Xcall.updataTime;
-			XcallResp.battSOCEx = Appchoice->Xcall.battSOCEx;
+			XcallResp.srsSt = XcallResp_ptr->srsSt;
+			XcallResp.updataTime = XcallResp_ptr->updataTime;
+			XcallResp.battSOCEx = XcallResp_ptr->battSOCEx;
 
 			ec = uper_encode(pduType_XcallResp,(void *) &XcallResp,PrvtPro_writeout,&key);
 
@@ -193,26 +197,27 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 		break;
 		case ECDC_RMTCFG_CHECK_REQ:
 		{
-			log_i(LOG_HOZON, "encode Cfg_check_resp\n");
+			log_i(LOG_HOZON, "encode Cfg_check_req\n");
 			CfgCheckReqInfo_t cfgcheckReq;
+			PrvtProt_App_rmtCfg_t *rmtCfgCheckReq_ptr = (PrvtProt_App_rmtCfg_t*)appchoice;
 			memset(&cfgcheckReq,0 , sizeof(CfgCheckReqInfo_t));
 
 			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 
-			cfgcheckReq.mcuSw.buf = Appchoice->rmtCfg.checkCfgReq.mcuSw;
-			cfgcheckReq.mcuSw.size = Appchoice->rmtCfg.checkCfgReq.mcuSwlen;
-			cfgcheckReq.mpuSw.buf = Appchoice->rmtCfg.checkCfgReq.mpuSw;
-			cfgcheckReq.mpuSw.size = Appchoice->rmtCfg.checkCfgReq.mpuSwlen;
-			cfgcheckReq.vehicleVIN.buf = Appchoice->rmtCfg.checkCfgReq.vehicleVin;
-			cfgcheckReq.vehicleVIN.size = Appchoice->rmtCfg.checkCfgReq.vehicleVinlen;
-			cfgcheckReq.iccID.buf = Appchoice->rmtCfg.checkCfgReq.iccID;
-			cfgcheckReq.iccID.size = Appchoice->rmtCfg.checkCfgReq.iccIDlen;
-			cfgcheckReq.btMacAddr.buf = Appchoice->rmtCfg.checkCfgReq.btMacAddr;
-			cfgcheckReq.btMacAddr.size = Appchoice->rmtCfg.checkCfgReq.btMacAddrlen;
-			cfgcheckReq.configSw.buf = Appchoice->rmtCfg.checkCfgReq.configSw;
-			cfgcheckReq.configSw.size = Appchoice->rmtCfg.checkCfgReq.configSwlen;
-			cfgcheckReq.cfgVersion.buf = Appchoice->rmtCfg.checkCfgReq.cfgVersion;
-			cfgcheckReq.cfgVersion.size = Appchoice->rmtCfg.checkCfgReq.cfgVersionlen;
+			cfgcheckReq.mcuSw.buf = rmtCfgCheckReq_ptr->checkCfgReq.mcuSw;
+			cfgcheckReq.mcuSw.size = rmtCfgCheckReq_ptr->checkCfgReq.mcuSwlen;
+			cfgcheckReq.mpuSw.buf = rmtCfgCheckReq_ptr->checkCfgReq.mpuSw;
+			cfgcheckReq.mpuSw.size = rmtCfgCheckReq_ptr->checkCfgReq.mpuSwlen;
+			cfgcheckReq.vehicleVIN.buf = rmtCfgCheckReq_ptr->checkCfgReq.vehicleVin;
+			cfgcheckReq.vehicleVIN.size = rmtCfgCheckReq_ptr->checkCfgReq.vehicleVinlen;
+			cfgcheckReq.iccID.buf = rmtCfgCheckReq_ptr->checkCfgReq.iccID;
+			cfgcheckReq.iccID.size = rmtCfgCheckReq_ptr->checkCfgReq.iccIDlen;
+			cfgcheckReq.btMacAddr.buf = rmtCfgCheckReq_ptr->checkCfgReq.btMacAddr;
+			cfgcheckReq.btMacAddr.size = rmtCfgCheckReq_ptr->checkCfgReq.btMacAddrlen;
+			cfgcheckReq.configSw.buf = rmtCfgCheckReq_ptr->checkCfgReq.configSw;
+			cfgcheckReq.configSw.size = rmtCfgCheckReq_ptr->checkCfgReq.configSwlen;
+			cfgcheckReq.cfgVersion.buf = rmtCfgCheckReq_ptr->checkCfgReq.cfgVersion;
+			cfgcheckReq.cfgVersion.size = rmtCfgCheckReq_ptr->checkCfgReq.cfgVersionlen;
 			//*/
 			ec = uper_encode(pduType_Cfg_check_req,(void *) &cfgcheckReq,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
@@ -224,14 +229,15 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 		break;
 		case ECDC_RMTCFG_GET_REQ:
 		{
-			log_i(LOG_HOZON, "encode Cfg_check_req\n");
+			log_i(LOG_HOZON, "encode Cfg_get_req\n");
 			CfgGetReqInfo_t cfgGetReq;
+			PrvtProt_App_rmtCfg_t *rmtCfgGetReq_ptr = (PrvtProt_App_rmtCfg_t*)appchoice;
 			memset(&cfgGetReq,0 , sizeof(CfgGetReqInfo_t));
 
 			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 
-			cfgGetReq.cfgVersion.buf = Appchoice->rmtCfg.getCfgReq.cfgVersion_ptr;
-			cfgGetReq.cfgVersion.size = Appchoice->rmtCfg.getCfgReq.cfgVersionlen;
+			cfgGetReq.cfgVersion.buf = rmtCfgGetReq_ptr->getCfgReq.cfgVersion_ptr;
+			cfgGetReq.cfgVersion.size = rmtCfgGetReq_ptr->getCfgReq.cfgVersionlen;
 			ec = uper_encode(pduType_Cfg_get_req,(void *) &cfgGetReq,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
@@ -242,21 +248,23 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 		break;
 		case ECDC_RMTCFG_END_REQ:
 		{
-			log_i(LOG_HOZON, "encode Cfg_end_request\n");
+			log_i(LOG_HOZON, "encode Cfg_end_req\n");
 			CfgEndReqInfo_t CfgEndReq;
+			//PrvtProt_App_rmtCfg_t appdata;
+			PrvtProt_App_rmtCfg_t *rmtCfgEndReq_ptr = (PrvtProt_App_rmtCfg_t*)appchoice;
 			memset(&CfgEndReq,0 , sizeof(CfgEndReqInfo_t));
 
 			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 
-			CfgEndReq.configSuccess = Appchoice->rmtCfg.EndCfgReq.configSuccess;
-			CfgEndReq.mcuSw.buf = Appchoice->rmtCfg.EndCfgReq.mcuSw_ptr;
-			CfgEndReq.mcuSw.size = Appchoice->rmtCfg.EndCfgReq.mcuSwlen;
-			CfgEndReq.cfgVersion.buf = Appchoice->rmtCfg.EndCfgReq.cfgVersion_ptr;
-			CfgEndReq.cfgVersion.size = Appchoice->rmtCfg.EndCfgReq.cfgVersionlen;
-			CfgEndReq.configSw.buf = Appchoice->rmtCfg.EndCfgReq.configSw_ptr;
-			CfgEndReq.configSw.size = Appchoice->rmtCfg.EndCfgReq.configSwlen;
-			CfgEndReq.mpuSw.buf = Appchoice->rmtCfg.EndCfgReq.mpuSw_ptr;
-			CfgEndReq.mpuSw.size = Appchoice->rmtCfg.EndCfgReq.mpuSwlen;
+			CfgEndReq.configSuccess = rmtCfgEndReq_ptr->EndCfgReq.configSuccess;
+			CfgEndReq.mcuSw.buf 	= rmtCfgEndReq_ptr->EndCfgReq.mcuSw_ptr;
+			CfgEndReq.mcuSw.size 	= rmtCfgEndReq_ptr->EndCfgReq.mcuSwlen;
+			CfgEndReq.cfgVersion.buf = rmtCfgEndReq_ptr->EndCfgReq.cfgVersion_ptr;
+			CfgEndReq.cfgVersion.size = rmtCfgEndReq_ptr->EndCfgReq.cfgVersionlen;
+			CfgEndReq.configSw.buf 	 = rmtCfgEndReq_ptr->EndCfgReq.configSw_ptr;
+			CfgEndReq.configSw.size  = rmtCfgEndReq_ptr->EndCfgReq.configSwlen;
+			CfgEndReq.mpuSw.buf  = rmtCfgEndReq_ptr->EndCfgReq.mpuSw_ptr;
+			CfgEndReq.mpuSw.size = rmtCfgEndReq_ptr->EndCfgReq.mpuSwlen;
 			ec = uper_encode(pduType_Cfg_end_req,(void *) &CfgEndReq,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
@@ -267,12 +275,14 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 		break;
 		case ECDC_RMTCFG_CONN_RESP:
 		{
-			log_i(LOG_HOZON, "encode Cfg_end_request\n");
+			log_i(LOG_HOZON, "encode Cfg_conn_req\n");
 			CfgConnRespInfo_t CfgConnResp;
+			//PrvtProt_App_rmtCfg_t appdata;
+			PrvtProt_App_rmtCfg_t *rmtCfgConnResp_ptr = (PrvtProt_App_rmtCfg_t*)appchoice;
 			memset(&CfgConnResp,0 , sizeof(CfgConnRespInfo_t));
 
 			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
-
+			CfgConnResp.configAccepted = rmtCfgConnResp_ptr->connCfgResp.configAccepted;
 			ec = uper_encode(pduType_Cfg_conn_resp,(void *) &CfgConnResp,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
@@ -321,13 +331,31 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 		msgData[tboxmsglen++]= tboxAppdata[i];
 	}
 	*msgDataLen = 1 + tboxDisBodydataLen + tboxAppdataLen;//填充 message data lengtn
-	
+
 /*********************************************
-				解码
-*********************************************/	
-#if 1
-	PrvtPro_decodeMsgData(msgData,tboxDisBodydataLen+1+tboxAppdataLen,NULL,1);
-#endif	
+			解码
+*********************************************/
+	PrvtProt_DisptrBody_t disbody;
+	switch(type)
+	{
+		case ECDC_XCALL_REQ:
+		case ECDC_XCALL_RESP:
+		{
+			PrvtProt_App_Xcall_t xcallappdata;
+			PrvtPro_decodeMsgData(msgData,*msgDataLen,&disbody,&xcallappdata);
+		}
+		break;
+		case ECDC_RMTCFG_CHECK_REQ:
+		case ECDC_RMTCFG_GET_REQ:
+		case ECDC_RMTCFG_END_REQ:
+		case ECDC_RMTCFG_CONN_RESP:
+		{
+			PrvtProt_App_rmtCfg_t rmtCfgappdata;
+			PrvtPro_decodeMsgData(msgData,*msgDataLen,&disbody,&rmtCfgappdata);
+		}
+		break;
+	}
+
 	return 0;
 }
 
@@ -342,9 +370,9 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,long *msgDataLen, \
 
 *备  注：
 ******************************************************/
-int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *MsgData,int isdecodeAppdata)
+int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisBody,void *appData)
 {
-	PrvtProt_msgData_t *msgData = (PrvtProt_msgData_t*)MsgData;
+	PrvtProt_DisptrBody_t *msgDataBody = (PrvtProt_DisptrBody_t*)DisBody;
 	asn_dec_rval_t dc;
 	asn_codec_ctx_t *asn_codec_ctx = 0 ;
 	Bodyinfo_t RxBodydata;
@@ -364,80 +392,81 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *MsgD
 		return -1;
 	}
 	
-	if(msgData != NULL)
+	if(msgDataBody != NULL)
 	{
-		msgData->DisBody.aID[0] = RxBodydata.aID.buf[0];
-		msgData->DisBody.aID[1] = RxBodydata.aID.buf[1];
-		msgData->DisBody.aID[2] = RxBodydata.aID.buf[2];
-		msgData->DisBody.mID 	= RxBodydata.mID;
-		msgData->DisBody.eventTime 	= RxBodydata.eventTime;
-		log_i(LOG_HOZON, "RxBodydata.aid = %s",msgData->DisBody.aID);
-		log_i(LOG_HOZON, "RxBodydata.mID = %d",RxBodydata.mID);
-		log_i(LOG_HOZON, "RxBodydata.eventTime = %d",RxBodydata.eventTime);
+		//msgDataBody->aID[0] = RxBodydata.aID.buf[0];
+		//msgDataBody->aID[1] = RxBodydata.aID.buf[1];
+		//msgDataBody->aID[2] = RxBodydata.aID.buf[2];
+		memcpy(msgDataBody->aID,RxBodydata.aID.buf,sizeof(char)*3);
+		msgDataBody->mID 	= RxBodydata.mID;
+		msgDataBody->eventTime 	= RxBodydata.eventTime;
+		log_i(LOG_HOZON, "RxBodydata.aid = %s\n",msgDataBody->aID);
+		log_i(LOG_HOZON, "RxBodydata.mID = %d\n",RxBodydata.mID);
+		log_i(LOG_HOZON, "RxBodydata.eventTime = %d\n",RxBodydata.eventTime);
 		if(NULL != RxBodydata.expirationTime)
 		{
-			log_i(LOG_HOZON, "RxBodydata.expirationTime = %d",(*(RxBodydata.expirationTime)));
-			msgData->DisBody.expTime = *(RxBodydata.expirationTime);/* OPTIONAL */
+			log_i(LOG_HOZON, "RxBodydata.expirationTime = %d\n",(*(RxBodydata.expirationTime)));
+			msgDataBody->expTime = *(RxBodydata.expirationTime);/* OPTIONAL */
 		}
 		if(NULL != RxBodydata.eventId)
 		{
-			log_i(LOG_HOZON, "RxBodydata.eventId = %d",(*(RxBodydata.eventId)));
-			msgData->DisBody.eventId = *(RxBodydata.eventId);/* OPTIONAL */
+			log_i(LOG_HOZON, "RxBodydata.eventId = %d\n",(*(RxBodydata.eventId)));
+			msgDataBody->eventId = *(RxBodydata.eventId);/* OPTIONAL */
 		}
 		if(NULL != RxBodydata.ulMsgCnt)
 		{
-			msgData->DisBody.ulMsgCnt = *(RxBodydata.ulMsgCnt);/* OPTIONAL */
-			log_i(LOG_HOZON, "RxBodydata.ulMsgCnt = %d",(*(RxBodydata.ulMsgCnt)));
+			msgDataBody->ulMsgCnt = *(RxBodydata.ulMsgCnt);/* OPTIONAL */
+			log_i(LOG_HOZON, "RxBodydata.ulMsgCnt = %d\n",(*(RxBodydata.ulMsgCnt)));
 		}
 		if(NULL != RxBodydata.dlMsgCnt)
 		{
-			log_i(LOG_HOZON, "RxBodydata.dlMsgCnt = %d",(*(RxBodydata.dlMsgCnt)));
-			msgData->DisBody.dlMsgCnt = *(RxBodydata.dlMsgCnt);/* OPTIONAL */
+			log_i(LOG_HOZON, "RxBodydata.dlMsgCnt = %d\n",(*(RxBodydata.dlMsgCnt)));
+			msgDataBody->dlMsgCnt = *(RxBodydata.dlMsgCnt);/* OPTIONAL */
 		}
 		if(NULL != RxBodydata.msgCntAcked)
 		{
-			log_i(LOG_HOZON, "RxBodydata.msgCntAcked = %d",(*(RxBodydata.msgCntAcked)));
-			msgData->DisBody.msgCntAcked = *(RxBodydata.msgCntAcked);/* OPTIONAL */
+			log_i(LOG_HOZON, "RxBodydata.msgCntAcked = %d\n",(*(RxBodydata.msgCntAcked)));
+			msgDataBody->msgCntAcked = *(RxBodydata.msgCntAcked);/* OPTIONAL */
 		}
 		if(NULL != RxBodydata.ackReq)
 		{
-			log_i(LOG_HOZON, "RxBodydata.ackReq = %d",(*(RxBodydata.ackReq)));
-			msgData->DisBody.ackReq	= *(RxBodydata.ackReq);/* OPTIONAL */
+			log_i(LOG_HOZON, "RxBodydata.ackReq = %d\n",(*(RxBodydata.ackReq)));
+			msgDataBody->ackReq	= *(RxBodydata.ackReq);/* OPTIONAL */
 		}
 		if(NULL != RxBodydata.appDataLen)
 		{
-			log_i(LOG_HOZON, "RxBodydata.appDataLen = %d",(*(RxBodydata.appDataLen)));
-			msgData->DisBody.appDataLen	= *(RxBodydata.appDataLen);/* OPTIONAL */
+			log_i(LOG_HOZON, "RxBodydata.appDataLen = %d\n",(*(RxBodydata.appDataLen)));
+			msgDataBody->appDataLen	= *(RxBodydata.appDataLen);/* OPTIONAL */
 		}
 		if(NULL != RxBodydata.appDataEncode)
 		{
-			log_i(LOG_HOZON, "RxBodydata.appDataEncode = %d",(*(RxBodydata.appDataEncode)));
-			msgData->DisBody.appDataEncode	= *(RxBodydata.appDataEncode);/* OPTIONAL */
+			log_i(LOG_HOZON, "RxBodydata.appDataEncode = %d\n",(*(RxBodydata.appDataEncode)));
+			msgDataBody->appDataEncode	= *(RxBodydata.appDataEncode);/* OPTIONAL */
 		}
 		if(NULL != RxBodydata.appDataProVer)
 		{
-			log_i(LOG_HOZON, "RxBodydata.appDataProVer = %d",(*(RxBodydata.appDataProVer)));
-			msgData->DisBody.appDataProVer	= *(RxBodydata.appDataProVer);/* OPTIONAL */
+			log_i(LOG_HOZON, "RxBodydata.appDataProVer = %d\n",(*(RxBodydata.appDataProVer)));
+			msgDataBody->appDataProVer	= *(RxBodydata.appDataProVer);/* OPTIONAL */
 		}
 		if(NULL != RxBodydata.testFlag)
 		{
-			log_i(LOG_HOZON, "RxBodydata.testFlag = %d",(*(RxBodydata.testFlag)));
-			msgData->DisBody.testFlag = *(RxBodydata.testFlag);/* OPTIONAL */
+			log_i(LOG_HOZON, "RxBodydata.testFlag = %d\n",(*(RxBodydata.testFlag)));
+			msgDataBody->testFlag = *(RxBodydata.testFlag);/* OPTIONAL */
 		}
 		if(NULL != RxBodydata.result)
 		{
-			log_i(LOG_HOZON, "RxBodydata.result = %d",(*(RxBodydata.result)));
-			msgData->DisBody.result	= *(RxBodydata.result);/* OPTIONAL */
+			log_i(LOG_HOZON, "RxBodydata.result = %d\n",(*(RxBodydata.result)));
+			msgDataBody->result	= *(RxBodydata.result);/* OPTIONAL */
 		}
 	}
 
-	if((isdecodeAppdata == 1) && ((LeMessageDataLen-LeMessageData[0]) > 0))
+	if((appData != NULL) && ((LeMessageDataLen-LeMessageData[0]) > 0))
 	{
 		AID = (RxBodydata.aID.buf[0] - 0x30)*100 +  (RxBodydata.aID.buf[1] - 0x30)*10 + \
 			  (RxBodydata.aID.buf[2] - 0x30);
 		MID = RxBodydata.mID;
 		log_i(LOG_HOZON, "uper decode:appdata");
-		log_i(LOG_HOZON, "application data length = %d",LeMessageDataLen-LeMessageData[0]);
+		log_i(LOG_HOZON, "application data length = %d\n",LeMessageDataLen-LeMessageData[0]);
 		switch(AID)
 		{
 			case PP_AID_XCALL:
@@ -451,18 +480,12 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *MsgD
 							 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
 					if(dc.code  != RC_OK)
 					{
-						log_e(LOG_HOZON, "Could not decode application data Frame");
+						log_e(LOG_HOZON, "Could not decode application data Frame\n");
 						return -1;
 					}
 
-					if(NULL != msgData)
-					{
-						msgData->appData.Xcall.xcallType = RxXcallReq.xcallType;
-					}
-					else
-					{
-						PrvtPro_showMsgData(ECDC_XCALL_REQ,RxBodydata_ptr,RxXcallReq_ptr);
-					}
+					((PrvtProt_App_Xcall_t*)appData)->xcallType = RxXcallReq.xcallType;
+					log_i(LOG_HOZON, "appData->xcallType = %d\n",((PrvtProt_App_Xcall_t*)appData)->xcallType);
 				}
 				else if(PP_MID_XCALL_RESP == MID)//xcall response
 				{
@@ -477,27 +500,20 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *MsgD
 						return -1;
 					}
 
-					if(NULL != msgData)
-					{
-						msgData->appData.Xcall.xcallType 	= RxXcallResp.xcallType;
-						msgData->appData.Xcall.updataTime 	= RxXcallResp.updataTime;
-						msgData->appData.Xcall.battSOCEx 	= RxXcallResp.battSOCEx;
-						msgData->appData.Xcall.engineSt 	= RxXcallResp.engineSt;
-						msgData->appData.Xcall.srsSt 		= RxXcallResp.srsSt;
-						msgData->appData.Xcall.totalOdoMr 	= RxXcallResp.ttOdoMeter;
-						msgData->appData.Xcall.gpsPos.altitude 	= 	 (**(RxXcallResp.gpsPos.list.array)).altitude;
-						msgData->appData.Xcall.gpsPos.gpsSpeed 	=	 (**(RxXcallResp.gpsPos.list.array)).gpsSpeed;
-						msgData->appData.Xcall.gpsPos.gpsSt 	=	 (**(RxXcallResp.gpsPos.list.array)).gpsSt;
-						msgData->appData.Xcall.gpsPos.gpsTimestamp = (**(RxXcallResp.gpsPos.list.array)).gpsTimestamp;
-						msgData->appData.Xcall.gpsPos.hdop 		=	 (**(RxXcallResp.gpsPos.list.array)).hdop;
-						msgData->appData.Xcall.gpsPos.heading 	=	 (**(RxXcallResp.gpsPos.list.array)).heading;
-						msgData->appData.Xcall.gpsPos.latitude 	=	 (**(RxXcallResp.gpsPos.list.array)).latitude;
-						msgData->appData.Xcall.gpsPos.longitude =	 (**(RxXcallResp.gpsPos.list.array)).longitude;
-					}
-					else
-					{
-						PrvtPro_showMsgData(ECDC_XCALL_RESP,RxBodydata_ptr,RxXcallResp_ptr);
-					}
+					((PrvtProt_App_Xcall_t*)appData)->xcallType 	= RxXcallResp.xcallType;
+					((PrvtProt_App_Xcall_t*)appData)->updataTime 	= RxXcallResp.updataTime;
+					((PrvtProt_App_Xcall_t*)appData)->battSOCEx 	= RxXcallResp.battSOCEx;
+					((PrvtProt_App_Xcall_t*)appData)->engineSt 	= RxXcallResp.engineSt;
+					((PrvtProt_App_Xcall_t*)appData)->srsSt 		= RxXcallResp.srsSt;
+					((PrvtProt_App_Xcall_t*)appData)->totalOdoMr 	= RxXcallResp.ttOdoMeter;
+					((PrvtProt_App_Xcall_t*)appData)->gpsPos.altitude 	= 	 (**(RxXcallResp.gpsPos.list.array)).altitude;
+					((PrvtProt_App_Xcall_t*)appData)->gpsPos.gpsSpeed 	=	 (**(RxXcallResp.gpsPos.list.array)).gpsSpeed;
+					((PrvtProt_App_Xcall_t*)appData)->gpsPos.gpsSt 	=	 (**(RxXcallResp.gpsPos.list.array)).gpsSt;
+					((PrvtProt_App_Xcall_t*)appData)->gpsPos.gpsTimestamp = (**(RxXcallResp.gpsPos.list.array)).gpsTimestamp;
+					((PrvtProt_App_Xcall_t*)appData)->gpsPos.hdop 		=	 (**(RxXcallResp.gpsPos.list.array)).hdop;
+					((PrvtProt_App_Xcall_t*)appData)->gpsPos.heading 	=	 (**(RxXcallResp.gpsPos.list.array)).heading;
+					((PrvtProt_App_Xcall_t*)appData)->gpsPos.latitude 	=	 (**(RxXcallResp.gpsPos.list.array)).latitude;
+					((PrvtProt_App_Xcall_t*)appData)->gpsPos.longitude =	 (**(RxXcallResp.gpsPos.list.array)).longitude;
 				}
 				else
 				{}
@@ -505,6 +521,7 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *MsgD
 			break;
 			case PP_AID_RMTCFG:
 			{
+				PrvtProt_App_rmtCfg_t *appData_ptr = (PrvtProt_App_rmtCfg_t*)appData;
 				if(PP_MID_CHECK_CFG_RESP == MID)//check cfg resp
 				{
 					log_i(LOG_HOZON, "config check response\n");
@@ -519,16 +536,14 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *MsgD
 						return -1;
 					}
 
-					if(NULL != msgData)
+					//App_rmtCfg_checkResp_t* appData_ptr = (App_rmtCfg_checkResp_t*)appData;
+					appData_ptr->checkCfgResp.needUpdate = cfgcheckResp.needUpdate;
+					for(i = 0;i < cfgcheckResp.cfgVersion->size;i++)
 					{
-						msgData->appData.rmtCfg.checkCfgResp.needUpdate = cfgcheckResp.needUpdate;
-						for(i = 0;i < cfgcheckResp.cfgVersion->size;i++)
-						{
-							msgData->appData.rmtCfg.checkCfgResp.cfgVersion[i] = cfgcheckResp.cfgVersion->buf[i];
-						}
-						log_i(LOG_HOZON, "checkCfgResp.needUpdate = %d\n",msgData->appData.rmtCfg.checkCfgResp.needUpdate);
-						log_i(LOG_HOZON, "checkCfgResp.cfgVersion = %s\n",msgData->appData.rmtCfg.checkCfgResp.cfgVersion);
+						appData_ptr->checkCfgResp.cfgVersion[i] = cfgcheckResp.cfgVersion->buf[i];
 					}
+					log_i(LOG_HOZON, "checkCfgResp.needUpdate = %d\n",appData_ptr->checkCfgResp.needUpdate);
+					log_i(LOG_HOZON, "checkCfgResp.cfgVersion = %s\n",appData_ptr->checkCfgResp.cfgVersion);
 				}
 				else if(PP_MID_GET_CFG_RESP == MID)//get cfg resp
 				{
@@ -544,145 +559,143 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *MsgD
 						return -1;
 					}
 
-					if(NULL != msgData)
+					//App_rmtCfg_getResp_t* appData_ptr = (App_rmtCfg_getResp_t*)appData;
+					appData_ptr->getCfgResp.result = cfggetResp.result;
+					log_i(LOG_HOZON, "getCfgResp.result = %d\n",appData_ptr->getCfgResp.result);
+					if(cfggetResp.ficmCfg != NULL)
 					{
-						msgData->appData.rmtCfg.getCfgResp.result = cfggetResp.result;
-						log_i(LOG_HOZON, "getCfgResp.result = %d\n",msgData->appData.rmtCfg.getCfgResp.result);
-						if(cfggetResp.ficmCfg != NULL)
+						for(i = 0;i < (**(cfggetResp.ficmCfg->list.array)).token.size;i++)
 						{
-							for(i = 0;i < (**(cfggetResp.ficmCfg->list.array)).token.size;i++)
-							{
-								msgData->appData.rmtCfg.getCfgResp.token[i] = (**(cfggetResp.ficmCfg->list.array)).token.buf[i];
-								msgData->appData.rmtCfg.getCfgResp.tokenlen = (**(cfggetResp.ficmCfg->list.array)).token.size;
-							}
-							msgData->appData.rmtCfg.getCfgResp.ficmConfigValid = 1;
-							log_i(LOG_HOZON, "getCfgResp.token = %s\n",msgData->appData.rmtCfg.getCfgResp.token);
-							log_i(LOG_HOZON, "getCfgResp.tokenlen = %d\n",msgData->appData.rmtCfg.getCfgResp.tokenlen);
+							appData_ptr->getCfgResp.token[i] = (**(cfggetResp.ficmCfg->list.array)).token.buf[i];
+							appData_ptr->getCfgResp.tokenlen = (**(cfggetResp.ficmCfg->list.array)).token.size;
 						}
+						((App_rmtCfg_getResp_t*)appData)->ficmConfigValid = 1;
+						log_i(LOG_HOZON, "getCfgResp.token = %s\n",appData_ptr->getCfgResp.token);
+						log_i(LOG_HOZON, "getCfgResp.tokenlen = %d\n",appData_ptr->getCfgResp.tokenlen);
+					}
 
-						if(cfggetResp.apn1Config != NULL)
+					if(cfggetResp.apn1Config != NULL)
+					{
+						appData_ptr->getCfgResp.apn1ConfigValid =1;
+						for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspAddress.size;i++)
 						{
-							msgData->appData.rmtCfg.getCfgResp.apn1ConfigValid =1;
-							for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspAddress.size;i++)
-							{
-								msgData->appData.rmtCfg.getCfgResp.tspAddr[i] = (**(cfggetResp.apn1Config->list.array)).tspAddress.buf[i];
-								msgData->appData.rmtCfg.getCfgResp.tspAddrlen = (**(cfggetResp.apn1Config->list.array)).tspAddress.size;
-							}
-							log_i(LOG_HOZON, "getCfgResp.tspAddr = %s\n",msgData->appData.rmtCfg.getCfgResp.tspAddr);
-							log_i(LOG_HOZON, "getCfgResp.tspAddrlen = %d\n",msgData->appData.rmtCfg.getCfgResp.tspAddrlen);
-							for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspPass.size;i++)
-							{
-								msgData->appData.rmtCfg.getCfgResp.tspPass[i] = (**(cfggetResp.apn1Config->list.array)).tspPass.buf[i];
-								msgData->appData.rmtCfg.getCfgResp.tspPasslen = (**(cfggetResp.apn1Config->list.array)).tspPass.size;
-							}
-							log_i(LOG_HOZON, "getCfgResp.tspPass = %s\n",msgData->appData.rmtCfg.getCfgResp.tspPass);
-							log_i(LOG_HOZON, "getCfgResp.tspPasslen = %d\n",msgData->appData.rmtCfg.getCfgResp.tspPasslen);
-							for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspIp.size;i++)
-							{
-								msgData->appData.rmtCfg.getCfgResp.tspIP[i] = (**(cfggetResp.apn1Config->list.array)).tspIp.buf[i];
-								msgData->appData.rmtCfg.getCfgResp.tspIPlen = (**(cfggetResp.apn1Config->list.array)).tspIp.size;
-							}
-							log_i(LOG_HOZON, "getCfgResp.tspIP = %s\n",msgData->appData.rmtCfg.getCfgResp.tspIP);
-							log_i(LOG_HOZON, "getCfgResp.tspIPlen = %d\n",msgData->appData.rmtCfg.getCfgResp.tspIPlen);
-							for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspSms.size;i++)
-							{
-								msgData->appData.rmtCfg.getCfgResp.tspSms[i] = (**(cfggetResp.apn1Config->list.array)).tspSms.buf[i];
-								msgData->appData.rmtCfg.getCfgResp.tspSmslen = (**(cfggetResp.apn1Config->list.array)).tspSms.size;
-							}
-							log_i(LOG_HOZON, "getCfgResp.tspSms = %s\n",msgData->appData.rmtCfg.getCfgResp.tspSms);
-							log_i(LOG_HOZON, "getCfgResp.tspSmslen = %d\n",msgData->appData.rmtCfg.getCfgResp.tspSmslen);
-							for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspPort.size;i++)
-							{
-								msgData->appData.rmtCfg.getCfgResp.tspPort[i] = (**(cfggetResp.apn1Config->list.array)).tspPort.buf[i];
-								msgData->appData.rmtCfg.getCfgResp.tspPortlen = (**(cfggetResp.apn1Config->list.array)).tspPort.size;
-							}
-							log_i(LOG_HOZON, "getCfgResp.tspPort = %s\n",msgData->appData.rmtCfg.getCfgResp.tspPort);
-							log_i(LOG_HOZON, "getCfgResp.tspPortlen = %d\n",msgData->appData.rmtCfg.getCfgResp.tspPortlen);
+							appData_ptr->getCfgResp.tspAddr[i] = (**(cfggetResp.apn1Config->list.array)).tspAddress.buf[i];
+							appData_ptr->getCfgResp.tspAddrlen = (**(cfggetResp.apn1Config->list.array)).tspAddress.size;
 						}
-
-						if(cfggetResp.apn2Config != NULL)
+						log_i(LOG_HOZON, "getCfgResp.tspAddr = %s\n",appData_ptr->getCfgResp.tspAddr);
+						log_i(LOG_HOZON, "getCfgResp.tspAddrlen = %d\n",appData_ptr->getCfgResp.tspAddrlen);
+						for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspPass.size;i++)
 						{
-							msgData->appData.rmtCfg.getCfgResp.apn2ConfigValid = 1;
-							for(i = 0;i < (**(cfggetResp.apn2Config->list.array)).tspAddress.size;i++)
-							{
-								msgData->appData.rmtCfg.getCfgResp.apn2Address[i] = (**(cfggetResp.apn2Config->list.array)).tspAddress.buf[i];
-								msgData->appData.rmtCfg.getCfgResp.apn2Addresslen = (**(cfggetResp.apn2Config->list.array)).tspAddress.size;
-							}
-							log_i(LOG_HOZON, "getCfgResp.apn2Address = %s\n",msgData->appData.rmtCfg.getCfgResp.apn2Address);
-							log_i(LOG_HOZON, "getCfgResp.apn2Addresslen = %d\n",msgData->appData.rmtCfg.getCfgResp.apn2Addresslen);
-							for(i = 0;i < (**(cfggetResp.apn2Config->list.array)).tspUser.size;i++)
-							{
-								msgData->appData.rmtCfg.getCfgResp.apn2User[i] = (**(cfggetResp.apn2Config->list.array)).tspUser.buf[i];
-								msgData->appData.rmtCfg.getCfgResp.apn2Userlen = (**(cfggetResp.apn2Config->list.array)).tspUser.size;
-							}
-							log_i(LOG_HOZON, "getCfgResp.apn2User = %s\n",msgData->appData.rmtCfg.getCfgResp.apn2User);
-							log_i(LOG_HOZON, "getCfgResp.apn2Userlen = %d\n",msgData->appData.rmtCfg.getCfgResp.apn2Userlen);
-							for(i = 0;i < (**(cfggetResp.apn2Config->list.array)).tspPass.size;i++)
-							{
-								msgData->appData.rmtCfg.getCfgResp.apn2Pass[i] = (**(cfggetResp.apn2Config->list.array)).tspPass.buf[i];
-								msgData->appData.rmtCfg.getCfgResp.apn2Passlen = (**(cfggetResp.apn2Config->list.array)).tspPass.size;
-							}
-							log_i(LOG_HOZON, "getCfgResp.apn2Pass = %s\n",msgData->appData.rmtCfg.getCfgResp.apn2Pass);
-							log_i(LOG_HOZON, "getCfgResp.apn2Passlen = %d\n",msgData->appData.rmtCfg.getCfgResp.apn2Passlen);
+							appData_ptr->getCfgResp.tspPass[i] = (**(cfggetResp.apn1Config->list.array)).tspPass.buf[i];
+							appData_ptr->getCfgResp.tspPasslen = (**(cfggetResp.apn1Config->list.array)).tspPass.size;
 						}
-
-						if(cfggetResp.commonConfig != NULL)
+						log_i(LOG_HOZON, "getCfgResp.tspPass = %s\n",appData_ptr->getCfgResp.tspPass);
+						log_i(LOG_HOZON, "getCfgResp.tspPasslen = %d\n",appData_ptr->getCfgResp.tspPasslen);
+						for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspIp.size;i++)
 						{
-							msgData->appData.rmtCfg.getCfgResp.commonConfigValid = 1;
-							msgData->appData.rmtCfg.getCfgResp.actived = (**(cfggetResp.commonConfig->list.array)).actived;
-							msgData->appData.rmtCfg.getCfgResp.bCallEnabled = (**(cfggetResp.commonConfig->list.array)).bCallEnabled;
-							msgData->appData.rmtCfg.getCfgResp.btKeyEntryEnabled = (**(cfggetResp.commonConfig->list.array)).btKeyEntryEnabled;
-							msgData->appData.rmtCfg.getCfgResp.dcEnabled = (**(cfggetResp.commonConfig->list.array)).dcEnabled;
-							msgData->appData.rmtCfg.getCfgResp.dtcEnabled = (**(cfggetResp.commonConfig->list.array)).dtcEnabled;
-							msgData->appData.rmtCfg.getCfgResp.eCallEnabled = (**(cfggetResp.commonConfig->list.array)).eCallEnabled;
-							msgData->appData.rmtCfg.getCfgResp.iCallEnabled = (**(cfggetResp.commonConfig->list.array)).iCallEnabled;
-							msgData->appData.rmtCfg.getCfgResp.journeysEnabled = (**(cfggetResp.commonConfig->list.array)).journeysEnabled;
-							msgData->appData.rmtCfg.getCfgResp.onlineInfEnabled = (**(cfggetResp.commonConfig->list.array)).onlineInfEnabled;
-							msgData->appData.rmtCfg.getCfgResp.rChargeEnabled = (**(cfggetResp.commonConfig->list.array)).rChargeEnabled;
-							msgData->appData.rmtCfg.getCfgResp.rcEnabled = (**(cfggetResp.commonConfig->list.array)).rcEnabled;
-							msgData->appData.rmtCfg.getCfgResp.svtEnabled = (**(cfggetResp.commonConfig->list.array)).svtEnabled;
-							msgData->appData.rmtCfg.getCfgResp.vsEnabled = (**(cfggetResp.commonConfig->list.array)).vsEnabled;
-
-							log_i(LOG_HOZON, "getCfgResp.actived = %d\n",msgData->appData.rmtCfg.getCfgResp.actived);
-							log_i(LOG_HOZON, "getCfgResp.bCallEnabled = %d\n",msgData->appData.rmtCfg.getCfgResp.bCallEnabled);
-							log_i(LOG_HOZON, "getCfgResp.btKeyEntryEnabled = %d\n",msgData->appData.rmtCfg.getCfgResp.btKeyEntryEnabled);
-							log_i(LOG_HOZON, "getCfgResp.dcEnabled = %d\n",msgData->appData.rmtCfg.getCfgResp.dcEnabled);
-							log_i(LOG_HOZON, "getCfgResp.dtcEnabled = %d\n",msgData->appData.rmtCfg.getCfgResp.dtcEnabled);
-							log_i(LOG_HOZON, "getCfgResp.eCallEnabled = %d\n",msgData->appData.rmtCfg.getCfgResp.eCallEnabled);
-							log_i(LOG_HOZON, "getCfgResp.iCallEnabled = %d\n",msgData->appData.rmtCfg.getCfgResp.iCallEnabled);
-							log_i(LOG_HOZON, "getCfgResp.journeysEnabled = %d\n",msgData->appData.rmtCfg.getCfgResp.journeysEnabled);
-							log_i(LOG_HOZON, "getCfgResp.onlineInfEnabled = %d\n",msgData->appData.rmtCfg.getCfgResp.onlineInfEnabled);
-							log_i(LOG_HOZON, "getCfgResp.rChargeEnabled = %d\n",msgData->appData.rmtCfg.getCfgResp.rChargeEnabled);
-							log_i(LOG_HOZON, "getCfgResp.rcEnabled = %d\n",msgData->appData.rmtCfg.getCfgResp.rcEnabled);
-							log_i(LOG_HOZON, "getCfgResp.svtEnabled = %d\n",msgData->appData.rmtCfg.getCfgResp.svtEnabled);
-							log_i(LOG_HOZON, "getCfgResp.vsEnabled = %d\n",msgData->appData.rmtCfg.getCfgResp.vsEnabled);
+							appData_ptr->getCfgResp.tspIP[i] = (**(cfggetResp.apn1Config->list.array)).tspIp.buf[i];
+							appData_ptr->getCfgResp.tspIPlen = (**(cfggetResp.apn1Config->list.array)).tspIp.size;
 						}
-
-						if(cfggetResp.extendConfig != NULL)
+						log_i(LOG_HOZON, "getCfgResp.tspIP = %s\n",appData_ptr->getCfgResp.tspIP);
+						log_i(LOG_HOZON, "getCfgResp.tspIPlen = %d\n",appData_ptr->getCfgResp.tspIPlen);
+						for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspSms.size;i++)
 						{
-							msgData->appData.rmtCfg.getCfgResp.extendConfigValid = 1;
-							for(i = 0;i < (**(cfggetResp.extendConfig->list.array)).bcallNO.size;i++)
-							{
-								msgData->appData.rmtCfg.getCfgResp.bcallNO[i] = (**(cfggetResp.extendConfig->list.array)).bcallNO.buf[i];
-								msgData->appData.rmtCfg.getCfgResp.bcallNOlen = (**(cfggetResp.extendConfig->list.array)).bcallNO.size;
-							}
-							log_i(LOG_HOZON, "getCfgResp.bcallNO = %s\n",msgData->appData.rmtCfg.getCfgResp.bcallNO);
-							log_i(LOG_HOZON, "getCfgResp.bcallNOlen = %d\n",msgData->appData.rmtCfg.getCfgResp.bcallNOlen);
-							for(i = 0;i < (**(cfggetResp.extendConfig->list.array)).ecallNO.size;i++)
-							{
-								msgData->appData.rmtCfg.getCfgResp.ecallNO[i] = (**(cfggetResp.extendConfig->list.array)).ecallNO.buf[i];
-								msgData->appData.rmtCfg.getCfgResp.ecallNOlen = (**(cfggetResp.extendConfig->list.array)).ecallNO.size;
-							}
-							log_i(LOG_HOZON, "getCfgResp.ecallNO = %s\n",msgData->appData.rmtCfg.getCfgResp.ecallNO);
-							log_i(LOG_HOZON, "getCfgResp.ecallNOlen = %d\n",msgData->appData.rmtCfg.getCfgResp.ecallNOlen);
-							for(i = 0;i < (**(cfggetResp.extendConfig->list.array)).icallNO.size;i++)
-							{
-								msgData->appData.rmtCfg.getCfgResp.ccNO[i] = (**(cfggetResp.extendConfig->list.array)).icallNO.buf[i];
-								msgData->appData.rmtCfg.getCfgResp.ccNOlen = (**(cfggetResp.extendConfig->list.array)).icallNO.size;
-							}
-							log_i(LOG_HOZON, "getCfgResp.ccNONO = %s\n",msgData->appData.rmtCfg.getCfgResp.ccNO);
-							log_i(LOG_HOZON, "getCfgResp.ccNOlen = %d\n",msgData->appData.rmtCfg.getCfgResp.ccNOlen);
+							appData_ptr->getCfgResp.tspSms[i] = (**(cfggetResp.apn1Config->list.array)).tspSms.buf[i];
+							appData_ptr->getCfgResp.tspSmslen = (**(cfggetResp.apn1Config->list.array)).tspSms.size;
 						}
+						log_i(LOG_HOZON, "getCfgResp.tspSms = %s\n",appData_ptr->getCfgResp.tspSms);
+						log_i(LOG_HOZON, "getCfgResp.tspSmslen = %d\n",appData_ptr->getCfgResp.tspSmslen);
+						for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspPort.size;i++)
+						{
+							appData_ptr->getCfgResp.tspPort[i] = (**(cfggetResp.apn1Config->list.array)).tspPort.buf[i];
+							appData_ptr->getCfgResp.tspPortlen = (**(cfggetResp.apn1Config->list.array)).tspPort.size;
+						}
+						log_i(LOG_HOZON, "getCfgResp.tspPort = %s\n",appData_ptr->getCfgResp.tspPort);
+						log_i(LOG_HOZON, "getCfgResp.tspPortlen = %d\n",appData_ptr->getCfgResp.tspPortlen);
+					}
+
+					if(cfggetResp.apn2Config != NULL)
+					{
+						appData_ptr->getCfgResp.apn2ConfigValid = 1;
+						for(i = 0;i < (**(cfggetResp.apn2Config->list.array)).tspAddress.size;i++)
+						{
+							appData_ptr->getCfgResp.apn2Address[i] = (**(cfggetResp.apn2Config->list.array)).tspAddress.buf[i];
+							appData_ptr->getCfgResp.apn2Addresslen = (**(cfggetResp.apn2Config->list.array)).tspAddress.size;
+						}
+						log_i(LOG_HOZON, "getCfgResp.apn2Address = %s\n",appData_ptr->getCfgResp.apn2Address);
+						log_i(LOG_HOZON, "getCfgResp.apn2Addresslen = %d\n",appData_ptr->getCfgResp.apn2Addresslen);
+						for(i = 0;i < (**(cfggetResp.apn2Config->list.array)).tspUser.size;i++)
+						{
+							appData_ptr->getCfgResp.apn2User[i] = (**(cfggetResp.apn2Config->list.array)).tspUser.buf[i];
+							appData_ptr->getCfgResp.apn2Userlen = (**(cfggetResp.apn2Config->list.array)).tspUser.size;
+						}
+						log_i(LOG_HOZON, "getCfgResp.apn2User = %s\n",appData_ptr->getCfgResp.apn2User);
+						log_i(LOG_HOZON, "getCfgResp.apn2Userlen = %d\n",appData_ptr->getCfgResp.apn2Userlen);
+						for(i = 0;i < (**(cfggetResp.apn2Config->list.array)).tspPass.size;i++)
+						{
+							appData_ptr->getCfgResp.apn2Pass[i] = (**(cfggetResp.apn2Config->list.array)).tspPass.buf[i];
+							appData_ptr->getCfgResp.apn2Passlen = (**(cfggetResp.apn2Config->list.array)).tspPass.size;
+						}
+						log_i(LOG_HOZON, "getCfgResp.apn2Pass = %s\n",appData_ptr->getCfgResp.apn2Pass);
+						log_i(LOG_HOZON, "getCfgResp.apn2Passlen = %d\n",appData_ptr->getCfgResp.apn2Passlen);
+					}
+
+					if(cfggetResp.commonConfig != NULL)
+					{
+						appData_ptr->getCfgResp.commonConfigValid = 1;
+						appData_ptr->getCfgResp.actived = (**(cfggetResp.commonConfig->list.array)).actived;
+						appData_ptr->getCfgResp.bCallEnabled = (**(cfggetResp.commonConfig->list.array)).bCallEnabled;
+						appData_ptr->getCfgResp.btKeyEntryEnabled = (**(cfggetResp.commonConfig->list.array)).btKeyEntryEnabled;
+						appData_ptr->getCfgResp.dcEnabled = (**(cfggetResp.commonConfig->list.array)).dcEnabled;
+						appData_ptr->getCfgResp.dtcEnabled = (**(cfggetResp.commonConfig->list.array)).dtcEnabled;
+						appData_ptr->getCfgResp.eCallEnabled = (**(cfggetResp.commonConfig->list.array)).eCallEnabled;
+						appData_ptr->getCfgResp.iCallEnabled = (**(cfggetResp.commonConfig->list.array)).iCallEnabled;
+						appData_ptr->getCfgResp.journeysEnabled = (**(cfggetResp.commonConfig->list.array)).journeysEnabled;
+						appData_ptr->getCfgResp.onlineInfEnabled = (**(cfggetResp.commonConfig->list.array)).onlineInfEnabled;
+						appData_ptr->getCfgResp.rChargeEnabled = (**(cfggetResp.commonConfig->list.array)).rChargeEnabled;
+						appData_ptr->getCfgResp.rcEnabled = (**(cfggetResp.commonConfig->list.array)).rcEnabled;
+						appData_ptr->getCfgResp.svtEnabled = (**(cfggetResp.commonConfig->list.array)).svtEnabled;
+						appData_ptr->getCfgResp.vsEnabled = (**(cfggetResp.commonConfig->list.array)).vsEnabled;
+
+						log_i(LOG_HOZON, "getCfgResp.actived = %d\n",appData_ptr->getCfgResp.actived);
+						log_i(LOG_HOZON, "getCfgResp.bCallEnabled = %d\n",appData_ptr->getCfgResp.bCallEnabled);
+						log_i(LOG_HOZON, "getCfgResp.btKeyEntryEnabled = %d\n",appData_ptr->getCfgResp.btKeyEntryEnabled);
+						log_i(LOG_HOZON, "getCfgResp.dcEnabled = %d\n",appData_ptr->getCfgResp.dcEnabled);
+						log_i(LOG_HOZON, "getCfgResp.dtcEnabled = %d\n",appData_ptr->getCfgResp.dtcEnabled);
+						log_i(LOG_HOZON, "getCfgResp.eCallEnabled = %d\n",appData_ptr->getCfgResp.eCallEnabled);
+						log_i(LOG_HOZON, "getCfgResp.iCallEnabled = %d\n",appData_ptr->getCfgResp.iCallEnabled);
+						log_i(LOG_HOZON, "getCfgResp.journeysEnabled = %d\n",appData_ptr->getCfgResp.journeysEnabled);
+						log_i(LOG_HOZON, "getCfgResp.onlineInfEnabled = %d\n",appData_ptr->getCfgResp.onlineInfEnabled);
+						log_i(LOG_HOZON, "getCfgResp.rChargeEnabled = %d\n",appData_ptr->getCfgResp.rChargeEnabled);
+						log_i(LOG_HOZON, "getCfgResp.rcEnabled = %d\n",appData_ptr->getCfgResp.rcEnabled);
+						log_i(LOG_HOZON, "getCfgResp.svtEnabled = %d\n",appData_ptr->getCfgResp.svtEnabled);
+						log_i(LOG_HOZON, "getCfgResp.vsEnabled = %d\n",appData_ptr->getCfgResp.vsEnabled);
+					}
+
+					if(cfggetResp.extendConfig != NULL)
+					{
+						appData_ptr->getCfgResp.extendConfigValid = 1;
+						for(i = 0;i < (**(cfggetResp.extendConfig->list.array)).bcallNO.size;i++)
+						{
+							appData_ptr->getCfgResp.bcallNO[i] = (**(cfggetResp.extendConfig->list.array)).bcallNO.buf[i];
+							appData_ptr->getCfgResp.bcallNOlen = (**(cfggetResp.extendConfig->list.array)).bcallNO.size;
+						}
+						log_i(LOG_HOZON, "getCfgResp.bcallNO = %s\n",appData_ptr->getCfgResp.bcallNO);
+						log_i(LOG_HOZON, "getCfgResp.bcallNOlen = %d\n",appData_ptr->getCfgResp.bcallNOlen);
+						for(i = 0;i < (**(cfggetResp.extendConfig->list.array)).ecallNO.size;i++)
+						{
+							appData_ptr->getCfgResp.ecallNO[i] = (**(cfggetResp.extendConfig->list.array)).ecallNO.buf[i];
+							appData_ptr->getCfgResp.ecallNOlen = (**(cfggetResp.extendConfig->list.array)).ecallNO.size;
+						}
+						log_i(LOG_HOZON, "getCfgResp.ecallNO = %s\n",appData_ptr->getCfgResp.ecallNO);
+						log_i(LOG_HOZON, "getCfgResp.ecallNOlen = %d\n",appData_ptr->getCfgResp.ecallNOlen);
+						for(i = 0;i < (**(cfggetResp.extendConfig->list.array)).icallNO.size;i++)
+						{
+							appData_ptr->getCfgResp.ccNO[i] = (**(cfggetResp.extendConfig->list.array)).icallNO.buf[i];
+							appData_ptr->getCfgResp.ccNOlen = (**(cfggetResp.extendConfig->list.array)).icallNO.size;
+						}
+						log_i(LOG_HOZON, "getCfgResp.ccNONO = %s\n",appData_ptr->getCfgResp.ccNO);
+						log_i(LOG_HOZON, "getCfgResp.ccNOlen = %d\n",appData_ptr->getCfgResp.ccNOlen);
 					}
 				}
 				else
@@ -700,6 +713,7 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *MsgD
 	return 0;
 }
 
+#if 0
 /******************************************************
 *函数名：PrvtPro_showMsgData
 
@@ -798,7 +812,7 @@ static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,void *RxAppd
 		}
 	}
 }
-
+#endif
 /******************************************************
 *函数名：static void PrvtPro_writeout
 

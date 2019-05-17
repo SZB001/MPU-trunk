@@ -71,58 +71,65 @@ static PrvtProt_pack_t 		PP_Xcall_Pack;
 
 static PrvtProt_xcall_t	PP_xcall[PP_XCALL_MAX] =
 {
+	{
 		{
-			{
-					/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-					 {"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  },//ecall req
-				  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-					 {"170",1,		0,		  0,	PP_INVALID,	   0,	   0,		 0,       0,       0,      0,     256,	 1,        0   },//bcall req
+			/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
+			 {"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27	 },//ecall req
+		  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+			 {"170",1,		0,		  0,	PP_INVALID,	   0,	   0,		 0,       0,       0,      0,     256,	 1,        0   },//bcall req
 
-			},
-			{
-					/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-					{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  }, //ecall response
-				  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-					{"170", 2,      0,        0,		PP_INVALID,    0,      0,		0,		 0,		  0,	  0,	 256,	1,		0   } //bcall response
-			},
-			{0,0,0,0,0,0},
-			PP_BCALL_TYPE
 		},
 		{
-			{
-					/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-					 {"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  },//ecall req
-				  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-					 {"170",1,		0,		  0,	PP_INVALID,	   0,	   0,		 0,       0,       0,      0,     256,	 1,        0   },//ecall req
+			/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
+			{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27  }, //ecall response
+		  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+			{"170", 2,      0,        0,	PP_INVALID,    0,      0,		0,		 0,		  0,	  0,	 256,	1,		  0   } //bcall response
+		},
+		{0,0,0,0,0},
+		PP_BCALL_TYPE
+	},
+	{
+		{
+			/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
+			 {"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27	  },//ecall req
+		  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+			 {"170",1,		0,		  0,	PP_INVALID,	   0,	   0,		 0,       0,       0,      0,     256,	 1,        0   },//ecall req
 
-			},
-			{
-					/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-					{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  }, //ecall response
-				  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-					{"170", 2,      0,        0,		PP_INVALID,    0,      0,		0,		 0,		  0,	  0,	 256,	1,		0   } //ecall response
-			},
-			{0,0,0,0,0},
-			PP_ECALL_TYPE
 		},
 		{
-			{
-					/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-					 {"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  },//ecall req
-				  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-					 {"170",1,		0,		  0,	PP_INVALID,	   0,	   0,		 0,       0,       0,      0,     256,	 1,        0   },//icall req
-
-			},
-			{
-					/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-					{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  0	  }, //ecall response
-				  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-					{"170", 2,      0,        0,		PP_INVALID,    0,      0,		0,		0,		  0,	  0,	 256,	1,		0   } //icall response
-			},
-			{0,0,0,0,0},
-			PP_ICALL_TYPE
+			/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
+			{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27	  }, //ecall response
+		  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+			{"170", 2,      0,        0,	PP_INVALID,    0,      0,		0,		 0,		  0,	  0,	 256,	1,		  0   } //ecall response
 		},
+		{0,0,0,0,0},
+		PP_ECALL_TYPE
+	},
+	{
+		{
+			/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
+			 {"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27  },//ecall req
+		  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+			 {"170",1,		0,		  0,	PP_INVALID,	   0,	   0,		 0,       0,       0,      0,     256,	 1,        0   },//icall req
 
+		},
+		{
+			/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
+			{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27  }, //ecall response
+		  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
+			{"170", 2,      0,        0,	PP_INVALID,    0,      0,		0,		0,		  0,	  0,	 256,	1,		  0   } //icall response
+		},
+		{0,0,0,0,0},
+		PP_ICALL_TYPE
+	},
+
+};
+
+
+static PrvtProt_App_Xcall_t	Appdata_Xcall =
+{
+	/*xcallType engineSt totalOdoMr	gps{gpsSt latitude longitude altitude heading gpsSpeed hdop}   srsSt  updataTime	battSOCEx*/
+		0,		0xff,	 0,		       {0,    0,       0,       0,        0,       0,       0  },	1,		0,			 0
 };
 
 //static PrvtProt_xcallSt_t PP_xcall[PP_XCALL_MAX];
@@ -269,17 +276,18 @@ static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,i
 		return;
 	}
 
-	PrvtProt_msgData_t MsgData;
-	PrvtPro_decodeMsgData(rxPack->msgdata,(len - 18),&MsgData,1);
-	aid = (MsgData.DisBody.aID[0] - 0x30)*100 +  (MsgData.DisBody.aID[1] - 0x30)*10 + \
-			  (MsgData.DisBody.aID[2] - 0x30);
+	PrvtProt_DisptrBody_t MsgDataBody;
+	PrvtProt_App_Xcall_t Appdata;
+	PrvtPro_decodeMsgData(rxPack->msgdata,(len - 18),&MsgDataBody,&Appdata);
+	aid = (MsgDataBody.aID[0] - 0x30)*100 +  (MsgDataBody.aID[1] - 0x30)*10 + \
+			  (MsgDataBody.aID[2] - 0x30);
 	if(PP_AID_XCALL != aid)
 	{
 		log_e(LOG_HOZON, "aid unmatch");
 		return;
 	}
 
-	switch(MsgData.DisBody.mID)
+	switch(MsgDataBody.mID)
 	{
 		case PP_MID_XCALL_RESP://收到xcall response回复
 		{
@@ -288,6 +296,15 @@ static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,i
 				PP_xcall[PP_ECALL].state.waitSt = 0;
 				log_i(LOG_HOZON, "\r\necall ok\r\n");
 			}
+		}
+		break;
+		case PP_MID_XCALL_REQ://收到tsp查询请求
+		{
+			if(PP_INVALID == PP_xcall[Appdata.xcallType-1].packResp.DisBody.eventId)
+			{
+				PP_xcall[Appdata.xcallType-1].packResp.DisBody.eventId = MsgDataBody.eventId;
+			}
+			PP_xcall[Appdata.xcallType-1].state.resp = 1;
 		}
 		break;
 		default:
@@ -421,7 +438,7 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 {
-	long msgdatalen;
+	int msgdatalen;
 	int res = 0;
 	PP_xcall[XcallType].packResp.Header.ver.Byte = task->version;
 	PP_xcall[XcallType].packResp.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
@@ -429,19 +446,23 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	memcpy(&PP_Xcall_Pack, &PP_xcall[XcallType].packResp.Header, sizeof(PrvtProt_pack_Header_t));
 
 	PP_xcall[XcallType].packResp.DisBody.eventTime = PrvtPro_getTimestamp();
+	if(PP_INVALID == PP_xcall[XcallType].packResp.DisBody.eventId)
+	{
+		PP_xcall[XcallType].packResp.DisBody.eventId = PP_AID_XCALL + PP_xcall[XcallType].Type;
+	}
 	PP_xcall[XcallType].packResp.DisBody.expTime   = PrvtPro_getTimestamp();
 	PP_xcall[XcallType].packResp.DisBody.ulMsgCnt++;	/* OPTIONAL */
 
 	PrvtProtcfg_gpsData_t gpsDt;
-	PP_appData.Xcall.xcallType = (long)(PP_xcall[XcallType].Type);//xcall type:ecall/icall/bcall
-	PP_appData.Xcall.engineSt = PrvtProtCfg_engineSt();//启动状态；1-熄火；2-启动
-	PP_appData.Xcall.totalOdoMr = PrvtProtCfg_totalOdoMr();//里程有效范围：0 - 1000000（km）
-	if(PP_appData.Xcall.totalOdoMr > 1000000)
+	Appdata_Xcall.xcallType = (long)(PP_xcall[XcallType].Type);//xcall type:ecall/icall/bcall
+	Appdata_Xcall.engineSt = PrvtProtCfg_engineSt();//启动状态；1-熄火；2-启动
+	Appdata_Xcall.totalOdoMr = PrvtProtCfg_totalOdoMr();//里程有效范围：0 - 1000000（km）
+	if(Appdata_Xcall.totalOdoMr > 1000000)
 	{
-		PP_appData.Xcall.totalOdoMr = 1000000;
+		Appdata_Xcall.totalOdoMr = 1000000;
 	}
-	PP_appData.Xcall.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps状态 0-无效；1-有效
-	PP_appData.Xcall.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gps时间戳:系统时间(通过gps校时)
+	Appdata_Xcall.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps状态 0-无效；1-有效
+	Appdata_Xcall.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gps时间戳:系统时间(通过gps校时)
 
 	PrvtProtCfg_gpsData(&gpsDt);
 	log_i(LOG_HOZON, "is_north = %d",gpsDt.is_north);
@@ -450,57 +471,57 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	log_i(LOG_HOZON, "longitude = %lf",gpsDt.longitude);
 	log_i(LOG_HOZON, "altitude = %lf",gpsDt.height);
 
-	if(PP_appData.Xcall.gpsPos.gpsSt == 1)
+	if(Appdata_Xcall.gpsPos.gpsSt == 1)
 	{
 		if(gpsDt.is_north)
 		{
-			PP_appData.Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000);//纬度 x 1000000,当GPS信号无效时，值为0
+			Appdata_Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000);//纬度 x 1000000,当GPS信号无效时，值为0
 		}
 		else
 		{
-			PP_appData.Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//纬度 x 1000000,当GPS信号无效时，值为0
+			Appdata_Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//纬度 x 1000000,当GPS信号无效时，值为0
 		}
 
 		if(gpsDt.is_east)
 		{
-			PP_appData.Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000);//经度 x 1000000,当GPS信号无效时，值为0
+			Appdata_Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000);//经度 x 1000000,当GPS信号无效时，值为0
 		}
 		else
 		{
-			PP_appData.Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//经度 x 1000000,当GPS信号无效时，值为0
+			Appdata_Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//经度 x 1000000,当GPS信号无效时，值为0
 		}
-		log_i(LOG_HOZON, "PP_appData.latitude = %lf",PP_appData.Xcall.gpsPos.latitude);
-		log_i(LOG_HOZON, "PP_appData.longitude = %lf",PP_appData.Xcall.gpsPos.longitude);
+		log_i(LOG_HOZON, "PP_appData.latitude = %lf",Appdata_Xcall.gpsPos.latitude);
+		log_i(LOG_HOZON, "PP_appData.longitude = %lf",Appdata_Xcall.gpsPos.longitude);
 	}
 	else
 	{
-		PP_appData.Xcall.gpsPos.latitude  = 0;
-		PP_appData.Xcall.gpsPos.longitude = 0;
+		Appdata_Xcall.gpsPos.latitude  = 0;
+		Appdata_Xcall.gpsPos.longitude = 0;
 	}
-	PP_appData.Xcall.gpsPos.altitude = (long)gpsDt.height;//高度（m）
-	if(PP_appData.Xcall.gpsPos.altitude > 10000)
+	Appdata_Xcall.gpsPos.altitude = (long)gpsDt.height;//高度（m）
+	if(Appdata_Xcall.gpsPos.altitude > 10000)
 	{
-		PP_appData.Xcall.gpsPos.altitude = 10000;
+		Appdata_Xcall.gpsPos.altitude = 10000;
 	}
-	PP_appData.Xcall.gpsPos.heading = (long)gpsDt.direction;//车头方向角度，0为正北方向
-	PP_appData.Xcall.gpsPos.gpsSpeed = (long)gpsDt.kms*10;//速度 x 10，单位km/h
-	PP_appData.Xcall.gpsPos.hdop = (long)gpsDt.hdop*10;//水平精度因子 x 10
-	if(PP_appData.Xcall.gpsPos.hdop > 1000)
+	Appdata_Xcall.gpsPos.heading = (long)gpsDt.direction;//车头方向角度，0为正北方向
+	Appdata_Xcall.gpsPos.gpsSpeed = (long)gpsDt.kms*10;//速度 x 10，单位km/h
+	Appdata_Xcall.gpsPos.hdop = (long)gpsDt.hdop*10;//水平精度因子 x 10
+	if(Appdata_Xcall.gpsPos.hdop > 1000)
 	{
-		PP_appData.Xcall.gpsPos.hdop = 1000;
+		Appdata_Xcall.gpsPos.hdop = 1000;
 	}
-	PP_appData.Xcall.srsSt = 1;//安全气囊状态 1- 正常；2 - 弹出
-	PP_appData.Xcall.updataTime = PrvtPro_getTimestamp();//数据时间戳
-	PP_appData.Xcall.battSOCEx = PrvtProtCfg_vehicleSOC();//车辆电池剩余电量：0-10000（0%-100%）
+	Appdata_Xcall.srsSt = 1;//安全气囊状态 1- 正常；2 - 弹出
+	Appdata_Xcall.updataTime = PrvtPro_getTimestamp();//数据时间戳
+	Appdata_Xcall.battSOCEx = PrvtProtCfg_vehicleSOC();//车辆电池剩余电量：0-10000（0%-100%）
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_XCALL_RESP,PP_Xcall_Pack.msgdata,&msgdatalen,\
-									   &PP_xcall[XcallType].packResp.DisBody,&PP_appData))//数据编码打包是否完成
+									   &PP_xcall[XcallType].packResp.DisBody,&Appdata_Xcall))//数据编码打包是否完成
 	{
 		log_e(LOG_HOZON, "encode error\n");
 		return 0;
 	}
 
-	PP_Xcall_Pack.Header.msglen = PrvtPro_BSEndianReverse(18 + msgdatalen);
+	PP_Xcall_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
 	res = sockproxy_MsgSend(PP_Xcall_Pack.Header.sign,18 + msgdatalen,NULL);
 
 	protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign, \
