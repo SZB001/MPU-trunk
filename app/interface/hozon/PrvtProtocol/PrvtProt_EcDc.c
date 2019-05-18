@@ -630,6 +630,7 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 		{
 			case PP_AID_XCALL:
 			{
+				PrvtProt_App_Xcall_t *app_xcall_ptr = (PrvtProt_App_Xcall_t*)appData;
 				if(PP_MID_XCALL_REQ == MID)//xcall req
 				{
 					XcallReqinfo_t RxXcallReq;
@@ -643,8 +644,8 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						return -1;
 					}
 
-					((PrvtProt_App_Xcall_t*)appData)->xcallType = RxXcallReq.xcallType;
-					log_i(LOG_HOZON, "appData->xcallType = %d\n",((PrvtProt_App_Xcall_t*)appData)->xcallType);
+					app_xcall_ptr->xcallType = RxXcallReq.xcallType;
+					log_i(LOG_HOZON, "appData->xcallType = %d\n",app_xcall_ptr->xcallType);
 				}
 				else if(PP_MID_XCALL_RESP == MID)//xcall response
 				{
@@ -659,20 +660,20 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						return -1;
 					}
 
-					((PrvtProt_App_Xcall_t*)appData)->xcallType 	= RxXcallResp.xcallType;
-					((PrvtProt_App_Xcall_t*)appData)->updataTime 	= RxXcallResp.updataTime;
-					((PrvtProt_App_Xcall_t*)appData)->battSOCEx 	= RxXcallResp.battSOCEx;
-					((PrvtProt_App_Xcall_t*)appData)->engineSt 		= RxXcallResp.engineSt;
-					((PrvtProt_App_Xcall_t*)appData)->srsSt 		= RxXcallResp.srsSt;
-					((PrvtProt_App_Xcall_t*)appData)->totalOdoMr 	= RxXcallResp.ttOdoMeter;
-					((PrvtProt_App_Xcall_t*)appData)->gpsPos.altitude 	= 	 (**(RxXcallResp.gpsPos.list.array)).altitude;
-					((PrvtProt_App_Xcall_t*)appData)->gpsPos.gpsSpeed 	=	 (**(RxXcallResp.gpsPos.list.array)).gpsSpeed;
-					((PrvtProt_App_Xcall_t*)appData)->gpsPos.gpsSt 	=	 (**(RxXcallResp.gpsPos.list.array)).gpsSt;
-					((PrvtProt_App_Xcall_t*)appData)->gpsPos.gpsTimestamp = (**(RxXcallResp.gpsPos.list.array)).gpsTimestamp;
-					((PrvtProt_App_Xcall_t*)appData)->gpsPos.hdop 		=	 (**(RxXcallResp.gpsPos.list.array)).hdop;
-					((PrvtProt_App_Xcall_t*)appData)->gpsPos.heading 	=	 (**(RxXcallResp.gpsPos.list.array)).heading;
-					((PrvtProt_App_Xcall_t*)appData)->gpsPos.latitude 	=	 (**(RxXcallResp.gpsPos.list.array)).latitude;
-					((PrvtProt_App_Xcall_t*)appData)->gpsPos.longitude =	 (**(RxXcallResp.gpsPos.list.array)).longitude;
+					app_xcall_ptr->xcallType 	= RxXcallResp.xcallType;
+					app_xcall_ptr->updataTime 	= RxXcallResp.updataTime;
+					app_xcall_ptr->battSOCEx 	= RxXcallResp.battSOCEx;
+					app_xcall_ptr->engineSt 		= RxXcallResp.engineSt;
+					app_xcall_ptr->srsSt 		= RxXcallResp.srsSt;
+					app_xcall_ptr->totalOdoMr 	= RxXcallResp.ttOdoMeter;
+					app_xcall_ptr->gpsPos.altitude 	= 	 (**(RxXcallResp.gpsPos.list.array)).altitude;
+					app_xcall_ptr->gpsPos.gpsSpeed 	=	 (**(RxXcallResp.gpsPos.list.array)).gpsSpeed;
+					app_xcall_ptr->gpsPos.gpsSt 	=	 (**(RxXcallResp.gpsPos.list.array)).gpsSt;
+					app_xcall_ptr->gpsPos.gpsTimestamp = (**(RxXcallResp.gpsPos.list.array)).gpsTimestamp;
+					app_xcall_ptr->gpsPos.hdop 		=	 (**(RxXcallResp.gpsPos.list.array)).hdop;
+					app_xcall_ptr->gpsPos.heading 	=	 (**(RxXcallResp.gpsPos.list.array)).heading;
+					app_xcall_ptr->gpsPos.latitude 	=	 (**(RxXcallResp.gpsPos.list.array)).latitude;
+					app_xcall_ptr->gpsPos.longitude =	 (**(RxXcallResp.gpsPos.list.array)).longitude;
 				}
 				else
 				{}
@@ -680,7 +681,7 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 			break;
 			case PP_AID_RMTCFG:
 			{
-				PrvtProt_App_rmtCfg_t *appData_ptr = (PrvtProt_App_rmtCfg_t*)appData;
+				PrvtProt_App_rmtCfg_t *app_rmtCfg_ptr = (PrvtProt_App_rmtCfg_t*)appData;
 				if(PP_MID_CHECK_CFG_RESP == MID)//check cfg resp
 				{
 					log_i(LOG_HOZON, "config check response\n");
@@ -695,12 +696,12 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						return -1;
 					}
 
-					appData_ptr->checkResp.needUpdate = cfgcheckResp.needUpdate;
-					memcpy(appData_ptr->checkResp.cfgVersion,cfgcheckResp.cfgVersion->buf, \
+					app_rmtCfg_ptr->checkResp.needUpdate = cfgcheckResp.needUpdate;
+					memcpy(app_rmtCfg_ptr->checkResp.cfgVersion,cfgcheckResp.cfgVersion->buf, \
 																cfgcheckResp.cfgVersion->size);
-					appData_ptr->checkResp.cfgVersionlen = cfgcheckResp.cfgVersion->size;
-					log_i(LOG_HOZON, "checkCfgResp.needUpdate = %d\n",appData_ptr->checkResp.needUpdate);
-					log_i(LOG_HOZON, "checkCfgResp.cfgVersion = %s\n",appData_ptr->checkResp.cfgVersion);
+					app_rmtCfg_ptr->checkResp.cfgVersionlen = cfgcheckResp.cfgVersion->size;
+					log_i(LOG_HOZON, "checkCfgResp.needUpdate = %d\n",app_rmtCfg_ptr->checkResp.needUpdate);
+					log_i(LOG_HOZON, "checkCfgResp.cfgVersion = %s\n",app_rmtCfg_ptr->checkResp.cfgVersion);
 				}
 				else if(PP_MID_GET_CFG_RESP == MID)//get cfg resp
 				{
@@ -716,132 +717,132 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						return -1;
 					}
 
-					appData_ptr->getResp.result = cfggetResp.result;
-					log_i(LOG_HOZON, "getCfgResp.result = %d\n",appData_ptr->getResp.result);
+					app_rmtCfg_ptr->getResp.result = cfggetResp.result;
+					log_i(LOG_HOZON, "getCfgResp.result = %d\n",app_rmtCfg_ptr->getResp.result);
 					if(cfggetResp.ficmCfg != NULL)
 					{
-						appData_ptr->getResp.FICM.ficmConfigValid = 1;
-						memcpy(appData_ptr->getResp.FICM.token,(**(cfggetResp.ficmCfg->list.array)).token.buf, \
+						app_rmtCfg_ptr->getResp.FICM.ficmConfigValid = 1;
+						memcpy(app_rmtCfg_ptr->getResp.FICM.token,(**(cfggetResp.ficmCfg->list.array)).token.buf, \
 								(**(cfggetResp.ficmCfg->list.array)).token.size);
-						appData_ptr->getResp.FICM.tokenlen = (**(cfggetResp.ficmCfg->list.array)).token.size;
-						memcpy(appData_ptr->getResp.FICM.userID,(**(cfggetResp.ficmCfg->list.array)).userID.buf, \
+						app_rmtCfg_ptr->getResp.FICM.tokenlen = (**(cfggetResp.ficmCfg->list.array)).token.size;
+						memcpy(app_rmtCfg_ptr->getResp.FICM.userID,(**(cfggetResp.ficmCfg->list.array)).userID.buf, \
 														(**(cfggetResp.ficmCfg->list.array)).userID.size);
-						appData_ptr->getResp.FICM.userIDlen = (**(cfggetResp.ficmCfg->list.array)).userID.size;
+						app_rmtCfg_ptr->getResp.FICM.userIDlen = (**(cfggetResp.ficmCfg->list.array)).userID.size;
 
-						log_i(LOG_HOZON, "getCfgResp.token = %s\n",appData_ptr->getResp.FICM.token);
-						log_i(LOG_HOZON, "getCfgResp.tokenlen = %d\n",appData_ptr->getResp.FICM.tokenlen);
-						log_i(LOG_HOZON, "getCfgResp.userID = %s\n",appData_ptr->getResp.FICM.userID);
-						log_i(LOG_HOZON, "getCfgResp.userIDlen = %d\n",appData_ptr->getResp.FICM.userIDlen);
+						log_i(LOG_HOZON, "getCfgResp.token = %s\n",app_rmtCfg_ptr->getResp.FICM.token);
+						log_i(LOG_HOZON, "getCfgResp.tokenlen = %d\n",app_rmtCfg_ptr->getResp.FICM.tokenlen);
+						log_i(LOG_HOZON, "getCfgResp.userID = %s\n",app_rmtCfg_ptr->getResp.FICM.userID);
+						log_i(LOG_HOZON, "getCfgResp.userIDlen = %d\n",app_rmtCfg_ptr->getResp.FICM.userIDlen);
 					}
 
 					if(cfggetResp.apn1Cfg != NULL)
 					{
-						appData_ptr->getResp.APN1.apn1ConfigValid =1;
-						memcpy(appData_ptr->getResp.APN1.tspAddr,(**(cfggetResp.apn1Cfg->list.array)).tspAddress.buf, \
+						app_rmtCfg_ptr->getResp.APN1.apn1ConfigValid =1;
+						memcpy(app_rmtCfg_ptr->getResp.APN1.tspAddr,(**(cfggetResp.apn1Cfg->list.array)).tspAddress.buf, \
 															(**(cfggetResp.apn1Cfg->list.array)).tspAddress.size);
-						appData_ptr->getResp.APN1.tspAddrlen = (**(cfggetResp.apn1Cfg->list.array)).tspAddress.size;
-						log_i(LOG_HOZON, "getCfgResp.tspAddr = %s\n",appData_ptr->getResp.APN1.tspAddr);
-						log_i(LOG_HOZON, "getCfgResp.tspAddrlen = %d\n",appData_ptr->getResp.APN1.tspAddrlen);
+						app_rmtCfg_ptr->getResp.APN1.tspAddrlen = (**(cfggetResp.apn1Cfg->list.array)).tspAddress.size;
+						log_i(LOG_HOZON, "getCfgResp.tspAddr = %s\n",app_rmtCfg_ptr->getResp.APN1.tspAddr);
+						log_i(LOG_HOZON, "getCfgResp.tspAddrlen = %d\n",app_rmtCfg_ptr->getResp.APN1.tspAddrlen);
 
-						memcpy(appData_ptr->getResp.APN1.tspPass,(**(cfggetResp.apn1Cfg->list.array)).tspPass.buf, \
+						memcpy(app_rmtCfg_ptr->getResp.APN1.tspPass,(**(cfggetResp.apn1Cfg->list.array)).tspPass.buf, \
 															(**(cfggetResp.apn1Cfg->list.array)).tspPass.size);
-						appData_ptr->getResp.APN1.tspPasslen = (**(cfggetResp.apn1Cfg->list.array)).tspPass.size;
-						log_i(LOG_HOZON, "getCfgResp.tspPass = %s\n",appData_ptr->getResp.APN1.tspPass);
-						log_i(LOG_HOZON, "getCfgResp.tspPasslen = %d\n",appData_ptr->getResp.APN1.tspPasslen);
+						app_rmtCfg_ptr->getResp.APN1.tspPasslen = (**(cfggetResp.apn1Cfg->list.array)).tspPass.size;
+						log_i(LOG_HOZON, "getCfgResp.tspPass = %s\n",app_rmtCfg_ptr->getResp.APN1.tspPass);
+						log_i(LOG_HOZON, "getCfgResp.tspPasslen = %d\n",app_rmtCfg_ptr->getResp.APN1.tspPasslen);
 
-						memcpy(appData_ptr->getResp.APN1.tspIP,(**(cfggetResp.apn1Cfg->list.array)).tspIp.buf, \
+						memcpy(app_rmtCfg_ptr->getResp.APN1.tspIP,(**(cfggetResp.apn1Cfg->list.array)).tspIp.buf, \
 															(**(cfggetResp.apn1Cfg->list.array)).tspIp.size);
-						appData_ptr->getResp.APN1.tspIPlen = (**(cfggetResp.apn1Cfg->list.array)).tspIp.size;
-						log_i(LOG_HOZON, "getCfgResp.tspIP = %s\n",appData_ptr->getResp.APN1.tspIP);
-						log_i(LOG_HOZON, "getCfgResp.tspIPlen = %d\n",appData_ptr->getResp.APN1.tspIPlen);
+						app_rmtCfg_ptr->getResp.APN1.tspIPlen = (**(cfggetResp.apn1Cfg->list.array)).tspIp.size;
+						log_i(LOG_HOZON, "getCfgResp.tspIP = %s\n",app_rmtCfg_ptr->getResp.APN1.tspIP);
+						log_i(LOG_HOZON, "getCfgResp.tspIPlen = %d\n",app_rmtCfg_ptr->getResp.APN1.tspIPlen);
 
-						memcpy(appData_ptr->getResp.APN1.tspSms,(**(cfggetResp.apn1Cfg->list.array)).tspSms.buf, \
+						memcpy(app_rmtCfg_ptr->getResp.APN1.tspSms,(**(cfggetResp.apn1Cfg->list.array)).tspSms.buf, \
 															(**(cfggetResp.apn1Cfg->list.array)).tspSms.size);
-						appData_ptr->getResp.APN1.tspSmslen = (**(cfggetResp.apn1Cfg->list.array)).tspSms.size;
-						log_i(LOG_HOZON, "getCfgResp.tspSms = %s\n",appData_ptr->getResp.APN1.tspSms);
-						log_i(LOG_HOZON, "getCfgResp.tspSmslen = %d\n",appData_ptr->getResp.APN1.tspSmslen);
+						app_rmtCfg_ptr->getResp.APN1.tspSmslen = (**(cfggetResp.apn1Cfg->list.array)).tspSms.size;
+						log_i(LOG_HOZON, "getCfgResp.tspSms = %s\n",app_rmtCfg_ptr->getResp.APN1.tspSms);
+						log_i(LOG_HOZON, "getCfgResp.tspSmslen = %d\n",app_rmtCfg_ptr->getResp.APN1.tspSmslen);
 
-						memcpy(appData_ptr->getResp.APN1.tspPort,(**(cfggetResp.apn1Cfg->list.array)).tspPort.buf, \
+						memcpy(app_rmtCfg_ptr->getResp.APN1.tspPort,(**(cfggetResp.apn1Cfg->list.array)).tspPort.buf, \
 															(**(cfggetResp.apn1Cfg->list.array)).tspPort.size);
-						appData_ptr->getResp.APN1.tspPortlen = (**(cfggetResp.apn1Cfg->list.array)).tspPort.size;
-						log_i(LOG_HOZON, "getCfgResp.tspPort = %s\n",appData_ptr->getResp.APN1.tspPort);
-						log_i(LOG_HOZON, "getCfgResp.tspPortlen = %d\n",appData_ptr->getResp.APN1.tspPortlen);
+						app_rmtCfg_ptr->getResp.APN1.tspPortlen = (**(cfggetResp.apn1Cfg->list.array)).tspPort.size;
+						log_i(LOG_HOZON, "getCfgResp.tspPort = %s\n",app_rmtCfg_ptr->getResp.APN1.tspPort);
+						log_i(LOG_HOZON, "getCfgResp.tspPortlen = %d\n",app_rmtCfg_ptr->getResp.APN1.tspPortlen);
 					}
 
 					if(cfggetResp.apn2Cfg != NULL)
 					{
-						appData_ptr->getResp.APN2.apn2ConfigValid = 1;
-						memcpy(appData_ptr->getResp.APN2.apn2Address,(**(cfggetResp.apn2Cfg->list.array)).tspAddress.buf, \
+						app_rmtCfg_ptr->getResp.APN2.apn2ConfigValid = 1;
+						memcpy(app_rmtCfg_ptr->getResp.APN2.apn2Address,(**(cfggetResp.apn2Cfg->list.array)).tspAddress.buf, \
 															(**(cfggetResp.apn2Cfg->list.array)).tspAddress.size);
-						appData_ptr->getResp.APN2.apn2Addresslen = (**(cfggetResp.apn2Cfg->list.array)).tspAddress.size;
-						log_i(LOG_HOZON, "getCfgResp.apn2Address = %s\n",appData_ptr->getResp.APN2.apn2Address);
-						log_i(LOG_HOZON, "getCfgResp.apn2Addresslen = %d\n",appData_ptr->getResp.APN2.apn2Addresslen);
+						app_rmtCfg_ptr->getResp.APN2.apn2Addresslen = (**(cfggetResp.apn2Cfg->list.array)).tspAddress.size;
+						log_i(LOG_HOZON, "getCfgResp.apn2Address = %s\n",app_rmtCfg_ptr->getResp.APN2.apn2Address);
+						log_i(LOG_HOZON, "getCfgResp.apn2Addresslen = %d\n",app_rmtCfg_ptr->getResp.APN2.apn2Addresslen);
 
-						memcpy(appData_ptr->getResp.APN2.apn2User,(**(cfggetResp.apn2Cfg->list.array)).tspUser.buf, \
+						memcpy(app_rmtCfg_ptr->getResp.APN2.apn2User,(**(cfggetResp.apn2Cfg->list.array)).tspUser.buf, \
 															(**(cfggetResp.apn2Cfg->list.array)).tspUser.size);
-						appData_ptr->getResp.APN2.apn2Userlen = (**(cfggetResp.apn2Cfg->list.array)).tspUser.size;
-						log_i(LOG_HOZON, "getCfgResp.apn2User = %s\n",appData_ptr->getResp.APN2.apn2User);
-						log_i(LOG_HOZON, "getCfgResp.apn2Userlen = %d\n",appData_ptr->getResp.APN2.apn2Userlen);
+						app_rmtCfg_ptr->getResp.APN2.apn2Userlen = (**(cfggetResp.apn2Cfg->list.array)).tspUser.size;
+						log_i(LOG_HOZON, "getCfgResp.apn2User = %s\n",app_rmtCfg_ptr->getResp.APN2.apn2User);
+						log_i(LOG_HOZON, "getCfgResp.apn2Userlen = %d\n",app_rmtCfg_ptr->getResp.APN2.apn2Userlen);
 
-						memcpy(appData_ptr->getResp.APN2.apn2Pass,(**(cfggetResp.apn2Cfg->list.array)).tspPass.buf, \
+						memcpy(app_rmtCfg_ptr->getResp.APN2.apn2Pass,(**(cfggetResp.apn2Cfg->list.array)).tspPass.buf, \
 															(**(cfggetResp.apn2Cfg->list.array)).tspPass.size);
-						appData_ptr->getResp.APN2.apn2Passlen = (**(cfggetResp.apn2Cfg->list.array)).tspPass.size;
-						log_i(LOG_HOZON, "getCfgResp.apn2Pass = %s\n",appData_ptr->getResp.APN2.apn2Pass);
-						log_i(LOG_HOZON, "getCfgResp.apn2Passlen = %d\n",appData_ptr->getResp.APN2.apn2Passlen);
+						app_rmtCfg_ptr->getResp.APN2.apn2Passlen = (**(cfggetResp.apn2Cfg->list.array)).tspPass.size;
+						log_i(LOG_HOZON, "getCfgResp.apn2Pass = %s\n",app_rmtCfg_ptr->getResp.APN2.apn2Pass);
+						log_i(LOG_HOZON, "getCfgResp.apn2Passlen = %d\n",app_rmtCfg_ptr->getResp.APN2.apn2Passlen);
 					}
 
 					if(cfggetResp.commonCfg != NULL)
 					{
-						appData_ptr->getResp.COMMON.commonConfigValid = 1;
-						appData_ptr->getResp.COMMON.actived = (**(cfggetResp.commonCfg->list.array)).actived;
-						appData_ptr->getResp.COMMON.bCallEnabled = (**(cfggetResp.commonCfg->list.array)).bCallEnabled;
-						appData_ptr->getResp.COMMON.btKeyEntryEnabled = (**(cfggetResp.commonCfg->list.array)).btKeyEntryEnabled;
-						appData_ptr->getResp.COMMON.dcEnabled = (**(cfggetResp.commonCfg->list.array)).dcEnabled;
-						appData_ptr->getResp.COMMON.dtcEnabled = (**(cfggetResp.commonCfg->list.array)).dtcEnabled;
-						appData_ptr->getResp.COMMON.eCallEnabled = (**(cfggetResp.commonCfg->list.array)).eCallEnabled;
-						appData_ptr->getResp.COMMON.iCallEnabled = (**(cfggetResp.commonCfg->list.array)).iCallEnabled;
-						appData_ptr->getResp.COMMON.journeysEnabled = (**(cfggetResp.commonCfg->list.array)).journeysEnabled;
-						appData_ptr->getResp.COMMON.onlineInfEnabled = (**(cfggetResp.commonCfg->list.array)).onlineInfEnabled;
-						appData_ptr->getResp.COMMON.rChargeEnabled = (**(cfggetResp.commonCfg->list.array)).rChargeEnabled;
-						appData_ptr->getResp.COMMON.rcEnabled = (**(cfggetResp.commonCfg->list.array)).rcEnabled;
-						appData_ptr->getResp.COMMON.svtEnabled = (**(cfggetResp.commonCfg->list.array)).svtEnabled;
-						appData_ptr->getResp.COMMON.vsEnabled = (**(cfggetResp.commonCfg->list.array)).vsEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.commonConfigValid = 1;
+						app_rmtCfg_ptr->getResp.COMMON.actived = (**(cfggetResp.commonCfg->list.array)).actived;
+						app_rmtCfg_ptr->getResp.COMMON.bCallEnabled = (**(cfggetResp.commonCfg->list.array)).bCallEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.btKeyEntryEnabled = (**(cfggetResp.commonCfg->list.array)).btKeyEntryEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.dcEnabled = (**(cfggetResp.commonCfg->list.array)).dcEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.dtcEnabled = (**(cfggetResp.commonCfg->list.array)).dtcEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.eCallEnabled = (**(cfggetResp.commonCfg->list.array)).eCallEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.iCallEnabled = (**(cfggetResp.commonCfg->list.array)).iCallEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.journeysEnabled = (**(cfggetResp.commonCfg->list.array)).journeysEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.onlineInfEnabled = (**(cfggetResp.commonCfg->list.array)).onlineInfEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.rChargeEnabled = (**(cfggetResp.commonCfg->list.array)).rChargeEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.rcEnabled = (**(cfggetResp.commonCfg->list.array)).rcEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.svtEnabled = (**(cfggetResp.commonCfg->list.array)).svtEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.vsEnabled = (**(cfggetResp.commonCfg->list.array)).vsEnabled;
 
-						log_i(LOG_HOZON, "getCfgResp.actived = %d\n",appData_ptr->getResp.COMMON.actived);
-						log_i(LOG_HOZON, "getCfgResp.bCallEnabled = %d\n",appData_ptr->getResp.COMMON.bCallEnabled);
-						log_i(LOG_HOZON, "getCfgResp.btKeyEntryEnabled = %d\n",appData_ptr->getResp.COMMON.btKeyEntryEnabled);
-						log_i(LOG_HOZON, "getCfgResp.dcEnabled = %d\n",appData_ptr->getResp.COMMON.dcEnabled);
-						log_i(LOG_HOZON, "getCfgResp.dtcEnabled = %d\n",appData_ptr->getResp.COMMON.dtcEnabled);
-						log_i(LOG_HOZON, "getCfgResp.eCallEnabled = %d\n",appData_ptr->getResp.COMMON.eCallEnabled);
-						log_i(LOG_HOZON, "getCfgResp.iCallEnabled = %d\n",appData_ptr->getResp.COMMON.iCallEnabled);
-						log_i(LOG_HOZON, "getCfgResp.journeysEnabled = %d\n",appData_ptr->getResp.COMMON.journeysEnabled);
-						log_i(LOG_HOZON, "getCfgResp.onlineInfEnabled = %d\n",appData_ptr->getResp.COMMON.onlineInfEnabled);
-						log_i(LOG_HOZON, "getCfgResp.rChargeEnabled = %d\n",appData_ptr->getResp.COMMON.rChargeEnabled);
-						log_i(LOG_HOZON, "getCfgResp.rcEnabled = %d\n",appData_ptr->getResp.COMMON.rcEnabled);
-						log_i(LOG_HOZON, "getCfgResp.svtEnabled = %d\n",appData_ptr->getResp.COMMON.svtEnabled);
-						log_i(LOG_HOZON, "getCfgResp.vsEnabled = %d\n",appData_ptr->getResp.COMMON.vsEnabled);
+						log_i(LOG_HOZON, "getCfgResp.actived = %d\n",app_rmtCfg_ptr->getResp.COMMON.actived);
+						log_i(LOG_HOZON, "getCfgResp.bCallEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.bCallEnabled);
+						log_i(LOG_HOZON, "getCfgResp.btKeyEntryEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.btKeyEntryEnabled);
+						log_i(LOG_HOZON, "getCfgResp.dcEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.dcEnabled);
+						log_i(LOG_HOZON, "getCfgResp.dtcEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.dtcEnabled);
+						log_i(LOG_HOZON, "getCfgResp.eCallEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.eCallEnabled);
+						log_i(LOG_HOZON, "getCfgResp.iCallEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.iCallEnabled);
+						log_i(LOG_HOZON, "getCfgResp.journeysEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.journeysEnabled);
+						log_i(LOG_HOZON, "getCfgResp.onlineInfEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.onlineInfEnabled);
+						log_i(LOG_HOZON, "getCfgResp.rChargeEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.rChargeEnabled);
+						log_i(LOG_HOZON, "getCfgResp.rcEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.rcEnabled);
+						log_i(LOG_HOZON, "getCfgResp.svtEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.svtEnabled);
+						log_i(LOG_HOZON, "getCfgResp.vsEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.vsEnabled);
 					}
 
 					if(cfggetResp.extendCfg != NULL)
 					{
-						appData_ptr->getResp.EXTEND.extendConfigValid = 1;
-						memcpy(appData_ptr->getResp.EXTEND.bcallNO,(**(cfggetResp.extendCfg->list.array)).bcallNO.buf, \
+						app_rmtCfg_ptr->getResp.EXTEND.extendConfigValid = 1;
+						memcpy(app_rmtCfg_ptr->getResp.EXTEND.bcallNO,(**(cfggetResp.extendCfg->list.array)).bcallNO.buf, \
 																(**(cfggetResp.extendCfg->list.array)).bcallNO.size);
-						appData_ptr->getResp.EXTEND.bcallNOlen = (**(cfggetResp.extendCfg->list.array)).bcallNO.size;
-						log_i(LOG_HOZON, "getCfgResp.bcallNO = %s\n",appData_ptr->getResp.EXTEND.bcallNO);
-						log_i(LOG_HOZON, "getCfgResp.bcallNOlen = %d\n",appData_ptr->getResp.EXTEND.bcallNOlen);
+						app_rmtCfg_ptr->getResp.EXTEND.bcallNOlen = (**(cfggetResp.extendCfg->list.array)).bcallNO.size;
+						log_i(LOG_HOZON, "getCfgResp.bcallNO = %s\n",app_rmtCfg_ptr->getResp.EXTEND.bcallNO);
+						log_i(LOG_HOZON, "getCfgResp.bcallNOlen = %d\n",app_rmtCfg_ptr->getResp.EXTEND.bcallNOlen);
 
-						memcpy(appData_ptr->getResp.EXTEND.ecallNO,(**(cfggetResp.extendCfg->list.array)).ecallNO.buf, \
+						memcpy(app_rmtCfg_ptr->getResp.EXTEND.ecallNO,(**(cfggetResp.extendCfg->list.array)).ecallNO.buf, \
 																(**(cfggetResp.extendCfg->list.array)).ecallNO.size);
-						appData_ptr->getResp.EXTEND.ecallNOlen = (**(cfggetResp.extendCfg->list.array)).ecallNO.size;
-						log_i(LOG_HOZON, "getCfgResp.ecallNO = %s\n",appData_ptr->getResp.EXTEND.ecallNO);
-						log_i(LOG_HOZON, "getCfgResp.ecallNOlen = %d\n",appData_ptr->getResp.EXTEND.ecallNOlen);
+						app_rmtCfg_ptr->getResp.EXTEND.ecallNOlen = (**(cfggetResp.extendCfg->list.array)).ecallNO.size;
+						log_i(LOG_HOZON, "getCfgResp.ecallNO = %s\n",app_rmtCfg_ptr->getResp.EXTEND.ecallNO);
+						log_i(LOG_HOZON, "getCfgResp.ecallNOlen = %d\n",app_rmtCfg_ptr->getResp.EXTEND.ecallNOlen);
 
-						memcpy(appData_ptr->getResp.EXTEND.ccNO,(**(cfggetResp.extendCfg->list.array)).icallNO.buf, \
+						memcpy(app_rmtCfg_ptr->getResp.EXTEND.ccNO,(**(cfggetResp.extendCfg->list.array)).icallNO.buf, \
 																(**(cfggetResp.extendCfg->list.array)).icallNO.size);
-						appData_ptr->getResp.EXTEND.ccNOlen = (**(cfggetResp.extendCfg->list.array)).icallNO.size;
-						log_i(LOG_HOZON, "getCfgResp.ccNONO = %s\n",appData_ptr->getResp.EXTEND.ccNO);
-						log_i(LOG_HOZON, "getCfgResp.ccNOlen = %d\n",appData_ptr->getResp.EXTEND.ccNOlen);
+						app_rmtCfg_ptr->getResp.EXTEND.ccNOlen = (**(cfggetResp.extendCfg->list.array)).icallNO.size;
+						log_i(LOG_HOZON, "getCfgResp.ccNONO = %s\n",app_rmtCfg_ptr->getResp.EXTEND.ccNO);
+						log_i(LOG_HOZON, "getCfgResp.ccNOlen = %d\n",app_rmtCfg_ptr->getResp.EXTEND.ccNOlen);
 					}
 				}
 				else if(PP_MID_READ_CFG_REQ == MID)//read config req
@@ -862,7 +863,7 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 					{
 						for(i = 0;i < DecodeCRR.settingIds.list.count;i++)
 						{
-							appData_ptr->ReadReq.SettingId[i] = DecodeCRR.settingIds.list.array[i]->id;
+							app_rmtCfg_ptr->ReadReq.SettingId[i] = DecodeCRR.settingIds.list.array[i]->id;
 						}
 					}
 				}

@@ -338,6 +338,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 			if(res > 0)
 			{
 				rmtCfg->state.req  = AppData_rmtCfg.connResp.configAccepted;
+				rmtCfg->state.reqCnt = 0;
 				rmtCfg->state.period = tm_get_time();
 			}
 			else if(res < 0)
@@ -409,15 +410,21 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 	{
 		case PP_RMTCFG_CFG_IDLE:
 		{
-			if(1 == rmtCfg->state.req)
+			if((1 == rmtCfg->state.req) && (rmtCfg->state.reqCnt < 3))
 			{
 				if((tm_get_time() - rmtCfg->state.period) >= RMTCFG_DELAY_TIME)
 				{
 					log_i(LOG_HOZON, "start request remote config\r\n");
 					rmtCfg->state.CfgSt = PP_CHECK_CFG_REQ;
 					rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
-					rmtCfg->state.req = 0;
+					rmtCfg->state.reqCnt++;
+					//rmtCfg->state.req = 0;
 				}
+			}
+			else
+			{
+				rmtCfg->state.reqCnt = 0;
+				rmtCfg->state.req = 0;
 			}
 		}
 		break;
@@ -429,6 +436,8 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				log_e(LOG_HOZON, "socket send error, reset protocol");
 				sockproxy_socketclose();//by liujian 20190514
 				rmtCfg->state.req = 1;
+				rmtCfg->state.reqCnt = 0;
+				rmtCfg->state.period = tm_get_time();
 				rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
 			}
 			else if(res > 0)
@@ -450,7 +459,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 					 log_e(LOG_HOZON, "check cfg response time out");
 					 rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
 					 rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
-					 rmtCfg->state.req = 1;
+					 //rmtCfg->state.req = 1;
 					 rmtCfg->state.period = tm_get_time();
 				 }
 			}
@@ -464,6 +473,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				else
 				{
 					rmtCfg->state.req = 0;
+					rmtCfg->state.reqCnt = 0;
 					rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
 					rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
 
@@ -479,6 +489,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				log_e(LOG_HOZON, "socket send error, reset protocol");
 				sockproxy_socketclose();//by liujian 20190514
 				rmtCfg->state.req = 1;
+				rmtCfg->state.reqCnt = 0;
 				rmtCfg->state.period = tm_get_time();
 				rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
 			}
@@ -501,7 +512,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 					 log_e(LOG_HOZON, "get cfg response time out");
 					 rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
 					 rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
-					 rmtCfg->state.req = 1;
+					 //rmtCfg->state.req = 1;
 					 rmtCfg->state.period = tm_get_time();
 				 }
 			}
@@ -514,9 +525,8 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		case PP_RMTCFG_CFG_END://结束配置
 		{
 			if(AppData_rmtCfg.getResp.result == 1)
-			{
+			{//缓存配置，并通知服务器配置完成状态
 				AppData_rmtCfg.getResp.result = 0;
-				//配置生效，使用新的配置
 				memcpy(AppData_rmtCfg.ReadResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion, \
 														  AppData_rmtCfg.checkResp.cfgVersionlen);
 				AppData_rmtCfg.ReadResp.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
@@ -535,15 +545,24 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				log_e(LOG_HOZON, "socket send error, reset protocol");
 				sockproxy_socketclose();//by liujian 20190514
 				rmtCfg->state.req = 1;
+				rmtCfg->state.reqCnt = 0;
 				rmtCfg->state.period = tm_get_time();
 				rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
 			}
-			else if(res > 0)
+			else if(res > 0)//发送ok
 			{
 				log_i(LOG_HOZON, "remote config take effect\r\n");
+				if(rmtCfg->state.cfgsuccess == 1)
+				{
+					rmtCfg->state.cfgsuccess = 0;
+					//保存配置，使用新的配置
+					//
+					//
+				}
 				rmtCfg->state.waitSt  = PP_RMTCFG_WAIT_IDLE;
 				rmtCfg->state.CfgSt 	= PP_RMTCFG_CFG_IDLE;
 				rmtCfg->state.req 	= 0;
+				rmtCfg->state.reqCnt 	= 0;
 			}
 			else
 			{}
@@ -774,7 +793,7 @@ static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 
 	/*appdata*/
-	AppData_rmtCfg.getResp.result = 1;
+	AppData_rmtCfg.ReadResp.result = 1;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_READ_RESP,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
 									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//数据编码打包是否完成

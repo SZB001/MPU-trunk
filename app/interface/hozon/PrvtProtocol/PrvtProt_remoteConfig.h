@@ -64,6 +64,7 @@ typedef enum
 typedef struct
 {
 	uint8_t req;
+	uint8_t reqCnt;
 	uint8_t CfgSt;
 	uint64_t period;
 	uint8_t waitSt;
