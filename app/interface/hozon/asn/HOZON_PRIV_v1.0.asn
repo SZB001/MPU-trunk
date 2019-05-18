@@ -75,10 +75,10 @@ CfgGetRespInfo ::= SEQUENCE -- 用于 TAP 向 TCU 返回配置更新包
 {
 	result			BOOLEAN, -- 
 	ficmCfg			SEQUENCE(SIZE(1)) OF FICMConfigSettings OPTIONAL, 	-- gb配置项
-	apn1Config		SEQUENCE(SIZE(1)) OF APN1ConfigSettings OPTIONAL, 	-- apn1配置项
-	apn2Config		SEQUENCE(SIZE(1)) OF APN2ConfigSettings OPTIONAL, 	-- apn2配置项
-	commonConfig	SEQUENCE(SIZE(1)) OF CommonConfigSettings OPTIONAL,	-- 常规配置项
-	extendConfig	SEQUENCE(SIZE(1)) OF ExtendConfigSettings OPTIONAL 	-- 扩展配置项
+	apn1Cfg			SEQUENCE(SIZE(1)) OF APN1ConfigSettings OPTIONAL, 	-- apn1配置项
+	apn2Cfg			SEQUENCE(SIZE(1)) OF APN2ConfigSettings OPTIONAL, 	-- apn2配置项
+	commonCfg		SEQUENCE(SIZE(1)) OF CommonConfigSettings OPTIONAL,	-- 常规配置项
+	extendCfg		SEQUENCE(SIZE(1)) OF ExtendConfigSettings OPTIONAL 	-- 扩展配置项
 }
 
 FICMConfigSettings ::= SEQUENCE
@@ -151,11 +151,58 @@ CfgReadRespInfo ::= SEQUENCE --
 {
 	result			BOOLEAN, -- 
 	cfgVersion		OCTET STRING(SIZE(32)), -- 版本号
-	ficmCfg			SEQUENCE(SIZE(1)) OF FICMConfigSettings OPTIONAL, 	-- gb配置项
-	apn1Config		SEQUENCE(SIZE(1)) OF APN1ConfigSettings OPTIONAL, 	-- apn1配置项
-	apn2Config		SEQUENCE(SIZE(1)) OF APN2ConfigSettings OPTIONAL, 	-- apn2配置项
-	commonConfig	SEQUENCE(SIZE(1)) OF CommonConfigSettings OPTIONAL,	-- 常规配置项
-	extendConfig	SEQUENCE(SIZE(1)) OF ExtendConfigSettings OPTIONAL 	-- 扩展配置项
+	ficmConfig		SEQUENCE(SIZE(1)) OF FICMConfigSet OPTIONAL, 	-- gb配置项
+	apn1Config		SEQUENCE(SIZE(1)) OF APN1ConfigSet OPTIONAL, 	-- apn1配置项
+	apn2Config		SEQUENCE(SIZE(1)) OF APN2ConfigSet OPTIONAL, 	-- apn2配置项
+	commonConfig	SEQUENCE(SIZE(1)) OF CommonConfigSet OPTIONAL,	-- 常规配置项
+	extendConfig	SEQUENCE(SIZE(1)) OF ExtendConfigSet OPTIONAL 	-- 扩展配置项
+}
+
+FICMConfigSet ::= SEQUENCE
+{
+	token			OCTET STRING(SIZE(1..32)), -- 
+	userID			OCTET STRING(SIZE(1..32))  -- 
+}
+
+APN1ConfigSet ::= SEQUENCE
+{
+	tspAddress		OCTET STRING(SIZE(1..32)), -- APN address
+	tspUser			OCTET STRING(SIZE(1..16)), -- APN user name
+	tspPass			OCTET STRING(SIZE(1..16)), -- ASCII string of APN Password
+	tspIp			OCTET STRING(SIZE(1..15)), -- ASCII String of TSP IP address
+	tspSms			OCTET STRING(SIZE(1..32)), -- ASCII string of TSP SMS Address
+	tspPort			OCTET STRING(SIZE(1..6))   -- ASCII String of TSP IP Port address Default 40004
+}
+
+APN2ConfigSet ::= SEQUENCE
+{
+	tspAddress		OCTET STRING(SIZE(1..32)), -- APN address
+	tspUser			OCTET STRING(SIZE(1..16)), -- APN user name
+	tspPass			OCTET STRING(SIZE(1..16))  -- ASCII string of APN Password
+}
+
+CommonConfigSet ::= SEQUENCE
+{
+	actived				BOOLEAN, -- 是否激活 Default false
+	rcEnabled			BOOLEAN, -- 远程控制使能 Default false
+	svtEnabled			BOOLEAN, -- Default false
+	vsEnabled			BOOLEAN, -- Default false
+	iCallEnabled		BOOLEAN, -- Default false
+	bCallEnabled		BOOLEAN, -- Default false
+	eCallEnabled		BOOLEAN, -- Default false
+	dcEnabled			BOOLEAN, -- Default false
+	dtcEnabled			BOOLEAN, -- Default false
+	journeysEnabled		BOOLEAN, -- Default false
+	onlineInfEnabled	BOOLEAN, -- Default false
+	rChargeEnabled		BOOLEAN, -- Default false
+	btKeyEntryEnabled	BOOLEAN  -- Default false
+}
+
+ExtendConfigSet ::= SEQUENCE
+{
+	ecallNO			OCTET STRING(SIZE(1..16)), -- ecall 号码
+	bcallNO			OCTET STRING(SIZE(1..16)), -- bcall 号码
+	icallNO			OCTET STRING(SIZE(1..16))  -- icall 号码
 }
 
 CfgConnRespInfo ::= SEQUENCE --
@@ -163,5 +210,107 @@ CfgConnRespInfo ::= SEQUENCE --
 	configAccepted	BOOLEAN --
 }
 
+RmtCtrlReqInfo ::= SEQUENCE --
+{
+	rvcReqType		INTEGER(0..65535), -- 远程车控指令
+	rvcReqParams	OCTET STRING(SIZE(1..255)) OPTIONAL -- 根据指令传入对应参数
+}
+
+RmtCtrlStRespInfo ::= SEQUENCE --
+{
+	rvcReqType				INTEGER(0..65535), -- 远程车控指令
+	rvcReqStatus			INTEGER(0..255), -- 
+	rvcFailureType 			INTEGER(0..255)	OPTIONAL, -- 
+	gpsPosition				SEQUENCE(SIZE(1)) OF RmtRvsposInfo, -- 车辆救援位置
+	basicVehicleStatus		SEQUENCE(SIZE(1)) OF RvsBasicStatus	-- 
+}
+
+RmtRvsposInfo ::= SEQUENCE
+{
+	gpsSt          		BOOLEAN, -- gps状态
+	gpsTimestamp		INTEGER(0..2147483647), -- GPS时间戳
+	latitude			INTEGER(-90000000..90000000), -- 纬度x1000000
+	longitude			INTEGER(-180000000..180000000), -- 经度x1000000
+	altitude			INTEGER(-100..10000), -- 高度
+	heading				INTEGER(0..359), -- 车头方向角度			
+	gpsSpeed			INTEGER(-1000..4500), -- 速度x10
+	hdop				INTEGER(0..1000) -- 水平精度因子x10
+}
+
+RvsBasicStatus ::= SEQUENCE
+{
+	driverDoor			BOOLEAN	OPTIONAL, --
+	driverLock			BOOLEAN, --
+	passengerDoor		BOOLEAN	OPTIONAL, --
+	passengerLock		BOOLEAN, --
+	rearLeftDoor		BOOLEAN OPTIONAL, --
+	rearLeftLock		BOOLEAN, --
+	rearRightDoor		BOOLEAN	OPTIONAL, --
+	rearRightLock		BOOLEAN, --
+	bootStatus			BOOLEAN	OPTIONAL, --
+	bootStatusLock		BOOLEAN, --
+	driverWindow		BOOLEAN	OPTIONAL, --
+	passengerWindow		BOOLEAN	OPTIONAL, --
+	rearLeftWindow		BOOLEAN	OPTIONAL, --
+	rearRightWinow		BOOLEAN	OPTIONAL, --
+	sunroofStatus		BOOLEAN	OPTIONAL, --
+	engineStatus		BOOLEAN, --
+	accStatus			BOOLEAN, --
+	accTemp				INTEGER(18..36)	OPTIONAL, -- 
+	accMode				INTEGER(0..3)	OPTIONAL, -- 
+	accBlowVolume		INTEGER(0..7)	OPTIONAL, -- 
+	innerTemp			INTEGER(0..125), -- 
+	outTemp				INTEGER(0..125), -- 
+	sideLightStatus 	BOOLEAN, --
+	dippedBeamStatus	BOOLEAN, --
+	mainBeamStatus		BOOLEAN, --
+	hazardLightStus		BOOLEAN, --
+	frtRightTyrePre		INTEGER(0..45) 	OPTIONAL, -- 
+	frtRightTyreTemp	INTEGER(0..165) OPTIONAL, -- 
+	frontLeftTyrePre	INTEGER(0..45) 	OPTIONAL, -- 
+	frontLeftTyreTemp	INTEGER(0..165) OPTIONAL, -- 
+	rearRightTyrePre	INTEGER(0..45)	OPTIONAL, -- 
+	rearRightTyreTemp	INTEGER(0..165)	OPTIONAL, -- 
+	rearLeftTyrePre		INTEGER(0..45)	OPTIONAL, -- 
+	rearLeftTyreTemp	INTEGER(0..165)	OPTIONAL, -- 
+	batterySOCExact		INTEGER(0..10000), -- 
+	chargeRemainTim		INTEGER(0..65535)	OPTIONAL, -- 
+	availableOdomtr		INTEGER(0..65535), -- 
+	engineRunningTime	INTEGER(0..65535)	OPTIONAL, -- 
+	bookingChargeSt		BOOLEAN, --
+	bookingChargeHour	INTEGER(0..23)	OPTIONAL, -- 
+	bookingChargeMin	INTEGER(0..59)	OPTIONAL, -- 	
+	chargeMode			INTEGER(0..255)	OPTIONAL, -- 
+	chargeStatus		INTEGER(0..255)	OPTIONAL, -- 
+	powerMode			INTEGER(0..255)	OPTIONAL, -- 
+	speed				INTEGER(0..2500), -- 
+	totalOdometer		INTEGER(0..1000000), -- 
+	batteryVoltage		INTEGER(0..10000), -- 
+	batteryCurrent		INTEGER(0..10000), -- 
+	batterySOCPrc		INTEGER(0..100), -- 
+	dcStatus			BOOLEAN, --
+	gearPosition		INTEGER(0..255), -- 
+	insulationRstance	INTEGER(0..60000), -- 
+	acceleratePedalprc	INTEGER(0..100), -- 
+	deceleratePedalprc	INTEGER(0..100), -- 
+	canBusActive		BOOLEAN, --
+	bonnetStatus		BOOLEAN, --
+	lockStatus			BOOLEAN, --
+	gsmStatus			BOOLEAN, --
+	wheelTyreMotrSt		INTEGER(0..255)	OPTIONAL, -- 
+	vehicleAlarmSt		INTEGER(0..255), -- 
+	currentJourneyID	INTEGER(0..2147483647), -- 
+	journeyOdom			INTEGER(0..65535), -- 
+	frtLeftSeatHeatLel	INTEGER(0..255)	OPTIONAL, -- 
+	frtRightSeatHeatLel	INTEGER(0..255)	OPTIONAL, -- 
+	airCleanerSt		BOOLEAN	OPTIONAL --
+}
+
+BookingResp ::= SEQUENCE
+{
+	bookingId			INTEGER(0..2147483647), --
+	rvcReqCode			INTEGER(0..65535), -- 
+	oprTime				INTEGER(0..2147483647) --	
+}
 
 END

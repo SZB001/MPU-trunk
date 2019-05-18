@@ -13,7 +13,7 @@
 #include "config.h"
 #endif
 
-///#ifndef _BSD_SOURCE
+//#ifndef _BSD_SOURCE
 //#define _BSD_SOURCE /* for snprintf() on some linux systems  */
 //#endif
 

@@ -23,42 +23,42 @@ extern "C" {
 #endif
 
 /* Forward declarations */
-struct FICMConfigSettings;
-struct APN1ConfigSettings;
-struct APN2ConfigSettings;
-struct CommonConfigSettings;
-struct ExtendConfigSettings;
+struct FICMConfigSet;
+struct APN1ConfigSet;
+struct APN2ConfigSet;
+struct CommonConfigSet;
+struct ExtendConfigSet;
 
 /* CfgReadRespInfo */
 typedef struct CfgReadRespInfo {
 	BOOLEAN_t	 result;
 	OCTET_STRING_t	 cfgVersion;
-	struct ficmCfg {
-		A_SEQUENCE_OF(struct FICMConfigSettings) list;
+	struct ficmConfig {
+		A_SEQUENCE_OF(struct FICMConfigSet) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
-	} *ficmCfg;
+	} *ficmConfig;
 	struct apn1Config {
-		A_SEQUENCE_OF(struct APN1ConfigSettings) list;
+		A_SEQUENCE_OF(struct APN1ConfigSet) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
 	} *apn1Config;
 	struct apn2Config {
-		A_SEQUENCE_OF(struct APN2ConfigSettings) list;
+		A_SEQUENCE_OF(struct APN2ConfigSet) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
 	} *apn2Config;
 	struct commonConfig {
-		A_SEQUENCE_OF(struct CommonConfigSettings) list;
+		A_SEQUENCE_OF(struct CommonConfigSet) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
 	} *commonConfig;
 	struct extendConfig {
-		A_SEQUENCE_OF(struct ExtendConfigSettings) list;
+		A_SEQUENCE_OF(struct ExtendConfigSet) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
@@ -76,11 +76,11 @@ extern asn_TYPE_descriptor_t asn_DEF_CfgReadRespInfo;
 #endif
 
 /* Referred external types */
-#include "FICMConfigSettings.h"
-#include "APN1ConfigSettings.h"
-#include "APN2ConfigSettings.h"
-#include "CommonConfigSettings.h"
-#include "ExtendConfigSettings.h"
+#include "FICMConfigSet.h"
+#include "APN1ConfigSet.h"
+#include "APN2ConfigSet.h"
+#include "CommonConfigSet.h"
+#include "ExtendConfigSet.h"
 
 #endif	/* _CfgReadRespInfo_H_ */
 #include <asn_internal.h>

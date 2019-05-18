@@ -134,10 +134,6 @@ typedef struct
 
 typedef struct 
 {	
-	//PrvtProt_heartbeat_t heartbeat;
-	//PrvtProt_xcall_t xcall[PP_XCALL_MAX];
-	//PP_WAIT_STATE waitSt[PP_APP_MID_MAX];/* 等待响应的状态 */
-	//uint64_t waittime[PP_APP_MID_MAX];/* 等待响应的时间 */
 	char suspend;/* 暂停 */
 	uint32_t nonce;/* TCP会话ID 由TSP平台产生 */
 	unsigned char version;/* 大/小版本(由TSP平台定义)*/

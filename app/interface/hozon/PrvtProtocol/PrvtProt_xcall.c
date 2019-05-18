@@ -61,7 +61,7 @@ typedef struct
 
 typedef struct
 {
-	PrvtProt_xcall_pack_t 	packReq;
+	//PrvtProt_xcall_pack_t 	packReq;
 	PrvtProt_xcall_pack_t 	packResp;
 	PrvtProt_xcallSt_t	 	state;
 	char 					Type;
@@ -69,62 +69,7 @@ typedef struct
 
 static PrvtProt_pack_t 		PP_Xcall_Pack;
 
-static PrvtProt_xcall_t	PP_xcall[PP_XCALL_MAX] =
-{
-	{
-		{
-			/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-			 {"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27	 },//ecall req
-		  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-			 {"170",1,		0,		  0,	PP_INVALID,	   0,	   0,		 0,       0,       0,      0,     256,	 1,        0   },//bcall req
-
-		},
-		{
-			/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-			{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27  }, //ecall response
-		  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-			{"170", 2,      0,        0,	PP_INVALID,    0,      0,		0,		 0,		  0,	  0,	 256,	1,		  0   } //bcall response
-		},
-		{0,0,0,0,0},
-		PP_BCALL_TYPE
-	},
-	{
-		{
-			/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-			 {"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27	  },//ecall req
-		  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-			 {"170",1,		0,		  0,	PP_INVALID,	   0,	   0,		 0,       0,       0,      0,     256,	 1,        0   },//ecall req
-
-		},
-		{
-			/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-			{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27	  }, //ecall response
-		  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-			{"170", 2,      0,        0,	PP_INVALID,    0,      0,		0,		 0,		  0,	  0,	 256,	1,		  0   } //ecall response
-		},
-		{0,0,0,0,0},
-		PP_ECALL_TYPE
-	},
-	{
-		{
-			/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-			 {"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27  },//ecall req
-		  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-			 {"170",1,		0,		  0,	PP_INVALID,	   0,	   0,		 0,       0,       0,      0,     256,	 1,        0   },//icall req
-
-		},
-		{
-			/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-			{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27  }, //ecall response
-		  /*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-			{"170", 2,      0,        0,	PP_INVALID,    0,      0,		0,		0,		  0,	  0,	 256,	1,		  0   } //icall response
-		},
-		{0,0,0,0,0},
-		PP_ICALL_TYPE
-	},
-
-};
-
+static PrvtProt_xcall_t	PP_xcall[PP_XCALL_MAX];
 
 static PrvtProt_App_Xcall_t	Appdata_Xcall =
 {
@@ -132,12 +77,6 @@ static PrvtProt_App_Xcall_t	Appdata_Xcall =
 		0,		0xff,	 0,		       {0,    0,       0,       0,        0,       0,       0  },	1,		0,			 0
 };
 
-//static PrvtProt_xcallSt_t PP_xcall[PP_XCALL_MAX];
-
-//const char PP_xcallType[PP_XCALL_MAX] =
-//{
-//	PP_BCALL_TYPE,PP_ECALL_TYPE,PP_ICALL_TYPE
-//};
 
 /*******************************************************
 description£º function declaration
@@ -150,7 +89,6 @@ static int PP_xcall_do_rcvMsg(PrvtProt_task_t *task);
 static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len);
 static int PP_xcall_do_wait(PrvtProt_task_t *task);
 static int PP_xcall_do_checkXcall(PrvtProt_task_t *task);
-//static int PrvtPro_ecallReq(PrvtProt_task_t *task);
 static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType);
 
 /******************************************************
@@ -169,11 +107,25 @@ description£º function code
 ******************************************************/
 void PP_xcall_init(void)
 {
-	PP_xcall[PP_ECALL].state.req = 0;
-	PP_xcall[PP_ECALL].state.resp = 0;
-	PP_xcall[PP_ECALL].state.retrans = 0;
-	PP_xcall[PP_ECALL].state.waitSt = 0;
-	PP_xcall[PP_ECALL].state.waittime= 0;
+	int i;
+
+	memset(&PP_xcall[PP_BCALL],0 , sizeof(PrvtProt_xcall_t));
+	memset(&PP_xcall[PP_ECALL],0 , sizeof(PrvtProt_xcall_t));
+	memset(&PP_xcall[PP_ICALL],0 , sizeof(PrvtProt_xcall_t));
+	for(i = 0;i < PP_XCALL_MAX;i++)
+	{
+		memcpy(PP_xcall[i].packResp.Header.sign,"**",2);
+		PP_xcall[i].packResp.Header.commtype.Byte = 0xe1;
+		PP_xcall[i].packResp.Header.ver.Byte = 0x30;
+		PP_xcall[i].packResp.Header.opera = 0x02;
+		PP_xcall[i].packResp.Header.tboxid = 27;
+
+		memcpy(PP_xcall[i].packResp.DisBody.aID,"170",3);
+		PP_xcall[i].packResp.DisBody.mID = 2;
+		PP_xcall[i].packResp.DisBody.eventId = PP_INVALID;
+		PP_xcall[i].packResp.DisBody.appDataProVer = 256;
+		PP_xcall[i].packResp.DisBody.testFlag = 1;
+	}
 }
 
 /******************************************************

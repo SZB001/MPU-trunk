@@ -34,7 +34,7 @@ memb_cfgVersion_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 static int
-memb_ficmCfg_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+memb_ficmConfig_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	size_t size;
 	
@@ -163,7 +163,7 @@ memb_extendConfig_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_type_ficmCfg_constr_4 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_type_ficmConfig_constr_4 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
@@ -193,7 +193,7 @@ static asn_per_constraints_t asn_PER_memb_cfgVersion_constr_3 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 0,  0,  32,  32 }	/* (SIZE(32..32)) */,
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_ficmCfg_constr_4 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_ficmConfig_constr_4 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
@@ -218,30 +218,30 @@ static asn_per_constraints_t asn_PER_memb_extendConfig_constr_12 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
 };
-static asn_TYPE_member_t asn_MBR_ficmCfg_4[] = {
+static asn_TYPE_member_t asn_MBR_ficmConfig_4[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
-		&asn_DEF_FICMConfigSettings,
+		&asn_DEF_FICMConfigSet,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
 		""
 		},
 };
-static const ber_tlv_tag_t asn_DEF_ficmCfg_tags_4[] = {
+static const ber_tlv_tag_t asn_DEF_ficmConfig_tags_4[] = {
 	(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
-static asn_SET_OF_specifics_t asn_SPC_ficmCfg_specs_4 = {
-	sizeof(struct ficmCfg),
-	offsetof(struct ficmCfg, _asn_ctx),
+static asn_SET_OF_specifics_t asn_SPC_ficmConfig_specs_4 = {
+	sizeof(struct ficmConfig),
+	offsetof(struct ficmConfig, _asn_ctx),
 	0,	/* XER encoding is XMLDelimitedItemList */
 };
 static /* Use -fall-defs-global to expose */
-asn_TYPE_descriptor_t asn_DEF_ficmCfg_4 = {
-	"ficmCfg",
-	"ficmCfg",
+asn_TYPE_descriptor_t asn_DEF_ficmConfig_4 = {
+	"ficmConfig",
+	"ficmConfig",
 	SEQUENCE_OF_free,
 	SEQUENCE_OF_print,
 	SEQUENCE_OF_constraint,
@@ -252,23 +252,23 @@ asn_TYPE_descriptor_t asn_DEF_ficmCfg_4 = {
 	SEQUENCE_OF_decode_uper,
 	SEQUENCE_OF_encode_uper,
 	0,	/* Use generic outmost tag fetcher */
-	asn_DEF_ficmCfg_tags_4,
-	sizeof(asn_DEF_ficmCfg_tags_4)
-		/sizeof(asn_DEF_ficmCfg_tags_4[0]) - 1, /* 1 */
-	asn_DEF_ficmCfg_tags_4,	/* Same as above */
-	sizeof(asn_DEF_ficmCfg_tags_4)
-		/sizeof(asn_DEF_ficmCfg_tags_4[0]), /* 2 */
-	&asn_PER_type_ficmCfg_constr_4,
-	asn_MBR_ficmCfg_4,
+	asn_DEF_ficmConfig_tags_4,
+	sizeof(asn_DEF_ficmConfig_tags_4)
+		/sizeof(asn_DEF_ficmConfig_tags_4[0]) - 1, /* 1 */
+	asn_DEF_ficmConfig_tags_4,	/* Same as above */
+	sizeof(asn_DEF_ficmConfig_tags_4)
+		/sizeof(asn_DEF_ficmConfig_tags_4[0]), /* 2 */
+	&asn_PER_type_ficmConfig_constr_4,
+	asn_MBR_ficmConfig_4,
 	1,	/* Single element */
-	&asn_SPC_ficmCfg_specs_4	/* Additional specs */
+	&asn_SPC_ficmConfig_specs_4	/* Additional specs */
 };
 
 static asn_TYPE_member_t asn_MBR_apn1Config_6[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
-		&asn_DEF_APN1ConfigSettings,
+		&asn_DEF_APN1ConfigSet,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
@@ -314,7 +314,7 @@ static asn_TYPE_member_t asn_MBR_apn2Config_8[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
-		&asn_DEF_APN2ConfigSettings,
+		&asn_DEF_APN2ConfigSet,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
@@ -360,7 +360,7 @@ static asn_TYPE_member_t asn_MBR_commonConfig_10[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
-		&asn_DEF_CommonConfigSettings,
+		&asn_DEF_CommonConfigSet,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
@@ -406,7 +406,7 @@ static asn_TYPE_member_t asn_MBR_extendConfig_12[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
-		&asn_DEF_ExtendConfigSettings,
+		&asn_DEF_ExtendConfigSet,
 		0,	/* Defer constraints checking to the member type */
 		0,	/* No PER visible constraints */
 		0,
@@ -467,14 +467,14 @@ static asn_TYPE_member_t asn_MBR_CfgReadRespInfo_1[] = {
 		0,
 		"cfgVersion"
 		},
-	{ ATF_POINTER, 5, offsetof(struct CfgReadRespInfo, ficmCfg),
+	{ ATF_POINTER, 5, offsetof(struct CfgReadRespInfo, ficmConfig),
 		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
 		0,
-		&asn_DEF_ficmCfg_4,
-		memb_ficmCfg_constraint_1,
-		&asn_PER_memb_ficmCfg_constr_4,
+		&asn_DEF_ficmConfig_4,
+		memb_ficmConfig_constraint_1,
+		&asn_PER_memb_ficmConfig_constr_4,
 		0,
-		"ficmCfg"
+		"ficmConfig"
 		},
 	{ ATF_POINTER, 4, offsetof(struct CfgReadRespInfo, apn1Config),
 		(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
@@ -520,7 +520,7 @@ static const ber_tlv_tag_t asn_DEF_CfgReadRespInfo_tags_1[] = {
 static const asn_TYPE_tag2member_t asn_MAP_CfgReadRespInfo_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* result */
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* cfgVersion */
-    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* ficmCfg */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* ficmConfig */
     { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* apn1Config */
     { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* apn2Config */
     { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 }, /* commonConfig */

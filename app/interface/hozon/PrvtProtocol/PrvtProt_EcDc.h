@@ -47,6 +47,7 @@ typedef enum
 	ECDC_RMTCFG_END_REQ,//remote config req end
 	ECDC_RMTCFG_READ_REQ,//remote config read req
 	ECDC_RMTCFG_CONN_RESP,//remote config conn resp
+	ECDC_RMTCFG_READ_RESP,//remote config read req
 	ECDC_APP_MID_MAX
 } ECDC_APP_MID_TYPE;//应用类型
 /*****struct definitions*****/

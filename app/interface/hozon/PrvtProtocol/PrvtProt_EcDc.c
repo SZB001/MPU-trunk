@@ -33,6 +33,8 @@ description£º include the header file
 #include "CfgCheckRespInfo.h"
 #include "CfgEndReqInfo.h"
 #include "CfgConnRespInfo.h"
+#include "CfgReadReqInfo.h"
+#include "CfgReadRespInfo.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
 
@@ -63,6 +65,8 @@ static asn_TYPE_descriptor_t *pduType_Cfg_get_req = &asn_DEF_CfgGetReqInfo;
 static asn_TYPE_descriptor_t *pduType_Cfg_get_resp = &asn_DEF_CfgGetRespInfo;
 static asn_TYPE_descriptor_t *pduType_Cfg_end_req = &asn_DEF_CfgEndReqInfo;
 static asn_TYPE_descriptor_t *pduType_Cfg_conn_resp = &asn_DEF_CfgConnRespInfo;
+static asn_TYPE_descriptor_t *pduType_Cfg_read_req = &asn_DEF_CfgReadReqInfo;
+static asn_TYPE_descriptor_t *pduType_Cfg_read_resp = &asn_DEF_CfgReadRespInfo;
 static uint8_t tboxAppdata[PP_ECDC_DATA_LEN];
 static int tboxAppdataLen;
 static uint8_t tboxDisBodydata[PP_ECDC_DATA_LEN];
@@ -204,20 +208,20 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 
 			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 
-			cfgcheckReq.mcuSw.buf = rmtCfgCheckReq_ptr->checkCfgReq.mcuSw;
-			cfgcheckReq.mcuSw.size = rmtCfgCheckReq_ptr->checkCfgReq.mcuSwlen;
-			cfgcheckReq.mpuSw.buf = rmtCfgCheckReq_ptr->checkCfgReq.mpuSw;
-			cfgcheckReq.mpuSw.size = rmtCfgCheckReq_ptr->checkCfgReq.mpuSwlen;
-			cfgcheckReq.vehicleVIN.buf = rmtCfgCheckReq_ptr->checkCfgReq.vehicleVin;
-			cfgcheckReq.vehicleVIN.size = rmtCfgCheckReq_ptr->checkCfgReq.vehicleVinlen;
-			cfgcheckReq.iccID.buf = rmtCfgCheckReq_ptr->checkCfgReq.iccID;
-			cfgcheckReq.iccID.size = rmtCfgCheckReq_ptr->checkCfgReq.iccIDlen;
-			cfgcheckReq.btMacAddr.buf = rmtCfgCheckReq_ptr->checkCfgReq.btMacAddr;
-			cfgcheckReq.btMacAddr.size = rmtCfgCheckReq_ptr->checkCfgReq.btMacAddrlen;
-			cfgcheckReq.configSw.buf = rmtCfgCheckReq_ptr->checkCfgReq.configSw;
-			cfgcheckReq.configSw.size = rmtCfgCheckReq_ptr->checkCfgReq.configSwlen;
-			cfgcheckReq.cfgVersion.buf = rmtCfgCheckReq_ptr->checkCfgReq.cfgVersion;
-			cfgcheckReq.cfgVersion.size = rmtCfgCheckReq_ptr->checkCfgReq.cfgVersionlen;
+			cfgcheckReq.mcuSw.buf = rmtCfgCheckReq_ptr->checkReq.mcuSw;
+			cfgcheckReq.mcuSw.size = rmtCfgCheckReq_ptr->checkReq.mcuSwlen;
+			cfgcheckReq.mpuSw.buf = rmtCfgCheckReq_ptr->checkReq.mpuSw;
+			cfgcheckReq.mpuSw.size = rmtCfgCheckReq_ptr->checkReq.mpuSwlen;
+			cfgcheckReq.vehicleVIN.buf = rmtCfgCheckReq_ptr->checkReq.vehicleVin;
+			cfgcheckReq.vehicleVIN.size = rmtCfgCheckReq_ptr->checkReq.vehicleVinlen;
+			cfgcheckReq.iccID.buf = rmtCfgCheckReq_ptr->checkReq.iccID;
+			cfgcheckReq.iccID.size = rmtCfgCheckReq_ptr->checkReq.iccIDlen;
+			cfgcheckReq.btMacAddr.buf = rmtCfgCheckReq_ptr->checkReq.btMacAddr;
+			cfgcheckReq.btMacAddr.size = rmtCfgCheckReq_ptr->checkReq.btMacAddrlen;
+			cfgcheckReq.configSw.buf = rmtCfgCheckReq_ptr->checkReq.configSw;
+			cfgcheckReq.configSw.size = rmtCfgCheckReq_ptr->checkReq.configSwlen;
+			cfgcheckReq.cfgVersion.buf = rmtCfgCheckReq_ptr->checkReq.cfgVersion;
+			cfgcheckReq.cfgVersion.size = rmtCfgCheckReq_ptr->checkReq.cfgVersionlen;
 			//*/
 			ec = uper_encode(pduType_Cfg_check_req,(void *) &cfgcheckReq,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
@@ -236,8 +240,8 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 
 			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 
-			cfgGetReq.cfgVersion.buf = rmtCfgGetReq_ptr->getCfgReq.cfgVersion_ptr;
-			cfgGetReq.cfgVersion.size = rmtCfgGetReq_ptr->getCfgReq.cfgVersionlen;
+			cfgGetReq.cfgVersion.buf = rmtCfgGetReq_ptr->getReq.cfgVersion;
+			cfgGetReq.cfgVersion.size = rmtCfgGetReq_ptr->getReq.cfgVersionlen;
 			ec = uper_encode(pduType_Cfg_get_req,(void *) &cfgGetReq,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
@@ -256,15 +260,15 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 
 			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 
-			CfgEndReq.configSuccess = rmtCfgEndReq_ptr->EndCfgReq.configSuccess;
-			CfgEndReq.mcuSw.buf 	= rmtCfgEndReq_ptr->EndCfgReq.mcuSw_ptr;
-			CfgEndReq.mcuSw.size 	= rmtCfgEndReq_ptr->EndCfgReq.mcuSwlen;
-			CfgEndReq.cfgVersion.buf = rmtCfgEndReq_ptr->EndCfgReq.cfgVersion_ptr;
-			CfgEndReq.cfgVersion.size = rmtCfgEndReq_ptr->EndCfgReq.cfgVersionlen;
-			CfgEndReq.configSw.buf 	 = rmtCfgEndReq_ptr->EndCfgReq.configSw_ptr;
-			CfgEndReq.configSw.size  = rmtCfgEndReq_ptr->EndCfgReq.configSwlen;
-			CfgEndReq.mpuSw.buf  = rmtCfgEndReq_ptr->EndCfgReq.mpuSw_ptr;
-			CfgEndReq.mpuSw.size = rmtCfgEndReq_ptr->EndCfgReq.mpuSwlen;
+			CfgEndReq.configSuccess = rmtCfgEndReq_ptr->EndReq.configSuccess;
+			CfgEndReq.mcuSw.buf 	= rmtCfgEndReq_ptr->EndReq.mcuSw;
+			CfgEndReq.mcuSw.size 	= rmtCfgEndReq_ptr->EndReq.mcuSwlen;
+			CfgEndReq.cfgVersion.buf = rmtCfgEndReq_ptr->EndReq.cfgVersion;
+			CfgEndReq.cfgVersion.size = rmtCfgEndReq_ptr->EndReq.cfgVersionlen;
+			CfgEndReq.configSw.buf 	 = rmtCfgEndReq_ptr->EndReq.configSw;
+			CfgEndReq.configSw.size  = rmtCfgEndReq_ptr->EndReq.configSwlen;
+			CfgEndReq.mpuSw.buf  = rmtCfgEndReq_ptr->EndReq.mpuSw;
+			CfgEndReq.mpuSw.size = rmtCfgEndReq_ptr->EndReq.mpuSwlen;
 			ec = uper_encode(pduType_Cfg_end_req,(void *) &CfgEndReq,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
@@ -282,8 +286,165 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			memset(&CfgConnResp,0 , sizeof(CfgConnRespInfo_t));
 
 			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
-			CfgConnResp.configAccepted = rmtCfgConnResp_ptr->connCfgResp.configAccepted;
+			CfgConnResp.configAccepted = rmtCfgConnResp_ptr->connResp.configAccepted;
 			ec = uper_encode(pduType_Cfg_conn_resp,(void *) &CfgConnResp,PrvtPro_writeout,&key);
+			if(ec.encoded  == -1)
+			{
+				log_e(LOG_HOZON,"encode:appdata Cfg_conn_req fail\n");
+				return -1;
+			}
+		}
+		break;
+		case ECDC_RMTCFG_READ_RESP:
+		{
+			log_i(LOG_HOZON, "encode Cfg_read_resp\n");
+			CfgReadRespInfo_t CfgReadResp;
+			PrvtProt_App_rmtCfg_t *rmtCfgReadResp_ptr = (PrvtProt_App_rmtCfg_t*)appchoice;
+			memset(&CfgReadResp,0 , sizeof(CfgReadRespInfo_t));
+
+			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+			CfgReadResp.result = rmtCfgReadResp_ptr->ReadResp.result;
+			CfgReadResp.cfgVersion.buf = rmtCfgReadResp_ptr->checkReq.cfgVersion;
+			CfgReadResp.cfgVersion.size = rmtCfgReadResp_ptr->checkReq.cfgVersionlen;
+			if(1 == rmtCfgReadResp_ptr->ReadResp.result)
+			{
+				if(1 == rmtCfgReadResp_ptr->ReadResp.FICM.ficmConfigValid)
+				{
+					FICMConfigSet_t FICMCfgSet;
+					FICMConfigSet_t *FICMCfgSet_ptr = &FICMCfgSet;
+					struct ficmConfig ficmConfig;
+
+					memset(&FICMCfgSet,0 , sizeof(FICMConfigSet_t));
+					FICMCfgSet.token.buf = rmtCfgReadResp_ptr->ReadResp.FICM.token;
+					FICMCfgSet.token.size = rmtCfgReadResp_ptr->ReadResp.FICM.tokenlen;
+					FICMCfgSet.userID.buf =  rmtCfgReadResp_ptr->ReadResp.FICM.userID;
+					FICMCfgSet.userID.size = rmtCfgReadResp_ptr->ReadResp.FICM.userIDlen;
+					ficmConfig.list.array = &FICMCfgSet_ptr;
+					ficmConfig.list.count = 1;
+					ficmConfig.list.size = 1;
+					CfgReadResp.ficmConfig = &ficmConfig;
+				}
+				else
+				{
+					CfgReadResp.ficmConfig  = NULL;
+				}
+
+				if(1 == rmtCfgReadResp_ptr->ReadResp.APN1.apn1ConfigValid)
+				{
+					APN1ConfigSet_t APN1ConfigSet;
+					APN1ConfigSet_t *APN1ConfigSet_ptr = &APN1ConfigSet;
+					struct apn1Config apn1Cfg;
+
+					memset(&APN1ConfigSet,0 , sizeof(APN1ConfigSet_t));
+					APN1ConfigSet.tspAddress.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspAddr;
+					APN1ConfigSet.tspAddress.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspAddrlen;
+					APN1ConfigSet.tspIp.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspIP;
+					APN1ConfigSet.tspIp.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspIPlen;
+					APN1ConfigSet.tspPass.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspPass;
+					APN1ConfigSet.tspPass.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspPasslen;
+					APN1ConfigSet.tspPort.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspPort;
+					APN1ConfigSet.tspPort.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspPortlen;
+					APN1ConfigSet.tspSms.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspSms;
+					APN1ConfigSet.tspSms.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspSmslen;
+					APN1ConfigSet.tspUser.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspUser;
+					APN1ConfigSet.tspUser.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspUserlen;
+					apn1Cfg.list.array = &APN1ConfigSet_ptr;
+					apn1Cfg.list.count = 1;
+					apn1Cfg.list.size = 1;
+					CfgReadResp.apn1Config = &apn1Cfg;
+				}
+				else
+				{
+					CfgReadResp.apn1Config = NULL;
+				}
+
+				if(1 == rmtCfgReadResp_ptr->ReadResp.APN2.apn2ConfigValid)
+				{
+					APN2ConfigSet_t APN2ConfigSet;
+					APN2ConfigSet_t *APN2ConfigSet_ptr = &APN2ConfigSet;
+					struct apn2Config apn2Cfg;
+
+					memset(&APN2ConfigSet,0 , sizeof(APN2ConfigSet_t));
+					APN2ConfigSet.tspAddress.buf = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Address;
+					APN2ConfigSet.tspAddress.size = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Addresslen;
+					APN2ConfigSet.tspPass.buf = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Pass;
+					APN2ConfigSet.tspPass.size = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Passlen;
+					APN2ConfigSet.tspUser.buf = rmtCfgReadResp_ptr->ReadResp.APN2.apn2User;
+					APN2ConfigSet.tspUser.size = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Userlen;
+					apn2Cfg.list.array = &APN2ConfigSet_ptr;
+					apn2Cfg.list.count = 1;
+					apn2Cfg.list.size = 1;
+					CfgReadResp.apn2Config = &apn2Cfg;
+				}
+				else
+				{
+					CfgReadResp.apn2Config = NULL;
+
+				}
+
+				if(1 == rmtCfgReadResp_ptr->ReadResp.COMMON.commonConfigValid)
+				{
+					CommonConfigSet_t CommonConfigSet;
+					CommonConfigSet_t *CommonConfigSet_ptr = &CommonConfigSet;
+					struct commonConfig commonCfg;
+
+					memset(&CommonConfigSet,0 , sizeof(CommonConfigSet_t));
+					CommonConfigSet.actived 		= rmtCfgReadResp_ptr->ReadResp.COMMON.actived;
+					CommonConfigSet.rcEnabled 		= rmtCfgReadResp_ptr->ReadResp.COMMON.rcEnabled;
+					CommonConfigSet.svtEnabled 		= rmtCfgReadResp_ptr->ReadResp.COMMON.svtEnabled;
+					CommonConfigSet.vsEnabled 		= rmtCfgReadResp_ptr->ReadResp.COMMON.vsEnabled;
+					CommonConfigSet.iCallEnabled 	= rmtCfgReadResp_ptr->ReadResp.COMMON.iCallEnabled;
+					CommonConfigSet.bCallEnabled 	= rmtCfgReadResp_ptr->ReadResp.COMMON.bCallEnabled;
+					CommonConfigSet.eCallEnabled 	= rmtCfgReadResp_ptr->ReadResp.COMMON.eCallEnabled;
+					CommonConfigSet.dcEnabled 	 	= rmtCfgReadResp_ptr->ReadResp.COMMON.dcEnabled;
+					CommonConfigSet.dtcEnabled 	 	= rmtCfgReadResp_ptr->ReadResp.COMMON.dtcEnabled;
+					CommonConfigSet.journeysEnabled = rmtCfgReadResp_ptr->ReadResp.COMMON.journeysEnabled;
+					CommonConfigSet.onlineInfEnabled = rmtCfgReadResp_ptr->ReadResp.COMMON.onlineInfEnabled;
+					CommonConfigSet.rChargeEnabled 	= rmtCfgReadResp_ptr->ReadResp.COMMON.rChargeEnabled;
+					CommonConfigSet.btKeyEntryEnabled = rmtCfgReadResp_ptr->ReadResp.COMMON.btKeyEntryEnabled;
+					commonCfg.list.array = &CommonConfigSet_ptr;
+					commonCfg.list.count =1;
+					commonCfg.list.size = 1;
+					CfgReadResp.commonConfig = &commonCfg;
+				}
+				else
+				{
+					CfgReadResp.commonConfig = NULL;
+				}
+
+				if(1 == rmtCfgReadResp_ptr->ReadResp.EXTEND.extendConfigValid)
+				{
+					ExtendConfigSet_t ExtendConfigSet;
+					ExtendConfigSet_t *ExtendConfigSet_ptr = &ExtendConfigSet;
+					struct extendConfig extendCfg;
+
+					memset(&ExtendConfigSet,0 , sizeof(ExtendConfigSet_t));
+					ExtendConfigSet.ecallNO.buf = rmtCfgReadResp_ptr->ReadResp.EXTEND.ecallNO;
+					ExtendConfigSet.ecallNO.size = rmtCfgReadResp_ptr->ReadResp.EXTEND.ecallNOlen;
+					ExtendConfigSet.bcallNO.buf = rmtCfgReadResp_ptr->ReadResp.EXTEND.bcallNO;
+					ExtendConfigSet.bcallNO.size = rmtCfgReadResp_ptr->ReadResp.EXTEND.bcallNOlen;
+					ExtendConfigSet.icallNO.buf = rmtCfgReadResp_ptr->ReadResp.EXTEND.ccNO;
+					ExtendConfigSet.icallNO.size = rmtCfgReadResp_ptr->ReadResp.EXTEND.ccNOlen;
+					extendCfg.list.array = &ExtendConfigSet_ptr;
+					extendCfg.list.count =1;
+					extendCfg.list.size = 1;
+					CfgReadResp.extendConfig = &extendCfg;
+				}
+				else
+				{
+					CfgReadResp.extendConfig = NULL;
+				}
+			}
+			else
+			{
+				CfgReadResp.ficmConfig 	= NULL;
+				CfgReadResp.apn1Config 	= NULL;
+				CfgReadResp.apn2Config 	= NULL;
+				CfgReadResp.commonConfig = NULL;
+				CfgReadResp.extendConfig = NULL;
+			}
+
+			ec = uper_encode(pduType_Cfg_read_resp,(void *) &CfgReadResp,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
 				log_e(LOG_HOZON,"encode:appdata Cfg_conn_req fail\n");
@@ -335,6 +496,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 /*********************************************
 			½âÂë
 *********************************************/
+#if 1
 	PrvtProt_DisptrBody_t disbody;
 	switch(type)
 	{
@@ -355,7 +517,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 		}
 		break;
 	}
-
+#endif
 	return 0;
 }
 
@@ -394,9 +556,6 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 	
 	if(msgDataBody != NULL)
 	{
-		//msgDataBody->aID[0] = RxBodydata.aID.buf[0];
-		//msgDataBody->aID[1] = RxBodydata.aID.buf[1];
-		//msgDataBody->aID[2] = RxBodydata.aID.buf[2];
 		memcpy(msgDataBody->aID,RxBodydata.aID.buf,sizeof(char)*3);
 		msgDataBody->mID 	= RxBodydata.mID;
 		msgDataBody->eventTime 	= RxBodydata.eventTime;
@@ -503,7 +662,7 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 					((PrvtProt_App_Xcall_t*)appData)->xcallType 	= RxXcallResp.xcallType;
 					((PrvtProt_App_Xcall_t*)appData)->updataTime 	= RxXcallResp.updataTime;
 					((PrvtProt_App_Xcall_t*)appData)->battSOCEx 	= RxXcallResp.battSOCEx;
-					((PrvtProt_App_Xcall_t*)appData)->engineSt 	= RxXcallResp.engineSt;
+					((PrvtProt_App_Xcall_t*)appData)->engineSt 		= RxXcallResp.engineSt;
 					((PrvtProt_App_Xcall_t*)appData)->srsSt 		= RxXcallResp.srsSt;
 					((PrvtProt_App_Xcall_t*)appData)->totalOdoMr 	= RxXcallResp.ttOdoMeter;
 					((PrvtProt_App_Xcall_t*)appData)->gpsPos.altitude 	= 	 (**(RxXcallResp.gpsPos.list.array)).altitude;
@@ -536,14 +695,12 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						return -1;
 					}
 
-					//App_rmtCfg_checkResp_t* appData_ptr = (App_rmtCfg_checkResp_t*)appData;
-					appData_ptr->checkCfgResp.needUpdate = cfgcheckResp.needUpdate;
-					for(i = 0;i < cfgcheckResp.cfgVersion->size;i++)
-					{
-						appData_ptr->checkCfgResp.cfgVersion[i] = cfgcheckResp.cfgVersion->buf[i];
-					}
-					log_i(LOG_HOZON, "checkCfgResp.needUpdate = %d\n",appData_ptr->checkCfgResp.needUpdate);
-					log_i(LOG_HOZON, "checkCfgResp.cfgVersion = %s\n",appData_ptr->checkCfgResp.cfgVersion);
+					appData_ptr->checkResp.needUpdate = cfgcheckResp.needUpdate;
+					memcpy(appData_ptr->checkResp.cfgVersion,cfgcheckResp.cfgVersion->buf, \
+																cfgcheckResp.cfgVersion->size);
+					appData_ptr->checkResp.cfgVersionlen = cfgcheckResp.cfgVersion->size;
+					log_i(LOG_HOZON, "checkCfgResp.needUpdate = %d\n",appData_ptr->checkResp.needUpdate);
+					log_i(LOG_HOZON, "checkCfgResp.cfgVersion = %s\n",appData_ptr->checkResp.cfgVersion);
 				}
 				else if(PP_MID_GET_CFG_RESP == MID)//get cfg resp
 				{
@@ -559,148 +716,155 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						return -1;
 					}
 
-					//App_rmtCfg_getResp_t* appData_ptr = (App_rmtCfg_getResp_t*)appData;
-					appData_ptr->getCfgResp.result = cfggetResp.result;
-					log_i(LOG_HOZON, "getCfgResp.result = %d\n",appData_ptr->getCfgResp.result);
+					appData_ptr->getResp.result = cfggetResp.result;
+					log_i(LOG_HOZON, "getCfgResp.result = %d\n",appData_ptr->getResp.result);
 					if(cfggetResp.ficmCfg != NULL)
 					{
-						for(i = 0;i < (**(cfggetResp.ficmCfg->list.array)).token.size;i++)
-						{
-							appData_ptr->getCfgResp.token[i] = (**(cfggetResp.ficmCfg->list.array)).token.buf[i];
-							appData_ptr->getCfgResp.tokenlen = (**(cfggetResp.ficmCfg->list.array)).token.size;
-						}
-						((App_rmtCfg_getResp_t*)appData)->ficmConfigValid = 1;
-						log_i(LOG_HOZON, "getCfgResp.token = %s\n",appData_ptr->getCfgResp.token);
-						log_i(LOG_HOZON, "getCfgResp.tokenlen = %d\n",appData_ptr->getCfgResp.tokenlen);
+						appData_ptr->getResp.FICM.ficmConfigValid = 1;
+						memcpy(appData_ptr->getResp.FICM.token,(**(cfggetResp.ficmCfg->list.array)).token.buf, \
+								(**(cfggetResp.ficmCfg->list.array)).token.size);
+						appData_ptr->getResp.FICM.tokenlen = (**(cfggetResp.ficmCfg->list.array)).token.size;
+						memcpy(appData_ptr->getResp.FICM.userID,(**(cfggetResp.ficmCfg->list.array)).userID.buf, \
+														(**(cfggetResp.ficmCfg->list.array)).userID.size);
+						appData_ptr->getResp.FICM.userIDlen = (**(cfggetResp.ficmCfg->list.array)).userID.size;
+
+						log_i(LOG_HOZON, "getCfgResp.token = %s\n",appData_ptr->getResp.FICM.token);
+						log_i(LOG_HOZON, "getCfgResp.tokenlen = %d\n",appData_ptr->getResp.FICM.tokenlen);
+						log_i(LOG_HOZON, "getCfgResp.userID = %s\n",appData_ptr->getResp.FICM.userID);
+						log_i(LOG_HOZON, "getCfgResp.userIDlen = %d\n",appData_ptr->getResp.FICM.userIDlen);
 					}
 
-					if(cfggetResp.apn1Config != NULL)
+					if(cfggetResp.apn1Cfg != NULL)
 					{
-						appData_ptr->getCfgResp.apn1ConfigValid =1;
-						for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspAddress.size;i++)
-						{
-							appData_ptr->getCfgResp.tspAddr[i] = (**(cfggetResp.apn1Config->list.array)).tspAddress.buf[i];
-							appData_ptr->getCfgResp.tspAddrlen = (**(cfggetResp.apn1Config->list.array)).tspAddress.size;
-						}
-						log_i(LOG_HOZON, "getCfgResp.tspAddr = %s\n",appData_ptr->getCfgResp.tspAddr);
-						log_i(LOG_HOZON, "getCfgResp.tspAddrlen = %d\n",appData_ptr->getCfgResp.tspAddrlen);
-						for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspPass.size;i++)
-						{
-							appData_ptr->getCfgResp.tspPass[i] = (**(cfggetResp.apn1Config->list.array)).tspPass.buf[i];
-							appData_ptr->getCfgResp.tspPasslen = (**(cfggetResp.apn1Config->list.array)).tspPass.size;
-						}
-						log_i(LOG_HOZON, "getCfgResp.tspPass = %s\n",appData_ptr->getCfgResp.tspPass);
-						log_i(LOG_HOZON, "getCfgResp.tspPasslen = %d\n",appData_ptr->getCfgResp.tspPasslen);
-						for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspIp.size;i++)
-						{
-							appData_ptr->getCfgResp.tspIP[i] = (**(cfggetResp.apn1Config->list.array)).tspIp.buf[i];
-							appData_ptr->getCfgResp.tspIPlen = (**(cfggetResp.apn1Config->list.array)).tspIp.size;
-						}
-						log_i(LOG_HOZON, "getCfgResp.tspIP = %s\n",appData_ptr->getCfgResp.tspIP);
-						log_i(LOG_HOZON, "getCfgResp.tspIPlen = %d\n",appData_ptr->getCfgResp.tspIPlen);
-						for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspSms.size;i++)
-						{
-							appData_ptr->getCfgResp.tspSms[i] = (**(cfggetResp.apn1Config->list.array)).tspSms.buf[i];
-							appData_ptr->getCfgResp.tspSmslen = (**(cfggetResp.apn1Config->list.array)).tspSms.size;
-						}
-						log_i(LOG_HOZON, "getCfgResp.tspSms = %s\n",appData_ptr->getCfgResp.tspSms);
-						log_i(LOG_HOZON, "getCfgResp.tspSmslen = %d\n",appData_ptr->getCfgResp.tspSmslen);
-						for(i = 0;i < (**(cfggetResp.apn1Config->list.array)).tspPort.size;i++)
-						{
-							appData_ptr->getCfgResp.tspPort[i] = (**(cfggetResp.apn1Config->list.array)).tspPort.buf[i];
-							appData_ptr->getCfgResp.tspPortlen = (**(cfggetResp.apn1Config->list.array)).tspPort.size;
-						}
-						log_i(LOG_HOZON, "getCfgResp.tspPort = %s\n",appData_ptr->getCfgResp.tspPort);
-						log_i(LOG_HOZON, "getCfgResp.tspPortlen = %d\n",appData_ptr->getCfgResp.tspPortlen);
+						appData_ptr->getResp.APN1.apn1ConfigValid =1;
+						memcpy(appData_ptr->getResp.APN1.tspAddr,(**(cfggetResp.apn1Cfg->list.array)).tspAddress.buf, \
+															(**(cfggetResp.apn1Cfg->list.array)).tspAddress.size);
+						appData_ptr->getResp.APN1.tspAddrlen = (**(cfggetResp.apn1Cfg->list.array)).tspAddress.size;
+						log_i(LOG_HOZON, "getCfgResp.tspAddr = %s\n",appData_ptr->getResp.APN1.tspAddr);
+						log_i(LOG_HOZON, "getCfgResp.tspAddrlen = %d\n",appData_ptr->getResp.APN1.tspAddrlen);
+
+						memcpy(appData_ptr->getResp.APN1.tspPass,(**(cfggetResp.apn1Cfg->list.array)).tspPass.buf, \
+															(**(cfggetResp.apn1Cfg->list.array)).tspPass.size);
+						appData_ptr->getResp.APN1.tspPasslen = (**(cfggetResp.apn1Cfg->list.array)).tspPass.size;
+						log_i(LOG_HOZON, "getCfgResp.tspPass = %s\n",appData_ptr->getResp.APN1.tspPass);
+						log_i(LOG_HOZON, "getCfgResp.tspPasslen = %d\n",appData_ptr->getResp.APN1.tspPasslen);
+
+						memcpy(appData_ptr->getResp.APN1.tspIP,(**(cfggetResp.apn1Cfg->list.array)).tspIp.buf, \
+															(**(cfggetResp.apn1Cfg->list.array)).tspIp.size);
+						appData_ptr->getResp.APN1.tspIPlen = (**(cfggetResp.apn1Cfg->list.array)).tspIp.size;
+						log_i(LOG_HOZON, "getCfgResp.tspIP = %s\n",appData_ptr->getResp.APN1.tspIP);
+						log_i(LOG_HOZON, "getCfgResp.tspIPlen = %d\n",appData_ptr->getResp.APN1.tspIPlen);
+
+						memcpy(appData_ptr->getResp.APN1.tspSms,(**(cfggetResp.apn1Cfg->list.array)).tspSms.buf, \
+															(**(cfggetResp.apn1Cfg->list.array)).tspSms.size);
+						appData_ptr->getResp.APN1.tspSmslen = (**(cfggetResp.apn1Cfg->list.array)).tspSms.size;
+						log_i(LOG_HOZON, "getCfgResp.tspSms = %s\n",appData_ptr->getResp.APN1.tspSms);
+						log_i(LOG_HOZON, "getCfgResp.tspSmslen = %d\n",appData_ptr->getResp.APN1.tspSmslen);
+
+						memcpy(appData_ptr->getResp.APN1.tspPort,(**(cfggetResp.apn1Cfg->list.array)).tspPort.buf, \
+															(**(cfggetResp.apn1Cfg->list.array)).tspPort.size);
+						appData_ptr->getResp.APN1.tspPortlen = (**(cfggetResp.apn1Cfg->list.array)).tspPort.size;
+						log_i(LOG_HOZON, "getCfgResp.tspPort = %s\n",appData_ptr->getResp.APN1.tspPort);
+						log_i(LOG_HOZON, "getCfgResp.tspPortlen = %d\n",appData_ptr->getResp.APN1.tspPortlen);
 					}
 
-					if(cfggetResp.apn2Config != NULL)
+					if(cfggetResp.apn2Cfg != NULL)
 					{
-						appData_ptr->getCfgResp.apn2ConfigValid = 1;
-						for(i = 0;i < (**(cfggetResp.apn2Config->list.array)).tspAddress.size;i++)
-						{
-							appData_ptr->getCfgResp.apn2Address[i] = (**(cfggetResp.apn2Config->list.array)).tspAddress.buf[i];
-							appData_ptr->getCfgResp.apn2Addresslen = (**(cfggetResp.apn2Config->list.array)).tspAddress.size;
-						}
-						log_i(LOG_HOZON, "getCfgResp.apn2Address = %s\n",appData_ptr->getCfgResp.apn2Address);
-						log_i(LOG_HOZON, "getCfgResp.apn2Addresslen = %d\n",appData_ptr->getCfgResp.apn2Addresslen);
-						for(i = 0;i < (**(cfggetResp.apn2Config->list.array)).tspUser.size;i++)
-						{
-							appData_ptr->getCfgResp.apn2User[i] = (**(cfggetResp.apn2Config->list.array)).tspUser.buf[i];
-							appData_ptr->getCfgResp.apn2Userlen = (**(cfggetResp.apn2Config->list.array)).tspUser.size;
-						}
-						log_i(LOG_HOZON, "getCfgResp.apn2User = %s\n",appData_ptr->getCfgResp.apn2User);
-						log_i(LOG_HOZON, "getCfgResp.apn2Userlen = %d\n",appData_ptr->getCfgResp.apn2Userlen);
-						for(i = 0;i < (**(cfggetResp.apn2Config->list.array)).tspPass.size;i++)
-						{
-							appData_ptr->getCfgResp.apn2Pass[i] = (**(cfggetResp.apn2Config->list.array)).tspPass.buf[i];
-							appData_ptr->getCfgResp.apn2Passlen = (**(cfggetResp.apn2Config->list.array)).tspPass.size;
-						}
-						log_i(LOG_HOZON, "getCfgResp.apn2Pass = %s\n",appData_ptr->getCfgResp.apn2Pass);
-						log_i(LOG_HOZON, "getCfgResp.apn2Passlen = %d\n",appData_ptr->getCfgResp.apn2Passlen);
+						appData_ptr->getResp.APN2.apn2ConfigValid = 1;
+						memcpy(appData_ptr->getResp.APN2.apn2Address,(**(cfggetResp.apn2Cfg->list.array)).tspAddress.buf, \
+															(**(cfggetResp.apn2Cfg->list.array)).tspAddress.size);
+						appData_ptr->getResp.APN2.apn2Addresslen = (**(cfggetResp.apn2Cfg->list.array)).tspAddress.size;
+						log_i(LOG_HOZON, "getCfgResp.apn2Address = %s\n",appData_ptr->getResp.APN2.apn2Address);
+						log_i(LOG_HOZON, "getCfgResp.apn2Addresslen = %d\n",appData_ptr->getResp.APN2.apn2Addresslen);
+
+						memcpy(appData_ptr->getResp.APN2.apn2User,(**(cfggetResp.apn2Cfg->list.array)).tspUser.buf, \
+															(**(cfggetResp.apn2Cfg->list.array)).tspUser.size);
+						appData_ptr->getResp.APN2.apn2Userlen = (**(cfggetResp.apn2Cfg->list.array)).tspUser.size;
+						log_i(LOG_HOZON, "getCfgResp.apn2User = %s\n",appData_ptr->getResp.APN2.apn2User);
+						log_i(LOG_HOZON, "getCfgResp.apn2Userlen = %d\n",appData_ptr->getResp.APN2.apn2Userlen);
+
+						memcpy(appData_ptr->getResp.APN2.apn2Pass,(**(cfggetResp.apn2Cfg->list.array)).tspPass.buf, \
+															(**(cfggetResp.apn2Cfg->list.array)).tspPass.size);
+						appData_ptr->getResp.APN2.apn2Passlen = (**(cfggetResp.apn2Cfg->list.array)).tspPass.size;
+						log_i(LOG_HOZON, "getCfgResp.apn2Pass = %s\n",appData_ptr->getResp.APN2.apn2Pass);
+						log_i(LOG_HOZON, "getCfgResp.apn2Passlen = %d\n",appData_ptr->getResp.APN2.apn2Passlen);
 					}
 
-					if(cfggetResp.commonConfig != NULL)
+					if(cfggetResp.commonCfg != NULL)
 					{
-						appData_ptr->getCfgResp.commonConfigValid = 1;
-						appData_ptr->getCfgResp.actived = (**(cfggetResp.commonConfig->list.array)).actived;
-						appData_ptr->getCfgResp.bCallEnabled = (**(cfggetResp.commonConfig->list.array)).bCallEnabled;
-						appData_ptr->getCfgResp.btKeyEntryEnabled = (**(cfggetResp.commonConfig->list.array)).btKeyEntryEnabled;
-						appData_ptr->getCfgResp.dcEnabled = (**(cfggetResp.commonConfig->list.array)).dcEnabled;
-						appData_ptr->getCfgResp.dtcEnabled = (**(cfggetResp.commonConfig->list.array)).dtcEnabled;
-						appData_ptr->getCfgResp.eCallEnabled = (**(cfggetResp.commonConfig->list.array)).eCallEnabled;
-						appData_ptr->getCfgResp.iCallEnabled = (**(cfggetResp.commonConfig->list.array)).iCallEnabled;
-						appData_ptr->getCfgResp.journeysEnabled = (**(cfggetResp.commonConfig->list.array)).journeysEnabled;
-						appData_ptr->getCfgResp.onlineInfEnabled = (**(cfggetResp.commonConfig->list.array)).onlineInfEnabled;
-						appData_ptr->getCfgResp.rChargeEnabled = (**(cfggetResp.commonConfig->list.array)).rChargeEnabled;
-						appData_ptr->getCfgResp.rcEnabled = (**(cfggetResp.commonConfig->list.array)).rcEnabled;
-						appData_ptr->getCfgResp.svtEnabled = (**(cfggetResp.commonConfig->list.array)).svtEnabled;
-						appData_ptr->getCfgResp.vsEnabled = (**(cfggetResp.commonConfig->list.array)).vsEnabled;
+						appData_ptr->getResp.COMMON.commonConfigValid = 1;
+						appData_ptr->getResp.COMMON.actived = (**(cfggetResp.commonCfg->list.array)).actived;
+						appData_ptr->getResp.COMMON.bCallEnabled = (**(cfggetResp.commonCfg->list.array)).bCallEnabled;
+						appData_ptr->getResp.COMMON.btKeyEntryEnabled = (**(cfggetResp.commonCfg->list.array)).btKeyEntryEnabled;
+						appData_ptr->getResp.COMMON.dcEnabled = (**(cfggetResp.commonCfg->list.array)).dcEnabled;
+						appData_ptr->getResp.COMMON.dtcEnabled = (**(cfggetResp.commonCfg->list.array)).dtcEnabled;
+						appData_ptr->getResp.COMMON.eCallEnabled = (**(cfggetResp.commonCfg->list.array)).eCallEnabled;
+						appData_ptr->getResp.COMMON.iCallEnabled = (**(cfggetResp.commonCfg->list.array)).iCallEnabled;
+						appData_ptr->getResp.COMMON.journeysEnabled = (**(cfggetResp.commonCfg->list.array)).journeysEnabled;
+						appData_ptr->getResp.COMMON.onlineInfEnabled = (**(cfggetResp.commonCfg->list.array)).onlineInfEnabled;
+						appData_ptr->getResp.COMMON.rChargeEnabled = (**(cfggetResp.commonCfg->list.array)).rChargeEnabled;
+						appData_ptr->getResp.COMMON.rcEnabled = (**(cfggetResp.commonCfg->list.array)).rcEnabled;
+						appData_ptr->getResp.COMMON.svtEnabled = (**(cfggetResp.commonCfg->list.array)).svtEnabled;
+						appData_ptr->getResp.COMMON.vsEnabled = (**(cfggetResp.commonCfg->list.array)).vsEnabled;
 
-						log_i(LOG_HOZON, "getCfgResp.actived = %d\n",appData_ptr->getCfgResp.actived);
-						log_i(LOG_HOZON, "getCfgResp.bCallEnabled = %d\n",appData_ptr->getCfgResp.bCallEnabled);
-						log_i(LOG_HOZON, "getCfgResp.btKeyEntryEnabled = %d\n",appData_ptr->getCfgResp.btKeyEntryEnabled);
-						log_i(LOG_HOZON, "getCfgResp.dcEnabled = %d\n",appData_ptr->getCfgResp.dcEnabled);
-						log_i(LOG_HOZON, "getCfgResp.dtcEnabled = %d\n",appData_ptr->getCfgResp.dtcEnabled);
-						log_i(LOG_HOZON, "getCfgResp.eCallEnabled = %d\n",appData_ptr->getCfgResp.eCallEnabled);
-						log_i(LOG_HOZON, "getCfgResp.iCallEnabled = %d\n",appData_ptr->getCfgResp.iCallEnabled);
-						log_i(LOG_HOZON, "getCfgResp.journeysEnabled = %d\n",appData_ptr->getCfgResp.journeysEnabled);
-						log_i(LOG_HOZON, "getCfgResp.onlineInfEnabled = %d\n",appData_ptr->getCfgResp.onlineInfEnabled);
-						log_i(LOG_HOZON, "getCfgResp.rChargeEnabled = %d\n",appData_ptr->getCfgResp.rChargeEnabled);
-						log_i(LOG_HOZON, "getCfgResp.rcEnabled = %d\n",appData_ptr->getCfgResp.rcEnabled);
-						log_i(LOG_HOZON, "getCfgResp.svtEnabled = %d\n",appData_ptr->getCfgResp.svtEnabled);
-						log_i(LOG_HOZON, "getCfgResp.vsEnabled = %d\n",appData_ptr->getCfgResp.vsEnabled);
+						log_i(LOG_HOZON, "getCfgResp.actived = %d\n",appData_ptr->getResp.COMMON.actived);
+						log_i(LOG_HOZON, "getCfgResp.bCallEnabled = %d\n",appData_ptr->getResp.COMMON.bCallEnabled);
+						log_i(LOG_HOZON, "getCfgResp.btKeyEntryEnabled = %d\n",appData_ptr->getResp.COMMON.btKeyEntryEnabled);
+						log_i(LOG_HOZON, "getCfgResp.dcEnabled = %d\n",appData_ptr->getResp.COMMON.dcEnabled);
+						log_i(LOG_HOZON, "getCfgResp.dtcEnabled = %d\n",appData_ptr->getResp.COMMON.dtcEnabled);
+						log_i(LOG_HOZON, "getCfgResp.eCallEnabled = %d\n",appData_ptr->getResp.COMMON.eCallEnabled);
+						log_i(LOG_HOZON, "getCfgResp.iCallEnabled = %d\n",appData_ptr->getResp.COMMON.iCallEnabled);
+						log_i(LOG_HOZON, "getCfgResp.journeysEnabled = %d\n",appData_ptr->getResp.COMMON.journeysEnabled);
+						log_i(LOG_HOZON, "getCfgResp.onlineInfEnabled = %d\n",appData_ptr->getResp.COMMON.onlineInfEnabled);
+						log_i(LOG_HOZON, "getCfgResp.rChargeEnabled = %d\n",appData_ptr->getResp.COMMON.rChargeEnabled);
+						log_i(LOG_HOZON, "getCfgResp.rcEnabled = %d\n",appData_ptr->getResp.COMMON.rcEnabled);
+						log_i(LOG_HOZON, "getCfgResp.svtEnabled = %d\n",appData_ptr->getResp.COMMON.svtEnabled);
+						log_i(LOG_HOZON, "getCfgResp.vsEnabled = %d\n",appData_ptr->getResp.COMMON.vsEnabled);
 					}
 
-					if(cfggetResp.extendConfig != NULL)
+					if(cfggetResp.extendCfg != NULL)
 					{
-						appData_ptr->getCfgResp.extendConfigValid = 1;
-						for(i = 0;i < (**(cfggetResp.extendConfig->list.array)).bcallNO.size;i++)
-						{
-							appData_ptr->getCfgResp.bcallNO[i] = (**(cfggetResp.extendConfig->list.array)).bcallNO.buf[i];
-							appData_ptr->getCfgResp.bcallNOlen = (**(cfggetResp.extendConfig->list.array)).bcallNO.size;
-						}
-						log_i(LOG_HOZON, "getCfgResp.bcallNO = %s\n",appData_ptr->getCfgResp.bcallNO);
-						log_i(LOG_HOZON, "getCfgResp.bcallNOlen = %d\n",appData_ptr->getCfgResp.bcallNOlen);
-						for(i = 0;i < (**(cfggetResp.extendConfig->list.array)).ecallNO.size;i++)
-						{
-							appData_ptr->getCfgResp.ecallNO[i] = (**(cfggetResp.extendConfig->list.array)).ecallNO.buf[i];
-							appData_ptr->getCfgResp.ecallNOlen = (**(cfggetResp.extendConfig->list.array)).ecallNO.size;
-						}
-						log_i(LOG_HOZON, "getCfgResp.ecallNO = %s\n",appData_ptr->getCfgResp.ecallNO);
-						log_i(LOG_HOZON, "getCfgResp.ecallNOlen = %d\n",appData_ptr->getCfgResp.ecallNOlen);
-						for(i = 0;i < (**(cfggetResp.extendConfig->list.array)).icallNO.size;i++)
-						{
-							appData_ptr->getCfgResp.ccNO[i] = (**(cfggetResp.extendConfig->list.array)).icallNO.buf[i];
-							appData_ptr->getCfgResp.ccNOlen = (**(cfggetResp.extendConfig->list.array)).icallNO.size;
-						}
-						log_i(LOG_HOZON, "getCfgResp.ccNONO = %s\n",appData_ptr->getCfgResp.ccNO);
-						log_i(LOG_HOZON, "getCfgResp.ccNOlen = %d\n",appData_ptr->getCfgResp.ccNOlen);
+						appData_ptr->getResp.EXTEND.extendConfigValid = 1;
+						memcpy(appData_ptr->getResp.EXTEND.bcallNO,(**(cfggetResp.extendCfg->list.array)).bcallNO.buf, \
+																(**(cfggetResp.extendCfg->list.array)).bcallNO.size);
+						appData_ptr->getResp.EXTEND.bcallNOlen = (**(cfggetResp.extendCfg->list.array)).bcallNO.size;
+						log_i(LOG_HOZON, "getCfgResp.bcallNO = %s\n",appData_ptr->getResp.EXTEND.bcallNO);
+						log_i(LOG_HOZON, "getCfgResp.bcallNOlen = %d\n",appData_ptr->getResp.EXTEND.bcallNOlen);
+
+						memcpy(appData_ptr->getResp.EXTEND.ecallNO,(**(cfggetResp.extendCfg->list.array)).ecallNO.buf, \
+																(**(cfggetResp.extendCfg->list.array)).ecallNO.size);
+						appData_ptr->getResp.EXTEND.ecallNOlen = (**(cfggetResp.extendCfg->list.array)).ecallNO.size;
+						log_i(LOG_HOZON, "getCfgResp.ecallNO = %s\n",appData_ptr->getResp.EXTEND.ecallNO);
+						log_i(LOG_HOZON, "getCfgResp.ecallNOlen = %d\n",appData_ptr->getResp.EXTEND.ecallNOlen);
+
+						memcpy(appData_ptr->getResp.EXTEND.ccNO,(**(cfggetResp.extendCfg->list.array)).icallNO.buf, \
+																(**(cfggetResp.extendCfg->list.array)).icallNO.size);
+						appData_ptr->getResp.EXTEND.ccNOlen = (**(cfggetResp.extendCfg->list.array)).icallNO.size;
+						log_i(LOG_HOZON, "getCfgResp.ccNONO = %s\n",appData_ptr->getResp.EXTEND.ccNO);
+						log_i(LOG_HOZON, "getCfgResp.ccNOlen = %d\n",appData_ptr->getResp.EXTEND.ccNOlen);
 					}
 				}
-				else
+				else if(PP_MID_READ_CFG_REQ == MID)//read config req
 				{
+					log_i(LOG_HOZON,  "read config req\n");
+					CfgReadReqInfo_t DecodeCRR;
+					CfgReadReqInfo_t *DecodeCRR_ptr = &DecodeCRR;
+					memset(&DecodeCRR,0 , sizeof(CfgReadReqInfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_Cfg_read_req,(void *) &DecodeCRR_ptr, \
+							&LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_e(LOG_HOZON,  "Could not decode cfg read req application data Frame\n");
+						return -1;
+					}
 
+					if(DecodeCRR.settingIds.list.count < PP_RMTCFG_SETID_MAX)
+					{
+						for(i = 0;i < DecodeCRR.settingIds.list.count;i++)
+						{
+							appData_ptr->ReadReq.SettingId[i] = DecodeCRR.settingIds.list.array[i]->id;
+						}
+					}
 				}
 			}
 			break;

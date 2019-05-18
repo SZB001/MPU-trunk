@@ -37,6 +37,7 @@ description： include the header file
 #include "log.h"
 #include "list.h"
 #include "../../support/protocol.h"
+#include "cfg_api.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
 #include "PrvtProt_shell.h"
@@ -67,6 +68,8 @@ typedef struct
 
 static PrvtProt_pack_t 		PP_rmtCfg_Pack;
 
+static PrvtProt_rmtCfg_t	PP_rmtCfg;
+#if 0
 static PrvtProt_rmtCfg_t	PP_rmtCfg =
 {
 	{
@@ -75,8 +78,12 @@ static PrvtProt_rmtCfg_t	PP_rmtCfg =
 		/*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
 		{"100", 1,      0,            0,	PP_INVALID,    0,      0,		0,		 0,		  0,	  0,	 256,	1,			0   } //bcall response
 	},
-	{1,PP_RMTCFG_CFG_IDLE,0,0,0}
+	{1,PP_RMTCFG_CFG_IDLE,0,0,0,0}
 };
+#endif
+
+static PrvtProt_App_rmtCfg_t AppData_rmtCfg;
+#if 0
 static PrvtProt_App_rmtCfg_t AppData_rmtCfg =
 {	/*    mcuSw   mpuSw     vehicleVin         iccID                  btMacAddr    configSw     cfgVersion */
 		{"00654","00654","LUZAGAAA6JA000654","89860317452068729781","000000000000","00000","00000000000000000000000000000001" \
@@ -106,8 +113,11 @@ static PrvtProt_App_rmtCfg_t AppData_rmtCfg =
 		{ 0,            "00000","00000","00000","00000000000000000000000000000000" \
 						,5,5,5,32,NULL,NULL,NULL,NULL},\
 	/* configAccepted*/
-		{0}
+		{0},\
+	/* setting ID */
+		{0,0,0,0,0}
 };
+#endif
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -115,15 +125,16 @@ description： function declaration
 
 /*Static function declaration*/
 static int PP_rmtCfg_do_checksock(PrvtProt_task_t *task);
-static int PP_rmtCfg_do_rcvMsg(PrvtProt_task_t *task);
-static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len);
+static int PP_rmtCfg_do_rcvMsg(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg);
+static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,PrvtProt_pack_t* rxPack,int len);
 static int PP_rmtCfg_do_wait(PrvtProt_task_t *task);
-static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task);
-static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task);
-static int PP_rmtCfg_getRequest(PrvtProt_task_t *task);
-static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task);
-static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task);
-
+static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg);
+static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg);
+static int PP_rmtCfg_getRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg);
+static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg);
+static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg);
+static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg);
+static int PP_rmtCfg_strcmp(unsigned char* str1,unsigned char* str2,int len);
 /******************************************************
 description： function code
 ******************************************************/
@@ -140,9 +151,40 @@ description： function code
 ******************************************************/
 void PP_rmtCfg_init(void)
 {
+	memset(&PP_rmtCfg,0 , sizeof(PrvtProt_rmtCfg_t));
+	memcpy(PP_rmtCfg.pack.Header.sign,"**",2);
+	PP_rmtCfg.pack.Header.ver.Byte = 0x30;
+	PP_rmtCfg.pack.Header.commtype.Byte = 0xe1;
+	PP_rmtCfg.pack.Header.opera = 0x02;
+	PP_rmtCfg.pack.Header.tboxid = 27;
+	memcpy(PP_rmtCfg.pack.DisBody.aID,"100",strlen("100"));
+	PP_rmtCfg.pack.DisBody.eventId = PP_INVALID;
+	PP_rmtCfg.pack.DisBody.appDataProVer = 256;
+	PP_rmtCfg.pack.DisBody.testFlag = 1;
 	PP_rmtCfg.state.req = 1;
+	PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
 	PP_rmtCfg.state.period = tm_get_time();
-	//memset(&AppData_rmtCfg,0 , sizeof(PrvtProt_App_rmtCfg_t));
+
+	memset(&AppData_rmtCfg,0 , sizeof(PrvtProt_App_rmtCfg_t));
+	memcpy(AppData_rmtCfg.checkReq.mcuSw,"00654",strlen("00654"));
+	AppData_rmtCfg.checkReq.mcuSwlen = strlen("00654");
+	memcpy(AppData_rmtCfg.checkReq.mpuSw,"00654",strlen("00654"));
+	AppData_rmtCfg.checkReq.mpuSwlen = strlen("00654");
+	memcpy(AppData_rmtCfg.checkReq.vehicleVin,"LUZAGAAA6JA000654",strlen("LUZAGAAA6JA000654"));
+	AppData_rmtCfg.checkReq.vehicleVinlen = strlen("LUZAGAAA6JA000654");
+	memcpy(AppData_rmtCfg.checkReq.iccID,"89860317452068729781",strlen("89860317452068729781"));
+	AppData_rmtCfg.checkReq.iccIDlen = strlen("89860317452068729781");
+	memcpy(AppData_rmtCfg.checkReq.btMacAddr,"000000000000",strlen("000000000000"));
+	AppData_rmtCfg.checkReq.btMacAddrlen = strlen("000000000000");
+	memcpy(AppData_rmtCfg.checkReq.configSw,"00000",strlen("00000"));
+	AppData_rmtCfg.checkReq.configSwlen = strlen("00000");
+	memcpy(AppData_rmtCfg.checkReq.cfgVersion,"00000000000000000000000000000001",strlen("00000000000000000000000000000001"));
+	AppData_rmtCfg.checkReq.cfgVersionlen = strlen("00000000000000000000000000000001");
+
+
+
+
+
 }
 
 /******************************************************
@@ -160,9 +202,9 @@ int PP_rmtCfg_mainfunction(void *task)
 {
 	int res;
 	res = 		PP_rmtCfg_do_checksock((PrvtProt_task_t*)task) ||
-				PP_rmtCfg_do_rcvMsg((PrvtProt_task_t*)task) ||
+				PP_rmtCfg_do_rcvMsg((PrvtProt_task_t*)task,&PP_rmtCfg) ||
 				PP_rmtCfg_do_wait((PrvtProt_task_t*)task) ||
-				PP_rmtCfg_do_checkConfig((PrvtProt_task_t*)task);
+				PP_rmtCfg_do_checkConfig((PrvtProt_task_t*)task,&PP_rmtCfg);
 	return res;
 }
 
@@ -198,7 +240,7 @@ static int PP_rmtCfg_do_checksock(PrvtProt_task_t *task)
 
 *备  注：
 ******************************************************/
-static int PP_rmtCfg_do_rcvMsg(PrvtProt_task_t *task)
+static int PP_rmtCfg_do_rcvMsg(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {	
 	int rlen = 0;
 	PrvtProt_pack_t rcv_pack;
@@ -220,7 +262,7 @@ static int PP_rmtCfg_do_rcvMsg(PrvtProt_task_t *task)
 	{
 		return 0;
 	}
-	PP_rmtCfg_RxMsgHandle(task,&rcv_pack,rlen);
+	PP_rmtCfg_RxMsgHandle(task,rmtCfg,&rcv_pack,rlen);
 
 	return 0;
 }
@@ -236,10 +278,11 @@ static int PP_rmtCfg_do_rcvMsg(PrvtProt_task_t *task)
 
 *备  注：
 ******************************************************/
-static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len)
+static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,PrvtProt_pack_t* rxPack,int len)
 {
 	int aid;
 	int res;
+	int i;
 	if(PP_NGTP_TYPE != rxPack->Header.opera)
 	{
 		log_e(LOG_HOZON, "unknow package");
@@ -262,32 +305,40 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 	}
 	switch(MsgDataBody.mID)
 	{
-		case PP_MID_CHECK_CFG_RESP://remote config check response
+		case PP_MID_CHECK_CFG_RESP://check remote config response
 		{
 			if(PP_rmtCfg.state.waitSt == PP_RMTCFG_CHECK_WAIT_RESP)//接收到回复
 			{
-				PP_rmtCfg.state.waitSt = 0;
+				if((1 == AppData_rmtCfg.checkResp.needUpdate) && \
+						(PP_rmtCfg_strcmp(AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkReq.cfgVersion,32)!=0))
+				{
+					rmtCfg->state.needUpdata = 1;
+				}
+				AppData_rmtCfg.checkResp.needUpdate = 0;
+				rmtCfg->state.waitSt = 0;
 				log_i(LOG_HOZON, "\r\ncheck config req ok\r\n");
 			}
 		}
 		break;
-		case PP_MID_GET_CFG_RESP://remote config check response
+		case PP_MID_GET_CFG_RESP://get remote config response
 		{
-			if(PP_rmtCfg.state.waitSt == PP_RMTCFG_GET_WAIT_RESP)//接收到回复
+			if(rmtCfg->state.waitSt == PP_RMTCFG_GET_WAIT_RESP)//接收到回复
 			{
-				PP_rmtCfg.state.waitSt = 0;
+				rmtCfg->state.waitSt = 0;
+
 				log_i(LOG_HOZON, "\r\nget config req ok\r\n");
 			}
 		}
 		break;
 		case PP_MID_CONN_CFG_REQ://TAP 向 TCU 发送配置更新请求， TCU 选择合适的时机去后台请求数据
 		{
-			PP_rmtCfg.pack.DisBody.eventId = MsgDataBody.eventId;
-			res = PP_rmtCfg_ConnResp(task);
+			rmtCfg->pack.DisBody.eventId = MsgDataBody.eventId;
+			rmtCfg->state.cfgAccept = 1;//接受配置更新请求
+			res = PP_rmtCfg_ConnResp(task,rmtCfg);
 			if(res > 0)
 			{
-				PP_rmtCfg.state.req  = AppData_rmtCfg.connCfgResp.configAccepted;
-				PP_rmtCfg.state.period = tm_get_time();
+				rmtCfg->state.req  = AppData_rmtCfg.connResp.configAccepted;
+				rmtCfg->state.period = tm_get_time();
 			}
 			else if(res < 0)
 			{
@@ -296,6 +347,20 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 			}
 			else
 			{}
+		}
+		break;
+		case PP_MID_READ_CFG_REQ://TAP 向 TCU 发送读配置请求
+		{
+			res = PP_rmtCfg_ReadCfgResp(task,rmtCfg);
+			if(res < 0)
+			{
+				log_e(LOG_HOZON, "socket send error, reset protocol");
+				sockproxy_socketclose();//by liujian 20190514
+			}
+			for(i = 0; i < PP_RMTCFG_SETID_MAX;i++)
+			{
+				AppData_rmtCfg.ReadReq.SettingId[i] = 0;
+			}
 		}
 		break;
 		default:
@@ -316,21 +381,6 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 ******************************************************/
 static int PP_rmtCfg_do_wait(PrvtProt_task_t *task)
 {
-    /*if (!PP_rmtCfg.state.waitSt)//没有事件等待应答
-    {
-        return 0;
-    }
-
-	 if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)
-	 {
-		 PP_rmtCfg.state.waitSt = 0;
-		 if(PP_RMTCFG_CHECK_REQ == PP_rmtCfg.state.waitSt)
-		 {
-			 log_e(LOG_HOZON, "check cfg req time out");
-		 }
-		 return 0;
-	 }
-	 //*/
 
 	return 0;
 }
@@ -346,7 +396,7 @@ static int PP_rmtCfg_do_wait(PrvtProt_task_t *task)
 
 *备  注：
 ******************************************************/
-static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task)
+static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
 	int res;
 
@@ -355,38 +405,37 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task)
 		return 0;
 	}
 
-	switch(PP_rmtCfg.state.CfgSt)
+	switch(rmtCfg->state.CfgSt)
 	{
 		case PP_RMTCFG_CFG_IDLE:
 		{
-			if(1 == PP_rmtCfg.state.req)
+			if(1 == rmtCfg->state.req)
 			{
-				if((tm_get_time() - PP_rmtCfg.state.period) >= RMTCFG_DELAY_TIME)
+				if((tm_get_time() - rmtCfg->state.period) >= RMTCFG_DELAY_TIME)
 				{
 					log_i(LOG_HOZON, "start request remote config\r\n");
-					//PP_rmtCfg.state.period = 0;
-					PP_rmtCfg.state.CfgSt = PP_CHECK_CFG_REQ;
-					PP_rmtCfg.state.waitSt = PP_RMTCFG_WAIT_IDLE;
-					PP_rmtCfg.state.req = 0;
+					rmtCfg->state.CfgSt = PP_CHECK_CFG_REQ;
+					rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
+					rmtCfg->state.req = 0;
 				}
 			}
 		}
 		break;
 		case PP_CHECK_CFG_REQ:
 		{
-			res = PP_rmtCfg_checkRequest(task);
+			res = PP_rmtCfg_checkRequest(task,rmtCfg);
 			if(res < 0)//请求发送失败
 			{
 				log_e(LOG_HOZON, "socket send error, reset protocol");
 				sockproxy_socketclose();//by liujian 20190514
-				PP_rmtCfg.state.req = 1;
-				PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
+				rmtCfg->state.req = 1;
+				rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
 			}
 			else if(res > 0)
 			{
-				PP_rmtCfg.state.waitSt 		= PP_RMTCFG_CHECK_WAIT_RESP;//等待检查检查配置请求响应
-				PP_rmtCfg.state.CfgSt 		= PP_CHECK_CFG_RESP;
-				PP_rmtCfg.state.waittime 	= tm_get_time();
+				rmtCfg->state.waitSt 		= PP_RMTCFG_CHECK_WAIT_RESP;//等待检查检查配置请求响应
+				rmtCfg->state.CfgSt 		= PP_CHECK_CFG_RESP;
+				rmtCfg->state.waittime 	= tm_get_time();
 			}
 			else
 			{}
@@ -394,28 +443,29 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task)
 		break;
 		case PP_CHECK_CFG_RESP:
 		{
-			if(PP_rmtCfg.state.waitSt != PP_RMTCFG_WAIT_IDLE)//未响应
+			if(rmtCfg->state.waitSt != PP_RMTCFG_WAIT_IDLE)//未响应
 			{
-				 if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//等待响应超时
+				 if((tm_get_time() - rmtCfg->state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//等待响应超时
 				 {
 					 log_e(LOG_HOZON, "check cfg response time out");
-					 PP_rmtCfg.state.waitSt = PP_RMTCFG_WAIT_IDLE;
-					 PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
-					 PP_rmtCfg.state.req = 1;
-					 PP_rmtCfg.state.period = tm_get_time();
+					 rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
+					 rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
+					 rmtCfg->state.req = 1;
+					 rmtCfg->state.period = tm_get_time();
 				 }
 			}
 			else
 			{
-				if(AppData_rmtCfg.checkCfgResp.needUpdate == 1)
+				if(rmtCfg->state.needUpdata == 1)
 				{
-					PP_rmtCfg.state.CfgSt = PP_GET_CFG_REQ;
+					rmtCfg->state.needUpdata = 0;
+					rmtCfg->state.CfgSt = PP_GET_CFG_REQ;
 				}
 				else
 				{
-					PP_rmtCfg.state.req = 0;
-					PP_rmtCfg.state.waitSt = PP_RMTCFG_WAIT_IDLE;
-					PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
+					rmtCfg->state.req = 0;
+					rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
+					rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
 
 				}
 			}
@@ -423,20 +473,20 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task)
 		break;
 		case PP_GET_CFG_REQ:
 		{
-			res = PP_rmtCfg_getRequest(task);
+			res = PP_rmtCfg_getRequest(task,rmtCfg);
 			if(res < 0)//请求失败
 			{
 				log_e(LOG_HOZON, "socket send error, reset protocol");
 				sockproxy_socketclose();//by liujian 20190514
-				PP_rmtCfg.state.req = 1;
-				PP_rmtCfg.state.period = tm_get_time();
-				PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
+				rmtCfg->state.req = 1;
+				rmtCfg->state.period = tm_get_time();
+				rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
 			}
 			else if(res > 0)
 			{
-				PP_rmtCfg.state.waitSt 		= PP_RMTCFG_GET_WAIT_RESP;//等待请求响应
-				PP_rmtCfg.state.CfgSt 		= PP_GET_CFG_RESP;
-				PP_rmtCfg.state.waittime 	= tm_get_time();
+				rmtCfg->state.waitSt 		= PP_RMTCFG_GET_WAIT_RESP;//等待请求响应
+				rmtCfg->state.CfgSt 		= PP_GET_CFG_RESP;
+				rmtCfg->state.waittime 	= tm_get_time();
 			}
 			else
 			{}
@@ -444,46 +494,56 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task)
 		break;
 		case PP_GET_CFG_RESP:
 		{
-			if(PP_rmtCfg.state.waitSt != PP_RMTCFG_WAIT_IDLE)//未响应
+			if(rmtCfg->state.waitSt != PP_RMTCFG_WAIT_IDLE)//未响应
 			{
-				 if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//等待响应超时
+				 if((tm_get_time() - rmtCfg->state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//等待响应超时
 				 {
 					 log_e(LOG_HOZON, "get cfg response time out");
-					 PP_rmtCfg.state.waitSt = PP_RMTCFG_WAIT_IDLE;
-					 PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
-					 PP_rmtCfg.state.req = 1;
-					 PP_rmtCfg.state.period = tm_get_time();
+					 rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
+					 rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
+					 rmtCfg->state.req = 1;
+					 rmtCfg->state.period = tm_get_time();
 				 }
 			}
 			else
 			{
-				PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_END;
+				rmtCfg->state.CfgSt = PP_RMTCFG_CFG_END;
 			}
 		}
 		break;
 		case PP_RMTCFG_CFG_END://结束配置
 		{
-			res = PP_rmtCfg_CfgEndRequest(task);
+			if(AppData_rmtCfg.getResp.result == 1)
+			{
+				AppData_rmtCfg.getResp.result = 0;
+				//配置生效，使用新的配置
+				memcpy(AppData_rmtCfg.ReadResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion, \
+														  AppData_rmtCfg.checkResp.cfgVersionlen);
+				AppData_rmtCfg.ReadResp.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
+				AppData_rmtCfg.ReadResp.FICM.ficmConfigValid = AppData_rmtCfg.getResp.FICM.ficmConfigValid;
+				memcpy(&(AppData_rmtCfg.ReadResp.FICM),&(AppData_rmtCfg.getResp.FICM),sizeof(App_rmtCfg_FICM_t));
+				memcpy(&(AppData_rmtCfg.ReadResp.APN1),&(AppData_rmtCfg.getResp.APN1),sizeof(App_rmtCfg_APN1_t));
+				memcpy(&(AppData_rmtCfg.ReadResp.APN2),&(AppData_rmtCfg.getResp.APN2),sizeof(App_rmtCfg_APN2_t));
+				memcpy(&(AppData_rmtCfg.ReadResp.COMMON),&(AppData_rmtCfg.getResp.COMMON),sizeof(App_rmtCfg_COMMON_t));
+				memcpy(&(AppData_rmtCfg.ReadResp.EXTEND),&(AppData_rmtCfg.getResp.EXTEND),sizeof(App_rmtCfg_EXTEND_t));
+				rmtCfg->state.cfgsuccess = 1;
+			}
+
+			res = PP_rmtCfg_CfgEndRequest(task,rmtCfg);
 			if(res < 0)//发送失败
 			{
 				log_e(LOG_HOZON, "socket send error, reset protocol");
 				sockproxy_socketclose();//by liujian 20190514
-				PP_rmtCfg.state.req = 1;
-				PP_rmtCfg.state.period = tm_get_time();
-				PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
+				rmtCfg->state.req = 1;
+				rmtCfg->state.period = tm_get_time();
+				rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
 			}
 			else if(res > 0)
 			{
 				log_i(LOG_HOZON, "remote config take effect\r\n");
-
-				if(AppData_rmtCfg.getCfgResp.result == 1)
-				{
-					//配置生效，使用新的配置
-				}
-
-				PP_rmtCfg.state.waitSt  = PP_RMTCFG_WAIT_IDLE;
-				PP_rmtCfg.state.CfgSt 	= PP_RMTCFG_CFG_IDLE;
-				PP_rmtCfg.state.req 	= 0;
+				rmtCfg->state.waitSt  = PP_RMTCFG_WAIT_IDLE;
+				rmtCfg->state.CfgSt 	= PP_RMTCFG_CFG_IDLE;
+				rmtCfg->state.req 	= 0;
 			}
 			else
 			{}
@@ -507,26 +567,26 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task)
 
 *备  注：
 ******************************************************/
-static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task)
+static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
 	int msgdatalen;
 	int res;
 	/*header*/
-	PP_rmtCfg.pack.Header.ver.Byte = task->version;
-	PP_rmtCfg.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-	PP_rmtCfg.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-	memcpy(&PP_rmtCfg_Pack, &PP_rmtCfg.pack.Header, sizeof(PrvtProt_pack_Header_t));
+	rmtCfg->pack.Header.ver.Byte = task->version;
+	rmtCfg->pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+	rmtCfg->pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	memcpy(&PP_rmtCfg_Pack, &rmtCfg->pack.Header, sizeof(PrvtProt_pack_Header_t));
 	/*body*/
-	PP_rmtCfg.pack.DisBody.mID = PP_MID_CHECK_CFG_REQ;
-	PP_rmtCfg.pack.DisBody.eventId = PP_AID_RMTCFG + PP_MID_CHECK_CFG_REQ;
-	PP_rmtCfg.pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	PP_rmtCfg.pack.DisBody.expTime   = PrvtPro_getTimestamp();
-	PP_rmtCfg.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	rmtCfg->pack.DisBody.mID = PP_MID_CHECK_CFG_REQ;
+	rmtCfg->pack.DisBody.eventId = PP_AID_RMTCFG + PP_MID_CHECK_CFG_REQ;
+	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 
 	/*appdata*/
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_CHECK_REQ,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &PP_rmtCfg.pack.DisBody,&AppData_rmtCfg))//数据编码打包是否完成
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//数据编码打包是否完成
 	{
 		log_e(LOG_HOZON, "uper error");
 		return 0;
@@ -551,27 +611,28 @@ static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task)
 
 *备  注：
 ******************************************************/
-static int PP_rmtCfg_getRequest(PrvtProt_task_t *task)
+static int PP_rmtCfg_getRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
 	int msgdatalen;
 	int res;
 	/*header*/
-	PP_rmtCfg.pack.Header.ver.Byte = task->version;
-	PP_rmtCfg.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-	PP_rmtCfg.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-	memcpy(&PP_rmtCfg_Pack, &PP_rmtCfg.pack.Header, sizeof(PrvtProt_pack_Header_t));
+	rmtCfg->pack.Header.ver.Byte = task->version;
+	rmtCfg->pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+	rmtCfg->pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	memcpy(&PP_rmtCfg_Pack, &rmtCfg->pack.Header, sizeof(PrvtProt_pack_Header_t));
 	/*body*/
-	PP_rmtCfg.pack.DisBody.mID = PP_MID_GET_CFG_REQ;
-	PP_rmtCfg.pack.DisBody.eventId = PP_AID_RMTCFG + PP_MID_GET_CFG_REQ;
-	PP_rmtCfg.pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	PP_rmtCfg.pack.DisBody.expTime   = PrvtPro_getTimestamp();
-	PP_rmtCfg.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	rmtCfg->pack.DisBody.mID = PP_MID_GET_CFG_REQ;
+	rmtCfg->pack.DisBody.eventId = PP_AID_RMTCFG + PP_MID_GET_CFG_REQ;
+	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 
 	/*appdata*/
-	AppData_rmtCfg.getCfgReq.cfgVersion_ptr = AppData_rmtCfg.checkCfgResp.cfgVersion;
+	memcpy(AppData_rmtCfg.getReq.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersionlen);
+	AppData_rmtCfg.getReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_GET_REQ,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &PP_rmtCfg.pack.DisBody,&AppData_rmtCfg))//数据编码打包是否完成
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//数据编码打包是否完成
 	{
 		log_e(LOG_HOZON, "uper error");
 		return 0;
@@ -596,35 +657,35 @@ static int PP_rmtCfg_getRequest(PrvtProt_task_t *task)
 
 *备  注：
 ******************************************************/
-static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task)
+static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
 	int msgdatalen;
 	int res;
 	/*header*/
-	PP_rmtCfg.pack.Header.ver.Byte = task->version;
-	PP_rmtCfg.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-	PP_rmtCfg.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-	memcpy(&PP_rmtCfg_Pack, &PP_rmtCfg.pack.Header, sizeof(PrvtProt_pack_Header_t));
+	rmtCfg->pack.Header.ver.Byte = task->version;
+	rmtCfg->pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+	rmtCfg->pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	memcpy(&PP_rmtCfg_Pack, &rmtCfg->pack.Header, sizeof(PrvtProt_pack_Header_t));
 	/*body*/
-	PP_rmtCfg.pack.DisBody.mID = PP_MID_CFG_END;
-	PP_rmtCfg.pack.DisBody.eventId = PP_AID_RMTCFG + PP_MID_CFG_END;
-	PP_rmtCfg.pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	PP_rmtCfg.pack.DisBody.expTime   = PrvtPro_getTimestamp();
-	PP_rmtCfg.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	rmtCfg->pack.DisBody.mID = PP_MID_CFG_END;
+	rmtCfg->pack.DisBody.eventId = PP_AID_RMTCFG + PP_MID_CFG_END;
+	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 
 	/*appdata*/
-	AppData_rmtCfg.EndCfgReq.configSuccess = 0;
-	if(AppData_rmtCfg.getCfgResp.result == 1)
-	{
-		AppData_rmtCfg.EndCfgReq.configSuccess = 1;
-	}
-	AppData_rmtCfg.EndCfgReq.mcuSw_ptr = AppData_rmtCfg.EndCfgReq.mcuSw;
-	AppData_rmtCfg.EndCfgReq.mpuSw_ptr = AppData_rmtCfg.EndCfgReq.mpuSw;
-	AppData_rmtCfg.EndCfgReq.cfgVersion_ptr = AppData_rmtCfg.EndCfgReq.cfgVersion;
-	AppData_rmtCfg.EndCfgReq.configSw_ptr = AppData_rmtCfg.EndCfgReq.configSw;
+	AppData_rmtCfg.EndReq.configSuccess = rmtCfg->state.cfgsuccess;
+	memcpy(AppData_rmtCfg.EndReq.mcuSw,AppData_rmtCfg.checkReq.mcuSw,AppData_rmtCfg.checkReq.mcuSwlen);
+	AppData_rmtCfg.EndReq.mcuSwlen = AppData_rmtCfg.checkReq.mcuSwlen;
+	memcpy(AppData_rmtCfg.EndReq.mpuSw,AppData_rmtCfg.checkReq.mpuSw,AppData_rmtCfg.checkReq.mpuSwlen);
+	AppData_rmtCfg.EndReq.mpuSwlen = AppData_rmtCfg.checkReq.mpuSwlen;
+	memcpy(AppData_rmtCfg.EndReq.configSw,AppData_rmtCfg.checkReq.configSw,AppData_rmtCfg.checkReq.configSwlen);
+	AppData_rmtCfg.EndReq.configSwlen = AppData_rmtCfg.checkReq.configSwlen;
+	memcpy(AppData_rmtCfg.EndReq.cfgVersion,AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.checkReq.cfgVersionlen);
+	AppData_rmtCfg.EndReq.cfgVersionlen = AppData_rmtCfg.checkReq.cfgVersionlen;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_END_REQ,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &PP_rmtCfg.pack.DisBody,&AppData_rmtCfg))//数据编码打包是否完成
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//数据编码打包是否完成
 	{
 		log_e(LOG_HOZON, "uper error");
 		return 0;
@@ -649,26 +710,30 @@ static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task)
 
 *备  注：
 ******************************************************/
-static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task)
+static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
 	int msgdatalen;
 	int res;
 	/*header*/
-	PP_rmtCfg.pack.Header.ver.Byte = task->version;
-	PP_rmtCfg.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-	PP_rmtCfg.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-	memcpy(&PP_rmtCfg_Pack, &PP_rmtCfg.pack.Header, sizeof(PrvtProt_pack_Header_t));
+	rmtCfg->pack.Header.ver.Byte = task->version;
+	rmtCfg->pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+	rmtCfg->pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	memcpy(&PP_rmtCfg_Pack, &rmtCfg->pack.Header, sizeof(PrvtProt_pack_Header_t));
 	/*body*/
-	PP_rmtCfg.pack.DisBody.mID = PP_MID_CONN_CFG_RESP;
-	PP_rmtCfg.pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	PP_rmtCfg.pack.DisBody.expTime   = PrvtPro_getTimestamp();
-	PP_rmtCfg.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	rmtCfg->pack.DisBody.mID = PP_MID_CONN_CFG_RESP;
+	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 
 	/*appdata*/
-	AppData_rmtCfg.connCfgResp.configAccepted = 1;
+	AppData_rmtCfg.connResp.configAccepted = 0;
+	if(1 == rmtCfg->state.cfgAccept)
+	{
+		AppData_rmtCfg.connResp.configAccepted = 1;
+	}
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_CONN_RESP,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &PP_rmtCfg.pack.DisBody,&AppData_rmtCfg))//数据编码打包是否完成
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//数据编码打包是否完成
 	{
 		log_e(LOG_HOZON, "uper error");
 		return 0;
@@ -681,6 +746,51 @@ static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task)
 					18 + msgdatalen,1);
 	return res;
 }
+
+/******************************************************
+*函数名：PP_rmtCfg_ReadCfgResp
+
+*形  参：
+
+*返回值：
+
+*描  述： response of remote read config request
+
+*备  注：
+******************************************************/
+static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
+{
+	int msgdatalen;
+	int res;
+	/*header*/
+	rmtCfg->pack.Header.ver.Byte = task->version;
+	rmtCfg->pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+	rmtCfg->pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	memcpy(&PP_rmtCfg_Pack, &rmtCfg->pack.Header, sizeof(PrvtProt_pack_Header_t));
+	/*body*/
+	rmtCfg->pack.DisBody.mID = PP_MID_READ_CFG_RESP;
+	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+
+	/*appdata*/
+	AppData_rmtCfg.getResp.result = 1;
+
+	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_READ_RESP,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//数据编码打包是否完成
+	{
+		log_e(LOG_HOZON, "uper error");
+		return 0;
+	}
+
+	PP_rmtCfg_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
+	res = sockproxy_MsgSend(PP_rmtCfg_Pack.Header.sign,18 + msgdatalen,NULL);
+
+	protocol_dump(LOG_HOZON, "remote_config_conn_resp", PP_rmtCfg_Pack.Header.sign, \
+					18 + msgdatalen,1);
+	return res;
+}
+
 /******************************************************
 *函数名:PP_rmtCfg_SetCfgReq
 
@@ -698,5 +808,27 @@ void PP_rmtCfg_SetCfgReq(unsigned char req)
 	PP_rmtCfg.state.period = tm_get_time();
 }
 
+/******************************************************
+*函数名:PP_rmtCfg_strcmp
 
+*形  参：
+
+*返回值：
+
+*描  述：字符串比较
+
+*备  注：
+******************************************************/
+static int PP_rmtCfg_strcmp(unsigned char* str1,unsigned char* str2,int len)
+{
+	int i;
+	for(i = 0;i < len;i++)
+	{
+		if(str1[i] != str2[i])
+		{
+			return -1;
+		}
+	}
+	return 0;
+}
 

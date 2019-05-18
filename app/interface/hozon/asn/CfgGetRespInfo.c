@@ -34,7 +34,7 @@ memb_ficmCfg_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 static int
-memb_apn1Config_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+memb_apn1Cfg_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	size_t size;
 	
@@ -60,7 +60,7 @@ memb_apn1Config_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 static int
-memb_apn2Config_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+memb_apn2Cfg_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	size_t size;
 	
@@ -86,7 +86,7 @@ memb_apn2Config_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 static int
-memb_commonConfig_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+memb_commonCfg_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	size_t size;
 	
@@ -112,7 +112,7 @@ memb_commonConfig_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 static int
-memb_extendConfig_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+memb_extendCfg_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	size_t size;
 	
@@ -142,22 +142,22 @@ static asn_per_constraints_t asn_PER_type_ficmCfg_constr_3 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_type_apn1Config_constr_5 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_type_apn1Cfg_constr_5 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_type_apn2Config_constr_7 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_type_apn2Cfg_constr_7 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_type_commonConfig_constr_9 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_type_commonCfg_constr_9 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_type_extendConfig_constr_11 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_type_extendCfg_constr_11 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
@@ -167,22 +167,22 @@ static asn_per_constraints_t asn_PER_memb_ficmCfg_constr_3 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_apn1Config_constr_5 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_apn1Cfg_constr_5 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_apn2Config_constr_7 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_apn2Cfg_constr_7 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_commonConfig_constr_9 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_commonCfg_constr_9 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_extendConfig_constr_11 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_extendCfg_constr_11 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (SIZE(1..1)) */,
 	0, 0	/* No PER value map */
@@ -233,7 +233,7 @@ asn_TYPE_descriptor_t asn_DEF_ficmCfg_3 = {
 	&asn_SPC_ficmCfg_specs_3	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_apn1Config_5[] = {
+static asn_TYPE_member_t asn_MBR_apn1Cfg_5[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
@@ -244,19 +244,19 @@ static asn_TYPE_member_t asn_MBR_apn1Config_5[] = {
 		""
 		},
 };
-static const ber_tlv_tag_t asn_DEF_apn1Config_tags_5[] = {
+static const ber_tlv_tag_t asn_DEF_apn1Cfg_tags_5[] = {
 	(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
-static asn_SET_OF_specifics_t asn_SPC_apn1Config_specs_5 = {
-	sizeof(struct apn1Config),
-	offsetof(struct apn1Config, _asn_ctx),
+static asn_SET_OF_specifics_t asn_SPC_apn1Cfg_specs_5 = {
+	sizeof(struct apn1Cfg),
+	offsetof(struct apn1Cfg, _asn_ctx),
 	0,	/* XER encoding is XMLDelimitedItemList */
 };
 static /* Use -fall-defs-global to expose */
-asn_TYPE_descriptor_t asn_DEF_apn1Config_5 = {
-	"apn1Config",
-	"apn1Config",
+asn_TYPE_descriptor_t asn_DEF_apn1Cfg_5 = {
+	"apn1Cfg",
+	"apn1Cfg",
 	SEQUENCE_OF_free,
 	SEQUENCE_OF_print,
 	SEQUENCE_OF_constraint,
@@ -267,19 +267,19 @@ asn_TYPE_descriptor_t asn_DEF_apn1Config_5 = {
 	SEQUENCE_OF_decode_uper,
 	SEQUENCE_OF_encode_uper,
 	0,	/* Use generic outmost tag fetcher */
-	asn_DEF_apn1Config_tags_5,
-	sizeof(asn_DEF_apn1Config_tags_5)
-		/sizeof(asn_DEF_apn1Config_tags_5[0]) - 1, /* 1 */
-	asn_DEF_apn1Config_tags_5,	/* Same as above */
-	sizeof(asn_DEF_apn1Config_tags_5)
-		/sizeof(asn_DEF_apn1Config_tags_5[0]), /* 2 */
-	&asn_PER_type_apn1Config_constr_5,
-	asn_MBR_apn1Config_5,
+	asn_DEF_apn1Cfg_tags_5,
+	sizeof(asn_DEF_apn1Cfg_tags_5)
+		/sizeof(asn_DEF_apn1Cfg_tags_5[0]) - 1, /* 1 */
+	asn_DEF_apn1Cfg_tags_5,	/* Same as above */
+	sizeof(asn_DEF_apn1Cfg_tags_5)
+		/sizeof(asn_DEF_apn1Cfg_tags_5[0]), /* 2 */
+	&asn_PER_type_apn1Cfg_constr_5,
+	asn_MBR_apn1Cfg_5,
 	1,	/* Single element */
-	&asn_SPC_apn1Config_specs_5	/* Additional specs */
+	&asn_SPC_apn1Cfg_specs_5	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_apn2Config_7[] = {
+static asn_TYPE_member_t asn_MBR_apn2Cfg_7[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
@@ -290,19 +290,19 @@ static asn_TYPE_member_t asn_MBR_apn2Config_7[] = {
 		""
 		},
 };
-static const ber_tlv_tag_t asn_DEF_apn2Config_tags_7[] = {
+static const ber_tlv_tag_t asn_DEF_apn2Cfg_tags_7[] = {
 	(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
-static asn_SET_OF_specifics_t asn_SPC_apn2Config_specs_7 = {
-	sizeof(struct apn2Config),
-	offsetof(struct apn2Config, _asn_ctx),
+static asn_SET_OF_specifics_t asn_SPC_apn2Cfg_specs_7 = {
+	sizeof(struct apn2Cfg),
+	offsetof(struct apn2Cfg, _asn_ctx),
 	0,	/* XER encoding is XMLDelimitedItemList */
 };
 static /* Use -fall-defs-global to expose */
-asn_TYPE_descriptor_t asn_DEF_apn2Config_7 = {
-	"apn2Config",
-	"apn2Config",
+asn_TYPE_descriptor_t asn_DEF_apn2Cfg_7 = {
+	"apn2Cfg",
+	"apn2Cfg",
 	SEQUENCE_OF_free,
 	SEQUENCE_OF_print,
 	SEQUENCE_OF_constraint,
@@ -313,19 +313,19 @@ asn_TYPE_descriptor_t asn_DEF_apn2Config_7 = {
 	SEQUENCE_OF_decode_uper,
 	SEQUENCE_OF_encode_uper,
 	0,	/* Use generic outmost tag fetcher */
-	asn_DEF_apn2Config_tags_7,
-	sizeof(asn_DEF_apn2Config_tags_7)
-		/sizeof(asn_DEF_apn2Config_tags_7[0]) - 1, /* 1 */
-	asn_DEF_apn2Config_tags_7,	/* Same as above */
-	sizeof(asn_DEF_apn2Config_tags_7)
-		/sizeof(asn_DEF_apn2Config_tags_7[0]), /* 2 */
-	&asn_PER_type_apn2Config_constr_7,
-	asn_MBR_apn2Config_7,
+	asn_DEF_apn2Cfg_tags_7,
+	sizeof(asn_DEF_apn2Cfg_tags_7)
+		/sizeof(asn_DEF_apn2Cfg_tags_7[0]) - 1, /* 1 */
+	asn_DEF_apn2Cfg_tags_7,	/* Same as above */
+	sizeof(asn_DEF_apn2Cfg_tags_7)
+		/sizeof(asn_DEF_apn2Cfg_tags_7[0]), /* 2 */
+	&asn_PER_type_apn2Cfg_constr_7,
+	asn_MBR_apn2Cfg_7,
 	1,	/* Single element */
-	&asn_SPC_apn2Config_specs_7	/* Additional specs */
+	&asn_SPC_apn2Cfg_specs_7	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_commonConfig_9[] = {
+static asn_TYPE_member_t asn_MBR_commonCfg_9[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
@@ -336,19 +336,19 @@ static asn_TYPE_member_t asn_MBR_commonConfig_9[] = {
 		""
 		},
 };
-static const ber_tlv_tag_t asn_DEF_commonConfig_tags_9[] = {
+static const ber_tlv_tag_t asn_DEF_commonCfg_tags_9[] = {
 	(ASN_TAG_CLASS_CONTEXT | (4 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
-static asn_SET_OF_specifics_t asn_SPC_commonConfig_specs_9 = {
-	sizeof(struct commonConfig),
-	offsetof(struct commonConfig, _asn_ctx),
+static asn_SET_OF_specifics_t asn_SPC_commonCfg_specs_9 = {
+	sizeof(struct commonCfg),
+	offsetof(struct commonCfg, _asn_ctx),
 	0,	/* XER encoding is XMLDelimitedItemList */
 };
 static /* Use -fall-defs-global to expose */
-asn_TYPE_descriptor_t asn_DEF_commonConfig_9 = {
-	"commonConfig",
-	"commonConfig",
+asn_TYPE_descriptor_t asn_DEF_commonCfg_9 = {
+	"commonCfg",
+	"commonCfg",
 	SEQUENCE_OF_free,
 	SEQUENCE_OF_print,
 	SEQUENCE_OF_constraint,
@@ -359,19 +359,19 @@ asn_TYPE_descriptor_t asn_DEF_commonConfig_9 = {
 	SEQUENCE_OF_decode_uper,
 	SEQUENCE_OF_encode_uper,
 	0,	/* Use generic outmost tag fetcher */
-	asn_DEF_commonConfig_tags_9,
-	sizeof(asn_DEF_commonConfig_tags_9)
-		/sizeof(asn_DEF_commonConfig_tags_9[0]) - 1, /* 1 */
-	asn_DEF_commonConfig_tags_9,	/* Same as above */
-	sizeof(asn_DEF_commonConfig_tags_9)
-		/sizeof(asn_DEF_commonConfig_tags_9[0]), /* 2 */
-	&asn_PER_type_commonConfig_constr_9,
-	asn_MBR_commonConfig_9,
+	asn_DEF_commonCfg_tags_9,
+	sizeof(asn_DEF_commonCfg_tags_9)
+		/sizeof(asn_DEF_commonCfg_tags_9[0]) - 1, /* 1 */
+	asn_DEF_commonCfg_tags_9,	/* Same as above */
+	sizeof(asn_DEF_commonCfg_tags_9)
+		/sizeof(asn_DEF_commonCfg_tags_9[0]), /* 2 */
+	&asn_PER_type_commonCfg_constr_9,
+	asn_MBR_commonCfg_9,
 	1,	/* Single element */
-	&asn_SPC_commonConfig_specs_9	/* Additional specs */
+	&asn_SPC_commonCfg_specs_9	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_extendConfig_11[] = {
+static asn_TYPE_member_t asn_MBR_extendCfg_11[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
@@ -382,19 +382,19 @@ static asn_TYPE_member_t asn_MBR_extendConfig_11[] = {
 		""
 		},
 };
-static const ber_tlv_tag_t asn_DEF_extendConfig_tags_11[] = {
+static const ber_tlv_tag_t asn_DEF_extendCfg_tags_11[] = {
 	(ASN_TAG_CLASS_CONTEXT | (5 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
-static asn_SET_OF_specifics_t asn_SPC_extendConfig_specs_11 = {
-	sizeof(struct extendConfig),
-	offsetof(struct extendConfig, _asn_ctx),
+static asn_SET_OF_specifics_t asn_SPC_extendCfg_specs_11 = {
+	sizeof(struct extendCfg),
+	offsetof(struct extendCfg, _asn_ctx),
 	0,	/* XER encoding is XMLDelimitedItemList */
 };
 static /* Use -fall-defs-global to expose */
-asn_TYPE_descriptor_t asn_DEF_extendConfig_11 = {
-	"extendConfig",
-	"extendConfig",
+asn_TYPE_descriptor_t asn_DEF_extendCfg_11 = {
+	"extendCfg",
+	"extendCfg",
 	SEQUENCE_OF_free,
 	SEQUENCE_OF_print,
 	SEQUENCE_OF_constraint,
@@ -405,16 +405,16 @@ asn_TYPE_descriptor_t asn_DEF_extendConfig_11 = {
 	SEQUENCE_OF_decode_uper,
 	SEQUENCE_OF_encode_uper,
 	0,	/* Use generic outmost tag fetcher */
-	asn_DEF_extendConfig_tags_11,
-	sizeof(asn_DEF_extendConfig_tags_11)
-		/sizeof(asn_DEF_extendConfig_tags_11[0]) - 1, /* 1 */
-	asn_DEF_extendConfig_tags_11,	/* Same as above */
-	sizeof(asn_DEF_extendConfig_tags_11)
-		/sizeof(asn_DEF_extendConfig_tags_11[0]), /* 2 */
-	&asn_PER_type_extendConfig_constr_11,
-	asn_MBR_extendConfig_11,
+	asn_DEF_extendCfg_tags_11,
+	sizeof(asn_DEF_extendCfg_tags_11)
+		/sizeof(asn_DEF_extendCfg_tags_11[0]) - 1, /* 1 */
+	asn_DEF_extendCfg_tags_11,	/* Same as above */
+	sizeof(asn_DEF_extendCfg_tags_11)
+		/sizeof(asn_DEF_extendCfg_tags_11[0]), /* 2 */
+	&asn_PER_type_extendCfg_constr_11,
+	asn_MBR_extendCfg_11,
 	1,	/* Single element */
-	&asn_SPC_extendConfig_specs_11	/* Additional specs */
+	&asn_SPC_extendCfg_specs_11	/* Additional specs */
 };
 
 static asn_TYPE_member_t asn_MBR_CfgGetRespInfo_1[] = {
@@ -436,41 +436,41 @@ static asn_TYPE_member_t asn_MBR_CfgGetRespInfo_1[] = {
 		0,
 		"ficmCfg"
 		},
-	{ ATF_POINTER, 4, offsetof(struct CfgGetRespInfo, apn1Config),
+	{ ATF_POINTER, 4, offsetof(struct CfgGetRespInfo, apn1Cfg),
 		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
 		0,
-		&asn_DEF_apn1Config_5,
-		memb_apn1Config_constraint_1,
-		&asn_PER_memb_apn1Config_constr_5,
+		&asn_DEF_apn1Cfg_5,
+		memb_apn1Cfg_constraint_1,
+		&asn_PER_memb_apn1Cfg_constr_5,
 		0,
-		"apn1Config"
+		"apn1Cfg"
 		},
-	{ ATF_POINTER, 3, offsetof(struct CfgGetRespInfo, apn2Config),
+	{ ATF_POINTER, 3, offsetof(struct CfgGetRespInfo, apn2Cfg),
 		(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
 		0,
-		&asn_DEF_apn2Config_7,
-		memb_apn2Config_constraint_1,
-		&asn_PER_memb_apn2Config_constr_7,
+		&asn_DEF_apn2Cfg_7,
+		memb_apn2Cfg_constraint_1,
+		&asn_PER_memb_apn2Cfg_constr_7,
 		0,
-		"apn2Config"
+		"apn2Cfg"
 		},
-	{ ATF_POINTER, 2, offsetof(struct CfgGetRespInfo, commonConfig),
+	{ ATF_POINTER, 2, offsetof(struct CfgGetRespInfo, commonCfg),
 		(ASN_TAG_CLASS_CONTEXT | (4 << 2)),
 		0,
-		&asn_DEF_commonConfig_9,
-		memb_commonConfig_constraint_1,
-		&asn_PER_memb_commonConfig_constr_9,
+		&asn_DEF_commonCfg_9,
+		memb_commonCfg_constraint_1,
+		&asn_PER_memb_commonCfg_constr_9,
 		0,
-		"commonConfig"
+		"commonCfg"
 		},
-	{ ATF_POINTER, 1, offsetof(struct CfgGetRespInfo, extendConfig),
+	{ ATF_POINTER, 1, offsetof(struct CfgGetRespInfo, extendCfg),
 		(ASN_TAG_CLASS_CONTEXT | (5 << 2)),
 		0,
-		&asn_DEF_extendConfig_11,
-		memb_extendConfig_constraint_1,
-		&asn_PER_memb_extendConfig_constr_11,
+		&asn_DEF_extendCfg_11,
+		memb_extendCfg_constraint_1,
+		&asn_PER_memb_extendCfg_constr_11,
 		0,
-		"extendConfig"
+		"extendCfg"
 		},
 };
 static const int asn_MAP_CfgGetRespInfo_oms_1[] = { 1, 2, 3, 4, 5 };
@@ -480,10 +480,10 @@ static const ber_tlv_tag_t asn_DEF_CfgGetRespInfo_tags_1[] = {
 static const asn_TYPE_tag2member_t asn_MAP_CfgGetRespInfo_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* result */
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* ficmCfg */
-    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* apn1Config */
-    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* apn2Config */
-    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* commonConfig */
-    { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 } /* extendConfig */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* apn1Cfg */
+    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* apn2Cfg */
+    { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* commonCfg */
+    { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 } /* extendCfg */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_CfgGetRespInfo_specs_1 = {
 	sizeof(struct CfgGetRespInfo),

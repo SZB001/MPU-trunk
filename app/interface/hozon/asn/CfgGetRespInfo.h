@@ -37,30 +37,30 @@ typedef struct CfgGetRespInfo {
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
 	} *ficmCfg;
-	struct apn1Config {
+	struct apn1Cfg {
 		A_SEQUENCE_OF(struct APN1ConfigSettings) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
-	} *apn1Config;
-	struct apn2Config {
+	} *apn1Cfg;
+	struct apn2Cfg {
 		A_SEQUENCE_OF(struct APN2ConfigSettings) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
-	} *apn2Config;
-	struct commonConfig {
+	} *apn2Cfg;
+	struct commonCfg {
 		A_SEQUENCE_OF(struct CommonConfigSettings) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
-	} *commonConfig;
-	struct extendConfig {
+	} *commonCfg;
+	struct extendCfg {
 		A_SEQUENCE_OF(struct ExtendConfigSettings) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
-	} *extendConfig;
+	} *extendCfg;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
