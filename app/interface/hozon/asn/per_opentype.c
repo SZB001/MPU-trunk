@@ -179,7 +179,7 @@ uper_open_type_get_complex(asn_codec_ctx_t *ctx, asn_TYPE_descriptor_t *td,
 		if(padding > 7) {
 			ASN_DEBUG("Too large padding %d in open type",
 				(int)padding);
-			padding %= 8;
+			//padding %= 8;
 			rv.code = RC_FAIL;
 			UPDRESTOREPD;
 			return rv;

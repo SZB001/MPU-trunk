@@ -20,7 +20,7 @@ OFLAGS += -lrds -ldev_rw -lhash -ltimer -llog -ldir -lfile -lshm -lmd5 -lrb -lip
 # 3rd party module
 ifeq ($(PLATFORM), EC20)
 OFLAGS += -ldsi_netctrl -ldsutils -lqcmap_client  -lqmi_cci -lqmiservices -lqmi_common_so -lqmi -lmcm
-OFLAGS += -L $(LIB_PATH_R) -lql_common_api
+OFLAGS += -L $(LIB_PATH_R) -lql_common_api	#-ltboxsock -lssl -lcrypto
 endif
 
 # OS module

@@ -115,7 +115,7 @@ typedef struct
 	uint8_t tokenlen;
 	uint8_t userIDlen;
 	uint8_t ficmConfigValid;
-}App_rmtCfg_FICM_t;
+}__attribute__((packed))  App_rmtCfg_FICM_t;
 
 typedef struct
 {
@@ -132,7 +132,7 @@ typedef struct
 	uint8_t tspSmslen;
 	uint8_t tspPortlen;
 	uint8_t apn1ConfigValid;
-}App_rmtCfg_APN1_t;
+}__attribute__((packed)) App_rmtCfg_APN1_t;
 
 typedef struct
 {
@@ -143,7 +143,7 @@ typedef struct
 	uint8_t apn2Userlen;
 	uint8_t apn2Passlen;
 	uint8_t apn2ConfigValid;
-}App_rmtCfg_APN2_t;
+}__attribute__((packed)) App_rmtCfg_APN2_t;
 
 typedef struct
 {
@@ -161,7 +161,7 @@ typedef struct
 	int rChargeEnabled;
 	int btKeyEntryEnabled;
 	uint8_t commonConfigValid;
-}App_rmtCfg_COMMON_t;
+}__attribute__((packed)) App_rmtCfg_COMMON_t;
 
 typedef struct
 {
@@ -172,7 +172,7 @@ typedef struct
 	uint8_t bcallNOlen;
 	uint8_t ccNOlen;
 	uint8_t extendConfigValid;
-}App_rmtCfg_EXTEND_t;
+}__attribute__((packed)) App_rmtCfg_EXTEND_t;
 
 typedef struct
 {
@@ -194,10 +194,6 @@ typedef struct
 	uint8_t mpuSwlen;
 	uint8_t configSwlen;
 	uint8_t cfgVersionlen;
-	//uint8_t *mcuSw_ptr;
-	//uint8_t *mpuSw_ptr;
-	//uint8_t *configSw_ptr;
-	//uint8_t *cfgVersion_ptr;
 }App_rmtCfg_EndCfgReq_t;
 
 typedef struct
@@ -208,6 +204,7 @@ typedef struct
 typedef struct
 {
 	long SettingId[PP_RMTCFG_SETID_MAX];
+	uint8_t SettingIdlen;
 }App_rmtCfg_CfgReadReq_t;
 
 typedef struct
@@ -220,6 +217,7 @@ typedef struct
 	App_rmtCfg_APN2_t 	APN2;
 	App_rmtCfg_COMMON_t COMMON;
 	App_rmtCfg_EXTEND_t EXTEND;
+	uint8_t readreq[PP_RMTCFG_SETID_MAX];
 }App_rmtCfg_CfgReadResp_t;
 
 typedef struct

@@ -35,6 +35,7 @@ description£º include the header file
 #include "CfgConnRespInfo.h"
 #include "CfgReadReqInfo.h"
 #include "CfgReadRespInfo.h"
+#include "RmtCtrlReqInfo.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
 
@@ -45,6 +46,7 @@ description£º include the header file
 #include "PrvtProt_cfg.h"
 #include "PrvtProt_xcall.h"
 #include "PrvtProt_remoteConfig.h"
+#include "PrvtProt_rmtCtrl.h"
 #include "PrvtProt.h"
 #include "PrvtProt_EcDc.h"
 
@@ -67,6 +69,7 @@ static asn_TYPE_descriptor_t *pduType_Cfg_end_req = &asn_DEF_CfgEndReqInfo;
 static asn_TYPE_descriptor_t *pduType_Cfg_conn_resp = &asn_DEF_CfgConnRespInfo;
 static asn_TYPE_descriptor_t *pduType_Cfg_read_req = &asn_DEF_CfgReadReqInfo;
 static asn_TYPE_descriptor_t *pduType_Cfg_read_resp = &asn_DEF_CfgReadRespInfo;
+static asn_TYPE_descriptor_t *pduType_Ctrl_Req = &asn_DEF_RmtCtrlReqInfo;
 static uint8_t tboxAppdata[PP_ECDC_DATA_LEN];
 static int tboxAppdataLen;
 static uint8_t tboxDisBodydata[PP_ECDC_DATA_LEN];
@@ -304,32 +307,41 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 
 			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 			CfgReadResp.result = rmtCfgReadResp_ptr->ReadResp.result;
+			log_i(LOG_HOZON, "CfgReadResp.result = %d\n",CfgReadResp.result);
 			CfgReadResp.cfgVersion.buf = rmtCfgReadResp_ptr->checkReq.cfgVersion;
 			CfgReadResp.cfgVersion.size = rmtCfgReadResp_ptr->checkReq.cfgVersionlen;
+			log_i(LOG_HOZON, "CfgReadResp.cfgVersion.buf = %s\n",CfgReadResp.cfgVersion.buf);
+			log_i(LOG_HOZON, "CfgReadResp.cfgVersion.size = %d\n",CfgReadResp.cfgVersion.size);
 			if(1 == rmtCfgReadResp_ptr->ReadResp.result)
 			{
-				if(1 == rmtCfgReadResp_ptr->ReadResp.FICM.ficmConfigValid)
+				if((rmtCfgReadResp_ptr->ReadResp.readreq[0] == 1) && \
+							(1 == rmtCfgReadResp_ptr->ReadResp.FICM.ficmConfigValid))
 				{
 					FICMConfigSet_t FICMCfgSet;
 					FICMConfigSet_t *FICMCfgSet_ptr = &FICMCfgSet;
-					struct ficmConfig ficmConfig;
+					struct ficmConfig ficmCfg;
 
 					memset(&FICMCfgSet,0 , sizeof(FICMConfigSet_t));
 					FICMCfgSet.token.buf = rmtCfgReadResp_ptr->ReadResp.FICM.token;
 					FICMCfgSet.token.size = rmtCfgReadResp_ptr->ReadResp.FICM.tokenlen;
 					FICMCfgSet.userID.buf =  rmtCfgReadResp_ptr->ReadResp.FICM.userID;
 					FICMCfgSet.userID.size = rmtCfgReadResp_ptr->ReadResp.FICM.userIDlen;
-					ficmConfig.list.array = &FICMCfgSet_ptr;
-					ficmConfig.list.count = 1;
-					ficmConfig.list.size = 1;
-					CfgReadResp.ficmConfig = &ficmConfig;
+					log_i(LOG_HOZON, "FICMCfgSet.token.buf = %s\n",FICMCfgSet.token.buf);
+					log_i(LOG_HOZON, "FICMCfgSet.token.size = %d\n",FICMCfgSet.token.size);
+					log_i(LOG_HOZON, "FICMCfgSet.userID.buf = %s\n",FICMCfgSet.userID.buf);
+					log_i(LOG_HOZON, "FICMCfgSet.userID.size = %d\n",FICMCfgSet.userID.size);
+					ficmCfg.list.array = &FICMCfgSet_ptr;
+					ficmCfg.list.count = 1;
+					ficmCfg.list.size = 0;
+					CfgReadResp.ficmConfig = &ficmCfg;
 				}
 				else
 				{
 					CfgReadResp.ficmConfig  = NULL;
 				}
 
-				if(1 == rmtCfgReadResp_ptr->ReadResp.APN1.apn1ConfigValid)
+				if((rmtCfgReadResp_ptr->ReadResp.readreq[1] == 1) && \
+						(1 == rmtCfgReadResp_ptr->ReadResp.APN1.apn1ConfigValid))
 				{
 					APN1ConfigSet_t APN1ConfigSet;
 					APN1ConfigSet_t *APN1ConfigSet_ptr = &APN1ConfigSet;
@@ -338,16 +350,28 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					memset(&APN1ConfigSet,0 , sizeof(APN1ConfigSet_t));
 					APN1ConfigSet.tspAddress.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspAddr;
 					APN1ConfigSet.tspAddress.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspAddrlen;
+					log_i(LOG_HOZON, "APN1ConfigSet.tspAddress.buf = %s\n",APN1ConfigSet.tspAddress.buf);
+					log_i(LOG_HOZON, "APN1ConfigSet.tspAddress.size = %d\n",APN1ConfigSet.tspAddress.size);
 					APN1ConfigSet.tspIp.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspIP;
 					APN1ConfigSet.tspIp.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspIPlen;
+					log_i(LOG_HOZON, "APN1ConfigSet.tspIp.buf = %s\n",APN1ConfigSet.tspIp.buf);
+					log_i(LOG_HOZON, "APN1ConfigSet.tspIp.size = %d\n",APN1ConfigSet.tspIp.size);
 					APN1ConfigSet.tspPass.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspPass;
 					APN1ConfigSet.tspPass.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspPasslen;
+					log_i(LOG_HOZON, "APN1ConfigSet.tspPass.buf = %s\n",APN1ConfigSet.tspPass.buf);
+					log_i(LOG_HOZON, "APN1ConfigSet.tspPass.size = %d\n",APN1ConfigSet.tspPass.size);
 					APN1ConfigSet.tspPort.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspPort;
 					APN1ConfigSet.tspPort.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspPortlen;
+					log_i(LOG_HOZON, "APN1ConfigSet.tspPort.buf = %s\n",APN1ConfigSet.tspPort.buf);
+					log_i(LOG_HOZON, "APN1ConfigSet.tspPort.size = %d\n",APN1ConfigSet.tspPort.size);
 					APN1ConfigSet.tspSms.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspSms;
 					APN1ConfigSet.tspSms.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspSmslen;
+					log_i(LOG_HOZON, "APN1ConfigSet.tspSms.buf = %s\n",APN1ConfigSet.tspSms.buf);
+					log_i(LOG_HOZON, "APN1ConfigSet.tspSms.size = %d\n",APN1ConfigSet.tspSms.size);
 					APN1ConfigSet.tspUser.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspUser;
 					APN1ConfigSet.tspUser.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspUserlen;
+					log_i(LOG_HOZON, "APN1ConfigSet.tspUser.buf = %s\n",APN1ConfigSet.tspUser.buf);
+					log_i(LOG_HOZON, "APN1ConfigSet.tspUser.size = %d\n",APN1ConfigSet.tspUser.size);
 					apn1Cfg.list.array = &APN1ConfigSet_ptr;
 					apn1Cfg.list.count = 1;
 					apn1Cfg.list.size = 1;
@@ -358,7 +382,8 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					CfgReadResp.apn1Config = NULL;
 				}
 
-				if(1 == rmtCfgReadResp_ptr->ReadResp.APN2.apn2ConfigValid)
+				if((rmtCfgReadResp_ptr->ReadResp.readreq[2] == 1) && \
+						(1 == rmtCfgReadResp_ptr->ReadResp.APN2.apn2ConfigValid))
 				{
 					APN2ConfigSet_t APN2ConfigSet;
 					APN2ConfigSet_t *APN2ConfigSet_ptr = &APN2ConfigSet;
@@ -367,10 +392,16 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					memset(&APN2ConfigSet,0 , sizeof(APN2ConfigSet_t));
 					APN2ConfigSet.tspAddress.buf = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Address;
 					APN2ConfigSet.tspAddress.size = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Addresslen;
+					log_i(LOG_HOZON, "APN2ConfigSet.tspAddress.buf = %s\n",APN2ConfigSet.tspAddress.buf);
+					log_i(LOG_HOZON, "APN2ConfigSet.tspAddress.size = %d\n",APN2ConfigSet.tspAddress.size);
 					APN2ConfigSet.tspPass.buf = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Pass;
 					APN2ConfigSet.tspPass.size = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Passlen;
+					log_i(LOG_HOZON, "APN2ConfigSet.tspPass.buf = %s\n",APN2ConfigSet.tspPass.buf);
+					log_i(LOG_HOZON, "APN2ConfigSet.tspPass.size = %d\n",APN2ConfigSet.tspPass.size);
 					APN2ConfigSet.tspUser.buf = rmtCfgReadResp_ptr->ReadResp.APN2.apn2User;
 					APN2ConfigSet.tspUser.size = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Userlen;
+					log_i(LOG_HOZON, "APN2ConfigSet.tspUser.buf = %s\n",APN2ConfigSet.tspUser.buf);
+					log_i(LOG_HOZON, "APN2ConfigSet.tspUser.size = %d\n",APN2ConfigSet.tspUser.size);
 					apn2Cfg.list.array = &APN2ConfigSet_ptr;
 					apn2Cfg.list.count = 1;
 					apn2Cfg.list.size = 1;
@@ -382,7 +413,8 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 
 				}
 
-				if(1 == rmtCfgReadResp_ptr->ReadResp.COMMON.commonConfigValid)
+				if((rmtCfgReadResp_ptr->ReadResp.readreq[3] == 1) && \
+						(1 == rmtCfgReadResp_ptr->ReadResp.COMMON.commonConfigValid))
 				{
 					CommonConfigSet_t CommonConfigSet;
 					CommonConfigSet_t *CommonConfigSet_ptr = &CommonConfigSet;
@@ -390,18 +422,32 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 
 					memset(&CommonConfigSet,0 , sizeof(CommonConfigSet_t));
 					CommonConfigSet.actived 		= rmtCfgReadResp_ptr->ReadResp.COMMON.actived;
+					log_i(LOG_HOZON, "CommonConfigSet.actived = %d\n",CommonConfigSet.actived);
 					CommonConfigSet.rcEnabled 		= rmtCfgReadResp_ptr->ReadResp.COMMON.rcEnabled;
+					log_i(LOG_HOZON, "CommonConfigSet.rcEnabled = %d\n",CommonConfigSet.rcEnabled);
 					CommonConfigSet.svtEnabled 		= rmtCfgReadResp_ptr->ReadResp.COMMON.svtEnabled;
+					log_i(LOG_HOZON, "CommonConfigSet.svtEnabled = %d\n",CommonConfigSet.svtEnabled);
 					CommonConfigSet.vsEnabled 		= rmtCfgReadResp_ptr->ReadResp.COMMON.vsEnabled;
+					log_i(LOG_HOZON, "CommonConfigSet.vsEnabled = %d\n",CommonConfigSet.vsEnabled);
 					CommonConfigSet.iCallEnabled 	= rmtCfgReadResp_ptr->ReadResp.COMMON.iCallEnabled;
+					log_i(LOG_HOZON, "CommonConfigSet.iCallEnabled = %d\n",CommonConfigSet.iCallEnabled);
 					CommonConfigSet.bCallEnabled 	= rmtCfgReadResp_ptr->ReadResp.COMMON.bCallEnabled;
+					log_i(LOG_HOZON, "CommonConfigSet.bCallEnabled = %d\n",CommonConfigSet.bCallEnabled);
 					CommonConfigSet.eCallEnabled 	= rmtCfgReadResp_ptr->ReadResp.COMMON.eCallEnabled;
+					log_i(LOG_HOZON, "CommonConfigSet.eCallEnabled = %d\n",CommonConfigSet.eCallEnabled);
 					CommonConfigSet.dcEnabled 	 	= rmtCfgReadResp_ptr->ReadResp.COMMON.dcEnabled;
+					log_i(LOG_HOZON, "CommonConfigSet.dcEnabled = %d\n",CommonConfigSet.dcEnabled);
 					CommonConfigSet.dtcEnabled 	 	= rmtCfgReadResp_ptr->ReadResp.COMMON.dtcEnabled;
+					log_i(LOG_HOZON, "CommonConfigSet.dtcEnabled = %d\n",CommonConfigSet.dtcEnabled);
 					CommonConfigSet.journeysEnabled = rmtCfgReadResp_ptr->ReadResp.COMMON.journeysEnabled;
+					log_i(LOG_HOZON, "CommonConfigSet.journeysEnabled = %d\n",CommonConfigSet.journeysEnabled);
 					CommonConfigSet.onlineInfEnabled = rmtCfgReadResp_ptr->ReadResp.COMMON.onlineInfEnabled;
+					log_i(LOG_HOZON, "CommonConfigSet.onlineInfEnabled = %d\n",CommonConfigSet.onlineInfEnabled);
 					CommonConfigSet.rChargeEnabled 	= rmtCfgReadResp_ptr->ReadResp.COMMON.rChargeEnabled;
+					log_i(LOG_HOZON, "CommonConfigSet.rChargeEnabled = %d\n",CommonConfigSet.rChargeEnabled);
 					CommonConfigSet.btKeyEntryEnabled = rmtCfgReadResp_ptr->ReadResp.COMMON.btKeyEntryEnabled;
+					log_i(LOG_HOZON, "CommonConfigSet.btKeyEntryEnabled = %d\n",CommonConfigSet.btKeyEntryEnabled);
+
 					commonCfg.list.array = &CommonConfigSet_ptr;
 					commonCfg.list.count =1;
 					commonCfg.list.size = 1;
@@ -412,7 +458,8 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					CfgReadResp.commonConfig = NULL;
 				}
 
-				if(1 == rmtCfgReadResp_ptr->ReadResp.EXTEND.extendConfigValid)
+				if((rmtCfgReadResp_ptr->ReadResp.readreq[4] == 1) && \
+						(1 == rmtCfgReadResp_ptr->ReadResp.EXTEND.extendConfigValid))
 				{
 					ExtendConfigSet_t ExtendConfigSet;
 					ExtendConfigSet_t *ExtendConfigSet_ptr = &ExtendConfigSet;
@@ -421,10 +468,16 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					memset(&ExtendConfigSet,0 , sizeof(ExtendConfigSet_t));
 					ExtendConfigSet.ecallNO.buf = rmtCfgReadResp_ptr->ReadResp.EXTEND.ecallNO;
 					ExtendConfigSet.ecallNO.size = rmtCfgReadResp_ptr->ReadResp.EXTEND.ecallNOlen;
+					log_i(LOG_HOZON, "ExtendConfigSet.ecallNO.buf = %s\n",ExtendConfigSet.ecallNO.buf);
+					log_i(LOG_HOZON, "ExtendConfigSet.ecallNO.size = %d\n",ExtendConfigSet.ecallNO.size);
 					ExtendConfigSet.bcallNO.buf = rmtCfgReadResp_ptr->ReadResp.EXTEND.bcallNO;
 					ExtendConfigSet.bcallNO.size = rmtCfgReadResp_ptr->ReadResp.EXTEND.bcallNOlen;
+					log_i(LOG_HOZON, "ExtendConfigSet.bcallNO.buf = %s\n",ExtendConfigSet.bcallNO.buf);
+					log_i(LOG_HOZON, "ExtendConfigSet.bcallNO.size = %d\n",ExtendConfigSet.bcallNO.size);
 					ExtendConfigSet.icallNO.buf = rmtCfgReadResp_ptr->ReadResp.EXTEND.ccNO;
 					ExtendConfigSet.icallNO.size = rmtCfgReadResp_ptr->ReadResp.EXTEND.ccNOlen;
+					log_i(LOG_HOZON, "ExtendConfigSet.icallNO.buf = %s\n",ExtendConfigSet.icallNO.buf);
+					log_i(LOG_HOZON, "ExtendConfigSet.icallNO.size = %d\n",ExtendConfigSet.icallNO.size);
 					extendCfg.list.array = &ExtendConfigSet_ptr;
 					extendCfg.list.count =1;
 					extendCfg.list.size = 1;
@@ -447,7 +500,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			ec = uper_encode(pduType_Cfg_read_resp,(void *) &CfgReadResp,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
-				log_e(LOG_HOZON,"encode:appdata Cfg_conn_req fail\n");
+				log_e(LOG_HOZON,"encode:appdata Cfg_read_resp fail\n");
 				return -1;
 			}
 		}
@@ -744,6 +797,12 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						log_i(LOG_HOZON, "getCfgResp.tspAddr = %s\n",app_rmtCfg_ptr->getResp.APN1.tspAddr);
 						log_i(LOG_HOZON, "getCfgResp.tspAddrlen = %d\n",app_rmtCfg_ptr->getResp.APN1.tspAddrlen);
 
+						memcpy(app_rmtCfg_ptr->getResp.APN1.tspUser,(**(cfggetResp.apn1Cfg->list.array)).tspUser.buf, \
+																	(**(cfggetResp.apn1Cfg->list.array)).tspUser.size);
+						app_rmtCfg_ptr->getResp.APN1.tspUserlen = (**(cfggetResp.apn1Cfg->list.array)).tspUser.size;
+						log_i(LOG_HOZON, "getCfgResp.tspUser = %s\n",app_rmtCfg_ptr->getResp.APN1.tspUser);
+						log_i(LOG_HOZON, "getCfgResp.tspUserlen = %d\n",app_rmtCfg_ptr->getResp.APN1.tspUserlen);
+
 						memcpy(app_rmtCfg_ptr->getResp.APN1.tspPass,(**(cfggetResp.apn1Cfg->list.array)).tspPass.buf, \
 															(**(cfggetResp.apn1Cfg->list.array)).tspPass.size);
 						app_rmtCfg_ptr->getResp.APN1.tspPasslen = (**(cfggetResp.apn1Cfg->list.array)).tspPass.size;
@@ -859,13 +918,43 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						return -1;
 					}
 
+					memset(&(app_rmtCfg_ptr->ReadReq),0,sizeof(App_rmtCfg_CfgReadReq_t));
 					if(DecodeCRR.settingIds.list.count < PP_RMTCFG_SETID_MAX)
 					{
 						for(i = 0;i < DecodeCRR.settingIds.list.count;i++)
 						{
 							app_rmtCfg_ptr->ReadReq.SettingId[i] = DecodeCRR.settingIds.list.array[i]->id;
+							log_i(LOG_HOZON, "ReadReq.SettingId = %d\n",app_rmtCfg_ptr->ReadReq.SettingId[i]);
 						}
+						app_rmtCfg_ptr->ReadReq.SettingIdlen = DecodeCRR.settingIds.list.count;
+						log_i(LOG_HOZON, "ReadReq.SettingIdlen = %d\n",app_rmtCfg_ptr->ReadReq.SettingIdlen);
 					}
+				}
+			}
+			break;
+			case PP_AID_RMTCTRL:
+			{
+				PrvtProt_App_rmtCtrl_t *app_rmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t*)appData;
+				if(PP_MID_CHECK_CFG_RESP == MID)//check cfg resp
+				{
+					log_i(LOG_HOZON, "remote control check req\n");
+					RmtCtrlReqInfo_t RmtCtrlReq;
+					RmtCtrlReqInfo_t *RmtCtrlReq_ptr = &RmtCtrlReq;
+					memset(&RmtCtrlReq,0 , sizeof(RmtCtrlReqInfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_Ctrl_Req,(void *) &RmtCtrlReq_ptr, \
+									 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_e(LOG_HOZON,  "Could not decode remote control req application data Frame\n");
+						return -1;
+					}
+
+					app_rmtCtrl_ptr->CtrlReq.rvcReqType = RmtCtrlReq.rvcReqType;
+					memcpy(app_rmtCtrl_ptr->CtrlReq.rvcReqParams,RmtCtrlReq.rvcReqParams->buf, \
+																RmtCtrlReq.rvcReqParams->size);
+					app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen = RmtCtrlReq.rvcReqParams->size;
+					log_i(LOG_HOZON, "RmtCtrlReq.rvcReqType = %d\n",RmtCtrlReq_ptr->rvcReqType);
+					log_i(LOG_HOZON, "RmtCtrlReq.rvcReqParams = %s\n",app_rmtCtrl_ptr->CtrlReq.rvcReqParams);
 				}
 			}
 			break;

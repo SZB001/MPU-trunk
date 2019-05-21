@@ -542,6 +542,8 @@ void PP_xcall_SetEcallReq(unsigned char req)
 	PP_xcall[PP_ECALL].state.req = req;
 }
 
+
+#if 0
 /******************************************************
 *º¯ÊýÃû£ºPP_xcall_SetEcallResp
 
@@ -557,5 +559,5 @@ void PP_xcall_SetEcallResp(unsigned char resp)
 {
 	PP_xcall[PP_ECALL].state.resp = resp;
 }
-
+#endif
 

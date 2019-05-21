@@ -187,7 +187,7 @@ static int PP_shell_setEcallResp(int argc, const char **argv)
 
 	sscanf(argv[0], "%u", &EcallResp);
 	log_o(LOG_HOZON, "EcallReq = %d",EcallResp);
-	PP_xcall_SetEcallResp((uint8_t)EcallResp);
+	//PP_xcall_SetEcallResp((uint8_t)EcallResp);
 	PrvtPro_SetcallCCReq((uint8_t)EcallResp);
     sleep(1);
     return 0;

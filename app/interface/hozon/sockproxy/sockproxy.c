@@ -28,6 +28,13 @@ description： include the header file
 #include "sockproxy_data.h"
 #include "sockproxy.h"
 
+
+//#include <openssl/pem.h>
+//#include <openssl/bio.h>
+//#include <openssl/evp.h>
+//#include <ctype.h>
+//#include "tboxsock.h"
+
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -46,8 +53,8 @@ description： function declaration
 
 /*Static function declaration*/
 static void *sockproxy_main(void);
-static int sockproxy_do_checksock(sockproxy_stat_t *state);
-static int sockproxy_do_receive(sockproxy_stat_t *state);
+static int 	sockproxy_do_checksock(sockproxy_stat_t *state);
+static int 	sockproxy_do_receive(sockproxy_stat_t *state);
 static void sockproxy_gbMakeupMsg(uint8_t *data,int len);
 static void sockproxy_privMakeupMsg(uint8_t *data,int len);
 
@@ -88,7 +95,8 @@ int sockproxy_init(INIT_PHASE phase)
         break;
         case INIT_PHASE_OUTSIDE:
 		{
-			
+			/*init SSL*/
+			//HzTboxInit();
 		}
         break;
     }
@@ -359,7 +367,7 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 			if((res > 0) && (res != len))//实际发送出去的数据跟需要发送的数据不一致
 			{
 				res = 0;
-			}	
+			}
 		}
 		else
 		{

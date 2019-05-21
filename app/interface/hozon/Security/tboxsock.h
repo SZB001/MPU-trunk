@@ -12,8 +12,8 @@
  * chenlei           Jan /21/2019         Initial creation
  *
  =================================================================================================*/
-#ifndef _INC_H_
-#define _INC_H_
+#ifndef _TBOXSOCK_H_
+#define _TBOXSOCK_H_
 
 SSL_CTX   *pctx;
 

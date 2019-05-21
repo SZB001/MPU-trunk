@@ -93,6 +93,6 @@ description£º function External declaration
 extern void PP_xcall_init(void);
 extern int PP_xcall_mainfunction(void *task);
 extern void PP_xcall_SetEcallReq(unsigned char req);
-extern void PP_xcall_SetEcallResp(unsigned char resp);
+//extern void PP_rmtCtrl_SetEcallResp(unsigned char resp);
 
 #endif 

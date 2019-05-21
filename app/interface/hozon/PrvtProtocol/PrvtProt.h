@@ -48,6 +48,13 @@ description£º macro definitions
 #define PP_MID_CONN_CFG_RESP 	8//conn config response
 #define PP_MID_CFG_END 	9//end config req
 
+/* remote ctrl */
+//AID
+#define PP_AID_RMTCTRL	 	110//
+//MID
+#define PP_MID_RMTCTRL_REQ 	1//remote ctrl request
+//#define PP_MID_RMTCTRL_RESP 	2//remote ctrl response
+
 /***********ºêº¯Êý***********/
 
 /*******************************************************

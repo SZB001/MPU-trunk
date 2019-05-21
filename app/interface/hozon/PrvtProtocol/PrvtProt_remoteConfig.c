@@ -134,7 +134,8 @@ static int PP_rmtCfg_getRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg);
 static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg);
 static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg);
-static int PP_rmtCfg_strcmp(unsigned char* str1,unsigned char* str2,int len);
+//static int PP_rmtCfg_strcmp(unsigned char* str1,unsigned char* str2,int len);
+static void PP_rmtCfg_reset(PrvtProt_rmtCfg_t *rmtCfg);
 /******************************************************
 description： function code
 ******************************************************/
@@ -180,11 +181,6 @@ void PP_rmtCfg_init(void)
 	AppData_rmtCfg.checkReq.configSwlen = strlen("00000");
 	memcpy(AppData_rmtCfg.checkReq.cfgVersion,"00000000000000000000000000000001",strlen("00000000000000000000000000000001"));
 	AppData_rmtCfg.checkReq.cfgVersionlen = strlen("00000000000000000000000000000001");
-
-
-
-
-
 }
 
 /******************************************************
@@ -226,6 +222,8 @@ static int PP_rmtCfg_do_checksock(PrvtProt_task_t *task)
 
 		return 0;
 	}
+	//释放资源
+	PP_rmtCfg_reset(&PP_rmtCfg);
 	return -1;
 }
 
@@ -309,8 +307,8 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 		{
 			if(PP_rmtCfg.state.waitSt == PP_RMTCFG_CHECK_WAIT_RESP)//接收到回复
 			{
-				if((1 == AppData_rmtCfg.checkResp.needUpdate) && \
-						(PP_rmtCfg_strcmp(AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkReq.cfgVersion,32)!=0))
+				if((1 == AppData_rmtCfg.checkResp.needUpdate) \
+						/*&& (PP_rmtCfg_strcmp(AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkReq.cfgVersion,32)!=0)*/)
 				{
 					rmtCfg->state.needUpdata = 1;
 				}
@@ -350,8 +348,14 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 			{}
 		}
 		break;
-		case PP_MID_READ_CFG_REQ://TAP 向 TCU 发送读配置请求
+		case PP_MID_READ_CFG_REQ://TAP 向 TCU 读配置请求
 		{
+			memset(AppData_rmtCfg.ReadResp.readreq,0,PP_RMTCFG_SETID_MAX);
+			for(i = 0; i < AppData_rmtCfg.ReadReq.SettingIdlen;i++)
+			{
+				AppData_rmtCfg.ReadResp.readreq[AppData_rmtCfg.ReadReq.SettingId[i] -1] = 1;
+			}
+
 			res = PP_rmtCfg_ReadCfgResp(task,rmtCfg);
 			if(res < 0)
 			{
@@ -410,7 +414,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 	{
 		case PP_RMTCFG_CFG_IDLE:
 		{
-			if((1 == rmtCfg->state.req) && (rmtCfg->state.reqCnt < 3))
+			if((1 == rmtCfg->state.req) && (rmtCfg->state.reqCnt < 10))
 			{
 				if((tm_get_time() - rmtCfg->state.period) >= RMTCFG_DELAY_TIME)
 				{
@@ -418,7 +422,6 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 					rmtCfg->state.CfgSt = PP_CHECK_CFG_REQ;
 					rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
 					rmtCfg->state.reqCnt++;
-					//rmtCfg->state.req = 0;
 				}
 			}
 			else
@@ -459,7 +462,6 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 					 log_e(LOG_HOZON, "check cfg response time out");
 					 rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
 					 rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
-					 //rmtCfg->state.req = 1;
 					 rmtCfg->state.period = tm_get_time();
 				 }
 			}
@@ -483,6 +485,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		break;
 		case PP_GET_CFG_REQ:
 		{
+			memset(&(AppData_rmtCfg.getResp),0,sizeof(App_rmtCfg_getResp_t));
 			res = PP_rmtCfg_getRequest(task,rmtCfg);
 			if(res < 0)//请求失败
 			{
@@ -512,7 +515,6 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 					 log_e(LOG_HOZON, "get cfg response time out");
 					 rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
 					 rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
-					 //rmtCfg->state.req = 1;
 					 rmtCfg->state.period = tm_get_time();
 				 }
 			}
@@ -530,12 +532,13 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				memcpy(AppData_rmtCfg.ReadResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion, \
 														  AppData_rmtCfg.checkResp.cfgVersionlen);
 				AppData_rmtCfg.ReadResp.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
-				AppData_rmtCfg.ReadResp.FICM.ficmConfigValid = AppData_rmtCfg.getResp.FICM.ficmConfigValid;
+				//AppData_rmtCfg.ReadResp.FICM.ficmConfigValid = AppData_rmtCfg.getResp.FICM.ficmConfigValid;
 				memcpy(&(AppData_rmtCfg.ReadResp.FICM),&(AppData_rmtCfg.getResp.FICM),sizeof(App_rmtCfg_FICM_t));
 				memcpy(&(AppData_rmtCfg.ReadResp.APN1),&(AppData_rmtCfg.getResp.APN1),sizeof(App_rmtCfg_APN1_t));
 				memcpy(&(AppData_rmtCfg.ReadResp.APN2),&(AppData_rmtCfg.getResp.APN2),sizeof(App_rmtCfg_APN2_t));
 				memcpy(&(AppData_rmtCfg.ReadResp.COMMON),&(AppData_rmtCfg.getResp.COMMON),sizeof(App_rmtCfg_COMMON_t));
 				memcpy(&(AppData_rmtCfg.ReadResp.EXTEND),&(AppData_rmtCfg.getResp.EXTEND),sizeof(App_rmtCfg_EXTEND_t));
+
 				rmtCfg->state.cfgsuccess = 1;
 			}
 
@@ -558,6 +561,9 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 					//保存配置，使用新的配置
 					//
 					//
+					memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion, \
+																			  AppData_rmtCfg.checkResp.cfgVersionlen);
+					AppData_rmtCfg.checkReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
 				}
 				rmtCfg->state.waitSt  = PP_RMTCFG_WAIT_IDLE;
 				rmtCfg->state.CfgSt 	= PP_RMTCFG_CFG_IDLE;
@@ -827,6 +833,7 @@ void PP_rmtCfg_SetCfgReq(unsigned char req)
 	PP_rmtCfg.state.period = tm_get_time();
 }
 
+#if 0
 /******************************************************
 *函数名:PP_rmtCfg_strcmp
 
@@ -850,4 +857,28 @@ static int PP_rmtCfg_strcmp(unsigned char* str1,unsigned char* str2,int len)
 	}
 	return 0;
 }
+#endif
 
+/******************************************************
+*函数名:PP_rmtCfg_reset
+
+*形  参：
+
+*返回值：
+
+*描  述：字符串比较
+
+*备  注：
+******************************************************/
+static void PP_rmtCfg_reset(PrvtProt_rmtCfg_t *rmtCfg)
+{
+	rmtCfg->state.CfgSt = 0;
+	rmtCfg->state.cfgAccept = 0;
+	rmtCfg->state.cfgsuccess = 0;
+	rmtCfg->state.needUpdata = 0;
+	rmtCfg->state.req = 0;
+	rmtCfg->state.period = 0;
+	rmtCfg->state.reqCnt = 0;
+	rmtCfg->state.waitSt = 0;
+	rmtCfg->state.waittime = 0;
+}
