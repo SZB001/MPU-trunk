@@ -46,6 +46,7 @@ description£º include the header file
 #include "PrvtProt_callCenter.h"
 #include "PrvtProt_xcall.h"
 #include "PrvtProt_remoteConfig.h"
+#include "PP_rmtCtrl.h"
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -184,6 +185,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			PrvtProt_shell_init();
 			PP_xcall_init();
 			PP_rmtCfg_init();
+			PP_rmtCtrl_init();
 		}
         break;
     }
@@ -264,6 +266,8 @@ static void *PrvtProt_main(void)
 		PrvtProt_CC_mainfunction();/* CC request:²¦´ò¾ÈÔ®µç»°*/
 
 		PP_rmtCfg_mainfunction(&pp_task);
+
+		PP_rmtCtrl_mainfunction(&pp_task);
     }
 	(void)res;
     return NULL;

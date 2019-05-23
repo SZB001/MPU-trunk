@@ -181,6 +181,43 @@ void PP_rmtCfg_init(void)
 	AppData_rmtCfg.checkReq.configSwlen = strlen("00000");
 	memcpy(AppData_rmtCfg.checkReq.cfgVersion,"00000000000000000000000000000001",strlen("00000000000000000000000000000001"));
 	AppData_rmtCfg.checkReq.cfgVersionlen = strlen("00000000000000000000000000000001");
+#if 0
+	memcpy(AppData_rmtCfg.ReadResp.cfgVersion,"00000000000000000000000000000000",32);
+	AppData_rmtCfg.ReadResp.cfgVersionlen = 32;
+	memcpy(AppData_rmtCfg.ReadResp.FICM.token,"00000000000000000000000000000000",32);
+	AppData_rmtCfg.ReadResp.FICM.tokenlen = 32;
+	memcpy(AppData_rmtCfg.ReadResp.FICM.userID,"00000000000000000000000000000000",32);
+	AppData_rmtCfg.ReadResp.FICM.userIDlen = 32;
+
+	memcpy(AppData_rmtCfg.ReadResp.APN1.tspAddr,"00000000000000000000000000000000",32);
+	AppData_rmtCfg.ReadResp.APN1.tspAddrlen = 32;
+	memcpy(AppData_rmtCfg.ReadResp.APN1.tspIP,"0000000000000000",15);
+	AppData_rmtCfg.ReadResp.APN1.tspIPlen = 15;
+	memcpy(AppData_rmtCfg.ReadResp.APN1.tspPass,"00000000000000000",16);
+	AppData_rmtCfg.ReadResp.APN1.tspPasslen = 16;
+	memcpy(AppData_rmtCfg.ReadResp.APN1.tspPort,"0000000",6);
+	AppData_rmtCfg.ReadResp.APN1.tspPortlen = 6;
+	memcpy(AppData_rmtCfg.ReadResp.APN1.tspSms,"00000000000000000000000000000000",32);
+	AppData_rmtCfg.ReadResp.APN1.tspSmslen = 32;
+	memcpy(AppData_rmtCfg.ReadResp.APN1.tspUser,"00000000000000000000000000000000",16);
+	AppData_rmtCfg.ReadResp.APN1.tspUserlen = 16;
+
+	memcpy(AppData_rmtCfg.ReadResp.APN2.apn2Address,"00000000000000000000000000000000",32);
+	AppData_rmtCfg.ReadResp.APN2.apn2Addresslen = 32;
+	memcpy(AppData_rmtCfg.ReadResp.APN2.apn2Pass,"000000",6);
+	AppData_rmtCfg.ReadResp.APN2.apn2Passlen = 6;
+	memcpy(AppData_rmtCfg.ReadResp.APN2.apn2User,"00000000000000000",16);
+	AppData_rmtCfg.ReadResp.APN1.tspPasslen = 16;
+
+	memcpy(AppData_rmtCfg.ReadResp.EXTEND.bcallNO,"00000000000000000000000000000000",16);
+	AppData_rmtCfg.ReadResp.EXTEND.bcallNOlen = 16;
+	memcpy(AppData_rmtCfg.ReadResp.EXTEND.ecallNO,"00000000000000000000000000000000",16);
+	AppData_rmtCfg.ReadResp.EXTEND.ecallNOlen = 16;
+	memcpy(AppData_rmtCfg.ReadResp.EXTEND.ccNO,"00000000000000000000000000000000",16);
+	AppData_rmtCfg.ReadResp.EXTEND.ccNOlen = 16;
+#endif
+
+
 }
 
 /******************************************************
@@ -355,7 +392,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 			{
 				AppData_rmtCfg.ReadResp.readreq[AppData_rmtCfg.ReadReq.SettingId[i] -1] = 1;
 			}
-
+			rmtCfg->pack.DisBody.eventId = MsgDataBody.eventId;
 			res = PP_rmtCfg_ReadCfgResp(task,rmtCfg);
 			if(res < 0)
 			{

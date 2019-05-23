@@ -52,9 +52,9 @@ description£º macro definitions
 //AID
 #define PP_AID_RMTCTRL	 	110//
 //MID
-#define PP_MID_RMTCTRL_REQ 	1//remote ctrl request
-//#define PP_MID_RMTCTRL_RESP 	2//remote ctrl response
-
+#define PP_MID_RMTCTRL_REQ 			1//remote ctrl request
+#define PP_MID_RMTCTRL_RESP 		2//remote ctrl response
+#define PP_MID_RMTCTRL_BOOKINGRESP 	3//remote ctrl booking response
 /***********ºêº¯Êý***********/
 
 /*******************************************************

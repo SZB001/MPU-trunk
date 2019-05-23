@@ -12,7 +12,8 @@ INCLUDES =	-I $(ROOTDIR)/app/base/scom \
 		    -I $(ROOTDIR)/app/base/uds \
 		    -I $(ROOTDIR)/app/base/uds/server \
    	        -I $(ROOTDIR)/app/base/uds/server/foton \
-			-I $(ROOTDIR)/app/interface/hozon/asn	
+			-I $(ROOTDIR)/app/interface/hozon/asn	\
+			-I $(ROOTDIR)/app/interface/hozon/PrvtProtocol/remoteControl
 			#-I $(ROOTDIR)/app/interface/hozon/Security	\
 			#-I $(ROOTDIR)/app/interface/hozon/Security/openssl
 #endif

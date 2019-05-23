@@ -123,7 +123,7 @@ typedef struct
 	uint8_t tspUser[17];
 	uint8_t tspPass[17];
 	uint8_t tspIP[16];
-	uint8_t tspSms[32];
+	uint8_t tspSms[33];
 	uint8_t tspPort[7];
 	uint8_t tspAddrlen;
 	uint8_t tspUserlen;

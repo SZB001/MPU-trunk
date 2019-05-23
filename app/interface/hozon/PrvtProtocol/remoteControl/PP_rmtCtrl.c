@@ -38,12 +38,13 @@ description： include the header file
 #include "../../support/protocol.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
-#include "PrvtProt_shell.h"
-#include "PrvtProt_queue.h"
-#include "PrvtProt_EcDc.h"
-#include "PrvtProt_cfg.h"
-#include "PrvtProt.h"
-#include "PrvtProt_rmtCtrl.h"
+#include "../PrvtProt_shell.h"
+#include "../PrvtProt_queue.h"
+#include "../PrvtProt_EcDc.h"
+#include "../PrvtProt_cfg.h"
+#include "../PrvtProt.h"
+#include "PP_doorLockCtrl.h"
+#include "PP_rmtCtrl.h"
 
 /*******************************************************
 description： global variable definitions
@@ -80,6 +81,8 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task);
 static int PP_rmtCtrl_do_mainfunction(PrvtProt_task_t *task,PrvtProt_rmtCtrl_t *rmtCtrl);
 static int PP_rmtCtrl_doorLockCtrl(PrvtProt_task_t *task,PrvtProt_rmtCtrl_t *rmtCtrl);
+
+static int PP_doorLockCtrl_StatusResp(unsigned int reqtype);
 /******************************************************
 description： function code
 ******************************************************/
@@ -103,6 +106,7 @@ void PP_rmtCtrl_init(void)
 	{
 		PP_rmtCtrl.state[i].reqType = PP_RMTCTRL_UNKNOW;
 	}
+	PP_doorLockCtrl_init();
 }
 
 /******************************************************
@@ -120,9 +124,11 @@ int PP_rmtCtrl_mainfunction(void *task)
 {
 	int res;
 	res = 		PP_rmtCtrl_do_checksock((PrvtProt_task_t*)task) ||
-				PP_rmtCtrl_do_rcvMsg((PrvtProt_task_t*)task) ||
-				PP_rmtCtrl_do_wait((PrvtProt_task_t*)task) ||
-				PP_rmtCtrl_do_mainfunction((PrvtProt_task_t*)task,&PP_rmtCtrl);
+				PP_rmtCtrl_do_rcvMsg((PrvtProt_task_t*)task) ;//||
+				//PP_rmtCtrl_do_wait((PrvtProt_task_t*)task) ||
+				//PP_rmtCtrl_do_mainfunction((PrvtProt_task_t*)task,&PP_rmtCtrl);
+
+	PP_doorLockCtrl_mainfunction((PrvtProt_task_t*)task);
 	return res;
 }
 
@@ -225,62 +231,52 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		{
 			case PP_RMTCTRL_DOORLOCK://控制车门锁
 			{
-				PP_rmtCtrl.state[RMTCTRL_DOORLOCK].req = 1;
-				PP_rmtCtrl.state[RMTCTRL_DOORLOCK].reqType = Appdata.CtrlReq.rvcReqType;
+				SetPP_doorLockCtrl_Request(&Appdata,&MsgDataBody);
 			}
 			break;
 			case PP_RMTCTRL_PNRSUNROOF://控制全景天窗
 			{
-				PP_rmtCtrl.state[RMTCTRL_PANORSUNROOF].req = 1;
-				PP_rmtCtrl.state[RMTCTRL_PANORSUNROOF].reqType = Appdata.CtrlReq.rvcReqType;
+				log_i(LOG_HOZON, "remote PANORSUNROOF control req");
 			}
 			break;
 			case PP_RMTCTRL_AUTODOOR://控制自动门
 			{
-				PP_rmtCtrl.state[RMTCTRL_AUTODOOR].req = 1;
-				PP_rmtCtrl.state[RMTCTRL_AUTODOOR].reqType = Appdata.CtrlReq.rvcReqType;
+				log_i(LOG_HOZON, "remote AUTODOOR control req");
 			}
 			break;
 			case PP_RMTCTRL_RMTSRCHVEHICLE://远程搜索车辆
 			{
-				PP_rmtCtrl.state[RMTCTRL_AUTODOOR].req = 1;
-				PP_rmtCtrl.state[RMTCTRL_AUTODOOR].reqType = Appdata.CtrlReq.rvcReqType;
+				log_i(LOG_HOZON, "remote RMTSRCHVEHICLE control req");
 			}
 			break;
 			case PP_RMTCTRL_DETECTCAMERA://驾驶员检测摄像头
 			{
-				PP_rmtCtrl.state[DETECTCAMERA].req = 1;
-				PP_rmtCtrl.state[DETECTCAMERA].reqType = Appdata.CtrlReq.rvcReqType;
+				log_i(LOG_HOZON, "remote DETECTCAMERA control req");
 			}
 			break;
 			case PP_RMTCTRL_DATARECORDER://行车记录仪
 			{
-				PP_rmtCtrl.state[DATARECORDER].req = 1;
-				PP_rmtCtrl.state[DATARECORDER].reqType = Appdata.CtrlReq.rvcReqType;
+				log_i(LOG_HOZON, "remote DATARECORDER control req");
 			}
 			break;
 			case PP_RMTCTRL_AC://空调
 			{
-				PP_rmtCtrl.state[RMTCTRL_AC].req = 1;
-				PP_rmtCtrl.state[RMTCTRL_AC].reqType = Appdata.CtrlReq.rvcReqType;
+				log_i(LOG_HOZON, "remote RMTCTRL_AC control req");
 			}
 			break;
 			case PP_RMTCTRL_CHARGE://充电
 			{
-				PP_rmtCtrl.state[RMTCTRL_CHARGE].req = 1;
-				PP_rmtCtrl.state[RMTCTRL_CHARGE].reqType = Appdata.CtrlReq.rvcReqType;
+				log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
 			}
 			break;
 			case PP_RMTCTRL_HIGHTENSIONCTRL://高电压控制
 			{
-				PP_rmtCtrl.state[RMTCTRL_HIGHTENSIONCTRL].req = 1;
-				PP_rmtCtrl.state[RMTCTRL_HIGHTENSIONCTRL].reqType = Appdata.CtrlReq.rvcReqType;
+				log_i(LOG_HOZON, "remote RMTCTRL_HIGHTENSIONCTRL control req");
 			}
 			break;
 			case PP_RMTCTRL_ENGINECTRL://发动机控制
 			{
-				PP_rmtCtrl.state[RMTCTRL_ENGINECTRL].req = 1;
-				PP_rmtCtrl.state[RMTCTRL_ENGINECTRL].reqType = Appdata.CtrlReq.rvcReqType;
+				log_i(LOG_HOZON, "remote RMTCTRL_ENGINECTRL control req");
 			}
 			break;
 			default:
@@ -362,9 +358,8 @@ static int PP_rmtCtrl_doorLockCtrl(PrvtProt_task_t *task,PrvtProt_rmtCtrl_t *rmt
 	return 0;
 }
 
-#if 0
 /******************************************************
-*函数名：PP_rmtCtrl_SetEcallReq
+*函数名：PP_rmtCtrl_SetCtrlReq
 
 *形  参：
 
@@ -374,10 +369,122 @@ static int PP_rmtCtrl_doorLockCtrl(PrvtProt_task_t *task,PrvtProt_rmtCtrl_t *rmt
 
 *备  注：
 ******************************************************/
-void PP_rmtCtrl_SetEcallReq(unsigned char req)
+void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
-
+	switch((uint8_t)(reqType >> 8))
+	{
+		case PP_RMTCTRL_DOORLOCK://控制车门锁
+		{
+			PP_doorLockCtrl_SetCtrlReq(req,reqType);
+		}
+		break;
+		case PP_RMTCTRL_PNRSUNROOF://控制全景天窗
+		{
+			log_i(LOG_HOZON, "remote PANORSUNROOF control req");
+		}
+		break;
+		case PP_RMTCTRL_AUTODOOR://控制自动门
+		{
+			log_i(LOG_HOZON, "remote AUTODOOR control req");
+		}
+		break;
+		case PP_RMTCTRL_RMTSRCHVEHICLE://远程搜索车辆
+		{
+			log_i(LOG_HOZON, "remote RMTSRCHVEHICLE control req");
+		}
+		break;
+		case PP_RMTCTRL_DETECTCAMERA://驾驶员检测摄像头
+		{
+			log_i(LOG_HOZON, "remote DETECTCAMERA control req");
+		}
+		break;
+		case PP_RMTCTRL_DATARECORDER://行车记录仪
+		{
+			PP_doorLockCtrl_StatusResp(reqType);
+			log_i(LOG_HOZON, "remote DATARECORDER control req");
+		}
+		break;
+		case PP_RMTCTRL_AC://空调
+		{
+			PP_doorLockCtrl_StatusResp(reqType);
+			log_i(LOG_HOZON, "remote RMTCTRL_AC control req");
+		}
+		break;
+		case PP_RMTCTRL_CHARGE://充电
+		{
+			PP_doorLockCtrl_StatusResp(reqType);
+			log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
+		}
+		break;
+		case PP_RMTCTRL_HIGHTENSIONCTRL://高电压控制
+		{
+			log_i(LOG_HOZON, "remote RMTCTRL_HIGHTENSIONCTRL control req");
+		}
+		break;
+		case PP_RMTCTRL_ENGINECTRL://发动机控制
+		{
+			log_i(LOG_HOZON, "remote RMTCTRL_ENGINECTRL control req");
+		}
+		break;
+		default:
+		break;
+	}
 }
 
-#endif
+
+/******************************************************
+*函数名：PP_doorLockCtrl_StatusResp
+
+*形  参：
+
+*返回值：
+
+*描  述：remote control status response
+
+*备  注：
+******************************************************/
+static int PP_doorLockCtrl_StatusResp(unsigned int reqtype)
+{
+	int msgdatalen;
+	int res;
+	PrvtProt_rmtCtrl_pack_t rmtCtrl_pack;
+	memset(&rmtCtrl_pack.DisBody,0,sizeof(PrvtProt_rmtCtrl_pack_t));
+	/*header*/
+	memcpy(rmtCtrl_pack.Header.sign,"**",2);
+	rmtCtrl_pack.Header.ver.Byte = 0x30;
+	rmtCtrl_pack.Header.commtype.Byte = 0xe1;
+	rmtCtrl_pack.Header.opera = 0x02;
+	rmtCtrl_pack.Header.nonce  = PrvtPro_BSEndianReverse(0);
+	rmtCtrl_pack.Header.tboxid = PrvtPro_BSEndianReverse(27);
+	memcpy(&PP_rmtCtrl_Pack, &rmtCtrl_pack.Header, sizeof(PrvtProt_pack_Header_t));
+	/*body*/
+	memcpy(rmtCtrl_pack.DisBody.aID,"110",3);
+	rmtCtrl_pack.DisBody.mID = PP_MID_RMTCTRL_BOOKINGRESP;
+	rmtCtrl_pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_BOOKINGRESP;
+	rmtCtrl_pack.DisBody.eventTime = PrvtPro_getTimestamp();
+	rmtCtrl_pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	rmtCtrl_pack.DisBody.appDataProVer = 256;
+	rmtCtrl_pack.DisBody.testFlag = 1;
+	rmtCtrl_pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+
+	PrvtProt_App_rmtCtrl_t app_rmtCtrl;
+	/*appdata*/
+	app_rmtCtrl.CtrlbookingResp.bookingId = 1;
+	app_rmtCtrl.CtrlbookingResp.rvcReqCode = (long)reqtype;
+	app_rmtCtrl.CtrlbookingResp.oprTime = PrvtPro_getTimestamp();
+
+	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_BOOKINGRESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
+									   &rmtCtrl_pack.DisBody,&app_rmtCtrl))//数据编码打包是否完成
+	{
+		log_e(LOG_HOZON, "uper error");
+		return 0;
+	}
+
+	PP_rmtCtrl_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
+	res = sockproxy_MsgSend(PP_rmtCtrl_Pack.Header.sign,18 + msgdatalen,NULL);
+
+	protocol_dump(LOG_HOZON, "get_remote_control_booking_response", PP_rmtCtrl_Pack.Header.sign, \
+					18 + msgdatalen,1);
+	return res;
+}
 

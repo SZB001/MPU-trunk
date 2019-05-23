@@ -36,6 +36,8 @@ description： include the header file
 #include "CfgReadReqInfo.h"
 #include "CfgReadRespInfo.h"
 #include "RmtCtrlReqInfo.h"
+#include "RmtCtrlStRespInfo.h"
+#include "BookingResp.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
 
@@ -46,9 +48,9 @@ description： include the header file
 #include "PrvtProt_cfg.h"
 #include "PrvtProt_xcall.h"
 #include "PrvtProt_remoteConfig.h"
-#include "PrvtProt_rmtCtrl.h"
 #include "PrvtProt.h"
 #include "PrvtProt_EcDc.h"
+#include "remoteControl/PP_rmtCtrl.h"
 
 /*******************************************************
 description： global variable definitions
@@ -70,6 +72,8 @@ static asn_TYPE_descriptor_t *pduType_Cfg_conn_resp = &asn_DEF_CfgConnRespInfo;
 static asn_TYPE_descriptor_t *pduType_Cfg_read_req = &asn_DEF_CfgReadReqInfo;
 static asn_TYPE_descriptor_t *pduType_Cfg_read_resp = &asn_DEF_CfgReadRespInfo;
 static asn_TYPE_descriptor_t *pduType_Ctrl_Req = &asn_DEF_RmtCtrlReqInfo;
+static asn_TYPE_descriptor_t *pduType_Rmt_Ctrl_resp = &asn_DEF_RmtCtrlStRespInfo;
+static asn_TYPE_descriptor_t *pduType_Rmt_Ctrl_Bookingresp = &asn_DEF_BookingResp;
 static uint8_t tboxAppdata[PP_ECDC_DATA_LEN];
 static int tboxAppdataLen;
 static uint8_t tboxDisBodydata[PP_ECDC_DATA_LEN];
@@ -127,20 +131,17 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 	Bodydata.aID.size = 3;
 	Bodydata.mID = DisptrBody->mID;
 	Bodydata.eventTime 		= DisptrBody->eventTime;
-	Bodydata.expirationTime = &(DisptrBody->expTime);	/* OPTIONAL */;
-	if(DisptrBody->eventId != PP_INVALID)//event ID初始化为0xFFFFFFFF-无效
-	{
-		Bodydata.eventId 	= &(DisptrBody->eventId);/* OPTIONAL */
-	}
-	Bodydata.ulMsgCnt 		= &(DisptrBody->ulMsgCnt);	/* OPTIONAL */
-	Bodydata.dlMsgCnt 		= &(DisptrBody->dlMsgCnt);	/* OPTIONAL */
-	Bodydata.msgCntAcked 	= &(DisptrBody->msgCntAcked);/* OPTIONAL */
-	Bodydata.ackReq			= &(DisptrBody->ackReq);/* OPTIONAL */
-	Bodydata.appDataLen 	= &(DisptrBody->appDataLen);/* OPTIONAL */
-	Bodydata.appDataEncode	= &(DisptrBody->appDataEncode);/* OPTIONAL */
-	Bodydata.appDataProVer	= &(DisptrBody->appDataProVer);/* OPTIONAL */
-	Bodydata.testFlag		= &(DisptrBody->testFlag);/* OPTIONAL */
-	Bodydata.result			= &(DisptrBody->result);/* OPTIONAL */
+	Bodydata.expirationTime = &DisptrBody->expTime;	/* OPTIONAL */;
+	Bodydata.eventId 		= &DisptrBody->eventId;/* OPTIONAL */
+	Bodydata.ulMsgCnt 		= &DisptrBody->ulMsgCnt;	/* OPTIONAL */
+	Bodydata.dlMsgCnt 		= &DisptrBody->dlMsgCnt;	/* OPTIONAL */
+	Bodydata.msgCntAcked 	= &DisptrBody->msgCntAcked;/* OPTIONAL */
+	Bodydata.ackReq			= &DisptrBody->ackReq;/* OPTIONAL */
+	Bodydata.appDataLen 	= &DisptrBody->appDataLen;/* OPTIONAL */
+	Bodydata.appDataEncode	= &DisptrBody->appDataEncode;/* OPTIONAL */
+	Bodydata.appDataProVer	= &DisptrBody->appDataProVer;/* OPTIONAL */
+	Bodydata.testFlag		= &DisptrBody->testFlag;/* OPTIONAL */
+	Bodydata.result			= &DisptrBody->result;/* OPTIONAL */
 	
 	asn_enc_rval_t ec;
 	log_i(LOG_HOZON, "uper encode:appdata");
@@ -225,7 +226,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			cfgcheckReq.configSw.size = rmtCfgCheckReq_ptr->checkReq.configSwlen;
 			cfgcheckReq.cfgVersion.buf = rmtCfgCheckReq_ptr->checkReq.cfgVersion;
 			cfgcheckReq.cfgVersion.size = rmtCfgCheckReq_ptr->checkReq.cfgVersionlen;
-			//*/
+
 			ec = uper_encode(pduType_Cfg_check_req,(void *) &cfgcheckReq,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
@@ -305,23 +306,46 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			PrvtProt_App_rmtCfg_t *rmtCfgReadResp_ptr = (PrvtProt_App_rmtCfg_t*)appchoice;
 			memset(&CfgReadResp,0 , sizeof(CfgReadRespInfo_t));
 
-			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+			//Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+
 			CfgReadResp.result = rmtCfgReadResp_ptr->ReadResp.result;
 			log_i(LOG_HOZON, "CfgReadResp.result = %d\n",CfgReadResp.result);
 			CfgReadResp.cfgVersion.buf = rmtCfgReadResp_ptr->checkReq.cfgVersion;
 			CfgReadResp.cfgVersion.size = rmtCfgReadResp_ptr->checkReq.cfgVersionlen;
 			log_i(LOG_HOZON, "CfgReadResp.cfgVersion.buf = %s\n",CfgReadResp.cfgVersion.buf);
 			log_i(LOG_HOZON, "CfgReadResp.cfgVersion.size = %d\n",CfgReadResp.cfgVersion.size);
-			if(1 == rmtCfgReadResp_ptr->ReadResp.result)
+			CfgReadResp.ficmConfig 	= NULL;
+			CfgReadResp.apn1Config 	= NULL;
+			CfgReadResp.apn2Config 	= NULL;
+			CfgReadResp.commonConfig = NULL;
+			CfgReadResp.extendConfig = NULL;
+
+			FICMConfigSet_t FICMCfgSet;
+			FICMConfigSet_t *FICMCfgSet_ptr = &FICMCfgSet;
+			struct ficmConfig ficmConfig;
+			APN1ConfigSet_t APN1ConfigSet;
+			APN1ConfigSet_t *APN1ConfigSet_ptr = &APN1ConfigSet;
+			struct apn1Config apn1Config;
+			APN2ConfigSet_t APN2ConfigSet;
+			APN2ConfigSet_t *APN2ConfigSet_ptr = &APN2ConfigSet;
+			struct apn2Config apn2Config;
+			CommonConfigSet_t CommonConfigSet;
+			CommonConfigSet_t *CommonConfigSet_ptr = &CommonConfigSet;
+			struct commonConfig commonConfig;
+			ExtendConfigSet_t ExtendConfigSet;
+			ExtendConfigSet_t *ExtendConfigSet_ptr = &ExtendConfigSet;
+			struct extendConfig extendConfig;
+
+			memset(&ExtendConfigSet,0 , sizeof(ExtendConfigSet_t));
+			memset(&CommonConfigSet,0 , sizeof(CommonConfigSet_t));
+			memset(&APN2ConfigSet,0 , sizeof(APN2ConfigSet_t));
+			memset(&APN1ConfigSet,0 , sizeof(APN1ConfigSet_t));
+			memset(&FICMCfgSet,0 , sizeof(FICMConfigSet_t));
+			if(1 == CfgReadResp.result)
 			{
 				if((rmtCfgReadResp_ptr->ReadResp.readreq[0] == 1) && \
 							(1 == rmtCfgReadResp_ptr->ReadResp.FICM.ficmConfigValid))
 				{
-					FICMConfigSet_t FICMCfgSet;
-					FICMConfigSet_t *FICMCfgSet_ptr = &FICMCfgSet;
-					struct ficmConfig ficmCfg;
-
-					memset(&FICMCfgSet,0 , sizeof(FICMConfigSet_t));
 					FICMCfgSet.token.buf = rmtCfgReadResp_ptr->ReadResp.FICM.token;
 					FICMCfgSet.token.size = rmtCfgReadResp_ptr->ReadResp.FICM.tokenlen;
 					FICMCfgSet.userID.buf =  rmtCfgReadResp_ptr->ReadResp.FICM.userID;
@@ -330,24 +354,15 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					log_i(LOG_HOZON, "FICMCfgSet.token.size = %d\n",FICMCfgSet.token.size);
 					log_i(LOG_HOZON, "FICMCfgSet.userID.buf = %s\n",FICMCfgSet.userID.buf);
 					log_i(LOG_HOZON, "FICMCfgSet.userID.size = %d\n",FICMCfgSet.userID.size);
-					ficmCfg.list.array = &FICMCfgSet_ptr;
-					ficmCfg.list.count = 1;
-					ficmCfg.list.size = 0;
-					CfgReadResp.ficmConfig = &ficmCfg;
-				}
-				else
-				{
-					CfgReadResp.ficmConfig  = NULL;
+					ficmConfig.list.array = &FICMCfgSet_ptr;
+					ficmConfig.list.count = 1;
+					ficmConfig.list.size = 1;
+					CfgReadResp.ficmConfig = &ficmConfig;
 				}
 
 				if((rmtCfgReadResp_ptr->ReadResp.readreq[1] == 1) && \
 						(1 == rmtCfgReadResp_ptr->ReadResp.APN1.apn1ConfigValid))
 				{
-					APN1ConfigSet_t APN1ConfigSet;
-					APN1ConfigSet_t *APN1ConfigSet_ptr = &APN1ConfigSet;
-					struct apn1Config apn1Cfg;
-
-					memset(&APN1ConfigSet,0 , sizeof(APN1ConfigSet_t));
 					APN1ConfigSet.tspAddress.buf = rmtCfgReadResp_ptr->ReadResp.APN1.tspAddr;
 					APN1ConfigSet.tspAddress.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspAddrlen;
 					log_i(LOG_HOZON, "APN1ConfigSet.tspAddress.buf = %s\n",APN1ConfigSet.tspAddress.buf);
@@ -372,24 +387,15 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					APN1ConfigSet.tspUser.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspUserlen;
 					log_i(LOG_HOZON, "APN1ConfigSet.tspUser.buf = %s\n",APN1ConfigSet.tspUser.buf);
 					log_i(LOG_HOZON, "APN1ConfigSet.tspUser.size = %d\n",APN1ConfigSet.tspUser.size);
-					apn1Cfg.list.array = &APN1ConfigSet_ptr;
-					apn1Cfg.list.count = 1;
-					apn1Cfg.list.size = 1;
-					CfgReadResp.apn1Config = &apn1Cfg;
-				}
-				else
-				{
-					CfgReadResp.apn1Config = NULL;
+					apn1Config.list.array = &APN1ConfigSet_ptr;
+					apn1Config.list.count = 1;
+					apn1Config.list.size = 1;
+					CfgReadResp.apn1Config = &apn1Config;
 				}
 
 				if((rmtCfgReadResp_ptr->ReadResp.readreq[2] == 1) && \
 						(1 == rmtCfgReadResp_ptr->ReadResp.APN2.apn2ConfigValid))
 				{
-					APN2ConfigSet_t APN2ConfigSet;
-					APN2ConfigSet_t *APN2ConfigSet_ptr = &APN2ConfigSet;
-					struct apn2Config apn2Cfg;
-
-					memset(&APN2ConfigSet,0 , sizeof(APN2ConfigSet_t));
 					APN2ConfigSet.tspAddress.buf = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Address;
 					APN2ConfigSet.tspAddress.size = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Addresslen;
 					log_i(LOG_HOZON, "APN2ConfigSet.tspAddress.buf = %s\n",APN2ConfigSet.tspAddress.buf);
@@ -402,25 +408,15 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					APN2ConfigSet.tspUser.size = rmtCfgReadResp_ptr->ReadResp.APN2.apn2Userlen;
 					log_i(LOG_HOZON, "APN2ConfigSet.tspUser.buf = %s\n",APN2ConfigSet.tspUser.buf);
 					log_i(LOG_HOZON, "APN2ConfigSet.tspUser.size = %d\n",APN2ConfigSet.tspUser.size);
-					apn2Cfg.list.array = &APN2ConfigSet_ptr;
-					apn2Cfg.list.count = 1;
-					apn2Cfg.list.size = 1;
-					CfgReadResp.apn2Config = &apn2Cfg;
-				}
-				else
-				{
-					CfgReadResp.apn2Config = NULL;
-
+					apn2Config.list.array = &APN2ConfigSet_ptr;
+					apn2Config.list.count = 1;
+					apn2Config.list.size = 1;
+					CfgReadResp.apn2Config = &apn2Config;
 				}
 
 				if((rmtCfgReadResp_ptr->ReadResp.readreq[3] == 1) && \
 						(1 == rmtCfgReadResp_ptr->ReadResp.COMMON.commonConfigValid))
 				{
-					CommonConfigSet_t CommonConfigSet;
-					CommonConfigSet_t *CommonConfigSet_ptr = &CommonConfigSet;
-					struct commonConfig commonCfg;
-
-					memset(&CommonConfigSet,0 , sizeof(CommonConfigSet_t));
 					CommonConfigSet.actived 		= rmtCfgReadResp_ptr->ReadResp.COMMON.actived;
 					log_i(LOG_HOZON, "CommonConfigSet.actived = %d\n",CommonConfigSet.actived);
 					CommonConfigSet.rcEnabled 		= rmtCfgReadResp_ptr->ReadResp.COMMON.rcEnabled;
@@ -448,24 +444,15 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					CommonConfigSet.btKeyEntryEnabled = rmtCfgReadResp_ptr->ReadResp.COMMON.btKeyEntryEnabled;
 					log_i(LOG_HOZON, "CommonConfigSet.btKeyEntryEnabled = %d\n",CommonConfigSet.btKeyEntryEnabled);
 
-					commonCfg.list.array = &CommonConfigSet_ptr;
-					commonCfg.list.count =1;
-					commonCfg.list.size = 1;
-					CfgReadResp.commonConfig = &commonCfg;
-				}
-				else
-				{
-					CfgReadResp.commonConfig = NULL;
+					commonConfig.list.array = &CommonConfigSet_ptr;
+					commonConfig.list.count =1;
+					commonConfig.list.size = 1;
+					CfgReadResp.commonConfig = &commonConfig;
 				}
 
 				if((rmtCfgReadResp_ptr->ReadResp.readreq[4] == 1) && \
 						(1 == rmtCfgReadResp_ptr->ReadResp.EXTEND.extendConfigValid))
 				{
-					ExtendConfigSet_t ExtendConfigSet;
-					ExtendConfigSet_t *ExtendConfigSet_ptr = &ExtendConfigSet;
-					struct extendConfig extendCfg;
-
-					memset(&ExtendConfigSet,0 , sizeof(ExtendConfigSet_t));
 					ExtendConfigSet.ecallNO.buf = rmtCfgReadResp_ptr->ReadResp.EXTEND.ecallNO;
 					ExtendConfigSet.ecallNO.size = rmtCfgReadResp_ptr->ReadResp.EXTEND.ecallNOlen;
 					log_i(LOG_HOZON, "ExtendConfigSet.ecallNO.buf = %s\n",ExtendConfigSet.ecallNO.buf);
@@ -478,29 +465,145 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					ExtendConfigSet.icallNO.size = rmtCfgReadResp_ptr->ReadResp.EXTEND.ccNOlen;
 					log_i(LOG_HOZON, "ExtendConfigSet.icallNO.buf = %s\n",ExtendConfigSet.icallNO.buf);
 					log_i(LOG_HOZON, "ExtendConfigSet.icallNO.size = %d\n",ExtendConfigSet.icallNO.size);
-					extendCfg.list.array = &ExtendConfigSet_ptr;
-					extendCfg.list.count =1;
-					extendCfg.list.size = 1;
-					CfgReadResp.extendConfig = &extendCfg;
+					extendConfig.list.array = &ExtendConfigSet_ptr;
+					extendConfig.list.count =1;
+					extendConfig.list.size = 1;
+					CfgReadResp.extendConfig = &extendConfig;
 				}
-				else
-				{
-					CfgReadResp.extendConfig = NULL;
-				}
-			}
-			else
-			{
-				CfgReadResp.ficmConfig 	= NULL;
-				CfgReadResp.apn1Config 	= NULL;
-				CfgReadResp.apn2Config 	= NULL;
-				CfgReadResp.commonConfig = NULL;
-				CfgReadResp.extendConfig = NULL;
 			}
 
 			ec = uper_encode(pduType_Cfg_read_resp,(void *) &CfgReadResp,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
 				log_e(LOG_HOZON,"encode:appdata Cfg_read_resp fail\n");
+				return -1;
+			}
+		}
+		break;
+		case ECDC_RMTCTRL_RESP:
+		{
+			log_i(LOG_HOZON, "encode remote_control_resp\n");
+			PrvtProt_App_rmtCtrl_t *rmtCtrlResp_ptr = (PrvtProt_App_rmtCtrl_t*)appchoice;
+			RmtCtrlStRespInfo_t RmtCtrlResp;
+			RmtRvsposInfo_t rmtCtrlRvspos;
+			RmtRvsposInfo_t *rmtCtrlRvspos_ptr = &rmtCtrlRvspos;
+
+			RvsBasicStatus_t	RvsBasicSt;
+			RvsBasicStatus_t *RvsBasicSt_ptr= &RvsBasicSt;
+			memset(&RmtCtrlResp,0 , sizeof(RmtCtrlStRespInfo_t));
+			memset(&rmtCtrlRvspos,0 , sizeof(RmtRvsposInfo_t));
+			memset(&RvsBasicSt,0 , sizeof(RvsBasicStatus_t));
+
+			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+
+			RmtCtrlResp.rvcReqType 			= rmtCtrlResp_ptr->CtrlResp.rvcReqType;
+			RmtCtrlResp.rvcReqStatus 		= rmtCtrlResp_ptr->CtrlResp.rvcReqStatus;
+			RmtCtrlResp.rvcFailureType 		= &(rmtCtrlResp_ptr->CtrlResp.rvcFailureType);
+
+			rmtCtrlRvspos.gpsSt 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.gpsSt;//gps状态 0-无效；1-有效
+			rmtCtrlRvspos.gpsTimestamp 		= rmtCtrlResp_ptr->CtrlResp.gpsPos.gpsTimestamp;//gps时间戳
+			rmtCtrlRvspos.latitude 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.latitude;//纬度 x 1000000,当GPS信号无效时，值为0
+			rmtCtrlRvspos.longitude 		= rmtCtrlResp_ptr->CtrlResp.gpsPos.longitude;//经度 x 1000000,当GPS信号无效时，值为0
+			rmtCtrlRvspos.altitude 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.altitude;//高度（m）
+			rmtCtrlRvspos.heading 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.heading;//车头方向角度，0为正北方向
+			rmtCtrlRvspos.gpsSpeed 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.gpsSpeed;//速度 x 10，单位km/h
+			rmtCtrlRvspos.hdop 				= rmtCtrlResp_ptr->CtrlResp.gpsPos.hdop;//水平精度因子 x 10
+			RmtCtrlResp.gpsPosition.list.array = &rmtCtrlRvspos_ptr;
+			RmtCtrlResp.gpsPosition.list.size = 0;
+			RmtCtrlResp.gpsPosition.list.count =1;
+
+			RvsBasicSt.driverDoor 			= &rmtCtrlResp_ptr->CtrlResp.basicSt.driverDoor	/* OPTIONAL */;
+			RvsBasicSt.driverLock 			= rmtCtrlResp_ptr->CtrlResp.basicSt.driverLock;
+			RvsBasicSt.passengerDoor 		= &rmtCtrlResp_ptr->CtrlResp.basicSt.passengerDoor	/* OPTIONAL */;
+			RvsBasicSt.passengerLock 		= rmtCtrlResp_ptr->CtrlResp.basicSt.passengerLock;
+			RvsBasicSt.rearLeftDoor 		= &rmtCtrlResp_ptr->CtrlResp.basicSt.rearLeftDoor	/* OPTIONAL */;
+			RvsBasicSt.rearLeftLock 		= rmtCtrlResp_ptr->CtrlResp.basicSt.rearLeftLock;
+			RvsBasicSt.rearRightDoor 		= &rmtCtrlResp_ptr->CtrlResp.basicSt.rearRightDoor	/* OPTIONAL */;
+			RvsBasicSt.rearRightLock 		= rmtCtrlResp_ptr->CtrlResp.basicSt.rearRightLock;
+			RvsBasicSt.bootStatus 			= &rmtCtrlResp_ptr->CtrlResp.basicSt.bootStatus	/* OPTIONAL */;
+			RvsBasicSt.bootStatusLock 		= rmtCtrlResp_ptr->CtrlResp.basicSt.bootStatusLock;
+			RvsBasicSt.driverWindow 		= &rmtCtrlResp_ptr->CtrlResp.basicSt.driverWindow	/* OPTIONAL */;
+			RvsBasicSt.passengerWindow 		= &rmtCtrlResp_ptr->CtrlResp.basicSt.passengerWindow	/* OPTIONAL */;
+			RvsBasicSt.rearLeftWindow 		= &rmtCtrlResp_ptr->CtrlResp.basicSt.rearLeftWindow	/* OPTIONAL */;
+			RvsBasicSt.rearRightWinow 		= &rmtCtrlResp_ptr->CtrlResp.basicSt.rearRightWinow	/* OPTIONAL */;
+			RvsBasicSt.sunroofStatus 		= &rmtCtrlResp_ptr->CtrlResp.basicSt.sunroofStatus	/* OPTIONAL */;
+			RvsBasicSt.engineStatus 		= rmtCtrlResp_ptr->CtrlResp.basicSt.engineStatus;
+			RvsBasicSt.accStatus 			= rmtCtrlResp_ptr->CtrlResp.basicSt.accStatus;
+			RvsBasicSt.accTemp 				= &rmtCtrlResp_ptr->CtrlResp.basicSt.accTemp	/* OPTIONAL */;
+			RvsBasicSt.accMode 				= &rmtCtrlResp_ptr->CtrlResp.basicSt.accMode	/* OPTIONAL */;
+			RvsBasicSt.accBlowVolume		= &rmtCtrlResp_ptr->CtrlResp.basicSt.accBlowVolume/* OPTIONAL */;
+			RvsBasicSt.innerTemp 			= rmtCtrlResp_ptr->CtrlResp.basicSt.innerTemp;
+			RvsBasicSt.outTemp 				= rmtCtrlResp_ptr->CtrlResp.basicSt.outTemp;
+			RvsBasicSt.sideLightStatus		= rmtCtrlResp_ptr->CtrlResp.basicSt.sideLightStatus;
+			RvsBasicSt.dippedBeamStatus		= rmtCtrlResp_ptr->CtrlResp.basicSt.dippedBeamStatus;
+			RvsBasicSt.mainBeamStatus		= rmtCtrlResp_ptr->CtrlResp.basicSt.mainBeamStatus;
+			RvsBasicSt.hazardLightStus		= rmtCtrlResp_ptr->CtrlResp.basicSt.hazardLightStus;
+			RvsBasicSt.frtRightTyrePre		= &rmtCtrlResp_ptr->CtrlResp.basicSt.frtRightTyrePre/* OPTIONAL */;
+			RvsBasicSt.frtRightTyreTemp		= &rmtCtrlResp_ptr->CtrlResp.basicSt.frtRightTyreTemp/* OPTIONAL */;
+			RvsBasicSt.frontLeftTyrePre		= &rmtCtrlResp_ptr->CtrlResp.basicSt.frontLeftTyrePre/* OPTIONAL */;
+			RvsBasicSt.frontLeftTyreTemp	= &rmtCtrlResp_ptr->CtrlResp.basicSt.frontLeftTyreTemp	/* OPTIONAL */;
+			RvsBasicSt.rearRightTyrePre		= &rmtCtrlResp_ptr->CtrlResp.basicSt.rearRightTyrePre/* OPTIONAL */;
+			RvsBasicSt.rearRightTyreTemp	= &rmtCtrlResp_ptr->CtrlResp.basicSt.rearRightTyreTemp	/* OPTIONAL */;
+			RvsBasicSt.rearLeftTyrePre		= &rmtCtrlResp_ptr->CtrlResp.basicSt.rearLeftTyrePre/* OPTIONAL */;
+			RvsBasicSt.rearLeftTyreTemp		= &rmtCtrlResp_ptr->CtrlResp.basicSt.rearLeftTyreTemp/* OPTIONAL */;
+			RvsBasicSt.batterySOCExact		= rmtCtrlResp_ptr->CtrlResp.basicSt.batterySOCExact;
+			RvsBasicSt.chargeRemainTim		= &rmtCtrlResp_ptr->CtrlResp.basicSt.chargeRemainTim/* OPTIONAL */;
+			RvsBasicSt.availableOdomtr		= rmtCtrlResp_ptr->CtrlResp.basicSt.availableOdomtr;
+			RvsBasicSt.engineRunningTime	= &rmtCtrlResp_ptr->CtrlResp.basicSt.engineRunningTime/* OPTIONAL */;
+			RvsBasicSt.bookingChargeSt		= rmtCtrlResp_ptr->CtrlResp.basicSt.bookingChargeSt;
+			RvsBasicSt.bookingChargeHour	= &rmtCtrlResp_ptr->CtrlResp.basicSt.bookingChargeHour	/* OPTIONAL */;
+			RvsBasicSt.bookingChargeMin		= &rmtCtrlResp_ptr->CtrlResp.basicSt.bookingChargeMin/* OPTIONAL */;
+			RvsBasicSt.chargeMode			= &rmtCtrlResp_ptr->CtrlResp.basicSt.chargeMode/* OPTIONAL */;
+			RvsBasicSt.chargeStatus			= &rmtCtrlResp_ptr->CtrlResp.basicSt.chargeStatus/* OPTIONAL */;
+			RvsBasicSt.powerMode			= &rmtCtrlResp_ptr->CtrlResp.basicSt.powerMode/* OPTIONAL */;
+			RvsBasicSt.speed				= rmtCtrlResp_ptr->CtrlResp.basicSt.speed;
+			RvsBasicSt.totalOdometer		= rmtCtrlResp_ptr->CtrlResp.basicSt.totalOdometer;
+			RvsBasicSt.batteryVoltage		= rmtCtrlResp_ptr->CtrlResp.basicSt.batteryVoltage;
+			RvsBasicSt.batteryCurrent		= rmtCtrlResp_ptr->CtrlResp.basicSt.batteryCurrent;
+			RvsBasicSt.batterySOCPrc		= rmtCtrlResp_ptr->CtrlResp.basicSt.batterySOCPrc;
+			RvsBasicSt.dcStatus				= rmtCtrlResp_ptr->CtrlResp.basicSt.dcStatus;
+			RvsBasicSt.gearPosition			= rmtCtrlResp_ptr->CtrlResp.basicSt.gearPosition;
+			RvsBasicSt.insulationRstance	= rmtCtrlResp_ptr->CtrlResp.basicSt.insulationRstance;
+			RvsBasicSt.acceleratePedalprc	= rmtCtrlResp_ptr->CtrlResp.basicSt.acceleratePedalprc;
+			RvsBasicSt.deceleratePedalprc	= rmtCtrlResp_ptr->CtrlResp.basicSt.deceleratePedalprc;
+			RvsBasicSt.canBusActive			= rmtCtrlResp_ptr->CtrlResp.basicSt.canBusActive;
+			RvsBasicSt.bonnetStatus			= rmtCtrlResp_ptr->CtrlResp.basicSt.bonnetStatus;
+			RvsBasicSt.lockStatus			= rmtCtrlResp_ptr->CtrlResp.basicSt.lockStatus;
+			RvsBasicSt.gsmStatus			= rmtCtrlResp_ptr->CtrlResp.basicSt.gsmStatus;
+			RvsBasicSt.wheelTyreMotrSt		= &rmtCtrlResp_ptr->CtrlResp.basicSt.wheelTyreMotrSt	/* OPTIONAL */;
+			RvsBasicSt.vehicleAlarmSt		= rmtCtrlResp_ptr->CtrlResp.basicSt.vehicleAlarmSt;
+			RvsBasicSt.currentJourneyID		= rmtCtrlResp_ptr->CtrlResp.basicSt.currentJourneyID;
+			RvsBasicSt.journeyOdom			= rmtCtrlResp_ptr->CtrlResp.basicSt.journeyOdom;
+			RvsBasicSt.frtLeftSeatHeatLel	= &rmtCtrlResp_ptr->CtrlResp.basicSt.frtLeftSeatHeatLel	/* OPTIONAL */;
+			RvsBasicSt.frtRightSeatHeatLel	= &rmtCtrlResp_ptr->CtrlResp.basicSt.frtRightSeatHeatLel/* OPTIONAL */;
+			RvsBasicSt.airCleanerSt			= &rmtCtrlResp_ptr->CtrlResp.basicSt.airCleanerSt/* OPTIONAL */;
+			RmtCtrlResp.basicVehicleStatus.list.array = &RvsBasicSt_ptr;
+			RmtCtrlResp.basicVehicleStatus.list.size = 0;
+			RmtCtrlResp.basicVehicleStatus.list.count =1;
+
+			ec = uper_encode(pduType_Rmt_Ctrl_resp,(void *) &RmtCtrlResp,PrvtPro_writeout,&key);
+			if(ec.encoded  == -1)
+			{
+				log_i(LOG_HOZON,  "encode:appdata remote_control_resp fail\n");
+				return -1;
+			}
+		}
+		break;
+		case ECDC_RMTCTRL_BOOKINGRESP:
+		{
+			log_i(LOG_HOZON, "encode Ctrl_booking_resp\n");
+			BookingResp_t ctrlBookingResp;
+			PrvtProt_App_rmtCtrl_t *rmtCtrlBookingResp_ptr = (PrvtProt_App_rmtCtrl_t*)appchoice;
+			memset(&ctrlBookingResp,0 , sizeof(BookingResp_t));
+
+			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+			ctrlBookingResp.bookingId = rmtCtrlBookingResp_ptr->CtrlbookingResp.bookingId;
+			ctrlBookingResp.oprTime = rmtCtrlBookingResp_ptr->CtrlbookingResp.oprTime;
+			ctrlBookingResp.rvcReqCode = rmtCtrlBookingResp_ptr->CtrlbookingResp.rvcReqCode;
+			ec = uper_encode(pduType_Rmt_Ctrl_Bookingresp,(void *) &ctrlBookingResp,PrvtPro_writeout,&key);
+			if(ec.encoded  == -1)
+			{
+				log_i(LOG_HOZON,  "encode:appdata Ctrl_booking_resp fail\n");
 				return -1;
 			}
 		}
@@ -919,7 +1022,7 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 					}
 
 					memset(&(app_rmtCfg_ptr->ReadReq),0,sizeof(App_rmtCfg_CfgReadReq_t));
-					if(DecodeCRR.settingIds.list.count < PP_RMTCFG_SETID_MAX)
+					if(DecodeCRR.settingIds.list.count <= PP_RMTCFG_SETID_MAX)
 					{
 						for(i = 0;i < DecodeCRR.settingIds.list.count;i++)
 						{
@@ -935,9 +1038,9 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 			case PP_AID_RMTCTRL:
 			{
 				PrvtProt_App_rmtCtrl_t *app_rmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t*)appData;
-				if(PP_MID_CHECK_CFG_RESP == MID)//check cfg resp
+				if(PP_MID_RMTCTRL_REQ == MID)//check cfg resp
 				{
-					log_i(LOG_HOZON, "remote control check req\n");
+					log_i(LOG_HOZON, "remote control req\n");
 					RmtCtrlReqInfo_t RmtCtrlReq;
 					RmtCtrlReqInfo_t *RmtCtrlReq_ptr = &RmtCtrlReq;
 					memset(&RmtCtrlReq,0 , sizeof(RmtCtrlReqInfo_t));
@@ -950,11 +1053,16 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 					}
 
 					app_rmtCtrl_ptr->CtrlReq.rvcReqType = RmtCtrlReq.rvcReqType;
-					memcpy(app_rmtCtrl_ptr->CtrlReq.rvcReqParams,RmtCtrlReq.rvcReqParams->buf, \
-																RmtCtrlReq.rvcReqParams->size);
-					app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen = RmtCtrlReq.rvcReqParams->size;
-					log_i(LOG_HOZON, "RmtCtrlReq.rvcReqType = %d\n",RmtCtrlReq_ptr->rvcReqType);
-					log_i(LOG_HOZON, "RmtCtrlReq.rvcReqParams = %s\n",app_rmtCtrl_ptr->CtrlReq.rvcReqParams);
+					log_i(LOG_HOZON, "RmtCtrlReq.rvcReqType = %d\n",app_rmtCtrl_ptr->CtrlReq.rvcReqType);
+					app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen = 0;
+					if(RmtCtrlReq.rvcReqParams != NULL)
+					{
+						memcpy(app_rmtCtrl_ptr->CtrlReq.rvcReqParams,RmtCtrlReq.rvcReqParams->buf, \
+																	RmtCtrlReq.rvcReqParams->size);
+						app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen = RmtCtrlReq.rvcReqParams->size;
+						log_i(LOG_HOZON, "RmtCtrlReq.rvcReqParams = %s\n",app_rmtCtrl_ptr->CtrlReq.rvcReqParams);
+						log_i(LOG_HOZON, "RmtCtrlReq.rvcReqParamslen = %d\n",app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen);
+					}
 				}
 			}
 			break;

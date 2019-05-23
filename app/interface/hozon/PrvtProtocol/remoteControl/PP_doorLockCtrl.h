@@ -1,17 +1,16 @@
 /******************************************************
-文件名：	PrvtProt_EcDc.h
+文件名：PP_doorLockCtrl.h
 
-描述：	企业私有协议（浙江合众）	
+描述：	车门锁控制
 
 Data			  Vasion			author
-2019/4/29		V1.0			liujian
+2019/05/18		   V1.0			    liujian
 *******************************************************/
-#ifndef		_PRVTPROT_ECDC_H
-#define		_PRVTPROT_ECDC_H
+#ifndef		_PP_DOORLOCK_CTRL_H
+#define		_PP_DOORLOCK_CTRL_H
 /*******************************************************
 description： include the header file
 *******************************************************/
-
 
 /*******************************************************
 description： macro definitions
@@ -19,10 +18,6 @@ description： macro definitions
 /**********宏开关定义*********/
 
 /**********宏常量定义*********/
-#define PP_ECDC_DATA_LEN 	512//长度
-
-#define PP_ENCODE_DISBODY 	0x01//编码dispatcher header
-#define PP_ENCODE_APPDATA 	0x02//编码app data
 
 
 /***********宏函数***********/
@@ -35,24 +30,15 @@ description： struct definitions
 description： typedef definitions
 *******************************************************/
 /******enum definitions******/
-typedef enum
+typedef struct
 {
-	/*XCALL*/
-	ECDC_XCALL_REQ = 0,//xcall request
-    ECDC_XCALL_RESP,//xcall response
-
-	/*remote config*/
-	ECDC_RMTCFG_CHECK_REQ,//check remote config req
-	ECDC_RMTCFG_GET_REQ,//get remote config req
-	ECDC_RMTCFG_END_REQ,//remote config req end
-	ECDC_RMTCFG_READ_REQ,//remote config read req
-	ECDC_RMTCFG_CONN_RESP,//remote config conn resp
-	ECDC_RMTCFG_READ_RESP,//remote config read req
-	ECDC_RMTCTRL_RESP,//remote control resp
-	ECDC_RMTCTRL_BOOKINGRESP,//remote control booking resp
-	ECDC_APP_MID_MAX
-} ECDC_APP_MID_TYPE;//应用类型
-/*****struct definitions*****/
+	uint8_t req;
+	long reqType;
+	uint8_t CtrlSt;
+	uint64_t period;
+	uint8_t waitSt;
+	uint64_t waittime;
+}__attribute__((packed))  PP_rmtdoorCtrlSt_t; /*remote control结构体*/
 
 /******union definitions*****/
 
@@ -63,8 +49,9 @@ description： variable External declaration
 /*******************************************************
 description： function External declaration
 *******************************************************/
-extern int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
-							  void *disptrBody, void *appchoice);
-extern int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen, \
-										void *DisBody,void *appData);
+extern void PP_doorLockCtrl_init(void);
+extern int 	PP_doorLockCtrl_mainfunction(void *task);
+extern void SetPP_doorLockCtrl_Request(void *appdatarmtCtrl,void *disptrBody);
+extern void PP_doorLockCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
+
 #endif 
