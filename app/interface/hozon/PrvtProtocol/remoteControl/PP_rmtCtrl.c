@@ -44,6 +44,8 @@ description： include the header file
 #include "../PrvtProt_cfg.h"
 #include "../PrvtProt.h"
 #include "PP_doorLockCtrl.h"
+#include "PP_ACCtrl.h"
+#include "PP_ChargeCtrl.h"
 #include "PP_rmtCtrl.h"
 
 /*******************************************************
@@ -82,7 +84,7 @@ static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task);
 static int PP_rmtCtrl_do_mainfunction(PrvtProt_task_t *task,PrvtProt_rmtCtrl_t *rmtCtrl);
 static int PP_rmtCtrl_doorLockCtrl(PrvtProt_task_t *task,PrvtProt_rmtCtrl_t *rmtCtrl);
 
-static int PP_doorLockCtrl_StatusResp(unsigned int reqtype);
+static int PP_doorLockCtrl_StatusResp(long bookingId,unsigned int reqtype);
 /******************************************************
 description： function code
 ******************************************************/
@@ -107,6 +109,8 @@ void PP_rmtCtrl_init(void)
 		PP_rmtCtrl.state[i].reqType = PP_RMTCTRL_UNKNOW;
 	}
 	PP_doorLockCtrl_init();
+	PP_ACCtrl_init();
+	PP_ChargeCtrl_init();
 }
 
 /******************************************************
@@ -129,6 +133,9 @@ int PP_rmtCtrl_mainfunction(void *task)
 				//PP_rmtCtrl_do_mainfunction((PrvtProt_task_t*)task,&PP_rmtCtrl);
 
 	PP_doorLockCtrl_mainfunction((PrvtProt_task_t*)task);
+
+	PP_ACCtrl_mainfunction((PrvtProt_task_t*)task);
+	PP_ChargeCtrl_mainfunction((PrvtProt_task_t*)task);
 	return res;
 }
 
@@ -261,11 +268,12 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 			case PP_RMTCTRL_AC://空调
 			{
-				log_i(LOG_HOZON, "remote RMTCTRL_AC control req");
+				SetPP_ACCtrl_Request(&Appdata,&MsgDataBody);
 			}
 			break;
 			case PP_RMTCTRL_CHARGE://充电
 			{
+				PP_doorLockCtrl_StatusResp(2,(uint16_t)(Appdata.CtrlReq.rvcReqType));
 				log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
 			}
 			break;
@@ -400,19 +408,19 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 		break;
 		case PP_RMTCTRL_DATARECORDER://行车记录仪
 		{
-			PP_doorLockCtrl_StatusResp(reqType);
+			//PP_doorLockCtrl_StatusResp(reqType);
 			log_i(LOG_HOZON, "remote DATARECORDER control req");
 		}
 		break;
 		case PP_RMTCTRL_AC://空调
 		{
-			PP_doorLockCtrl_StatusResp(reqType);
+			PP_doorLockCtrl_StatusResp(1,reqType);
 			log_i(LOG_HOZON, "remote RMTCTRL_AC control req");
 		}
 		break;
 		case PP_RMTCTRL_CHARGE://充电
 		{
-			PP_doorLockCtrl_StatusResp(reqType);
+			PP_doorLockCtrl_StatusResp(2,reqType);
 			log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
 		}
 		break;
@@ -443,7 +451,7 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 
 *备  注：
 ******************************************************/
-static int PP_doorLockCtrl_StatusResp(unsigned int reqtype)
+static int PP_doorLockCtrl_StatusResp(long bookingId,unsigned int reqtype)
 {
 	int msgdatalen;
 	int res;
@@ -469,7 +477,7 @@ static int PP_doorLockCtrl_StatusResp(unsigned int reqtype)
 
 	PrvtProt_App_rmtCtrl_t app_rmtCtrl;
 	/*appdata*/
-	app_rmtCtrl.CtrlbookingResp.bookingId = 1;
+	app_rmtCtrl.CtrlbookingResp.bookingId = bookingId;
 	app_rmtCtrl.CtrlbookingResp.rvcReqCode = (long)reqtype;
 	app_rmtCtrl.CtrlbookingResp.oprTime = PrvtPro_getTimestamp();
 

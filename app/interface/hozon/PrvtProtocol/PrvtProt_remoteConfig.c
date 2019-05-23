@@ -67,57 +67,9 @@ typedef struct
 }__attribute__((packed))  PrvtProt_rmtCfg_t; /*½á¹¹Ìå*/
 
 static PrvtProt_pack_t 		PP_rmtCfg_Pack;
-
 static PrvtProt_rmtCfg_t	PP_rmtCfg;
-#if 0
-static PrvtProt_rmtCfg_t	PP_rmtCfg =
-{
-	{
-	  /* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-		{"**",	0x30,	0,		0xe1,		0,			0x02,	0,		  27}, //ecall response
-		/*   AID  MID  EventTime	ExpTime	EventID		ulMsgCnt  dlMsgCnt	AckedCnt ackReq	 Applen	 AppEc  AppVer  TestFlg  result*/
-		{"100", 1,      0,            0,	PP_INVALID,    0,      0,		0,		 0,		  0,	  0,	 256,	1,			0   } //bcall response
-	},
-	{1,PP_RMTCFG_CFG_IDLE,0,0,0,0}
-};
-#endif
-
 static PrvtProt_App_rmtCfg_t AppData_rmtCfg;
-#if 0
-static PrvtProt_App_rmtCfg_t AppData_rmtCfg =
-{	/*    mcuSw   mpuSw     vehicleVin         iccID                  btMacAddr    configSw     cfgVersion */
-		{"00654","00654","LUZAGAAA6JA000654","89860317452068729781","000000000000","00000","00000000000000000000000000000001" \
-				,5,5,17,20,12,5,32,NULL,NULL,NULL,NULL,NULL,NULL,NULL},\
 
-	/*  needUpdate cfgVersion 					*/
-		{0,       "00000000000000000000000000000000" ,32,NULL },\
-
-	/*     cfgVersion 					*/
-		{"00000000000000000000000000000000" ,32,NULL },\
-
-	/*	result  token                               userID   */
-		{0,      "00000000000000000000000000000000","00000000000000000000000000000000", \
-	/*   tspAddr                            tspUser             tspPass            tspIP        */
-		"00000000000000000000000000000000","0000000000000000","0000000000000000", "000000000000000", \
-	/*    tspSms                           tspPort   apn2addr 	                        apn2User			apn2Pass */
-		"00000000000000000000000000000000","000000", "00000000000000000000000000000000", "0000000000000000","000000", \
-	/*	actived  rcEnabled  svtEnabled vsEnabled  iCallEnabled  bCallEnabled*/
-		0,       0,          0,         0,          0,           0, \
-	/*  eCallEnabled   dcEnabled   dtcEnabled   journeysEnabled  onlineInfEnabled rChargeEnabled   btKeyEntryEnabled     */
-		0,				0,			0,				0,				0,				0,				0,\
-	/*  ecallNO   			bcallNO   		   CCNO */
-		"0000000000000000","0000000000000000","0000000000000000",32,32,32,16,16,15,32,6,32,16,6,16,16,16, \
-		NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,0},
-
-	/*configSuccess  mcuSw   mpuSw   configSw     cfgVersion */
-		{ 0,            "00000","00000","00000","00000000000000000000000000000000" \
-						,5,5,5,32,NULL,NULL,NULL,NULL},\
-	/* configAccepted*/
-		{0},\
-	/* setting ID */
-		{0,0,0,0,0}
-};
-#endif
 /*******************************************************
 description£º function declaration
 *******************************************************/
@@ -181,43 +133,6 @@ void PP_rmtCfg_init(void)
 	AppData_rmtCfg.checkReq.configSwlen = strlen("00000");
 	memcpy(AppData_rmtCfg.checkReq.cfgVersion,"00000000000000000000000000000001",strlen("00000000000000000000000000000001"));
 	AppData_rmtCfg.checkReq.cfgVersionlen = strlen("00000000000000000000000000000001");
-#if 0
-	memcpy(AppData_rmtCfg.ReadResp.cfgVersion,"00000000000000000000000000000000",32);
-	AppData_rmtCfg.ReadResp.cfgVersionlen = 32;
-	memcpy(AppData_rmtCfg.ReadResp.FICM.token,"00000000000000000000000000000000",32);
-	AppData_rmtCfg.ReadResp.FICM.tokenlen = 32;
-	memcpy(AppData_rmtCfg.ReadResp.FICM.userID,"00000000000000000000000000000000",32);
-	AppData_rmtCfg.ReadResp.FICM.userIDlen = 32;
-
-	memcpy(AppData_rmtCfg.ReadResp.APN1.tspAddr,"00000000000000000000000000000000",32);
-	AppData_rmtCfg.ReadResp.APN1.tspAddrlen = 32;
-	memcpy(AppData_rmtCfg.ReadResp.APN1.tspIP,"0000000000000000",15);
-	AppData_rmtCfg.ReadResp.APN1.tspIPlen = 15;
-	memcpy(AppData_rmtCfg.ReadResp.APN1.tspPass,"00000000000000000",16);
-	AppData_rmtCfg.ReadResp.APN1.tspPasslen = 16;
-	memcpy(AppData_rmtCfg.ReadResp.APN1.tspPort,"0000000",6);
-	AppData_rmtCfg.ReadResp.APN1.tspPortlen = 6;
-	memcpy(AppData_rmtCfg.ReadResp.APN1.tspSms,"00000000000000000000000000000000",32);
-	AppData_rmtCfg.ReadResp.APN1.tspSmslen = 32;
-	memcpy(AppData_rmtCfg.ReadResp.APN1.tspUser,"00000000000000000000000000000000",16);
-	AppData_rmtCfg.ReadResp.APN1.tspUserlen = 16;
-
-	memcpy(AppData_rmtCfg.ReadResp.APN2.apn2Address,"00000000000000000000000000000000",32);
-	AppData_rmtCfg.ReadResp.APN2.apn2Addresslen = 32;
-	memcpy(AppData_rmtCfg.ReadResp.APN2.apn2Pass,"000000",6);
-	AppData_rmtCfg.ReadResp.APN2.apn2Passlen = 6;
-	memcpy(AppData_rmtCfg.ReadResp.APN2.apn2User,"00000000000000000",16);
-	AppData_rmtCfg.ReadResp.APN1.tspPasslen = 16;
-
-	memcpy(AppData_rmtCfg.ReadResp.EXTEND.bcallNO,"00000000000000000000000000000000",16);
-	AppData_rmtCfg.ReadResp.EXTEND.bcallNOlen = 16;
-	memcpy(AppData_rmtCfg.ReadResp.EXTEND.ecallNO,"00000000000000000000000000000000",16);
-	AppData_rmtCfg.ReadResp.EXTEND.ecallNOlen = 16;
-	memcpy(AppData_rmtCfg.ReadResp.EXTEND.ccNO,"00000000000000000000000000000000",16);
-	AppData_rmtCfg.ReadResp.EXTEND.ccNOlen = 16;
-#endif
-
-
 }
 
 /******************************************************
