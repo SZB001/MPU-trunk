@@ -55,7 +55,16 @@ description： macro definitions
 #define PP_MID_RMTCTRL_REQ 			1//remote ctrl request
 #define PP_MID_RMTCTRL_RESP 		2//remote ctrl response
 #define PP_MID_RMTCTRL_BOOKINGRESP 	3//remote ctrl booking response
+
+
+#define PP_AID_VS	 		130//车辆状态
+//MID
+#define PP_MID_VS_REQ 	1//VS request
+#define PP_MID_VS_RESP 	2//VS response
+
 /***********宏函数***********/
+typedef void (*PrvtProt_InitObj)(void);//初始化
+typedef int (*PrvtProt_mainFuncObj)(void* x);//
 
 /*******************************************************
 description： struct definitions
@@ -65,13 +74,16 @@ description： struct definitions
 description： typedef definitions
 *******************************************************/
 /******enum definitions******/
-/*typedef enum
+typedef enum
 {
-	PP_APP_HB = 0,//心跳
-	PP_APP_XCALL,//
-	PP_APP_MAX
-} PP_APP_INDEX;
-*/
+	PP_RMTFUNC_XCALL = 0,//XCALL
+	PP_RMTFUNC_CC,//呼叫中心
+	PP_RMTFUNC_CFG,//远程配置
+	PP_RMTFUNC_CTRL,//远程控制
+	PP_RMTFUNC_VS,//车辆状态
+	PP_RMTFUNC_MAX
+} PP_RMTFUNC_INDEX;
+
 
 typedef enum
 {
@@ -165,6 +177,14 @@ typedef struct
 	long	testFlag	/* OPTIONAL */;
 	long	result	/* OPTIONAL */;
 }PrvtProt_DisptrBody_t;
+
+
+typedef struct
+{
+	char funcObj;
+	PrvtProt_InitObj Init;//初始化
+	PrvtProt_mainFuncObj mainFunc;//
+}PrvtProt_RmtFunc_t; /*结构体*/
 
 /******union definitions*****/
 

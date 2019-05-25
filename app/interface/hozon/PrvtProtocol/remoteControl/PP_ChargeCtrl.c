@@ -320,7 +320,7 @@ static int PP_ChargeCtrl_StatusResp(PrvtProt_task_t *task,PrvtProt_rmtChargeCtrl
 	App_rmtChargeCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel= 1	/* OPTIONAL */;
 	App_rmtChargeCtrl.CtrlResp.basicSt.frtRightSeatHeatLel	= 1/* OPTIONAL */;
 	App_rmtChargeCtrl.CtrlResp.basicSt.airCleanerSt	= 1/* OPTIONAL */;
-
+	App_rmtChargeCtrl.CtrlResp.basicSt.srsStatus = 1;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_RESP,PP_rmtChargeCtrl_Pack.msgdata,&msgdatalen,\
 									   &rmtACCtrl->pack.DisBody,&App_rmtChargeCtrl))//数据编码打包是否完成

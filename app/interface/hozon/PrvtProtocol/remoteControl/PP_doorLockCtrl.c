@@ -137,7 +137,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 			PP_rmtdoorCtrl.state.req = 0;
 		}
 	}
-	return res;
+	return 0;
 }
 
 

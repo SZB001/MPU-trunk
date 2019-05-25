@@ -24,6 +24,7 @@ description： include the header file
 #include "PrvtProt_remoteConfig.h"
 //#include "remoteControl/PP_doorLockCtrl.h"
 #include "PP_rmtCtrl.h"
+#include "PrvtProt_VehiSt.h"
 #include "PrvtProt_shell.h"
 /*******************************************************
 description： global variable definitions
@@ -46,6 +47,7 @@ static int PP_shell_setEcallReq(int argc, const char **argv);
 static int PP_shell_setEcallResp(int argc, const char **argv);
 static int PP_shell_SetRmtCfgReq(int argc, const char **argv);
 static int PP_shell_SetRmtCtrlReq(int argc, const char **argv);
+static int PP_shell_SetRmtVSReq(int argc, const char **argv);
 /******************************************************
 description： function code
 ******************************************************/
@@ -68,6 +70,7 @@ void PrvtProt_shell_init(void)
 	shell_cmd_register("HOZON_SetEcallResp", PP_shell_setEcallResp, "set HOZON PrvtProt ecall response");
 	shell_cmd_register("HOZON_SetRmtCfgReq", PP_shell_SetRmtCfgReq, "set HOZON PrvtProt remote config request");
 	shell_cmd_register("HOZON_SetRmtCtrlReq", PP_shell_SetRmtCtrlReq, "set HOZON PrvtProt remote control request");
+	shell_cmd_register("HOZON_SetRmtVSReq", PP_shell_SetRmtVSReq, "set HOZON PrvtProt remote VS request");
 }
 
 
@@ -255,4 +258,31 @@ static int PP_shell_SetRmtCtrlReq(int argc, const char **argv)
     return 0;
 }
 
+/******************************************************
+*函数名：PP_shell_SetRmtVSReq
+
+*形  参：设置
+
+
+*返回值：void
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PP_shell_SetRmtVSReq(int argc, const char **argv)
+{
+	unsigned int rmtVSReq;
+    if (argc != 1)
+    {
+        shellprintf(" usage: HOZON_PP_SetRemoteVSReq <remote check VS req>\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &rmtVSReq);
+
+	PP_VS_SetVSReq((uint8_t)rmtVSReq);
+    sleep(1);
+    return 0;
+}
 

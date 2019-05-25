@@ -48,6 +48,6 @@ description£º variable External declaration
 description£º function External declaration
 *******************************************************/
 extern void PrvtProt_CC_init(void);
-extern void PrvtProt_CC_mainfunction(void);
+extern int PrvtProt_CC_mainfunction(void *task);
 extern void PrvtPro_SetcallCCReq(unsigned char req);
 #endif 

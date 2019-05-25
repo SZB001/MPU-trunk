@@ -24,7 +24,7 @@ description： macro definitions
 #define PP_HB_WAIT_TIMEOUT 	(5*1000)//心跳等待超时时间
 #define PP_XCALL_WAIT_TIMEOUT 	(5*1000)//等待超时时间
 #define PP_RMTCFG_WAIT_TIMEOUT 	(5*1000)//等待超时时间
-#define	PP_INVALID		0xFFFFFFFF
+#define	PP_INIT_EVENTID			0x0
 
 /***********宏函数***********/
 

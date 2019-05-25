@@ -68,9 +68,21 @@ typedef struct
 }__attribute__((packed))  PrvtProt_rmtCtrl_t; /*结构体*/
 
 static PrvtProt_rmtCtrl_t PP_rmtCtrl;
-
 static PrvtProt_pack_t 		PP_rmtCtrl_Pack;
 
+static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
+{
+	{RMTCTRL_DOORLOCK,PP_doorLockCtrl_init,	PP_doorLockCtrl_mainfunction},
+	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
+	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
+	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
+	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
+	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
+	{RMTCTRL_AC,	  PP_ACCtrl_init, 		PP_ACCtrl_mainfunction},
+	{RMTCTRL_CHARGE,  PP_ChargeCtrl_init,	PP_ChargeCtrl_mainfunction},
+	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
+	{RMTCTRL_PANORSUNROOF,NULL,	NULL}
+};
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -80,11 +92,9 @@ description： function declaration
 static int PP_rmtCtrl_do_checksock(PrvtProt_task_t *task);
 static int PP_rmtCtrl_do_rcvMsg(PrvtProt_task_t *task);
 static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len);
-static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task);
-static int PP_rmtCtrl_do_mainfunction(PrvtProt_task_t *task,PrvtProt_rmtCtrl_t *rmtCtrl);
-static int PP_rmtCtrl_doorLockCtrl(PrvtProt_task_t *task,PrvtProt_rmtCtrl_t *rmtCtrl);
+//static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task);
 
-static int PP_doorLockCtrl_StatusResp(long bookingId,unsigned int reqtype);
+static int PP_rmtCtrl_StatusResp(long bookingId,unsigned int reqtype);
 /******************************************************
 description： function code
 ******************************************************/
@@ -107,10 +117,11 @@ void PP_rmtCtrl_init(void)
 	for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
 	{
 		PP_rmtCtrl.state[i].reqType = PP_RMTCTRL_UNKNOW;
+		if(PP_RmtCtrlFunc[i].Init != NULL)
+		{
+			PP_RmtCtrlFunc[i].Init();
+		}
 	}
-	PP_doorLockCtrl_init();
-	PP_ACCtrl_init();
-	PP_ChargeCtrl_init();
 }
 
 /******************************************************
@@ -127,15 +138,18 @@ void PP_rmtCtrl_init(void)
 int PP_rmtCtrl_mainfunction(void *task)
 {
 	int res;
+	int i;
 	res = 		PP_rmtCtrl_do_checksock((PrvtProt_task_t*)task) ||
-				PP_rmtCtrl_do_rcvMsg((PrvtProt_task_t*)task) ;//||
-				//PP_rmtCtrl_do_wait((PrvtProt_task_t*)task) ||
-				//PP_rmtCtrl_do_mainfunction((PrvtProt_task_t*)task,&PP_rmtCtrl);
+				PP_rmtCtrl_do_rcvMsg((PrvtProt_task_t*)task) ;
 
-	PP_doorLockCtrl_mainfunction((PrvtProt_task_t*)task);
+	for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
+	{
+		if(PP_RmtCtrlFunc[i].mainFunc != NULL)
+		{
+			PP_RmtCtrlFunc[i].mainFunc((PrvtProt_task_t*)task);
+		}
+	}
 
-	PP_ACCtrl_mainfunction((PrvtProt_task_t*)task);
-	PP_ChargeCtrl_mainfunction((PrvtProt_task_t*)task);
 	return res;
 }
 
@@ -273,7 +287,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 			case PP_RMTCTRL_CHARGE://充电
 			{
-				PP_doorLockCtrl_StatusResp(2,(uint16_t)(Appdata.CtrlReq.rvcReqType));
+				SetPP_ChargeCtrl_Request(&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
 			}
 			break;
@@ -293,6 +307,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 	}
 }
 
+#if 0
 /******************************************************
 *函数名：PP_rmtCtrl_do_wait
 
@@ -309,62 +324,7 @@ static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task)
 
 	return 0;
 }
-
-/******************************************************
-*函数名：PP_rmtCtrl_do_mainfunction
-
-*形  参：
-
-*返回值：
-
-*描  述：检查ecall等请求
-
-*备  注：
-******************************************************/
-static int PP_rmtCtrl_do_mainfunction(PrvtProt_task_t *task,PrvtProt_rmtCtrl_t *rmtCtrl)
-{
-
-	PP_rmtCtrl_doorLockCtrl(task,rmtCtrl);
-
-	return 0;
-}
-
-/******************************************************
-*函数名：PP_rmtCtrl_doorLockCtrl
-
-*形  参：
-
-*返回值：
-
-*描  述：门锁控制
-
-*备  注：
-******************************************************/
-static int PP_rmtCtrl_doorLockCtrl(PrvtProt_task_t *task,PrvtProt_rmtCtrl_t *rmtCtrl)
-{
-	if(1 != sockproxy_socketState())//socket not open
-	{
-		return 0;
-		//释放资源
-	}
-
-	switch(PP_rmtCtrl.state[RMTCTRL_DOORLOCK].CtrlSt)
-	{
-	case CTRLDOORLOCK_IDLE:
-	{
-		if(PP_RMTCTRL_DOORLOCKOPEN == \
-				PP_rmtCtrl.state[RMTCTRL_DOORLOCK].reqType)//车门锁打开
-		{
-
-		}
-	}
-	break;
-	default:
-	break;
-	}
-
-	return 0;
-}
+#endif
 
 /******************************************************
 *函数名：PP_rmtCtrl_SetCtrlReq
@@ -414,13 +374,13 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 		break;
 		case PP_RMTCTRL_AC://空调
 		{
-			PP_doorLockCtrl_StatusResp(1,reqType);
+			PP_rmtCtrl_StatusResp(1,reqType);
 			log_i(LOG_HOZON, "remote RMTCTRL_AC control req");
 		}
 		break;
 		case PP_RMTCTRL_CHARGE://充电
 		{
-			PP_doorLockCtrl_StatusResp(2,reqType);
+			PP_rmtCtrl_StatusResp(2,reqType);
 			log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
 		}
 		break;
@@ -441,7 +401,7 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 
 
 /******************************************************
-*函数名：PP_doorLockCtrl_StatusResp
+*函数名：PP_rmtCtrl_StatusResp
 
 *形  参：
 
@@ -451,7 +411,7 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 
 *备  注：
 ******************************************************/
-static int PP_doorLockCtrl_StatusResp(long bookingId,unsigned int reqtype)
+static int PP_rmtCtrl_StatusResp(long bookingId,unsigned int reqtype)
 {
 	int msgdatalen;
 	int res;

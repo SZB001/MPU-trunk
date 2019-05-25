@@ -95,18 +95,18 @@ typedef struct
 	uint8_t btMacAddrlen;
 	uint8_t configSwlen;
 	uint8_t cfgVersionlen;
-}App_rmtCfg_checkReq_t;
+}__attribute__((packed)) App_rmtCfg_checkReq_t;
 typedef struct
 {
 	int needUpdate;
 	uint8_t cfgVersion[33];
 	uint8_t cfgVersionlen;
-}App_rmtCfg_checkResp_t;
+}__attribute__((packed)) App_rmtCfg_checkResp_t;
 typedef struct
 {
 	uint8_t cfgVersion[33];
 	uint8_t cfgVersionlen;
-}App_rmtCfg_getReq_t;
+}__attribute__((packed)) App_rmtCfg_getReq_t;
 
 typedef struct
 {
@@ -182,7 +182,8 @@ typedef struct
 	App_rmtCfg_APN2_t 	APN2;
 	App_rmtCfg_COMMON_t COMMON;
 	App_rmtCfg_EXTEND_t EXTEND;
-}App_rmtCfg_getResp_t;
+}__attribute__((packed)) App_rmtCfg_getResp_t;
+
 typedef struct
 {
 	int configSuccess;
@@ -194,7 +195,7 @@ typedef struct
 	uint8_t mpuSwlen;
 	uint8_t configSwlen;
 	uint8_t cfgVersionlen;
-}App_rmtCfg_EndCfgReq_t;
+}__attribute__((packed)) App_rmtCfg_EndCfgReq_t;
 
 typedef struct
 {
@@ -205,7 +206,7 @@ typedef struct
 {
 	long SettingId[PP_RMTCFG_SETID_MAX];
 	uint8_t SettingIdlen;
-}App_rmtCfg_CfgReadReq_t;
+}__attribute__((packed)) App_rmtCfg_CfgReadReq_t;
 
 typedef struct
 {
@@ -218,7 +219,7 @@ typedef struct
 	App_rmtCfg_COMMON_t COMMON;
 	App_rmtCfg_EXTEND_t EXTEND;
 	uint8_t readreq[PP_RMTCFG_SETID_MAX];
-}App_rmtCfg_CfgReadResp_t;
+}__attribute__((packed)) App_rmtCfg_CfgReadResp_t;
 
 typedef struct
 {
@@ -244,7 +245,7 @@ typedef struct
 	App_rmtCfg_CfgReadReq_t	ReadReq;
 	/* read config resp */
 	App_rmtCfg_CfgReadResp_t ReadResp;
-}PrvtProt_App_rmtCfg_t;
+}__attribute__((packed)) PrvtProt_App_rmtCfg_t;
 /******union definitions*****/
 
 /*******************************************************

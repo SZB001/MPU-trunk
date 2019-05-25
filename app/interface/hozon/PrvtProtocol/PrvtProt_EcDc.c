@@ -38,6 +38,10 @@ description： include the header file
 #include "RmtCtrlReqInfo.h"
 #include "RmtCtrlStRespInfo.h"
 #include "BookingResp.h"
+#include "VehicleStReqInfo.h"
+#include "VehicleStRespInfo.h"
+#include "VSgpspos.h"
+#include "VSExtStatus.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
 
@@ -51,7 +55,7 @@ description： include the header file
 #include "PrvtProt.h"
 #include "PrvtProt_EcDc.h"
 #include "remoteControl/PP_rmtCtrl.h"
-
+#include "PrvtProt_VehiSt.h"
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -74,6 +78,10 @@ static asn_TYPE_descriptor_t *pduType_Cfg_read_resp = &asn_DEF_CfgReadRespInfo;
 static asn_TYPE_descriptor_t *pduType_Ctrl_Req = &asn_DEF_RmtCtrlReqInfo;
 static asn_TYPE_descriptor_t *pduType_Rmt_Ctrl_resp = &asn_DEF_RmtCtrlStRespInfo;
 static asn_TYPE_descriptor_t *pduType_Rmt_Ctrl_Bookingresp = &asn_DEF_BookingResp;
+
+static asn_TYPE_descriptor_t *pduType_VS_req = &asn_DEF_VehicleStReqInfo;
+static asn_TYPE_descriptor_t *pduType_VS_resp = &asn_DEF_VehicleStRespInfo;
+
 static uint8_t tboxAppdata[PP_ECDC_DATA_LEN];
 static int tboxAppdataLen;
 static uint8_t tboxDisBodydata[PP_ECDC_DATA_LEN];
@@ -577,6 +585,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			RvsBasicSt.frtLeftSeatHeatLel	= &rmtCtrlResp_ptr->CtrlResp.basicSt.frtLeftSeatHeatLel	/* OPTIONAL */;
 			RvsBasicSt.frtRightSeatHeatLel	= &rmtCtrlResp_ptr->CtrlResp.basicSt.frtRightSeatHeatLel/* OPTIONAL */;
 			RvsBasicSt.airCleanerSt			= &rmtCtrlResp_ptr->CtrlResp.basicSt.airCleanerSt/* OPTIONAL */;
+			RvsBasicSt.srsStatus			= rmtCtrlResp_ptr->CtrlResp.basicSt.srsStatus;
 			RmtCtrlResp.basicVehicleStatus.list.array = &RvsBasicSt_ptr;
 			RmtCtrlResp.basicVehicleStatus.list.size = 0;
 			RmtCtrlResp.basicVehicleStatus.list.count =1;
@@ -604,6 +613,140 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			if(ec.encoded  == -1)
 			{
 				log_i(LOG_HOZON,  "encode:appdata Ctrl_booking_resp fail\n");
+				return -1;
+			}
+		}
+		break;
+		case ECDC_RMTVS_RESP:
+		{
+			log_i(LOG_HOZON, "encode remote_check_vs_resp\n");
+			PrvtProt_App_VS_t *rmtVSResp_ptr = (PrvtProt_App_VS_t*)appchoice;
+			VehicleStRespInfo_t VSResp;
+			memset(&VSResp,0 , sizeof(VehicleStRespInfo_t));
+
+			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+
+			VSgpspos_t VSgpspos;
+			VSgpspos_t *VSgpspos_ptr = &VSgpspos;
+
+			RvsBasicStatus_t	VSBasicSt;
+			RvsBasicStatus_t *VSBasicSt_ptr= &VSBasicSt;
+
+			struct exVehicleSt exVehicleSt;
+			VSExtStatus_t VSExtSt;
+			VSExtStatus_t *VSExtSt_ptr = &VSExtSt;
+			OCTET_STRING_t	alertIds;
+
+			memset(&VSResp,0 , sizeof(VehicleStRespInfo_t));
+			memset(&VSgpspos,0 , sizeof(VSgpspos_t));
+			memset(&VSBasicSt,0 , sizeof(RvsBasicStatus_t));
+			memset(&VSExtSt,0 , sizeof(VSExtStatus_t));
+
+			VSResp.statusTime = rmtVSResp_ptr->VSResp.statusTime;
+
+			VSgpspos.gpsSt = rmtVSResp_ptr->VSResp.gpsPos.gpsSt;//gps状态 0-无效；1-有效
+			VSgpspos.gpsTimestamp = rmtVSResp_ptr->VSResp.gpsPos.gpsTimestamp;//gps时间戳
+			VSgpspos.latitude = rmtVSResp_ptr->VSResp.gpsPos.latitude;//纬度 x 1000000,当GPS信号无效时，值为0
+			VSgpspos.longitude = rmtVSResp_ptr->VSResp.gpsPos.longitude;//经度 x 1000000,当GPS信号无效时，值为0
+			VSgpspos.altitude = rmtVSResp_ptr->VSResp.gpsPos.altitude;//高度（m）
+			VSgpspos.heading = rmtVSResp_ptr->VSResp.gpsPos.heading;//车头方向角度，0为正北方向
+			VSgpspos.gpsSpeed = rmtVSResp_ptr->VSResp.gpsPos.gpsSpeed;//速度 x 10，单位km/h
+			VSgpspos.hdop = rmtVSResp_ptr->VSResp.gpsPos.hdop;//水平精度因子 x 10
+			VSResp.vsgpsPos.list.array = &VSgpspos_ptr;
+			VSResp.vsgpsPos.list.size =0;
+			VSResp.vsgpsPos.list.count =1;
+
+			VSBasicSt.driverDoor 		= &rmtVSResp_ptr->VSResp.basicSt.driverDoor	/* OPTIONAL */;
+			VSBasicSt.driverLock 		= rmtVSResp_ptr->VSResp.basicSt.driverLock;
+			VSBasicSt.passengerDoor 	= &rmtVSResp_ptr->VSResp.basicSt.passengerDoor	/* OPTIONAL */;
+			VSBasicSt.passengerLock 	= rmtVSResp_ptr->VSResp.basicSt.passengerLock;
+			VSBasicSt.rearLeftDoor 		= &rmtVSResp_ptr->VSResp.basicSt.rearLeftDoor	/* OPTIONAL */;
+			VSBasicSt.rearLeftLock 		= rmtVSResp_ptr->VSResp.basicSt.rearLeftLock;
+			VSBasicSt.rearRightDoor 	= &rmtVSResp_ptr->VSResp.basicSt.rearRightDoor	/* OPTIONAL */;
+			VSBasicSt.rearRightLock 	= rmtVSResp_ptr->VSResp.basicSt.rearRightLock;
+			VSBasicSt.bootStatus 		= &rmtVSResp_ptr->VSResp.basicSt.bootStatus	/* OPTIONAL */;
+			VSBasicSt.bootStatusLock 	= rmtVSResp_ptr->VSResp.basicSt.bootStatusLock;
+			VSBasicSt.driverWindow 		= &rmtVSResp_ptr->VSResp.basicSt.driverWindow	/* OPTIONAL */;
+			VSBasicSt.passengerWindow 	= &rmtVSResp_ptr->VSResp.basicSt.passengerWindow	/* OPTIONAL */;
+			VSBasicSt.rearLeftWindow 	= &rmtVSResp_ptr->VSResp.basicSt.rearLeftWindow	/* OPTIONAL */;
+			VSBasicSt.rearRightWinow 	= &rmtVSResp_ptr->VSResp.basicSt.rearRightWinow	/* OPTIONAL */;
+			VSBasicSt.sunroofStatus 	= &rmtVSResp_ptr->VSResp.basicSt.sunroofStatus	/* OPTIONAL */;
+			VSBasicSt.engineStatus 		= rmtVSResp_ptr->VSResp.basicSt.engineStatus;
+			VSBasicSt.accStatus 		= rmtVSResp_ptr->VSResp.basicSt.accStatus;
+			VSBasicSt.accTemp 			= &rmtVSResp_ptr->VSResp.basicSt.accTemp	/* OPTIONAL */;
+			VSBasicSt.accMode 			= &rmtVSResp_ptr->VSResp.basicSt.accMode	/* OPTIONAL */;
+			VSBasicSt.accBlowVolume		= &rmtVSResp_ptr->VSResp.basicSt.accBlowVolume/* OPTIONAL */;
+			VSBasicSt.innerTemp			= rmtVSResp_ptr->VSResp.basicSt.innerTemp;
+			VSBasicSt.outTemp 			= rmtVSResp_ptr->VSResp.basicSt.outTemp;
+			VSBasicSt.sideLightStatus	= rmtVSResp_ptr->VSResp.basicSt.sideLightStatus;
+			VSBasicSt.dippedBeamStatus	= rmtVSResp_ptr->VSResp.basicSt.dippedBeamStatus;
+			VSBasicSt.mainBeamStatus	= rmtVSResp_ptr->VSResp.basicSt.mainBeamStatus;
+			VSBasicSt.hazardLightStus	= rmtVSResp_ptr->VSResp.basicSt.hazardLightStus;
+			VSBasicSt.frtRightTyrePre	= &rmtVSResp_ptr->VSResp.basicSt.frtRightTyrePre/* OPTIONAL */;
+			VSBasicSt.frtRightTyreTemp	= &rmtVSResp_ptr->VSResp.basicSt.frtRightTyreTemp/* OPTIONAL */;
+			VSBasicSt.frontLeftTyrePre	= &rmtVSResp_ptr->VSResp.basicSt.frontLeftTyrePre/* OPTIONAL */;
+			VSBasicSt.frontLeftTyreTemp	= &rmtVSResp_ptr->VSResp.basicSt.frontLeftTyreTemp	/* OPTIONAL */;
+			VSBasicSt.rearRightTyrePre	= &rmtVSResp_ptr->VSResp.basicSt.rearRightTyrePre/* OPTIONAL */;
+			VSBasicSt.rearRightTyreTemp	= &rmtVSResp_ptr->VSResp.basicSt.rearRightTyreTemp	/* OPTIONAL */;
+			VSBasicSt.rearLeftTyrePre	= &rmtVSResp_ptr->VSResp.basicSt.rearLeftTyrePre/* OPTIONAL */;
+			VSBasicSt.rearLeftTyreTemp	= &rmtVSResp_ptr->VSResp.basicSt.rearLeftTyreTemp/* OPTIONAL */;
+			VSBasicSt.batterySOCExact	= rmtVSResp_ptr->VSResp.basicSt.batterySOCExact;
+			VSBasicSt.chargeRemainTim	= &rmtVSResp_ptr->VSResp.basicSt.chargeRemainTim/* OPTIONAL */;
+			VSBasicSt.availableOdomtr	= rmtVSResp_ptr->VSResp.basicSt.availableOdomtr;
+			VSBasicSt.engineRunningTime	= &rmtVSResp_ptr->VSResp.basicSt.engineRunningTime/* OPTIONAL */;
+			VSBasicSt.bookingChargeSt	= rmtVSResp_ptr->VSResp.basicSt.bookingChargeSt;
+			VSBasicSt.bookingChargeHour	= &rmtVSResp_ptr->VSResp.basicSt.bookingChargeHour	/* OPTIONAL */;
+			VSBasicSt.bookingChargeMin	= &rmtVSResp_ptr->VSResp.basicSt.bookingChargeMin/* OPTIONAL */;
+			VSBasicSt.chargeMode		= &rmtVSResp_ptr->VSResp.basicSt.chargeMode/* OPTIONAL */;
+			VSBasicSt.chargeStatus		= &rmtVSResp_ptr->VSResp.basicSt.chargeStatus/* OPTIONAL */;
+			VSBasicSt.powerMode			= &rmtVSResp_ptr->VSResp.basicSt.powerMode/* OPTIONAL */;
+			VSBasicSt.speed				= rmtVSResp_ptr->VSResp.basicSt.speed;
+			VSBasicSt.totalOdometer		= rmtVSResp_ptr->VSResp.basicSt.totalOdometer;
+			VSBasicSt.batteryVoltage	= rmtVSResp_ptr->VSResp.basicSt.batteryVoltage;
+			VSBasicSt.batteryCurrent	= rmtVSResp_ptr->VSResp.basicSt.batteryCurrent;
+			VSBasicSt.batterySOCPrc		= rmtVSResp_ptr->VSResp.basicSt.batterySOCPrc;
+			VSBasicSt.dcStatus			= rmtVSResp_ptr->VSResp.basicSt.dcStatus;
+			VSBasicSt.gearPosition		= rmtVSResp_ptr->VSResp.basicSt.gearPosition;
+			VSBasicSt.insulationRstance	= rmtVSResp_ptr->VSResp.basicSt.insulationRstance;
+			VSBasicSt.acceleratePedalprc= rmtVSResp_ptr->VSResp.basicSt.acceleratePedalprc;
+			VSBasicSt.deceleratePedalprc= rmtVSResp_ptr->VSResp.basicSt.deceleratePedalprc;
+			VSBasicSt.canBusActive		= rmtVSResp_ptr->VSResp.basicSt.canBusActive;
+			VSBasicSt.bonnetStatus		= rmtVSResp_ptr->VSResp.basicSt.bonnetStatus;
+			VSBasicSt.lockStatus		= rmtVSResp_ptr->VSResp.basicSt.lockStatus;
+			VSBasicSt.gsmStatus			= rmtVSResp_ptr->VSResp.basicSt.gsmStatus;
+			VSBasicSt.wheelTyreMotrSt	= &rmtVSResp_ptr->VSResp.basicSt.wheelTyreMotrSt	/* OPTIONAL */;
+			VSBasicSt.vehicleAlarmSt	= rmtVSResp_ptr->VSResp.basicSt.vehicleAlarmSt;
+			VSBasicSt.currentJourneyID	= rmtVSResp_ptr->VSResp.basicSt.currentJourneyID;
+			VSBasicSt.journeyOdom		= rmtVSResp_ptr->VSResp.basicSt.journeyOdom;
+			VSBasicSt.frtLeftSeatHeatLel= &rmtVSResp_ptr->VSResp.basicSt.frtLeftSeatHeatLel	/* OPTIONAL */;
+			VSBasicSt.frtRightSeatHeatLel	= &rmtVSResp_ptr->VSResp.basicSt.frtRightSeatHeatLel/* OPTIONAL */;
+			VSBasicSt.airCleanerSt		= &rmtVSResp_ptr->VSResp.basicSt.airCleanerSt/* OPTIONAL */;
+			VSBasicSt.srsStatus 		= rmtVSResp_ptr->VSResp.basicSt.srsStatus;
+			VSResp.vehiclebasicSt.list.array = &VSBasicSt_ptr;
+			VSResp.vehiclebasicSt.list.size =1;
+			VSResp.vehiclebasicSt.list.count =1;
+
+			if((rmtVSResp_ptr->VSResp.ExtSt.validFlg == 1) && \
+					(rmtVSResp_ptr->VSResp.ExtSt.alertSize != 0))
+			{
+				VSExtSt.alertSize = rmtVSResp_ptr->VSResp.ExtSt.alertSize;
+				alertIds.size = rmtVSResp_ptr->VSResp.ExtSt.alertSize;
+				alertIds.buf = rmtVSResp_ptr->VSResp.ExtSt.alertIds;
+				VSExtSt.alertIds = &alertIds;
+				exVehicleSt.list.array = &VSExtSt_ptr;
+				exVehicleSt.list.count = 1;
+				exVehicleSt.list.size = 1;
+				VSResp.exVehicleSt = &exVehicleSt;
+			}
+			else
+			{
+				VSResp.exVehicleSt = NULL;
+			}
+
+			ec = uper_encode(pduType_VS_resp,(void *) &VSResp,PrvtPro_writeout,&key);
+			if(ec.encoded  == -1)
+			{
+				log_i(LOG_HOZON,  "encode:appdata rmt_VS_resp fail\n");
 				return -1;
 			}
 		}
@@ -1063,6 +1206,28 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						log_i(LOG_HOZON, "RmtCtrlReq.rvcReqParams = %s\n",app_rmtCtrl_ptr->CtrlReq.rvcReqParams);
 						log_i(LOG_HOZON, "RmtCtrlReq.rvcReqParamslen = %d\n",app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen);
 					}
+				}
+			}
+			break;
+			case PP_AID_VS:
+			{
+				PrvtProt_App_VS_t *app_VS_ptr = (PrvtProt_App_VS_t*)appData;
+				if(PP_MID_VS_REQ == MID)//check Vehi status req
+				{
+					log_i(LOG_HOZON, "remote vehi status req\n");
+					VehicleStReqInfo_t VSReq;
+					VehicleStReqInfo_t *VSReq_ptr = &VSReq;
+					memset(&VSReq,0 , sizeof(VehicleStReqInfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_VS_req,(void *) &VSReq_ptr, \
+									 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_e(LOG_HOZON,  "Could not decode remote vehi status check  req application data Frame\n");
+						return -1;
+					}
+
+					app_VS_ptr->VSReq.vehStatusReqType = VSReq.vehStatusReqType;
+					log_i(LOG_HOZON, "VSReq.vehStatusReqType = %d\n",app_VS_ptr->VSReq.vehStatusReqType);
 				}
 			}
 			break;

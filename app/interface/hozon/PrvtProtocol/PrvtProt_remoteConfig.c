@@ -111,7 +111,7 @@ void PP_rmtCfg_init(void)
 	PP_rmtCfg.pack.Header.opera = 0x02;
 	PP_rmtCfg.pack.Header.tboxid = 27;
 	memcpy(PP_rmtCfg.pack.DisBody.aID,"100",strlen("100"));
-	PP_rmtCfg.pack.DisBody.eventId = PP_INVALID;
+	PP_rmtCfg.pack.DisBody.eventId = PP_INIT_EVENTID;
 	PP_rmtCfg.pack.DisBody.appDataProVer = 256;
 	PP_rmtCfg.pack.DisBody.testFlag = 1;
 	PP_rmtCfg.state.req = 1;
@@ -133,6 +133,12 @@ void PP_rmtCfg_init(void)
 	AppData_rmtCfg.checkReq.configSwlen = strlen("00000");
 	memcpy(AppData_rmtCfg.checkReq.cfgVersion,"00000000000000000000000000000001",strlen("00000000000000000000000000000001"));
 	AppData_rmtCfg.checkReq.cfgVersionlen = strlen("00000000000000000000000000000001");
+
+	//读取配置
+	//(void)cfg_get_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,sizeof(App_rmtCfg_CfgReadResp_t));
+
+	//memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.ReadResp.cfgVersion,32);
+	//AppData_rmtCfg.checkReq.cfgVersionlen = 32;
 }
 
 /******************************************************
@@ -390,7 +396,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 			{
 				log_e(LOG_HOZON, "socket send error, reset protocol");
 				sockproxy_socketclose();//by liujian 20190514
-				rmtCfg->state.req = 1;
+				rmtCfg->state.req = 0;
 				rmtCfg->state.reqCnt = 0;
 				rmtCfg->state.period = tm_get_time();
 				rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
@@ -443,7 +449,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 			{
 				log_e(LOG_HOZON, "socket send error, reset protocol");
 				sockproxy_socketclose();//by liujian 20190514
-				rmtCfg->state.req = 1;
+				rmtCfg->state.req = 0;
 				rmtCfg->state.reqCnt = 0;
 				rmtCfg->state.period = tm_get_time();
 				rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
@@ -490,7 +496,6 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				memcpy(&(AppData_rmtCfg.ReadResp.APN2),&(AppData_rmtCfg.getResp.APN2),sizeof(App_rmtCfg_APN2_t));
 				memcpy(&(AppData_rmtCfg.ReadResp.COMMON),&(AppData_rmtCfg.getResp.COMMON),sizeof(App_rmtCfg_COMMON_t));
 				memcpy(&(AppData_rmtCfg.ReadResp.EXTEND),&(AppData_rmtCfg.getResp.EXTEND),sizeof(App_rmtCfg_EXTEND_t));
-
 				rmtCfg->state.cfgsuccess = 1;
 			}
 
@@ -499,7 +504,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 			{
 				log_e(LOG_HOZON, "socket send error, reset protocol");
 				sockproxy_socketclose();//by liujian 20190514
-				rmtCfg->state.req = 1;
+				rmtCfg->state.req = 0;
 				rmtCfg->state.reqCnt = 0;
 				rmtCfg->state.period = tm_get_time();
 				rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
@@ -511,11 +516,10 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				{
 					rmtCfg->state.cfgsuccess = 0;
 					//保存配置，使用新的配置
-					//
-					//
-					memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion, \
-																			  AppData_rmtCfg.checkResp.cfgVersionlen);
-					AppData_rmtCfg.checkReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
+					//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,sizeof(App_rmtCfg_CfgReadResp_t));
+
+					//memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersionlen);
+					//AppData_rmtCfg.checkReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
 				}
 				rmtCfg->state.waitSt  = PP_RMTCFG_WAIT_IDLE;
 				rmtCfg->state.CfgSt 	= PP_RMTCFG_CFG_IDLE;

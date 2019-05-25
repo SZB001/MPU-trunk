@@ -320,6 +320,7 @@ static int PP_ACCtrl_StatusResp(PrvtProt_task_t *task,PrvtProt_rmtACCtrl_t *rmtA
 	App_rmtACCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel= 1	/* OPTIONAL */;
 	App_rmtACCtrl.CtrlResp.basicSt.frtRightSeatHeatLel	= 1/* OPTIONAL */;
 	App_rmtACCtrl.CtrlResp.basicSt.airCleanerSt	= 1/* OPTIONAL */;
+	App_rmtACCtrl.CtrlResp.basicSt.srsStatus = 1;
 
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_RESP,PP_rmtACCtrl_Pack.msgdata,&msgdatalen,\

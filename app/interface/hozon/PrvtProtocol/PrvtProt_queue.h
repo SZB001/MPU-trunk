@@ -19,7 +19,7 @@ description： macro definitions
 
 /**********宏常量定义*********/
 #define PP_DATA_LNG  1456U/*数据队列中数据长*/
-#define PP_QUEUE_LNG  3U/*数据队列长*/
+#define PP_QUEUE_LNG  10U/*数据队列长*/
 
 /***********宏函数***********/
 
@@ -36,6 +36,7 @@ typedef enum
 	PP_XCALL = 0,//
 	PP_REMOTE_CFG,
 	PP_REMOTE_CTRL,
+	PP_REMOTE_VS,
 	PP_MAX
 }PP_RX_OBJ;
 

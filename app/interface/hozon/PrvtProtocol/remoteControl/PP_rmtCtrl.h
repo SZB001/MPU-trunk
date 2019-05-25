@@ -75,7 +75,8 @@ description： macro definitions
 #define PP_RMTCTRL_ALOWSTART			0x0901//
 
 /***********宏函数***********/
-
+typedef void (*PP_rmtCtrlInitObj)(void);//初始化
+typedef int (*PP_rmtCtrlmainFuncObj)(void* x);//
 /*******************************************************
 description： struct definitions
 *******************************************************/
@@ -90,8 +91,8 @@ typedef enum
 	RMTCTRL_PANORSUNROOF,//全景天窗
 	RMTCTRL_AUTODOOR,//自动感应门
 	RMTCTRL_RMTSRCHVEHICLE,//
-	DETECTCAMERA,
-	DATARECORDER,
+	RMTCTRL_DETECTCAMERA,
+	RMTCTRL_DATARECORDER,
 	RMTCTRL_AC,
 	RMTCTRL_CHARGE,
 	RMTCTRL_HIGHTENSIONCTRL,
@@ -205,6 +206,7 @@ typedef struct
 	long	frtLeftSeatHeatLel	/* OPTIONAL */;//取值范围：0-255
 	long	frtRightSeatHeatLel	/* OPTIONAL */;//取值范围：0-255
 	int		airCleanerSt	/* OPTIONAL */;
+	int		srsStatus;
 }__attribute__((packed))  App_rmtCtrlResp_basicSt_t;
 
 typedef struct
@@ -232,6 +234,13 @@ typedef struct
 	App_rmtCtrlbookingResp_t CtrlbookingResp;
 }__attribute__((packed))  PrvtProt_App_rmtCtrl_t;
 
+
+typedef struct
+{
+	char rmtObj;
+	PP_rmtCtrlInitObj 		Init;//初始化
+	PP_rmtCtrlmainFuncObj	mainFunc;//
+}PrvtProt_RmtCtrlFunc_t; /*结构体*/
 /******union definitions*****/
 
 /*******************************************************

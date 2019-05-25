@@ -122,7 +122,7 @@ void PP_xcall_init(void)
 
 		memcpy(PP_xcall[i].packResp.DisBody.aID,"170",3);
 		PP_xcall[i].packResp.DisBody.mID = 2;
-		PP_xcall[i].packResp.DisBody.eventId = PP_INVALID;
+		PP_xcall[i].packResp.DisBody.eventId = PP_INIT_EVENTID;
 		PP_xcall[i].packResp.DisBody.appDataProVer = 256;
 		PP_xcall[i].packResp.DisBody.testFlag = 1;
 	}
@@ -252,7 +252,7 @@ static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,i
 		break;
 		case PP_MID_XCALL_REQ://收到tsp查询请求
 		{
-			if(PP_INVALID == PP_xcall[Appdata.xcallType-1].packResp.DisBody.eventId)
+			if(PP_INIT_EVENTID == PP_xcall[Appdata.xcallType-1].packResp.DisBody.eventId)
 			{
 				PP_xcall[Appdata.xcallType-1].packResp.DisBody.eventId = MsgDataBody.eventId;
 			}
@@ -398,7 +398,7 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	memcpy(&PP_Xcall_Pack, &PP_xcall[XcallType].packResp.Header, sizeof(PrvtProt_pack_Header_t));
 
 	PP_xcall[XcallType].packResp.DisBody.eventTime = PrvtPro_getTimestamp();
-	if(PP_INVALID == PP_xcall[XcallType].packResp.DisBody.eventId)
+	if(PP_INIT_EVENTID == PP_xcall[XcallType].packResp.DisBody.eventId)
 	{
 		PP_xcall[XcallType].packResp.DisBody.eventId = PP_AID_XCALL + PP_xcall[XcallType].Type;
 	}

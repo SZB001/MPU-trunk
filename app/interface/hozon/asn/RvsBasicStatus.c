@@ -1703,6 +1703,15 @@ static asn_TYPE_member_t asn_MBR_RvsBasicStatus_1[] = {
 		0,
 		"airCleanerSt"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct RvsBasicStatus, srsStatus),
+		(ASN_TAG_CLASS_CONTEXT | (65 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_BOOLEAN,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		"srsStatus"
+		},
 };
 static const int asn_MAP_RvsBasicStatus_oms_1[] = { 0, 2, 4, 6, 8, 10, 11, 12, 13, 14, 17, 18, 19, 26, 27, 28, 29, 30, 31, 32, 33, 35, 37, 39, 40, 41, 42, 43, 58, 62, 63, 64 };
 static const ber_tlv_tag_t asn_DEF_RvsBasicStatus_tags_1[] = {
@@ -1773,13 +1782,14 @@ static const asn_TYPE_tag2member_t asn_MAP_RvsBasicStatus_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (61 << 2)), 61, 0, 0 }, /* journeyOdom */
     { (ASN_TAG_CLASS_CONTEXT | (62 << 2)), 62, 0, 0 }, /* frtLeftSeatHeatLel */
     { (ASN_TAG_CLASS_CONTEXT | (63 << 2)), 63, 0, 0 }, /* frtRightSeatHeatLel */
-    { (ASN_TAG_CLASS_CONTEXT | (64 << 2)), 64, 0, 0 } /* airCleanerSt */
+    { (ASN_TAG_CLASS_CONTEXT | (64 << 2)), 64, 0, 0 }, /* airCleanerSt */
+    { (ASN_TAG_CLASS_CONTEXT | (65 << 2)), 65, 0, 0 } /* srsStatus */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_RvsBasicStatus_specs_1 = {
 	sizeof(struct RvsBasicStatus),
 	offsetof(struct RvsBasicStatus, _asn_ctx),
 	asn_MAP_RvsBasicStatus_tag2el_1,
-	65,	/* Count of tags in the map */
+	66,	/* Count of tags in the map */
 	asn_MAP_RvsBasicStatus_oms_1,	/* Optional members */
 	32, 0,	/* Root/Additions */
 	-1,	/* Start extensions */
@@ -1806,7 +1816,7 @@ asn_TYPE_descriptor_t asn_DEF_RvsBasicStatus = {
 		/sizeof(asn_DEF_RvsBasicStatus_tags_1[0]), /* 1 */
 	0,	/* No PER visible constraints */
 	asn_MBR_RvsBasicStatus_1,
-	65,	/* Elements count */
+	66,	/* Elements count */
 	&asn_SPC_RvsBasicStatus_specs_1	/* Additional specs */
 };
 

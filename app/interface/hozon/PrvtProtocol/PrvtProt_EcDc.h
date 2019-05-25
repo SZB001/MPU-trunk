@@ -50,6 +50,7 @@ typedef enum
 	ECDC_RMTCFG_READ_RESP,//remote config read req
 	ECDC_RMTCTRL_RESP,//remote control resp
 	ECDC_RMTCTRL_BOOKINGRESP,//remote control booking resp
+	ECDC_RMTVS_RESP,//remote check vehi status response
 	ECDC_APP_MID_MAX
 } ECDC_APP_MID_TYPE;//应用类型
 /*****struct definitions*****/

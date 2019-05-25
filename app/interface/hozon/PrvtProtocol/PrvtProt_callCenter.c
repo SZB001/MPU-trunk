@@ -67,7 +67,7 @@ void PrvtProt_CC_init(void)
 
 *±¸  ×¢£º
 ******************************************************/
-void PrvtProt_CC_mainfunction(void)
+int PrvtProt_CC_mainfunction(void *task)
 {
 	char argv[11] = "17783007443";
 	if((1 == CC_task.callreq) || (PrvtProt_CC_callreq()))
@@ -75,13 +75,14 @@ void PrvtProt_CC_mainfunction(void)
 	    if( strlen(argv) > 32 )
 	    {
 	    	log_e(LOG_HOZON,"the telephone num too long\r\n");
-	        return;
+	        return -1;
 	    }
 
 	    makecall(argv);
 	    log_e(LOG_HOZON,"begin to make call\r\n");
 	    CC_task.callreq = 0;
 	}
+	return 0;
 }
 
 /******************************************************

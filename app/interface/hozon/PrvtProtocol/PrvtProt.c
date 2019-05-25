@@ -47,6 +47,7 @@ description£º include the header file
 #include "PrvtProt_xcall.h"
 #include "PrvtProt_remoteConfig.h"
 #include "PP_rmtCtrl.h"
+#include "PrvtProt_VehiSt.h"
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -58,14 +59,7 @@ description£º static variable definitions
 *******************************************************/
 static PrvtProt_heartbeat_t PP_heartbeat;
 static PrvtProt_task_t 	pp_task;
-//static PrvtProt_pack_t 	PP_RxPack[PP_APP_MAX];
 static PrvtProt_pack_Header_t 	PP_PackHeader_HB;
-#if 0
-static PrvtProt_pack_Header_t 	PP_PackHeader_HB =
-{/* sign  version  nonce	commtype	safetype	opera	msglen	tboxid*/
-	"**",	0x30,	0,		0x70,		0,			0x01,	18,		  0	  //heart beat
-};
-#endif
 
 typedef struct
 {
@@ -80,44 +74,16 @@ typedef struct
 	PrvtProt_appData_t 		appData;
 }PrvtProt_msgData_t;
 
-#if 0
- PrvtProt_appData_t 		PP_appData =
+
+static PrvtProt_RmtFunc_t PP_RmtFunc[PP_RMTFUNC_MAX] =
 {
-	/*xcallType engineSt totalOdoMr	gps{gpsSt latitude longitude altitude heading gpsSpeed hdop}   srsSt  updataTime	battSOCEx*/
-	{	0,		0xff,	 0,		       {0,    0,       0,       0,        0,       0,       0  },	1,		0,			 0  },
-
-	{/*  mcuSw   mpuSw     vehicleVin         iccID                  btMacAddr    configSw     cfgVersion */
-		{"00000","00000","00000000000000000","00000000000000000000","000000000000","00000","00000000000000000000000000000000" \
-				,5,5,17,20,12,5,32,NULL,NULL,NULL,NULL,NULL,NULL,NULL},\
-
-	/*  needUpdate cfgVersion 					*/
-		{0,        "00000000000000000000000000000000" ,32,NULL },\
-
-	/*     cfgVersion 					*/
-		{"00000000000000000000000000000000" ,32,NULL },\
-
-	/*	result  token                               userID   */
-		{0,      "00000000000000000000000000000000","00000000000000000000000000000000", \
-	/*   tspAddr                            tspUser             tspPass            tspIP        */
-		"00000000000000000000000000000000","0000000000000000","0000000000000000", "000000000000000", \
-	/*    tspSms                           tspPort   apn2addr 	                        apn2User			apn2Pass */
-		"00000000000000000000000000000000","000000", "00000000000000000000000000000000", "0000000000000000","000000", \
-	/*	actived  rcEnabled  svtEnabled vsEnabled  iCallEnabled  bCallEnabled*/
-		0,       0,          0,         0,          0,           0, \
-	/*  eCallEnabled   dcEnabled   dtcEnabled   journeysEnabled  onlineInfEnabled rChargeEnabled   btKeyEntryEnabled     */
-		0,				0,			0,				0,				0,				0,				0,\
-	/*  ecallNO   			bcallNO   		   CCNO */
-		"0000000000000000","0000000000000000","0000000000000000",32,32,32,16,16,15,32,6,32,16,6,16,16,16, \
-		NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,0,0,0,0},
-
-		/*configSuccess  mcuSw   mpuSw   configSw     cfgVersion */
-		{ 0,            "00000","00000","00000","00000000000000000000000000000000" \
-						,5,5,5,32,NULL,NULL,NULL,NULL},\
-		/* configAccepted*/
-			{0}
-	}
+	{PP_RMTFUNC_XCALL,PP_xcall_init,	PP_xcall_mainfunction},
+	{PP_RMTFUNC_CC,	  PrvtProt_CC_init, PrvtProt_CC_mainfunction},
+	{PP_RMTFUNC_CFG,  PP_rmtCfg_init,	PP_rmtCfg_mainfunction},
+	{PP_RMTFUNC_CTRL, PP_rmtCtrl_init,	PP_rmtCtrl_mainfunction},
+	{PP_RMTFUNC_VS,   PP_VS_init,		PP_VS_mainfunction}
 };
-#endif
+
 /*******************************************************
 description£º function declaration
 *******************************************************/
@@ -152,7 +118,7 @@ description£º function code
 int PrvtProt_init(INIT_PHASE phase)
 {
     int ret = 0;
-
+    int obj;
     switch (phase)
     {
         case INIT_PHASE_INSIDE:
@@ -181,11 +147,14 @@ int PrvtProt_init(INIT_PHASE phase)
         break;
         case INIT_PHASE_OUTSIDE:
 		{
-			PrvtProt_CC_init();
 			PrvtProt_shell_init();
-			PP_xcall_init();
-			PP_rmtCfg_init();
-			PP_rmtCtrl_init();
+			for(obj = 0;obj < PP_RMTFUNC_MAX;obj++)
+			{
+				if(PP_RmtFunc[obj].Init != NULL)
+				{
+					PP_RmtFunc[obj].Init();
+				}
+			}
 		}
         break;
     }
@@ -247,6 +216,7 @@ static void *PrvtProt_main(void)
 {
 	log_o(LOG_HOZON, "proprietary protocol  of hozon thread running");
 	int res;
+	int obj;
     prctl(PR_SET_NAME, "HZ_PRVT_PROT");
     while (1)
     {
@@ -261,13 +231,20 @@ static void *PrvtProt_main(void)
 				PrvtPro_do_wait(&pp_task) || 
 				PrvtProt_do_heartbeat(&pp_task);
 
-		(void)PP_xcall_mainfunction(&pp_task);//xcall
+		for(obj = 0;obj < PP_RMTFUNC_MAX;obj++)
+		{
+			if(PP_RmtFunc[obj].mainFunc != NULL)
+			{
+				PP_RmtFunc[obj].mainFunc(&pp_task);
+			}
+		}
 
-		PrvtProt_CC_mainfunction();/* CC request:²¦´ò¾ÈÔ®µç»°*/
-
+		/*PP_xcall_mainfunction(&pp_task);
+		PrvtProt_CC_mainfunction(&pp_task);
 		PP_rmtCfg_mainfunction(&pp_task);
-
 		PP_rmtCtrl_mainfunction(&pp_task);
+		PP_VS_mainfunction(&pp_task);
+*/
     }
 	(void)res;
     return NULL;

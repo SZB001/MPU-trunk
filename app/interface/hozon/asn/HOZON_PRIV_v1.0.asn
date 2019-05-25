@@ -303,7 +303,8 @@ RvsBasicStatus ::= SEQUENCE
 	journeyOdom			INTEGER(0..65535), -- 
 	frtLeftSeatHeatLel	INTEGER(0..255)	OPTIONAL, -- 
 	frtRightSeatHeatLel	INTEGER(0..255)	OPTIONAL, -- 
-	airCleanerSt		BOOLEAN	OPTIONAL --
+	airCleanerSt		BOOLEAN	OPTIONAL, --
+	srsStatus			BOOLEAN --
 }
 
 BookingResp ::= SEQUENCE
@@ -311,6 +312,97 @@ BookingResp ::= SEQUENCE
 	bookingId			INTEGER(0..2147483647), --
 	rvcReqCode			INTEGER(0..65535), -- 
 	oprTime				INTEGER(0..2147483647) --	
+}
+
+VehicleStReqInfo ::= SEQUENCE
+{
+	vehStatusReqType	INTEGER(0..255) -- 
+}
+
+VehicleStRespInfo ::= SEQUENCE
+{
+	statusTime			INTEGER(0..2147483647), -- 
+	vsgpsPos			SEQUENCE(SIZE(1)) OF VSgpspos, -- 
+	vehiclebasicSt		SEQUENCE(SIZE(1)) OF RvsBasicStatus,	--
+	exVehicleSt			SEQUENCE(SIZE(1)) OF VSExtStatus OPTIONAL --
+}
+
+VSgpspos ::= SEQUENCE
+{
+	gpsSt          		BOOLEAN, -- gps状态
+	gpsTimestamp		INTEGER(0..2147483647), -- GPS时间戳
+	latitude			INTEGER(-90000000..90000000), -- 纬度x1000000
+	longitude			INTEGER(-180000000..180000000), -- 经度x1000000
+	altitude			INTEGER(-100..10000), -- 高度
+	heading				INTEGER(0..359), -- 车头方向角度			
+	gpsSpeed			INTEGER(-1000..4500), -- 速度x10
+	hdop				INTEGER(0..1000) -- 水平精度因子x10
+}
+
+VSExtStatus ::= SEQUENCE
+{
+	alertSize			INTEGER(0..255), -- 
+	alertIds			OCTET STRING(SIZE(0..255)) OPTIONAL --
+}
+
+VehicleStAlertInfo ::= SEQUENCE
+{
+	vehicleStatus		SEQUENCE(SIZE(1)) OF RvsVehicleAlert	--	
+}
+
+RvsVehicleAlert ::= SEQUENCE
+{
+	alertTime			INTEGER(0..2147483647), -- 
+	vagpsPos			SEQUENCE(SIZE(1)) OF VSgpspos, -- 
+	alertSize			INTEGER(0..255), -- 
+	alertIds			OCTET STRING(SIZE(0..255)) OPTIONAL --
+}
+
+VehicleStInfo ::= SEQUENCE
+{
+	vehicleStatus		SEQUENCE(SIZE(1)) OF RvsVehicleInfo	--	
+}
+
+RvsVehicleInfo ::= SEQUENCE
+{
+	infoTime			INTEGER(0..2147483647), -- 
+	vigpsPos			SEQUENCE(SIZE(1)) OF VSgpspos, -- 
+	infoSize			INTEGER(0..128) -- 
+}
+
+VehicleSleepStInfo ::= SEQUENCE
+{
+	reason				INTEGER(0..255), -- 
+	vehicleBatterySt	INTEGER(0..255) OPTIONAL-- 
+}
+
+DiagnosticReqInfo ::= SEQUENCE
+{
+	diagCommand			SEQUENCE(SIZE(1..255)) OF DiagCommand --  
+}
+
+DiagCommand ::= SEQUENCE
+{
+	diagType 			INTEGER(0..255) -- 
+}
+
+DiagnosticRespInfo ::= SEQUENCE
+{
+	diagType			INTEGER(0..255), -- 
+	result				BOOLEAN, --
+	failureType			INTEGER(0..255) OPTIONAL, -- 
+	diagCommand			SEQUENCE(SIZE(1..255)) OF DiagCode OPTIONAL --
+}
+
+DiagCode ::= SEQUENCE
+{
+	diagCode 			IA5String(SIZE(5)), -- 
+	diagTime			INTEGER(0..2147483647) -- 
+}
+
+DiagnosticStInfo ::= SEQUENCE
+{
+	diagStatus			SEQUENCE(SIZE(1..255)) OF DiagnosticRespInfo --
 }
 
 END
