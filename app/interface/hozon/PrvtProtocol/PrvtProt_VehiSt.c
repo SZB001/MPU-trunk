@@ -350,7 +350,7 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 
 	/*appdata*/
 	PrvtProtcfg_gpsData_t gpsDt;
-	PP_VS_appdata.VSResp.statusTime = 0;//表示立即执行
+	PP_VS_appdata.VSResp.statusTime = PrvtPro_getTimestamp();//0表示立即执行
 
 	PP_VS_appdata.VSResp.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps状态 0-无效；1-有效;
 	PP_VS_appdata.VSResp.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gps时间戳:系统时间(通过gps校时)

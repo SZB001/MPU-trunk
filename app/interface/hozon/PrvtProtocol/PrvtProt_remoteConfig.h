@@ -18,7 +18,7 @@ description： macro definitions
 /**********宏开关定义*********/
 
 /**********宏常量定义*********/
-#define RMTCFG_DELAY_TIME 		5500//
+#define RMTCFG_DELAY_TIME 		5000//
 //#define PP_XCALL_ACK_WAIT 	0x01//应答成功
 //#define PP_XCALL_ACK_SUCCESS 	0x02//应答成功
 

@@ -46,6 +46,7 @@ description： include the header file
 #include "PP_doorLockCtrl.h"
 #include "PP_ACCtrl.h"
 #include "PP_ChargeCtrl.h"
+#include "PP_rmtCtrl_data.h"
 #include "PP_rmtCtrl.h"
 
 /*******************************************************
@@ -83,6 +84,8 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
 	{RMTCTRL_PANORSUNROOF,NULL,	NULL}
 };
+
+
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -122,6 +125,8 @@ void PP_rmtCtrl_init(void)
 			PP_RmtCtrlFunc[i].Init();
 		}
 	}
+
+	//PP_rmtCtrl_data_init();
 }
 
 /******************************************************
@@ -397,6 +402,50 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 		default:
 		break;
 	}
+}
+
+
+/******************************************************
+*函数名：PP_rmtCtrl_msgSend
+
+*形  参：
+
+*返回值：
+
+*描  述：remote control status response
+
+*备  注：
+******************************************************/
+int PP_rmtCtrl_msgSend(uint8_t* msg,int len,uint8_t type,PP_rmtCtrlsendInform_cb *sendInform_cb,void *Inform_cb_para)
+{
+    int i;
+#if 0
+    pthread_mutex_lock(&PP_senddatamtx);
+
+    gb_pack_t *rpt;
+    list_t *node;
+
+    if ((node = list_get_first(&gb_free_lst)) == NULL)
+    {
+        if ((node = list_get_first(&gb_delay_lst)) == NULL &&
+            (node = list_get_first(&gb_realtm_lst)) == NULL)
+        {
+            /* it should not be happened */
+            log_e(LOG_GB32960, "BIG ERROR: no buffer to use.");
+
+            while (1);
+        }
+    }
+
+    rpt = list_entry(node, gb_pack_t, link);
+    rpt->len  = len;
+    //rpt->seq  = i + 1;
+    rpt->list = &gb_realtm_lst;
+    rpt->type = type;
+    list_insert_before(&gb_realtm_lst, node);
+
+    pthread_mutex_unlock(&PP_senddatamtx);
+#endif
 }
 
 

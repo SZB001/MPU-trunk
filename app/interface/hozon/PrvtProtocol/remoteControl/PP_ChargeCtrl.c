@@ -174,7 +174,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 	}
 
 
-	return res;
+	return 0;
 }
 
 

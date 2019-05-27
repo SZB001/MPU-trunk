@@ -372,7 +372,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 	{
 		case PP_RMTCFG_CFG_IDLE:
 		{
-			if((1 == rmtCfg->state.req) && (rmtCfg->state.reqCnt < 10))
+			if((1 == rmtCfg->state.req) && (rmtCfg->state.reqCnt < PP_RETRANSMIT_TIMES))
 			{
 				if((tm_get_time() - rmtCfg->state.period) >= RMTCFG_DELAY_TIME)
 				{
@@ -420,7 +420,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 					 log_e(LOG_HOZON, "check cfg response time out");
 					 rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
 					 rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
-					 rmtCfg->state.period = tm_get_time();
+					 rmtCfg->state.period = tm_get_time() - RMTCFG_DELAY_TIME;
 				 }
 			}
 			else
@@ -473,7 +473,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 					 log_e(LOG_HOZON, "get cfg response time out");
 					 rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
 					 rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
-					 rmtCfg->state.period = tm_get_time();
+					 rmtCfg->state.period = tm_get_time() - RMTCFG_DELAY_TIME;
 				 }
 			}
 			else

@@ -451,6 +451,11 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 					WrPP_queue(PP_REMOTE_CTRL,rxPack->Header.sign,len);
 				}
 				break;
+				case PP_AID_VS://remote vehi status check
+				{
+					WrPP_queue(PP_REMOTE_VS,rxPack->Header.sign,len);
+				}
+				break;
 				default:
 				{
 					log_e(LOG_HOZON, "rcv unknow ngtp package\r\n");

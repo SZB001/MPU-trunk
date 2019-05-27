@@ -77,6 +77,8 @@ description： macro definitions
 /***********宏函数***********/
 typedef void (*PP_rmtCtrlInitObj)(void);//初始化
 typedef int (*PP_rmtCtrlmainFuncObj)(void* x);//
+
+typedef void (*PP_rmtCtrlsendInform_cb)(void* x);//发送通知回调
 /*******************************************************
 description： struct definitions
 *******************************************************/
@@ -175,9 +177,9 @@ typedef struct
 	long	rearRightTyreTemp	/* OPTIONAL */;//取值范围：0-165
 	long	rearLeftTyrePre	/* OPTIONAL */;//取值范围：0-45
 	long	rearLeftTyreTemp	/* OPTIONAL */;//取值范围：0-165
-	long	 batterySOCExact;//取值范围：0-10000
+	long 	batterySOCExact;//取值范围：0-10000
 	long	chargeRemainTim	/* OPTIONAL */;//取值范围：0-65535
-	long	 availableOdomtr;//取值范围：0-65535
+	long	availableOdomtr;//取值范围：0-65535
 	long	engineRunningTime	/* OPTIONAL */;//取值范围：0-65535
 	int	 	bookingChargeSt;
 	long	bookingChargeHour	/* OPTIONAL */;//取值范围：0-23
@@ -185,11 +187,11 @@ typedef struct
 	long	chargeMode	/* OPTIONAL */;//取值范围：0-255
 	long	chargeStatus	/* OPTIONAL */;//取值范围：0-255
 	long	powerMode	/* OPTIONAL */;//取值范围：0-255
-	long	 speed;//取值范围：0-2500
-	long	 totalOdometer;//取值范围：0-1000000
-	long	 batteryVoltage;//取值范围：0-10000
-	long	 batteryCurrent;//取值范围：0-10000
-	long	 batterySOCPrc;//取值范围：0-100
+	long	speed;//取值范围：0-2500
+	long	totalOdometer;//取值范围：0-1000000
+	long	batteryVoltage;//取值范围：0-10000
+	long	batteryCurrent;//取值范围：0-10000
+	long	batterySOCPrc;//取值范围：0-100
 	int	 dcStatus;
 	long	 gearPosition;//取值范围：0-255
 	long	 insulationRstance;//取值范围：0-60000
@@ -229,8 +231,8 @@ typedef struct
 
 typedef struct
 {
-	App_rmtCtrlReq_t CtrlReq;
-	App_rmtCtrlResp_t CtrlResp;
+	App_rmtCtrlReq_t 	CtrlReq;
+	App_rmtCtrlResp_t 	CtrlResp;
 	App_rmtCtrlbookingResp_t CtrlbookingResp;
 }__attribute__((packed))  PrvtProt_App_rmtCtrl_t;
 
@@ -241,7 +243,10 @@ typedef struct
 	PP_rmtCtrlInitObj 		Init;//初始化
 	PP_rmtCtrlmainFuncObj	mainFunc;//
 }PrvtProt_RmtCtrlFunc_t; /*结构体*/
+
+
 /******union definitions*****/
+
 
 /*******************************************************
 description： variable External declaration
@@ -251,7 +256,7 @@ description： variable External declaration
 description： function External declaration
 *******************************************************/
 extern void PP_rmtCtrl_init(void);
-extern int PP_rmtCtrl_mainfunction(void *task);
+extern int 	PP_rmtCtrl_mainfunction(void *task);
 extern void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 
 #endif 
