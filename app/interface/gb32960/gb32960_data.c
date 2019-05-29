@@ -26,6 +26,8 @@
 #define GB_MAX_EXTR_INFO    16
 #define GB_MAX_MOTOR        4
 
+#define GB_MAX_EVENT_INFO   14
+
 /* vehicle type */
 #define GB_VEHITYPE_ELECT   0x01
 #define GB_VEHITYPE_HYBIRD  0x02
@@ -110,6 +112,7 @@
 #define GB_DATA_BATTTEMP    0x09
 #define GB_DATA_FUELCELL    0x0A
 #define GB_DATA_VIRTUAL     0x0B
+#define GB_DATA_EVENT     	0x0C//by liujian
 
 /* report data type */
 #define GB_RPTTYPE_REALTM   0x02
@@ -146,6 +149,15 @@ typedef struct
     uint8_t vehi_type;
 } gb_vehi_t;
 
+/* event information structure */
+typedef struct
+{
+    int info[GB_MAX_EVENT_INFO];
+    uint8_t oldst[GB_MAX_EVENT_INFO];
+	uint8_t newst[GB_MAX_EVENT_INFO];
+	uint8_t triflg;
+} gb_event_t;
+
 /* fuel cell information structure */
 typedef struct
 {
@@ -174,6 +186,7 @@ typedef struct _gb_info_t
     int extr[GB_MAX_EXTR_INFO];
     int warntrig;
     int warntest;
+	gb_event_t event;
     struct _gb_info_t *next;
 } gb_info_t;
 
@@ -200,7 +213,90 @@ static uint16_t gb_datintv;
 #define DAT_UNLOCK()        pthread_mutex_unlock(&gb_datmtx)
 #define GROUP_SIZE(inf)     RDUP_DIV((inf)->batt.cell_cnt, 200)
 
+/* event report */
+static uint32_t gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
+{
+    uint32_t len = 0, tmp;
+	int i;
+	uint8_t buf[1024];
+	uint8_t *eventcnt_ptr;
+	RTCTIME time;
+	
+	DAT_LOCK();
+	
+    can_get_time(uptime, &time);
+    buf[len++] = time.year - 2000;
+    buf[len++] = time.mon;
+    buf[len++] = time.mday;
+    buf[len++] = time.hour;
+    buf[len++] = time.min;
+    buf[len++] = time.sec;
+    /* data type : event information */
+    buf[len++] = 0x95;//event body type
+    buf[len++] = time.year - 2000;
+    buf[len++] = time.mon;
+    buf[len++] = time.mday;
+    buf[len++] = time.hour;
+    buf[len++] = time.min;
+    buf[len++] = time.sec;
+	eventcnt_ptr = &buf[len++];
+	*eventcnt_ptr = 0;
+	
+	for(i = 0;i < GB_MAX_EVENT_INFO;i++)
+	{
+		if (gbinf->event.info[i])
+		{
+			gbinf->event.newst[i] = dbc_get_signal_from_id(gbinf->event.info[i])->value;
+			if(gbinf->event.newst[i])
+			{
+				if(gbinf->event.oldst[i] == 0)
+				{
+					gbinf->event.triflg = 1;
+				}
+				gbinf->event.oldst[i] = gbinf->event.newst[i];
+				(*eventcnt_ptr) += 1;
+				buf[len++] = i + 1;
+				buf[len++] = 0;
+			}
+			else 
+			{
+				gbinf->event.oldst[i] = 0;
+			}
+		}
+	}
+	
+	if(gbinf->event.triflg == 1)
+	{	
+		gb_pack_t *rpt;
+		list_t *node;
+		log_i(LOG_GB32960, "event trig.");
+		gbinf->event.triflg = 0;
+		if ((node = list_get_first(&gb_free_lst)) == NULL)
+		{
+			if ((node = list_get_first(&gb_delay_lst)) == NULL &&
+					(node = list_get_first(&gb_realtm_lst)) == NULL)
+			{
+				/* it should not be happened */
+				log_e(LOG_GB32960, "BIG ERROR: no buffer to use.");
 
+				while (1);
+			}
+		}
+
+		rpt = list_entry(node, gb_pack_t, link);
+		rpt->len  = len;
+		for(i = 0;i < len;i++)
+		{
+			rpt->data[i] = buf[i];
+		}
+		rpt->seq  = i + 1;
+		rpt->list = &gb_realtm_lst;
+		rpt->type = GB_RPTTYPE_REALTM;
+		list_insert_before(&gb_realtm_lst, node);
+	}
+	DAT_UNLOCK();
+
+}
 
 static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 {
@@ -1345,7 +1441,17 @@ static int gb_data_parse_surfix(gb_info_t *gbinf, int sigid, const char *sfx)
         case GB_DATA_VIRTUAL:
             log_i(LOG_GB32960, "get virtual channe %s", sfx);
             break;
+		case GB_DATA_EVENT:
+		{
+			if (gbindex >= GB_MAX_EVENT_INFO)
+            {
+                log_e(LOG_GB32960, "event info over %d! ", gbindex);
+                break;
+            }
 
+            gbinf->event.info[gbindex] = sigid;
+		}
+		break;
         default:
             log_o(LOG_GB32960, "unkonwn type %s", sfx);
             break;
@@ -1538,26 +1644,29 @@ static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
             break;
 
         case CAN_EVENT_DATAIN:
-            {
-                static int counter = 0;
-                CAN_MSG *msg = (CAN_MSG *)arg1;
+		{
+			static int counter = 0;
+			CAN_MSG *msg = (CAN_MSG *)arg1;
 
-                while (canact && gb_inf && arg2--)
-                {
-                    if (msg->type == 'T' && ++counter == 100)
-                    {
-                        counter = 0;
-                        gb_data_periodic(gb_inf, gb_datintv, msg->uptime);
-                    }
+			while (canact && gb_inf && arg2--)
+			{
+				if (msg->type == 'T' && ++counter == 100)
+				{
+					counter = 0;
+					gb_data_periodic(gb_inf, gb_datintv, msg->uptime);
+				}
 
-                    msg++;
-                }
-
-                break;
-            }
-
+				msg++;
+			}
+			
+			if(gb_inf)
+			{
+				gb_data_eventReport(gb_inf,msg->uptime);
+			}
+		}
+		break;
         default:
-            break;
+        break;
     }
 
     return 0;
