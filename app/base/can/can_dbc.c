@@ -310,6 +310,7 @@ static int dbc_parse_sig_suffix(dbc_data_t *dbc, dbc_sig_t *sig, const char *sfx
     {
         if (*p == '@')
         {
+        	 log_w(LOG_CAN, "suffix is  display: %s", sfx);
             if (sscanf(p, "@%u", &sig->port) != 1)
             {
                 log_e(LOG_CAN, "suffix @x is incorrect: %s", p);
@@ -332,6 +333,7 @@ static int dbc_parse_sig_suffix(dbc_data_t *dbc, dbc_sig_t *sig, const char *sfx
         }
         else if (*p == 'M')
         {
+        	log_w(LOG_CAN, "suffix is  display: %s", sfx);
             if (mc >= 4)
             {
                 log_e(LOG_CAN, "too many MxIx suffix: %s", p);

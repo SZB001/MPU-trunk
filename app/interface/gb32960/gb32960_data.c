@@ -26,7 +26,7 @@
 #define GB_MAX_EXTR_INFO    16
 #define GB_MAX_MOTOR        4
 
-#define GB_MAX_EVENT_INFO   14
+#define GB_MAX_EVENT_INFO   15
 
 /* vehicle type */
 #define GB_VEHITYPE_ELECT   0x01
@@ -214,7 +214,7 @@ static uint16_t gb_datintv;
 #define GROUP_SIZE(inf)     RDUP_DIV((inf)->batt.cell_cnt, 200)
 
 /* event report */
-static uint32_t gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
+static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
 {
     uint32_t len = 0, tmp;
 	int i;
@@ -295,7 +295,6 @@ static uint32_t gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
 		list_insert_before(&gb_realtm_lst, node);
 	}
 	DAT_UNLOCK();
-
 }
 
 static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
@@ -1453,8 +1452,8 @@ static int gb_data_parse_surfix(gb_info_t *gbinf, int sigid, const char *sfx)
 		}
 		break;
         default:
-            log_o(LOG_GB32960, "unkonwn type %s", sfx);
-            break;
+            log_o(LOG_GB32960, "unkonwn type %s%x", sfx ,gbtype);
+       break;
     }
 
     return 5;
@@ -1661,7 +1660,7 @@ static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 			
 			if(gb_inf)
 			{
-				gb_data_eventReport(gb_inf,msg->uptime);
+				//gb_data_eventReport(gb_inf,msg->uptime);
 			}
 		}
 		break;

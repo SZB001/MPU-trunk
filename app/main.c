@@ -52,7 +52,7 @@ int main(int argc , char **argv)
         ftp_init,
         assist_init,
         gb_init,
-        ft_init,
+        //ft_init,
         dsu_init,
         uds_init,
         fct_init,
