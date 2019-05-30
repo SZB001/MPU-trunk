@@ -18,7 +18,7 @@ description： macro definitions
 /**********宏开关定义*********/
 
 /**********宏常量定义*********/
-#define PP_RMTCTRL_MAX_SENDQUEUE		20
+#define PP_RMTCTRL_MAX_SENDQUEUE		30
 /***********宏函数***********/
 typedef void (*PP_rmtCtrlsendInform_cb)(void* x);//发送通知回调
 /*******************************************************

@@ -549,7 +549,7 @@ void fota_rollback(fota_t *fota)
     }
 
     log_o(LOG_FOTA, "FOTA rollback done!");
-    hu_fota_upd_rollupd_reslut_state(error);
+    //hu_fota_upd_rollupd_reslut_state(error);
 }
 
 static int fota_tbox_upgrade(fota_ver_t *ver)

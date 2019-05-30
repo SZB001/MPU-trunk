@@ -111,7 +111,7 @@ void tbox_self_upgrade_report(void)
   // AP_SOCK_INFO* info;
   //  fota_msg_t msgdata;
   //  msgdata.fota_cb(FOTA_EVENT_FINISH, 0);
-  hu_cmd_fota_selupgrade_finish();
+  //hu_cmd_fota_selupgrade_finish();
   //info->waitcnt = 0;
   ecu_selfupgrade_readversion = 1;
   

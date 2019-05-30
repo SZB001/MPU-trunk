@@ -1262,7 +1262,7 @@ void selfupgrade_mpu_only_report(void)
     if (1 == mpu_self_upgrade_finish_report_flag)
     {
         mpu_self_upgrade_finish_report_flag = 0;
-        hu_cmd_fota_selupgrade_finish();//finish report
+        //hu_cmd_fota_selupgrade_finish();//finish report
         file_delete(mpu_selfupgrade_flag_file);
         log_e(LOG_DEV, "repot mpu self upgrade finish ,delete file");
     }
