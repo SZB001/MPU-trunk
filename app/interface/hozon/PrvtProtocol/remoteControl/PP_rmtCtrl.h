@@ -78,7 +78,7 @@ description： macro definitions
 typedef void (*PP_rmtCtrlInitObj)(void);//初始化
 typedef int (*PP_rmtCtrlmainFuncObj)(void* x);//
 
-typedef void (*PP_rmtCtrlsendInform_cb)(void* x);//发送通知回调
+//typedef void (*PP_rmtCtrlsendInform_cb)(void* x);//发送通知回调
 /*******************************************************
 description： struct definitions
 *******************************************************/
@@ -258,5 +258,4 @@ description： function External declaration
 extern void PP_rmtCtrl_init(void);
 extern int 	PP_rmtCtrl_mainfunction(void *task);
 extern void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
-
 #endif 

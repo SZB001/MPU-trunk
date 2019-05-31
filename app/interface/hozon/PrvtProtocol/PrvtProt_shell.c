@@ -74,8 +74,6 @@ void PrvtProt_shell_init(void)
 }
 
 
-
-
 /******************************************************
 *º¯ÊýÃû£ºPP_shell_setHeartBeatPeriod
 
