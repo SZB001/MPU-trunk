@@ -318,8 +318,8 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 
 			CfgReadResp.result = rmtCfgReadResp_ptr->ReadResp.result;
 			log_i(LOG_HOZON, "CfgReadResp.result = %d\n",CfgReadResp.result);
-			CfgReadResp.cfgVersion.buf = rmtCfgReadResp_ptr->checkReq.cfgVersion;
-			CfgReadResp.cfgVersion.size = rmtCfgReadResp_ptr->checkReq.cfgVersionlen;
+			CfgReadResp.cfgVersion.buf = rmtCfgReadResp_ptr->ReadResp.cfgVersion;
+			CfgReadResp.cfgVersion.size = rmtCfgReadResp_ptr->ReadResp.cfgVersionlen;
 			log_i(LOG_HOZON, "CfgReadResp.cfgVersion.buf = %s\n",CfgReadResp.cfgVersion.buf);
 			log_i(LOG_HOZON, "CfgReadResp.cfgVersion.size = %d\n",CfgReadResp.cfgVersion.size);
 			CfgReadResp.ficmConfig 	= NULL;

@@ -26,7 +26,7 @@ description： macro definitions
 #define PP_RMTCFG_WAIT_TIMEOUT 	(5*1000)//等待超时时间
 #define	PP_INIT_EVENTID			0x0
 
-#define	PP_RETRANSMIT_TIMES		3
+#define	PP_RETRANSMIT_TIMES		5
 
 /***********宏函数***********/
 
