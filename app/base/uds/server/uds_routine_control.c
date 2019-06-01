@@ -14,8 +14,9 @@
 #define   CheckLeanTuKey                   0xA400
 
 static unsigned int erasememoryflag;
-extern void ap_do_report_request_tukey_qet(void);
-extern unsigned char tu_key_check_flag_finish;
+//extern void ap_do_report_request_tukey_qet(void);//by liujian 20190601
+//extern unsigned char tu_key_check_flag_finish;
+static unsigned char tu_key_check_flag_finish = 0;
 
 void UDS_SRV_RoutineControl(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DLC)
 {
@@ -168,7 +169,7 @@ void UDS_SRV_RoutineControl(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_
                 case CheckLeanTuKey:
 
                      uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_RequestCorrectlyReceivedResponsePending);
-					 ap_do_report_request_tukey_qet();
+					 //ap_do_report_request_tukey_qet();//by liujian 20190601
 					 int time_conut=0;
 					 time_conut = tm_get_time();
                      while(1)

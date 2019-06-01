@@ -56,9 +56,9 @@ int main(int argc , char **argv)
         dsu_init,
         uds_init,
         fct_init,
-        fota_init,
+        //fota_init,
         //hu_init,
-        ap_init,
+        //ap_init,
 		PrvtProt_init,
 		sockproxy_init,
     };
@@ -81,9 +81,9 @@ int main(int argc , char **argv)
         dsu_run,
         uds_run,
         fct_run,
-        fota_run,
+        //fota_run,
         //hu_run,
-        ap_run,
+        //ap_run,
 		PrvtProt_run,
 		sockproxy_run,
     };

@@ -18,7 +18,7 @@
 
 static unsigned char rawData[1024 * 1024 * 4];
 static unsigned char upg_file_data[2 * 1024 * 1024];
-extern void tbox_self_upgrade_report(void);
+//extern void tbox_self_upgrade_report(void);
 
 
 /****************************************************************
@@ -93,7 +93,7 @@ int upg_ctl_scom_msg_proc(unsigned char *msg, unsigned int len)
             log_o(LOG_DEV, "finish upgrading mcu,end time:%u", (unsigned int)tm_get_time());
             scom_tl_stop_server();
             
-			tbox_self_upgrade_report();
+			//tbox_self_upgrade_report();//by liujian
 
             res.result = SCOM_TL_RET_OK;
             res.reason = 0;
