@@ -104,6 +104,7 @@ description£∫ function code
 ******************************************************/
 void PP_rmtCfg_init(void)
 {
+	int res;
 	memset(&PP_rmtCfg,0 , sizeof(PrvtProt_rmtCfg_t));
 	memcpy(PP_rmtCfg.pack.Header.sign,"**",2);
 	PP_rmtCfg.pack.Header.ver.Byte = 0x30;
@@ -117,7 +118,6 @@ void PP_rmtCfg_init(void)
 	PP_rmtCfg.state.req = 1;
 	PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
 	PP_rmtCfg.state.period = tm_get_time();
-
 	memset(&AppData_rmtCfg,0 , sizeof(PrvtProt_App_rmtCfg_t));
 	memcpy(AppData_rmtCfg.checkReq.mcuSw,"00654",strlen("00654"));
 	AppData_rmtCfg.checkReq.mcuSwlen = strlen("00654");
@@ -125,8 +125,15 @@ void PP_rmtCfg_init(void)
 	AppData_rmtCfg.checkReq.mpuSwlen = strlen("00654");
 	memcpy(AppData_rmtCfg.checkReq.vehicleVin,"LUZAGAAA6JA000654",strlen("LUZAGAAA6JA000654"));
 	AppData_rmtCfg.checkReq.vehicleVinlen = strlen("LUZAGAAA6JA000654");
-	memcpy(AppData_rmtCfg.checkReq.iccID,"89860317452068729781",strlen("89860317452068729781"));
-	AppData_rmtCfg.checkReq.iccIDlen = strlen("89860317452068729781");
+	//memcpy(AppData_rmtCfg.checkReq.iccID,"89860317452068729781",strlen("89860317452068729781"));
+	//AppData_rmtCfg.checkReq.iccIDlen = strlen("89860317452068729781");
+	res = at_get_iccid(AppData_rmtCfg.checkReq.iccID);
+	if(res != 0)
+	{
+		log_e(LOG_HOZON, "get iccid fail");
+	}
+	AppData_rmtCfg.checkReq.iccIDlen = 20;
+
 	memcpy(AppData_rmtCfg.checkReq.btMacAddr,"000000000000",strlen("000000000000"));
 	AppData_rmtCfg.checkReq.btMacAddrlen = strlen("000000000000");
 	memcpy(AppData_rmtCfg.checkReq.configSw,"00000",strlen("00000"));
@@ -137,7 +144,6 @@ void PP_rmtCfg_init(void)
 
 	//∂¡»°≈‰÷√
 	unsigned int len;
-	int res;
 	len = 512;
 	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,&len);
 	if(res==0)
