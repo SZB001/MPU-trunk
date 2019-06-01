@@ -219,6 +219,7 @@ typedef struct
 	App_rmtCfg_COMMON_t COMMON;
 	App_rmtCfg_EXTEND_t EXTEND;
 	uint8_t readreq[PP_RMTCFG_SETID_MAX];
+	uint8_t cfgsuccess;
 }__attribute__((packed)) App_rmtCfg_CfgReadResp_t;
 
 typedef struct

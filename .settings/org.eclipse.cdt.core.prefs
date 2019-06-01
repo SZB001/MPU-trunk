@@ -1,0 +1,15 @@
+eclipse.preferences.version=1
+indexer/indexAllFiles=true
+indexer/indexAllHeaderVersions=true
+indexer/indexAllVersionsSpecificHeaders=
+indexer/indexOnOpen=true
+indexer/indexUnusedHeadersWithAlternateLang=false
+indexer/indexUnusedHeadersWithDefaultLang=true
+indexer/indexerId=org.eclipse.cdt.core.fastIndexer
+indexer/skipFilesLargerThanMB=8
+indexer/skipImplicitReferences=true
+indexer/skipIncludedFilesLargerThanMB=16
+indexer/skipMacroReferences=true
+indexer/skipReferences=false
+indexer/skipTypeReferences=true
+indexer/useHeuristicIncludeResolution=true

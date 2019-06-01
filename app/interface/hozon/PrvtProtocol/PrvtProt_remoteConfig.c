@@ -131,14 +131,37 @@ void PP_rmtCfg_init(void)
 	AppData_rmtCfg.checkReq.btMacAddrlen = strlen("000000000000");
 	memcpy(AppData_rmtCfg.checkReq.configSw,"00000",strlen("00000"));
 	AppData_rmtCfg.checkReq.configSwlen = strlen("00000");
-	memcpy(AppData_rmtCfg.checkReq.cfgVersion,"00000000000000000000000000000001",strlen("00000000000000000000000000000001"));
+	memcpy(AppData_rmtCfg.checkReq.cfgVersion,"00000000000000000000000000000001",\
+											strlen("00000000000000000000000000000001"));
 	AppData_rmtCfg.checkReq.cfgVersionlen = strlen("00000000000000000000000000000001");
 
 	//读取配置
-	//(void)cfg_get_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,sizeof(App_rmtCfg_CfgReadResp_t));
-
-	//memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.ReadResp.cfgVersion,32);
-	//AppData_rmtCfg.checkReq.cfgVersionlen = 32;
+	unsigned int len;
+	int res;
+	len = 512;
+	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,&len);
+	if(res==0)
+	{
+		if(AppData_rmtCfg.ReadResp.cfgsuccess == 1)
+		{
+			log_e(LOG_HOZON, "local config data valid");
+			memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.ReadResp.cfgVersion,32);
+			AppData_rmtCfg.checkReq.cfgVersionlen = 32;
+		}
+		else
+		{
+			log_e(LOG_HOZON, "local config data invalid");
+		}
+	}
+	else
+	{
+		log_e(LOG_HOZON, "read local config data fail");
+		AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = 0;
+		AppData_rmtCfg.ReadResp.APN2.apn2ConfigValid = 0;
+		AppData_rmtCfg.ReadResp.COMMON.commonConfigValid = 0;
+		AppData_rmtCfg.ReadResp.EXTEND.extendConfigValid= 0;
+		AppData_rmtCfg.ReadResp.FICM.ficmConfigValid = 0;
+	}
 }
 
 /******************************************************
@@ -515,11 +538,12 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				if(rmtCfg->state.cfgsuccess == 1)
 				{
 					rmtCfg->state.cfgsuccess = 0;
+					AppData_rmtCfg.ReadResp.cfgsuccess = 1;
 					//保存配置，使用新的配置
-					//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,sizeof(App_rmtCfg_CfgReadResp_t));
+					(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,sizeof(App_rmtCfg_CfgReadResp_t));
 
-					//memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersionlen);
-					//AppData_rmtCfg.checkReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
+					memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersionlen);
+					AppData_rmtCfg.checkReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
 				}
 				rmtCfg->state.waitSt  = PP_RMTCFG_WAIT_IDLE;
 				rmtCfg->state.CfgSt 	= PP_RMTCFG_CFG_IDLE;

@@ -89,7 +89,7 @@ int ap_init(INIT_PHASE phase)
             {
                 unsigned int len;
                 
-                mpu_self_file_exists();
+                //mpu_self_file_exists();
                 
                 len = sizeof(apinfo.url);
                 ret |= cfg_get_para(CFG_ITEM_FTTSP_URL, apinfo.url, &len);
