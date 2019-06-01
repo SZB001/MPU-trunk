@@ -26,7 +26,25 @@
 #define GB_MAX_EXTR_INFO    16
 #define GB_MAX_MOTOR        4
 
-#define GB_MAX_EVENT_INFO   15
+
+/* event information index */
+#define GB_EVT_EPBLAMP_ON       	0x00
+#define GB_EVT_EPBWRONGLAMP_ON      0x01
+#define GB_EVT_REARFOGLAMP_ON       0x02
+#define GB_EVT_POSLAMP_ON         	0x03
+#define GB_EVT_MAINBELTLAMP_ON     	0x04
+#define GB_EVT_PASSBELTLAMP_ON     	0x05
+#define GB_EVT_LEFTTURNLAMP_ON     	0x06
+#define GB_EVT_RIGHTTURNLAMP_ON    	0x07
+#define GB_EVT_NEARLAMP_ON       	0x08//½ü¹âµÆ
+#define GB_EVT_HIGHBEAMLAMP_ON      0x09
+#define GB_EVT_LEFTDRVDOOR_OPEN     0x0a
+#define GB_EVT_RIGHTDRVDOOR_OPEN    0x0b
+#define GB_EVT_LEFTREARDRVDOOR_OPEN      	0x0c
+#define GB_EVT_RIGHTREARDRVDOOR_OPEN      	0x0d
+#define GB_EVT_TAILDOOR_OPEN    			0x0e
+#define GB_MAX_EVENT_INFO   (GB_EVT_TAILDOOR_OPEN + 1)
+
 
 /* vehicle type */
 #define GB_VEHITYPE_ELECT   0x01
@@ -158,6 +176,32 @@ typedef struct
 	uint8_t triflg;
 } gb_event_t;
 
+typedef struct
+{
+    uint8_t type;
+    uint16_t code;
+} gb_eventCode_t;
+
+static gb_eventCode_t	gb_eventCode[GB_MAX_EVENT_INFO] =
+{
+	{GB_EVT_EPBLAMP_ON,0x0001},
+	{GB_EVT_EPBWRONGLAMP_ON,0x0002},
+	{GB_EVT_REARFOGLAMP_ON,0x0003},
+	{GB_EVT_POSLAMP_ON,0x0004},
+	{GB_EVT_MAINBELTLAMP_ON,0x0005},
+	{GB_EVT_PASSBELTLAMP_ON,0x0006},
+	{GB_EVT_LEFTTURNLAMP_ON,0x0007},
+	{GB_EVT_RIGHTTURNLAMP_ON,0x0008},
+	{GB_EVT_NEARLAMP_ON,0x0009},
+	{GB_EVT_HIGHBEAMLAMP_ON,0x0009},
+	{GB_EVT_LEFTDRVDOOR_OPEN,0x000A},
+	{GB_EVT_RIGHTDRVDOOR_OPEN,0x000B},
+	{GB_EVT_LEFTREARDRVDOOR_OPEN,0x000C},
+	{GB_EVT_RIGHTREARDRVDOOR_OPEN,0x000D},
+	{GB_EVT_TAILDOOR_OPEN,0x000E}
+};
+
+
 /* fuel cell information structure */
 typedef struct
 {
@@ -255,8 +299,8 @@ static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
 				}
 				gbinf->event.oldst[i] = gbinf->event.newst[i];
 				(*eventcnt_ptr) += 1;
-				buf[len++] = i + 1;
-				buf[len++] = 0;
+				buf[len++] = gb_eventCode[i].code;
+				buf[len++] = gb_eventCode[i].code >> 8;
 			}
 			else 
 			{
@@ -1660,7 +1704,8 @@ static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 			
 			if(gb_inf)
 			{
-				//gb_data_eventReport(gb_inf,msg->uptime);
+				//log_i(LOG_GB32960, "event check report");
+				gb_data_eventReport(gb_inf,msg->uptime);
 			}
 		}
 		break;
