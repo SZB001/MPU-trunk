@@ -133,25 +133,11 @@ void PP_rmtCfg_init(void)
 	unsigned int len;
 	len = 512;
 	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,&len);
-	if(res==0)
+	if((res==0) && (AppData_rmtCfg.ReadResp.cfgsuccess == 1))
 	{
-		if(AppData_rmtCfg.ReadResp.cfgsuccess == 1)
-		{
-			//log_e(LOG_HOZON, "local config data valid");
-			memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.ReadResp.cfgVersion,32);
-			AppData_rmtCfg.checkReq.cfgVersionlen = 32;
-		}
-		else
-		{
-			//log_e(LOG_HOZON, "local config data invalid");
-			memcpy(AppData_rmtCfg.ReadResp.cfgVersion,AppData_rmtCfg.checkReq.cfgVersion,32);
-			AppData_rmtCfg.ReadResp.cfgVersionlen = 32;
-			AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = 0;
-			AppData_rmtCfg.ReadResp.APN2.apn2ConfigValid = 0;
-			AppData_rmtCfg.ReadResp.COMMON.commonConfigValid = 0;
-			AppData_rmtCfg.ReadResp.EXTEND.extendConfigValid= 0;
-			AppData_rmtCfg.ReadResp.FICM.ficmConfigValid = 0;
-		}
+		//log_e(LOG_HOZON, "local config data valid");
+		memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.ReadResp.cfgVersion,32);
+		AppData_rmtCfg.checkReq.cfgVersionlen = 32;
 	}
 	else
 	{
