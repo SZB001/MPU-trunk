@@ -70,4 +70,5 @@ extern long PrvtProtCfg_engineSt(void);
 extern long PrvtProtCfg_totalOdoMr(void);
 extern long PrvtProtCfg_vehicleSOC(void);
 extern void PrvtProtCfg_gpsData(PrvtProtcfg_gpsData_t *gpsDt);
+extern int PrvtProtCfg_get_iccid(char *iccid);
 #endif 

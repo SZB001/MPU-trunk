@@ -136,20 +136,47 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 	Ìî³ä dispatcher bodyºÍapplication data
 *********************************************/	
 	Bodydata.aID.buf = DisptrBody->aID;
+	log_i(LOG_HOZON, "Bodydata.aID = %s\n",Bodydata.aID.buf);
 	Bodydata.aID.size = 3;
+
 	Bodydata.mID = DisptrBody->mID;
+	log_i(LOG_HOZON, "Bodydata.mID = %d\n",Bodydata.mID);
+
 	Bodydata.eventTime 		= DisptrBody->eventTime;
+	log_i(LOG_HOZON, "Bodydata.eventTime = %d\n",Bodydata.eventTime);
+
 	Bodydata.expirationTime = &DisptrBody->expTime;	/* OPTIONAL */;
+	log_i(LOG_HOZON, "Bodydata.expirationTime = %d\n",*Bodydata.expirationTime);
+
 	Bodydata.eventId 		= &DisptrBody->eventId;/* OPTIONAL */
+	log_i(LOG_HOZON, "Bodydata.eventId = %d\n",*Bodydata.eventId);
+
 	Bodydata.ulMsgCnt 		= &DisptrBody->ulMsgCnt;	/* OPTIONAL */
+	log_i(LOG_HOZON, "Bodydata.ulMsgCnt = %d\n",*Bodydata.ulMsgCnt);
+
 	Bodydata.dlMsgCnt 		= &DisptrBody->dlMsgCnt;	/* OPTIONAL */
+	log_i(LOG_HOZON, "Bodydata.dlMsgCnt = %d\n",*Bodydata.dlMsgCnt);
+
 	Bodydata.msgCntAcked 	= &DisptrBody->msgCntAcked;/* OPTIONAL */
+	log_i(LOG_HOZON, "Bodydata.msgCntAcked = %d\n",*Bodydata.msgCntAcked);
+
 	Bodydata.ackReq			= &DisptrBody->ackReq;/* OPTIONAL */
+	log_i(LOG_HOZON, "Bodydata.ackReq = %d\n",*Bodydata.ackReq);
+
 	Bodydata.appDataLen 	= &DisptrBody->appDataLen;/* OPTIONAL */
+	log_i(LOG_HOZON, "Bodydata.appDataLen = %d\n",*Bodydata.appDataLen);
+
 	Bodydata.appDataEncode	= &DisptrBody->appDataEncode;/* OPTIONAL */
+	log_i(LOG_HOZON, "Bodydata.appDataEncode = %d\n",*Bodydata.appDataEncode);
+
 	Bodydata.appDataProVer	= &DisptrBody->appDataProVer;/* OPTIONAL */
+	log_i(LOG_HOZON, "Bodydata.appDataProVer = %d\n",*Bodydata.appDataProVer);
+
 	Bodydata.testFlag		= &DisptrBody->testFlag;/* OPTIONAL */
+	log_i(LOG_HOZON, "Bodydata.testFlag = %d\n",*Bodydata.testFlag);
+
 	Bodydata.result			= &DisptrBody->result;/* OPTIONAL */
+	log_i(LOG_HOZON, "Bodydata.result = %d\n",*Bodydata.result);
 	
 	asn_enc_rval_t ec;
 	log_i(LOG_HOZON, "uper encode:appdata");
@@ -994,13 +1021,14 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						log_e(LOG_HOZON,  "Could not decode cfg check response application data Frame\n");
 						return -1;
 					}
-
+					log_i(LOG_HOZON, "decode appdata ok\n");
 					app_rmtCfg_ptr->checkResp.needUpdate = cfgcheckResp.needUpdate;
+					log_i(LOG_HOZON, "checkCfgResp.needUpdate = %d\n",app_rmtCfg_ptr->checkResp.needUpdate);
+					log_i(LOG_HOZON, "checkCfgResp.cfgVersionlen = %d\n",cfgcheckResp.cfgVersion->size);
+					app_rmtCfg_ptr->checkResp.cfgVersionlen = cfgcheckResp.cfgVersion->size;
 					memcpy(app_rmtCfg_ptr->checkResp.cfgVersion,cfgcheckResp.cfgVersion->buf, \
 																cfgcheckResp.cfgVersion->size);
-					app_rmtCfg_ptr->checkResp.cfgVersionlen = cfgcheckResp.cfgVersion->size;
-					log_i(LOG_HOZON, "checkCfgResp.needUpdate = %d\n",app_rmtCfg_ptr->checkResp.needUpdate);
-					log_i(LOG_HOZON, "checkCfgResp.cfgVersion = %s\n",app_rmtCfg_ptr->checkResp.cfgVersion);
+					//log_i(LOG_HOZON, "checkCfgResp.cfgVersion = %s\n",app_rmtCfg_ptr->checkResp.cfgVersion);
 				}
 				else if(PP_MID_GET_CFG_RESP == MID)//get cfg resp
 				{

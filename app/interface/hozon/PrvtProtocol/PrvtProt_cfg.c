@@ -10,6 +10,7 @@ Data			Vasion			author
 description： include the header file
 *******************************************************/
 #include "gps_api.h"
+#include "at.h"
 #include "../sockproxy/sockproxy_data.h"
 #include "PrvtProt_cfg.h"
 /*******************************************************
@@ -149,4 +150,16 @@ void PrvtProtCfg_gpsData(PrvtProtcfg_gpsData_t *gpsDt)
 	gpsDt->height = gps_snap.msl;
 	gpsDt->hdop = gps_snap.hdop;
 	gpsDt->kms = gps_snap.kms;
+}
+
+/******************************************************
+*函数名：PrvtProtCfg_get_iccid
+*形  参：
+*返回值：
+*描  述：读取gps数据
+*备  注：
+******************************************************/
+int PrvtProtCfg_get_iccid(char *iccid)
+{
+	return at_get_iccid(iccid);
 }

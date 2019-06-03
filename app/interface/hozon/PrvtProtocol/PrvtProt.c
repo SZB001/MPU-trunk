@@ -132,7 +132,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			pp_task.suspend = 0;
 			pp_task.nonce = 0;/* TCP会话ID 由TSP平台产生 */
 			pp_task.version = 0x30;/* 大/小版本(由TSP平台定义)*/
-			pp_task.tboxid = 27;/* 平台通过tboxID与tboxSN映射 */
+			pp_task.tboxid = 28;/* 平台通过tboxID与tboxSN映射 */
 
 			memset(&PP_PackHeader_HB,0 , sizeof(PrvtProt_pack_Header_t));
 			memcpy(PP_PackHeader_HB.sign,"**",2);
@@ -140,7 +140,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			PP_PackHeader_HB.commtype.Byte = 0x70;
 			PP_PackHeader_HB.opera = 0x01;
 			PP_PackHeader_HB.msglen = 18;
-			PP_PackHeader_HB.tboxid = 27;
+			PP_PackHeader_HB.tboxid = 28;
 		}
         break;
         case INIT_PHASE_RESTORE:
