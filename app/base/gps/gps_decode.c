@@ -7,6 +7,14 @@
 #include "dev_time.h"
 #include "shell_api.h"
 
+#include "tbox_ivi_api.h"
+
+
+extern ivi_client ivi_clients[MAX_IVI_NUM];
+extern void ivi_gps_response_send( int fd );
+extern int tbox_ivi_get_gps_onoff(void);
+
+
 static long long gps_r_distance = 0;  /* realtime distance */
 static long long gps_s_distance = 0;  /* the distance already saved in flash */
 static GPS_DATA gps_snap;
@@ -15,6 +23,124 @@ static pthread_mutex_t gps_snap_mutex;
 static pthread_mutex_t gps_distance_mutex;
 
 extern void gps_do_callback(unsigned int event, unsigned int arg1, unsigned int arg2);
+
+extern pthread_mutex_t nmea_mutex;
+
+char GPSSTR[2048] = {0};
+
+GSV_INFO_T gpGsvInfo;
+static pthread_mutex_t gpGsvInfoMutex;
+
+GSV_INFO_T glGsvInfo;
+static pthread_mutex_t glGsvInfoMutex;
+
+#if 0
+void gps_pack_nmea(unsigned char * nmea)
+{
+    pthread_mutex_lock(&nmea_mutex);
+
+    memset(GPSSTR,0,sizeof(GPSSTR));
+
+    if( memcmp(nmea, "$GPRMC", 6) == 0 )
+    {
+        memcpy(GPSSTR,nmea,strlen((const char *)nmea));
+        strcat(GPSSTR,";");
+    }
+    else if( memcmp(nmea, "$GPGGA", 6) == 0 )
+    {
+        memcpy(GPSSTR,nmea,strlen((const char *)nmea));
+        strcat(GPSSTR,";");
+    }
+    else if( memcmp(nmea, "$GPGSA", 6) == 0 )
+    {
+        memcpy(GPSSTR,nmea,strlen((const char *)nmea));
+        strcat(GPSSTR,";");
+    }
+    else if( memcmp(nmea, "$GPGSV", 6) == 0 )
+    {
+        memcpy(GPSSTR,nmea,strlen((const char *)nmea));
+        strcat(GPSSTR,";");
+    }
+    
+    pthread_mutex_unlock(&nmea_mutex);
+
+    return;  
+}
+#endif
+
+void gps_pack_nmea(unsigned char * nmea)
+{
+    pthread_mutex_lock(&nmea_mutex);
+
+    if( memcmp(nmea, "$GPRMC", 6) == 0 )
+    {
+        strcat(GPSSTR,(const char *)nmea);
+        strcat(GPSSTR,";");
+    }
+    else if( memcmp(nmea, "$GPGGA", 6) == 0 )
+    {
+        strcat(GPSSTR,(const char *)nmea);
+        strcat(GPSSTR,";");
+    }
+    else if( memcmp(nmea, "$GPGSA", 6) == 0 )
+    {
+        strcat(GPSSTR,(const char *)nmea);
+        strcat(GPSSTR,";");
+    }
+    else if( memcmp(nmea, "$GPGSV", 6) == 0 )
+    {
+        strcat(GPSSTR,(const char *)nmea);
+        strcat(GPSSTR,";");
+    }
+    
+    pthread_mutex_unlock(&nmea_mutex);
+
+    return;  
+}
+
+
+void gps_get_nmea(unsigned char * nmea)
+ {
+     if( NULL == nmea )
+     {
+         log_e(LOG_GPS,"gps_get_nmea para error!!!");
+         return ;
+     }
+ 
+     pthread_mutex_lock(&nmea_mutex);
+     memcpy(nmea,GPSSTR,strlen((const char *)GPSSTR));
+     pthread_mutex_unlock(&nmea_mutex);
+ 
+     return ;
+ }
+/****************************************************************
+ function:     gps_init_gp_gsv_info
+ description:  initiaze the GSV infomation of GPS to 0
+ input:        none
+ output:       none
+ return:       none
+ *****************************************************************/
+void gps_init_gp_gsv_info(void)
+{
+    pthread_mutex_lock(&gpGsvInfoMutex);
+    memset(&gpGsvInfo, 0, sizeof(gpGsvInfo));
+    pthread_mutex_unlock(&gpGsvInfoMutex);
+}
+
+/****************************************************************
+ function:     gps_init_gl_gsv_info
+ description:  initiaze the GSV infomation of GL to 0
+ input:        none
+ output:       none
+ return:       none
+ *****************************************************************/
+void gps_init_gl_gsv_info(void)
+{
+    pthread_mutex_lock(&glGsvInfoMutex);
+    memset(&glGsvInfo, 0, sizeof(glGsvInfo));
+    pthread_mutex_unlock(&glGsvInfoMutex);
+}
+
 
 /****************************************************************
  function:     gps_acc_distance
@@ -359,7 +485,11 @@ int gps_decode_init(INIT_PHASE phase)
         case INIT_PHASE_INSIDE:
             pthread_mutex_init(&gps_snap_mutex, NULL);
             pthread_mutex_init(&gps_distance_mutex, NULL);
+			pthread_mutex_init(&gpGsvInfoMutex, NULL);
+            pthread_mutex_init(&glGsvInfoMutex, NULL);
             gps_init_snap();
+			gps_init_gp_gsv_info();
+            gps_init_gl_gsv_info();
             break;
 
         case INIT_PHASE_RESTORE:
@@ -481,16 +611,225 @@ static unsigned int gps_decode_rmc(unsigned char *buf)
         else
         {
             gps_init_snap();
+			gps_init_gp_gsv_info();
+        	gps_init_gl_gsv_info();
             return GPS_INVALID_MSG;
         }
     }
     else
     {
         gps_init_snap();
+		gps_init_gp_gsv_info();
+        gps_init_gl_gsv_info();
         return GPS_INVALID_MSG;
     }
 
     return 0;
+}
+
+static char *gls_get_char_position_in_str(char *buf, char c, int n)
+{
+    int i = 0;
+    int len;
+    int pos = 0;
+
+    if (NULL == buf)
+    {
+        return NULL;
+    }
+
+    len = strlen(buf);
+
+    if (n > len)
+    {
+        return NULL;
+    }
+
+    while (buf[i] != '\0')
+    {
+        if (c == buf[i])
+        {
+            pos ++;
+
+            if (pos == n)
+            {
+                return &buf[i];
+            }
+        }
+
+        i++;
+    }
+
+    return NULL;
+}
+
+static void gps_decode_gpgsv(unsigned char *buf)
+{
+    int i;
+    int numSV = 0;
+    static int frame_cnt = 0;
+    static int frame_current = 1;
+    int frame_cnt_tmp = 0;
+    int frame_current_tmp = 0;
+    static SATELLITE_INFO_T sInfo[64];
+
+    if (sscanf((char const *) &buf[3], "GSV,%d,%d,%2d%*s",
+               &frame_cnt_tmp, &frame_current_tmp, &numSV) == 3)
+    {
+        log_i(LOG_GPS, "frame count: %d ,current frame: %d ,numSV: %d ", frame_cnt_tmp, frame_current_tmp,
+              numSV);
+
+        if (frame_cnt != frame_cnt_tmp)
+        {
+            frame_cnt = frame_cnt_tmp;
+            frame_current = 1;
+        }
+
+        if (frame_current != frame_current_tmp)
+        {
+            frame_current = 1;
+            return;
+        }
+        else
+        {
+            char *tmp_ptr = NULL;
+
+            /* decode data */
+            for (i = 0; i < 4 && (i < numSV - 4 * (frame_current - 1)); i++)
+            {
+                tmp_ptr = gls_get_char_position_in_str((char *)buf, ',', 4 + i * 4);
+
+                if (sscanf(tmp_ptr, ",%d,%d,%d,%2d,%*s", &sInfo[i + 4 * (frame_current - 1)].satelliteId, \
+                           &sInfo[i + 4 * (frame_current - 1)].elevation, \
+                           &sInfo[i + 4 * (frame_current - 1)].azimuth, \
+                           &sInfo[i + 4 * (frame_current - 1)].signalStrength) == 4)
+                {
+                    continue;
+                }
+
+                if (sscanf(tmp_ptr, ",%d,%d,%d,,%*s", &sInfo[i + 4 * (frame_current - 1)].satelliteId, \
+                           &sInfo[i + 4 * (frame_current - 1)].elevation, \
+                           &sInfo[i + 4 * (frame_current - 1)].azimuth) == 3)
+                {
+                    sInfo[i + 4 * (frame_current - 1)].signalStrength = 0;
+                }
+            }
+
+            frame_current++;
+
+            if (frame_current > frame_cnt)
+            {
+                pthread_mutex_lock(&gpGsvInfoMutex);
+                gpGsvInfo.numSV = numSV;
+                log_i(LOG_GPS, "GPSÎÀÐÇ×ÜÊý£º%d", gpGsvInfo.numSV);
+
+                for (i = 0; i < numSV; i++)
+                {
+                    memcpy(&gpGsvInfo.satellite[i], &sInfo[i], sizeof(SATELLITE_INFO_T));
+                    log_i(LOG_GPS, "  ÎÀÐÇ %02d :  ID %02d £¬ÎÀÐÇÑö½Ç %02d £¬ÎÀÐÇ·½Î»½Ç %03d £¬ÐÅÔë±È %02d", \
+                          i, \
+                          gpGsvInfo.satellite[i].satelliteId, \
+                          gpGsvInfo.satellite[i].elevation, \
+                          gpGsvInfo.satellite[i].azimuth, \
+                          gpGsvInfo.satellite[i].signalStrength);
+                }
+
+                pthread_mutex_unlock(&gpGsvInfoMutex);
+                frame_current = 1;
+            }
+        }
+    }
+
+    return;
+}
+
+
+/****************************************************************
+ function:     gps_decode_glgsv
+ description:  decode the message which begin with "$GLGSV"
+ input:        unsigned char * buf, the message which begin with "$GLGSV"
+ output:       none
+ return:       none
+ Liu binkui add for geely
+ *****************************************************************/
+static void gps_decode_glgsv(unsigned char *buf)
+{
+    int i;
+    int numSV = 0;
+    static int frame_cnt = 0;
+    static int frame_current = 1;
+    int frame_cnt_tmp = 0;
+    int frame_current_tmp = 0;
+    static SATELLITE_INFO_T sInfo[64];
+
+    if (sscanf((char const *) &buf[3], "GSV,%d,%d,%2d%*s",
+               &frame_cnt_tmp, &frame_current_tmp, &numSV) == 3)
+    {
+        log_i(LOG_GPS, "frame count: %d ,current frame: %d ,numSV: %d ", frame_cnt_tmp, frame_current_tmp,
+              numSV);
+
+        if (frame_cnt != frame_cnt_tmp)
+        {
+            frame_cnt = frame_cnt_tmp;
+            frame_current = 1;
+        }
+
+        if (frame_current != frame_current_tmp)
+        {
+            frame_current = 1;
+            return;
+        }
+        else
+        {
+            char *tmp_ptr = NULL;
+
+            /* decode data */
+            for (i = 0; i < 4 && (i < numSV - 4 * (frame_current - 1)); i++)
+            {
+                tmp_ptr = gls_get_char_position_in_str((char *)buf, ',', 4 + i * 4);
+
+                if (sscanf(tmp_ptr, ",%d,%d,%d,%2d,%*s", &sInfo[i + 4 * (frame_current - 1)].satelliteId, \
+                           &sInfo[i + 4 * (frame_current - 1)].elevation, \
+                           &sInfo[i + 4 * (frame_current - 1)].azimuth, \
+                           &sInfo[i + 4 * (frame_current - 1)].signalStrength) == 4)
+                {
+                    continue;
+                }
+
+                if (sscanf(tmp_ptr, ",%d,%d,%d,,%*s", &sInfo[i + 4 * (frame_current - 1)].satelliteId, \
+                           &sInfo[i + 4 * (frame_current - 1)].elevation, \
+                           &sInfo[i + 4 * (frame_current - 1)].azimuth) == 3)
+                {
+                    sInfo[i + 4 * (frame_current - 1)].signalStrength = 0;
+                }
+            }
+
+            frame_current++;
+
+            if (frame_current > frame_cnt)
+            {
+                pthread_mutex_lock(&glGsvInfoMutex);
+                glGsvInfo.numSV = numSV;
+                log_i(LOG_GPS, "GLONASS ÎÀÐÇ×ÜÊý£º%d", glGsvInfo.numSV);
+
+                for (i = 0; i < numSV; i++)
+                {
+                    memcpy(&glGsvInfo.satellite[i], &sInfo[i], sizeof(SATELLITE_INFO_T));
+                    log_i(LOG_GPS, "  ÎÀÐÇ %02d :  ID %02d £¬ÎÀÐÇÑö½Ç %02d £¬ÎÀÐÇ·½Î»½Ç %03d £¬ÐÅÔë±È %02d", \
+                          i, \
+                          glGsvInfo.satellite[i].satelliteId, \
+                          glGsvInfo.satellite[i].elevation, \
+                          glGsvInfo.satellite[i].azimuth, \
+                          glGsvInfo.satellite[i].signalStrength);
+                }
+
+                pthread_mutex_unlock(&glGsvInfoMutex);
+                frame_current = 1;
+            }
+        }
+    }
+
+    return;
 }
 
 void gps_update_snap_by_gsa(double Hdop, double Vdop)
@@ -572,12 +911,34 @@ static void gps_decode_gsa(unsigned char *buf)
 int gps_decode(unsigned char *buf)
 {
     int ret;
+	static int gps_sta = 0;
     static unsigned long long llt = 0; // GPS loss lock time
 
-    if (gps_checksum(buf))
+	 if (gps_checksum(buf))
     {
         return 0;
     }
+	 
+    if( 1 == tbox_ivi_get_gps_onoff() )
+    {
+        if( 1 == gps_sta )
+        {
+            gps_pack_nmea( buf );
+        }
+        
+        if( memcmp(buf,"$GPRMC",6) == 0 )
+        {
+            gps_sta = 1;
+            ivi_gps_response_send(ivi_clients[0].fd);
+            memset(GPSSTR,0,sizeof(GPSSTR)); 
+        }
+    }
+#if 0
+    if( 1 == tbox_ivi_get_gps_onoff() )
+    {
+        ivi_gps_response_send(ivi_clients[0].fd);
+    }
+#endif
 
     log_i(LOG_GPS, "received: %s", buf);
     gps_do_callback(GPS_EVENT_DATAIN, (unsigned int) buf, strlen((const char *) buf));
@@ -606,6 +967,7 @@ int gps_decode(unsigned char *buf)
                     {
                         log_o(LOG_GPS, "GPS signal lost or too long unfixed.");
                         gps_dev_reset();
+						gps_set_task_bit(GPS_TASK_WEPH2UBX);//liubinkui add
                     }
                 }
             }
@@ -622,11 +984,16 @@ int gps_decode(unsigned char *buf)
         gps_decode_gga(buf);
         return 0;
     }
-    else if((memcmp(buf, "$GPGSA", 6) == 0) || (memcmp(buf, "$GNGSA", 6) == 0))
-	{
-		gps_decode_gsa(buf);
-		return 0;
-	}
+    else if (memcmp(buf, "$GPGSV", 6) == 0)
+    {
+        gps_decode_gpgsv(buf);
+        return 0;
+    }
+    else if (memcmp(buf, "$GLGSV", 6) == 0)
+    {
+        gps_decode_glgsv(buf);
+        return 0;
+    }
     else
     {
         return 0;

@@ -49,9 +49,11 @@ author        liuzhongwen
 #define MPU_MID_FOTA          0x1200
 #define MPU_MID_GEELYHU       0x1300
 #define MPU_MID_AUTO          0x1400   /* for autopilot tsp */
+#define MPU_MID_IVI           0x1500   /* FCT */
+
 
 #define MPU_MIN_MID           MPU_MID_TIMER
-#define MPU_MAX_MID           MPU_MID_AUTO
+#define MPU_MAX_MID           MPU_MID_IVI
 
 #define MPU_APP_MID_COUNT     (((MPU_MAX_MID - MPU_MIN_MID) >> 8) + 1)
 

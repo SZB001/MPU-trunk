@@ -7,6 +7,9 @@
 
 #define UBX_CFG_INIT_TIMEOUT    (500)
 
+#define UBX_WRITE_INTERVAL    (500)
+
+
 typedef enum
 {
     UBX_CFG_RATE_1HZ = 0,

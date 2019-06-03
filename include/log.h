@@ -49,6 +49,7 @@ typedef enum LOG_ID
     LOG_AUTO,
 	LOG_HOZON,
 	LOG_SOCK_PROXY,
+	LOG_IVI,
     LOG_MAX,
 } LOG_ID;
 

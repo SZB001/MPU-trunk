@@ -19,8 +19,12 @@ typedef struct gps_dev
     int dev_fd;
     timer_t data_timer;
     timer_t cfg_timer;
+    timer_t imp_timer; // import ephemeris timer
     unsigned char cfg_step;
+    unsigned char *eph_ptr; // ephemeris data ptr
+    unsigned char init_ok;//Liu Binkui add for A-GPS
 } GPS_DEV, *PGPS_DEV;
+
 
 int gps_dev_init(INIT_PHASE phase);
 int gps_dev_open(void);

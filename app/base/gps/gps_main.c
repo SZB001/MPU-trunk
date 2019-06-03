@@ -22,6 +22,122 @@ static gps_cb_t gps_cb_lst[GPS_MAX_CALLBACK];
 static pthread_t gps_tid; /* thread id */
 static unsigned char msgbuf[TCOM_MAX_MSG_LEN];
 
+pthread_mutex_t nmea_mutex;
+
+unsigned int gps_task_need_to_handle;
+
+typedef struct
+{
+    int is_dld_ok;
+    int retry_times;
+    char url[256];
+    char local_path[128];
+    int network_state;
+} GPS_EPH_DLD_CTL_T;
+
+static GPS_EPH_DLD_CTL_T gps_eph_dld_ctl;
+
+static pthread_mutex_t gps_eph_dld_ctl_mutex;
+#define GPS_EPH_DLD_LOCK()    pthread_mutex_lock(&gps_eph_dld_ctl_mutex)
+#define GPS_EPH_DLD_UNLOCK()  pthread_mutex_unlock(&gps_eph_dld_ctl_mutex)
+
+#define GPS_HTTP_FILE_PATH "/media/sdcard/mgaonline.ubx"
+
+int gps_set_task_bit(unsigned int mask)
+{
+    gps_task_need_to_handle |= mask;
+    return 0;
+}
+static inline int gps_get_task_bit_val(unsigned int mask)
+{
+    return (gps_task_need_to_handle & mask) ? 1 : 0;
+}
+
+/**
+* 根据mask位 清除task_need_to_handle中对应位的值
+*/
+static inline int gps_clear_task_bit(unsigned int mask)
+{
+    gps_task_need_to_handle &= ~mask;
+    return 0;
+}
+
+
+/**
+* 轮询任务
+*/
+static int gps_polling_tasks_check()
+{
+    if (gps_task_need_to_handle)
+    {
+        if (gps_get_task_bit_val(GPS_TASK_EPH_DLD))
+        {
+            if (!(gps_eph_dld_ctl.is_dld_ok) && gps_eph_dld_ctl.network_state)
+            {
+                /* reauest eph download */
+                //gps_start_eph_dld();
+                log_e(LOG_GPS, "***** start to download eph infomation *****");
+                /* clear eph download task */
+                gps_clear_task_bit(GPS_TASK_EPH_DLD);
+            }
+
+        }
+
+        if (gps_get_task_bit_val(GPS_TASK_WEPH2UBX))
+        {
+            GPS_EPH_DLD_LOCK();
+
+            if (gps_get_ubx_init_sta() && gps_eph_dld_ctl.is_dld_ok)
+            {
+                /* write eph infomation to ublox module */
+                log_e(LOG_GPS, "***** start to write ehpemeris infomation *****");
+                gps_dev_ubx_import_ehpemeris(GPS_HTTP_FILE_PATH);
+                /* clear eph write task */
+                gps_clear_task_bit(GPS_TASK_WEPH2UBX);
+            }
+
+            GPS_EPH_DLD_UNLOCK();
+        }
+
+    }
+
+    return 0;
+} 
+
+//星历下载
+
+#if 0
+static int gps_start_eph_dld(void)
+{
+    icurl_req_t info;
+
+    GPS_EPH_DLD_LOCK();
+
+    info.localpath = GPS_HTTP_FILE_PATH;
+    info.url = gps_eph_dld_ctl.url;
+    info.retry_times = GPS_EPH_DLD_RETRY;
+    info.callback = gps_ephemeris_dld_cb;
+    info.req = CURL_REQ_GET;
+    info.nm_device = GPS_EPH_DLD_DEVICE;
+    info.timeout = GPS_EPH_DLD_TIMEOUT;
+
+    //i_curl_request(icurl_req_t *icurl_req);
+
+    //if (http_download_request(gps_eph_dld_ctl.url, GPS_HTTP_FILE_PATH, NULL, gps_ephemeris_dld_cb) != 0)
+    //if (gps_eph_request_dld(gps_eph_dld_ctl.url, GPS_HTTP_FILE_PATH, gps_ephemeris_dld_cb) != 0)
+    if (i_curl_request(&info) != 0)
+    {
+
+        log_e(LOG_GPS, "request download from \"%s\" fail", gps_eph_dld_ctl.url);
+        GPS_EPH_DLD_UNLOCK();
+        return -1;
+    }
+
+    GPS_EPH_DLD_UNLOCK();
+    return 0;
+}
+#endif
+
 /****************************************************************
  function:     gps_init
  description:  initiaze thread communciation module
@@ -33,6 +149,8 @@ static unsigned char msgbuf[TCOM_MAX_MSG_LEN];
 int gps_init(INIT_PHASE phase)
 {
     int ret;
+
+	unsigned int cfglen;
 
     log_i(LOG_GPS, "init gps thread!");
 
@@ -89,8 +207,13 @@ static void *gps_main(void)
 
     gps_fd = gps_dev_get_fd();
 
+	gps_set_task_bit(GPS_TASK_EPH_DLD);
+	
     while (1)
     {
+    	/* polling task */
+        gps_polling_tasks_check();
+		
         FD_ZERO(&fds);
 
         if (gps_fd >= 0)
@@ -145,11 +268,32 @@ static void *gps_main(void)
                             gps_fd = gps_dev_get_fd();
                             gps_dev_reset();
                         }
+						 gps_set_task_bit(GPS_TASK_EPH_DLD);
                     }
                     else if (PM_MSG_SLEEP == msgheader.msgid || PM_MSG_OFF ==  msgheader.msgid)
                     {
                         gps_dev_close();
+						//gps_reset_eph_dld_ctl_par();
                         gps_fd = -1;
+					
+                    }
+
+                    /* Liu Binkui added for A-GPS */
+                    else if (GPS_MSG_NETWORK == msgheader.msgid)
+                    {
+                        int *network = (int *)msgbuf;
+
+                        if (gps_eph_dld_ctl.network_state != *network)
+                        {
+                            gps_eph_dld_ctl.network_state = *network;
+                        }
+
+                        log_i(LOG_GPS, "get NETWORK message: %d", *network);
+                    }
+                    else if (GPS_MSG_EPH_DLD_OK == msgheader.msgid)
+                    {
+                        /* set write eph task */
+                        gps_set_task_bit(GPS_TASK_WEPH2UBX);
                     }
                 }
             }

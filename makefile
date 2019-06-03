@@ -70,6 +70,7 @@ SUBDIRS := \
 	./app/interface/hozon/PrvtProtocol \
 	./app/interface/hozon/PrvtProtocol/remoteControl \
 	./app/interface/hozon/sockproxy \
+	./app/interface/protobuf \
 	./app \
 	./appl \
 	./shell

@@ -23,6 +23,8 @@
 
 static GPS_DEV gps_dev;
 static unsigned char gps_fix_status = GPS_UNCONNECTED;
+static unsigned char gps_dev_init_status = 0;//liu bin kui add,0:not init 1:init ok
+
 static pthread_mutex_t gps_dev_mutex;
 
 static unsigned char ubx_init_tbl[] =
@@ -34,6 +36,9 @@ static unsigned char ubx_init_tbl[] =
     //UBX_CFG_MSG_GLL_OFF,  // don't disable gngll, avoid the bug of UART2 receiving data exception.
     UBX_CFG_MSG_VTG_OFF,
 };
+	
+static unsigned char ubx_ephemeris_data[8 * 1024];
+
 
 /****************************************************************
  function:       gps_sleep_available
@@ -336,6 +341,86 @@ void gps_dev_recv(void)
 int gps_dev_get_fd(void)
 {
     return gps_dev.dev_fd;
+}
+
+
+int gps_get_ubx_init_sta(void)
+{
+    unsigned char state;
+    pthread_mutex_lock(&gps_dev_mutex);
+    state = gps_dev_init_status;
+    pthread_mutex_unlock(&gps_dev_mutex);
+
+    return state;
+}
+
+int gps_dev_ubx_import_ehpemeris(const char *file)
+{
+    int ret;
+    unsigned int len;
+
+    /* if fixed,don't write */
+    if (gps_get_fix_status() == 2)
+    {
+        log_e(LOG_GPS, "***** GPS has fixed,stop write *****");
+        return 0;
+    }
+
+    if (!file)
+    {
+        log_e(LOG_GPS, "ublox ephemeris file is null!");
+        return -1;
+    }
+
+    len = sizeof(ubx_ephemeris_data);
+
+    ret = file_read(file, ubx_ephemeris_data, &len);
+
+    if (0 != ret)
+    {
+        log_e(LOG_GPS, "read ephemeris file failed!");
+        return -1;
+    }
+
+    gps_dev.eph_ptr = (unsigned char *)ubx_ephemeris_data;
+
+    gps_dev_ubx_write_ehpemeris_data();
+
+    log_o(LOG_GPS, "startup import ehpemeris data to ublox success!");
+
+    return 0;
+}
+
+
+void gps_dev_ubx_write_ehpemeris_data(void)
+{
+    unsigned int len;
+
+    if (gps_dev.eph_ptr && *gps_dev.eph_ptr)
+    {
+        while ((0xB5 != gps_dev.eph_ptr[0]) || (0x62 != gps_dev.eph_ptr[1]))
+        {
+            gps_dev.eph_ptr++;
+        }
+
+        len = gps_dev.eph_ptr[4] + gps_dev.eph_ptr[5] * 256 + 8;
+
+        dev_write(gps_dev.dev_fd, gps_dev.eph_ptr, len);
+        //log_e(LOG_GPS, "***************************************************************");
+        gps_dev.eph_ptr += len;
+
+        if (0 != tm_start(gps_dev.imp_timer, UBX_WRITE_INTERVAL, TIMER_TIMEOUT_REL_ONCE))
+        {
+            log_e(LOG_GPS, "start GPS_MSG_ID_IMP_TIMER error");
+            gps_dev.eph_ptr = (unsigned char *)ubx_ephemeris_data;
+        }
+    }
+    else
+    {
+        gps_dev.eph_ptr = NULL;
+        tm_stop(gps_dev.imp_timer);
+        log_o(LOG_GPS, "ehpemeris data write success");
+    }
 }
 
 /****************************************************************

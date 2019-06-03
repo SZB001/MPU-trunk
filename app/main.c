@@ -27,6 +27,7 @@
 #include "ap_api.h"
 #include "hozon_SP_api.h"
 #include "hozon_PP_api.h"
+#include "tbox_ivi_api.h"
 
 int main(int argc , char **argv)
 {
@@ -61,6 +62,7 @@ int main(int argc , char **argv)
         //ap_init,
 		PrvtProt_init,
 		sockproxy_init,
+		ivi_init,
     };
 
     static module_run_fn run_tbl[] =
@@ -86,6 +88,7 @@ int main(int argc , char **argv)
         //ap_run,
 		PrvtProt_run,
 		sockproxy_run,
+		ivi_run,
     };
 
     log_init();

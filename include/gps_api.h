@@ -11,6 +11,8 @@ author        jinjun
 #include "mid_def.h"
 #include "init.h"
 
+#define GPS_TASK_EPH_DLD  (1<<0)
+#define GPS_TASK_WEPH2UBX (1<<1)
 /* GNSS Type */
 typedef enum GPS_TYPE
 {
@@ -38,6 +40,19 @@ typedef enum GPS_ERROR_CODE
     GPS_INVALID_DISTANCE_LEN,
 } GPS_ERROR_CODE;
 
+typedef struct
+{
+    int satelliteId;
+    int elevation;
+    int azimuth;
+    int signalStrength;
+} SATELLITE_INFO_T;
+
+typedef struct
+{
+    int numSV;
+    SATELLITE_INFO_T satellite[64];
+} GSV_INFO_T;
 #define GPS_TIMEOUT_4S                  (4000)           // 4S
 #define GPS_LOSS_LOCK_TIMEOUT           (300000)         // 300S
 
@@ -45,7 +60,9 @@ typedef enum GPS_MSG_ID
 {
     GPS_MSG_ID_TIMER = MPU_MID_GPS,
     GPS_MSG_ID_DATA_TIMER,
-    GPS_MSG_ID_CFG_TIMER
+    GPS_MSG_ID_CFG_TIMER,
+    GPS_MSG_NETWORK,//Liu Binkui added for A-GPS
+    GPS_MSG_EPH_DLD_OK,//Liu Binkui added for A-GPS
 } GPS_MSG_ID;
 
 /* GPS status */
