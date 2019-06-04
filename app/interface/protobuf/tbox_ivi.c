@@ -24,6 +24,7 @@
 
 static pthread_t ivi_tid;    /* thread id */
 static timer_t ivi_timer;
+static timer_t ivi_power_timer;
 
 
 int tcp_fd = -1;
@@ -438,37 +439,9 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 
             tbox__net__call_action_result__init( &call_request );
 
+			
             
             
-            break;
-        }
-
-        case TBOX__NET__MESSAGETYPE__REQUEST_WIFI_GET_STATUS:
-        {
-            TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_WIFI_STATUS;
-
-            result.result = true;
-            break;
-        }
-
-        case TBOX__NET__MESSAGETYPE__REQUEST_SETUP_WIFI:
-        {
-            TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_WIFI_SETUP_RESULT;
-            result.result = true;
-            break;
-        }
-
-        case TBOX__NET__MESSAGETYPE__REQUEST_WIFI_MACADDRESS:
-        {
-            TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_WIFI_MACADDRESS_RESULT;
-            result.result = true;
-            break;
-        }
-
-        case TBOX__NET__MESSAGETYPE__REQUEST_WIFI_CLIENT_LIST:
-        {
-            TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_WIFI_CLIENT_LIST_RESULT;
-            result.result = true;
             break;
         }
 
@@ -478,13 +451,15 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
             result.result = true;
             break;
         }
+		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO:
+		{
+			break;
+		}
 
-        case TBOX__NET__MESSAGETYPE__REQUEST_CERTIFICATION:
-        {
-            TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_CERTIFICATION_RESULT;
-            result.result = true;
-            break;
-        }
+		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_REMOTEDIAGNOSE:
+		{
+			break;
+		}
         
         default:
         {
@@ -566,19 +541,19 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
         {
             break;
         }
-		//心跳请求
+		//蹇冭烦璇锋眰
         case TBOX__NET__MESSAGETYPE__REQUEST_HEARTBEAT_SIGNAL:
         {
             ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_HEARTBEAT_SIGNAL);
             break;
         }
-		//网络制式和信号强度请求
+		//缃戠粶鍒跺紡鍜屼俊鍙峰己搴﹁姹�
         case TBOX__NET__MESSAGETYPE__REQUEST_NETWORK_SIGNAL_STRENGTH:
         {
             ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_NETWORK_SIGNAL_STRENGTH);
             break;
         }
-		//ECALL/BCALL/ICALL请求
+		//ECALL/BCALL/ICALL璇锋眰
         case TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION:
         {
             switch( TopMsg->call_action->type )
@@ -668,105 +643,11 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
             }
             break;
         }
-
-        case TBOX__NET__MESSAGETYPE__REQUEST_WIFI_GET_STATUS:
-        {
-            ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_WIFI_GET_STATUS);
-            break;
-        }
-
-        case TBOX__NET__MESSAGETYPE__REQUEST_SETUP_WIFI:
-        {
-            switch( TopMsg->wifi_set_cmd->cmd )
-            {
-                case TBOX__NET__WIFI_SET_CMD_ENUM__WIFI_ENABLE:
-                {
-                    if( true == TopMsg->wifi_set_cmd->cmd_para_value->wifi_enabled )
-                    {
-                        wifi_enable();
-                    }
-                    else if( false == TopMsg->wifi_set_cmd->cmd_para_value->wifi_enabled )
-                    {
-                        wifi_disable();
-                    }
-
-                    ivi_msg_response_send(fd,TBOX__NET__MESSAGETYPE__REQUEST_SETUP_WIFI);
-                    break;
-                }
-
-                case TBOX__NET__WIFI_SET_CMD_ENUM__WIFI_AP_SSID:
-                {
-#if 0                    
-                    char ssid[32 + 1] = {0};
-
-                    if( TopMsg->wifi_set_cmd->cmd_para_value->wifi_ap_ssid->len > 0 )
-                    {
-                        memcpy(ssid,TopMsg->wifi_set_cmd->cmd_para_value->wifi_ap_ssid->buf,TopMsg->wifi_set_cmd->cmd_para_value->wifi_ap_ssid->len);
-                        wifi_set_ssid( ssid );
-                        ivi_msg_response_send(fd,TBOX__NET__MESSAGETYPE__REQUEST_SETUP_WIFI);
-                    }
-                    else
-                    {
-                        ivi_msg_error_response_send(fd,TBOX__NET__MESSAGETYPE__RESPONSE_WIFI_SETUP_RESULT,"wifi ssid illegal");
-                    }
-#endif                    
-                    break;
-                }
-
-                case TBOX__NET__WIFI_SET_CMD_ENUM__WIFI_AP_PASSWORD:
-                {
-#if 0                    
-                    char passwd[32 + 1] = {0};
-
-                    if( strlen(TopMsg->wifi_set_cmd->cmd_para_value->wifi_ap_password) > 0 )
-                    {
-                        memcpy(passwd,TopMsg->wifi_set_cmd->cmd_para_value->wifi_ap_password,strlen(TopMsg->wifi_set_cmd->cmd_para_value->wifi_ap_password));
-                        wifi_set_key( passwd );
-                        ivi_msg_response_send(fd,TBOX__NET__MESSAGETYPE__REQUEST_SETUP_WIFI);
-                    }
-                    else
-                    {
-                        ivi_msg_error_response_send(fd,TBOX__NET__MESSAGETYPE__RESPONSE_WIFI_SETUP_RESULT,"wifi ssid illegal");
-                    }
-#endif                    
-                    
-                    break;
-                }
-
-                case TBOX__NET__WIFI_SET_CMD_ENUM__WIFI_AP_BANDWIDTH:
-                {
-                    break;
-                }
-
-                case TBOX__NET__WIFI_SET_CMD_ENUM__WIFI_AP_MAXLINKS:
-                {
-                    break;
-                }
-
-                default:
-                {
-                    log_e(LOG_IVI,"unkonw wifi set type!!!");
-                    break;
-                }
-
-            }
-
-            ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_SETUP_WIFI);
-            break;
-        }
-
-        case TBOX__NET__MESSAGETYPE__REQUEST_WIFI_MACADDRESS:
-        {
-            ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_WIFI_MACADDRESS);
-            break;
-        }
-
-        case TBOX__NET__MESSAGETYPE__REQUEST_WIFI_CLIENT_LIST:
-        {
-            ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_WIFI_CLIENT_LIST);
-            break;
-        }
-
+		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO:
+		{
+			break;
+		}
+        
         case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_GPS_SET:
         {   
             log_o(LOG_IVI,"onoff sta %d.",TopMsg->tbox_gps_ctrl->onoff);
@@ -810,10 +691,11 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
             break;
         }
 
-        case TBOX__NET__MESSAGETYPE__REQUEST_CERTIFICATION:
-        {
-            break;
-        }
+       case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_REMOTEDIAGNOSE:
+		{
+			break;
+		}
+       
         
         default:
         {
@@ -926,7 +808,7 @@ int ivi_init(INIT_PHASE phase)
                     log_e(LOG_IVI, "create timer IVI_MSG_GPS_EVENT failed ret=0x%08x", ret);
                     return ret;
                 }
-
+				
                 break;
             }
     }
@@ -1154,7 +1036,7 @@ int ivi_run(void)
     pthread_attr_t ta;
 
     pthread_attr_init(&ta);
-    pthread_attr_setdetachstate(&ta, PTHREAD_CREATE_DETACHED); //分离线程属性
+    pthread_attr_setdetachstate(&ta, PTHREAD_CREATE_DETACHED); //鍒嗙绾跨▼灞炴��
 
     /* create thread and monitor the incoming data */
     ret = pthread_create(&ivi_tid, &ta, (void *)ivi_main, NULL);
