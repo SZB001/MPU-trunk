@@ -66,9 +66,9 @@ typedef struct
 	PrvtProt_rmtCfgSt_t	 	state;
 }__attribute__((packed))  PrvtProt_rmtCfg_t; /*结构体*/
 
-static PrvtProt_pack_t 		PP_rmtCfg_Pack;
-static PrvtProt_rmtCfg_t	PP_rmtCfg;
-static PrvtProt_App_rmtCfg_t AppData_rmtCfg;
+static PrvtProt_pack_t 			PP_rmtCfg_Pack;
+static PrvtProt_rmtCfg_t		PP_rmtCfg;
+static PrvtProt_App_rmtCfg_t 	AppData_rmtCfg;
 
 /*******************************************************
 description： function declaration
@@ -135,13 +135,11 @@ void PP_rmtCfg_init(void)
 	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,&len);
 	if((res==0) && (AppData_rmtCfg.ReadResp.cfgsuccess == 1))
 	{
-		//log_e(LOG_HOZON, "local config data valid");
 		memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.ReadResp.cfgVersion,32);
 		AppData_rmtCfg.checkReq.cfgVersionlen = 32;
 	}
 	else
 	{
-		//log_e(LOG_HOZON, "read local config data fail");
 		memcpy(AppData_rmtCfg.ReadResp.cfgVersion,AppData_rmtCfg.checkReq.cfgVersion,32);
 		AppData_rmtCfg.ReadResp.cfgVersionlen = 32;
 		AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = 0;
@@ -150,7 +148,6 @@ void PP_rmtCfg_init(void)
 		AppData_rmtCfg.ReadResp.EXTEND.extendConfigValid= 0;
 		AppData_rmtCfg.ReadResp.FICM.ficmConfigValid = 0;
 	}
-	//log_e(LOG_HOZON, "PP_rmtCfg_init ok");
 }
 
 /******************************************************
@@ -528,7 +525,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 					rmtCfg->state.cfgsuccess = 0;
 					AppData_rmtCfg.ReadResp.cfgsuccess = 1;
 					//保存配置，使用新的配置
-					(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,sizeof(App_rmtCfg_CfgReadResp_t));
+					(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
 
 					memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersionlen);
 					AppData_rmtCfg.checkReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;

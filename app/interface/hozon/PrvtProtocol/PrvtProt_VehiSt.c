@@ -288,7 +288,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 			}
 			else if(res > 0)
 			{
-				log_e(LOG_HOZON, "socket send ok, reset");
+				log_e(LOG_HOZON, "socket send ok");
 				PP_rmtVS.state.req = PP_VS_NOREQ;
 			}
 			else
