@@ -22,7 +22,7 @@ memb_mcuSw_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size >= 1 && size <= 5)) {
+	if((size >= 1 && size <= 10)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -48,7 +48,7 @@ memb_mpuSw_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size >= 1 && size <= 5)) {
+	if((size >= 1 && size <= 10)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -113,12 +113,12 @@ memb_cfgVersion_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 
 static asn_per_constraints_t asn_PER_memb_mcuSw_constr_3 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	{ APC_CONSTRAINED,	 3,  3,  1,  5 }	/* (SIZE(1..5)) */,
+	{ APC_CONSTRAINED,	 4,  4,  1,  10 }	/* (SIZE(1..10)) */,
 	0, 0	/* No PER value map */
 };
 static asn_per_constraints_t asn_PER_memb_mpuSw_constr_4 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	{ APC_CONSTRAINED,	 3,  3,  1,  5 }	/* (SIZE(1..5)) */,
+	{ APC_CONSTRAINED,	 4,  4,  1,  10 }	/* (SIZE(1..10)) */,
 	0, 0	/* No PER value map */
 };
 static asn_per_constraints_t asn_PER_memb_configSw_constr_5 GCC_NOTUSED = {

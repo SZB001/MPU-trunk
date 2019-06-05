@@ -81,8 +81,8 @@ typedef struct
 ***********************************/
 typedef struct
 {
-	uint8_t mcuSw[6];
-	uint8_t mpuSw[6];
+	uint8_t mcuSw[11];
+	uint8_t mpuSw[11];
 	uint8_t vehicleVin[18];
 	uint8_t iccID[21];
 	uint8_t btMacAddr[13];//¿∂—¿macµÿ÷∑
@@ -187,8 +187,8 @@ typedef struct
 typedef struct
 {
 	int configSuccess;
-	uint8_t mcuSw[6];
-	uint8_t mpuSw[6];
+	uint8_t mcuSw[11];
+	uint8_t mpuSw[11];
 	uint8_t configSw[6];
 	uint8_t cfgVersion[33];
 	uint8_t mcuSwlen;

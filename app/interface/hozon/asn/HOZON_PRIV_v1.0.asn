@@ -51,8 +51,8 @@ RvsposInfo ::= SEQUENCE
 
 CfgCheckReqInfo ::= SEQUENCE -- 用于 TCU 向 TAP 检查是否当前有配置需
 {
-	mcuSw				OCTET STRING(SIZE(1..5)), -- mcu零件号和软件版本
-	mpuSw				OCTET STRING(SIZE(1..5)), -- mpu零件号和软件版本
+	mcuSw				OCTET STRING(SIZE(1..10)), -- mcu零件号和软件版本
+	mpuSw				OCTET STRING(SIZE(1..10)), -- mpu零件号和软件版本
 	vehicleVIN         	IA5String(SIZE(17)), -- vehicle vin code as transmit on the can bus
 	iccID				IA5String(SIZE(20)), -- ICCID of the currently installed SIM card
 	btMacAddr			IA5String(SIZE(12)), -- MAC address of the Bluetooth Module
@@ -131,8 +131,8 @@ ExtendConfigSettings ::= SEQUENCE
 CfgEndReqInfo ::= SEQUENCE
 {
 	configSuccess		BOOLEAN, 				  -- 配置是否成功
-	mcuSw				OCTET STRING(SIZE(1..5)), -- mcu零件号和软件版本
-	mpuSw				OCTET STRING(SIZE(1..5)), -- mpu零件号和软件版本
+	mcuSw				OCTET STRING(SIZE(1..10)), -- mcu零件号和软件版本
+	mpuSw				OCTET STRING(SIZE(1..10)), -- mpu零件号和软件版本
 	configSw			OCTET STRING(SIZE(1..5)), -- TCU 的零件号和软件版本
 	cfgVersion			OCTET STRING(SIZE(32))    -- 针对当前ConfigSetting 包进行版本管理,代表包的版本号
 }
@@ -404,5 +404,6 @@ DiagnosticStInfo ::= SEQUENCE
 {
 	diagStatus			SEQUENCE(SIZE(1..255)) OF DiagnosticRespInfo --
 }
+
 
 END

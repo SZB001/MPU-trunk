@@ -1024,11 +1024,14 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 					log_i(LOG_HOZON, "decode appdata ok\n");
 					app_rmtCfg_ptr->checkResp.needUpdate = cfgcheckResp.needUpdate;
 					log_i(LOG_HOZON, "checkCfgResp.needUpdate = %d\n",app_rmtCfg_ptr->checkResp.needUpdate);
-					log_i(LOG_HOZON, "checkCfgResp.cfgVersionlen = %d\n",cfgcheckResp.cfgVersion->size);
-					app_rmtCfg_ptr->checkResp.cfgVersionlen = cfgcheckResp.cfgVersion->size;
-					memcpy(app_rmtCfg_ptr->checkResp.cfgVersion,cfgcheckResp.cfgVersion->buf, \
-																cfgcheckResp.cfgVersion->size);
-					//log_i(LOG_HOZON, "checkCfgResp.cfgVersion = %s\n",app_rmtCfg_ptr->checkResp.cfgVersion);
+					if(cfgcheckResp.cfgVersion != NULL)
+					{
+						log_i(LOG_HOZON, "checkCfgResp.cfgVersionlen = %d\n",cfgcheckResp.cfgVersion->size);
+						app_rmtCfg_ptr->checkResp.cfgVersionlen = cfgcheckResp.cfgVersion->size;
+						memcpy(app_rmtCfg_ptr->checkResp.cfgVersion,cfgcheckResp.cfgVersion->buf, \
+																	cfgcheckResp.cfgVersion->size);
+						log_i(LOG_HOZON, "checkCfgResp.cfgVersion = %s\n",app_rmtCfg_ptr->checkResp.cfgVersion);
+					}
 				}
 				else if(PP_MID_GET_CFG_RESP == MID)//get cfg resp
 				{

@@ -140,7 +140,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			PP_PackHeader_HB.commtype.Byte = 0x70;
 			PP_PackHeader_HB.opera = 0x01;
 			PP_PackHeader_HB.msglen = 18;
-			PP_PackHeader_HB.tboxid = 28;
+			PP_PackHeader_HB.tboxid = pp_task.tboxid;
 		}
         break;
         case INIT_PHASE_RESTORE:
@@ -599,6 +599,22 @@ long PrvtPro_getTimestamp(void)
 void PrvtPro_Setsuspend(unsigned char suspend)
 {
 	pp_task.suspend = suspend;
+}
+
+/******************************************************
+*函数名：PrvtPro_SettboxId
+
+*形  参：
+
+*返回值：
+
+*描  述：设置暂停
+
+*备  注：
+******************************************************/
+void PrvtPro_SettboxId(unsigned long int tboxid)
+{
+	pp_task.tboxid = tboxid;
 }
 
 /******************************************************

@@ -10,7 +10,7 @@
 void   tbox__net__tbox_network_ctrl__init
                      (Tbox__Net__TboxNetworkCtrl         *message)
 {
-  static Tbox__Net__TboxNetworkCtrl init_value = TBOX__NET__TBOX_NETWORK_CTRL__INIT;
+  static const Tbox__Net__TboxNetworkCtrl init_value = TBOX__NET__TBOX_NETWORK_CTRL__INIT;
   *message = init_value;
 }
 size_t tbox__net__tbox_network_ctrl__get_packed_size
@@ -47,13 +47,15 @@ void   tbox__net__tbox_network_ctrl__free_unpacked
                      (Tbox__Net__TboxNetworkCtrl *message,
                       ProtobufCAllocator *allocator)
 {
+  if(!message)
+    return;
   assert(message->base.descriptor == &tbox__net__tbox_network_ctrl__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   tbox__net__call_action__init
                      (Tbox__Net__CallAction         *message)
 {
-  static Tbox__Net__CallAction init_value = TBOX__NET__CALL_ACTION__INIT;
+  static const Tbox__Net__CallAction init_value = TBOX__NET__CALL_ACTION__INIT;
   *message = init_value;
 }
 size_t tbox__net__call_action__get_packed_size
@@ -90,13 +92,15 @@ void   tbox__net__call_action__free_unpacked
                      (Tbox__Net__CallAction *message,
                       ProtobufCAllocator *allocator)
 {
+  if(!message)
+    return;
   assert(message->base.descriptor == &tbox__net__call_action__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   tbox__net__call_action_result__init
                      (Tbox__Net__CallActionResult         *message)
 {
-  static Tbox__Net__CallActionResult init_value = TBOX__NET__CALL_ACTION_RESULT__INIT;
+  static const Tbox__Net__CallActionResult init_value = TBOX__NET__CALL_ACTION_RESULT__INIT;
   *message = init_value;
 }
 size_t tbox__net__call_action_result__get_packed_size
@@ -133,13 +137,15 @@ void   tbox__net__call_action_result__free_unpacked
                      (Tbox__Net__CallActionResult *message,
                       ProtobufCAllocator *allocator)
 {
+  if(!message)
+    return;
   assert(message->base.descriptor == &tbox__net__call_action_result__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   tbox__net__call_status__init
                      (Tbox__Net__CallStatus         *message)
 {
-  static Tbox__Net__CallStatus init_value = TBOX__NET__CALL_STATUS__INIT;
+  static const Tbox__Net__CallStatus init_value = TBOX__NET__CALL_STATUS__INIT;
   *message = init_value;
 }
 size_t tbox__net__call_status__get_packed_size
@@ -176,13 +182,15 @@ void   tbox__net__call_status__free_unpacked
                      (Tbox__Net__CallStatus *message,
                       ProtobufCAllocator *allocator)
 {
+  if(!message)
+    return;
   assert(message->base.descriptor == &tbox__net__call_status__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   tbox__net__tbox_info__init
                      (Tbox__Net__TboxInfo         *message)
 {
-  static Tbox__Net__TboxInfo init_value = TBOX__NET__TBOX_INFO__INIT;
+  static const Tbox__Net__TboxInfo init_value = TBOX__NET__TBOX_INFO__INIT;
   *message = init_value;
 }
 size_t tbox__net__tbox_info__get_packed_size
@@ -219,13 +227,15 @@ void   tbox__net__tbox_info__free_unpacked
                      (Tbox__Net__TboxInfo *message,
                       ProtobufCAllocator *allocator)
 {
+  if(!message)
+    return;
   assert(message->base.descriptor == &tbox__net__tbox_info__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   tbox__net__tbox_gpscmd__init
                      (Tbox__Net__TboxGPSCmd         *message)
 {
-  static Tbox__Net__TboxGPSCmd init_value = TBOX__NET__TBOX_GPSCMD__INIT;
+  static const Tbox__Net__TboxGPSCmd init_value = TBOX__NET__TBOX_GPSCMD__INIT;
   *message = init_value;
 }
 size_t tbox__net__tbox_gpscmd__get_packed_size
@@ -262,13 +272,15 @@ void   tbox__net__tbox_gpscmd__free_unpacked
                      (Tbox__Net__TboxGPSCmd *message,
                       ProtobufCAllocator *allocator)
 {
+  if(!message)
+    return;
   assert(message->base.descriptor == &tbox__net__tbox_gpscmd__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   tbox__net__tbox_gpsinfo__init
                      (Tbox__Net__TboxGPSInfo         *message)
 {
-  static Tbox__Net__TboxGPSInfo init_value = TBOX__NET__TBOX_GPSINFO__INIT;
+  static const Tbox__Net__TboxGPSInfo init_value = TBOX__NET__TBOX_GPSINFO__INIT;
   *message = init_value;
 }
 size_t tbox__net__tbox_gpsinfo__get_packed_size
@@ -305,13 +317,15 @@ void   tbox__net__tbox_gpsinfo__free_unpacked
                      (Tbox__Net__TboxGPSInfo *message,
                       ProtobufCAllocator *allocator)
 {
+  if(!message)
+    return;
   assert(message->base.descriptor == &tbox__net__tbox_gpsinfo__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   tbox__net__tbox_active_state__init
                      (Tbox__Net__TboxActiveState         *message)
 {
-  static Tbox__Net__TboxActiveState init_value = TBOX__NET__TBOX_ACTIVE_STATE__INIT;
+  static const Tbox__Net__TboxActiveState init_value = TBOX__NET__TBOX_ACTIVE_STATE__INIT;
   *message = init_value;
 }
 size_t tbox__net__tbox_active_state__get_packed_size
@@ -348,13 +362,15 @@ void   tbox__net__tbox_active_state__free_unpacked
                      (Tbox__Net__TboxActiveState *message,
                       ProtobufCAllocator *allocator)
 {
+  if(!message)
+    return;
   assert(message->base.descriptor == &tbox__net__tbox_active_state__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   tbox__net__tbox_remote_diagnose__init
                      (Tbox__Net__TboxRemoteDiagnose         *message)
 {
-  static Tbox__Net__TboxRemoteDiagnose init_value = TBOX__NET__TBOX_REMOTE_DIAGNOSE__INIT;
+  static const Tbox__Net__TboxRemoteDiagnose init_value = TBOX__NET__TBOX_REMOTE_DIAGNOSE__INIT;
   *message = init_value;
 }
 size_t tbox__net__tbox_remote_diagnose__get_packed_size
@@ -391,13 +407,15 @@ void   tbox__net__tbox_remote_diagnose__free_unpacked
                      (Tbox__Net__TboxRemoteDiagnose *message,
                       ProtobufCAllocator *allocator)
 {
+  if(!message)
+    return;
   assert(message->base.descriptor == &tbox__net__tbox_remote_diagnose__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   tbox__net__msg_result__init
                      (Tbox__Net__MsgResult         *message)
 {
-  static Tbox__Net__MsgResult init_value = TBOX__NET__MSG_RESULT__INIT;
+  static const Tbox__Net__MsgResult init_value = TBOX__NET__MSG_RESULT__INIT;
   *message = init_value;
 }
 size_t tbox__net__msg_result__get_packed_size
@@ -434,13 +452,15 @@ void   tbox__net__msg_result__free_unpacked
                      (Tbox__Net__MsgResult *message,
                       ProtobufCAllocator *allocator)
 {
+  if(!message)
+    return;
   assert(message->base.descriptor == &tbox__net__msg_result__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   tbox__net__top_message__init
                      (Tbox__Net__TopMessage         *message)
 {
-  static Tbox__Net__TopMessage init_value = TBOX__NET__TOP_MESSAGE__INIT;
+  static const Tbox__Net__TopMessage init_value = TBOX__NET__TOP_MESSAGE__INIT;
   *message = init_value;
 }
 size_t tbox__net__top_message__get_packed_size
@@ -477,6 +497,8 @@ void   tbox__net__top_message__free_unpacked
                      (Tbox__Net__TopMessage *message,
                       ProtobufCAllocator *allocator)
 {
+  if(!message)
+    return;
   assert(message->base.descriptor == &tbox__net__top_message__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
@@ -485,9 +507,9 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_network_ctrl__field_descri
   {
     "onoff",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__TboxNetworkCtrl, has_onoff),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxNetworkCtrl, onoff),
     &tbox__net__network__send__on_off__descriptor,
     NULL,
@@ -497,9 +519,9 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_network_ctrl__field_descri
   {
     "time_cycle",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_UINT32,
-    offsetof(Tbox__Net__TboxNetworkCtrl, has_time_cycle),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxNetworkCtrl, time_cycle),
     NULL,
     NULL,
@@ -536,9 +558,9 @@ static const ProtobufCFieldDescriptor tbox__net__call_action__field_descriptors[
   {
     "type",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__CallAction, has_type),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__CallAction, type),
     &tbox__net__call_type__descriptor,
     NULL,
@@ -548,9 +570,9 @@ static const ProtobufCFieldDescriptor tbox__net__call_action__field_descriptors[
   {
     "action",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__CallAction, has_action),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__CallAction, action),
     &tbox__net__call_action_enum__descriptor,
     NULL,
@@ -587,9 +609,9 @@ static const ProtobufCFieldDescriptor tbox__net__call_action_result__field_descr
   {
     "type",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__CallActionResult, has_type),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__CallActionResult, type),
     &tbox__net__call_type__descriptor,
     NULL,
@@ -599,9 +621,9 @@ static const ProtobufCFieldDescriptor tbox__net__call_action_result__field_descr
   {
     "action",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__CallActionResult, has_action),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__CallActionResult, action),
     &tbox__net__call_action_enum__descriptor,
     NULL,
@@ -611,9 +633,9 @@ static const ProtobufCFieldDescriptor tbox__net__call_action_result__field_descr
   {
     "result",
     3,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__CallActionResult, has_result),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__CallActionResult, result),
     &tbox__net__call_action_result_enum__descriptor,
     NULL,
@@ -651,9 +673,9 @@ static const ProtobufCFieldDescriptor tbox__net__call_status__field_descriptors[
   {
     "type",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__CallStatus, has_type),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__CallStatus, type),
     &tbox__net__call_type__descriptor,
     NULL,
@@ -663,9 +685,9 @@ static const ProtobufCFieldDescriptor tbox__net__call_status__field_descriptors[
   {
     "call_status",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__CallStatus, has_call_status),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__CallStatus, call_status),
     &tbox__net__call_status_enum__descriptor,
     NULL,
@@ -675,9 +697,9 @@ static const ProtobufCFieldDescriptor tbox__net__call_status__field_descriptors[
   {
     "reserve",
     3,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_BYTES,
-    offsetof(Tbox__Net__CallStatus, has_reserve),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__CallStatus, reserve),
     NULL,
     NULL,
@@ -715,72 +737,72 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_info__field_descriptors[6]
   {
     "software_version",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxInfo, software_version),
     NULL,
-    NULL,
+    &protobuf_c_empty_string,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
     "hardware_version",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxInfo, hardware_version),
     NULL,
-    NULL,
+    &protobuf_c_empty_string,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
     "iccid",
     3,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxInfo, iccid),
     NULL,
-    NULL,
+    &protobuf_c_empty_string,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
     "pdid",
     4,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxInfo, pdid),
     NULL,
-    NULL,
+    &protobuf_c_empty_string,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
     "imei",
     5,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxInfo, imei),
     NULL,
-    NULL,
+    &protobuf_c_empty_string,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
     "vin",
     6,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxInfo, vin),
     NULL,
-    NULL,
+    &protobuf_c_empty_string,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
@@ -818,9 +840,9 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_gpscmd__field_descriptors[
   {
     "onoff",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__TboxGPSCmd, has_onoff),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxGPSCmd, onoff),
     &tbox__net__gps__send__on_off__descriptor,
     NULL,
@@ -830,9 +852,9 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_gpscmd__field_descriptors[
   {
     "time_cycle",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_UINT32,
-    offsetof(Tbox__Net__TboxGPSCmd, has_time_cycle),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxGPSCmd, time_cycle),
     NULL,
     NULL,
@@ -869,12 +891,12 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_gpsinfo__field_descriptors
   {
     "nmea",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxGPSInfo, nmea),
     NULL,
-    NULL,
+    &protobuf_c_empty_string,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
@@ -907,9 +929,9 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_active_state__field_descri
   {
     "active_state",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_BOOL,
-    offsetof(Tbox__Net__TboxActiveState, has_active_state),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxActiveState, active_state),
     NULL,
     NULL,
@@ -945,21 +967,21 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_remote_diagnose__field_des
   {
     "vin",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxRemoteDiagnose, vin),
     NULL,
-    NULL,
+    &protobuf_c_empty_string,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
     "eventid",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_UINT32,
-    offsetof(Tbox__Net__TboxRemoteDiagnose, has_eventid),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxRemoteDiagnose, eventid),
     NULL,
     NULL,
@@ -969,9 +991,9 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_remote_diagnose__field_des
   {
     "timestamp",
     3,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_UINT32,
-    offsetof(Tbox__Net__TboxRemoteDiagnose, has_timestamp),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxRemoteDiagnose, timestamp),
     NULL,
     NULL,
@@ -981,9 +1003,9 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_remote_diagnose__field_des
   {
     "datatype",
     4,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__TboxRemoteDiagnose, has_datatype),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxRemoteDiagnose, datatype),
     &tbox__net__data_type_enum__descriptor,
     NULL,
@@ -993,9 +1015,9 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_remote_diagnose__field_des
   {
     "cameraname",
     5,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__TboxRemoteDiagnose, has_cameraname),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxRemoteDiagnose, cameraname),
     &tbox__net__camera_name_enum__descriptor,
     NULL,
@@ -1005,9 +1027,9 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_remote_diagnose__field_des
   {
     "aid",
     6,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_UINT32,
-    offsetof(Tbox__Net__TboxRemoteDiagnose, has_aid),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxRemoteDiagnose, aid),
     NULL,
     NULL,
@@ -1017,9 +1039,9 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_remote_diagnose__field_des
   {
     "mid",
     7,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_UINT32,
-    offsetof(Tbox__Net__TboxRemoteDiagnose, has_mid),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxRemoteDiagnose, mid),
     NULL,
     NULL,
@@ -1029,9 +1051,9 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_remote_diagnose__field_des
   {
     "effectivetime",
     8,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_UINT32,
-    offsetof(Tbox__Net__TboxRemoteDiagnose, has_effectivetime),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxRemoteDiagnose, effectivetime),
     NULL,
     NULL,
@@ -1041,9 +1063,9 @@ static const ProtobufCFieldDescriptor tbox__net__tbox_remote_diagnose__field_des
   {
     "sizelimit",
     9,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_UINT32,
-    offsetof(Tbox__Net__TboxRemoteDiagnose, has_sizelimit),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TboxRemoteDiagnose, sizelimit),
     NULL,
     NULL,
@@ -1087,9 +1109,9 @@ static const ProtobufCFieldDescriptor tbox__net__msg_result__field_descriptors[2
   {
     "result",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_BOOL,
-    offsetof(Tbox__Net__MsgResult, has_result),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__MsgResult, result),
     NULL,
     NULL,
@@ -1099,9 +1121,9 @@ static const ProtobufCFieldDescriptor tbox__net__msg_result__field_descriptors[2
   {
     "error_code",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_BYTES,
-    offsetof(Tbox__Net__MsgResult, has_error_code),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__MsgResult, error_code),
     NULL,
     NULL,
@@ -1138,9 +1160,9 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "message_type",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__TopMessage, has_message_type),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, message_type),
     &tbox__net__messagetype__descriptor,
     NULL,
@@ -1150,9 +1172,9 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "signal_type",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_ENUM,
-    offsetof(Tbox__Net__TopMessage, has_signal_type),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, signal_type),
     &tbox__net__signal_type__descriptor,
     NULL,
@@ -1162,9 +1184,9 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "signal_power",
     3,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_INT32,
-    offsetof(Tbox__Net__TopMessage, has_signal_power),
+    0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, signal_power),
     NULL,
     NULL,
@@ -1174,7 +1196,7 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "tbox_network_ctrl",
     4,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, tbox_network_ctrl),
@@ -1186,7 +1208,7 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "call_action",
     5,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, call_action),
@@ -1198,7 +1220,7 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "call_status",
     6,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, call_status),
@@ -1210,7 +1232,7 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "call_result",
     7,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, call_result),
@@ -1222,7 +1244,7 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "tbox_info",
     8,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, tbox_info),
@@ -1234,7 +1256,7 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "tbox_gps_ctrl",
     9,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, tbox_gps_ctrl),
@@ -1246,7 +1268,7 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "tbox_gpsinfo",
     10,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, tbox_gpsinfo),
@@ -1258,7 +1280,7 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "tbox_activestate",
     11,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, tbox_activestate),
@@ -1270,7 +1292,7 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "tbox_remotedaignose",
     12,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, tbox_remotedaignose),
@@ -1282,7 +1304,7 @@ static const ProtobufCFieldDescriptor tbox__net__top_message__field_descriptors[
   {
     "msg_result",
     13,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_MESSAGE,
     0,   /* quantifier_offset */
     offsetof(Tbox__Net__TopMessage, msg_result),
