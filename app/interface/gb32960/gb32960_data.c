@@ -15,6 +15,8 @@
 #include "timer.h"
 #include "../support/protocol.h"
 
+#define GB_EXT	1//定义国标扩展信息
+
 #define GB_MAX_PACK_CELL    800
 #define GB_MAX_PACK_TEMP    800
 #define GB_MAX_FUEL_TEMP    200
@@ -26,7 +28,7 @@
 #define GB_MAX_EXTR_INFO    16
 #define GB_MAX_MOTOR        4
 
-
+#if GB_EXT
 /* event information index */
 #define GB_EVT_EPBLAMP_ON       	0x00
 #define GB_EVT_EPBWRONGLAMP_ON      0x01
@@ -45,6 +47,85 @@
 #define GB_EVT_TAILDOOR_OPEN    			0x0e
 #define GB_MAX_EVENT_INFO   (GB_EVT_TAILDOOR_OPEN + 1)
 
+/* vehi state extend information index */
+#define GB_VS_DRIDOORLOCKST       	0x00//驾驶侧门锁状态
+#define GB_VS_PASSDOORLOCKST      	0x01
+#define GB_VS_LRDOORLOCKST       	0x02
+#define GB_VS_RRDOORLOCKST         	0x03
+#define GB_VS_REARDDOORLOCKST     	0x04//后备箱门锁状态
+#define GB_VS_DRIWINDOWST     		0x05
+#define GB_VS_PASSWINDOWST     		0x06
+#define GB_VS_LRWINDOWST    		0x07
+#define GB_VS_RRWINDOWST       		0x08//
+#define GB_VS_UPWINDOWST      		0x09//天窗状态
+#define GB_VS_DRIDOORST     		0x0a
+#define GB_VS_PASSDOORST		    0x0b
+#define GB_VS_LRDOORST		      	0x0c
+#define GB_VS_RRDOORST		      	0x0d
+#define GB_VS_BACKDOORST		    0x0e//后备箱门状态
+#define GB_VS_ACST		    		0x0f
+#define GB_VS_ACTEMP		    	0x10
+#define GB_VS_ACMODE		    	0x11
+#define GB_VS_AIRVOLUME		    	0x12
+#define GB_VS_INTEMP		    	0x13
+#define GB_VS_OUTTEMP		   		0x14
+#define GB_VS_HLAMPST		    	0x15//双闪状态
+#define GB_VS_SLAMPST		    	0x16
+#define GB_VS_NEARLAMPST		    0x17
+#define GB_VS_HEADLIGHTST		    0x18
+#define GB_VS_LTURNLAMPST		    0x19
+#define GB_VS_RTURNLAMPST		    0x1A
+#define GB_VS_BRAKELAMPST		    0x1B
+#define GB_VS_ATMOSPHERELAMPST		0x1C
+#define GB_VS_RFTYRETEMP		    0x1D
+#define GB_VS_RFTYREPRESSURE		0x1E
+#define GB_VS_LFTYRETEMP		    0x1F
+#define GB_VS_LFTYREPRESSURE		0x20
+#define GB_VS_RRTYRETEMP		    0x21
+#define GB_VS_RRTYREPRESSURE		0x22
+#define GB_VS_LRTYRETEMP		    0x23
+#define GB_VS_LRTYREPRESSURE		0x24
+#define GB_VS_REMAINCHRGTIME		0x25
+#define GB_VS_FIXTIMECHARGEST		0x26//定时充电状态
+#define GB_VS_FIXSTARTCHRG_HOUR		0x27
+#define GB_VS_FIXSTARTCHRG_MIN		0x28
+#define GB_VS_FSCHARGEST		    0x29
+#define GB_VS_CELLNETST		    	0x2A
+#define GB_VS_CELLNETSIGN		    0x2B
+#define GB_VS_CANST		    		0x2C
+#define GB_VS_12VVOLTAGE		    0x2D//tbox
+#define GB_VS_SOC		    		0x2E
+#define GB_VS_ENDURANCEMILE		    0x2F
+#define GB_VS_DRIVMODE		    	0x30
+#define GB_VS_PARKST		    	0x31
+#define GB_VS_STARTST		    	0x32
+#define GB_VS_ASPEED_X				0x33
+#define GB_VS_ASPEED_Y				0x34
+#define GB_VS_ASPEED_Z				0x35
+#define GB_VS_FLTYRERSPEED			0x36
+#define GB_VS_FRTYRERSPEED			0x37
+#define GB_VS_RLTYRERSPEED			0x38
+#define GB_VS_RRTYRERSPEED			0x39
+#define GB_VS_STEERWHEELANGLE		0x3A
+#define GB_VS_TRIP					0x3B
+#define GB_VS_SUBTOTALTRVLTIME		0x3C
+#define GB_VS_TIPC					0x3D//瞬时电耗
+#define GB_VS_TAPC					0x3E//平均电耗
+#define GB_VS_SUBPC					0x3F
+#define GB_VS_ESCACTIVEST			0x40
+#define GB_VS_ESCDISABLEST			0x41
+#define GB_VS_TCSACTIVEST			0x42
+#define GB_VS_SASCAIL				0x43
+#define GB_VS_MAINDRIBELTST			0x44
+#define GB_VS_PASSDRIBELTST			0x45
+#define GB_VS_ELECSTOPBRAKEST		0x46
+#define GB_VS_RESERVE_ONE    		0x47
+#define GB_VS_RESERVE_TWO    		0x48
+#define GB_VS_THREE    				0x49
+#define GB_VS_FOUR    				0x4A
+#define GB_MAX_VSE_INFO   (GB_VS_FOUR + 1)
+
+#endif
 
 /* vehicle type */
 #define GB_VEHITYPE_ELECT   0x01
@@ -130,7 +211,10 @@
 #define GB_DATA_BATTTEMP    0x09
 #define GB_DATA_FUELCELL    0x0A
 #define GB_DATA_VIRTUAL     0x0B
-#define GB_DATA_EVENT     	0x0C//by liujian
+#if GB_EXT
+#define GB_DATA_EVENT     	0x0C//事件数据
+#define GB_DATA_VSEXT     	0x0F//车辆状态扩展数据
+#endif
 
 /* report data type */
 #define GB_RPTTYPE_REALTM   0x02
@@ -155,6 +239,7 @@ typedef struct
     int info[GB_MAX_MOTOR_INFO];
     uint8_t state_tbl[256];
 } gb_motor_t;
+
 /* vehicle information structure */
 typedef struct
 {
@@ -167,6 +252,7 @@ typedef struct
     uint8_t vehi_type;
 } gb_vehi_t;
 
+#if GB_EXT
 /* event information structure */
 typedef struct
 {
@@ -175,6 +261,7 @@ typedef struct
 	uint8_t newst[GB_MAX_EVENT_INFO];
 	uint8_t triflg;
 } gb_event_t;
+
 
 typedef struct
 {
@@ -201,6 +288,15 @@ static gb_eventCode_t	gb_eventCode[GB_MAX_EVENT_INFO] =
 	{GB_EVT_TAILDOOR_OPEN,0x000E}
 };
 
+
+/* vehi state information structure */
+typedef struct
+{
+    int info[GB_MAX_VSE_INFO];
+    uint8_t oldst[GB_MAX_VSE_INFO];
+	uint8_t newst[GB_MAX_VSE_INFO];
+} gb_VehiStExt_t;
+#endif
 
 /* fuel cell information structure */
 typedef struct
@@ -230,7 +326,10 @@ typedef struct _gb_info_t
     int extr[GB_MAX_EXTR_INFO];
     int warntrig;
     int warntest;
+#if GB_EXT
 	gb_event_t event;
+	gb_VehiStExt_t gb_VSExt;
+#endif
     struct _gb_info_t *next;
 } gb_info_t;
 
@@ -257,6 +356,7 @@ static uint16_t gb_datintv;
 #define DAT_UNLOCK()        pthread_mutex_unlock(&gb_datmtx)
 #define GROUP_SIZE(inf)     RDUP_DIV((inf)->batt.cell_cnt, 200)
 
+#if GB_EXT
 /* event report */
 static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
 {
@@ -340,6 +440,8 @@ static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
 	}
 	DAT_UNLOCK();
 }
+
+#endif
 
 static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 {
@@ -1006,6 +1108,572 @@ static uint32_t gb_data_save_gps(gb_info_t *gbinf, uint8_t *buf)
     return len;
 }
 
+#if GB_EXT
+static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
+{
+    uint32_t len = 0;
+    int i;
+    int tmp = 0;
+
+    /* data type : location data */
+    buf[len++] = 0x91;//信息类型标志
+
+    /* 车门锁 state */
+    if (gbinf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])
+    {
+        if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])->value)
+        {
+            buf[len++] = 0;//驾驶侧门锁上锁
+            buf[len++] = 0;//副驾驶侧门锁上锁
+            buf[len++] = 0;//左后门锁上锁
+            buf[len++] = 0;//右后门锁上锁
+        }
+        else
+        {
+        	 buf[len++] = 1;//解锁
+        	 buf[len++] = 1;//解锁
+        	 buf[len++] = 1;//解锁
+        	 buf[len++] = 1;//解锁
+        }
+    }
+    else
+    {
+        buf[len++] = 0xff;
+        buf[len++] = 0xff;
+        buf[len++] = 0xff;
+        buf[len++] = 0xff;
+    }
+
+    if (gbinf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//后备箱门锁
+    {
+        if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])->value)
+        {
+            buf[len++] = 0;//上锁
+        }
+        else
+        {
+        	 buf[len++] = 1;//解锁
+        }
+    }
+    else
+    {
+        buf[len++] = 0xff;
+    }
+
+    /* 车窗 state */
+    buf[len++] = 0xff;//驾驶侧窗状态
+    buf[len++] = 0xff;//副驾驶侧窗状态
+    buf[len++] = 0xff;//左后窗状态
+    buf[len++] = 0xff;//右后窗状态
+    buf[len++] = 0xff;//天窗状态
+
+    /* 车门 state */
+    for(i = 0; i < 4; i++)
+    {
+        if (gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN+i])
+        {
+            if(2 == dbc_get_signal_from_id(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN+i])->value)//开
+            {
+                buf[len++] = 1;
+                gbinf->gb_VSExt.oldst[GB_VS_DRIDOORST+i]  = 1;
+            }
+            else if(0 == dbc_get_signal_from_id(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN])->value)//关
+            {
+            	 buf[len++] = 0;
+            	 gbinf->gb_VSExt.oldst[GB_VS_DRIDOORST+i]  = 0;
+            }
+            else
+            {
+            	buf[len++] = gbinf->gb_VSExt.oldst[GB_VS_DRIDOORST+i];
+            }
+        }
+        else
+        {
+            buf[len++] = 0xff;
+            gbinf->gb_VSExt.oldst[GB_VS_DRIDOORST+i]  = 0xff;
+        }
+    }
+
+    if (gbinf->gb_VSExt.info[GB_VS_BACKDOORST])//后备箱门状态
+    {
+        if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_BACKDOORST])->value)
+        {
+            buf[len++] = 1;//开启
+        }
+        else
+        {
+        	 buf[len++] = 0;//
+        }
+    }
+    else
+    {
+        buf[len++] = 0xff;
+    }
+
+    /* 空调信息 */
+    if (gbinf->gb_VSExt.info[GB_VS_ACST])//
+    {
+        if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACST])->value)
+        {
+            buf[len++] = 1;//开启
+        }
+        else
+        {
+        	 buf[len++] = 0;//
+        }
+    }
+    else
+    {
+        buf[len++] = 0xff;
+    }
+
+    if (gbinf->gb_VSExt.info[GB_VS_ACTEMP])//
+    {
+        //if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value)
+        {
+            buf[len++] = 18;
+        }
+    }
+    else
+    {
+        buf[len++] = 0xff;
+    }
+
+    if (gbinf->gb_VSExt.info[GB_VS_ACMODE])//空调模式
+    {
+        //if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACMODE])->value)
+        {
+            buf[len++] = 3;
+        }
+    }
+    else
+    {
+        buf[len++] = 0xff;
+    }
+
+    if(gbinf->gb_VSExt.info[GB_VS_AIRVOLUME])//
+    {
+    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_AIRVOLUME])->value;
+    }
+    else
+    {
+        buf[len++] = 0;
+    }
+
+    if(gbinf->gb_VSExt.info[GB_VS_INTEMP])//
+    {
+    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_INTEMP])->value;
+    }
+    else
+    {
+        buf[len++] = 0;
+    }
+
+    if(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])//
+    {
+    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])->value;
+    }
+    else
+    {
+        buf[len++] = 0;
+    }
+
+    /* 车灯状态 */
+    if(gbinf->gb_VSExt.info[GB_VS_HLAMPST])//双闪状态
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_HLAMPST])->value;
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
+
+    if(gbinf->event.info[GB_EVT_POSLAMP_ON])//小灯
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->event.info[GB_EVT_POSLAMP_ON])->value;
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
+
+    if(gbinf->event.info[GB_EVT_NEARLAMP_ON])//
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->event.info[GB_EVT_NEARLAMP_ON])->value;
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
+    if(gbinf->event.info[GB_EVT_HIGHBEAMLAMP_ON])//
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->event.info[GB_EVT_HIGHBEAMLAMP_ON])->value;
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
+    if(gbinf->event.info[GB_EVT_LEFTTURNLAMP_ON])//
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->event.info[GB_EVT_LEFTTURNLAMP_ON])->value;
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
+    if(gbinf->event.info[GB_EVT_RIGHTTURNLAMP_ON])//
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->event.info[GB_EVT_RIGHTTURNLAMP_ON])->value;
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
+    if(gbinf->gb_VSExt.info[GB_VS_BRAKELAMPST])//
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_BRAKELAMPST])->value;
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
+    if(gbinf->gb_VSExt.info[GB_VS_ATMOSPHERELAMPST])//
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ATMOSPHERELAMPST])->value;
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
+
+    /* 车胎信息 */
+    for(i=0;i<4;i++)
+    {
+        if(gbinf->gb_VSExt.info[GB_VS_RFTYRETEMP+2*i])//
+    	{
+    		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYRETEMP+2*i])->value;
+    	}
+    	else
+    	{
+    		buf[len++] = 0xff;
+    	}
+        if(gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])//
+    	{
+        	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])->value;
+        	if(tmp > 450) tmp = 450;
+    		buf[len++] = tmp*100/177;
+    	}
+    	else
+    	{
+    		buf[len++] = 0xff;
+    	}
+    }
+
+    /* 充电信息 */
+    if(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])//
+	{
+    	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])->value;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		buf[len++] = 0xff;
+		buf[len++] = 0xff;
+	}
+
+    buf[len++] = 0xff;//定时充电状态
+    buf[len++] = 0xff;//定时开始充电时间小时
+    buf[len++] = 0xff;//定时开始充电 时间分钟
+    if(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])//快慢充状态
+	{
+    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
+
+    /* 基本状态 */
+    buf[len++] = 0xff;//蜂窝网络状态
+    buf[len++] = 0xff;//蜂窝网络信号强度
+    buf[len++] = 0xff;//can通讯状态
+    buf[len++] = 0xff;//12V 蓄电池电压
+    if(gbinf->vehi.info[GB_VINF_SOC])
+    {
+    	tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value;
+    	tmp = 100*tmp;
+    	buf[len++] = tmp >> 8;
+    	buf[len++] = tmp;
+    }
+    else
+    {
+    	 buf[len++] = 0xff;
+    	 buf[len++] = 0xff;
+    }
+    if(gbinf->gb_VSExt.info[GB_VS_ENDURANCEMILE])//续航里程
+    {
+    	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ENDURANCEMILE])->value;
+    	tmp = 10*tmp;
+    	buf[len++] = tmp >> 8;
+    	buf[len++] = tmp;
+    }
+    else
+    {
+    	 buf[len++] = 0xff;
+    	 buf[len++] = 0xff;
+    }
+
+    if(gbinf->gb_VSExt.info[GB_VS_DRIVMODE])//
+    {
+    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_DRIVMODE])->value;
+    }
+    else
+    {
+    	 buf[len++] = 0xff;
+    }
+
+    if(gbinf->gb_VSExt.info[GB_VS_PARKST])//驻车状态
+    {
+    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_PARKST])->value;
+    }
+    else
+    {
+    	 buf[len++] = 0xff;
+    }
+    if (gbinf->vehi.info[GB_VINF_STATE])//启动状态
+    {
+        if(dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_STATE])->value)
+        {
+        	buf[len++] = 1;
+        }
+        else
+        {
+        	buf[len++] = 0;
+        }
+    }
+    else
+    {
+        buf[len++] = 0xff;
+    }
+
+    /* 运动状态 */
+    for(i = 0;i<2;i++)
+    {
+        if(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])//加速度x,y
+        {
+        	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])->value;
+        	buf[len++] = tmp >> 8;
+        	buf[len++] = tmp;
+        }
+        else
+        {
+        	 buf[len++] = 0xff;
+        	 buf[len++] = 0xff;
+        }
+    }
+    if(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])//加速度z
+    {
+    	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])->value;
+    	buf[len++] = tmp >> 8;
+    	buf[len++] = tmp;
+    }
+    else
+    {
+    	 buf[len++] = 0xff;
+    	 buf[len++] = 0xff;
+    }
+
+    for(i = 0;i<4;i++)
+    {
+		if(gbinf->gb_VSExt.info[GB_VS_FLTYRERSPEED +i])//车轮转速
+		{
+			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FLTYRERSPEED +i])->value;
+			tmp = 10*tmp;
+			buf[len++] = tmp >> 8;
+			buf[len++] = tmp;
+		}
+		else
+		{
+			 buf[len++] = 0xff;
+			 buf[len++] = 0xff;
+		}
+    }
+
+	if(gbinf->gb_VSExt.info[GB_VS_STEERWHEELANGLE])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_STEERWHEELANGLE])->value;
+		tmp = 10*tmp;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_VSExt.info[GB_VS_TRIP])//小计里程
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TRIP])->value;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_VSExt.info[GB_VS_SUBTOTALTRVLTIME])//小计行驶时间
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_SUBTOTALTRVLTIME])->value;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+    for(i = 0;i<3;i++)
+    {
+		if(gbinf->gb_VSExt.info[GB_VS_TIPC+i])//瞬时/平均/小计电耗
+		{
+			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TIPC+i])->value;
+			buf[len++] = tmp >> 8;
+			buf[len++] = tmp;
+		}
+		else
+		{
+			 buf[len++] = 0xff;
+			 buf[len++] = 0xff;
+		}
+    }
+
+    /* 扩展状态信息 */
+	if(gbinf->gb_VSExt.info[GB_VS_ESCACTIVEST])//
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ESCACTIVEST])->value;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_VSExt.info[GB_VS_ESCDISABLEST])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ESCDISABLEST])->value;
+		if(tmp == 0)
+		{
+			buf[len++] = 1;
+		}
+		else if(tmp == 1)
+		{
+			buf[len++] = 0;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_VSExt.info[GB_VS_TCSACTIVEST])//TCS
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TCSACTIVEST])->value;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_VSExt.info[GB_VS_TCSACTIVEST])//SAS
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TCSACTIVEST])->value;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	for(i = 0;i<2;i++)
+	{
+		if(gbinf->gb_VSExt.info[GB_VS_MAINDRIBELTST+i])//主/副驾驶安全带状态
+		{
+			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_MAINDRIBELTST+i])->value;
+			if(tmp == 0)
+			{
+				buf[len++] = 1;
+			}
+			else if(tmp == 2)
+			{
+				buf[len++] = 0;
+			}
+			else
+			{
+				buf[len++] = 0xfe;
+			}
+		}
+		else
+		{
+			 buf[len++] = 0xff;
+		}
+	}
+
+	if(gbinf->gb_VSExt.info[GB_VS_ELECSTOPBRAKEST])//
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ELECSTOPBRAKEST])->value;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+	buf[len++] = 0xff;//预留1
+	buf[len++] = 0xff;//预留2
+	buf[len++] = 0xff;//预留3
+	buf[len++] = 0xff;
+	buf[len++] = 0xff;//预留4
+	buf[len++] = 0xff;
+
+    return len;
+}
+
+/*车辆位置扩展数据*/
+static uint32_t gb_data_save_VehiPosExt(gb_info_t *gbinf, uint8_t *buf)
+{
+    uint32_t len = 0;
+    int i;
+    int tmp = 0;
+
+    /* data type : location data */
+    buf[len++] = 0x92;//信息类型标志
+
+    tmp = 100;//车载终端的速度
+    buf[len++] = tmp >> 8;
+    buf[len++] = tmp;
+
+    tmp = 10;//定位精度
+    buf[len++] = tmp >> 8;
+    buf[len++] = tmp;
+
+    tmp = 10;//方向
+    buf[len++] = tmp >> 8;
+    buf[len++] = tmp;
+
+    tmp = 1000;//高度
+    buf[len++] = tmp >> 8;
+    buf[len++] = tmp;
+
+    return len;
+}
+#endif
+
 static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime)
 {
     uint32_t len = 0;
@@ -1045,7 +1713,12 @@ static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime
 
     len += gb_data_save_gps(gbinf, buf + len);
     len += gb_data_save_warn(gbinf, buf + len);
+#if GB_EXT
+    len += gb_data_save_VSExt(gbinf, buf + len);
 
+    len += gb_data_save_VehiPosExt(gbinf, buf + len);
+
+#endif
     return len;
 }
 
@@ -1484,6 +2157,7 @@ static int gb_data_parse_surfix(gb_info_t *gbinf, int sigid, const char *sfx)
         case GB_DATA_VIRTUAL:
             log_i(LOG_GB32960, "get virtual channe %s", sfx);
             break;
+#if GB_EXT
 		case GB_DATA_EVENT:
 		{
 			if (gbindex >= GB_MAX_EVENT_INFO)
@@ -1495,6 +2169,18 @@ static int gb_data_parse_surfix(gb_info_t *gbinf, int sigid, const char *sfx)
             gbinf->event.info[gbindex] = sigid;
 		}
 		break;
+		case GB_DATA_VSEXT:
+		{
+			if (gbindex >= GB_MAX_VSE_INFO)
+            {
+                log_e(LOG_GB32960, "VS ext info over %d! ", gbindex);
+                break;
+            }
+
+            gbinf->gb_VSExt.info[gbindex] = sigid;
+		}
+		break;
+#endif
         default:
             log_o(LOG_GB32960, "unkonwn type %s%x", sfx ,gbtype);
        break;
@@ -1701,12 +2387,13 @@ static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 
 				msg++;
 			}
-			
+#if GB_EXT
 			if(gb_inf)
 			{
 				//log_i(LOG_GB32960, "event check report");
 				gb_data_eventReport(gb_inf,msg->uptime);
 			}
+#endif
 		}
 		break;
         default:
