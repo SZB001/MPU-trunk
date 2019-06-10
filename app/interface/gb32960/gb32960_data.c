@@ -125,6 +125,85 @@
 #define GB_VS_FOUR    				0x4A
 #define GB_MAX_VSE_INFO   (GB_VS_FOUR + 1)
 
+
+/* components and parts state information index */
+#define GB_CMPT_MTRTARGETTORQUE       	0x00//
+#define GB_CMPT_MTRTARGETSPEED       	0x01//
+#define GB_CMPT_SYSST       			0x02//
+#define GB_CMPT_PWRUPST       			0x03//
+#define GB_CMPT_PWRDWNST       			0x04//
+#define GB_CMPT_FANGEARSTS       		0x05//
+#define GB_CMPT_PTCWORKSTS       		0x06//
+#define GB_CMPT_MOTCIRCWTRPUMWRKST      0x07//
+#define GB_CMPT_BATCIRCWTRPUMWRKST      0x08//
+#define GB_CMPT_CRASHOUTPUTST       	0x09//
+#define GB_CMPT_WORKMODE       			0x0A//
+#define GB_CMPT_CTRLTORQUE       		0x0B//电机实际扭矩
+#define GB_CMPT_MTRSENSEROTA       		0x0C//
+#define GB_CMPT_MAXAVAILTORQUE       	0x0D//
+#define GB_CMPT_POSBATTCONTST       	0x0E//
+#define GB_CMPT_NEGBATTCONTST       	0x0F//
+#define GB_CMPT_PRECHARGECONTST       	0x10//
+#define GB_CMPT_DCCHARGECONTST       	0x11//
+#define GB_CMPT_SIGNALBATHIGHESTVOLT    0x12//
+#define GB_CMPT_SIGNALBATLOWESTVOLT     0x13//
+#define GB_CMPT_SIGNALDIFFPRESSURE      0x14//
+#define GB_CMPT_BATHIGHESTTEMP       	0x15//
+#define GB_CMPT_BATLOWESTTEMP       	0x16//
+#define GB_CMPT_SIGNALDIFFTEMP       	0x17//
+#define GB_CMPT_CHARGECCSIG       		0x18//
+#define GB_CMPT_CHARGECPSIG       		0x19//
+#define GB_CMPT_QUICHGCC       			0x1A//
+#define GB_CMPT_POSFASTCHGPORTTEMP      0x1B//
+#define GB_CMPT_ENGFASTCHGPORTTEMP      0x1C//
+#define GB_CMPT_POSSLOWCHGPORTTEMP      0x1D//
+#define GB_CMPT_NEGSLOWCHGPORTTEMP      0x1E//
+#define GB_CMPT_CHARGEST     			0x1F//快充唤醒状态
+#define GB_CMPT_PWRBATTHEATST       	0x20//
+#define GB_CMPT_BATTVOLTAGE       		0x21//
+#define GB_CMPT_HDSAHTOTALCPSUM      	0x22//
+#define GB_CMPT_HDSAHACTIVECPSUM       	0x23//
+#define GB_CMPT_12VBATTVOLT       		0x24//
+#define GB_CMPT_REQOUTPUTMODE       	0x25//
+#define GB_CMPT_FCCURRENTREQ       		0x26//
+#define GB_CMPT_FCVOLTREQ       		0x27//
+#define GB_CMPT_CHRGGUNCNCTLI       	0x28//
+#define GB_CMPT_CURRENABLEPWROUTMAX     0x29//
+#define GB_CMPT_CHARGEOUTVOLT       	0x2A//
+#define GB_CMPT_CHARGEOUTCURR       	0x2B//
+#define GB_CMPT_CHARGEINPCURR       	0x2C//
+#define GB_CMPT_CHARGEINPVOLT       	0x2D//
+#define GB_CMPT_CHARGEMTRWORKST       	0x2E//
+#define GB_CMPT_S2ST       				0x2F//
+#define GB_CMPT_ACWORKSTATE       		0x30//
+#define GB_CMPT_CYCLEMODE       		0x31//
+#define GB_CMPT_VENTMODE       			0x32//
+#define GB_CMPT_FOOTMODE       			0x33//
+#define GB_CMPT_WINDOWMODE       		0x34//
+#define GB_CMPT_LHTEMP       			0x35//
+#define GB_CMPT_RHTEMP       			0x36//
+#define GB_CMPT_ACSTS       			0x37//
+#define GB_CMPT_PTCWORKST       		0x38//
+#define GB_CMPT_BLOWERSPDST       		0x39//
+#define GB_CMPT_OUTSIDETEMP       		0x3A//
+#define GB_CMPT_INSIDETEMP       		0x3B//
+#define GB_CMPT_EACBASEST       		0x3C//
+#define GB_CMPT_EACSPEEDSET       		0x3D//
+#define GB_CMPT_EACACPSPEED       		0x3E//
+#define GB_CMPT_EACHIGHVOLT       		0x3F//
+#define GB_CMPT_PTCPWRCONS       		0x40//
+#define GB_CMPT_CLNTTEMPIN       		0x41//
+#define GB_CMPT_CLNTTEMPOUT       		0x42//
+#define GB_CMPT_KEYAUTHEST       		0x43//
+#define GB_CMPT_IDDEVICENO       		0x44//
+#define GB_CMPT_VCULEARNST       		0x45//
+#define GB_CMPT_RAINSENSOR       		0x46//
+#define GB_CMPT_RESERVE_1       		0x47//
+#define GB_CMPT_RESERVE_2       		0x48//
+#define GB_CMPT_RESERVE_3       		0x49//
+#define GB_CMPT_RESERVE_4       		0x4A//
+#define GB_MAX_CMPT_INFO   (GB_CMPT_RESERVE_4 + 1)
+
 #endif
 
 /* vehicle type */
@@ -213,6 +292,7 @@
 #define GB_DATA_VIRTUAL     0x0B
 #if GB_EXT
 #define GB_DATA_EVENT     	0x0C//事件数据
+#define GB_DATA_CONPST     	0x0E//零部件状态数据
 #define GB_DATA_VSEXT     	0x0F//车辆状态扩展数据
 #endif
 
@@ -232,13 +312,13 @@ typedef struct
     int temp[GB_MAX_PACK_TEMP];
     uint32_t   cell_cnt;
     uint32_t   temp_cnt;
-} gb_batt_t;
+}gb_batt_t;
 /* motor information structure */
 typedef struct
 {
     int info[GB_MAX_MOTOR_INFO];
     uint8_t state_tbl[256];
-} gb_motor_t;
+}gb_motor_t;
 
 /* vehicle information structure */
 typedef struct
@@ -250,7 +330,7 @@ typedef struct
     uint8_t charge_tbl[256];
     uint8_t dcdc_tbl[256];
     uint8_t vehi_type;
-} gb_vehi_t;
+}gb_vehi_t;
 
 #if GB_EXT
 /* event information structure */
@@ -260,14 +340,14 @@ typedef struct
     uint8_t oldst[GB_MAX_EVENT_INFO];
 	uint8_t newst[GB_MAX_EVENT_INFO];
 	uint8_t triflg;
-} gb_event_t;
+}gb_event_t;
 
 
 typedef struct
 {
     uint8_t type;
     uint16_t code;
-} gb_eventCode_t;
+}gb_eventCode_t;
 
 static gb_eventCode_t	gb_eventCode[GB_MAX_EVENT_INFO] =
 {
@@ -295,7 +375,15 @@ typedef struct
     int info[GB_MAX_VSE_INFO];
     uint8_t oldst[GB_MAX_VSE_INFO];
 	uint8_t newst[GB_MAX_VSE_INFO];
-} gb_VehiStExt_t;
+}gb_VehiStExt_t;
+
+/* 零部件 state information structure */
+typedef struct
+{
+    int info[GB_MAX_CMPT_INFO];
+    uint8_t oldst[GB_MAX_CMPT_INFO];
+	uint8_t newst[GB_MAX_CMPT_INFO];
+}gb_ConpState_t;
 #endif
 
 /* fuel cell information structure */
@@ -305,14 +393,14 @@ typedef struct
     int temp[GB_MAX_FUEL_TEMP];
     int temp_cnt;
     uint8_t hvdcdc[8];
-} gb_fuelcell_t;
+}gb_fuelcell_t;
 
 /* engine information structure */
 typedef struct
 {
     int info[GB_MAX_ENGIN_INFO];
     uint8_t state_tbl[256];
-} gb_engin_t;
+}gb_engin_t;
 /* GB32960 information structure */
 typedef struct _gb_info_t
 {
@@ -329,9 +417,10 @@ typedef struct _gb_info_t
 #if GB_EXT
 	gb_event_t event;
 	gb_VehiStExt_t gb_VSExt;
+	gb_ConpState_t gb_ConpSt;
 #endif
     struct _gb_info_t *next;
-} gb_info_t;
+}gb_info_t;
 
 
 
@@ -1119,7 +1208,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = 0x91;//信息类型标志
 
     /* 车门锁 state */
-    if (gbinf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])
+    if(gbinf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])->value)
         {
@@ -1144,7 +1233,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    if (gbinf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//后备箱门锁
+    if(gbinf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//后备箱门锁
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])->value)
         {
@@ -1170,7 +1259,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     /* 车门 state */
     for(i = 0; i < 4; i++)
     {
-        if (gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN+i])
+        if(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN+i])
         {
             if(2 == dbc_get_signal_from_id(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN+i])->value)//开
             {
@@ -1194,7 +1283,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         }
     }
 
-    if (gbinf->gb_VSExt.info[GB_VS_BACKDOORST])//后备箱门状态
+    if(gbinf->gb_VSExt.info[GB_VS_BACKDOORST])//后备箱门状态
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_BACKDOORST])->value)
         {
@@ -1211,7 +1300,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     }
 
     /* 空调信息 */
-    if (gbinf->gb_VSExt.info[GB_VS_ACST])//
+    if(gbinf->gb_VSExt.info[GB_VS_ACST])//
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACST])->value)
         {
@@ -1227,7 +1316,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    if (gbinf->gb_VSExt.info[GB_VS_ACTEMP])//
+    if(gbinf->gb_VSExt.info[GB_VS_ACTEMP])//
     {
         //if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value)
         {
@@ -1239,7 +1328,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    if (gbinf->gb_VSExt.info[GB_VS_ACMODE])//空调模式
+    if(gbinf->gb_VSExt.info[GB_VS_ACMODE])//空调模式
     {
         //if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACMODE])->value)
         {
@@ -1266,7 +1355,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     }
     else
     {
-        buf[len++] = 0;
+        buf[len++] = 0xff;
     }
 
     if(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])//
@@ -1275,7 +1364,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     }
     else
     {
-        buf[len++] = 0;
+        buf[len++] = 0xff;
     }
 
     /* 车灯状态 */
@@ -1672,6 +1761,824 @@ static uint32_t gb_data_save_VehiPosExt(gb_info_t *gbinf, uint8_t *buf)
 
     return len;
 }
+
+
+/*零部件状态数据*/
+static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
+{
+    uint32_t len = 0;
+    int i;
+    int tmp = 0;
+    uint32_t tmp_32 = 0;
+
+    /* data type : location data */
+    buf[len++] = 0x93;//信息类型标志
+
+    /* 整车控制器 */
+	if(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETTORQUE])//当前电机目标扭矩
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETTORQUE])->value;
+		//tmp = 10*tmp;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETSPEED])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETSPEED])->value;
+		//tmp = 10*tmp;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_SYSST])//上下电状态
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_SYSST])->value;
+		if((tmp>=0)&&(tmp<=5))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_PWRUPST])//高压上电状态
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PWRUPST])->value;
+		if((tmp>=0)&&(tmp<=5))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_PWRDWNST])//高压下电状态
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PWRDWNST])->value;
+		if((tmp>=0)&&(tmp<=6))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_FANGEARSTS])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_FANGEARSTS])->value;
+		if((tmp>=0)&&(tmp<=2))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_PTCWORKSTS])//
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PTCWORKSTS])->value;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_MOTCIRCWTRPUMWRKST])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MOTCIRCWTRPUMWRKST])->value;
+		tmp = 10*tmp;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_BATCIRCWTRPUMWRKST])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_BATCIRCWTRPUMWRKST])->value;
+		tmp = 10*tmp;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_CRASHOUTPUTST])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CRASHOUTPUTST])->value;
+		if((tmp>=0)&&(tmp<=3))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+    /* 电机控制器 */
+	if(gbinf->gb_ConpSt.info[GB_CMPT_WORKMODE])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_WORKMODE])->value;
+		if((tmp>=0)&&(tmp<=7))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_CTRLTORQUE])//电机实际扭矩
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CTRLTORQUE])->value;
+		//tmp = 10*tmp;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_WORKMODE])//驱动当前旋转方向
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_WORKMODE])->value;
+		if((tmp>=0)&&(tmp<=7))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_MAXAVAILTORQUE])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MAXAVAILTORQUE])->value;
+		//tmp = 10*tmp;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+    /* 电池管理系统 */
+	for(i=0;i<4;i++)//正、负、预充电，快充继电器闭合状态
+	{
+		if(gbinf->gb_ConpSt.info[GB_CMPT_POSBATTCONTST+i])//
+		{
+			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_POSBATTCONTST+i])->value;
+			if((tmp>=0)&&(tmp<=1))
+			{
+				buf[len++] = tmp;
+			}
+			else
+			{
+				buf[len++] = 0xfe;
+			}
+		}
+		else
+		{
+			 buf[len++] = 0xff;
+		}
+	}
+
+	if (gbinf->extr[GB_XINF_MAXV])
+	{
+		tmp = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXV])->value;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	if (gbinf->extr[GB_XINF_MINV])
+	{
+		tmp = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINV])->value;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	{//单体压差
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	if (gbinf->extr[GB_XINF_MAXT])
+	{
+		tmp = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXT])->value;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if (gbinf->extr[GB_XINF_MINT])
+	{
+		tmp = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINT])->value;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	{//单体温差
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	for(i=0;i<3;i++)//快充CC/CP、慢充CC连接状态
+	{
+		if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGECCSIG+i])//
+		{
+			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHARGECCSIG+i])->value;
+			if((tmp>=0)&&(tmp<=1))
+			{
+				buf[len++] = tmp;
+			}
+			else
+			{
+				buf[len++] = 0xfe;
+			}
+		}
+		else
+		{
+			 buf[len++] = 0xff;
+		}
+	}
+
+	for(i=0;i<4;i++)//快充、慢充口温度
+	{
+		if(gbinf->gb_ConpSt.info[GB_CMPT_POSFASTCHGPORTTEMP+i])//
+		{
+			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_POSFASTCHGPORTTEMP+i])->value;
+			buf[len++] = tmp >> 8;
+			buf[len++] = tmp;
+		}
+		else
+		{
+			 buf[len++] = 0xff;
+			 buf[len++] = 0xff;
+		}
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEST])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEST])->value;
+		if((tmp>=0)&&(tmp<=6))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_VSExt.info[GB_VS_ACMODE])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACMODE])->value;
+		if((tmp>=0)&&(tmp<=7))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+   if(gbinf->vehi.info[GB_VINF_VOLTAGE])
+   {
+	   tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_VOLTAGE])->value;
+	   tmp = 20*tmp;
+	   buf[len++] = tmp >> 8;
+	   buf[len++] = tmp;
+   }
+   else
+   {
+	   buf[len++] = 0xff;
+	   buf[len++] = 0xff;
+   }
+
+	for(i=0;i<2;i++)//动力电池总、可用容量
+	{
+		if(gbinf->gb_ConpSt.info[GB_CMPT_HDSAHTOTALCPSUM+i])//
+		{
+			tmp_32 = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_HDSAHTOTALCPSUM+i])->value;
+			tmp_32 = 100*tmp_32;
+			buf[len++] = tmp_32 >> 24;
+			buf[len++] = tmp_32 >> 16;
+			buf[len++] = tmp_32 >> 8;
+			buf[len++] = tmp_32;
+		}
+		else
+		{
+			 buf[len++] = 0xff;
+			 buf[len++] = 0xff;
+			 buf[len++] = 0xff;
+			 buf[len++] = 0xff;
+		}
+	}
+
+	if (gbinf->gb_ConpSt.info[GB_CMPT_12VBATTVOLT])
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_12VBATTVOLT])->value;
+		tmp = 20*tmp;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_REQOUTPUTMODE])//动力电池充电请求
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_REQOUTPUTMODE])->value;
+		if((tmp>=0)&&(tmp<=3))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if (gbinf->gb_ConpSt.info[GB_CMPT_FCCURRENTREQ])
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_FCCURRENTREQ])->value;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	if (gbinf->gb_ConpSt.info[GB_CMPT_FCVOLTREQ])
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_FCVOLTREQ])->value;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	/* 车载充电机 */
+	if(gbinf->gb_ConpSt.info[GB_CMPT_CHRGGUNCNCTLI])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHRGGUNCNCTLI])->value;
+		if((tmp>=0)&&(tmp<=3))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if (gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])//充电机最大输出功率
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])->value;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	for(i=0;i<4;i++)//充电输入、输出电压电流
+	{
+		if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEOUTVOLT])
+		{
+			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEOUTVOLT])->value;
+			tmp = 20*tmp;
+			buf[len++] = tmp >> 8;
+			buf[len++] = tmp;
+		}
+		else
+		{
+			 buf[len++] = 0xff;
+			 buf[len++] = 0xff;
+		}
+	}
+
+	if(gbinf->vehi.info[GB_VINF_CHARGE])
+	{
+		tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_CHARGE])->value;
+		if((tmp>=0)&&(tmp<=7))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_S2ST])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_S2ST])->value;
+		if((tmp>=0)&&(tmp<=1))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	/* 空调控制器CLM */
+	if(gbinf->gb_VSExt.info[GB_VS_ACST])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACST])->value;
+		if((tmp>=0)&&(tmp<=1))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_CYCLEMODE])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CYCLEMODE])->value;
+		if((tmp>=0)&&(tmp<=2))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	for(i=0;i<3;i++)//吹面，吹脚，吹窗模式
+	{
+		if(gbinf->gb_ConpSt.info[GB_CMPT_VENTMODE+i])//
+		{
+			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_VENTMODE+i])->value;
+			if((tmp>=0)&&(tmp<=1))
+			{
+				buf[len++] = tmp;
+			}
+			else
+			{
+				buf[len++] = 0xfe;
+			}
+		}
+		else
+		{
+			 buf[len++] = 0xff;
+		}
+	}
+
+	for(i=0;i<2;i++)//嘱咐驾设置温度
+	{
+		if(gbinf->gb_ConpSt.info[GB_CMPT_LHTEMP+i])//
+		{
+			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_LHTEMP+i])->value;
+			buf[len++] = tmp;
+		}
+		else
+		{
+			 buf[len++] = 0xff;
+		}
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_ACSTS])//AC状态
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_ACSTS])->value;
+		if((tmp>=0)&&(tmp<=1))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_PTCWORKST])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PTCWORKST])->value;
+		if((tmp>=0)&&(tmp<=3))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_VSExt.info[GB_VS_AIRVOLUME])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_AIRVOLUME])->value;
+		if(((tmp>=0)&&(tmp<=7)) || (tmp == 0xe))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+    if(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])//
+    {
+    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])->value;
+    }
+    else
+    {
+        buf[len++] = 0xff;
+    }
+
+    if(gbinf->gb_VSExt.info[GB_VS_INTEMP])//
+    {
+    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_INTEMP])->value;
+    }
+    else
+    {
+        buf[len++] = 0xff;
+    }
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_RAINSENSOR])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_RAINSENSOR])->value;
+		if((tmp>=0)&&(tmp<=4))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	/* 压缩机EAC */
+	if(gbinf->gb_ConpSt.info[GB_CMPT_EACBASEST])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_EACBASEST])->value;
+		if((tmp>=0)&&(tmp<=4))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	for(i=0;i<2;i++)//压缩机目标、实际转速
+	{
+		if(gbinf->gb_ConpSt.info[GB_CMPT_EACSPEEDSET+i])
+		{
+			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_EACSPEEDSET+i])->value;
+			buf[len++] = tmp/100;
+		}
+		else
+		{
+			 buf[len++] = 0xff;
+		}
+	}
+
+	{//EAC高压供电电压
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	/* PTC */
+	if(gbinf->gb_ConpSt.info[GB_CMPT_PTCPWRCONS])
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PTCPWRCONS])->value;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+	for(i=0;i<2;i++)//冷却液进、出口温度
+	{
+		if(gbinf->gb_ConpSt.info[GB_CMPT_CLNTTEMPIN+i])
+		{
+			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CLNTTEMPIN+i])->value;
+			buf[len++] = tmp;
+		}
+		else
+		{
+			 buf[len++] = 0xff;
+		}
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_KEYAUTHEST])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_KEYAUTHEST])->value;
+		if((tmp>=0)&&(tmp<=2))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_IDDEVICENO])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_IDDEVICENO])->value;
+		if((tmp>=0)&&(tmp<=4))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_VCULEARNST])//
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_VCULEARNST])->value;
+		if((tmp>=0)&&(tmp<=1))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+	}
+
+
+	{//预留1
+		 buf[len++] = 0xff;
+	}
+	{//预留2
+		 buf[len++] = 0xff;
+	}
+	{//预留3
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+	{//预留4
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+	}
+
+    return len;
+}
+
 #endif
 
 static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime)
@@ -1715,8 +2622,9 @@ static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime
     len += gb_data_save_warn(gbinf, buf + len);
 #if GB_EXT
     len += gb_data_save_VSExt(gbinf, buf + len);
-
     len += gb_data_save_VehiPosExt(gbinf, buf + len);
+    len += gb_data_save_ComponentSt(gbinf, buf + len);
+
 
 #endif
     return len;
@@ -2178,6 +3086,17 @@ static int gb_data_parse_surfix(gb_info_t *gbinf, int sigid, const char *sfx)
             }
 
             gbinf->gb_VSExt.info[gbindex] = sigid;
+		}
+		break;
+		case GB_DATA_CONPST:
+		{
+			if (gbindex >= GB_MAX_VSE_INFO)
+            {
+                log_e(LOG_GB32960, "conp st info over %d! ", gbindex);
+                break;
+            }
+
+            gbinf->gb_ConpSt.info[gbindex] = sigid;
 		}
 		break;
 #endif
