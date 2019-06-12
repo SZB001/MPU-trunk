@@ -2316,9 +2316,9 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	}
 
 	/* ³µÔØ³äµç»ú */
-	if(gbinf->gb_ConpSt.info[GB_CMPT_CHRGGUNCNCTLI])//
+	if(gbinf->vehi.info[GB_VINF_CHARGE])//
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHRGGUNCNCTLI])->value;
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_VINF_CHARGE])->value;
 		if((tmp>=0)&&(tmp<=3))
 		{
 			buf[len++] = tmp;
@@ -2361,7 +2361,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		}
 	}
 
-	if(gbinf->vehi.info[GB_VINF_CHARGE])
+	if(gbinf->gb_ConpSt.info[GB_VINF_CHARGE])
 	{
 		tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_CHARGE])->value;
 		if((tmp>=0)&&(tmp<=7))
@@ -2378,10 +2378,10 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_ConpSt.info[GB_CMPT_S2ST])//
+	if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEMTRWORKST])//
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_S2ST])->value;
-		if((tmp>=0)&&(tmp<=1))
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEMTRWORKST])->value;
+		if((tmp>=0)&&(tmp<=7))
 		{
 			buf[len++] = tmp;
 		}
