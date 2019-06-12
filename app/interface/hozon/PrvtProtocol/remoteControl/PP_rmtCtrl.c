@@ -228,7 +228,7 @@ static int PP_rmtCtrl_do_rcvMsg(PrvtProt_task_t *task)
 
 *返回值：void
 
-*描  述：接收数据函数
+*描  述：
 
 *备  注：
 ******************************************************/

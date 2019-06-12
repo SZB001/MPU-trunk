@@ -22,7 +22,7 @@
 #define GB_MAX_FUEL_TEMP    200
 #define GB_MAX_FUEL_INFO    16
 #define GB_MAX_VEHI_INFO    16
-#define GB_MAX_WARN_INFO    32
+#define GB_MAX_WARN_INFO    (32 + 59)//33-91为扩展报警数据
 #define GB_MAX_MOTOR_INFO   8
 #define GB_MAX_ENGIN_INFO   4
 #define GB_MAX_EXTR_INFO    16
@@ -294,6 +294,7 @@
 #define GB_DATA_EVENT     	0x0C//事件数据
 #define GB_DATA_CONPST     	0x0E//零部件状态数据
 #define GB_DATA_VSEXT     	0x0F//车辆状态扩展数据
+
 #endif
 
 /* report data type */
@@ -384,6 +385,107 @@ typedef struct
     uint8_t oldst[GB_MAX_CMPT_INFO];
 	uint8_t newst[GB_MAX_CMPT_INFO];
 }gb_ConpState_t;
+
+typedef struct
+{
+    uint16_t code;
+}gb_alarmCode_t;
+
+static gb_alarmCode_t	gb_alarmCode[GB_MAX_WARN_INFO] =
+{
+	{0x0000},//0~31,对应国标,此处全0--不使用
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0000},
+	{0x0001},
+	{0x0002},
+	{0x0003},
+	{0x0004},
+	{0x0005},
+	{0x0006},
+	{0x0007},
+	{0x0008},
+	{0x0009},
+	{0x000A},
+	{0x000B},
+	{0x000C},
+	{0x000D},
+	{0x000E},
+	{0x000F},
+	{0x0010},
+	{0x0011},
+	{0x0012},
+	{0x0013},
+	{0x0014},
+	{0x0015},
+	{0x0016},//车载充电器欠压告警
+	{0x0016},//车载充电器欠压告警
+	{0x0017},
+	{0x0018},
+	{0x0019},
+	{0x001A},
+	{0x001B},
+	{0x001C},
+	{0x001D},
+	{0x001E},
+	{0x001F},
+	{0x0020},
+	{0x0021},
+	{0x0022},
+	{0x0023},
+	{0x0024},
+	{0x0025},
+	{0x0026},//电机异常告警
+	{0x0027},
+	{0x0028},
+	{0x0029},
+	{0x002A},
+	{0x002B},
+	{0x002C},
+	{0x002D},
+	{0x002E},
+	{0x002F},
+	{0x0030},
+	{0x0031},
+	{0x0032},
+	{0x0033},
+	{0x0034},
+	{0x0035},
+	{0x0036},
+	{0x0037},
+	{0x0038},
+	{0x0039},
+	{0x0026}//电机异常告警
+};
+
 #endif
 
 /* fuel cell information structure */
@@ -2579,6 +2681,284 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
     return len;
 }
 
+/* 扩展报警数据 */
+static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
+{
+    uint32_t len = 0, i, j;
+    uint8_t* warnlvl_ptr;
+    uint8_t* warnnum_ptr;
+    uint16_t warn_code = 0;
+    uint8_t ac_warnflag=0;
+    uint8_t warnvalue = 0;
+    /* data type : warn extend information */
+    buf[len++] = 0x94;
+
+    warnlvl_ptr = &buf[len++];//最高报警等级
+    warnnum_ptr = &buf[len++];//报警数
+
+    for (i = 0; i < 3; i++)
+    {
+        for (j = 32; j < GB_MAX_WARN_INFO; j++)
+        {
+            if (gbinf->warn[i][j] &&
+            (dbc_get_signal_from_id(gbinf->warn[i][j])->value ||
+            (gbinf->warn[3][j] &&
+            dbc_get_signal_from_id(gbinf->warn[3][j])->value)))
+            // index 3,as a relevance channel,if the is two canid used for on warning
+            {
+            	warnvalue = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
+            	if(j == 0x50)//制冷不响应故障
+            	{
+            		switch(warnvalue)
+            		{
+            			case 0x01://制冷不响应原因-压缩机故障
+            			{
+            				warn_code = 48;
+            			}
+            			break;
+            			case 0x02://制冷不响应原因-电子膨胀阀故障
+            			{
+            				warn_code = 49;
+            			}
+            			break;
+            			case 0x03://制冷不响应原因-HV 故障
+            			{
+            				warn_code = 50;
+            			}
+            			break;
+            			case 0x04://制冷不响应原因-压力传感器故障
+            			{
+            				warn_code = 51;
+            			}
+            			break;
+            			case 0x05://制冷不响应原因-冷却风扇故障
+            			{
+            				warn_code = 52;
+            			}
+            			break;
+            			case 0x06://制冷不响应原因-蒸发器温度传感器故障
+            			{
+            				warn_code = 53;
+            			}
+            			break;
+            			default:
+            			break;
+            		}
+    	        	buf[len++] = warn_code >> 8;
+    	        	buf[len++] = warn_code;
+    	        	(*warnnum_ptr)++;
+    	        	(*warnlvl_ptr)  = i + 1;
+    	        	ac_warnflag=1;
+            	}
+            	else if(j == 0x47)//制热不响应故障
+            	{
+            		switch(warnvalue)
+            		{
+            			case 0x01://PTC故障
+            			{
+            				warn_code = 54;
+            			}
+            			break;
+            			case 0x02://HV故障
+            			{
+            				warn_code = 55;
+            			}
+            			break;
+            			case 0x03://PTC水泵故障
+            			{
+            				warn_code = 56;
+            			}
+            			break;
+            			case 0x04://三通水阀故障
+            			{
+            				warn_code = 57;
+            			}
+            			break;
+            			default:
+            			break;
+            		}
+    	        	buf[len++] = warn_code >> 8;
+    	        	buf[len++] = warn_code;
+    	        	(*warnnum_ptr)++;
+    	        	(*warnlvl_ptr)  = i + 1;
+    	        	ac_warnflag=1;
+            	}
+            	else
+            	{
+                	buf[len++] = gb_alarmCode[j].code >> 8;
+                	buf[len++] = gb_alarmCode[j].code;
+                	(*warnnum_ptr)++;
+                	(*warnlvl_ptr)  = i + 1;
+            	}
+            }
+        }
+
+        //MCU 内部 IGBT 过温（U 相）
+		if (gbinf->warn[i][0x0f] &&
+		(dbc_get_signal_from_id(gbinf->warn[i][0x0f])->value ||
+		(gbinf->warn[3][0x0f] &&
+		dbc_get_signal_from_id(gbinf->warn[3][0x0f])->value)))
+		// index 3,as a relevance channel,if the is two canid used for on warning
+		{
+			warn_code = 7;
+        	buf[len++] = warn_code >> 8;
+        	buf[len++] = warn_code;
+        	(*warnnum_ptr)++;
+        	(*warnlvl_ptr)  = i + 1;
+		}
+
+        //单体蓄电池过压报警
+		if (gbinf->warn[i][0x05] &&
+		(dbc_get_signal_from_id(gbinf->warn[i][0x05])->value ||
+		(gbinf->warn[3][0x05] &&
+		dbc_get_signal_from_id(gbinf->warn[3][0x05])->value)))
+		// index 3,as a relevance channel,if the is two canid used for on warning
+		{
+			warn_code = 18;
+        	buf[len++] = warn_code >> 8;
+        	buf[len++] = warn_code;
+        	(*warnnum_ptr)++;
+        	(*warnlvl_ptr)  = i + 1;
+		}
+
+        //档位信号故障
+		if (gbinf->warn[i][0x33] &&
+		(dbc_get_signal_from_id(gbinf->warn[i][0x33])->value ||
+		(gbinf->warn[3][0x33] &&
+		dbc_get_signal_from_id(gbinf->warn[3][0x33])->value)))
+		// index 3,as a relevance channel,if the is two canid used for on warning
+		{
+			warn_code = 20;
+        	buf[len++] = warn_code >> 8;
+        	buf[len++] = warn_code;
+        	(*warnnum_ptr)++;
+        	(*warnlvl_ptr)  = i + 1;
+		}
+
+        //电机异常报警
+		if (gbinf->warn[i][0x0b] &&
+		(dbc_get_signal_from_id(gbinf->warn[i][0x0b])->value ||
+		(gbinf->warn[3][0x0b] &&
+		dbc_get_signal_from_id(gbinf->warn[3][0x0b])->value)))
+		// index 3,as a relevance channel,if the is two canid used for on warning
+		{
+			warn_code = 26;
+        	buf[len++] = warn_code >> 8;
+        	buf[len++] = warn_code;
+        	(*warnnum_ptr)++;
+        	(*warnlvl_ptr)  = i + 1;
+		}
+
+        //电机异常报警
+		if (gbinf->warn[i][0x0f] &&
+		(dbc_get_signal_from_id(gbinf->warn[i][0x0f])->value ||
+		(gbinf->warn[3][0x0f] &&
+		dbc_get_signal_from_id(gbinf->warn[3][0x0f])->value)))
+		// index 3,as a relevance channel,if the is two canid used for on warning
+		{
+			warn_code = 26;
+        	buf[len++] = warn_code >> 8;
+        	buf[len++] = warn_code;
+        	(*warnnum_ptr)++;
+        	(*warnlvl_ptr)  = i + 1;
+		}
+
+        //动力电池单体电压过压保护
+		if (gbinf->warn[i][0x05] &&
+		(dbc_get_signal_from_id(gbinf->warn[i][0x05])->value ||
+		(gbinf->warn[3][0x05] &&
+		dbc_get_signal_from_id(gbinf->warn[3][0x05])->value)))
+		// index 3,as a relevance channel,if the is two canid used for on warning
+		{
+			warn_code = 27;
+        	buf[len++] = warn_code >> 8;
+        	buf[len++] = warn_code;
+        	(*warnnum_ptr)++;
+        	(*warnlvl_ptr)  = i + 1;
+		}
+
+        //动力电池单体电压欠压保护故障
+		if (gbinf->warn[i][0x06] &&
+		(dbc_get_signal_from_id(gbinf->warn[i][0x06])->value ||
+		(gbinf->warn[3][0x06] &&
+		dbc_get_signal_from_id(gbinf->warn[3][0x06])->value)))
+		// index 3,as a relevance channel,if the is two canid used for on warning
+		{
+			warn_code = 28;
+        	buf[len++] = warn_code >> 8;
+        	buf[len++] = warn_code;
+        	(*warnnum_ptr)++;
+        	(*warnlvl_ptr)  = i + 1;
+		}
+
+        //动力电池温度过高保护故障
+		if (gbinf->warn[i][0x01] &&
+		(dbc_get_signal_from_id(gbinf->warn[i][0x01])->value ||
+		(gbinf->warn[3][0x01] &&
+		dbc_get_signal_from_id(gbinf->warn[3][0x01])->value)))
+		// index 3,as a relevance channel,if the is two canid used for on warning
+		{
+			warn_code = 32;
+        	buf[len++] = warn_code >> 8;
+        	buf[len++] = warn_code;
+        	(*warnnum_ptr)++;
+        	(*warnlvl_ptr)  = i + 1;
+		}
+
+    }
+
+    if(ac_warnflag)//空调不工作报警
+    {
+		warn_code = 47;
+    	buf[len++] = warn_code >> 8;
+    	buf[len++] = warn_code;
+    	(*warnnum_ptr)++;
+    	//(*warnlvl_ptr)  = i + 1;
+    }
+
+    //TBOX 故障报警
+    if(1)
+    {
+		warn_code = 13;
+    	buf[len++] = warn_code >> 8;
+    	buf[len++] = warn_code;
+    	(*warnnum_ptr)++;
+    	(*warnlvl_ptr)  = 0 + 1;
+    }
+
+    //与 BMS 通讯丢失
+    if(1)
+    {
+		warn_code = 37;
+    	buf[len++] = warn_code >> 8;
+    	buf[len++] = warn_code;
+    	(*warnnum_ptr)++;
+    	(*warnlvl_ptr)  = 2 + 1;
+    }
+
+    //与 MCU 通讯丢失
+    if(1)
+    {
+		warn_code = 38;
+    	buf[len++] = warn_code >> 8;
+    	buf[len++] = warn_code;
+    	(*warnnum_ptr)++;
+    	//(*warnlvl_ptr)  = 0 + 1;
+    }
+
+    //拖车提醒
+    if(1)
+    {
+		warn_code = 45;
+    	buf[len++] = warn_code >> 8;
+    	buf[len++] = warn_code;
+    	(*warnnum_ptr)++;
+    	//(*warnlvl_ptr)  = i + 1;
+    }
+
+    return len;
+}
+
 #endif
 
 static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime)
@@ -2624,7 +3004,7 @@ static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime
     len += gb_data_save_VSExt(gbinf, buf + len);
     len += gb_data_save_VehiPosExt(gbinf, buf + len);
     len += gb_data_save_ComponentSt(gbinf, buf + len);
-
+    len += gb_data_save_warnExt(gbinf, buf + len);
 
 #endif
     return len;

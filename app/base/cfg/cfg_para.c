@@ -421,6 +421,9 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     memset(&apn_auth, 0, sizeof(apn_auth));
     cfg_set_by_id(CFG_ITEM_LOC_APN_AUTH, &apn_auth, sizeof(apn_auth), type);
 
+    unsigned char dbc_path[] = "/usrdata/dbc/GB-EP30_CAN_r4_001.dbc";
+    cfg_set_by_id(CFG_ITEM_DBC_PATH, dbc_path, 256, type);
+
     wifi_enable = 0;
     cfg_set_by_id(CFG_ITEM_WIFI_SET, &wifi_enable, sizeof(wifi_enable), type);
 
@@ -464,11 +467,11 @@ int cfg_set_default_para(CFG_SET_TYPE type)
 
     cfg_set_by_id(CFG_ITEM_GB32960_VIN, "00000000000000000", 18, type);
 
-    char gb_url[256];
-    memset(gb_url, 0, sizeof(gb_url));
+    char gb_url[256] = "60.12.185.130";
+    //memset(gb_url, 0, sizeof(gb_url));
     cfg_set_by_id(CFG_ITEM_GB32960_URL, gb_url, sizeof(gb_url), type);
 
-    tmp_short = 0;
+    tmp_short = 20000;
     cfg_set_by_id(CFG_ITEM_GB32960_PORT, &tmp_short, sizeof(short), type);
 
     tmp_short = 0;
@@ -479,7 +482,7 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     cfg_set_by_id(CFG_ITEM_GB32960_TIMEOUT, &tmp_short, sizeof(short), type);
     tmp_int = 0;
     cfg_set_by_id(CFG_ITEM_GB32960_REGSEQ, &tmp_int, sizeof(int), type);
-
+#if 0
     cfg_set_by_id(CFG_ITEM_FOTON_VIN, "00000000000000000", 18, type);
     
     cfg_set_by_id(CFG_ITEM_FOTON_URL, "211.94.119.48", 256, type);
@@ -501,7 +504,7 @@ int cfg_set_default_para(CFG_SET_TYPE type)
 
 	tmp_short = 15;
     cfg_set_by_id(CFG_ITEM_FT_HBINTV, &tmp_short, sizeof(short), type);
-
+#endif
     unsigned int sleep_time = 7 * 24 * 60;
     cfg_set_by_id(CFG_ITEM_SLEEP_TIME, &sleep_time, sizeof(sleep_time), type);
     unsigned int dsleep_time = 14 * 24 * 60;
