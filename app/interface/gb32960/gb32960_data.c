@@ -206,6 +206,39 @@
 
 #endif
 
+/* alarm fault information index */
+//可充电储能装置故障
+#define GB_AF_BATTRISEFAST       		0x00//
+// 其他故障
+#define GB_AF_FLTYRESENSORLOST       	0x01//
+#define GB_AF_FLTYRELEAK       			0x02//
+#define GB_AF_FLTYRELOWPRESSUREWARN     0x03//
+#define GB_AF_FLTYREHIGHPRESSUREWARN    0x04//
+#define GB_AF_FLTYREHIGHTEMPWARN       	0x05//
+#define GB_AF_FLTYRELOWBATT       		0x06//
+
+#define GB_AF_FRTYRESENSORLOST       	0x07//
+#define GB_AF_FRTYRELEAK       			0x08//
+#define GB_AF_FRTYRELOWPRESSUREWARN     0x09//
+#define GB_AF_FRTYREHIGHPRESSUREWARN    0x0A//
+#define GB_AF_FRTYREHIGHTEMPWARN       	0x0B//
+#define GB_AF_FRTYRELOWBATT       		0x0C//
+
+#define GB_AF_RLTYRESENSORLOST       	0x0D//
+#define GB_AF_RLTYRELEAK       			0x0E//
+#define GB_AF_RLTYRELOWPRESSUREWARN     0x0F//
+#define GB_AF_RLTYREHIGHPRESSUREWARN    0x10//
+#define GB_AF_RLTYREHIGHTEMPWARN       	0x11//
+#define GB_AF_RLTYRELOWBATT       		0x12//
+
+#define GB_AF_RRTYRESENSORLOST       	0x13//
+#define GB_AF_RRTYRELEAK       			0x14//
+#define GB_AF_RRTYRELOWPRESSUREWARN     0x15//
+#define GB_AF_RRTYREHIGHPRESSUREWARN    0x16//
+#define GB_AF_RRTYREHIGHTEMPWARN       	0x17//
+#define GB_AF_RRTYRELOWBATT       		0x18//
+#define GB_MAX_AF_INFO   (GB_AF_RRTYRELOWBATT + 1)
+
 /* vehicle type */
 #define GB_VEHITYPE_ELECT   0x01
 #define GB_VEHITYPE_HYBIRD  0x02
@@ -294,6 +327,7 @@
 #define GB_DATA_VSEXT     	0x0F//车辆状态扩展数据
 
 #endif
+#define GB_DATA_ALARMFAULT  0x05//报警-故障代码
 
 /* report data type */
 #define GB_RPTTYPE_REALTM   0x02
@@ -486,6 +520,49 @@ static gb_alarmCode_t	gb_alarmCode[GB_MAX_WARN_INFO] =
 
 #endif
 
+/* 报警-故障 information structure */
+typedef struct
+{
+    int info[GB_MAX_AF_INFO];
+    uint8_t oldst[GB_MAX_AF_INFO];
+	uint8_t newst[GB_MAX_AF_INFO];
+}gb_alarmFault_t;
+
+typedef struct
+{
+    uint16_t code;
+}gb_alarmFaultCode_t;
+
+static gb_alarmFaultCode_t gb_alarmFaultCode[GB_MAX_AF_INFO] =
+{
+		{1001},
+
+		{4001},
+		{4002},
+		{4003},
+		{4004},
+		{4005},
+		{4006},
+		{4007},
+		{4008},
+		{4009},
+		{4010},
+		{4011},
+		{4012},
+		{4013},
+		{4014},
+		{4015},
+		{4016},
+		{4017},
+		{4018},
+		{4019},
+		{4020},
+		{4021},
+		{4022},
+		{4023},
+		{4024}
+};
+
 /* fuel cell information structure */
 typedef struct
 {
@@ -519,6 +596,7 @@ typedef struct _gb_info_t
 	gb_VehiStExt_t gb_VSExt;
 	gb_ConpState_t gb_ConpSt;
 #endif
+	gb_alarmFault_t gb_alarmFault;
     struct _gb_info_t *next;
 }gb_info_t;
 
@@ -718,7 +796,6 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
     if (gbinf->vehi.info[GB_VINF_SHIFT])
     {
         uint8_t sft;
-
         tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SHIFT])->value;
         sft = gbinf->vehi.shift_tbl[tmp];
 
@@ -744,7 +821,13 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
                 tmp = 0;
                 break;
         }
+        buf[len++] = tmp;
     }
+    else
+    {
+    	buf[len++] = 0;
+    }
+
 	/* insulation resistance, scale 1k */
 	tmp = gbinf->vehi.info[GB_VINF_INSULAT] ?
 		  MIN(dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_INSULAT])->value, 60000) : 0xffff;
@@ -1164,10 +1247,117 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = warnbit >> 8;
     buf[len++] = warnbit;
 
-    buf[len++] = 0;     /* battery fault */
+    /* battery fault */
+    uint8_t *battFaultNum_ptr;
+    uint32_t faultCode = 0;
+    battFaultNum_ptr =  &buf[len++];
+    *battFaultNum_ptr = 0;
+
+    //电池升温过快
+    for (i = 0; i < 3; i++)
+    {
+		if (gbinf->warn[i][0x36] &&
+		(dbc_get_signal_from_id(gbinf->warn[i][0x36])->value ||
+		(gbinf->warn[3][0x36] &&
+		dbc_get_signal_from_id(gbinf->warn[3][0x36])->value)))
+		// index 3,as a relevance channel,if the is two canid used for on warning
+		{
+			faultCode = gb_alarmFaultCode[GB_AF_BATTRISEFAST].code;
+			buf[len++] = faultCode >> 24;
+			buf[len++] = faultCode >> 16;
+			buf[len++] = faultCode >> 8;
+			buf[len++] = faultCode;
+			*battFaultNum_ptr = 1;
+		}
+    }
+
     buf[len++] = 0;     /* motor fault */
     buf[len++] = 0;     /* engin fault */
-    buf[len++] = 0;     /* other fault */
+
+    /* other fault */
+    uint8_t *otherFaultNum_ptr;
+    otherFaultNum_ptr =  &buf[len++];
+    *otherFaultNum_ptr = 0;
+    for(i = 0; i < 4; i++)//对应4个轮胎
+    {
+    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRESENSORLOST + 6*i])
+		{
+			if(dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRESENSORLOST + 6*i])->value)
+			{
+				faultCode = gb_alarmFaultCode[GB_AF_FLTYRESENSORLOST + 6*i].code;
+				buf[len++] = faultCode >> 24;
+				buf[len++] = faultCode >> 16;
+				buf[len++] = faultCode >> 8;
+				buf[len++] = faultCode;
+				*otherFaultNum_ptr += 1;
+			}
+		}
+
+    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRELEAK + 6*i])
+		{
+			if(dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRELEAK + 6*i])->value)
+			{
+				faultCode = gb_alarmFaultCode[GB_AF_FLTYRELEAK + 6*i].code;
+				buf[len++] = faultCode >> 24;
+				buf[len++] = faultCode >> 16;
+				buf[len++] = faultCode >> 8;
+				buf[len++] = faultCode;
+				*otherFaultNum_ptr += 1;
+			}
+		}
+
+    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
+		{
+			if(0x02 == dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])->value)
+			{
+				faultCode = gb_alarmFaultCode[GB_AF_FLTYRELOWPRESSUREWARN + 6*i].code;
+				buf[len++] = faultCode >> 24;
+				buf[len++] = faultCode >> 16;
+				buf[len++] = faultCode >> 8;
+				buf[len++] = faultCode;
+				*otherFaultNum_ptr += 1;
+			}
+		}
+
+    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
+		{
+			if(0x03 == dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])->value)
+			{
+				faultCode = gb_alarmFaultCode[GB_AF_FLTYREHIGHPRESSUREWARN + 6*i].code;
+				buf[len++] = faultCode >> 24;
+				buf[len++] = faultCode >> 16;
+				buf[len++] = faultCode >> 8;
+				buf[len++] = faultCode;
+				*otherFaultNum_ptr += 1;
+			}
+		}
+
+    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYREHIGHTEMPWARN + 6*i])
+		{
+			if(dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYREHIGHTEMPWARN + 6*i])->value)
+			{
+				faultCode = gb_alarmFaultCode[GB_AF_FLTYREHIGHTEMPWARN + 6*i].code;
+				buf[len++] = faultCode >> 24;
+				buf[len++] = faultCode >> 16;
+				buf[len++] = faultCode >> 8;
+				buf[len++] = faultCode;
+				*otherFaultNum_ptr += 1;
+			}
+		}
+
+    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWBATT + 6*i])
+		{
+			if(dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWBATT + 6*i])->value)
+			{
+				faultCode = gb_alarmFaultCode[GB_AF_FLTYRELOWBATT + 6*i].code;
+				buf[len++] = faultCode >> 24;
+				buf[len++] = faultCode >> 16;
+				buf[len++] = faultCode >> 8;
+				buf[len++] = faultCode;
+				*otherFaultNum_ptr += 1;
+			}
+		}
+    }
 
     return len;
 }
@@ -3441,6 +3631,17 @@ static int gb_data_parse_surfix(gb_info_t *gbinf, int sigid, const char *sfx)
 		}
 		break;
 #endif
+		case GB_DATA_ALARMFAULT:
+		{
+			if (gbindex >= GB_MAX_AF_INFO)
+            {
+                log_e(LOG_GB32960, "alarm fault info over %d! ", gbindex);
+                break;
+            }
+
+            gbinf->gb_alarmFault.info[gbindex] = sigid;
+		}
+		break;
         default:
             log_o(LOG_GB32960, "unkonwn type %s%x", sfx ,gbtype);
        break;

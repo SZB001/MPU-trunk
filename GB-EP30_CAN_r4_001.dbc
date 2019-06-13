@@ -81,37 +81,37 @@ BO_ 618 BDM_Fr03_26A: 8 BDCM
 BO_ 906 BDM_Fr04_38A: 8 BDCM
  SG_ BDMRtyreStatus : 0|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMRLTyreLearntSt : 1|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ BDMRLTyrePressureWarn : 3|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ BDMRLTyreTemperatureWarn : 4|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ BDMRLTyrePressureWarn_WG500F : 3|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ BDMRLTyreTemperatureWarn_WG5011 : 4|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMRLTyreQucikLeak : 5|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMRLTyreSensorFailure : 6|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ BDMRLTyreLowBattery : 7|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ BDMRLTyreLowBattery_WG5012 : 7|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMRLTyrePressure_WGF024 : 15|8@0+(1.373,100)[100|488.742] "" Vector__XXX
  SG_ BDMRLTyreTemperature_WGF023 : 23|8@0+(1,-60)[-60|194] "" Vector__XXX
  SG_ BDMRRTyreLearntSt : 25|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ BDMRRTyrePressureWarn : 27|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ BDMRRTyreTemperatureWarn : 28|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ BDMRRTyrePressureWarn_WG5015 : 27|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ BDMRRTyreTemperatureWarn_WG5017 : 28|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMRRTyreQucikLeak : 29|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMRRTyreSensorFailure : 30|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ BDMRRTyreLowBattery : 31|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ BDMRRTyreLowBattery_WG5018 : 31|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMRRTyrePressure_WGF022 : 39|8@0+(1.373,100)[100|488.742] "" Vector__XXX
  SG_ BDMRRTyreTemperature_WGF021 : 47|8@0+(1,-60)[-60|194] "" Vector__XXX
 BO_ 874 BDM_Fr05_36A: 8 BDCM
  SG_ BDMFtyreStatus : 0|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMFLTyreLearntSt : 1|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ BDMFLTyrePressureWarn : 3|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ BDMFLTyreTemperatureWarn : 4|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ BDMFLTyrePressureWarn_WG5003 : 3|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ BDMFLTyreTemperatureWarn_WG5005 : 4|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMFLTyreQucikLeak : 5|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMFLTyreSensorFailure : 6|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ BDMFLTyreLowBattery : 7|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ BDMFLTyreLowBattery_WG5006 : 7|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMFLTyrePressure_WGF020 : 15|8@0+(1.373,100)[100|488.742] "" Vector__XXX
  SG_ BDMFLTyreTemperature_WGF01F : 23|8@0+(1,-60)[-60|194] "" Vector__XXX
  SG_ BDMFRTyreLearntSt : 25|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ BDMFRTyrePressureWarn : 27|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ BDMFRTyreTemperatureWarn : 28|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ BDMFRTyrePressureWarn_WG5009 : 27|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ BDMFRTyreTemperatureWarn_WG500B : 28|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMFRTyreQucikLeak : 29|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMFRTyreSensorFailure : 30|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ BDMFRTyreLowBattery : 31|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ BDMFRTyreLowBattery_WG500C : 31|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMFRTyrePressure_WGF01E : 39|8@0+(1.373,100)[100|488.742] "" Vector__XXX
  SG_ BDMFRTyreTemperature_WGF01D : 47|8@0+(1,-60)[-60|194] "" Vector__XXX
  SG_ BDMSystemFailure_WG704B : 55|2@0+(1,0)[0|3] "" Vector__XXX
