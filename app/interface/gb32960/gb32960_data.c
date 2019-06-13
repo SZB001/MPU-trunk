@@ -214,19 +214,17 @@
 /* vehicle information index */
 #define GB_VINF_STATE       0x00
 #define GB_VINF_CHARGE      0x01
-#define GB_VINF_SPEED       0x02
-#define GB_VINF_ODO         0x03
-#define GB_VINF_VOLTAGE     0x04
-#define GB_VINF_CURRENT     0x05
-#define GB_VINF_SOC         0x06
-#define GB_VINF_DCDC        0x07
-#define GB_VINF_SHIFT       0x08
-#define GB_VINF_INSULAT     0x09
-#define GB_VINF_ACCPAD      0x0a
-#define GB_VINF_BRKPAD      0x0b
-#define GB_VINF_DRVIND      0x0c
-#define GB_VINF_BRKIND      0x0d
-#define GB_VINF_VEHIMODE    0x0e
+#define GB_VINF_VEHIMODE    0x02
+#define GB_VINF_SPEED       0x03
+#define GB_VINF_ODO         0x04
+#define GB_VINF_VOLTAGE     0x05
+#define GB_VINF_CURRENT     0x06
+#define GB_VINF_SOC         0x07
+#define GB_VINF_DCDC        0x08
+#define GB_VINF_SHIFT       0x09
+#define GB_VINF_INSULAT     0x0a
+#define GB_VINF_ACCPAD      0x0b
+#define GB_VINF_BRKPAD      0x0c
 #define GB_VINF_MAX         GB_VINF_VEHIMODE + 1
 
 /* motor information index */
@@ -664,25 +662,25 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
     }
 
     /* vehicle type */
-    if (gbinf->vehi.info[GB_VINF_VEHIMODE])
-    {
-        tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_VEHIMODE])->value;
-        buf[len++] = gbinf->vehi.mode_tbl[tmp] ? gbinf->vehi.mode_tbl[tmp] : 0xff;
-    }
-    else
+    //if (gbinf->vehi.info[GB_VINF_VEHIMODE])
+    //{
+    //    tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_VEHIMODE])->value;
+    //    buf[len++] = gbinf->vehi.mode_tbl[tmp] ? gbinf->vehi.mode_tbl[tmp] : 0xff;
+    //}
+    //else
     {
         buf[len++] = gbinf->vehi.vehi_type;
     }
 
     /* vehicle speed, scale 0.1km/h */
     tmp = gbinf->vehi.info[GB_VINF_SPEED] ?
-          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SPEED])->value * 10 : 0xffff;
+          (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SPEED])->value / 32) * 10 : 0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
     /* odograph, scale 0.1km */
     tmp = gbinf->vehi.info[GB_VINF_ODO] ?
-          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_ODO])->value * 10 : 0xffffffff;
+          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_ODO])->value : 0xffffffff;
     buf[len++] = tmp >> 24;
     buf[len++] = tmp >> 16;
     buf[len++] = tmp >> 8;
@@ -690,19 +688,19 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 
     /* total voltage, scale 0.1V */
     tmp = gbinf->vehi.info[GB_VINF_VOLTAGE] ?
-          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_VOLTAGE])->value * 10 : 0xffff;
+          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_VOLTAGE])->value / 2 : 0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    /* total voltage, scale 0.1V, offset -1000A */
+    /* total curr, scale 0.1V, offset -1000A */
     tmp = gbinf->vehi.info[GB_VINF_CURRENT] ?
-          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_CURRENT])->value * 10 + 10000 : 0xffff;
+          (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_CURRENT])->value / 20 + 400) * 10: 0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
     /* total SOC */
     tmp = gbinf->vehi.info[GB_VINF_SOC] ?
-          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value : 0xff;
+          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value / 100 : 0xff;
     buf[len++] = tmp;
 
     /* DCDC state */
@@ -746,58 +744,21 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
                 tmp = 0;
                 break;
         }
-
-        if (gbinf->vehi.info[GB_VINF_DRVIND])
-        {
-            if (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_DRVIND])->value > 0)
-            {
-                tmp |= 0x20;
-            }
-        }
-        else if (gbinf->vehi.info[GB_VINF_ACCPAD])
-        {
-            if (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_ACCPAD])->value > 0)
-            {
-                tmp |= 0x20;
-            }
-        }
-
-        if (gbinf->vehi.info[GB_VINF_BRKIND])
-        {
-            if (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKIND])->value > 0)
-            {
-                tmp |= 0x10;
-            }
-        }
-        else if (gbinf->vehi.info[GB_VINF_BRKPAD])
-        {
-            if (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value > 0)
-            {
-                tmp |= 0x10;
-            }
-        }
-
-        buf[len++] = tmp;
     }
-    else
-    {
-        buf[len++] = 0xff;
-    }
+	/* insulation resistance, scale 1k */
+	tmp = gbinf->vehi.info[GB_VINF_INSULAT] ?
+		  MIN(dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_INSULAT])->value, 60000) : 0xffff;
+	buf[len++] = tmp >> 8;
+	buf[len++] = tmp;
 
-    /* insulation resistance, scale 1k */
-    tmp = gbinf->vehi.info[GB_VINF_INSULAT] ?
-          MIN(dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_INSULAT])->value, 60000) : 0xffff;
-    buf[len++] = tmp >> 8;
-    buf[len++] = tmp;
-
-    /* accelate pad value */
-    tmp = gbinf->vehi.info[GB_VINF_ACCPAD] ?
-          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_ACCPAD])->value : 0xff;
-    buf[len++] = tmp;
+	/* accelate pad value */
+	tmp = gbinf->vehi.info[GB_VINF_ACCPAD] ?
+		  dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_ACCPAD])->value : 0xff;
+	buf[len++] = tmp;
 
     /* break pad value */
     tmp = gbinf->vehi.info[GB_VINF_BRKPAD] ?
-          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value : 0xff;
+          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value + 100 : 0xff;
     buf[len++] = tmp;
 
     return len;
