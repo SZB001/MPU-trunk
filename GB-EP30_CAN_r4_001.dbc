@@ -49,6 +49,7 @@ BO_ 825 BDM_Fr01_339: 8 BDCM
  SG_ BDMFrontWiperSt : 34|3@0+(1,0)[0|7] "" Vector__XXX
  SG_ BDMDoorLockSts_WGF000 : 38|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMRearDefrostSts : 39|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ BDMTrunkLockSts_WGF004 : 43|1@0+(1,0)[0|1] "" Vector__XXX
 BO_ 601 BDM_Fr02_259: 8 BDCM
  SG_ BDMPowerMode_WG1000 : 3|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BDMEngineForbidStatus : 16|1@0+(1,0)[0|1] "" Vector__XXX
@@ -119,6 +120,7 @@ BO_ 225 EPS_Fr02_0E1: 8 EPS
  SG_ EPSFailSts_WG704E : 21|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ EPSFr02MsgCounter : 55|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ EPSFr02Checksum : 63|8@0+(1,0)[0|255] "" Vector__XXX
+ SG_ EPSDriveSteerTorqueValid_WG7022 : 15|1@0+(1,0)[0|1] "" Vector__XXX
 BO_ 481 EPS_Fr03_1E1: 8 EPS
  SG_ EPSSteeringAngleValid : 6|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ EPSSteeringAngleSpd : 15|8@0+(4,0)[0|1020] "dgree/s" Vector__XXX
@@ -164,6 +166,7 @@ BO_ 646 BMS_Fr06_286: 8 BMS
  SG_ BMS6ChargeFlt : 52|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS6S2Sts_WGE02F : 50|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BMS6BatCircWtrPumWrkSts_WGE008 : 23|16@0+(0.1,0)[0|100] "%" Vector__XXX
+ SG_ BMS6PrechargeContSts_WGE010 : 15|2@0+(1,0)[0|3] "" Vector__XXX
 BO_ 631 BMS_Fr07_277: 8 BMS
  SG_ BMS7TempRiseFastFlt_WG7036 : 27|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7CellOverTempSts_WG7201 : 1|2@0+(1,0)[0|3] "" Vector__XXX
@@ -568,9 +571,11 @@ BO_ 853 PTC_Fr01_355: 8 PTC
  SG_ PTCPowerConsumption_WGE040 : 31|8@0+(0.1,0)[0|25.3] "kw" Vector__XXX
  SG_ PTCClntTempInlt_WGE041 : 47|8@0+(1,-40)[-40|100] "¡æ" Vector__XXX
  SG_ PTCClntTempOtlt_WGE042 : 55|8@0+(1,-40)[-40|100] "¡æ" Vector__XXX
+ SG_ PTCWrkngSts_WGE038 : 7|2@0+(1,0)[0|3] "" Vector__XXX
 BO_ 885 EAC_Fr01_375: 8 EACP
  SG_ EACACPSpeed_WGE03E : 31|7@0+(100,0)[0|8600] "rpm" Vector__XXX
  SG_ EACBaseState_WGE03C : 54|3@0+(1,0)[0|7] "" Vector__XXX
+ SG_ EACInputVolt_WGE03F : 8|9@0+(1,0)[0|510] "v" Vector__XXX
 BO_ 917 CLM_Fr01_395: 8 CLM
  SG_ CLMEACSpeedSet_WGE03D : 17|7@0+(100,0)[0|8600] "rpm" Vector__XXX
 BO_ 926 CLM_Fr02_39E: 8 CLM
@@ -594,6 +599,7 @@ BO_ 920 CLM_Fr03_398: 8 CLM
  SG_ CLMUncoolReason_WG7050 : 12|3@0+(1,0)[0|7] "" Vector__XXX
  SG_ CLMUnheatReason_WG7047 : 15|3@0+(1,0)[0|7] "" Vector__XXX
  SG_ CLMThermalSts_WGF011 : 31|4@0+(1,0)[0|15] "" Vector__XXX
+ SG_ CLMInsideTemp_WGF013 : 7|8@0+(0.5,-40)[-40|87.5] "" Vector__XXX
 BO_ 542 ICU_Fr01_21E: 8 ICU
  SG_ ICUBrakeFluidLow_WG704A : 10|1@0+(1,0)[0|1] "" Vector__XXX
 BO_ 1317 ICU_Fr02_525: 8 ICU
@@ -637,6 +643,7 @@ BO_ 912 ALM_Fr01_390: 8 ALM
  SG_ ALMIHURvaluefeedback : 15|8@0+(1,0)[0|255] "" Vector__XXX
  SG_ ALMIHUGvaluefeedback : 23|8@0+(1,0)[0|255] "" Vector__XXX
  SG_ ALMIHUBvaluefeedback : 31|8@0+(1,0)[0|255] "" Vector__XXX
+ SG_ ALMIHUfeedback_WGF01C : 36|1@0+(1,0)[0|1] "" Vector__XXX
 BO_ 1430 BMS_Fr23_596: 8 BMS
  SG_ BMS58HdsahTotalCpSum_WGE022 : 39|25@0+(0.01,0)[0|210240] "Ah" Vector__XXX
 BO_ 1431 BMS_Fr24_597: 8 BMS

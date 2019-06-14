@@ -627,7 +627,7 @@ static uint16_t gb_datintv;
 /* event report */
 static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
 {
-    uint32_t len = 0, tmp;
+    uint32_t len = 0;
 	int i;
 	uint8_t buf[1024];
 	uint8_t *eventcnt_ptr;
@@ -644,6 +644,7 @@ static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
     buf[len++] = time.sec;
     /* data type : event information */
     buf[len++] = 0x95;//event body type
+
     buf[len++] = time.year - 2000;
     buf[len++] = time.mon;
     buf[len++] = time.mday;
@@ -752,7 +753,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 
     /* vehicle speed, scale 0.1km/h */
     tmp = gbinf->vehi.info[GB_VINF_SPEED] ?
-          (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SPEED])->value / 32) * 10 : 0xffff;
+          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SPEED])->value * 10 : 0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
@@ -766,13 +767,13 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 
     /* total voltage, scale 0.1V */
     tmp = gbinf->vehi.info[GB_VINF_VOLTAGE] ?
-          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_VOLTAGE])->value / 2 : 0xffff;
+          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_VOLTAGE])->value * 10 : 0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
     /* total curr, scale 0.1V, offset -1000A */
     tmp = gbinf->vehi.info[GB_VINF_CURRENT] ?
-          (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_CURRENT])->value / 20 + 400) * 10: 0xffff;
+          (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_CURRENT])->value + 1000) * 10: 0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
@@ -1571,10 +1572,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
     if(gbinf->gb_VSExt.info[GB_VS_ACTEMP])//
     {
-        //if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value)
-        {
-            buf[len++] = 18;
-        }
+    	 buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value * 2;
     }
     else
     {
@@ -1583,10 +1581,28 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
     if(gbinf->gb_VSExt.info[GB_VS_ACMODE])//空调模式
     {
-        //if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACMODE])->value)
-        {
-            buf[len++] = 3;
-        }
+    	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACMODE])->value;
+    	switch(tmp)
+    	{
+			case 1:
+			case 5:
+			case 7:
+			{
+				 buf[len++] = 1;//制热
+			}
+			break;
+			case 2:
+			case 6:
+			{
+				 buf[len++] = 2;//制冷
+			}
+			break;
+			default:
+			{
+				buf[len++] = 0xff;
+			}
+			break;
+    	}
     }
     else
     {
@@ -1604,7 +1620,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
     if(gbinf->gb_VSExt.info[GB_VS_INTEMP])//
     {
-    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_INTEMP])->value;
+    	buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_INTEMP])->value + 55) * 2;
     }
     else
     {
@@ -1613,7 +1629,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
     if(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])//
     {
-    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])->value;
+    	buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])->value + 55) * 2;
     }
     else
     {
@@ -1693,17 +1709,18 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     {
         if(gbinf->gb_VSExt.info[GB_VS_RFTYRETEMP+2*i])//
     	{
-    		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYRETEMP+2*i])->value;
+    		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYRETEMP+2*i])->value + 50;
     	}
     	else
     	{
     		buf[len++] = 0xff;
     	}
+
         if(gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])//
     	{
-        	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])->value;
-        	if(tmp > 450) tmp = 450;
-    		buf[len++] = tmp*100/177;
+        	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])->value / 0.0177;
+        	if(tmp > 253) tmp = 253;
+    		buf[len++] = tmp;
     	}
     	else
     	{
@@ -1755,8 +1772,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     }
     if(gbinf->gb_VSExt.info[GB_VS_ENDURANCEMILE])//续航里程
     {
-    	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ENDURANCEMILE])->value;
-    	tmp = 10*tmp;
+    	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ENDURANCEMILE])->value * 10;
     	buf[len++] = tmp >> 8;
     	buf[len++] = tmp;
     }
@@ -1804,7 +1820,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     {
         if(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])//加速度x,y
         {
-        	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])->value;
+        	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])->value + 1023) * 100;
         	buf[len++] = tmp >> 8;
         	buf[len++] = tmp;
         }
@@ -1816,7 +1832,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     }
     if(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])//加速度z
     {
-    	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])->value;
+    	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])->value + 4095) * 100;
     	buf[len++] = tmp >> 8;
     	buf[len++] = tmp;
     }
@@ -1830,8 +1846,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     {
 		if(gbinf->gb_VSExt.info[GB_VS_FLTYRERSPEED +i])//车轮转速
 		{
-			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FLTYRERSPEED +i])->value;
-			tmp = 10*tmp;
+			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FLTYRERSPEED +i])->value * 10;
 			buf[len++] = tmp >> 8;
 			buf[len++] = tmp;
 		}
@@ -1844,8 +1859,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
 	if(gbinf->gb_VSExt.info[GB_VS_STEERWHEELANGLE])//
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_STEERWHEELANGLE])->value;
-		tmp = 10*tmp;
+		tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_STEERWHEELANGLE])->value + 7200) * 10;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -1857,7 +1871,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
 	if(gbinf->gb_VSExt.info[GB_VS_TRIP])//小计里程
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TRIP])->value;
+		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TRIP])->value * 10;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -1883,7 +1897,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     {
 		if(gbinf->gb_VSExt.info[GB_VS_TIPC+i])//瞬时/平均/小计电耗
 		{
-			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TIPC+i])->value;
+			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TIPC+i])->value * 10;
 			buf[len++] = tmp >> 8;
 			buf[len++] = tmp;
 		}
@@ -1990,25 +2004,27 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 static uint32_t gb_data_save_VehiPosExt(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0;
-    int i;
     int tmp = 0;
+	GPS_DATA gps_snap;
+
+	gps_get_snap(&gps_snap);
 
     /* data type : location data */
     buf[len++] = 0x92;//信息类型标志
 
-    tmp = 100;//车载终端的速度
+    tmp = gps_snap.kms * 10;//车载终端的速度
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    tmp = 10;//定位精度
+    tmp =gps_snap.hdop * 10;//定位精度
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    tmp = 10;//方向
+    tmp = gps_snap.direction;//方向
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    tmp = 1000;//高度
+    tmp =  gps_snap.msl * 10;//高度
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
@@ -2021,7 +2037,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0;
     int i;
-    int tmp = 0;
+    int32_t  tmp = 0;
     uint32_t tmp_32 = 0;
 
     /* data type : location data */
@@ -2030,8 +2046,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
     /* 整车控制器 */
 	if(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETTORQUE])//当前电机目标扭矩
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETTORQUE])->value;
-		//tmp = 10*tmp;
+		tmp = (dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETTORQUE])->value + 1024) * 20;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -2043,8 +2058,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 
 	if(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETSPEED])//
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETSPEED])->value;
-		//tmp = 10*tmp;
+		tmp = (dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETSPEED])->value + 16000) * 2;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -2194,8 +2208,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 
 	if(gbinf->gb_ConpSt.info[GB_CMPT_CTRLTORQUE])//电机实际扭矩
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CTRLTORQUE])->value;
-		//tmp = 10*tmp;
+		tmp = (dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CTRLTORQUE])->value + 1024) * 20;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -2224,8 +2237,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 
 	if(gbinf->gb_ConpSt.info[GB_CMPT_MAXAVAILTORQUE])//
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MAXAVAILTORQUE])->value;
-		//tmp = 10*tmp;
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MAXAVAILTORQUE])->value * 20;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -2287,7 +2299,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 
 	if (gbinf->extr[GB_XINF_MAXT])
 	{
-		tmp = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXT])->value;
+		tmp = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXT])->value + 40;
 		buf[len++] = tmp;
 	}
 	else
@@ -2297,7 +2309,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 
 	if (gbinf->extr[GB_XINF_MINT])
 	{
-		tmp = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINT])->value;
+		tmp = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINT])->value + 40;
 		buf[len++] = tmp;
 	}
 	else
@@ -2334,7 +2346,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_POSFASTCHGPORTTEMP+i])//
 		{
-			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_POSFASTCHGPORTTEMP+i])->value;
+			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_POSFASTCHGPORTTEMP+i])->value + 40;
 			buf[len++] = tmp >> 8;
 			buf[len++] = tmp;
 		}
@@ -2381,8 +2393,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 
    if(gbinf->vehi.info[GB_VINF_VOLTAGE])
    {
-	   tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_VOLTAGE])->value;
-	   tmp = 20*tmp;
+	   tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_VOLTAGE])->value * 20;
 	   buf[len++] = tmp >> 8;
 	   buf[len++] = tmp;
    }
@@ -2396,8 +2407,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_HDSAHTOTALCPSUM+i])//
 		{
-			tmp_32 = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_HDSAHTOTALCPSUM+i])->value;
-			tmp_32 = 100*tmp_32;
+			tmp_32 = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_HDSAHTOTALCPSUM+i])->value * 100;
 			buf[len++] = tmp_32 >> 24;
 			buf[len++] = tmp_32 >> 16;
 			buf[len++] = tmp_32 >> 8;
@@ -2414,8 +2424,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 
 	if (gbinf->gb_ConpSt.info[GB_CMPT_12VBATTVOLT])
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_12VBATTVOLT])->value;
-		tmp = 20*tmp;
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_12VBATTVOLT])->value * 20;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -2444,7 +2453,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 
 	if (gbinf->gb_ConpSt.info[GB_CMPT_FCCURRENTREQ])
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_FCCURRENTREQ])->value;
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_FCCURRENTREQ])->value + 400;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -2486,7 +2495,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 
 	if (gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])//充电机最大输出功率
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])->value;
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])->value * 200;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -2500,8 +2509,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEOUTVOLT])
 		{
-			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEOUTVOLT])->value;
-			tmp = 20*tmp;
+			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEOUTVOLT])->value * 20;
 			buf[len++] = tmp >> 8;
 			buf[len++] = tmp;
 		}
@@ -2601,7 +2609,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		}
 	}
 
-	for(i=0;i<2;i++)//嘱咐驾设置温度
+	for(i=0;i<2;i++)//主副驾设置温度
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_LHTEMP+i])//
 		{
@@ -2667,7 +2675,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 
     if(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])//
     {
-    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])->value;
+    	buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])->value + 55) * 2;
     }
     else
     {
@@ -2676,7 +2684,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 
     if(gbinf->gb_VSExt.info[GB_VS_INTEMP])//
     {
-    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_INTEMP])->value;
+    	buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_INTEMP])->value + 55) * 2;
     }
     else
     {
@@ -2722,8 +2730,8 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_EACSPEEDSET+i])
 		{
-			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_EACSPEEDSET+i])->value;
-			buf[len++] = tmp/100;
+			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_EACSPEEDSET+i])->value / 100;
+			buf[len++] = tmp;
 		}
 		else
 		{
@@ -2731,15 +2739,22 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		}
 	}
 
+	if(gbinf->gb_ConpSt.info[GB_CMPT_EACHIGHVOLT])
 	{//EAC高压供电电压
-		 buf[len++] = 0xff;
-		 buf[len++] = 0xff;
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_EACHIGHVOLT])->value;
+		 buf[len++] = tmp >> 8;
+		 buf[len++] = tmp;
+	}
+	else
+	{
+		buf[len++] = 0xff;
+		buf[len++] = 0xff;
 	}
 
 	/* PTC */
 	if(gbinf->gb_ConpSt.info[GB_CMPT_PTCPWRCONS])
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PTCPWRCONS])->value;
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PTCPWRCONS])->value * 10;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -2753,7 +2768,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_CLNTTEMPIN+i])
 		{
-			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CLNTTEMPIN+i])->value;
+			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CLNTTEMPIN+i])->value + 40;
 			buf[len++] = tmp;
 		}
 		else
