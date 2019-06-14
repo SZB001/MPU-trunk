@@ -6,6 +6,7 @@
 
 #include "protobuf.h"
 
+
 PROTOBUF_C__BEGIN_DECLS
 
 #if PROTOBUF_C_VERSION_NUMBER < 1003000

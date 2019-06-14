@@ -28,17 +28,29 @@ typedef struct
     struct sockaddr_in addr;
 } ivi_client;
 
+typedef struct{
+	int ecall;
+	int bcall;
+	int icall;
+	int action;
+}ivi_callrequest;
+
+
 typedef enum IVI_MSG_EVENT
 {
     IVI_MSG_GPS_EVENT = MPU_MID_IVI,
 } IVI_MSG_EVENT;
-
 
 /* initiaze thread communciation module */
 int ivi_init(INIT_PHASE phase);
 
 /* startup thread communciation module */
 int ivi_run(void);
+
+int tbox_ivi_get_call_action(void);
+
+int tbox_ivi_get_call_type(void);
+
 
 #endif
 

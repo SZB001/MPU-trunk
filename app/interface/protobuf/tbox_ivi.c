@@ -19,19 +19,19 @@
 #include "tcom_api.h"
 #include "pwdg.h"
 #include "cfg_api.h"
-
+#include "fault_sync.h"
 #include "tbox_ivi_pb.h"
 
 static pthread_t ivi_tid;    /* thread id */
 static timer_t ivi_timer;
-static timer_t ivi_power_timer;
-
-
+static int signalpower;
 int tcp_fd = -1;
 ivi_client ivi_clients[MAX_IVI_NUM];
 
-int gps_onoff = 0;
+ivi_callrequest callrequest;
 
+int gps_onoff = 0;
+int network_onoff = 0;
 static unsigned char ivi_msgbuf[1024];
 
 unsigned char recv_buf[MAX_IVI_NUM][IVI_MSG_SIZE];
@@ -42,10 +42,15 @@ typedef void (*ivi_msg_handler)(unsigned char *msg, unsigned int len, void *para
 extern void gps_get_nmea(unsigned char * nmea);
 extern int nm_get_net_type(void);
 extern int at_get_sim_status(void);
+extern int at_get_imei(char *imei);
+extern int at_get_iccid(char *iccid);
 extern void makecall(char *num);
 extern void disconnectcall(void);
 extern int wifi_disable(void);
 extern int wifi_enable(void);
+extern int nm_get_signal(void);
+extern int assist_get_call_status(void);
+
 
 int pb_bytes_set(ProtobufCBinaryData * des, uint8_t *buf, int len)
 {
@@ -139,6 +144,12 @@ int tbox_ivi_get_gps_onoff(void)
 {
     return gps_onoff;
 }
+
+int tbox_ivi_get_network_onoff(void)
+{
+    return network_onoff;
+}
+
 
 void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
 {
@@ -244,7 +255,7 @@ void ivi_msg_error_response_send( int fd ,Tbox__Net__Messagetype id,char *error_
     tbox__net__msg_result__init( &result );
 
     TopMsg.message_type = id;
-
+ 
     result.result = false;
     pb_bytes_set( &result.error_code, (uint8_t *)error_code, strlen(error_code));
     
@@ -282,6 +293,311 @@ void ivi_msg_error_response_send( int fd ,Tbox__Net__Messagetype id,char *error_
 
 }
 
+void ivi_remotediagnos_response_send( int fd )
+{
+
+    int i = 0;
+    int ret = 0;
+    size_t szlen = 0;
+
+    char send_buf[4096] = {0};
+    unsigned char pro_buf[2048] = {0};
+
+    if( fd < 0 )
+    {
+        log_e(LOG_IVI,"ivi_remotediagnos_response_send fd = %d.",fd);
+        return ;
+    }
+    
+    Tbox__Net__TopMessage TopMsg ;
+	Tbox__Net__TboxRemoteDiagnose diagnos;
+	
+    tbox__net__top_message__init( &TopMsg );
+	tbox__net__tbox_remote_diagnose__init( &diagnos );
+	
+    TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_TBOX_REMOTEDIAGNOSE;
+
+/*	diagnos.vin = ;
+	diagnos.eventid = ;
+	diagnos.timestamp = ;
+	diagnos.datatype = ;
+	diagnos.cameraname = ;
+	diagnos.aid = ;
+	diagnos.mid = ;
+	diagnos.effectivetime = ;
+	diagnos.sizelimit = ;
+*/	
+	TopMsg.tbox_remotedaignose = &diagnos;
+	
+    szlen = tbox__net__top_message__get_packed_size( &TopMsg );
+
+    tbox__net__top_message__pack(&TopMsg,pro_buf);
+    
+    memcpy(send_buf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
+
+    send_buf[IVI_PKG_S_MARKER_SIZE] = szlen >> 8;
+    send_buf[IVI_PKG_S_MARKER_SIZE + 1] = szlen;
+
+    for( i = 0; i < szlen; i ++ )
+    {
+        send_buf[ i + IVI_PKG_S_MARKER_SIZE + 2 ] = pro_buf[i];
+    }
+
+    memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
+
+    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
+
+
+    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
+    {
+        log_e(LOG_IVI, "ivi remotediagnos send response failed!!!");
+    }
+    else
+    {
+        log_i(LOG_IVI, "ivi remotediagnos send response success");
+    }
+
+    return;
+
+}
+
+void ivi_activestate_response_send( int fd )
+{
+    int i = 0;
+    int ret = 0;
+    size_t szlen = 0;
+
+    char send_buf[4096] = {0};
+    unsigned char pro_buf[2048] = {0};
+
+    if( fd < 0 )
+    {
+        log_e(LOG_IVI,"ivi_activestate_response_send fd = %d.",fd);
+        return ;
+    }
+    
+    Tbox__Net__TopMessage TopMsg ;
+	Tbox__Net__TboxActiveState state;
+	
+    tbox__net__top_message__init( &TopMsg );
+	tbox__net__tbox_active_state__init( &state );
+	
+    TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_ACTIVESTATE_RESULT;
+	state.active_state = 1; //已激活
+	
+	TopMsg.tbox_activestate = &state ;
+    szlen = tbox__net__top_message__get_packed_size( &TopMsg );
+
+    tbox__net__top_message__pack(&TopMsg,pro_buf);
+    
+    memcpy(send_buf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
+
+    send_buf[IVI_PKG_S_MARKER_SIZE] = szlen >> 8;
+    send_buf[IVI_PKG_S_MARKER_SIZE + 1] = szlen;
+
+    for( i = 0; i < szlen; i ++ )
+    {
+        send_buf[ i + IVI_PKG_S_MARKER_SIZE + 2 ] = pro_buf[i];
+    }
+
+    memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
+
+    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
+
+
+    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
+    {
+        log_e(LOG_IVI, "ivi activestate send response failed!!!");
+    }
+    else
+    {
+        log_i(LOG_IVI, "ivi activestate send response success");
+    }
+
+    return;
+
+}
+
+void ivi_signalpower_response_send(int fd  )
+{
+    int i = 0;
+    int ret = 0;
+    size_t szlen = 0;
+    char send_buf[4096] = {0};
+    unsigned char pro_buf[2048] = {0};
+	int temp;
+	temp = nm_get_signal();
+	if(signalpower == temp)
+	{
+		return ;
+	}
+	else
+	{
+		signalpower = temp;
+	}
+    if( fd < 0 )
+    {
+       log_e(LOG_IVI,"ivi_signalpower_response_send fd = %d.",fd);
+       return ; 
+    }
+	
+    Tbox__Net__TopMessage TopMsg ;
+    Tbox__Net__MsgResult result;
+    tbox__net__top_message__init( &TopMsg );
+    tbox__net__msg_result__init( &result );
+
+	unsigned char nettype;
+            
+    nettype = nm_get_net_type();
+
+    if( at_get_sim_status() == 2 )
+    {
+         TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__NONE_SIGNAL;
+    }
+    else
+    {
+         if(nettype == 0)
+         {
+             TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__GSM;
+         }
+         else if(nettype == 2)
+         {
+             TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__UMTS;
+          }
+          else if(nettype == 7)
+          {
+              TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__LTE;
+          }
+          else
+          {
+              TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__NONE_SIGNAL;
+          }
+     }		
+    TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_NETWORK_SIGNAL_STRENGTH;
+    result.result = true;
+	TopMsg.signal_power = temp;
+    TopMsg.msg_result = &result;
+	log_o(LOG_IVI,"power = %d",TopMsg.signal_power);
+    szlen = tbox__net__top_message__get_packed_size( &TopMsg );
+
+    tbox__net__top_message__pack(&TopMsg,pro_buf);
+    
+    memcpy(send_buf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
+
+    send_buf[IVI_PKG_S_MARKER_SIZE] = szlen >> 8;
+    send_buf[IVI_PKG_S_MARKER_SIZE + 1] = szlen;
+
+    for( i = 0; i < szlen; i ++ )
+    {
+        send_buf[ i + IVI_PKG_S_MARKER_SIZE + 2 ] = pro_buf[i];
+    }
+
+    memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
+
+    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
+
+
+    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
+    {
+        log_e(LOG_IVI, "ivi signalpower send response failed!!!");
+    }
+    else
+    {
+        log_i(LOG_IVI, "ivi signalpower send response success");
+    }
+
+    return;
+
+}
+
+void ivi_callstate_response_send(int fd  )
+{
+    int i = 0;
+    int ret = 0;
+    size_t szlen = 0;
+    char send_buf[4096] = {0};
+    unsigned char pro_buf[2048] = {0};
+	
+    if( fd < 0 )
+    {
+       log_e(LOG_IVI,"ivi_signalpower_response_send fd = %d.",ivi_clients[0].fd);
+       return ;
+    }
+	
+    Tbox__Net__TopMessage TopMsg ;
+    Tbox__Net__CallStatus callstate;
+    tbox__net__top_message__init( &TopMsg );
+	tbox__net__call_status__init( &callstate );
+    
+	TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_CALL_STATUS;
+	if( 1 == callrequest.ecall)
+	{
+		callstate.type = TBOX__NET__CALL_TYPE__ECALL;
+	}
+	else if ( 1 == callrequest.bcall )
+	{
+		callstate.type = TBOX__NET__CALL_TYPE__BCALL;
+	}
+	else
+	{
+		callstate.type = TBOX__NET__CALL_TYPE__ICALL;
+	}
+	
+	if( 0x01 == assist_get_call_status())
+	{
+		//来电
+		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_IN;
+	}
+	else if( 0x03 == assist_get_call_status())
+	{
+		//去电
+		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_OUT;
+	}
+	else if( 0x04 == assist_get_call_status())
+	{
+		//接通
+		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_CONNECTED;
+	}
+	else 
+	{
+		//响铃
+		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_DISCONNECTED;
+	}
+		
+
+	TopMsg.call_status = &callstate;
+    
+    szlen = tbox__net__top_message__get_packed_size( &TopMsg );
+
+    tbox__net__top_message__pack(&TopMsg,pro_buf);
+    
+    memcpy(send_buf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
+
+    send_buf[IVI_PKG_S_MARKER_SIZE] = szlen >> 8;
+    send_buf[IVI_PKG_S_MARKER_SIZE + 1] = szlen;
+
+    for( i = 0; i < szlen; i ++ )
+    {
+        send_buf[ i + IVI_PKG_S_MARKER_SIZE + 2 ] = pro_buf[i];
+    }
+
+    memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
+
+    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
+
+
+    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
+    {
+        log_e(LOG_IVI, "ivi signalpower send response failed!!!");
+    }
+    else
+    {
+        log_i(LOG_IVI, "ivi signalpower send response success");
+    }
+
+    return;
+
+}
 
 void ivi_gps_response_send( int fd )
 {
@@ -376,10 +692,10 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
     
     Tbox__Net__TopMessage TopMsg;
     Tbox__Net__MsgResult result;
-
+		
     tbox__net__top_message__init( &TopMsg );
     tbox__net__msg_result__init( &result );
-
+	
     switch( id )
     {
         case TBOX__NET__MESSAGETYPE__REQUEST_RESPONSE_NONE:
@@ -424,8 +740,10 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
                 {
                     TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__NONE_SIGNAL;
                 }
+				signalpower = nm_get_signal();
+				TopMsg.signal_power = nm_get_signal();
             }
-
+			
             result.result = true;
             
             break;
@@ -439,28 +757,76 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 
             tbox__net__call_action_result__init( &call_request );
 
-			
-            
-            
+      		if(1 == callrequest.ecall)
+      		{
+      			call_request.type = TBOX__NET__CALL_TYPE__ECALL;	
+      		}
+			else if( 1 == callrequest.bcall)
+			{
+				call_request.type = TBOX__NET__CALL_TYPE__BCALL;
+			}
+			else
+			{
+				call_request.type = TBOX__NET__CALL_TYPE__ICALL;
+			}
+
+			if( 1 == callrequest.action)
+			{
+				call_request.action = TBOX__NET__CALL_ACTION_ENUM__START_CALL;	
+			}
+			else
+			{
+				call_request.action = TBOX__NET__CALL_ACTION_ENUM__END_CALL;	
+			}
+//			call_request.result =  
+			TopMsg.call_result = &call_request;
             break;
         }
+		
+		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO:
+		{
 
+			TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_INFO;
+
+			Tbox__Net__TboxInfo tboxinfo;
+			tbox__net__tbox_info__init(&tboxinfo);
+
+			char software_version[9] = "111111111";
+			char hardware_version[9] = "111111111";
+			char iccid[9] = "111111111";
+			char pdid[9] = "111111111";
+			char imei[9] = "111111111";
+			char vin[9] = "111111111";
+			
+			tboxinfo.software_version = software_version;
+			tboxinfo.hardware_version = hardware_version;
+			tboxinfo.iccid  = iccid;
+			tboxinfo.pdid = pdid;
+			tboxinfo.imei = imei;
+			tboxinfo.vin = vin;
+
+			TopMsg.tbox_info = &tboxinfo;
+
+			log_o(LOG_IVI, "tbox info");
+			result.result = true;
+			break;
+		}
+		
         case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_GPS_SET:
         {
             TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_GPS_SET_RESULT;
             result.result = true;
             break;
         }
-		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO:
-		{
-			break;
-		}
-
+		
+#if 0
 		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_REMOTEDIAGNOSE:
 		{
+			TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_REMOTEDIAGNOSE_RESUL;
+			result.result = true;
 			break;
 		}
-        
+#endif       
         default:
         {
 
@@ -470,7 +836,7 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
     TopMsg.msg_result = &result;
 
     szlen = tbox__net__top_message__get_packed_size( &TopMsg );
-
+	
     tbox__net__top_message__pack(&TopMsg,pro_buf);
 
     memcpy(send_buf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
@@ -482,12 +848,10 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
     {
         send_buf[ i + IVI_PKG_S_MARKER_SIZE + 2 ] = pro_buf[i];
     }
-
+	
     memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
-
     ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
-
-
+	
     if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
     {
         log_e(LOG_IVI, "ivi msg send response failed!!!");
@@ -496,8 +860,10 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
     {
         log_i(LOG_IVI, "ivi msg send response success.");
     }
+	
 
 }
+
 
 void ivi_msg_request_process(unsigned char *data, int len,int fd)
 {
@@ -541,63 +907,51 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
         {
             break;
         }
-		//蹇冭烦璇锋眰
+		
         case TBOX__NET__MESSAGETYPE__REQUEST_HEARTBEAT_SIGNAL:
         {
             ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_HEARTBEAT_SIGNAL);
             break;
         }
-		//缃戠粶鍒跺紡鍜屼俊鍙峰己搴﹁姹�
+		
         case TBOX__NET__MESSAGETYPE__REQUEST_NETWORK_SIGNAL_STRENGTH:
         {
+        	network_onoff = 1;
             ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_NETWORK_SIGNAL_STRENGTH);
             break;
         }
-		//ECALL/BCALL/ICALL璇锋眰
+		
         case TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION:
         {
+        	memset(&callrequest,0 ,sizeof(ivi_callrequest));
             switch( TopMsg->call_action->type )
             {
-                case TBOX__NET__CALL_TYPE__ECALL:
+                case TBOX__NET__CALL_TYPE__ECALL:  //车机语音触发ECALL
                 {
+                	callrequest.ecall = 1;
                     if( TBOX__NET__CALL_ACTION_ENUM__START_CALL == TopMsg->call_action->action )
                     {
-                        
+                   		callrequest.action = 1;  
                     }
                     else if( TBOX__NET__CALL_ACTION_ENUM__END_CALL == TopMsg->call_action->action )
                     {
-                     
+                     	callrequest.action = 2;
                     }
                     ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION);
+					ivi_remotediagnos_response_send( fd ); //ECALL触发，下发远程诊断
                     break;
                 }
 
                 case TBOX__NET__CALL_TYPE__BCALL:
                 {
+                	callrequest.bcall = 1;
                     if( TBOX__NET__CALL_ACTION_ENUM__START_CALL == TopMsg->call_action->action )
                     {
-                        unsigned char bcall[32];
-                        int ret;
-                        unsigned int len;
-
-                        memset(bcall, 0, sizeof(bcall));
-                        len = sizeof(bcall);
-                        ret = cfg_get_para(CFG_ITEM_BCALL, bcall, &len);
-
-                        if (ret != 0)
-                        {
-                            log_e(LOG_IVI, "bcall read failed!!!");
-                            break;
-                        }
-
-                        if (strlen((char *)bcall) > 0)
-                        {
-                            makecall((char *)bcall);
-                        }
+                    	callrequest.action = 1;
                     }
                     else if( TBOX__NET__CALL_ACTION_ENUM__END_CALL == TopMsg->call_action->action )
                     {
-                        disconnectcall();
+                        callrequest.action = 2;
                     }
                     ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION);
                     break;
@@ -605,30 +959,14 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 
                 case TBOX__NET__CALL_TYPE__ICALL:
                 {
+                	callrequest.icall = 1;
                     if( TBOX__NET__CALL_ACTION_ENUM__START_CALL == TopMsg->call_action->action )
                     {
-                        unsigned char icall[32];
-                        int ret;
-                        unsigned int len;
-
-                        memset(icall, 0, sizeof(icall));
-                        len = sizeof(icall);
-                        ret = cfg_get_para(CFG_ITEM_ICALL, icall, &len);
-
-                        if (ret != 0)
-                        {
-                            log_e(LOG_ASSIST, "icall read failed");
-                            break;
-                        }
-
-                        if (strlen((char *)icall) > 0)
-                        {
-                            makecall((char *)icall);
-                        }
+                        callrequest.action = 1;
                     }
                     else if( TBOX__NET__CALL_ACTION_ENUM__END_CALL == TopMsg->call_action->action )
                     {
-                        disconnectcall();
+                        callrequest.action = 2;
                     }
 
                     ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION);
@@ -645,6 +983,7 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
         }
 		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO:
 		{
+			ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO);
 			break;
 		}
         
@@ -690,13 +1029,16 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
             }
             break;
         }
-
-       case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_REMOTEDIAGNOSE:
-		{
+		//车机回复TBOX远程诊断结果
+       case TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_REMOTEDIAGNOSE_RESULT:
+	   {
+	   		if(TopMsg->msg_result->result == true)
+	   		{
+				log_o(LOG_IVI,"remotediagnos success...");
+	   		}
 			break;
-		}
-       
-        
+	   }
+         
         default:
         {
             log_e(LOG_IVI,"recv ivi unknown message type!!!");
@@ -783,7 +1125,6 @@ int ivi_init(INIT_PHASE phase)
 {
     int ret = 0;
     int i = 0;
-	printf("ivi init\n");
     switch (phase)
     {
         case INIT_PHASE_INSIDE:
@@ -808,7 +1149,6 @@ int ivi_init(INIT_PHASE phase)
                     log_e(LOG_IVI, "create timer IVI_MSG_GPS_EVENT failed ret=0x%08x", ret);
                     return ret;
                 }
-				
                 break;
             }
     }
@@ -822,11 +1162,14 @@ void *ivi_main(void)
     TCOM_MSG_HEADER msghdr;
     fd_set read_set;
     static MSG_RX rx_msg[MAX_IVI_NUM];
+	struct timeval timeout;
 
     short i = 0;
     struct sockaddr_in cli_addr;
     int new_conn_fd = -1;
 
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 10000;  //select函数10ms延时
     prctl(PR_SET_NAME, "IVI");
 
     FD_ZERO(&read_set);
@@ -891,7 +1234,7 @@ void *ivi_main(void)
         }
 
         /* monitor the incoming data */
-        ret = select(max_fd + 1, &read_set, NULL, NULL, NULL);
+        ret = select(max_fd + 1, &read_set, NULL, NULL, &timeout);
 
         /* the file deccriptor is readable */
         if (ret > 0)
@@ -963,12 +1306,15 @@ void *ivi_main(void)
                         continue;
                     }
 
+					
+
                     if (tm_get_time() - ivi_clients[i].lasthearttime > 30000)
                     {
                         close(ivi_clients[i].fd);
                         ivi_clients[i].fd = -1;
                     }
-
+					
+					
                     if (FD_ISSET(ivi_clients[i].fd, &read_set))
                     {
                         log_i(LOG_IVI, "start read Client(%d) :%d\n", i, ivi_clients[i].fd);
@@ -977,9 +1323,9 @@ void *ivi_main(void)
                         {
                             rx_msg[i].used =  0;
                         }
-
+						
                         num = recv(ivi_clients[i].fd, (rx_msg[i].data + rx_msg[i].used), rx_msg[i].size - rx_msg[i].used, 0);
-
+					
                         if (num > 0)
                         {
                             ivi_clients[i].lasthearttime = tm_get_time();
@@ -998,6 +1344,7 @@ void *ivi_main(void)
                             close(ivi_clients[i].fd);
                             ivi_clients[i].fd = -1;
                         }
+						
                     }
                 }
             }
@@ -1005,7 +1352,7 @@ void *ivi_main(void)
         }
         else if (0 == ret)   /* timeout */
         {
-            continue;   /* continue to monitor the incomging data */
+            //continue;   /* continue to monitor the incomging data */
         }
         else
         {
@@ -1017,6 +1364,40 @@ void *ivi_main(void)
             log_e(LOG_IVI, "ivi_main exit, error:%s", strerror(errno));
             break;  /* thread exit abnormally */
         }
+		if( 2 == flt_get_by_id(SOSBTN))
+		{
+			memset(&callrequest,0 ,sizeof(ivi_callrequest));
+			callrequest.ecall = 1;
+			callrequest.action =1;
+			if(ivi_clients[0].fd > 0)
+			{
+				//按键触发ECALL，下发远程诊断命令
+				ivi_remotediagnos_response_send( ivi_clients[0].fd );
+			}
+			log_o(LOG_IVI, "SOS trigger!!!!!");
+		}
+		if(ivi_clients[0].fd > 0)  //轮询任务：信号强度、电话状态、绑车激活、远程诊断、
+		{
+			
+			if( 1 == tbox_ivi_get_network_onoff() ) //已经请求网络制式
+			{
+				ivi_signalpower_response_send( ivi_clients[0].fd ); //如果信号强度变化，传给车机
+			}
+//			if()   //电话成功拨出
+//			{
+//				ivi_callstate_response_send(ivi_clients[0].fd );  //电话状态变化，传给车机
+//			}
+//			if()  //判断TSP是否下发激活信息
+//			{
+//				ivi_activestate_response_send( ivi_clients[0].fd ); //通知车机激活成功
+//			}
+//			if()   //TSP是否下发远程命令
+//			{
+//				ivi_remotediagnos_response_send( ivi_clients[0].fd );
+//			}
+				
+		}
+	
     }
 
     return NULL;
@@ -1036,7 +1417,7 @@ int ivi_run(void)
     pthread_attr_t ta;
 
     pthread_attr_init(&ta);
-    pthread_attr_setdetachstate(&ta, PTHREAD_CREATE_DETACHED); //鍒嗙绾跨▼灞炴��
+    pthread_attr_setdetachstate(&ta, PTHREAD_CREATE_DETACHED); //分离线程属性
 
     /* create thread and monitor the incoming data */
     ret = pthread_create(&ivi_tid, &ta, (void *)ivi_main, NULL);

@@ -7,6 +7,7 @@
 #endif
 
 #include "tbox_ivi_pb.h"
+
 void   tbox__net__tbox_network_ctrl__init
                      (Tbox__Net__TboxNetworkCtrl         *message)
 {

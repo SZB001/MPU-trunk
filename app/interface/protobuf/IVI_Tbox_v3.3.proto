@@ -1,0 +1,186 @@
+
+syntax = "proto3";
+
+package tbox.net;
+
+enum Messagetype
+{
+	REQUEST_RESPONSE_NONE = 0;              //no use,just for remove 0 in the enum
+	REQUEST_HEARTBEAT_SIGNAL = 1;            //heartbeat signal
+	RESPONSE_HEARTBEAT_RESULT = 2;           //heartbeat call back
+	REQUEST_NETWORK_SIGNAL_STRENGTH = 3;   //ivi request tbox network signal strength; no topmessage's field
+	RESPONSE_NETWORK_SIGNAL_STRENGTH = 4;  	//tbox response network signal strength; topmessage's field: signal_type signal_power
+	REQUEST_CALL_ACTION = 5;               	//ivi request tbox a call action; topmessage's field: call_action
+	RESPONSE_CALL_ACTION_RESULT = 6;        //tbox response ivi a call action result; topmessage's field: call_result
+	RESPONSE_CALL_STATUS = 7;				//tbox report a call action status; topmessage's field: call_status
+	REQUEST_TBOX_INFO = 8;					//ivi request tbox info; no topmessage's field
+	RESPONSE_TBOX_INFO = 9;					//tbox response tbox info; topmessage's field: tbox_info
+	REQUEST_TBOX_GPS_SET = 10;				//ivi request GPS set
+	RESPONSE_TBOX_GPS_SET_RESULT = 11;      //ivi response GPS set
+	RESPONSE_TBOX_GPSINFO_RESULT = 12;		//tbox response mac address		
+	RESPONSE_TBOX_ACTIVESTATE_RESULT = 13;      //tbox response active state
+	REQUEST_TBOX_REMOTEDIAGNOSE =14;        //tbox request IVI to capture videos or pictures
+	RESPONSE_TBOX_REMOTEDIAGNOSE_RESULT =15;    //ivi response tbox : contrl result
+	
+}
+
+enum NETWORK_SEND_OnOff
+{
+	NETWORK_ON = 0;      //start network signal send to IVI
+	NETWORK_OFF = 1;     //stop
+	NETWORK_ONCE = 2;    //Only send the network signal for one time
+}
+
+enum SignalType
+{
+	NONE_SIGNAL	= 0; 	// no signal
+	GSM = 1; 			//2G
+	UMTS = 2; 			//3G
+	LTE = 3; 			//4G
+}
+
+enum CallType
+{
+	ECALL = 0;
+	BCALL = 1;
+	ICALL = 2;
+}
+
+enum CallActionEnum
+{
+	START_CALL = 0; // start a CALL
+	END_CALL = 1; // end current CALL
+}
+
+enum CallActionResultEnum
+{
+	CALL_ACTION_SUCCESS = 0; 					   //request action success
+	CALL_ACTION_NONSUPPORT = 1;                //nonsupport the call
+	START_FAILED_CALL_PROCESSING = 2; //start call failed because now a call is processing
+	START_FAILED_OTHER_ERROR = 3;      //start call failed because other reasons
+	END_FAILED_NO_CURRENT_CALL = 4;    //end current call failed because now no call
+	END_FAILED_OTHER_ERROR = 5;		   //end current call failed because other reasons
+}
+
+enum CallStatusEnum
+{
+	CALL_IN = 0;    //来电
+	CALL_OUT = 1;   //去电  
+	CALL_RING = 2;       //振铃
+	CALL_CONNECTED = 3;  //接通
+	CALL_DISCONNECTED = 4; //挂断
+}
+
+message TboxNetworkCtrl
+{
+	NETWORK_SEND_OnOff onoff = 1;
+	uint32 time_cycle = 2;
+}
+
+message CallAction
+{
+	CallType type = 1;
+	CallActionEnum action = 2;
+}
+
+message CallActionResult
+{
+	CallType type = 1;
+	CallActionEnum action = 2;
+	CallActionResultEnum result = 3;
+}
+
+message CallStatus
+{
+	CallType type = 1;
+	CallStatusEnum call_status = 2;
+	bytes reserve = 3;
+}
+
+message TboxInfo
+{
+	string software_version = 1;
+	string hardware_version = 2;
+	string iccid = 3;
+	string pdid = 4;
+	string imei = 5;
+	string vin  = 6;
+}
+
+enum GPS_SEND_OnOff
+{
+	GPS_ON = 0;      //start GPS info send to IVI
+	GPS_OFF = 1;     //stop
+	GPS_ONCE = 2;    //Only send the GPS info for one time
+}
+
+message TboxGPSCmd
+{
+	GPS_SEND_OnOff onoff = 1;
+	uint32 time_cycle = 2;  
+}
+
+message TboxGPSInfo
+{
+	string nmea = 1; 
+}
+
+message TboxActiveState
+{
+	bool active_state = 1;  //true:activated   false:not active
+}
+
+enum DataTypeEnum
+{
+	PHOTO_TYPE = 0; 
+	VIDEO_TYPE = 1; 
+}
+
+enum CameraNameEnum
+{
+	DVR_TYPE = 0;
+	DMS_TYPE = 1;
+}
+
+message TboxRemoteDiagnose
+{
+	string vin = 1;
+	uint32 eventid = 2;
+	uint32 timestamp = 3;
+	DataTypeEnum datatype = 4;
+	CameraNameEnum cameraname = 5;
+	uint32 aid = 6;
+	uint32 mid = 7;
+	uint32 effectivetime = 8;
+	uint32 sizelimit = 9;
+}
+
+message MsgResult
+{
+	bool result =1;  //true:success    flase:failed
+	bytes error_code = 2;  //none-error, dealing with failures and so on
+}
+
+message TopMessage
+{
+	Messagetype message_type = 1; 		//message type
+	SignalType signal_type = 2;  		//current signal type
+	int32 signal_power = 3;				//current signal strength, 0-5, 0 means no signal, 5 means strong strength
+	TboxNetworkCtrl tbox_network_ctrl = 4; 
+	CallAction call_action = 5;
+	CallStatus call_status = 6;
+	CallActionResult call_result = 7;
+	TboxInfo tbox_info = 8;
+	TboxGPSCmd tbox_gps_ctrl = 9;
+	TboxGPSInfo tbox_gpsinfo = 10;
+	TboxActiveState tbox_activestate = 11;
+	TboxRemoteDiagnose tbox_remotedaignose = 12;
+	MsgResult msg_result = 13;
+}
+
+
+
+
+
+
+
