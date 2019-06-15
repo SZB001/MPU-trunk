@@ -1572,7 +1572,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
     if(gbinf->gb_VSExt.info[GB_VS_ACTEMP])//
     {
-    	 buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value * 2;
+    	 buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value + 18) * 2;
     }
     else
     {
@@ -1744,13 +1744,21 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = 0xff;//定时充电状态
     buf[len++] = 0xff;//定时开始充电时间小时
     buf[len++] = 0xff;//定时开始充电 时间分钟
-    if(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])//快慢充状态
+	if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEST])//
 	{
-    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEST])->value;
+		if((tmp>=0)&&(tmp<=2))
+		{
+			buf[len++] = tmp;
+		}
+		else
+		{
+			buf[len++] = 0xfe;
+		}
 	}
 	else
 	{
-		buf[len++] = 0xff;
+		 buf[len++] = 0xff;
 	}
 
     /* 基本状态 */
