@@ -2869,6 +2869,8 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 
     warnlvl_ptr = &buf[len++];//最高报警等级
     warnnum_ptr = &buf[len++];//报警数
+    *warnlvl_ptr = 0;
+    *warnnum_ptr = 0;
 
     for (i = 0; i < 3; i++)
     {
