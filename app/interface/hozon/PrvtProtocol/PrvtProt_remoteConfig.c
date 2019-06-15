@@ -104,33 +104,47 @@ description： function code
 void PP_rmtCfg_init(void)
 {
 	int res;
+	unsigned int len;
 	memset(&PP_rmtCfg,0 , sizeof(PrvtProt_rmtCfg_t));
 	memset(&AppData_rmtCfg,0 , sizeof(PrvtProt_App_rmtCfg_t));
-	memcpy(AppData_rmtCfg.checkReq.mcuSw,"00655",strlen("00655"));
-	AppData_rmtCfg.checkReq.mcuSwlen = strlen("00655");
-	memcpy(AppData_rmtCfg.checkReq.mpuSw,"00655",strlen("00655"));
-	AppData_rmtCfg.checkReq.mpuSwlen = strlen("00655");
-	memcpy(AppData_rmtCfg.checkReq.vehicleVin,"LUZAGAAA6JA000655",strlen("LUZAGAAA6JA000655"));
-	AppData_rmtCfg.checkReq.vehicleVinlen = strlen("LUZAGAAA6JA000655");
 
-	memcpy(AppData_rmtCfg.checkReq.iccID,"89860317452068729782",strlen("89860317452068729782"));
-	//res = PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));
-	//if(res != 0)
-	//{
-	//	log_e(LOG_HOZON, "get iccid fail");
-	//}
+	len = 11;
+	res = cfg_get_para(CFG_ITEM_HOZON_TSP_MCUSW,AppData_rmtCfg.checkReq.mcuSw,&len);//
+	if(!AppData_rmtCfg.checkReq.mcuSw[0])
+	{
+		AppData_rmtCfg.checkReq.mcuSwlen = strlen((char*)AppData_rmtCfg.checkReq.mcuSw);
+	}
+	else
+	{
+		AppData_rmtCfg.checkReq.mcuSwlen = 10;
+	}
+
+	len = 11;
+	res = cfg_get_para(CFG_ITEM_HOZON_TSP_MPUSW,AppData_rmtCfg.checkReq.mpuSw,&len);//
+	if(!AppData_rmtCfg.checkReq.mpuSw[0])
+	{
+		AppData_rmtCfg.checkReq.mpuSwlen = strlen((char*)AppData_rmtCfg.checkReq.mpuSw);
+	}
+	else
+	{
+		AppData_rmtCfg.checkReq.mpuSwlen = 10;
+	}
+
+	len = 18;
+	res = cfg_get_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);//读取vin
+	AppData_rmtCfg.checkReq.vehicleVinlen = 17;
+
+	res = PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//读取iccid
 	AppData_rmtCfg.checkReq.iccIDlen = 20;
 
 	memcpy(AppData_rmtCfg.checkReq.btMacAddr,"000000000000",strlen("000000000000"));
 	AppData_rmtCfg.checkReq.btMacAddrlen = strlen("000000000000");
 	memcpy(AppData_rmtCfg.checkReq.configSw,"00000",strlen("00000"));
 	AppData_rmtCfg.checkReq.configSwlen = strlen("00000");
-	memcpy(AppData_rmtCfg.checkReq.cfgVersion,"00000000000000000000000000000001",\
-											strlen("00000000000000000000000000000001"));
-	AppData_rmtCfg.checkReq.cfgVersionlen = strlen("00000000000000000000000000000001");
+	memcpy(AppData_rmtCfg.checkReq.cfgVersion,"00000000000000000000000000000000",strlen("00000000000000000000000000000000"));
+	AppData_rmtCfg.checkReq.cfgVersionlen = strlen("00000000000000000000000000000000");
 
 	//读取配置
-	unsigned int len;
 	len = 512;
 	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,&len);
 	if((res==0) && (AppData_rmtCfg.ReadResp.cfgsuccess == 1))
@@ -374,6 +388,11 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 	if(1 != sockproxy_socketState())//socket open
 	{
 		return 0;
+	}
+
+	if(!AppData_rmtCfg.checkReq.iccID[0])
+	{//iccid无效
+		(void)PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//读取iccid
 	}
 
 	switch(rmtCfg->state.CfgSt)
@@ -824,6 +843,128 @@ void PP_rmtCfg_SetCfgReq(unsigned char req)
 {
 	PP_rmtCfg.state.req  = req;
 	PP_rmtCfg.state.period = tm_get_time();
+}
+
+/******************************************************
+*函数名:PP_rmtCfg_SetmcuSw
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：
+******************************************************/
+void PP_rmtCfg_SetmcuSw(const char *mcuSw)
+{
+	memcpy(AppData_rmtCfg.checkReq.mcuSw,mcuSw,strlen(mcuSw));
+	AppData_rmtCfg.checkReq.mcuSwlen = strlen(mcuSw);
+	if (cfg_set_para(CFG_ITEM_HOZON_TSP_MCUSW, AppData_rmtCfg.checkReq.mcuSw, sizeof(AppData_rmtCfg.checkReq.mcuSw)))
+	{
+		log_e(LOG_HOZON, "save mcuSw failed");
+	}
+}
+
+/******************************************************
+*函数名:PP_rmtCfg_SetmpuSw
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：
+******************************************************/
+void PP_rmtCfg_SetmpuSw(const char *mpuSw)
+{
+	memcpy(AppData_rmtCfg.checkReq.mpuSw,mpuSw,strlen(mpuSw));
+	AppData_rmtCfg.checkReq.mpuSwlen = strlen(mpuSw);
+	if (cfg_set_para(CFG_ITEM_HOZON_TSP_MPUSW, AppData_rmtCfg.checkReq.mpuSw, sizeof(AppData_rmtCfg.checkReq.mpuSw)))
+	{
+		log_e(LOG_HOZON, "save mpuSw failed");
+	}
+}
+
+/******************************************************
+*函数名:PP_rmtCfg_Seticcid
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：测试用
+******************************************************/
+void PP_rmtCfg_Seticcid(const char *iccid)
+{
+	memcpy(AppData_rmtCfg.checkReq.iccID,iccid,strlen(iccid));
+	AppData_rmtCfg.checkReq.iccIDlen = strlen(iccid);
+}
+
+/******************************************************
+*函数名:PP_rmtCfg_ShowCfgPara
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：测试用
+******************************************************/
+void PP_rmtCfg_ShowCfgPara(void)
+{
+	log_i(LOG_HOZON, "/******************************/");
+	log_i(LOG_HOZON, "       remote  cfg parameter    ");
+	log_i(LOG_HOZON, "/******************************/");
+	log_i(LOG_HOZON, "vehicleVin = %s",AppData_rmtCfg.checkReq.vehicleVin);
+	log_i(LOG_HOZON, "mcuSw = %s",AppData_rmtCfg.checkReq.mcuSw);
+	log_i(LOG_HOZON, "mpuSw = %s",AppData_rmtCfg.checkReq.mpuSw);
+	log_i(LOG_HOZON, "ICCID = %s",AppData_rmtCfg.checkReq.iccID);
+	log_i(LOG_HOZON, "cfgVersion = %s",AppData_rmtCfg.checkReq.cfgVersion);
+	log_i(LOG_HOZON, "configSw = %s",AppData_rmtCfg.checkReq.configSw);
+	log_i(LOG_HOZON, "btMacAddr = %s",AppData_rmtCfg.checkReq.btMacAddr);
+
+	log_i(LOG_HOZON, "\n/* FICM info */");
+	log_i(LOG_HOZON, "FICM.token = %s",AppData_rmtCfg.ReadResp.FICM.token);
+	log_i(LOG_HOZON, "FICM.userID = %s",AppData_rmtCfg.ReadResp.FICM.userID);
+
+	log_i(LOG_HOZON, "\n/* APN1 info */");
+	log_i(LOG_HOZON, "APN1.tspAddr = %s",AppData_rmtCfg.ReadResp.APN1.tspAddr);
+	log_i(LOG_HOZON, "APN1.tspUser = %s",AppData_rmtCfg.ReadResp.APN1.tspUser);
+	log_i(LOG_HOZON, "APN1.tspPass = %s",AppData_rmtCfg.ReadResp.APN1.tspPass);
+	log_i(LOG_HOZON, "APN1.tspIP = %s",AppData_rmtCfg.ReadResp.APN1.tspIP);
+	log_i(LOG_HOZON, "APN1.tspSms = %s",AppData_rmtCfg.ReadResp.APN1.tspSms);
+	log_i(LOG_HOZON, "APN1.tspPort = %s",AppData_rmtCfg.ReadResp.APN1.tspPort);
+
+	log_i(LOG_HOZON, "\n/* APN2 info */");
+	log_i(LOG_HOZON, "APN2.apn2Address = %s",AppData_rmtCfg.ReadResp.APN2.apn2Address);
+	log_i(LOG_HOZON, "APN2.apn2User = %s",AppData_rmtCfg.ReadResp.APN2.apn2User);
+	log_i(LOG_HOZON, "APN2.apn2Pass = %s",AppData_rmtCfg.ReadResp.APN2.apn2Pass);
+
+	log_i(LOG_HOZON, "\n/* COMMON info */");
+	log_i(LOG_HOZON, "COMMON.actived = %d",AppData_rmtCfg.ReadResp.COMMON.actived);
+	log_i(LOG_HOZON, "COMMON.rcEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.rcEnabled);
+	log_i(LOG_HOZON, "COMMON.svtEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.svtEnabled);
+	log_i(LOG_HOZON, "COMMON.vsEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.vsEnabled);
+	log_i(LOG_HOZON, "COMMON.iCallEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.iCallEnabled);
+	log_i(LOG_HOZON, "COMMON.bCallEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.bCallEnabled);
+	log_i(LOG_HOZON, "COMMON.eCallEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.eCallEnabled);
+	log_i(LOG_HOZON, "COMMON.dcEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.dcEnabled);
+	log_i(LOG_HOZON, "COMMON.dtcEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.dtcEnabled);
+	log_i(LOG_HOZON, "COMMON.journeysEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.journeysEnabled);
+	log_i(LOG_HOZON, "COMMON.onlineInfEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.onlineInfEnabled);
+	log_i(LOG_HOZON, "COMMON.rChargeEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.rChargeEnabled);
+	log_i(LOG_HOZON, "COMMON.btKeyEntryEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.btKeyEntryEnabled);
+
+	log_i(LOG_HOZON, "\n/* EXTEND info */");
+	log_i(LOG_HOZON, "EXTEND.ecallNO = %s",AppData_rmtCfg.ReadResp.EXTEND.ecallNO);
+	log_i(LOG_HOZON, "EXTEND.bcallNO = %s",AppData_rmtCfg.ReadResp.EXTEND.bcallNO);
+	log_i(LOG_HOZON, "EXTEND.ccNO = %s",AppData_rmtCfg.ReadResp.EXTEND.ccNO);
+
 }
 
 #if 0

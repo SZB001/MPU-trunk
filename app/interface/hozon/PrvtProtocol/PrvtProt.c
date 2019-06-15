@@ -37,6 +37,7 @@ description： include the header file
 #include "log.h"
 #include "list.h"
 #include "../../support/protocol.h"
+#include "cfg_api.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
 #include "PrvtProt_queue.h"
@@ -119,6 +120,7 @@ int PrvtProt_init(INIT_PHASE phase)
 {
     int ret = 0;
     int obj;
+    unsigned int cfglen;
     switch (phase)
     {
         case INIT_PHASE_INSIDE:
@@ -132,7 +134,6 @@ int PrvtProt_init(INIT_PHASE phase)
 			pp_task.suspend = 0;
 			pp_task.nonce = 0;/* TCP会话ID 由TSP平台产生 */
 			pp_task.version = 0x30;/* 大/小版本(由TSP平台定义)*/
-			pp_task.tboxid = 28;/* 平台通过tboxID与tboxSN映射 */
 
 			memset(&PP_PackHeader_HB,0 , sizeof(PrvtProt_pack_Header_t));
 			memcpy(PP_PackHeader_HB.sign,"**",2);
@@ -140,13 +141,16 @@ int PrvtProt_init(INIT_PHASE phase)
 			PP_PackHeader_HB.commtype.Byte = 0x70;
 			PP_PackHeader_HB.opera = 0x01;
 			PP_PackHeader_HB.msglen = 18;
-			PP_PackHeader_HB.tboxid = pp_task.tboxid;
 		}
         break;
         case INIT_PHASE_RESTORE:
         break;
         case INIT_PHASE_OUTSIDE:
 		{
+			cfglen = 4;
+			ret |= cfg_get_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, &cfglen);///* 平台通过tboxID与tboxSN映射 */
+			PP_PackHeader_HB.tboxid = pp_task.tboxid;
+
 			PrvtProt_shell_init();
 			for(obj = 0;obj < PP_RMTFUNC_MAX;obj++)
 			{
@@ -567,6 +571,27 @@ void PrvtPro_SetHeartBeatPeriod(unsigned char period)
 }
 
 /******************************************************
+*函数名:PrvtPro_ShowPara
+
+*形  参：
+
+*返回值：
+
+*描  述：参数显示
+
+*备  注：测试用
+******************************************************/
+void PrvtPro_ShowPara(void)
+{
+	log_i(LOG_HOZON, "/******************************/");
+	log_i(LOG_HOZON, "     	  public parameters 	  ");
+	log_i(LOG_HOZON, "/******************************/");
+	log_i(LOG_HOZON, "tboxid = %d",pp_task.tboxid);
+
+	PP_rmtCfg_ShowCfgPara();
+}
+
+/******************************************************
 *函数名：PrvtPro_getTimestamp
 
 *形  参：
@@ -612,9 +637,13 @@ void PrvtPro_Setsuspend(unsigned char suspend)
 
 *备  注：
 ******************************************************/
-void PrvtPro_SettboxId(unsigned long int tboxid)
+void PrvtPro_SettboxId(uint32_t tboxid)
 {
 	pp_task.tboxid = tboxid;
+	if(cfg_set_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, 4))
+	{
+		log_e(LOG_GB32960, "save server address failed");
+	}
 }
 
 /******************************************************

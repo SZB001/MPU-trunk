@@ -465,10 +465,14 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     unsigned char loopfile = 1;
     cfg_set_by_id(CFG_ITEM_DSU_LOOPFILE, (unsigned char *) &loopfile, sizeof(loopfile), type);
 
-    cfg_set_by_id(CFG_ITEM_GB32960_VIN, "00000000000000000", 18, type);
+    char gbvin[18];
+    memset(gbvin, 0, sizeof(gbvin));
+    strcpy((char *) gbvin, "00000000000000000");
+    cfg_set_by_id(CFG_ITEM_GB32960_VIN, gbvin, 18, type);
 
-    char gb_url[256] = "60.12.185.130";
-    //memset(gb_url, 0, sizeof(gb_url));
+    char gb_url[256];
+    memset(gb_url, 0, sizeof(gb_url));
+    strcpy((char *) gb_url, "60.12.185.130");
     cfg_set_by_id(CFG_ITEM_GB32960_URL, gb_url, sizeof(gb_url), type);
 
     tmp_short = 20000;
@@ -482,6 +486,15 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     cfg_set_by_id(CFG_ITEM_GB32960_TIMEOUT, &tmp_short, sizeof(short), type);
     tmp_int = 0;
     cfg_set_by_id(CFG_ITEM_GB32960_REGSEQ, &tmp_int, sizeof(int), type);
+
+    cfg_set_by_id(CFG_ITEM_HOZON_TSP_TBOXID, &tmp_int, sizeof(int), type);
+
+    char mxuSw[11];
+    memset(mxuSw, 0, sizeof(mxuSw));
+    strcpy((char *) mxuSw, "0000000000");
+    cfg_set_by_id(CFG_ITEM_HOZON_TSP_MCUSW, mxuSw, sizeof(mxuSw), type);
+    cfg_set_by_id(CFG_ITEM_HOZON_TSP_MPUSW, mxuSw, sizeof(mxuSw), type);
+
 #if 0
     cfg_set_by_id(CFG_ITEM_FOTON_VIN, "00000000000000000", 18, type);
     

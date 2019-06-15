@@ -48,6 +48,12 @@ static int PP_shell_setEcallResp(int argc, const char **argv);
 static int PP_shell_SetRmtCfgReq(int argc, const char **argv);
 static int PP_shell_SetRmtCtrlReq(int argc, const char **argv);
 static int PP_shell_SetRmtVSReq(int argc, const char **argv);
+static int PP_shell_SetTboxid(int argc, const char **argv);
+static int PP_shell_SetTmcuSw(int argc, const char **argv);
+static int PP_shell_SetTmpuSw(int argc, const char **argv);
+static int PP_shell_Seticcid(int argc, const char **argv);
+
+static int PP_shell_showpara(int argc, const char **argv);
 /******************************************************
 description： function code
 ******************************************************/
@@ -64,13 +70,22 @@ description： function code
 ******************************************************/
 void PrvtProt_shell_init(void)
 {
-	shell_cmd_register("HOZON_SetHeartBeatPeriod", PP_shell_setHeartBeatPeriod, "set HOZON PrvtProt HeartBeat Period");
-	shell_cmd_register("HOZON_SetSuspend", PP_shell_setSuspend, "set HOZON PrvtProt suspend");
-	shell_cmd_register("HOZON_SetEcallReq", PP_shell_setEcallReq, "set HOZON PrvtProt ecall request");
-	shell_cmd_register("HOZON_SetEcallResp", PP_shell_setEcallResp, "set HOZON PrvtProt ecall response");
-	shell_cmd_register("HOZON_SetRmtCfgReq", PP_shell_SetRmtCfgReq, "set HOZON PrvtProt remote config request");
-	shell_cmd_register("HOZON_SetRmtCtrlReq", PP_shell_SetRmtCtrlReq, "set HOZON PrvtProt remote control request");
-	shell_cmd_register("HOZON_SetRmtVSReq", PP_shell_SetRmtVSReq, "set HOZON PrvtProt remote VS request");
+	shell_cmd_register("hozon_setHeartBeatPeriod", PP_shell_setHeartBeatPeriod, "set HOZON PrvtProt HeartBeat Period");
+	shell_cmd_register("hozon_setSuspend", PP_shell_setSuspend, "set HOZON PrvtProt suspend");
+	shell_cmd_register("hozon_setEcallReq", PP_shell_setEcallReq, "set HOZON PrvtProt ecall request");
+	shell_cmd_register("hozon_setEcallResp", PP_shell_setEcallResp, "set HOZON PrvtProt ecall response");
+	shell_cmd_register("hozon_setRmtCfgReq", PP_shell_SetRmtCfgReq, "set HOZON PrvtProt remote config request");
+	shell_cmd_register("hozon_setRmtCtrlReq", PP_shell_SetRmtCtrlReq, "set HOZON PrvtProt remote control request");
+	shell_cmd_register("hozon_setRmtVSReq", PP_shell_SetRmtVSReq, "set HOZON PrvtProt remote VS request");
+
+	shell_cmd_register("hozon_settboxid", PP_shell_SetTboxid, "set HOZON tboxid");
+	shell_cmd_register("hozon_setmcuSw", PP_shell_SetTmcuSw, "set HOZON mcuSw");
+	shell_cmd_register("hozon_setmpuSw", PP_shell_SetTmpuSw, "set HOZON mpuSw");
+	shell_cmd_register("hozon_seticcid", PP_shell_Seticcid, "set HOZON iccid");
+
+
+	/* show */
+	shell_cmd_register("hozon_showpara", PP_shell_showpara, "show HOZON parameter");
 }
 
 
@@ -284,3 +299,124 @@ static int PP_shell_SetRmtVSReq(int argc, const char **argv)
     return 0;
 }
 
+/******************************************************
+*函数名：PP_shell_SetTboxid
+
+*形  参：设置
+
+
+*返回值：void
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PP_shell_SetTboxid(int argc, const char **argv)
+{
+	uint32_t tboxid;
+    if (argc != 1)
+    {
+        shellprintf(" usage: HOZON_PP_SetTboxid <set tboxid>\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%d", &tboxid);
+
+	PrvtPro_SettboxId(tboxid);
+    sleep(1);
+    return 0;
+}
+
+/******************************************************
+*函数名：PP_shell_SetTmcuSw
+
+*形  参：设置
+
+
+*返回值：void
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PP_shell_SetTmcuSw(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: HOZON_PP_SetmcuSw <set mcuSw>\r\n");
+        return -1;
+    }
+
+    PP_rmtCfg_SetmcuSw(argv[0]);
+    sleep(1);
+    return 0;
+}
+
+/******************************************************
+*函数名：PP_shell_SetTmpuSw
+
+*形  参：设置
+
+
+*返回值：void
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PP_shell_SetTmpuSw(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: HOZON_PP_SetmpuSw <set mpuSw>\r\n");
+        return -1;
+    }
+
+    PP_rmtCfg_SetmpuSw(argv[0]);
+    sleep(1);
+    return 0;
+}
+
+/******************************************************
+*函数名：PP_shell_Seticcid
+
+*形  参：设置
+
+
+*返回值：void
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PP_shell_Seticcid(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: HOZON_PP_Seticcid <set iccid>\r\n");
+        return -1;
+    }
+
+    PP_rmtCfg_Seticcid(argv[0]);
+    sleep(1);
+    return 0;
+}
+
+/******************************************************
+*函数名：PP_shell_showremoteCfg
+
+*形  参：设置
+
+
+*返回值：void
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PP_shell_showpara(int argc, const char **argv)
+{
+	PrvtPro_ShowPara();
+    sleep(1);
+    return 0;
+}
