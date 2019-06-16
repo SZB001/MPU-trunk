@@ -4,7 +4,7 @@
 *  asn.1编解码工具网址：http://lionet.info/asn1c/download.html
 *	1）Windows installer: asn1c-0.9.21.exe  //比较老，per编解码有问题，慎用！
 *	2）linux installer: asn1c-0.9.28.tar.gz //推荐使用
-*
+*   3）安装过程中出现报错，尝试指令前加 sudo
 *************************************************************************/
 
 1、编写格式引起的错误：

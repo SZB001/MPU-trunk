@@ -84,7 +84,10 @@ CfgGetRespInfo ::= SEQUENCE -- 用于 TAP 向 TCU 返回配置更新包
 FICMConfigSettings ::= SEQUENCE
 {
 	token			OCTET STRING(SIZE(1..32)), -- 
-	userID			OCTET STRING(SIZE(1..32))  -- 
+	userID			OCTET STRING(SIZE(1..32)),  -- 
+	directConnEnable			BOOLEAN, -- 
+	address			OCTET STRING(SIZE(1..32)), -- 
+	port			OCTET STRING(SIZE(1..6)) -- 
 }
 
 APN1ConfigSettings ::= SEQUENCE
@@ -161,7 +164,10 @@ CfgReadRespInfo ::= SEQUENCE --
 FICMConfigSet ::= SEQUENCE
 {
 	token			OCTET STRING(SIZE(1..32)), -- 
-	userID			OCTET STRING(SIZE(1..32))  -- 
+	userID			OCTET STRING(SIZE(1..32)),  -- 
+	directConnEnable			BOOLEAN, -- 
+	address			OCTET STRING(SIZE(1..32)), -- 
+	port			OCTET STRING(SIZE(1..6)) -- 
 }
 
 APN1ConfigSet ::= SEQUENCE

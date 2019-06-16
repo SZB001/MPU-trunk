@@ -931,6 +931,9 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_i(LOG_HOZON, "\n/* FICM info */");
 	log_i(LOG_HOZON, "FICM.token = %s",AppData_rmtCfg.ReadResp.FICM.token);
 	log_i(LOG_HOZON, "FICM.userID = %s",AppData_rmtCfg.ReadResp.FICM.userID);
+	log_i(LOG_HOZON, "FICM.directConnEnable = %d",AppData_rmtCfg.ReadResp.FICM.directConnEnable);
+	log_i(LOG_HOZON, "FICM.address = %s",AppData_rmtCfg.ReadResp.FICM.address);
+	log_i(LOG_HOZON, "FICM.port = %s",AppData_rmtCfg.ReadResp.FICM.port);
 
 	log_i(LOG_HOZON, "\n/* APN1 info */");
 	log_i(LOG_HOZON, "APN1.tspAddr = %s",AppData_rmtCfg.ReadResp.APN1.tspAddr);

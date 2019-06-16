@@ -385,10 +385,21 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					FICMCfgSet.token.size = rmtCfgReadResp_ptr->ReadResp.FICM.tokenlen;
 					FICMCfgSet.userID.buf =  rmtCfgReadResp_ptr->ReadResp.FICM.userID;
 					FICMCfgSet.userID.size = rmtCfgReadResp_ptr->ReadResp.FICM.userIDlen;
+					FICMCfgSet.directConnEnable = rmtCfgReadResp_ptr->ReadResp.FICM.directConnEnable;
+					FICMCfgSet.address.buf = rmtCfgReadResp_ptr->ReadResp.FICM.address;
+					FICMCfgSet.address.size = rmtCfgReadResp_ptr->ReadResp.FICM.addresslen;
+					FICMCfgSet.port.buf = rmtCfgReadResp_ptr->ReadResp.FICM.port;
+					FICMCfgSet.port.size = rmtCfgReadResp_ptr->ReadResp.FICM.portlen;
+
 					log_i(LOG_HOZON, "FICMCfgSet.token.buf = %s\n",FICMCfgSet.token.buf);
 					log_i(LOG_HOZON, "FICMCfgSet.token.size = %d\n",FICMCfgSet.token.size);
 					log_i(LOG_HOZON, "FICMCfgSet.userID.buf = %s\n",FICMCfgSet.userID.buf);
 					log_i(LOG_HOZON, "FICMCfgSet.userID.size = %d\n",FICMCfgSet.userID.size);
+					log_i(LOG_HOZON, "FICMCfgSet.directConnEnable = %d\n",FICMCfgSet.directConnEnable);
+					log_i(LOG_HOZON, "FICMCfgSet.address.buf = %s\n",FICMCfgSet.address.buf);
+					log_i(LOG_HOZON, "FICMCfgSet.address.size = %d\n",FICMCfgSet.address.size);
+					log_i(LOG_HOZON, "FICMCfgSet.port.buf = %s\n",FICMCfgSet.port.buf);
+					log_i(LOG_HOZON, "FICMCfgSet.port.size = %d\n",FICMCfgSet.port.size);
 					ficmConfig.list.array = &FICMCfgSet_ptr;
 					ficmConfig.list.count = 1;
 					ficmConfig.list.size = 1;
@@ -1055,14 +1066,31 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						memcpy(app_rmtCfg_ptr->getResp.FICM.token,(**(cfggetResp.ficmCfg->list.array)).token.buf, \
 								(**(cfggetResp.ficmCfg->list.array)).token.size);
 						app_rmtCfg_ptr->getResp.FICM.tokenlen = (**(cfggetResp.ficmCfg->list.array)).token.size;
+
 						memcpy(app_rmtCfg_ptr->getResp.FICM.userID,(**(cfggetResp.ficmCfg->list.array)).userID.buf, \
 														(**(cfggetResp.ficmCfg->list.array)).userID.size);
 						app_rmtCfg_ptr->getResp.FICM.userIDlen = (**(cfggetResp.ficmCfg->list.array)).userID.size;
+
+						app_rmtCfg_ptr->getResp.FICM.directConnEnable = (**(cfggetResp.ficmCfg->list.array)).directConnEnable;
+
+						memcpy(app_rmtCfg_ptr->getResp.FICM.address,(**(cfggetResp.ficmCfg->list.array)).address.buf, \
+																				(**(cfggetResp.ficmCfg->list.array)).address.size);
+						app_rmtCfg_ptr->getResp.FICM.addresslen = (**(cfggetResp.ficmCfg->list.array)).address.size;
+
+						memcpy(app_rmtCfg_ptr->getResp.FICM.port,(**(cfggetResp.ficmCfg->list.array)).port.buf, \
+																				(**(cfggetResp.ficmCfg->list.array)).port.size);
+						app_rmtCfg_ptr->getResp.FICM.portlen = (**(cfggetResp.ficmCfg->list.array)).port.size;
 
 						log_i(LOG_HOZON, "getCfgResp.token = %s\n",app_rmtCfg_ptr->getResp.FICM.token);
 						log_i(LOG_HOZON, "getCfgResp.tokenlen = %d\n",app_rmtCfg_ptr->getResp.FICM.tokenlen);
 						log_i(LOG_HOZON, "getCfgResp.userID = %s\n",app_rmtCfg_ptr->getResp.FICM.userID);
 						log_i(LOG_HOZON, "getCfgResp.userIDlen = %d\n",app_rmtCfg_ptr->getResp.FICM.userIDlen);
+
+						log_i(LOG_HOZON, "getCfgResp.directConnEnable = %d\n",app_rmtCfg_ptr->getResp.FICM.directConnEnable);
+						log_i(LOG_HOZON, "getCfgResp.address = %s\n",app_rmtCfg_ptr->getResp.FICM.address);
+						log_i(LOG_HOZON, "getCfgResp.addresslen = %d\n",app_rmtCfg_ptr->getResp.FICM.addresslen);
+						log_i(LOG_HOZON, "getCfgResp.port = %s\n",app_rmtCfg_ptr->getResp.FICM.port);
+						log_i(LOG_HOZON, "getCfgResp.portlen = %d\n",app_rmtCfg_ptr->getResp.FICM.portlen);
 					}
 
 					if(cfggetResp.apn1Cfg != NULL)

@@ -13,6 +13,7 @@
 
 /* Including external dependencies */
 #include <OCTET_STRING.h>
+#include <BOOLEAN.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
@@ -23,6 +24,9 @@ extern "C" {
 typedef struct FICMConfigSet {
 	OCTET_STRING_t	 token;
 	OCTET_STRING_t	 userID;
+	BOOLEAN_t	 directConnEnable;
+	OCTET_STRING_t	 address;
+	OCTET_STRING_t	 port;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

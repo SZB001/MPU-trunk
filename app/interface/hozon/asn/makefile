@@ -6,7 +6,7 @@ include $(ROOTDIR)/make.include
 TYPE := staticlib
 TARGETNAME := asn
 
-#INCLUDES += 
+#INCLUDES += -I../asn
 CCXXFLAGS = -Wall
 #CFLAGS =
 #CXXFLAGS =

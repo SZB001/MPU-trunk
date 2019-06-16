@@ -112,8 +112,13 @@ typedef struct
 {
 	uint8_t token[33];
 	uint8_t userID[33];
+	int directConnEnable;
+	uint8_t address[33];
+	uint8_t port[7];
 	uint8_t tokenlen;
 	uint8_t userIDlen;
+	uint8_t addresslen;
+	uint8_t portlen;
 	uint8_t ficmConfigValid;
 }__attribute__((packed))  App_rmtCfg_FICM_t;
 
