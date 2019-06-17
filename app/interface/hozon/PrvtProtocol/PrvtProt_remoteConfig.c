@@ -110,7 +110,7 @@ void PP_rmtCfg_init(void)
 
 	len = 11;
 	res = cfg_get_para(CFG_ITEM_HOZON_TSP_MCUSW,AppData_rmtCfg.checkReq.mcuSw,&len);//
-	if(!AppData_rmtCfg.checkReq.mcuSw[0])
+	if(AppData_rmtCfg.checkReq.mcuSw[0])
 	{
 		AppData_rmtCfg.checkReq.mcuSwlen = strlen((char*)AppData_rmtCfg.checkReq.mcuSw);
 	}
@@ -121,7 +121,7 @@ void PP_rmtCfg_init(void)
 
 	len = 11;
 	res = cfg_get_para(CFG_ITEM_HOZON_TSP_MPUSW,AppData_rmtCfg.checkReq.mpuSw,&len);//
-	if(!AppData_rmtCfg.checkReq.mpuSw[0])
+	if(AppData_rmtCfg.checkReq.mpuSw[0])
 	{
 		AppData_rmtCfg.checkReq.mpuSwlen = strlen((char*)AppData_rmtCfg.checkReq.mpuSw);
 	}

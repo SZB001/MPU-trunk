@@ -262,6 +262,21 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			cfgcheckReq.cfgVersion.buf = rmtCfgCheckReq_ptr->checkReq.cfgVersion;
 			cfgcheckReq.cfgVersion.size = rmtCfgCheckReq_ptr->checkReq.cfgVersionlen;
 
+			log_i(LOG_HOZON, "cfgcheckReq.mcuSw.buf = %s\n",cfgcheckReq.mcuSw.buf);
+			log_i(LOG_HOZON, "cfgcheckReq.mcuSw.size = %d\n",cfgcheckReq.mcuSw.size);
+			log_i(LOG_HOZON, "cfgcheckReq.mpuSw.buf = %s\n",cfgcheckReq.mpuSw.buf);
+			log_i(LOG_HOZON, "cfgcheckReq.mpuSw.size = %d\n",cfgcheckReq.mpuSw.size);
+			log_i(LOG_HOZON, "cfgcheckReq.vehicleVIN.buf = %s\n",cfgcheckReq.vehicleVIN.buf);
+			log_i(LOG_HOZON, "cfgcheckReq.vehicleVIN.size = %d\n",cfgcheckReq.vehicleVIN.size);
+			log_i(LOG_HOZON, "cfgcheckReq.iccID.buf = %s\n",cfgcheckReq.iccID.buf);
+			log_i(LOG_HOZON, "cfgcheckReq.iccID.size = %d\n",cfgcheckReq.iccID.size);
+			log_i(LOG_HOZON, "cfgcheckReq.btMacAddr.buf = %s\n",cfgcheckReq.btMacAddr.buf);
+			log_i(LOG_HOZON, "cfgcheckReq.btMacAddr.size = %d\n",cfgcheckReq.btMacAddr.size);
+			log_i(LOG_HOZON, "cfgcheckReq.configSw.buf = %s\n",cfgcheckReq.configSw.buf);
+			log_i(LOG_HOZON, "cfgcheckReq.configSw.size = %d\n",cfgcheckReq.configSw.size);
+			log_i(LOG_HOZON, "cfgcheckReq.cfgVersion.buf = %s\n",cfgcheckReq.cfgVersion.buf);
+			log_i(LOG_HOZON, "cfgcheckReq.cfgVersion.size = %d\n",cfgcheckReq.cfgVersion.size);
+
 			ec = uper_encode(pduType_Cfg_check_req,(void *) &cfgcheckReq,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
