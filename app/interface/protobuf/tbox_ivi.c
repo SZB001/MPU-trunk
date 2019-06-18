@@ -317,16 +317,16 @@ void ivi_remotediagnos_response_send( int fd )
 	
     TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_TBOX_REMOTEDIAGNOSE;
 
-/*	diagnos.vin = ;
-	diagnos.eventid = ;
-	diagnos.timestamp = ;
-	diagnos.datatype = ;
-	diagnos.cameraname = ;
-	diagnos.aid = ;
-	diagnos.mid = ;
-	diagnos.effectivetime = ;
-	diagnos.sizelimit = ;
-*/	
+	diagnos.vin = "111111111111111";
+//	diagnos.eventid = ;
+//	diagnos.timestamp = ;
+	diagnos.datatype = TBOX__NET__DATA_TYPE_ENUM__PHOTO_TYPE;
+	diagnos.cameraname = TBOX__NET__CAMERA_NAME_ENUM__DVR_TYPE;
+	diagnos.aid = 110;
+	diagnos.mid = 119;
+	diagnos.effectivetime = 100;
+	diagnos.sizelimit = 1000;
+	
 	TopMsg.tbox_remotedaignose = &diagnos;
 	
     szlen = tbox__net__top_message__get_packed_size( &TopMsg );
@@ -560,7 +560,7 @@ void ivi_callstate_response_send(int fd  )
 	}
 	else 
 	{
-		//响铃
+		//空闲(挂断)
 		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_DISCONNECTED;
 	}
 		
@@ -778,8 +778,9 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 			{
 				call_request.action = TBOX__NET__CALL_ACTION_ENUM__END_CALL;	
 			}
-//			call_request.result =  
+			call_request.result = TBOX__NET__CALL_ACTION_RESULT_ENUM__CALL_ACTION_SUCCESS; 
 			TopMsg.call_result = &call_request;
+			result.result = true;
             break;
         }
 		
@@ -790,20 +791,13 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 
 			Tbox__Net__TboxInfo tboxinfo;
 			tbox__net__tbox_info__init(&tboxinfo);
-
-			char software_version[9] = "111111111";
-			char hardware_version[9] = "111111111";
-			char iccid[9] = "111111111";
-			char pdid[9] = "111111111";
-			char imei[9] = "111111111";
-			char vin[9] = "111111111";
 			
-			tboxinfo.software_version = software_version;
-			tboxinfo.hardware_version = hardware_version;
-			tboxinfo.iccid  = iccid;
-			tboxinfo.pdid = pdid;
-			tboxinfo.imei = imei;
-			tboxinfo.vin = vin;
+			tboxinfo.software_version = "1234567890";
+			tboxinfo.hardware_version = "1234567890";
+			tboxinfo.iccid  = "1234567890";
+			tboxinfo.pdid = "1234567890";
+			tboxinfo.imei = "1234567890";
+			tboxinfo.vin = "1234567890";
 
 			TopMsg.tbox_info = &tboxinfo;
 
@@ -1305,8 +1299,6 @@ void *ivi_main(void)
                     {
                         continue;
                     }
-
-					
 
                     if (tm_get_time() - ivi_clients[i].lasthearttime > 30000)
                     {

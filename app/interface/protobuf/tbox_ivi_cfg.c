@@ -1,5 +1,7 @@
 
+#include <string.h>
 #include "tbox_ivi_api.h"
+
 
 extern ivi_callrequest callrequest; 
 
@@ -36,4 +38,8 @@ int tbox_ivi_get_call_action(void) //获取通话的类型
 	return 0;
 }
 
+void tbox_ivi_clear_call_flag(void)
+{
+	memset(&callrequest,0 ,sizeof(ivi_callrequest));
+}
 

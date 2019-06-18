@@ -49,6 +49,7 @@ description： include the header file
 #include "PrvtProt_remoteConfig.h"
 #include "PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
+#include "PrvtProt_data.h"
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -101,7 +102,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 static int PrvtPro_do_wait(PrvtProt_task_t *task);
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len);
 
-//static int PrvtPro_xcallCCreq(PrvtProt_task_t *task);
+static int PrvtProt_do_report(PrvtProt_task_t *task);
 /******************************************************
 description： function code
 ******************************************************/
@@ -159,6 +160,7 @@ int PrvtProt_init(INIT_PHASE phase)
 					PP_RmtFunc[obj].Init();
 				}
 			}
+			PrvtProt_data_init();
 		}
         break;
     }
@@ -233,7 +235,8 @@ static void *PrvtProt_main(void)
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
 				PrvtPro_do_wait(&pp_task) || 
-				PrvtProt_do_heartbeat(&pp_task);
+				PrvtProt_do_heartbeat(&pp_task) ||
+				PrvtProt_do_report(&pp_task);
 
 		for(obj = 0;obj < PP_RMTFUNC_MAX;obj++)
 		{
@@ -242,13 +245,6 @@ static void *PrvtProt_main(void)
 				PP_RmtFunc[obj].mainFunc(&pp_task);
 			}
 		}
-
-		/*PP_xcall_mainfunction(&pp_task);
-		PrvtProt_CC_mainfunction(&pp_task);
-		PP_rmtCfg_mainfunction(&pp_task);
-		PP_rmtCtrl_mainfunction(&pp_task);
-		PP_VS_mainfunction(&pp_task);
-*/
     }
 	(void)res;
     return NULL;
@@ -552,6 +548,50 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 		return -1;
 	}
 	return 0;
+}
+
+/******************************************************
+*函数名：PrvtProt_do_report
+
+*形  参：void
+
+*返回值：void
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PrvtProt_do_report(PrvtProt_task_t *task)
+{
+	int res;
+	PrvtProt_Send_t *rpt;
+
+    if ((rpt = PrvtProt_data_get_pack()) != NULL)
+    {
+        log_i(LOG_HOZON, "start to send report to server");
+        res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, NULL);
+        protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
+        if (res < 0)
+        {
+            log_e(LOG_HOZON, "socket send error, reset protocol");
+            PrvtProt_data_put_back(rpt);
+            sockproxy_socketclose();//by liujian 20190510
+        }
+        else if (res == 0)
+        {
+            log_e(LOG_HOZON, "unack list is full, send is canceled");
+            PrvtProt_data_put_back(rpt);
+        }
+        else
+        {
+        	if(rpt->SendInform_cb != NULL)
+        	{
+        		rpt->SendInform_cb(rpt->Inform_cb_para);
+        	}
+        }
+    }
+
+    return 0;
 }
 
 /******************************************************

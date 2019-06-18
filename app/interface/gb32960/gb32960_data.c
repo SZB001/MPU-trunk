@@ -623,6 +623,11 @@ static uint16_t gb_datintv;
 #define DAT_UNLOCK()        pthread_mutex_unlock(&gb_datmtx)
 #define GROUP_SIZE(inf)     RDUP_DIV((inf)->batt.cell_cnt, 200)
 
+
+static uint8_t gb_engineSt = 2;//熄火
+static long    gb_totalOdoMr = 0;//总计里程
+static long    gb_vehicleSOC = 0;//电量
+
 #if GB_EXT
 /* event report */
 static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
@@ -723,6 +728,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
     {
         tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_STATE])->value;
         buf[len++] = gbinf->vehi.state_tbl[tmp] ? gbinf->vehi.state_tbl[tmp] : 0xff;
+        gb_engineSt = gbinf->vehi.state_tbl[tmp] ? gbinf->vehi.state_tbl[tmp] : 0xff;
     }
     else
     {
@@ -764,6 +770,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = tmp >> 16;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
+    gb_totalOdoMr = tmp;
 
     /* total voltage, scale 0.1V */
     tmp = gbinf->vehi.info[GB_VINF_VOLTAGE] ?
@@ -781,6 +788,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
     tmp = gbinf->vehi.info[GB_VINF_SOC] ?
           dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value / 100 : 0xff;
     buf[len++] = tmp;
+    gb_vehicleSOC = tmp;
 
     /* DCDC state */
     if (gbinf->vehi.info[GB_VINF_DCDC])
@@ -3765,6 +3773,8 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
             if (gb_rld)
             {
                 ret = gb_data_parse_surfix(gb_rld, (int)arg1, (const char *)arg2);
+
+
             }
 
             break;
@@ -4132,19 +4142,7 @@ void gb_data_set_pendflag(int flag)
 */
 uint8_t gb_data_vehicleState(void)
 {
-	uint32_t tmp;
-	uint8_t vehicleState;
-/* vehicle state */
-   if (gb_inf->vehi.info[GB_VINF_STATE])
-   {
-       tmp = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_STATE])->value;
-       vehicleState = gb_inf->vehi.state_tbl[tmp] ? gb_inf->vehi.state_tbl[tmp] : 0xff;
-   }
-   else
-   {
-	   vehicleState = 0xff;
-   }
-   return vehicleState;
+   return gb_engineSt;
 }
 
 /*
@@ -4152,11 +4150,7 @@ uint8_t gb_data_vehicleState(void)
 */
 long gb_data_vehicleSOC(void)
 {
-	long vehicleSOC;
-	 /* total SOC */
-	vehicleSOC = gb_inf->vehi.info[GB_VINF_SOC] ?
-		  dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_SOC])->value : 0xff;
-	return  vehicleSOC;
+	return  gb_vehicleSOC;
 }
 
 /*
@@ -4164,9 +4158,5 @@ long gb_data_vehicleSOC(void)
 */
 long gb_data_vehicleOdograph(void)
 {
-	long tmp;
-    /* odograph, scale 0.1km */
-    tmp = gb_inf->vehi.info[GB_VINF_ODO] ?
-          dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_ODO])->value * 10 : 0xffffffff;
-    return tmp;
+    return gb_totalOdoMr;
 }

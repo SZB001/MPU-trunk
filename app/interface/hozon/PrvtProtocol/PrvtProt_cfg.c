@@ -65,18 +65,16 @@ int PrvtProtCfg_ecallTriggerEvent(void)
 ******************************************************/
 long PrvtProtCfg_engineSt(void)
 {
-	long st = 0xFF;
+	long st;
 	st = gb_data_vehicleState();
 	if(1 ==  st)//国标1对应启动
 	{
 		st = 2;
 	}
-	else if(2 ==  st)//国标1对应熄火
+	else
 	{
 		st = 1;
 	}
-	else
-	{}
 	return st;
 }
 

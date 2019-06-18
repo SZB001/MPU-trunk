@@ -51,6 +51,9 @@ int tbox_ivi_get_call_action(void);
 
 int tbox_ivi_get_call_type(void);
 
+void tbox_ivi_clear_call_flag(void);
+
+
 
 #endif
 

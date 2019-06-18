@@ -213,6 +213,10 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			XcallResp.xcallType = XcallResp_ptr->xcallType;
 			XcallResp.engineSt = XcallResp_ptr->engineSt;
 			XcallResp.ttOdoMeter = XcallResp_ptr->totalOdoMr;
+			log_i(LOG_HOZON, "XcallResp.xcallType = %d",XcallResp.xcallType);
+			log_i(LOG_HOZON, "XcallResp.engineSt = %d",XcallResp.engineSt);
+			log_i(LOG_HOZON, "XcallResp.ttOdoMeter = %d",XcallResp.ttOdoMeter);
+
 			Rvspos.gpsSt = XcallResp_ptr->gpsPos.gpsSt;//gps状态 0-无效；1-有效
 			Rvspos.gpsTimestamp = XcallResp_ptr->gpsPos.gpsTimestamp;//gps时间戳
 			Rvspos.latitude = XcallResp_ptr->gpsPos.latitude;//纬度 x 1000000,当GPS信号无效时，值为0
@@ -224,13 +228,22 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			XcallResp.gpsPos.list.array = &Rvspos_ptr;
 			XcallResp.gpsPos.list.size =0;
 			XcallResp.gpsPos.list.count =1;
+			log_i(LOG_HOZON, "Rvspos.gpsSt = %d",Rvspos.gpsSt);
+			log_i(LOG_HOZON, "Rvspos.gpsTimestamp = %d",Rvspos.gpsTimestamp);
+			log_i(LOG_HOZON, "Rvspos.latitude = %d",Rvspos.latitude);
+			log_i(LOG_HOZON, "Rvspos.longitude = %d",Rvspos.longitude);
+			log_i(LOG_HOZON, "Rvspos.altitude = %d",Rvspos.altitude);
+			log_i(LOG_HOZON, "Rvspos.heading = %d",Rvspos.heading);
+			log_i(LOG_HOZON, "Rvspos.gpsSpeed = %d",Rvspos.gpsSpeed);
+			log_i(LOG_HOZON, "Rvspos.hdop = %d",Rvspos.hdop);
 
 			XcallResp.srsSt = XcallResp_ptr->srsSt;
 			XcallResp.updataTime = XcallResp_ptr->updataTime;
 			XcallResp.battSOCEx = XcallResp_ptr->battSOCEx;
-
+			log_i(LOG_HOZON, "XcallResp.srsSt= %d",XcallResp.srsSt);
+			log_i(LOG_HOZON, "XcallResp.updataTime = %d",XcallResp.updataTime);
+			log_i(LOG_HOZON, "XcallResp.battSOCEx = %d",XcallResp.battSOCEx);
 			ec = uper_encode(pduType_XcallResp,(void *) &XcallResp,PrvtPro_writeout,&key);
-
 			if(ec.encoded  == -1)
 			{
 				log_e(LOG_HOZON, "encode:appdata XcallResp fail\n");
