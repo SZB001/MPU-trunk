@@ -491,7 +491,7 @@ int cfg_set_default_para(CFG_SET_TYPE type)
 
     char mxuSw[11];
     memset(mxuSw, 0, sizeof(mxuSw));
-    strcpy((char *) mxuSw, "0000000000");
+    strcpy((char *) mxuSw, "0");
     cfg_set_by_id(CFG_ITEM_HOZON_TSP_MCUSW, mxuSw, sizeof(mxuSw), type);
     cfg_set_by_id(CFG_ITEM_HOZON_TSP_MPUSW, mxuSw, sizeof(mxuSw), type);
 

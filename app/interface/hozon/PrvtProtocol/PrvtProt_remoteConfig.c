@@ -858,6 +858,7 @@ void PP_rmtCfg_SetCfgReq(unsigned char req)
 ******************************************************/
 void PP_rmtCfg_SetmcuSw(const char *mcuSw)
 {
+	memset(AppData_rmtCfg.checkReq.mcuSw,0 , 11);
 	memcpy(AppData_rmtCfg.checkReq.mcuSw,mcuSw,strlen(mcuSw));
 	AppData_rmtCfg.checkReq.mcuSwlen = strlen(mcuSw);
 	if (cfg_set_para(CFG_ITEM_HOZON_TSP_MCUSW, AppData_rmtCfg.checkReq.mcuSw, sizeof(AppData_rmtCfg.checkReq.mcuSw)))
@@ -879,6 +880,7 @@ void PP_rmtCfg_SetmcuSw(const char *mcuSw)
 ******************************************************/
 void PP_rmtCfg_SetmpuSw(const char *mpuSw)
 {
+	memset(AppData_rmtCfg.checkReq.mpuSw,0 , 11);
 	memcpy(AppData_rmtCfg.checkReq.mpuSw,mpuSw,strlen(mpuSw));
 	AppData_rmtCfg.checkReq.mpuSwlen = strlen(mpuSw);
 	if (cfg_set_para(CFG_ITEM_HOZON_TSP_MPUSW, AppData_rmtCfg.checkReq.mpuSw, sizeof(AppData_rmtCfg.checkReq.mpuSw)))
