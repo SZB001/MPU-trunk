@@ -5,8 +5,8 @@
  * 	`asn1c -gen-PER`
  */
 
-#ifndef	_DiagnosticReqInfo_H_
-#define	_DiagnosticReqInfo_H_
+#ifndef	_LogAcquisitionRespInfo_H_
+#define	_LogAcquisitionRespInfo_H_
 
 
 #include <asn_application.h>
@@ -19,20 +19,23 @@
 extern "C" {
 #endif
 
-/* DiagnosticReqInfo */
-typedef struct DiagnosticReqInfo {
-	long	 diagType;
+/* LogAcquisitionRespInfo */
+typedef struct LogAcquisitionRespInfo {
+	long	 logType;
+	long	 logLevel;
+	long	 startTime;
+	long	 durationTime;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} DiagnosticReqInfo_t;
+} LogAcquisitionRespInfo_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_DiagnosticReqInfo;
+extern asn_TYPE_descriptor_t asn_DEF_LogAcquisitionRespInfo;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _DiagnosticReqInfo_H_ */
+#endif	/* _LogAcquisitionRespInfo_H_ */
 #include <asn_internal.h>

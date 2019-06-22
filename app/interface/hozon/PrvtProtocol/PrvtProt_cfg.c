@@ -11,7 +11,7 @@ description£º include the header file
 *******************************************************/
 #include "gps_api.h"
 #include "at.h"
-#include "../sockproxy/sockproxy_data.h"
+#include "../sockproxy/sockproxy_rxdata.h"
 #include "PrvtProt_cfg.h"
 /*******************************************************
 description£º global variable definitions

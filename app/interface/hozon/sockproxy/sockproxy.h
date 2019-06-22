@@ -17,8 +17,8 @@ description： macro definitions
 #define SOCKPROXY_SHELL_PROTOCOL  0//该宏说明是否添加外壳协议:1-是 ; 0-否
 
 /**********宏常量定义*********/
-#define SOCK_SERVR_TIMEOUT    (1000 * 5)
-
+#define SOCK_SERVR_TIMEOUT    	(1000 * 5)
+#define SOCK_TXPAKG_OUTOFTIME    (1000 * 5)
 
 /***********宏函数***********/
 #define sockproxy_getURL(x)			gb32960_getURL(x)

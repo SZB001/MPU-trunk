@@ -1,11 +1,11 @@
 /******************************************************
 文件名：	
-描述：
+描述：	合众tsp对接socket链路的建立、断开、收/发数据处理
 Data			  Vasion			author
 2019/04/17		   V1.0			    liujian
 *******************************************************/
-#ifndef		__PRVT_PROT_QUEUE_H
-#define		__PRVT_PROT_QUEUE_H
+#ifndef		__SOCK_PROXY_RX_DATA_H
+#define		__SOCK_PROXY_RX_DATA_H
 /*******************************************************
 description： include the header file
 *******************************************************/
@@ -18,8 +18,8 @@ description： macro definitions
 
 
 /**********宏常量定义*********/
-#define PP_DATA_LNG  1456U/*数据队列中数据长*/
-#define PP_QUEUE_LNG  10U/*数据队列长*/
+#define SP_DATA_LNG  1456U/*数据队列中数据长*/
+#define SP_QUEUE_LNG  10U/*数据队列长*/
 
 /***********宏函数***********/
 
@@ -33,28 +33,25 @@ description： typedef definitions
 /******enum definitions******/
 typedef enum
 {
-	PP_XCALL = 0,//
-	PP_REMOTE_CFG,
-	PP_REMOTE_CTRL,
-	PP_REMOTE_VS,
-	PP_REMOTE_DIAG,
-	PP_MAX
-}PP_RX_OBJ;
+	SP_GB = 0,//
+    SP_PRIV,
+	SP_MAX,
+} SP_RX_OBJ;
 
 /*****struct definitions*****/
 typedef struct
 {
 	unsigned char  NonEmptyFlg;	/*数据非空标志*/
 	int	  len;/*数据长*/
-	unsigned char  data[PP_DATA_LNG];/*数据*/
-}PPCache_t;/*数据队列结构体*/
+	unsigned char  data[SP_DATA_LNG];/*数据*/
+}sockProxyCache_t;/*数据队列结构体*/
 
 typedef struct
 {
 	unsigned char  HeadLabel;/*头标签*/
 	unsigned char  TialLabel;/*尾标签*/
-	PPCache_t PPCache[PP_QUEUE_LNG];
-}PPObj_t;/*接收对象结构体*/
+	sockProxyCache_t SPCache[SP_QUEUE_LNG];
+}sockProxyObj_t;/*接收对象结构体*/
 
 /******union definitions*****/
 
@@ -65,8 +62,8 @@ description： variable External declaration
 /*******************************************************
 description： function External declaration
 *******************************************************/
-extern void PP_queue_Init(void);
-extern int WrPP_queue(unsigned char  obj,unsigned char* data,int len);
-extern int RdPP_queue(unsigned char  obj,unsigned char* data,int len);
+extern void SockproxyData_Init(void);
+extern int WrSockproxyData_Queue(unsigned char  obj,unsigned char* data,int len);
+extern int RdSockproxyData_Queue(unsigned char  obj,unsigned char* data,int len);
 
 #endif

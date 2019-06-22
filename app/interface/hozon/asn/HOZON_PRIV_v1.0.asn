@@ -382,22 +382,17 @@ VehicleSleepStInfo ::= SEQUENCE
 	vehicleBatterySt	INTEGER(0..255) OPTIONAL-- 
 }
 
-DiagnosticReqInfo ::= SEQUENCE
-{
-	diagCommand			SEQUENCE(SIZE(1..255)) OF DiagCommand --  
-}
-
-DiagCommand ::= SEQUENCE
+DiagnosticReqInfo ::= SEQUENCE --mid = 1
 {
 	diagType 			INTEGER(0..255) -- 
 }
 
-DiagnosticRespInfo ::= SEQUENCE
+DiagnosticRespInfo ::= SEQUENCE --mid = 2
 {
 	diagType			INTEGER(0..255), -- 
 	result				BOOLEAN, --
 	failureType			INTEGER(0..255) OPTIONAL, -- 
-	diagCommand			SEQUENCE(SIZE(1..255)) OF DiagCode OPTIONAL --
+	diagCode			SEQUENCE(SIZE(1..255)) OF DiagCode OPTIONAL --
 }
 
 DiagCode ::= SEQUENCE
@@ -406,10 +401,71 @@ DiagCode ::= SEQUENCE
 	diagTime			INTEGER(0..2147483647) -- 
 }
 
-DiagnosticStInfo ::= SEQUENCE
+DiagnosticStInfo ::= SEQUENCE --mid = 3
 {
 	diagStatus			SEQUENCE(SIZE(1..255)) OF DiagnosticRespInfo --
 }
+ 
+ImageAcquisitionReqInfo ::= SEQUENCE  --mid = 4
+{
+	dataType 			INTEGER(0..255), -- 
+	cameraName			INTEGER(0..255), -- 
+	effectiveTime		INTEGER(0..2147483647), -- 
+	sizeLimit			INTEGER(0..2147483647) -- 
+}
 
+ImageAcquisitionRespInfo ::= SEQUENCE --mid = 5
+{
+	result 				BOOLEAN, --
+	failureType			INTEGER(0..255) OPTIONAL, -- 
+	fileName 			IA5String(SIZE(1..255)) OPTIONAL --
+}
+
+LogAcquisitionRespInfo ::= SEQUENCE --mid = 6
+{
+	logType  			INTEGER(0..255), -- 
+	logLevel			INTEGER(0..255), -- 
+	startTime 			INTEGER(0..2147483647), -- 
+	durationTime 		INTEGER(0..65535) -- 
+}
+
+LogAcquisitionResInfo ::= SEQUENCE --mid = 7
+{
+	logType  			INTEGER(0..255), -- 
+	result 				BOOLEAN, --
+	failureType			INTEGER(0..255) OPTIONAL, -- 
+	fileName 			IA5String(SIZE(1..255)) OPTIONAL -- 
+}
+
+CertificateDownloadReqInfo ::= SEQUENCE
+{
+	mid   				INTEGER(0..255), -- 
+	eventId  			INTEGER(0..2147483647), -- 
+	cerType 			INTEGER(0..255), -- 
+	infoListLength 		INTEGER(0..65535), -- 
+	infoList 			OCTET STRING(SIZE(0..65535)) -- 
+}
+
+CertificateDownloadResInfo ::= SEQUENCE
+{
+	mid   				INTEGER(0..255), -- 
+	eventId  			INTEGER(0..2147483647), -- 
+	result 				BOOLEAN, --
+	failureType 		INTEGER(0..255) OPTIONAL, --
+	certType 			INTEGER(0..255) OPTIONAL, --
+	certLength 			INTEGER(0..4294967296) OPTIONAL, --
+	certContent  		OCTET STRING(SIZE(0..4294967296)) OPTIONAL -- 
+}
+
+CertificateDownloadStatusInfo ::= SEQUENCE
+{
+	mid   				INTEGER(0..255), -- 
+	eventId  			INTEGER(0..2147483647), -- 
+	certType 			INTEGER(0..255), --
+	result 				BOOLEAN, --
+	failureType 		INTEGER(0..255) OPTIONAL, --
+	infoListLength 		INTEGER(0..65535), --
+	infoList   			OCTET STRING(SIZE(0..65535)) -- 
+}
 
 END

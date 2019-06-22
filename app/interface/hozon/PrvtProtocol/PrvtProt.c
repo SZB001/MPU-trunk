@@ -32,10 +32,11 @@ description£º include the header file
 #include "per_encoder.h"
 #include "per_decoder.h"
 
-#include "../sockproxy/sockproxy_data.h"
 #include "init.h"
 #include "log.h"
 #include "list.h"
+#include "../sockproxy/sockproxy_rxdata.h"
+#include "../sockproxy/sockproxy_txdata.h"
 #include "../../support/protocol.h"
 #include "cfg_api.h"
 #include "hozon_SP_api.h"
@@ -577,7 +578,7 @@ static int PrvtProt_do_report(PrvtProt_task_t *task)
             PrvtProt_data_put_back(rpt);
             sockproxy_socketclose();//by liujian 20190510
         }
-        else if (res == 0)
+        else if(res == 0)
         {
             log_e(LOG_HOZON, "unack list is full, send is canceled");
             PrvtProt_data_put_back(rpt);

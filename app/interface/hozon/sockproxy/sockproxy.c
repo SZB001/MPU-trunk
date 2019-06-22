@@ -25,7 +25,10 @@ description： include the header file
 #include "nm_api.h"
 #include "../../support/protocol.h"
 #include "hozon_PP_api.h"
-#include "sockproxy_data.h"
+#include "hozon_SP_api.h"
+#include "sockproxy_rxdata.h"
+#include "sockproxy_txdata.h"
+#include "../PrvtProtocol/PrvtProt.h"
 #include "sockproxy.h"
 
 
@@ -52,7 +55,8 @@ description： function declaration
 /*Global function declaration*/
 
 /*Static function declaration*/
-static void *sockproxy_main(void);
+static void *sockproxy_rcvmain(void);
+static void *sockproxy_sendmain(void);
 static int 	sockproxy_do_checksock(sockproxy_stat_t *state);
 static int 	sockproxy_do_receive(sockproxy_stat_t *state);
 static void sockproxy_gbMakeupMsg(uint8_t *data,int len);
@@ -97,6 +101,7 @@ int sockproxy_init(INIT_PHASE phase)
 		{
 			/*init SSL*/
 			//HzTboxInit();
+			SP_data_init();
 		}
         break;
     }
@@ -115,35 +120,48 @@ int sockproxy_init(INIT_PHASE phase)
 int sockproxy_run(void)
 {
     int ret = 0;
-    pthread_t tid;
-    pthread_attr_t ta;
+    pthread_t rcvtid;
+    pthread_attr_t rcvta;
 
-    pthread_attr_init(&ta);
-    pthread_attr_setdetachstate(&ta, PTHREAD_CREATE_DETACHED);
+    pthread_attr_init(&rcvta);
+    pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_DETACHED);
 
-    ret = pthread_create(&tid, &ta, (void *)sockproxy_main, NULL);
+    ret = pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
 
     if (ret != 0)
     {
-        log_e(LOG_SOCK_PROXY, "pthread_create failed, error: %s", strerror(errno));
+        log_e(LOG_SOCK_PROXY, "pthread_create rcvmain failed, error: %s", strerror(errno));
         return ret;
     } 
+
+    pthread_t sendtid;
+    pthread_attr_t sendta;
+    pthread_attr_init(&sendta);
+    pthread_attr_setdetachstate(&sendta, PTHREAD_CREATE_DETACHED);
+
+    ret = pthread_create(&sendtid, &sendta, (void *)sockproxy_sendmain, NULL);
+
+    if (ret != 0)
+    {
+        log_e(LOG_SOCK_PROXY, "pthread_create sendmain failed, error: %s", strerror(errno));
+        return ret;
+    }
 
 	return 0;
 }
 
 /******************************************************
-*函数名：sockproxy_main
+*函数名：sockproxy_rcvmain
 *形  参：void
 *返回值：void
-*描  述：主任务函数
+*描  述：接收主任务线程
 *备  注：
 ******************************************************/
-static void *sockproxy_main(void)
+static void *sockproxy_rcvmain(void)
 {
 	int res = 0;
-	log_o(LOG_SOCK_PROXY, "socket proxy  of hozon thread running");
-    prctl(PR_SET_NAME, "SOCK_PROXY");
+	log_o(LOG_SOCK_PROXY, "socket proxy  of rcvmain thread running");
+    prctl(PR_SET_NAME, "SOCK_PROXY_RCV");
 
 	if ((sockSt.socket = sock_create("sockproxy", SOCK_TYPE_SYNCTCP)) < 0)
     {
@@ -158,6 +176,172 @@ static void *sockproxy_main(void)
     }
 	(void)res;
 	sock_delete(sockSt.socket);
+    return NULL;
+}
+
+/******************************************************
+*函数名：sockproxy_sendmain
+*形  参：void
+*返回值：void
+*描  述：发送主任务线程
+*备  注：
+******************************************************/
+static void *sockproxy_sendmain(void)
+{
+	int res = 0;
+	log_o(LOG_SOCK_PROXY, "socket proxy  of sendmain thread running");
+    prctl(PR_SET_NAME, "SOCK_PROXY_SEND");
+
+    while (1)
+    {
+    	SP_Send_t *rpt;
+    	char pakgtype;
+        if ((rpt = SP_data_get_pack()) != NULL)
+        {
+            log_i(LOG_HOZON, "start to send report to server");
+            if(rpt->Inform_cb_para != NULL)
+            {
+				PrvtProt_TxInform_t *TxInform_ptr = (PrvtProt_TxInform_t*)(rpt->Inform_cb_para);
+				pakgtype = TxInform_ptr->pakgtype;
+				switch(pakgtype)
+				{
+					case PP_TXPAKG_SIGTIME://单次时效型
+					{
+						if((tm_get_time() - TxInform_ptr->eventtime) < SOCK_TXPAKG_OUTOFTIME)//报文未过期
+						{
+							res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, NULL);
+							protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
+							if (res < 0)
+							{
+								log_e(LOG_HOZON, "socket send error, reset protocol");
+								if(rpt->SendInform_cb != NULL)
+								{
+									TxInform_ptr->successflg = PP_TXPAKG_FAIL;
+									TxInform_ptr->failresion = PP_TXPAKG_TXFAIL;
+									TxInform_ptr->txfailtime = tm_get_time();
+									rpt->SendInform_cb(rpt->Inform_cb_para);
+								}
+								sockproxy_socketclose();//by liujian 20190510
+							}
+							else if(res == 0)
+							{
+								log_e(LOG_HOZON, "unack list is full, send is canceled");
+								SP_data_put_back(rpt);
+							}
+							else
+							{//发送成功
+								if(rpt->SendInform_cb != NULL)
+								{
+									TxInform_ptr->successflg = PP_TXPAKG_SUCCESS;
+									rpt->SendInform_cb(rpt->Inform_cb_para);
+								}
+							}
+						}
+						else//报文过期
+						{
+							TxInform_ptr->successflg = PP_TXPAKG_FAIL;
+							TxInform_ptr->failresion = PP_TXPAKG_OUTOFDATE;
+							TxInform_ptr->txfailtime = tm_get_time();
+							rpt->SendInform_cb(rpt->Inform_cb_para);
+						}
+					}
+					break;
+					case PP_TXPAKG_SIGTRIG:
+					{
+						res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, NULL);
+						protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
+						if (res < 0)
+						{
+							log_e(LOG_HOZON, "socket send error, reset protocol");
+							if(rpt->SendInform_cb != NULL)
+							{
+								TxInform_ptr->successflg = PP_TXPAKG_FAIL;
+								TxInform_ptr->failresion = PP_TXPAKG_TXFAIL;
+								TxInform_ptr->txfailtime = tm_get_time();
+								rpt->SendInform_cb(rpt->Inform_cb_para);
+							}
+							sockproxy_socketclose();//by liujian 20190510
+						}
+						else if(res == 0)
+						{
+							log_e(LOG_HOZON, "unack list is full, send is canceled");
+							SP_data_put_back(rpt);
+						}
+						else
+						{//发送成功
+							if(rpt->SendInform_cb != NULL)
+							{
+								TxInform_ptr->successflg = PP_TXPAKG_SUCCESS;
+								rpt->SendInform_cb(rpt->Inform_cb_para);
+							}
+						}
+					}
+					break;
+					case PP_TXPAKG_CONTINUE:
+					{
+						res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, NULL);
+						protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
+						if (res < 0)
+						{
+							log_e(LOG_HOZON, "socket send error, reset protocol");
+							if(rpt->SendInform_cb != NULL)
+							{
+								TxInform_ptr->successflg = PP_TXPAKG_FAIL;
+								TxInform_ptr->failresion = PP_TXPAKG_TXFAIL;
+								TxInform_ptr->txfailtime = tm_get_time();
+								rpt->SendInform_cb(rpt->Inform_cb_para);
+							}
+							SP_data_put_back(rpt);
+							sockproxy_socketclose();//by liujian 20190510
+						}
+						else if(res == 0)
+						{
+							log_e(LOG_HOZON, "unack list is full, send is canceled");
+							SP_data_put_back(rpt);
+						}
+						else
+						{//发送成功
+							if(rpt->SendInform_cb != NULL)
+							{
+								TxInform_ptr->successflg = PP_TXPAKG_SUCCESS;
+								rpt->SendInform_cb(rpt->Inform_cb_para);
+							}
+						}
+					}
+					break;
+					default:
+					break;
+				}
+            }
+            else
+            {
+                res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, NULL);
+                protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
+                if (res < 0)
+                {
+                    log_e(LOG_HOZON, "socket send error, reset protocol");
+                	if(rpt->SendInform_cb != NULL)
+                	{
+                		rpt->SendInform_cb(rpt->Inform_cb_para);
+                	}
+                    sockproxy_socketclose();//by liujian 20190510
+                }
+                else if(res == 0)
+                {
+                    log_e(LOG_HOZON, "unack list is full, send is canceled");
+                    SP_data_put_back(rpt);
+                }
+                else
+                {
+                	if(rpt->SendInform_cb != NULL)
+                	{
+                		rpt->SendInform_cb(rpt->Inform_cb_para);
+                	}
+                }
+            }
+        }
+    }
+
     return NULL;
 }
 
@@ -358,7 +542,7 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
 int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 {
 	int res = 0;
-	log_i(LOG_SOCK_PROXY, "sockproxy_MsgSend <<<<<");
+	log_i(LOG_SOCK_PROXY, "<<<<<sockproxy_MsgSend <<<<<");
 	if(pthread_mutex_trylock(&sendmtx) == 0)//(非阻塞互斥锁)获取互斥锁
 	{
 		if(sockSt.state == PP_OPENED)
@@ -380,7 +564,7 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 	{
 		log_e(LOG_SOCK_PROXY, "send busy");
 	}
-	log_i(LOG_SOCK_PROXY, "sockproxy_MsgSend >>>>>");
+	log_i(LOG_SOCK_PROXY, ">>>>>sockproxy_MsgSend >>>>>");
 	return res;
 }
 

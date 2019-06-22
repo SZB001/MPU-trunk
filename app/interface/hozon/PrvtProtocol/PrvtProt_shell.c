@@ -43,7 +43,7 @@ description： function declaration
 /*Static function declaration*/
 static int PP_shell_setHeartBeatPeriod(int argc, const char **argv);
 static int PP_shell_setSuspend(int argc, const char **argv);
-static int PP_shell_setEcallReq(int argc, const char **argv);
+static int PP_shell_setXcallReq(int argc, const char **argv);
 static int PP_shell_setEcallResp(int argc, const char **argv);
 static int PP_shell_SetRmtCfgReq(int argc, const char **argv);
 static int PP_shell_SetRmtCtrlReq(int argc, const char **argv);
@@ -72,7 +72,7 @@ void PrvtProt_shell_init(void)
 {
 	shell_cmd_register("hozon_setHeartBeatPeriod", PP_shell_setHeartBeatPeriod, "set HOZON PrvtProt HeartBeat Period");
 	shell_cmd_register("hozon_setSuspend", PP_shell_setSuspend, "set HOZON PrvtProt suspend");
-	shell_cmd_register("hozon_setEcallReq", PP_shell_setEcallReq, "set HOZON PrvtProt ecall request");
+	shell_cmd_register("hozon_setXcallReq", PP_shell_setXcallReq, "set HOZON PrvtProt ecall request");
 	shell_cmd_register("hozon_setEcallResp", PP_shell_setEcallResp, "set HOZON PrvtProt ecall response");
 	shell_cmd_register("hozon_setRmtCfgReq", PP_shell_SetRmtCfgReq, "set HOZON PrvtProt remote config request");
 	shell_cmd_register("hozon_setRmtCtrlReq", PP_shell_SetRmtCtrlReq, "set HOZON PrvtProt remote control request");
@@ -155,9 +155,9 @@ static int PP_shell_setSuspend(int argc, const char **argv)
 }
 
 /******************************************************
-*函数名：PP_shell_setEcallReq
+*函数名：PP_shell_setXcallReq
 
-*形  参：设置ecall request
+*形  参：设置xcall request
 
 
 *返回值：void
@@ -166,18 +166,18 @@ static int PP_shell_setSuspend(int argc, const char **argv)
 
 *备  注：
 ******************************************************/
-static int PP_shell_setEcallReq(int argc, const char **argv)
+static int PP_shell_setXcallReq(int argc, const char **argv)
 {
-	unsigned int EcallReq;
+	unsigned int XcallReq;
     if (argc != 1)
     {
-        shellprintf(" usage: HOZON_PP_Setsuspend <ecall req>\r\n");
+        shellprintf(" usage: HOZON_PP_Setsuspend <xcall req>\r\n");
         return -1;
     }
 	
-	sscanf(argv[0], "%u", &EcallReq);
-	log_o(LOG_HOZON, "EcallReq = %d",EcallReq);
-	PP_xcall_SetEcallReq((uint8_t)EcallReq);
+	sscanf(argv[0], "%u", &XcallReq);
+	log_o(LOG_HOZON, "XcallReq = %d",XcallReq);
+	PP_xcall_SetXcallReq((uint8_t)XcallReq);
 	
     sleep(1);
     return 0;

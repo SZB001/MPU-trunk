@@ -5,8 +5,8 @@
  * 	`asn1c -gen-PER`
  */
 
-#ifndef	_DiagnosticReqInfo_H_
-#define	_DiagnosticReqInfo_H_
+#ifndef	_ImageAcquisitionReqInfo_H_
+#define	_ImageAcquisitionReqInfo_H_
 
 
 #include <asn_application.h>
@@ -19,20 +19,23 @@
 extern "C" {
 #endif
 
-/* DiagnosticReqInfo */
-typedef struct DiagnosticReqInfo {
-	long	 diagType;
+/* ImageAcquisitionReqInfo */
+typedef struct ImageAcquisitionReqInfo {
+	long	 dataType;
+	long	 cameraName;
+	long	 effectiveTime;
+	long	 sizeLimit;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} DiagnosticReqInfo_t;
+} ImageAcquisitionReqInfo_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_DiagnosticReqInfo;
+extern asn_TYPE_descriptor_t asn_DEF_ImageAcquisitionReqInfo;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _DiagnosticReqInfo_H_ */
+#endif	/* _ImageAcquisitionReqInfo_H_ */
 #include <asn_internal.h>

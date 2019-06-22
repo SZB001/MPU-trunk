@@ -32,10 +32,10 @@ description： include the header file
 #include "per_encoder.h"
 #include "per_decoder.h"
 
-#include "../sockproxy/sockproxy_data.h"
 #include "init.h"
 #include "log.h"
 #include "list.h"
+#include "../sockproxy/sockproxy_txdata.h"
 #include "../../support/protocol.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
@@ -331,9 +331,17 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 	/* bcall */
 	else if(1 == PP_xcall[PP_BCALL].state.req)
 	{
-
+		log_i(LOG_HOZON, "bcall trig\n");
+		PP_xcall[PP_BCALL].state.req = 0;
+		(void)PP_xcall_xcallResponse(task,PP_BCALL);
 	}
 	/* icall */
+	else if(1 == PP_xcall[PP_ICALL].state.req)
+	{
+		log_i(LOG_HOZON, "icall trig\n");
+		PP_xcall[PP_ICALL].state.req = 0;
+		(void)PP_xcall_xcallResponse(task,PP_ICALL);
+	}
 	else
 	{
 
@@ -451,7 +459,13 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 
 	PP_Xcall_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
 	//res = sockproxy_MsgSend(PP_Xcall_Pack.Header.sign,18 + msgdatalen,NULL);
-	PrvtProt_data_write(PP_Xcall_Pack.Header.sign,(18 + msgdatalen),PP_xcall_send_cb,NULL);
+
+	static PrvtProt_TxInform_t PP_TxInform;
+	PP_TxInform.aid = 170;
+	PP_TxInform.mid = 2;
+	PP_TxInform.pakgtype = PP_TXPAKG_SIGTRIG;
+
+	SP_data_write(PP_Xcall_Pack.Header.sign,(18 + msgdatalen),PP_xcall_send_cb,&PP_TxInform);
 	protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,(18 + msgdatalen),1);
 	return res;
 }
@@ -469,7 +483,14 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 ******************************************************/
 static void PP_xcall_send_cb(void * para)
 {
-	log_e(LOG_HOZON, "xcall resp send ok");
+	PrvtProt_TxInform_t *TxInform_ptr = (PrvtProt_TxInform_t*)para;
+	log_i(LOG_HOZON, "aid = %d",TxInform_ptr->aid);
+	log_i(LOG_HOZON, "mid = %d",TxInform_ptr->mid);
+	log_i(LOG_HOZON, "pakgtype = %d",TxInform_ptr->pakgtype);
+	log_i(LOG_HOZON, "eventtime = %d",TxInform_ptr->eventtime);
+	log_i(LOG_HOZON, "successflg = %d",TxInform_ptr->successflg);
+	log_i(LOG_HOZON, "failresion = %d",TxInform_ptr->failresion);
+	log_i(LOG_HOZON, "txfailtime = %d",TxInform_ptr->txfailtime);
 }
 
 #if 0
@@ -519,7 +540,7 @@ static int PP_xcall_ecallReq(PrvtProt_task_t *task)
 #endif
 
 /******************************************************
-*函数名：PP_xcall_SetEcallReq
+*函数名：PP_xcall_SetXcallReq
 
 *形  参：
 
@@ -529,9 +550,10 @@ static int PP_xcall_ecallReq(PrvtProt_task_t *task)
 
 *备  注：
 ******************************************************/
-void PP_xcall_SetEcallReq(unsigned char req)
+void PP_xcall_SetXcallReq(unsigned char req)
 {
-	PP_xcall[PP_ECALL].state.req = req;
+
+	PP_xcall[(req-1)].state.req = 1;
 }
 
 

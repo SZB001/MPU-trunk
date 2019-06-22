@@ -517,4 +517,6 @@ static int PP_rmtCtrl_StatusResp(long bookingId,unsigned int reqtype)
 static void PP_rmtCtrl_send_cb(void * para)
 {
 	log_e(LOG_HOZON, "send ok");
+
+
 }

@@ -1,28 +1,28 @@
 /******************************************************
-文件名：	
-描述：
+文件名：	sockproxy_txdata.h
+
+描述：	企业私有协议（浙江合众）	
+
 Data			  Vasion			author
-2019/04/17		   V1.0			    liujian
+2019/05/18		   V1.0			    liujian
 *******************************************************/
-#ifndef		__PRVT_PROT_QUEUE_H
-#define		__PRVT_PROT_QUEUE_H
+#ifndef		_PRVTPROT_TX_DATA_H
+#define		_PRVTPROT_TX_DATA_H
 /*******************************************************
 description： include the header file
 *******************************************************/
-
 
 /*******************************************************
 description： macro definitions
 *******************************************************/
 /**********宏开关定义*********/
 
-
 /**********宏常量定义*********/
-#define PP_DATA_LNG  1456U/*数据队列中数据长*/
-#define PP_QUEUE_LNG  10U/*数据队列长*/
+#define SP_MAX_SENDQUEUE		50
 
+#define SP_SENDBUFLNG			1456
 /***********宏函数***********/
-
+typedef void (*SP_sendInform_cb)(void* x);//发送通知回调
 /*******************************************************
 description： struct definitions
 *******************************************************/
@@ -31,32 +31,21 @@ description： struct definitions
 description： typedef definitions
 *******************************************************/
 /******enum definitions******/
-typedef enum
-{
-	PP_XCALL = 0,//
-	PP_REMOTE_CFG,
-	PP_REMOTE_CTRL,
-	PP_REMOTE_VS,
-	PP_REMOTE_DIAG,
-	PP_MAX
-}PP_RX_OBJ;
 
-/*****struct definitions*****/
+/******struct definitions******/
 typedef struct
 {
-	unsigned char  NonEmptyFlg;	/*数据非空标志*/
-	int	  len;/*数据长*/
-	unsigned char  data[PP_DATA_LNG];/*数据*/
-}PPCache_t;/*数据队列结构体*/
-
-typedef struct
-{
-	unsigned char  HeadLabel;/*头标签*/
-	unsigned char  TialLabel;/*尾标签*/
-	PPCache_t PPCache[PP_QUEUE_LNG];
-}PPObj_t;/*接收对象结构体*/
+	uint8_t 				msgdata[SP_SENDBUFLNG];
+	int						msglen;
+	void 					*Inform_cb_para;
+	SP_sendInform_cb		SendInform_cb;//
+	uint8_t					type;
+    list_t 					*list;
+    list_t  				link;
+}SP_Send_t; /*结构体*/
 
 /******union definitions*****/
+
 
 /*******************************************************
 description： variable External declaration
@@ -65,8 +54,8 @@ description： variable External declaration
 /*******************************************************
 description： function External declaration
 *******************************************************/
-extern void PP_queue_Init(void);
-extern int WrPP_queue(unsigned char  obj,unsigned char* data,int len);
-extern int RdPP_queue(unsigned char  obj,unsigned char* data,int len);
-
-#endif
+extern void SP_data_init(void);
+extern void SP_data_write(uint8_t *data,int len,SP_sendInform_cb sendInform_cb,void * cb_para);
+extern SP_Send_t *SP_data_get_pack(void);
+extern void SP_data_put_back(SP_Send_t *pack);
+#endif 

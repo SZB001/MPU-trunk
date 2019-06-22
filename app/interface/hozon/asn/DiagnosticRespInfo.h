@@ -30,12 +30,12 @@ typedef struct DiagnosticRespInfo {
 	long	 diagType;
 	BOOLEAN_t	 result;
 	long	*failureType	/* OPTIONAL */;
-	struct diagCommand {
+	struct diagCode {
 		A_SEQUENCE_OF(struct DiagCode) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
-	} *diagCommand;
+	} *diagCode;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

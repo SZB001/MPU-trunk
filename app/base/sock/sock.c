@@ -380,7 +380,7 @@ static void *sock_open_proc(sock_t *sock)
 
     log_i(LOG_SOCK, "socket(%s) is starting to resolve url: \"%s\"", sock->name, sock->url);
 
-    if (sock_resolve(sock->url, &s_addr))
+    if(sock_resolve(sock->url, &s_addr))
     {
         log_e(LOG_SOCK, "socket(%s) resolve url fail", sock->name);
         return sock_finish(sock, -1, SOCK_STAT_CLOSED);

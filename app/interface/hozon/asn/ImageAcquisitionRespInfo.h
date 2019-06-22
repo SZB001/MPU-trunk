@@ -5,34 +5,38 @@
  * 	`asn1c -gen-PER`
  */
 
-#ifndef	_DiagnosticReqInfo_H_
-#define	_DiagnosticReqInfo_H_
+#ifndef	_ImageAcquisitionRespInfo_H_
+#define	_ImageAcquisitionRespInfo_H_
 
 
 #include <asn_application.h>
 
 /* Including external dependencies */
+#include <BOOLEAN.h>
 #include <NativeInteger.h>
+#include <IA5String.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* DiagnosticReqInfo */
-typedef struct DiagnosticReqInfo {
-	long	 diagType;
+/* ImageAcquisitionRespInfo */
+typedef struct ImageAcquisitionRespInfo {
+	BOOLEAN_t	 result;
+	long	*failureType	/* OPTIONAL */;
+	IA5String_t	*fileName	/* OPTIONAL */;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} DiagnosticReqInfo_t;
+} ImageAcquisitionRespInfo_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_DiagnosticReqInfo;
+extern asn_TYPE_descriptor_t asn_DEF_ImageAcquisitionRespInfo;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _DiagnosticReqInfo_H_ */
+#endif	/* _ImageAcquisitionRespInfo_H_ */
 #include <asn_internal.h>

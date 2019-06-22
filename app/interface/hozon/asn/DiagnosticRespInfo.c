@@ -58,7 +58,7 @@ memb_failureType_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 static int
-memb_diagCommand_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+memb_diagCode_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	size_t size;
 	
@@ -83,7 +83,7 @@ memb_diagCommand_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
-static asn_per_constraints_t asn_PER_type_diagCommand_constr_5 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_type_diagCode_constr_5 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 8,  8,  1,  255 }	/* (SIZE(1..255)) */,
 	0, 0	/* No PER value map */
@@ -98,12 +98,12 @@ static asn_per_constraints_t asn_PER_memb_failureType_constr_4 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
-static asn_per_constraints_t asn_PER_memb_diagCommand_constr_5 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_diagCode_constr_5 GCC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 8,  8,  1,  255 }	/* (SIZE(1..255)) */,
 	0, 0	/* No PER value map */
 };
-static asn_TYPE_member_t asn_MBR_diagCommand_5[] = {
+static asn_TYPE_member_t asn_MBR_diagCode_5[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
@@ -114,19 +114,19 @@ static asn_TYPE_member_t asn_MBR_diagCommand_5[] = {
 		""
 		},
 };
-static const ber_tlv_tag_t asn_DEF_diagCommand_tags_5[] = {
+static const ber_tlv_tag_t asn_DEF_diagCode_tags_5[] = {
 	(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
-static asn_SET_OF_specifics_t asn_SPC_diagCommand_specs_5 = {
-	sizeof(struct diagCommand),
-	offsetof(struct diagCommand, _asn_ctx),
+static asn_SET_OF_specifics_t asn_SPC_diagCode_specs_5 = {
+	sizeof(struct diagCode),
+	offsetof(struct diagCode, _asn_ctx),
 	0,	/* XER encoding is XMLDelimitedItemList */
 };
 static /* Use -fall-defs-global to expose */
-asn_TYPE_descriptor_t asn_DEF_diagCommand_5 = {
-	"diagCommand",
-	"diagCommand",
+asn_TYPE_descriptor_t asn_DEF_diagCode_5 = {
+	"diagCode",
+	"diagCode",
 	SEQUENCE_OF_free,
 	SEQUENCE_OF_print,
 	SEQUENCE_OF_constraint,
@@ -137,16 +137,16 @@ asn_TYPE_descriptor_t asn_DEF_diagCommand_5 = {
 	SEQUENCE_OF_decode_uper,
 	SEQUENCE_OF_encode_uper,
 	0,	/* Use generic outmost tag fetcher */
-	asn_DEF_diagCommand_tags_5,
-	sizeof(asn_DEF_diagCommand_tags_5)
-		/sizeof(asn_DEF_diagCommand_tags_5[0]) - 1, /* 1 */
-	asn_DEF_diagCommand_tags_5,	/* Same as above */
-	sizeof(asn_DEF_diagCommand_tags_5)
-		/sizeof(asn_DEF_diagCommand_tags_5[0]), /* 2 */
-	&asn_PER_type_diagCommand_constr_5,
-	asn_MBR_diagCommand_5,
+	asn_DEF_diagCode_tags_5,
+	sizeof(asn_DEF_diagCode_tags_5)
+		/sizeof(asn_DEF_diagCode_tags_5[0]) - 1, /* 1 */
+	asn_DEF_diagCode_tags_5,	/* Same as above */
+	sizeof(asn_DEF_diagCode_tags_5)
+		/sizeof(asn_DEF_diagCode_tags_5[0]), /* 2 */
+	&asn_PER_type_diagCode_constr_5,
+	asn_MBR_diagCode_5,
 	1,	/* Single element */
-	&asn_SPC_diagCommand_specs_5	/* Additional specs */
+	&asn_SPC_diagCode_specs_5	/* Additional specs */
 };
 
 static asn_TYPE_member_t asn_MBR_DiagnosticRespInfo_1[] = {
@@ -177,14 +177,14 @@ static asn_TYPE_member_t asn_MBR_DiagnosticRespInfo_1[] = {
 		0,
 		"failureType"
 		},
-	{ ATF_POINTER, 1, offsetof(struct DiagnosticRespInfo, diagCommand),
+	{ ATF_POINTER, 1, offsetof(struct DiagnosticRespInfo, diagCode),
 		(ASN_TAG_CLASS_CONTEXT | (3 << 2)),
 		0,
-		&asn_DEF_diagCommand_5,
-		memb_diagCommand_constraint_1,
-		&asn_PER_memb_diagCommand_constr_5,
+		&asn_DEF_diagCode_5,
+		memb_diagCode_constraint_1,
+		&asn_PER_memb_diagCode_constr_5,
 		0,
-		"diagCommand"
+		"diagCode"
 		},
 };
 static const int asn_MAP_DiagnosticRespInfo_oms_1[] = { 2, 3 };
@@ -195,7 +195,7 @@ static const asn_TYPE_tag2member_t asn_MAP_DiagnosticRespInfo_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* diagType */
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* result */
     { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 }, /* failureType */
-    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 } /* diagCommand */
+    { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 } /* diagCode */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_DiagnosticRespInfo_specs_1 = {
 	sizeof(struct DiagnosticRespInfo),

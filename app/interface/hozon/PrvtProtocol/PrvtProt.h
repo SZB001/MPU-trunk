@@ -62,6 +62,19 @@ description： macro definitions
 #define PP_MID_VS_REQ 	1//VS request
 #define PP_MID_VS_RESP 	2//VS response
 
+#define PP_AID_DIAG	 		140//远程诊断
+//MID
+#define PP_MID_DIAG_REQ 	1//request
+#define PP_MID_DIAG_RESP 	2//response
+#define PP_MID_DIAG_STATUS 			3
+#define PP_MID_DIAG_IMAGEACQREQ  	4
+#define PP_MID_DIAG_IMAGEACQRESP  	5
+#define PP_MID_DIAG_LOGACQRESP  	6
+#define PP_MID_DIAG_LOGACQRES		7
+
+#define PP_TXPAKG_FAIL 	(-1)//报文发送失败
+#define PP_TXPAKG_SUCCESS 	  1//报文发送成功
+
 /***********宏函数***********/
 typedef void (*PrvtProt_InitObj)(void);//初始化
 typedef int (*PrvtProt_mainFuncObj)(void* x);//
@@ -84,6 +97,20 @@ typedef enum
 	PP_RMTFUNC_MAX
 } PP_RMTFUNC_INDEX;
 
+typedef enum
+{
+	PP_TXPAKG_UNKOWNTYPE = 0,//未知类型
+	PP_TXPAKG_CONTINUE,//周期型
+	PP_TXPAKG_SIGTRIG,//单次触发型
+	PP_TXPAKG_SIGTIME//单次时效型
+} PP_TXPAKG_TYPE;
+
+typedef enum
+{
+	PP_TXPAKG_UNKOWNFAIL = 0,//未知类型
+	PP_TXPAKG_TXFAIL,
+	PP_TXPAKG_OUTOFDATE//报文过期
+} PP_TXPAKG_FAILTYPE;
 
 typedef enum
 {
@@ -185,6 +212,17 @@ typedef struct
 	PrvtProt_InitObj Init;//初始化
 	PrvtProt_mainFuncObj mainFunc;//
 }PrvtProt_RmtFunc_t; /*结构体*/
+
+typedef struct
+{
+	int aid;
+	int mid;
+	char pakgtype;//报文类型:1-持续型（持续发送直到发送成功）；2-单次触发型（发送失败丢弃）；3-单次时效性（发送失败丢弃，同时报文具有时效性）
+	uint64_t eventtime;//事件产生时的时间
+	char successflg;//报文发送完成标志：-1 - 失败；1 - 成功；默认0
+	uint8_t failresion;
+	uint64_t txfailtime;//发送失败的时间
+}PrvtProt_TxInform_t; /*结构体*/
 
 /******union definitions*****/
 
