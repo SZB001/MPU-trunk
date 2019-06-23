@@ -50,7 +50,6 @@ description： include the header file
 #include "PrvtProt_remoteConfig.h"
 #include "PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
-#include "PrvtProt_data.h"
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -103,7 +102,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 static int PrvtPro_do_wait(PrvtProt_task_t *task);
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len);
 
-static int PrvtProt_do_report(PrvtProt_task_t *task);
+static void PP_HB_send_cb(void * para);
 /******************************************************
 description： function code
 ******************************************************/
@@ -161,7 +160,6 @@ int PrvtProt_init(INIT_PHASE phase)
 					PP_RmtFunc[obj].Init();
 				}
 			}
-			PrvtProt_data_init();
 		}
         break;
     }
@@ -236,8 +234,7 @@ static void *PrvtProt_main(void)
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
 				PrvtPro_do_wait(&pp_task) || 
-				PrvtProt_do_heartbeat(&pp_task) ||
-				PrvtProt_do_report(&pp_task);
+				PrvtProt_do_heartbeat(&pp_task);
 
 		for(obj = 0;obj < PP_RMTFUNC_MAX;obj++)
 		{
@@ -519,7 +516,7 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
 static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 {
 	PrvtProt_pack_Header_t pack_Header;
-	int res;
+
 	if((tm_get_time() - PP_heartbeat.timer) > (PP_heartbeat.period*1000))
 	{
 		PP_PackHeader_HB.ver.Byte = task->version;
@@ -528,71 +525,43 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 		PP_PackHeader_HB.tboxid = PrvtPro_BSEndianReverse(task->tboxid);
 		memcpy(&pack_Header, &PP_PackHeader_HB, sizeof(PrvtProt_pack_Header_t));
 
-		res = sockproxy_MsgSend(pack_Header.sign, 18,NULL);
-		if(res > 0)//发送成功
-		{
-			protocol_dump(LOG_HOZON, "PRVT_PROT", pack_Header.sign, 18, 1);
-			PP_heartbeat.waitSt = 1;
-			//task->heartbeat.ackFlag = PP_ACK_WAIT;
-			PP_heartbeat.waittime = tm_get_time();
-			PP_heartbeat.timer = tm_get_time();
-		}
-		else if(res < 0)
-		{
-			log_e(LOG_HOZON, "send heartbeat frame fail,close socket\r\n");
-			//task->heartbeat.timer = tm_get_time();
-			PP_heartbeat.waitSt = 0;
-			sockproxy_socketclose();//by liujian 20190510
-		}
-		else
-		{}
+
+		static PrvtProt_TxInform_t HB_TxInform;
+		memset(&HB_TxInform,0,sizeof(PrvtProt_TxInform_t));
+		HB_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
+		HB_TxInform.eventtime = tm_get_time();
+		SP_data_write(pack_Header.sign,18,PP_HB_send_cb,&HB_TxInform);
 		return -1;
 	}
 	return 0;
 }
 
 /******************************************************
-*函数名：PrvtProt_do_report
+*函数名：PP_HB_send_cb
 
-*形  参：void
+*形  参：
 
-*返回值：void
+*返回值：
 
 *描  述：
 
 *备  注：
 ******************************************************/
-static int PrvtProt_do_report(PrvtProt_task_t *task)
+static void PP_HB_send_cb(void * para)
 {
-	int res;
-	PrvtProt_Send_t *rpt;
+	PrvtProt_TxInform_t *TxInform_ptr = (PrvtProt_TxInform_t*)para;
 
-    if ((rpt = PrvtProt_data_get_pack()) != NULL)
-    {
-        log_i(LOG_HOZON, "start to send report to server");
-        res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, NULL);
-        protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
-        if (res < 0)
-        {
-            log_e(LOG_HOZON, "socket send error, reset protocol");
-            PrvtProt_data_put_back(rpt);
-            sockproxy_socketclose();//by liujian 20190510
-        }
-        else if(res == 0)
-        {
-            log_e(LOG_HOZON, "unack list is full, send is canceled");
-            PrvtProt_data_put_back(rpt);
-        }
-        else
-        {
-        	if(rpt->SendInform_cb != NULL)
-        	{
-        		rpt->SendInform_cb(rpt->Inform_cb_para);
-        	}
-        }
-    }
-
-    return 0;
+	if(PP_TXPAKG_SUCCESS == TxInform_ptr->successflg)
+	{
+		PP_heartbeat.waitSt = 1;
+		PP_heartbeat.waittime = tm_get_time();
+		PP_heartbeat.timer = tm_get_time();
+	}
+	else
+	{
+		log_e(LOG_HOZON, "send heartbeat frame fail\r\n");
+		PP_heartbeat.waitSt = 0;
+	}
 }
 
 /******************************************************

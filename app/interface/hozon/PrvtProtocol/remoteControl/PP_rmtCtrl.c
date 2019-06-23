@@ -35,6 +35,7 @@ description： include the header file
 #include "log.h"
 #include "list.h"
 #include "../../support/protocol.h"
+#include "../sockproxy/sockproxy_txdata.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
@@ -45,7 +46,6 @@ description： include the header file
 #include "PP_doorLockCtrl.h"
 #include "PP_ACCtrl.h"
 #include "PP_ChargeCtrl.h"
-#include "PP_rmtCtrl_data.h"
 #include "PP_rmtCtrl.h"
 
 /*******************************************************
@@ -95,7 +95,6 @@ static int PP_rmtCtrl_do_checksock(PrvtProt_task_t *task);
 static int PP_rmtCtrl_do_rcvMsg(PrvtProt_task_t *task);
 static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len);
 //static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task);
-static int PP_rmtCtrl_do_report(PrvtProt_task_t *task);
 static int PP_rmtCtrl_StatusResp(long bookingId,unsigned int reqtype);
 static void PP_rmtCtrl_send_cb(void * para);
 /******************************************************
@@ -126,7 +125,6 @@ void PP_rmtCtrl_init(void)
 		}
 	}
 
-	PP_rmtCtrl_data_init();
 }
 
 /******************************************************
@@ -145,8 +143,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 	int res;
 	int i;
 	res = 		PP_rmtCtrl_do_checksock((PrvtProt_task_t*)task) ||
-				PP_rmtCtrl_do_rcvMsg((PrvtProt_task_t*)task) ||
-				PP_rmtCtrl_do_report((PrvtProt_task_t*)task) ;
+				PP_rmtCtrl_do_rcvMsg((PrvtProt_task_t*)task);
 
 	for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
 	{
@@ -221,50 +218,6 @@ static int PP_rmtCtrl_do_rcvMsg(PrvtProt_task_t *task)
 	return 0;
 }
 
-/******************************************************
-*函数名：PP_rmtCtrl_do_report
-
-*形  参：void
-
-*返回值：void
-
-*描  述：
-
-*备  注：
-******************************************************/
-static int PP_rmtCtrl_do_report(PrvtProt_task_t *task)
-{
-	int res;
-	PrvtProt_RmtCtrlSend_t *rpt;
-
-    if ((rpt = PP_rmtCtrl_data_get_pack()) != NULL)
-    {
-        log_i(LOG_HOZON, "start to send report to server");
-        res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, NULL);
-        protocol_dump(LOG_HOZON, "send control data to tsp", rpt->msgdata, rpt->msglen, 1);
-
-        if (res < 0)
-        {
-            log_e(LOG_HOZON, "socket send error, reset protocol");
-            PP_rmtCtrl_data_put_back(rpt);
-            sockproxy_socketclose();//by liujian 20190510
-        }
-        else if (res == 0)
-        {
-            log_e(LOG_HOZON, "unack list is full, send is canceled");
-            PP_rmtCtrl_data_put_back(rpt);
-        }
-        else
-        {
-        	if(rpt->SendInform_cb != NULL)
-        	{
-        		rpt->SendInform_cb(rpt->Inform_cb_para);
-        	}
-        }
-    }
-
-    return 0;
-}
 /******************************************************
 *函数名：PP_rmtCtrl_RxMsgHandle
 
@@ -499,7 +452,7 @@ static int PP_rmtCtrl_StatusResp(long bookingId,unsigned int reqtype)
 
 	PP_rmtCtrl_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
 	//res = sockproxy_MsgSend(PP_rmtCtrl_Pack.Header.sign,18 + msgdatalen,NULL);
-	PP_rmtCtrl_data_write(PP_rmtCtrl_Pack.Header.sign,18 + msgdatalen,PP_rmtCtrl_send_cb,NULL);
+	SP_data_write(PP_rmtCtrl_Pack.Header.sign,18 + msgdatalen,PP_rmtCtrl_send_cb,NULL);
 	return 0;
 }
 

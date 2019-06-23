@@ -43,7 +43,6 @@ description£º include the header file
 #include "PrvtProt_EcDc.h"
 #include "PrvtProt_cfg.h"
 #include "PrvtProt.h"
-#include "PrvtProt_data.h"
 #include "PrvtProt_rmtDiag.h"
 
 /*******************************************************

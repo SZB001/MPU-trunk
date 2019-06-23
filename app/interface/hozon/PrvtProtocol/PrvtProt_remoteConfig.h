@@ -48,6 +48,7 @@ typedef enum
 	PP_RMTCFG_WAIT_IDLE = 0,//
 	PP_RMTCFG_CHECK_WAIT_RESP,//
 	PP_RMTCFG_GET_WAIT_RESP,//
+	PP_RMTCFG_END_WAIT_SENDRESP,//end cfg send response
 } PP_RMTCFG_WAIT_STATE;//µÈ´ý×´Ì¬
 
 typedef enum

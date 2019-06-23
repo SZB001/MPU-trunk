@@ -36,6 +36,7 @@ description： include the header file
 #include "log.h"
 #include "list.h"
 #include "../../support/protocol.h"
+#include "../sockproxy/sockproxy_txdata.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
 #include "PrvtProt_shell.h"
@@ -68,6 +69,7 @@ static PrvtProt_pack_t 		PP_VS_Pack;
 static PrvtProt_VS_t		PP_rmtVS;
 static PrvtProt_App_VS_t	PP_VS_appdata;
 
+static PrvtProt_TxInform_t VS_TxInform;
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -80,6 +82,8 @@ static void PP_VS_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int 
 static int PP_VS_do_wait(PrvtProt_task_t *task);
 static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task);
 static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS);
+
+static void PP_VS_send_cb(void * para);
 
 /******************************************************
 description： function code
@@ -108,6 +112,7 @@ void PP_VS_init(void)
 	PP_rmtVS.pack.DisBody.appDataProVer = 256;
 	PP_rmtVS.pack.DisBody.testFlag = 1;
 	PP_rmtVS.state.req = PP_VS_NOREQ;
+	memset(&VS_TxInform,0,sizeof(PrvtProt_TxInform_t));
 }
 
 /******************************************************
@@ -263,7 +268,6 @@ static int PP_VS_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 {
-	int res;
 
 	if(1 != sockproxy_socketState())//socket not open
 	{
@@ -278,39 +282,33 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 		case PP_VS_BASICSTATUS:
 		{
 			PP_VS_appdata.VSResp.ExtSt.validFlg = 0;//不上报ext status数据
-			res = PP_VS_VehiStatusResp(task,&PP_rmtVS);
-			if(res < 0)//请求发送失败
+			if(0 == PP_VS_VehiStatusResp(task,&PP_rmtVS))
 			{
-				log_e(LOG_HOZON, "socket send error, reset protocol");
-				PP_rmtVS.state.req = PP_VS_NOREQ;
-				sockproxy_socketclose();//by liujian 20190514
+				VS_TxInform.aid = PP_AID_VS;
+				VS_TxInform.mid = PP_MID_VS_RESP;
+				VS_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
+				VS_TxInform.eventtime = tm_get_time();
+
+				SP_data_write(PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,PP_VS_send_cb,&VS_TxInform);
+				protocol_dump(LOG_HOZON, "PP_VS_BASICSTATUS", PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,1);
 			}
-			else if(res > 0)
-			{
-				log_e(LOG_HOZON, "socket send ok");
-				PP_rmtVS.state.req = PP_VS_NOREQ;
-			}
-			else
-			{}
+			PP_rmtVS.state.req = PP_VS_NOREQ;
 		}
 		break;
 		case PP_VS_EXTSTATUS:
 		{
 			PP_VS_appdata.VSResp.ExtSt.validFlg = 1;//上报ext status数据
-			res = PP_VS_VehiStatusResp(task,&PP_rmtVS);
-			if(res < 0)//请求发送失败
+			if(0 == PP_VS_VehiStatusResp(task,&PP_rmtVS))
 			{
-				log_e(LOG_HOZON, "socket send error, reset protocol");
-				PP_rmtVS.state.req = PP_VS_NOREQ;
-				sockproxy_socketclose();//by liujian 20190514
+				VS_TxInform.aid = PP_AID_VS;
+				VS_TxInform.mid = PP_MID_VS_RESP;
+				VS_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
+				VS_TxInform.eventtime = tm_get_time();
+
+				SP_data_write(PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,PP_VS_send_cb,&VS_TxInform);
+				protocol_dump(LOG_HOZON, "PP_VS_EXTSTATUS", PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,1);
 			}
-			else if(res > 0)
-			{
-				log_e(LOG_HOZON, "socket send ok, reset");
-				PP_rmtVS.state.req = PP_VS_NOREQ;
-			}
-			else
-			{}
+			PP_rmtVS.state.req = PP_VS_NOREQ;
 		}
 		break;
 		default:
@@ -334,7 +332,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 {
 	int msgdatalen;
-	int res;
+	int res = 0;
 	/*header*/
 	rmtVS->pack.Header.ver.Byte = task->version;
 	rmtVS->pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
@@ -473,14 +471,12 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 									   &rmtVS->pack.DisBody,&PP_VS_appdata))//数据编码打包是否完成
 	{
 		log_e(LOG_HOZON, "uper error");
-		return 0;
+		return -1;
 	}
 
+	PP_VS_Pack.totallen = 18 + msgdatalen;
 	PP_VS_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
-	res = sockproxy_MsgSend(PP_VS_Pack.Header.sign,18 + msgdatalen,NULL);
 
-	protocol_dump(LOG_HOZON, "get_remote_VS_response", PP_VS_Pack.Header.sign, \
-					18 + msgdatalen,1);
 	return res;
 }
 
@@ -501,3 +497,25 @@ void PP_VS_SetVSReq(unsigned char req)
 	PP_rmtVS.pack.DisBody.eventId = 130+2;
 }
 
+/******************************************************
+*函数名：PP_VS_send_cb
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：
+******************************************************/
+static void PP_VS_send_cb(void * para)
+{
+	PrvtProt_TxInform_t *TxInform_ptr = (PrvtProt_TxInform_t*)para;
+	log_i(LOG_HOZON, "aid = %d",TxInform_ptr->aid);
+	log_i(LOG_HOZON, "mid = %d",TxInform_ptr->mid);
+	log_i(LOG_HOZON, "pakgtype = %d",TxInform_ptr->pakgtype);
+	log_i(LOG_HOZON, "eventtime = %d",TxInform_ptr->eventtime);
+	log_i(LOG_HOZON, "successflg = %d",TxInform_ptr->successflg);
+	log_i(LOG_HOZON, "failresion = %d",TxInform_ptr->failresion);
+	log_i(LOG_HOZON, "txfailtime = %d",TxInform_ptr->txfailtime);
+}

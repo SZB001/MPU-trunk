@@ -38,7 +38,6 @@ description£º include the header file
 #include "hozon_SP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
-//#include "../PrvtProt_queue.h"
 #include "../PrvtProt_EcDc.h"
 #include "../PrvtProt.h"
 #include "../PrvtProt_cfg.h"

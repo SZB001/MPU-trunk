@@ -44,7 +44,6 @@ description： include the header file
 #include "PrvtProt_EcDc.h"
 #include "PrvtProt_cfg.h"
 #include "PrvtProt.h"
-#include "PrvtProt_data.h"
 #include "PrvtProt_xcall.h"
 
 /*******************************************************
@@ -78,6 +77,7 @@ static PrvtProt_App_Xcall_t	Appdata_Xcall =
 		0,		0xff,	 0,		       {0,    0,       0,       0,        0,       0,       0  },	1,		0,			 0
 };
 
+static PrvtProt_TxInform_t Xcall_TxInform[PP_XCALL_MAX];
 
 /*******************************************************
 description： function declaration
@@ -127,6 +127,8 @@ void PP_xcall_init(void)
 		PP_xcall[i].packResp.DisBody.testFlag = 1;
 		PP_xcall[i].Type = i + 1;
 		PP_xcall[i].state.req = 0;
+
+		memset(&Xcall_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	}
 }
 
@@ -314,8 +316,7 @@ static int PP_xcall_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 {
-	//int res;
-	int i;
+
 	/* ecall */
 	if(PrvtProtCfg_ecallTriggerEvent())//ecall触发
 	{
@@ -326,21 +327,45 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 	{
 		log_i(LOG_HOZON, "ecall trig\n");
 		PP_xcall[PP_ECALL].state.req = 0;
-		(void)PP_xcall_xcallResponse(task,PP_ECALL);
+		if(0 == PP_xcall_xcallResponse(task,PP_ECALL))
+		{
+			Xcall_TxInform[PP_ECALL].aid = PP_AID_XCALL;
+			Xcall_TxInform[PP_ECALL].mid = PP_MID_XCALL_RESP;
+			Xcall_TxInform[PP_ECALL].pakgtype = PP_TXPAKG_CONTINUE;
+
+			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&Xcall_TxInform[PP_ECALL]);
+			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
+		}
 	}
 	/* bcall */
 	else if(1 == PP_xcall[PP_BCALL].state.req)
 	{
 		log_i(LOG_HOZON, "bcall trig\n");
 		PP_xcall[PP_BCALL].state.req = 0;
-		(void)PP_xcall_xcallResponse(task,PP_BCALL);
+		if(0 == PP_xcall_xcallResponse(task,PP_BCALL))
+		{
+			Xcall_TxInform[PP_BCALL].aid = PP_AID_XCALL;
+			Xcall_TxInform[PP_BCALL].mid = PP_MID_XCALL_RESP;
+			Xcall_TxInform[PP_BCALL].pakgtype = PP_TXPAKG_CONTINUE;
+
+			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&Xcall_TxInform[PP_BCALL]);
+			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
+		}
 	}
 	/* icall */
 	else if(1 == PP_xcall[PP_ICALL].state.req)
 	{
 		log_i(LOG_HOZON, "icall trig\n");
 		PP_xcall[PP_ICALL].state.req = 0;
-		(void)PP_xcall_xcallResponse(task,PP_ICALL);
+		if(0 == PP_xcall_xcallResponse(task,PP_ICALL))
+		{
+			Xcall_TxInform[PP_ICALL].aid = PP_AID_XCALL;
+			Xcall_TxInform[PP_ICALL].mid = PP_MID_XCALL_RESP;
+			Xcall_TxInform[PP_ICALL].pakgtype = PP_TXPAKG_CONTINUE;
+
+			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&Xcall_TxInform[PP_ICALL]);
+			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
+		}
 	}
 	else
 	{
@@ -377,7 +402,7 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 
 	/* disbody */
 	memcpy(PP_xcall[XcallType].packResp.DisBody.aID,"170",3);
-	PP_xcall[XcallType].packResp.DisBody.mID = 2;
+	PP_xcall[XcallType].packResp.DisBody.mID = PP_MID_XCALL_RESP;
 	PP_xcall[XcallType].packResp.DisBody.eventTime = PrvtPro_getTimestamp();
 	if(PP_INIT_EVENTID == PP_xcall[XcallType].packResp.DisBody.eventId)
 	{
@@ -457,16 +482,9 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 		return -1;
 	}
 
+	PP_Xcall_Pack.totallen = 18 + msgdatalen;
 	PP_Xcall_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
-	//res = sockproxy_MsgSend(PP_Xcall_Pack.Header.sign,18 + msgdatalen,NULL);
 
-	static PrvtProt_TxInform_t PP_TxInform;
-	PP_TxInform.aid = 170;
-	PP_TxInform.mid = 2;
-	PP_TxInform.pakgtype = PP_TXPAKG_SIGTRIG;
-
-	SP_data_write(PP_Xcall_Pack.Header.sign,(18 + msgdatalen),PP_xcall_send_cb,&PP_TxInform);
-	protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,(18 + msgdatalen),1);
 	return res;
 }
 
@@ -493,52 +511,6 @@ static void PP_xcall_send_cb(void * para)
 	log_i(LOG_HOZON, "txfailtime = %d",TxInform_ptr->txfailtime);
 }
 
-#if 0
-/******************************************************
-*函数名：PP_xcall_ecallReq
-
-*形  参：
-
-*返回值：
-
-*描  述：检查ecall等请求
-
-*备  注：
-******************************************************/
-static int PP_xcall_ecallReq(PrvtProt_task_t *task)
-{
-
-	long msgdatalen;
-
-	if(1 == pp_task.xcall[PP_ECALL].req)
-	{	
-		PP_PackHeader[PP_ECALL_REQ].ver.Byte = task->version;
-		PP_PackHeader[PP_ECALL_REQ].nonce  = PrvtPro_BSEndianReverse(task->nonce);
-		PP_PackHeader[PP_ECALL_REQ].tboxid = PrvtPro_BSEndianReverse(task->tboxid);
-		memcpy(&PP_Pack[PP_ECALL_REQ], &PP_PackHeader[PP_ECALL_REQ], sizeof(PrvtProt_pack_Header_t));
-
-		PP_DisptrBody[PP_ECALL_REQ].eventTime = PrvtPro_getTimestamp();
-		PP_DisptrBody[PP_ECALL_REQ].ulMsgCnt++;	/* OPTIONAL */
-		
-		PP_appData.Xcall.xcallType = PP_ECALL_TYPE;//紧急救援
-		if(0 == PrvtPro_msgPackageEncoding(PP_ECALL_REQ,PP_Pack[PP_ECALL_REQ].msgdata,&msgdatalen, \
-											&PP_DisptrBody[PP_ECALL_REQ],&PP_appData))
-		{
-			PP_Pack[PP_ECALL_REQ].Header.msglen = PrvtPro_BSEndianReverse(18 + msgdatalen);
-			if(sockproxy_MsgSend(PP_Pack[PP_ECALL_REQ].Header.sign,(18 + msgdatalen),NULL) > 0)//发送成功
-			{
-				pp_task.xcall[PP_ECALL].req = 0;
-				protocol_dump(LOG_HOZON, "PRVT_PROT", PP_Pack[PP_ECALL_REQ].Header.sign, \
-							  (18 + msgdatalen),1);
-			}
-		}
-		pp_task.xcall[PP_ECALL].req = 0;
-	}
-	
-	return 0;
-}
-#endif
-
 /******************************************************
 *函数名：PP_xcall_SetXcallReq
 
@@ -555,23 +527,4 @@ void PP_xcall_SetXcallReq(unsigned char req)
 
 	PP_xcall[(req-1)].state.req = 1;
 }
-
-
-#if 0
-/******************************************************
-*函数名：PP_xcall_SetEcallResp
-
-*形  参：
-
-*返回值：
-
-*描  述：设置ecall response
-
-*备  注：
-******************************************************/
-void PP_xcall_SetEcallResp(unsigned char resp)
-{
-	PP_xcall[PP_ECALL].state.resp = resp;
-}
-#endif
 

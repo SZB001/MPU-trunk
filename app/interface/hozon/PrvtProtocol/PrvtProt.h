@@ -166,6 +166,7 @@ typedef struct
 	PrvtProt_pack_Header_t Header;/* */
 	unsigned char msgdata[PP_MSG_DATA_LEN];/* 消息体 */
 	unsigned char msgtype;/* 消息类型 */
+	int totallen;//数据总长度
 }__attribute__((packed)) PrvtProt_pack_t; /*报文结构体*/
 
 typedef struct 

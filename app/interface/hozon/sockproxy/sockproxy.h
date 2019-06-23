@@ -18,7 +18,7 @@ description： macro definitions
 
 /**********宏常量定义*********/
 #define SOCK_SERVR_TIMEOUT    	(1000 * 5)
-#define SOCK_TXPAKG_OUTOFTIME    (1000 * 5)
+#define SOCK_TXPAKG_OUTOFTIME    (1000 * 1)
 
 /***********宏函数***********/
 #define sockproxy_getURL(x)			gb32960_getURL(x)
