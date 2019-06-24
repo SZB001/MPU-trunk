@@ -97,7 +97,9 @@ APN1ConfigSettings ::= SEQUENCE
 	tspPass			OCTET STRING(SIZE(1..16)), -- ASCII string of APN Password
 	tspIp			OCTET STRING(SIZE(1..15)), -- ASCII String of TSP IP address
 	tspSms			OCTET STRING(SIZE(1..32)), -- ASCII string of TSP SMS Address
-	tspPort			OCTET STRING(SIZE(1..6))   -- ASCII String of TSP IP Port address Default 40004
+	tspPort			OCTET STRING(SIZE(1..6)),   -- ASCII String of TSP IP Port address Default 40004
+	certAddress		OCTET STRING(SIZE(1..32)), -- 
+	certPort		OCTET STRING(SIZE(1..6))   -- 
 }
 
 APN2ConfigSettings ::= SEQUENCE
@@ -177,7 +179,9 @@ APN1ConfigSet ::= SEQUENCE
 	tspPass			OCTET STRING(SIZE(1..16)), -- ASCII string of APN Password
 	tspIp			OCTET STRING(SIZE(1..15)), -- ASCII String of TSP IP address
 	tspSms			OCTET STRING(SIZE(1..32)), -- ASCII string of TSP SMS Address
-	tspPort			OCTET STRING(SIZE(1..6))   -- ASCII String of TSP IP Port address Default 40004
+	tspPort			OCTET STRING(SIZE(1..6)),   -- ASCII String of TSP IP Port address Default 40004
+	certAddress		OCTET STRING(SIZE(1..32)), -- 
+	certPort		OCTET STRING(SIZE(1..6))   -- 
 }
 
 APN2ConfigSet ::= SEQUENCE

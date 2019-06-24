@@ -284,6 +284,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 			PP_VS_appdata.VSResp.ExtSt.validFlg = 0;//不上报ext status数据
 			if(0 == PP_VS_VehiStatusResp(task,&PP_rmtVS))
 			{
+				memset(&VS_TxInform,0,sizeof(PrvtProt_TxInform_t));
 				VS_TxInform.aid = PP_AID_VS;
 				VS_TxInform.mid = PP_MID_VS_RESP;
 				VS_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
@@ -300,6 +301,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 			PP_VS_appdata.VSResp.ExtSt.validFlg = 1;//上报ext status数据
 			if(0 == PP_VS_VehiStatusResp(task,&PP_rmtVS))
 			{
+				memset(&VS_TxInform,0,sizeof(PrvtProt_TxInform_t));
 				VS_TxInform.aid = PP_AID_VS;
 				VS_TxInform.mid = PP_MID_VS_RESP;
 				VS_TxInform.pakgtype = PP_TXPAKG_SIGTIME;

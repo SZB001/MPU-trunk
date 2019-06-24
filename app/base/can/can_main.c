@@ -277,6 +277,17 @@ static void can_do_receive(can_stat_t *state)
     }
 }
 
+int can_do_send(unsigned char port, CAN_SEND_MSG *msg)
+{
+    unsigned char temp[1+sizeof(CAN_SEND_MSG)];
+
+    temp[0] = port;
+    memcpy(&temp[1],msg,sizeof(CAN_SEND_MSG));
+
+    return scom_tl_send_frame(SCOM_TL_CMD_CAN_SEND, SCOM_TL_SINGLE_FRAME, 0,
+                                               (uint8_t *)temp, sizeof(CAN_SEND_MSG)+1);
+}
+
 static void can_do_change_dbc(can_stat_t *state, const char *fpath)
 {
     short baud[CAN_MAX_PORT], i;

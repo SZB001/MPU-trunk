@@ -62,6 +62,7 @@ description£º static variable definitions
 static PrvtProt_heartbeat_t PP_heartbeat;
 static PrvtProt_task_t 	pp_task;
 static PrvtProt_pack_Header_t 	PP_PackHeader_HB;
+static PrvtProt_TxInform_t HB_TxInform;
 
 typedef struct
 {
@@ -525,12 +526,12 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 		PP_PackHeader_HB.tboxid = PrvtPro_BSEndianReverse(task->tboxid);
 		memcpy(&pack_Header, &PP_PackHeader_HB, sizeof(PrvtProt_pack_Header_t));
 
-
-		static PrvtProt_TxInform_t HB_TxInform;
 		memset(&HB_TxInform,0,sizeof(PrvtProt_TxInform_t));
 		HB_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
 		HB_TxInform.eventtime = tm_get_time();
 		SP_data_write(pack_Header.sign,18,PP_HB_send_cb,&HB_TxInform);
+
+		PP_heartbeat.timer = tm_get_time();
 		return -1;
 	}
 	return 0;
@@ -555,7 +556,7 @@ static void PP_HB_send_cb(void * para)
 	{
 		PP_heartbeat.waitSt = 1;
 		PP_heartbeat.waittime = tm_get_time();
-		PP_heartbeat.timer = tm_get_time();
+		//PP_heartbeat.timer = tm_get_time();
 	}
 	else
 	{

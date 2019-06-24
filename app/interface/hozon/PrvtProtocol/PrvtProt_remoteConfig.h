@@ -131,12 +131,16 @@ typedef struct
 	uint8_t tspIP[16];
 	uint8_t tspSms[33];
 	uint8_t tspPort[7];
+	uint8_t certAddress[33];
+	uint8_t certPort[7];
 	uint8_t tspAddrlen;
 	uint8_t tspUserlen;
 	uint8_t tspPasslen;
 	uint8_t tspIPlen;
 	uint8_t tspSmslen;
 	uint8_t tspPortlen;
+	uint8_t certAddresslen;
+	uint8_t certPortlen;
 	uint8_t apn1ConfigValid;
 }__attribute__((packed)) App_rmtCfg_APN1_t;
 

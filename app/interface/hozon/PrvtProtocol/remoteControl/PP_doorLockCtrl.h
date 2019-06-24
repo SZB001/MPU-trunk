@@ -51,7 +51,7 @@ description£º function External declaration
 *******************************************************/
 extern void PP_doorLockCtrl_init(void);
 extern int 	PP_doorLockCtrl_mainfunction(void *task);
-extern void SetPP_doorLockCtrl_Request(void *appdatarmtCtrl,void *disptrBody);
+extern void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 extern void PP_doorLockCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 
 #endif 

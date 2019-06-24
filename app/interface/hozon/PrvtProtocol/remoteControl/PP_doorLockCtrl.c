@@ -310,14 +310,24 @@ static int PP_doorLockCtrl_StatusResp(PrvtProt_task_t *task,PrvtProt_rmtdoorCtrl
 
 *±¸  ×¢£º
 ******************************************************/
-void SetPP_doorLockCtrl_Request(void *appdatarmtCtrl,void *disptrBody)
+void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
-	PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
-	PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
-	log_i(LOG_HOZON, "remote door lock control req");
-	PP_rmtdoorCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-	PP_rmtdoorCtrl.state.req = 1;
-	PP_rmtdoorCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+	switch(ctrlstyle)
+	{
+		case RMTCTRL_TSP:
+		{
+			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
+			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
+
+			log_i(LOG_HOZON, "remote door lock control req");
+			PP_rmtdoorCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+			PP_rmtdoorCtrl.state.req = 1;
+			PP_rmtdoorCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+		}
+		break;
+		default:
+		break;
+	}
 }
 
 /******************************************************

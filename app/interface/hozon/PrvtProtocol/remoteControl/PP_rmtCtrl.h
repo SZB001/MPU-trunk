@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼şÃû£º	PrvtProt_rmtCtrl.h
+æ–‡ä»¶åï¼š	PrvtProt_rmtCtrl.h
 
-ÃèÊö£º	ÆóÒµË½ÓĞĞ­Òé£¨Õã½­ºÏÖÚ£©	
+æè¿°ï¼š	ä¼ä¸šç§æœ‰åè®®ï¼ˆæµ™æ±Ÿåˆä¼—ï¼‰
 
 Data			  Vasion			author
 2019/05/18		   V1.0			    liujian
@@ -9,29 +9,29 @@ Data			  Vasion			author
 #ifndef		_PRVTPROT_RMT_CTRL_H
 #define		_PRVTPROT_RMT_CTRL_H
 /*******************************************************
-description£º include the header file
+descriptionï¼š include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionï¼š macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********å®å¼€å…³å®šä¹‰*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
-//¿ØÖÆ¶ÔÏó
+/**********å®å¸¸é‡å®šä¹‰*********/
+//æ§åˆ¶å¯¹è±¡
 #define PP_RMTCTRL_UNKNOW				0xFF
 //vehicle control
-#define PP_RMTCTRL_DOORLOCK				0x00//³µÃÅËø
-#define PP_RMTCTRL_DOORLOCKOPEN			0x0000//³µÃÅËø´ò¿ª
-#define PP_RMTCTRL_DOORLOCKCLOSE		0x0001//³µÃÅËø¹Ø±Õ
+#define PP_RMTCTRL_DOORLOCK				0x00//è½¦é—¨é”
+#define PP_RMTCTRL_DOORLOCKOPEN			0x0000//è½¦é—¨é”æ‰“å¼€
+#define PP_RMTCTRL_DOORLOCKCLOSE		0x0001//è½¦é—¨é”å…³é—­
 
-#define PP_RMTCTRL_PNRSUNROOF			0x01//panoramic sunroofÈ«¾°Ìì´°
+#define PP_RMTCTRL_PNRSUNROOF			0x01//panoramic sunroofå…¨æ™¯å¤©çª—
 #define PP_RMTCTRL_PNRSUNROOFOPEN		0x0100//panoramic sunroof open
 #define PP_RMTCTRL_PNRSUNROOFCLOSE		0x0101//panoramic sunroof close
 #define PP_RMTCTRL_PNRSUNROOFUPWARP		0x0102//panoramic sunroof upwarp
 #define PP_RMTCTRL_PNRSUNROOFSTOP		0x0103//panoramic sunroof stop
 
-#define PP_RMTCTRL_AUTODOOR				0x02//Automatic doors¸ĞÓ¦Ê½µç¶¯ÃÅ
+#define PP_RMTCTRL_AUTODOOR				0x02//Automatic doorsæ„Ÿåº”å¼ç”µåŠ¨é—¨
 #define PP_RMTCTRL_AUTODOOROPEN			0x0200//Automatic doors open
 #define PP_RMTCTRL_AUTODOORCLOSE		0x0201//Automatic doors	close
 
@@ -40,12 +40,12 @@ description£º macro definitions
 #define PP_RMTCTRL_RMTSRCHVEHICLEOPEN	0x0300//Remote search vehicle open
 
 #define PP_RMTCTRL_DETECTCAMERA			0x04//Driver detection camera
-#define PP_RMTCTRL_CAMERAPHOTO			0x0400//ÉãÏñÍ·ÅÄÕÕ
-#define PP_RMTCTRL_RECORDVIDEO			0x0401//ÊÓÆµÂ¼ÖÆ
+#define PP_RMTCTRL_CAMERAPHOTO			0x0400//æ‘„åƒå¤´æ‹ç…§
+#define PP_RMTCTRL_RECORDVIDEO			0x0401//è§†é¢‘å½•åˆ¶
 
 #define PP_RMTCTRL_DATARECORDER			0x05//automobile data recorder
-#define PP_RMTCTRL_RECORDERPHOTO		0x0500//ĞĞ³µ¼ÇÂ¼ÒÇÅÄÕÕ
-#define PP_RMTCTRL_RECORDERVIDEO		0x0501//ĞĞ³µ¼ÇÂ¼ÒÇÂ¼ÖÆÊÓÆµ
+#define PP_RMTCTRL_RECORDERPHOTO		0x0500//è¡Œè½¦è®°å½•ä»ªæ‹ç…§
+#define PP_RMTCTRL_RECORDERVIDEO		0x0501//è¡Œè½¦è®°å½•ä»ªå½•åˆ¶è§†é¢‘
 
 //Air conditioning related
 #define PP_RMTCTRL_AC					0x06//Air conditioning
@@ -60,38 +60,52 @@ description£º macro definitions
 #define PP_RMTCTRL_PASSENGERHEATCLOSE	0x0608//close PASSENGER driving heatin
 
 //Energy related
-#define PP_RMTCTRL_CHARGE				0x07//³äµç
-#define PP_RMTCTRL_STARTCHARGE			0x0700//¿ªÊ¼³äµç
-#define PP_RMTCTRL_STOPCHARGE			0x0701//Í£Ö¹³äµç
-#define PP_RMTCTRL_APPOINTCHARGE		0x0702//Ô¤Ô¼³äµç
-#define PP_RMTCTRL_CHRGCANCELAPPOINT	0x0703//È¡ÏûÔ¤Ô¼
+#define PP_RMTCTRL_CHARGE				0x07//å……ç”µ
+#define PP_RMTCTRL_STARTCHARGE			0x0700//å¼€å§‹å……ç”µ
+#define PP_RMTCTRL_STOPCHARGE			0x0701//åœæ­¢å……ç”µ
+#define PP_RMTCTRL_APPOINTCHARGE		0x0702//é¢„çº¦å……ç”µ
+#define PP_RMTCTRL_CHRGCANCELAPPOINT	0x0703//å–æ¶ˆé¢„çº¦
 
-#define PP_RMTCTRL_HIGHTENSIONCTRL		0x08//¸ßÑ¹µç¿ØÖÆ
-#define PP_RMTCTRL_POWERON				0x0800//ÉÏµç
-#define PP_RMTCTRL_POWEROFF				0x0801//ÏÂµç
+#define PP_RMTCTRL_HIGHTENSIONCTRL		0x08//é«˜å‹ç”µæ§åˆ¶
+#define PP_RMTCTRL_POWERON				0x0800//ä¸Šç”µ
+#define PP_RMTCTRL_POWEROFF				0x0801//ä¸‹ç”µ
 
-#define PP_RMTCTRL_ENGINECTRL			0x09//·¢¶¯»ú¿ØÖÆ
+#define PP_RMTCTRL_ENGINECTRL			0x09//å‘åŠ¨æœºæ§åˆ¶
 #define PP_RMTCTRL_BANSTART				0x0900//
 #define PP_RMTCTRL_ALOWSTART			0x0901//
 
-/***********ºêº¯Êı***********/
-typedef void (*PP_rmtCtrlInitObj)(void);//³õÊ¼»¯
+/***********å®å‡½æ•°***********/
+typedef void (*PP_rmtCtrlInitObj)(void);//åˆå§‹åŒ–
 typedef int (*PP_rmtCtrlmainFuncObj)(void* x);//
 
-//typedef void (*PP_rmtCtrlsendInform_cb)(void* x);//·¢ËÍÍ¨Öª»Øµ÷
+typedef void (*PP_ctrlStInform_cb)(void* x);//æ§åˆ¶çŠ¶æ€é€šçŸ¥å›è°ƒ
 /*******************************************************
-description£º struct definitions
+descriptionï¼š struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¼š typedef definitions
 *******************************************************/
 /******enum definitions******/
 typedef enum
 {
-	RMTCTRL_DOORLOCK = 0,//³µÃÅËø
-	RMTCTRL_PANORSUNROOF,//È«¾°Ìì´°
-	RMTCTRL_AUTODOOR,//×Ô¶¯¸ĞÓ¦ÃÅ
+	RMTCTRL_TSP = 1,//tsp
+	RMTCTRL_BLUETOOTH//è“ç‰™
+}PP_RMTCTRL_CTRLSTYLE;//æ§åˆ¶æ–¹å¼
+
+typedef enum
+{
+	RMTCTRL_IDLE = 0,//
+	RMTCTRL_IDENTIFICAT_QUERY,//Ö¤
+	RMTCTRL_IDENTIFICAT_LAUNCH,//Ö¤
+	RMTCTRL_COMMAND_LAUNCH,    //
+}PP_RMTCTRL_COMMAND_OBJ;
+
+typedef enum
+{
+	RMTCTRL_DOORLOCK = 0,//è½¦é—¨é”
+	RMTCTRL_PANORSUNROOF,//å…¨æ™¯å¤©çª—
+	RMTCTRL_AUTODOOR,//è‡ªåŠ¨æ„Ÿåº”é—¨
 	RMTCTRL_RMTSRCHVEHICLE,//
 	RMTCTRL_DETECTCAMERA,
 	RMTCTRL_DATARECORDER,
@@ -104,10 +118,9 @@ typedef enum
 
 typedef enum
 {
-	CTRLDOORLOCK_IDLE = 0,//¿ÕÏĞ
-	CTRLDOORLOCK_OPEN_WAIT,//¿ªÃÅËøµÈ´ı×´Ì¬
-	CTRLDOORLOCK_CLOSE_WAIT,//¹ØÃÅËøµÈ´ı×´Ì¬
-
+	CTRLDOORLOCK_IDLE = 0,//ç©ºé—²
+	CTRLDOORLOCK_OPEN_WAIT,//å¼€é—¨é”ç­‰å¾…çŠ¶æ€
+	CTRLDOORLOCK_CLOSE_WAIT,//å…³é—¨é”ç­‰å¾…çŠ¶æ€
 }PP_RMTCTRL_DOORLOCK_STATE;
 
 
@@ -119,7 +132,7 @@ typedef struct
 	uint64_t period;
 	uint8_t waitSt;
 	uint64_t waittime;
-}__attribute__((packed))  PrvtProt_rmtCtrlSt_t; /*remote control½á¹¹Ìå*/
+}__attribute__((packed))  PrvtProt_rmtCtrlSt_t; /*remote controlç»“æ„ä½“*/
 
 /* application data struct */
 typedef struct
@@ -131,14 +144,14 @@ typedef struct
 
 typedef struct
 {
-	int  gpsSt;//gps×´Ì¬ 0-ÎŞĞ§£»1-ÓĞĞ§
-	long gpsTimestamp;//gpsÊ±¼ä´Á
-	long latitude;//Î³¶È x 1000000,µ±GPSĞÅºÅÎŞĞ§Ê±£¬ÖµÎª0
-	long longitude;//¾­¶È x 1000000,µ±GPSĞÅºÅÎŞĞ§Ê±£¬ÖµÎª0
-	long altitude;//¸ß¶È£¨m£©
-	long heading;//³µÍ··½Ïò½Ç¶È£¬0ÎªÕı±±·½Ïò
-	long gpsSpeed;//ËÙ¶È x 10£¬µ¥Î»km/h
-	long hdop;//Ë®Æ½¾«¶ÈÒò×Ó x 10
+	int  gpsSt;//gpsçŠ¶æ€ 0-æ— æ•ˆï¼›1-æœ‰æ•ˆ
+	long gpsTimestamp;//gpsæ—¶é—´æˆ³
+	long latitude;//çº¬åº¦ x 1000000,å½“GPSä¿¡å·æ— æ•ˆæ—¶ï¼Œå€¼ä¸º0
+	long longitude;//ç»åº¦ x 1000000,å½“GPSä¿¡å·æ— æ•ˆæ—¶ï¼Œå€¼ä¸º0
+	long altitude;//é«˜åº¦ï¼ˆmï¼‰
+	long heading;//è½¦å¤´æ–¹å‘è§’åº¦ï¼Œ0ä¸ºæ­£åŒ—æ–¹å‘
+	long gpsSpeed;//é€Ÿåº¦ x 10ï¼Œå•ä½km/h
+	long hdop;//æ°´å¹³ç²¾åº¦å› å­ x 10
 }__attribute__((packed)) PP_rmtCtrlgpsposition_t;
 
 typedef struct
@@ -160,53 +173,53 @@ typedef struct
 	int	sunroofStatus	/* OPTIONAL */;
 	int	 engineStatus;
 	int	 accStatus;
-	long	accTemp	/* OPTIONAL */;//È¡Öµ·¶Î§£º18-36
-	long	accMode	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-3
-	long	accBlowVolume	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-7
-	long	 innerTemp;//È¡Öµ·¶Î§£º0-125
-	long	 outTemp;//È¡Öµ·¶Î§£º0-125
+	long	accTemp	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š18-36
+	long	accMode	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-3
+	long	accBlowVolume	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-7
+	long	 innerTemp;//å–å€¼èŒƒå›´ï¼š0-125
+	long	 outTemp;//å–å€¼èŒƒå›´ï¼š0-125
 	int	 sideLightStatus;
 	int	 dippedBeamStatus;
 	int	 mainBeamStatus;
 	int	 hazardLightStus;
-	long	frtRightTyrePre	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-45
-	long	frtRightTyreTemp	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-168
-	long	frontLeftTyrePre	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-45
-	long	frontLeftTyreTemp	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-168
-	long	rearRightTyrePre	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-45
-	long	rearRightTyreTemp	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-165
-	long	rearLeftTyrePre	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-45
-	long	rearLeftTyreTemp	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-165
-	long 	batterySOCExact;//È¡Öµ·¶Î§£º0-10000
-	long	chargeRemainTim	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-65535
-	long	availableOdomtr;//È¡Öµ·¶Î§£º0-65535
-	long	engineRunningTime	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-65535
+	long	frtRightTyrePre	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-45
+	long	frtRightTyreTemp	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-168
+	long	frontLeftTyrePre	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-45
+	long	frontLeftTyreTemp	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-168
+	long	rearRightTyrePre	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-45
+	long	rearRightTyreTemp	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-165
+	long	rearLeftTyrePre	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-45
+	long	rearLeftTyreTemp	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-165
+	long 	batterySOCExact;//å–å€¼èŒƒå›´ï¼š0-10000
+	long	chargeRemainTim	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-65535
+	long	availableOdomtr;//å–å€¼èŒƒå›´ï¼š0-65535
+	long	engineRunningTime	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-65535
 	int	 	bookingChargeSt;
-	long	bookingChargeHour	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-23
-	long	bookingChargeMin	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-59
-	long	chargeMode	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-255
-	long	chargeStatus	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-255
-	long	powerMode	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-255
-	long	speed;//È¡Öµ·¶Î§£º0-2500
-	long	totalOdometer;//È¡Öµ·¶Î§£º0-1000000
-	long	batteryVoltage;//È¡Öµ·¶Î§£º0-10000
-	long	batteryCurrent;//È¡Öµ·¶Î§£º0-10000
-	long	batterySOCPrc;//È¡Öµ·¶Î§£º0-100
+	long	bookingChargeHour	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-23
+	long	bookingChargeMin	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-59
+	long	chargeMode	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-255
+	long	chargeStatus	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-255
+	long	powerMode	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-255
+	long	speed;//å–å€¼èŒƒå›´ï¼š0-2500
+	long	totalOdometer;//å–å€¼èŒƒå›´ï¼š0-1000000
+	long	batteryVoltage;//å–å€¼èŒƒå›´ï¼š0-10000
+	long	batteryCurrent;//å–å€¼èŒƒå›´ï¼š0-10000
+	long	batterySOCPrc;//å–å€¼èŒƒå›´ï¼š0-100
 	int	 dcStatus;
-	long	 gearPosition;//È¡Öµ·¶Î§£º0-255
-	long	 insulationRstance;//È¡Öµ·¶Î§£º0-60000
-	long	 acceleratePedalprc;//È¡Öµ·¶Î§£º0-100
-	long	 deceleratePedalprc;//È¡Öµ·¶Î§£º0-100
+	long	 gearPosition;//å–å€¼èŒƒå›´ï¼š0-255
+	long	 insulationRstance;//å–å€¼èŒƒå›´ï¼š0-60000
+	long	 acceleratePedalprc;//å–å€¼èŒƒå›´ï¼š0-100
+	long	 deceleratePedalprc;//å–å€¼èŒƒå›´ï¼š0-100
 	int	 canBusActive;
 	int	 bonnetStatus;
 	int	 lockStatus;
 	int	 gsmStatus;
-	long	wheelTyreMotrSt	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-255
-	long	 vehicleAlarmSt;//È¡Öµ·¶Î§£º0-255
-	long	 currentJourneyID;//È¡Öµ·¶Î§£º0-2147483647
-	long	 journeyOdom;//È¡Öµ·¶Î§£º0-65535
-	long	frtLeftSeatHeatLel	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-255
-	long	frtRightSeatHeatLel	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-255
+	long	wheelTyreMotrSt	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-255
+	long	 vehicleAlarmSt;//å–å€¼èŒƒå›´ï¼š0-255
+	long	 currentJourneyID;//å–å€¼èŒƒå›´ï¼š0-2147483647
+	long	 journeyOdom;//å–å€¼èŒƒå›´ï¼š0-65535
+	long	frtLeftSeatHeatLel	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-255
+	long	frtRightSeatHeatLel	/* OPTIONAL */;//å–å€¼èŒƒå›´ï¼š0-255
 	int		airCleanerSt	/* OPTIONAL */;
 	int		srsStatus;
 }__attribute__((packed))  App_rmtCtrlResp_basicSt_t;
@@ -240,22 +253,27 @@ typedef struct
 typedef struct
 {
 	char rmtObj;
-	PP_rmtCtrlInitObj 		Init;//³õÊ¼»¯
+	PP_rmtCtrlInitObj 		Init;//åˆå§‹åŒ–
 	PP_rmtCtrlmainFuncObj	mainFunc;//
-}PrvtProt_RmtCtrlFunc_t; /*½á¹¹Ìå*/
+}PrvtProt_RmtCtrlFunc_t; /*ç»“æ„ä½“*/
 
-
+typedef struct
+{
+	char style;//æ–¹å¼ï¼štsp-1ï¼›2-è“ç‰™
+	long reqType;//
+}PP_rmtCtrl_Stpara_t; /*ç»“æ„ä½“*/
 /******union definitions*****/
 
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¼š variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¼š function External declaration
 *******************************************************/
 extern void PP_rmtCtrl_init(void);
 extern int 	PP_rmtCtrl_mainfunction(void *task);
 extern void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
+extern void PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t * CtrlSt_para);
 #endif 

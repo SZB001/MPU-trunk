@@ -18,7 +18,7 @@ description： macro definitions
 /**********宏开关定义*********/
 
 /**********宏常量定义*********/
-#define SP_MAX_SENDQUEUE		50
+#define SP_MAX_SENDQUEUE		30
 
 #define SP_SENDBUFLNG			1456
 /***********宏函数***********/
@@ -58,4 +58,6 @@ extern void SP_data_init(void);
 extern void SP_data_write(uint8_t *data,int len,SP_sendInform_cb sendInform_cb,void * cb_para);
 extern SP_Send_t *SP_data_get_pack(void);
 extern void SP_data_put_back(SP_Send_t *pack);
+extern void SP_data_put_send(SP_Send_t *pack);
+extern void SP_data_ack_pack(void);
 #endif 

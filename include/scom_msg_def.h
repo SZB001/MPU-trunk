@@ -80,6 +80,7 @@ typedef enum
     SCOM_TL_CMD_CAN_SEND_CFG,
     SCOM_TL_CMD_CAN_AUTO_BAUD,
     SCOM_TL_CMD_CAN_FILER_CANID,
+    SCOM_TL_CMD_CAN_SEND,
 }SCOM_TL_CAN_TYPE;
 
 /* spi msg about FCT */

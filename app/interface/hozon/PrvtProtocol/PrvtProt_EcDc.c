@@ -461,6 +461,17 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					APN1ConfigSet.tspUser.size = rmtCfgReadResp_ptr->ReadResp.APN1.tspUserlen;
 					log_i(LOG_HOZON, "APN1ConfigSet.tspUser.buf = %s\n",APN1ConfigSet.tspUser.buf);
 					log_i(LOG_HOZON, "APN1ConfigSet.tspUser.size = %d\n",APN1ConfigSet.tspUser.size);
+
+					APN1ConfigSet.certAddress.buf = rmtCfgReadResp_ptr->ReadResp.APN1.certAddress;
+					APN1ConfigSet.certAddress.size = rmtCfgReadResp_ptr->ReadResp.APN1.certAddresslen;
+					log_i(LOG_HOZON, "APN1ConfigSet.certAddress.buf = %s\n",APN1ConfigSet.certAddress.buf);
+					log_i(LOG_HOZON, "APN1ConfigSet.certAddress.size = %d\n",APN1ConfigSet.certAddress.size);
+
+					APN1ConfigSet.certPort.buf = rmtCfgReadResp_ptr->ReadResp.APN1.certPort;
+					APN1ConfigSet.certPort.size = rmtCfgReadResp_ptr->ReadResp.APN1.certPortlen;
+					log_i(LOG_HOZON, "APN1ConfigSet.certPort.buf = %s\n",APN1ConfigSet.certPort.buf);
+					log_i(LOG_HOZON, "APN1ConfigSet.certPort.size = %d\n",APN1ConfigSet.certPort.size);
+
 					apn1Config.list.array = &APN1ConfigSet_ptr;
 					apn1Config.list.count = 1;
 					apn1Config.list.size = 1;
@@ -1159,6 +1170,18 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						app_rmtCfg_ptr->getResp.APN1.tspPortlen = (**(cfggetResp.apn1Cfg->list.array)).tspPort.size;
 						log_i(LOG_HOZON, "getCfgResp.tspPort = %s\n",app_rmtCfg_ptr->getResp.APN1.tspPort);
 						log_i(LOG_HOZON, "getCfgResp.tspPortlen = %d\n",app_rmtCfg_ptr->getResp.APN1.tspPortlen);
+
+						memcpy(app_rmtCfg_ptr->getResp.APN1.certAddress,(**(cfggetResp.apn1Cfg->list.array)).certAddress.buf, \
+															(**(cfggetResp.apn1Cfg->list.array)).certAddress.size);
+						app_rmtCfg_ptr->getResp.APN1.certAddresslen = (**(cfggetResp.apn1Cfg->list.array)).certAddress.size;
+						log_i(LOG_HOZON, "getCfgResp.certAddress = %s\n",app_rmtCfg_ptr->getResp.APN1.certAddress);
+						log_i(LOG_HOZON, "getCfgResp.certAddresslen = %d\n",app_rmtCfg_ptr->getResp.APN1.certAddresslen);
+
+						memcpy(app_rmtCfg_ptr->getResp.APN1.certPort,(**(cfggetResp.apn1Cfg->list.array)).certPort.buf, \
+															(**(cfggetResp.apn1Cfg->list.array)).certPort.size);
+						app_rmtCfg_ptr->getResp.APN1.certPortlen = (**(cfggetResp.apn1Cfg->list.array)).certPort.size;
+						log_i(LOG_HOZON, "getCfgResp.certPort = %s\n",app_rmtCfg_ptr->getResp.APN1.certPort);
+						log_i(LOG_HOZON, "getCfgResp.certPortlen = %d\n",app_rmtCfg_ptr->getResp.APN1.certPortlen);
 					}
 
 					if(cfggetResp.apn2Cfg != NULL)

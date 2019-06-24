@@ -45,6 +45,18 @@ int PrvtProtCfg_rcvMsg(unsigned char* buf,int buflen)
 }
 
 /******************************************************
+*函数名：PrvtProtcfg_AuthenticationStatu
+*形  参：
+*返回值：int
+*描  述：   返回认证状态
+*备  注：
+******************************************************/
+int PrvtProtcfg_AuthenticationStatu(void)
+{
+	return 0;
+}
+
+/******************************************************
 *函数名：PrvtProtCfg_ecallTriggerEvent
 *形  参：
 *返回值：
@@ -65,16 +77,18 @@ int PrvtProtCfg_ecallTriggerEvent(void)
 ******************************************************/
 long PrvtProtCfg_engineSt(void)
 {
-	long st;
+	long st = 0xFF;
 	st = gb_data_vehicleState();
 	if(1 ==  st)//国标1对应启动
 	{
 		st = 2;
 	}
-	else
+	else if(2 ==  st)//国标1对应熄火
 	{
 		st = 1;
 	}
+	else
+	{}
 	return st;
 }
 

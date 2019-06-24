@@ -84,6 +84,8 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 	{RMTCTRL_PANORSUNROOF,NULL,	NULL}
 };
 
+static int PP_rmtCtrl_flag = 0;
+
 
 /*******************************************************
 description： function declaration
@@ -96,6 +98,7 @@ static int PP_rmtCtrl_do_rcvMsg(PrvtProt_task_t *task);
 static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len);
 //static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task);
 static int PP_rmtCtrl_StatusResp(long bookingId,unsigned int reqtype);
+
 static void PP_rmtCtrl_send_cb(void * para);
 /******************************************************
 description： function code
@@ -145,12 +148,54 @@ int PP_rmtCtrl_mainfunction(void *task)
 	res = 		PP_rmtCtrl_do_checksock((PrvtProt_task_t*)task) ||
 				PP_rmtCtrl_do_rcvMsg((PrvtProt_task_t*)task);
 
-	for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
+	switch(PP_rmtCtrl_flag)
 	{
-		if(PP_RmtCtrlFunc[i].mainFunc != NULL)
+		case RMTCTRL_IDLE://空闲
 		{
-			PP_RmtCtrlFunc[i].mainFunc((PrvtProt_task_t*)task);
+			PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
+			if(1)
+			{
+
+			}
 		}
+		break;
+		case RMTCTRL_IDENTIFICAT_QUERY://检查认证
+		{
+			if(PP_get_identificat_flag() == 1)  //认证ok
+			{
+				PP_rmtCtrl_flag = RMTCTRL_COMMAND_LAUNCH;
+				//log_o(LOG_HOZON,"AuthenticationState valid --- command launch");
+			}
+			else  //认证无效
+			{
+
+				PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_LAUNCH;
+				//log_o(LOG_HOZON,"AuthenticationState invalid!!!!launch identificat");
+			}
+		}
+		break;
+		case RMTCTRL_IDENTIFICAT_LAUNCH://认证
+		{
+			PP_identificat_mainfunction();   //认证完之后去检查认证状态
+			PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
+		}
+		break;
+		case RMTCTRL_COMMAND_LAUNCH://远程控制
+		{
+			log_o(LOG_HOZON,"command ··········");
+			for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
+			{
+				if(PP_RmtCtrlFunc[i].mainFunc != NULL)
+				{
+					PP_RmtCtrlFunc[i].mainFunc((PrvtProt_task_t*)task);
+				}
+			}
+
+			PP_rmtCtrl_flag = RMTCTRL_IDLE; //远程命令执行完，回到空闲
+		}
+		break;
+		default:
+		break;
 	}
 
 	return res;
@@ -255,7 +300,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		{
 			case PP_RMTCTRL_DOORLOCK://控制车门锁
 			{
-				SetPP_doorLockCtrl_Request(&Appdata,&MsgDataBody);
+				SetPP_doorLockCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 			}
 			break;
 			case PP_RMTCTRL_PNRSUNROOF://控制全景天窗
@@ -471,5 +516,22 @@ static void PP_rmtCtrl_send_cb(void * para)
 {
 	log_e(LOG_HOZON, "send ok");
 
+
+}
+
+
+/******************************************************
+*函数名：PP_rmtCtrl_StInformTsp
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：
+******************************************************/
+void PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t * CtrlSt_para)
+{
 
 }

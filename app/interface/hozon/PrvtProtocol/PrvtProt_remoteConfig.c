@@ -322,6 +322,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 			rmtCfg->state.cfgAccept = 1;//接受配置更新请求
 			if(0 == PP_rmtCfg_ConnResp(task,rmtCfg,&MsgDataBody))
 			{
+				memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
 				rmtCfg_TxInform.aid = PP_AID_RMTCFG;
 				rmtCfg_TxInform.mid = PP_MID_CONN_CFG_RESP;
 				rmtCfg_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
@@ -342,6 +343,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 
 			if(0 == PP_rmtCfg_ReadCfgResp(task,rmtCfg,&MsgDataBody))
 			{
+				memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
 				rmtCfg_TxInform.aid = PP_AID_RMTCFG;
 				rmtCfg_TxInform.mid = PP_MID_READ_CFG_RESP;
 				rmtCfg_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
@@ -467,6 +469,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		{
 			if(0 == PP_rmtCfg_checkRequest(task,rmtCfg))
 			{
+				memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
 				rmtCfg_TxInform.aid = PP_AID_RMTCFG;
 				rmtCfg_TxInform.mid = PP_MID_CHECK_CFG_REQ;
 				rmtCfg_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
@@ -494,7 +497,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				rmtCfg->state.reqCnt = 0;
 				rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
 				rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
-
+				log_i(LOG_HOZON, "noneed updata\n");
 			}
 		}
 		break;
@@ -503,6 +506,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 			memset(&(AppData_rmtCfg.getResp),0,sizeof(App_rmtCfg_getResp_t));
 			if(0 == PP_rmtCfg_getRequest(task,rmtCfg))
 			{
+				memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
 				rmtCfg_TxInform.aid = PP_AID_RMTCFG;
 				rmtCfg_TxInform.mid = PP_MID_GET_CFG_REQ;
 				rmtCfg_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
@@ -542,6 +546,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 
 			if(0 == PP_rmtCfg_CfgEndRequest(task,rmtCfg))
 			{
+				memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
 				rmtCfg_TxInform.aid = PP_AID_RMTCFG;
 				rmtCfg_TxInform.mid = PP_MID_CFG_END;
 				rmtCfg_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
@@ -829,6 +834,7 @@ static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg
 void PP_rmtCfg_SetCfgReq(unsigned char req)
 {
 	PP_rmtCfg.state.req  = req;
+	PP_rmtCfg.state.reqCnt = 0;
 	PP_rmtCfg.state.period = tm_get_time();
 }
 
@@ -931,6 +937,8 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_i(LOG_HOZON, "APN1.tspIP = %s",AppData_rmtCfg.ReadResp.APN1.tspIP);
 	log_i(LOG_HOZON, "APN1.tspSms = %s",AppData_rmtCfg.ReadResp.APN1.tspSms);
 	log_i(LOG_HOZON, "APN1.tspPort = %s",AppData_rmtCfg.ReadResp.APN1.tspPort);
+	log_i(LOG_HOZON, "APN1.certAddress = %s",AppData_rmtCfg.ReadResp.APN1.certAddress);
+	log_i(LOG_HOZON, "APN1.certPort = %s",AppData_rmtCfg.ReadResp.APN1.certPort);
 
 	log_i(LOG_HOZON, "\n/* APN2 info */");
 	log_i(LOG_HOZON, "APN2.apn2Address = %s",AppData_rmtCfg.ReadResp.APN2.apn2Address);

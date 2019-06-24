@@ -42,6 +42,7 @@ description£º static variable definitions
 static SP_Send_t  SP_datamem[SP_MAX_SENDQUEUE];
 static list_t     SP_free_lst;
 static list_t     SP_realtm_lst;
+static list_t     SP_trans_lst;
 
 static pthread_mutex_t SP_txmtx = PTHREAD_MUTEX_INITIALIZER;//³õÊ¼»¯¾²Ì¬Ëø
 /*******************************************************
@@ -85,6 +86,7 @@ static void SP_data_clearqueue(void)
 {
     int i;
 
+    list_init(&SP_trans_lst);
     list_init(&SP_realtm_lst);
     list_init(&SP_free_lst);
 
@@ -172,5 +174,26 @@ void SP_data_put_back(SP_Send_t *pack)
 {
 	pthread_mutex_lock(&SP_txmtx);
     list_insert_after(pack->list, &pack->link);
+    pthread_mutex_unlock(&SP_txmtx);
+}
+
+void SP_data_put_send(SP_Send_t *pack)
+{
+    pthread_mutex_lock(&SP_txmtx);
+    list_insert_before(&SP_trans_lst, &pack->link);
+    pthread_mutex_unlock(&SP_txmtx);
+}
+
+void SP_data_ack_pack(void)
+{
+    list_t *node;
+
+    pthread_mutex_lock(&SP_txmtx);
+
+    if ((node = list_get_first(&SP_trans_lst)) != NULL)
+    {
+        list_insert_before(&SP_free_lst, node);
+    }
+
     pthread_mutex_unlock(&SP_txmtx);
 }

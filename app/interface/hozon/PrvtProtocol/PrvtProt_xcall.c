@@ -329,6 +329,7 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		PP_xcall[PP_ECALL].state.req = 0;
 		if(0 == PP_xcall_xcallResponse(task,PP_ECALL))
 		{
+			memset(&Xcall_TxInform[PP_ECALL],0,sizeof(PrvtProt_TxInform_t));
 			Xcall_TxInform[PP_ECALL].aid = PP_AID_XCALL;
 			Xcall_TxInform[PP_ECALL].mid = PP_MID_XCALL_RESP;
 			Xcall_TxInform[PP_ECALL].pakgtype = PP_TXPAKG_CONTINUE;
@@ -344,6 +345,7 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		PP_xcall[PP_BCALL].state.req = 0;
 		if(0 == PP_xcall_xcallResponse(task,PP_BCALL))
 		{
+			memset(&Xcall_TxInform[PP_BCALL],0,sizeof(PrvtProt_TxInform_t));
 			Xcall_TxInform[PP_BCALL].aid = PP_AID_XCALL;
 			Xcall_TxInform[PP_BCALL].mid = PP_MID_XCALL_RESP;
 			Xcall_TxInform[PP_BCALL].pakgtype = PP_TXPAKG_CONTINUE;
@@ -359,6 +361,7 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		PP_xcall[PP_ICALL].state.req = 0;
 		if(0 == PP_xcall_xcallResponse(task,PP_ICALL))
 		{
+			memset(&Xcall_TxInform[PP_ICALL],0,sizeof(PrvtProt_TxInform_t));
 			Xcall_TxInform[PP_ICALL].aid = PP_AID_XCALL;
 			Xcall_TxInform[PP_ICALL].mid = PP_MID_XCALL_RESP;
 			Xcall_TxInform[PP_ICALL].pakgtype = PP_TXPAKG_CONTINUE;

@@ -209,7 +209,7 @@ static void *sockproxy_sendmain(void)
 					{
 						if((tm_get_time() - TxInform_ptr->eventtime) < SOCK_TXPAKG_OUTOFTIME)//报文未过期
 						{
-							res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, NULL);
+							res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
 							protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
 							if (res < 0)
 							{
@@ -230,6 +230,7 @@ static void *sockproxy_sendmain(void)
 							}
 							else
 							{//发送成功
+								SP_data_put_send(rpt);
 								if(rpt->SendInform_cb != NULL)
 								{
 									TxInform_ptr->successflg = PP_TXPAKG_SUCCESS;
@@ -248,7 +249,7 @@ static void *sockproxy_sendmain(void)
 					break;
 					case PP_TXPAKG_SIGTRIG:
 					{
-						res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, NULL);
+						res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
 						protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
 						if (res < 0)
 						{
@@ -269,6 +270,7 @@ static void *sockproxy_sendmain(void)
 						}
 						else
 						{//发送成功
+							SP_data_put_send(rpt);
 							if(rpt->SendInform_cb != NULL)
 							{
 								TxInform_ptr->successflg = PP_TXPAKG_SUCCESS;
@@ -279,7 +281,7 @@ static void *sockproxy_sendmain(void)
 					break;
 					case PP_TXPAKG_CONTINUE:
 					{
-						res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, NULL);
+						res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
 						protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
 						if (res < 0)
 						{
@@ -301,6 +303,7 @@ static void *sockproxy_sendmain(void)
 						}
 						else
 						{//发送成功
+							SP_data_put_send(rpt);
 							if(rpt->SendInform_cb != NULL)
 							{
 								TxInform_ptr->successflg = PP_TXPAKG_SUCCESS;
@@ -315,7 +318,7 @@ static void *sockproxy_sendmain(void)
             }
             else
             {
-                res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, NULL);
+                res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
                 protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
                 if (res < 0)
                 {

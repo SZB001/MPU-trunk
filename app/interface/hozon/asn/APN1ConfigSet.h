@@ -27,6 +27,8 @@ typedef struct APN1ConfigSet {
 	OCTET_STRING_t	 tspIp;
 	OCTET_STRING_t	 tspSms;
 	OCTET_STRING_t	 tspPort;
+	OCTET_STRING_t	 certAddress;
+	OCTET_STRING_t	 certPort;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
