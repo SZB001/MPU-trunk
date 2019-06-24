@@ -50,4 +50,5 @@ extern void gb_data_set_pendflag(int flag);
 extern uint8_t gb_data_vehicleState(void);
 extern long gb_data_vehicleSOC(void);
 extern long gb_data_vehicleOdograph(void);
+extern long gb_data_vehicleSpeed(void);
 #endif

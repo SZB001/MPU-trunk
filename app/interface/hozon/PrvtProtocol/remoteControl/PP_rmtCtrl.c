@@ -69,6 +69,7 @@ typedef struct
 
 static PrvtProt_rmtCtrl_t PP_rmtCtrl;
 static PrvtProt_pack_t 		PP_rmtCtrl_Pack;
+static PrvtProt_App_rmtCtrl_t 		App_rmtCtrl;
 
 static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 {
@@ -97,7 +98,7 @@ static int PP_rmtCtrl_do_checksock(PrvtProt_task_t *task);
 static int PP_rmtCtrl_do_rcvMsg(PrvtProt_task_t *task);
 static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len);
 //static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task);
-static int PP_rmtCtrl_StatusResp(long bookingId,unsigned int reqtype);
+//static int PP_rmtCtrl_StatusResp(long bookingId,unsigned int reqtype);
 
 static void PP_rmtCtrl_send_cb(void * para);
 /******************************************************
@@ -422,13 +423,13 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 		break;
 		case PP_RMTCTRL_AC://空调
 		{
-			PP_rmtCtrl_StatusResp(1,reqType);
+			//PP_rmtCtrl_StatusResp(1,reqType);
 			log_i(LOG_HOZON, "remote RMTCTRL_AC control req");
 		}
 		break;
 		case PP_RMTCTRL_CHARGE://充电
 		{
-			PP_rmtCtrl_StatusResp(2,reqType);
+			//PP_rmtCtrl_StatusResp(2,reqType);
 			log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
 		}
 		break;
@@ -447,6 +448,7 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 	}
 }
 
+#if 0
 /******************************************************
 *函数名：PP_rmtCtrl_StatusResp
 
@@ -500,25 +502,7 @@ static int PP_rmtCtrl_StatusResp(long bookingId,unsigned int reqtype)
 	SP_data_write(PP_rmtCtrl_Pack.Header.sign,18 + msgdatalen,PP_rmtCtrl_send_cb,NULL);
 	return 0;
 }
-
-/******************************************************
-*函数名：PP_rmtCtrl_send_cb
-
-*形  参：
-
-*返回值：
-
-*描  述：remote control status response
-
-*备  注：
-******************************************************/
-static void PP_rmtCtrl_send_cb(void * para)
-{
-	log_e(LOG_HOZON, "send ok");
-
-
-}
-
+#endif
 
 /******************************************************
 *函数名：PP_rmtCtrl_StInformTsp
@@ -531,7 +515,224 @@ static void PP_rmtCtrl_send_cb(void * para)
 
 *备  注：
 ******************************************************/
-void PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t * CtrlSt_para)
+int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 {
+	int msgdatalen;
+	int res = 0;
 
+	PrvtProt_task_t* task_ptr = (PrvtProt_task_t*)task;
+	/*header*/
+	memcpy(PP_rmtCtrl.pack.Header.sign,"**",2);
+	PP_rmtCtrl.pack.Header.commtype.Byte = 0xe1;
+	PP_rmtCtrl.pack.Header.opera = 0x02;
+	PP_rmtCtrl.pack.Header.ver.Byte = task_ptr->version;
+	PP_rmtCtrl.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task_ptr->nonce);
+	PP_rmtCtrl.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task_ptr->tboxid);
+	memcpy(&PP_rmtCtrl_Pack, &PP_rmtCtrl.pack.Header, sizeof(PrvtProt_pack_Header_t));
+
+	switch(CtrlSt_para->Resptype)
+	{
+		case PP_RMTCTRL_RVCSTATUSRESP://非预约
+		{
+			/*body*/
+			memcpy(PP_rmtCtrl.pack.DisBody.aID,"110",3);
+			PP_rmtCtrl.pack.DisBody.mID = PP_MID_RMTCTRL_RESP;
+			PP_rmtCtrl.pack.DisBody.eventId =  CtrlSt_para->eventid;
+			PP_rmtCtrl.pack.DisBody.eventTime = PrvtPro_getTimestamp();
+			PP_rmtCtrl.pack.DisBody.expTime   = PrvtPro_getTimestamp();
+			PP_rmtCtrl.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+			PP_rmtCtrl.pack.DisBody.appDataProVer = 256;
+			PP_rmtCtrl.pack.DisBody.testFlag = 1;
+
+			/*appdata*/
+			PrvtProtcfg_gpsData_t gpsDt;
+			App_rmtCtrl.CtrlResp.rvcReqType = CtrlSt_para->reqType;
+			App_rmtCtrl.CtrlResp.rvcReqStatus = CtrlSt_para->rvcReqStatus;
+			App_rmtCtrl.CtrlResp.rvcFailureType = CtrlSt_para->rvcFailureType;
+			App_rmtCtrl.CtrlResp.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps状态 0-无效；1-有效;
+			App_rmtCtrl.CtrlResp.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gps时间戳:系统时间(通过gps校时)
+
+			PrvtProtCfg_gpsData(&gpsDt);
+
+			if(App_rmtCtrl.CtrlResp.gpsPos.gpsSt == 1)
+			{
+				if(gpsDt.is_north)
+				{
+					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000);//纬度 x 1000000,当GPS信号无效时，值为0
+				}
+				else
+				{
+					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//纬度 x 1000000,当GPS信号无效时，值为0
+				}
+
+				if(gpsDt.is_east)
+				{
+					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000);//经度 x 1000000,当GPS信号无效时，值为0
+				}
+				else
+				{
+					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//经度 x 1000000,当GPS信号无效时，值为0
+				}
+				log_i(LOG_HOZON, "PP_appData.latitude = %lf",App_rmtCtrl.CtrlResp.gpsPos.latitude);
+				log_i(LOG_HOZON, "PP_appData.longitude = %lf",App_rmtCtrl.CtrlResp.gpsPos.longitude);
+			}
+			else
+			{
+				App_rmtCtrl.CtrlResp.gpsPos.latitude  = 0;
+				App_rmtCtrl.CtrlResp.gpsPos.longitude = 0;
+			}
+			App_rmtCtrl.CtrlResp.gpsPos.altitude = (long)(gpsDt.height);//高度（m）
+			if(App_rmtCtrl.CtrlResp.gpsPos.altitude > 10000)
+			{
+				App_rmtCtrl.CtrlResp.gpsPos.altitude = 10000;
+			}
+			App_rmtCtrl.CtrlResp.gpsPos.heading = (long)(gpsDt.direction);//车头方向角度，0为正北方向
+			App_rmtCtrl.CtrlResp.gpsPos.gpsSpeed = (long)(gpsDt.kms*10);//速度 x 10，单位km/h
+			App_rmtCtrl.CtrlResp.gpsPos.hdop = (long)(gpsDt.hdop*10);//水平精度因子 x 10
+			if(App_rmtCtrl.CtrlResp.gpsPos.hdop > 1000)
+			{
+				App_rmtCtrl.CtrlResp.gpsPos.hdop = 1000;
+			}
+
+			App_rmtCtrl.CtrlResp.basicSt.driverDoor = 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.driverLock = 1;
+			App_rmtCtrl.CtrlResp.basicSt.passengerDoor = 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.passengerLock = 1;
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftDoor = 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftLock = 1;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightDoor = 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightLock = 1;
+			App_rmtCtrl.CtrlResp.basicSt.bootStatus = 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.bootStatusLock = 1;
+			App_rmtCtrl.CtrlResp.basicSt.driverWindow = 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.passengerWindow = 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftWindow = 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightWinow = 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.sunroofStatus = 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.engineStatus = 1;
+			App_rmtCtrl.CtrlResp.basicSt.accStatus = 1;
+			App_rmtCtrl.CtrlResp.basicSt.accTemp = 18	/* OPTIONAL */;//18-36
+			App_rmtCtrl.CtrlResp.basicSt.accMode = 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.accBlowVolume	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.innerTemp = 1;
+			App_rmtCtrl.CtrlResp.basicSt.outTemp = 1;
+			App_rmtCtrl.CtrlResp.basicSt.sideLightStatus= 1;
+			App_rmtCtrl.CtrlResp.basicSt.dippedBeamStatus= 1;
+			App_rmtCtrl.CtrlResp.basicSt.mainBeamStatus= 1;
+			App_rmtCtrl.CtrlResp.basicSt.hazardLightStus= 1;
+			App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.batterySOCExact= 1;
+			App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.availableOdomtr= 1;
+			App_rmtCtrl.CtrlResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.bookingChargeSt= 1;
+			App_rmtCtrl.CtrlResp.basicSt.bookingChargeHour= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.bookingChargeMin	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.chargeMode	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.chargeStatus	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.powerMode	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.speed= 1;
+			App_rmtCtrl.CtrlResp.basicSt.totalOdometer= 1;
+			App_rmtCtrl.CtrlResp.basicSt.batteryVoltage= 1;
+			App_rmtCtrl.CtrlResp.basicSt.batteryCurrent= 1;
+			App_rmtCtrl.CtrlResp.basicSt.batterySOCPrc= 1;
+			App_rmtCtrl.CtrlResp.basicSt.dcStatus= 1;
+			App_rmtCtrl.CtrlResp.basicSt.gearPosition= 1;
+			App_rmtCtrl.CtrlResp.basicSt.insulationRstance= 1;
+			App_rmtCtrl.CtrlResp.basicSt.acceleratePedalprc= 1;
+			App_rmtCtrl.CtrlResp.basicSt.deceleratePedalprc= 1;
+			App_rmtCtrl.CtrlResp.basicSt.canBusActive= 1;
+			App_rmtCtrl.CtrlResp.basicSt.bonnetStatus= 1;
+			App_rmtCtrl.CtrlResp.basicSt.lockStatus= 1;
+			App_rmtCtrl.CtrlResp.basicSt.gsmStatus= 1;
+			App_rmtCtrl.CtrlResp.basicSt.wheelTyreMotrSt= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.vehicleAlarmSt= 1;
+			App_rmtCtrl.CtrlResp.basicSt.currentJourneyID= 1;
+			App_rmtCtrl.CtrlResp.basicSt.journeyOdom= 1;
+			App_rmtCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.frtRightSeatHeatLel	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.airCleanerSt	= 1/* OPTIONAL */;
+
+			if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_RESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
+											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//数据编码打包是否完成
+			{
+				log_e(LOG_HOZON, "uper error");
+				return -1;
+			}
+		}
+		break;
+		case PP_RMTCTRL_RVCBOOKINGRESP://预约
+		{
+			/*body*/
+			memcpy(PP_rmtCtrl.pack.DisBody.aID,"110",3);
+			PP_rmtCtrl.pack.DisBody.mID = PP_MID_RMTCTRL_BOOKINGRESP;
+			PP_rmtCtrl.pack.DisBody.eventId =  CtrlSt_para->eventid;
+			PP_rmtCtrl.pack.DisBody.eventTime = PrvtPro_getTimestamp();
+			PP_rmtCtrl.pack.DisBody.expTime   = PrvtPro_getTimestamp();
+			PP_rmtCtrl.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+			PP_rmtCtrl.pack.DisBody.appDataProVer = 256;
+			PP_rmtCtrl.pack.DisBody.testFlag = 1;
+
+			/*appdata*/
+			App_rmtCtrl.CtrlbookingResp.bookingId = CtrlSt_para->bookingId;
+			App_rmtCtrl.CtrlbookingResp.rvcReqCode = CtrlSt_para->rvcReqCode;
+			App_rmtCtrl.CtrlbookingResp.oprTime = PrvtPro_getTimestamp();
+
+			if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_BOOKINGRESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
+											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//数据编码打包是否完成
+			{
+				log_e(LOG_HOZON, "uper error");
+				return -1;
+			}
+		}
+		break;
+		default:
+		break;
+	}
+
+	PP_rmtCtrl_Pack.totallen = 18 + msgdatalen;
+	PP_rmtCtrl_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
+
+	static PrvtProt_TxInform_t rmtCtrl_TxInform;
+	memset(&rmtCtrl_TxInform,0,sizeof(PrvtProt_TxInform_t));
+	rmtCtrl_TxInform.aid = PP_AID_RMTCTRL;
+	rmtCtrl_TxInform.mid = PP_MID_RMTCTRL_RESP;
+	rmtCtrl_TxInform.pakgtype = PP_TXPAKG_CONTINUE;
+
+	SP_data_write(PP_rmtCtrl_Pack.Header.sign,PP_rmtCtrl_Pack.totallen,PP_rmtCtrl_send_cb,&rmtCtrl_TxInform);
+
+	protocol_dump(LOG_HOZON, "get_remote_control_response", PP_rmtCtrl_Pack.Header.sign, \
+					18 + msgdatalen,1);
+	return res;
+
+}
+
+/******************************************************
+*函数名：PP_rmtCtrl_send_cb
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：
+******************************************************/
+static void PP_rmtCtrl_send_cb(void * para)
+{
+	PrvtProt_TxInform_t *TxInform_ptr = (PrvtProt_TxInform_t*)para;
+	log_i(LOG_HOZON, "aid = %d",TxInform_ptr->aid);
+	log_i(LOG_HOZON, "mid = %d",TxInform_ptr->mid);
+	log_i(LOG_HOZON, "pakgtype = %d",TxInform_ptr->pakgtype);
+	log_i(LOG_HOZON, "eventtime = %d",TxInform_ptr->eventtime);
+	log_i(LOG_HOZON, "successflg = %d",TxInform_ptr->successflg);
+	log_i(LOG_HOZON, "failresion = %d",TxInform_ptr->failresion);
+	log_i(LOG_HOZON, "txfailtime = %d",TxInform_ptr->txfailtime);
 }

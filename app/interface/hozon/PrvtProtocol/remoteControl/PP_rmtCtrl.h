@@ -257,10 +257,20 @@ typedef struct
 	PP_rmtCtrlmainFuncObj	mainFunc;//
 }PrvtProt_RmtCtrlFunc_t; /*结构体*/
 
+
+#define PP_RMTCTRL_RVCSTATUSRESP 	1
+#define PP_RMTCTRL_RVCBOOKINGRESP 	2
 typedef struct
 {
 	char style;//方式：tsp-1；2-蓝牙
-	long reqType;//
+	char Resptype;//回复类型：非预约-1；2-预约
+	long reqType;//请求类型
+	long eventid;//事件id
+	long rvcReqStatus;
+	long rvcFailureType;
+
+	long bookingId;
+	long rvcReqCode;
 }PP_rmtCtrl_Stpara_t; /*结构体*/
 /******union definitions*****/
 
@@ -275,5 +285,5 @@ description： function External declaration
 extern void PP_rmtCtrl_init(void);
 extern int 	PP_rmtCtrl_mainfunction(void *task);
 extern void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
-extern void PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t * CtrlSt_para);
+extern int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para);
 #endif 

@@ -627,6 +627,7 @@ static uint16_t gb_datintv;
 static uint8_t gb_engineSt = 2;//熄火
 static long    gb_totalOdoMr = 0;//总计里程
 static long    gb_vehicleSOC = 0;//电量
+static long    gb_vehicleSpeed = 0;//速度
 
 #if GB_EXT
 /* event report */
@@ -762,6 +763,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
           dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SPEED])->value * 10 : 0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
+    gb_vehicleSpeed = tmp;
 
     /* odograph, scale 0.1km */
     tmp = gbinf->vehi.info[GB_VINF_ODO] ?
@@ -4159,4 +4161,12 @@ long gb_data_vehicleSOC(void)
 long gb_data_vehicleOdograph(void)
 {
     return gb_totalOdoMr;
+}
+
+/*
+ 	 读取车辆速度
+*/
+long gb_data_vehicleSpeed(void)
+{
+    return gb_vehicleSpeed;
 }

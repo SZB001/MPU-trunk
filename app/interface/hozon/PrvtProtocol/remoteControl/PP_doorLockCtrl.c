@@ -118,22 +118,11 @@ int PP_doorLockCtrl_mainfunction(void *task)
 	int res;
 	if(PP_rmtdoorCtrl.state.req == 1)
 	{
-		res = PP_doorLockCtrl_StatusResp((PrvtProt_task_t *)task,&PP_rmtdoorCtrl);
-		if(res < 0)//ÇëÇó·¢ËÍÊ§°Ü
-		{
-			log_e(LOG_HOZON, "socket send error, reset protocol");
-			sockproxy_socketclose();//by liujian 20190514
-			//PP_rmtdoorCtrl.state.req = 1;
-		}
-		else if(res > 0)
-		{
-			log_e(LOG_HOZON, "socket send ok, reset");
-			PP_rmtdoorCtrl.state.req = 0;
-		}
-		else
-		{
-			PP_rmtdoorCtrl.state.req = 0;
-		}
+		PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+		rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
+		rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
+		rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+		res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
 	}
 	return 0;
 }
