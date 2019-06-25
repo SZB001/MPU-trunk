@@ -35,6 +35,23 @@ static PP_canSign_t PP_canSign;
 description： function code
 ******************************************************/
 /******************************************************
+*函数名：InitPPsignFltr_Parameter
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：
+******************************************************/
+void InitPrvtProt_SignParse_Parameter(void)
+{
+	memset(&PP_canSign,0,sizeof(PP_canSign_t));
+}
+
+
+/******************************************************
 *函数名：PrvtProt_data_parse_surfix
 *形  参：
 *返回值：

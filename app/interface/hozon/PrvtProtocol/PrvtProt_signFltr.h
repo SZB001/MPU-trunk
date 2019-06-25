@@ -1,44 +1,55 @@
 /******************************************************
-文件名：PP_doorLockCtrl.h
+文件名：	PrvtProt_signFltr.h
 
-描述：	车门锁控制
+描述：	企业私有协议（浙江合众）	
 
 Data			  Vasion			author
-2019/05/18		   V1.0			    liujian
+2019/04/16		   V1.0			    liujian
 *******************************************************/
-#ifndef		_PP_DOORLOCK_CTRL_H
-#define		_PP_DOORLOCK_CTRL_H
-/*******************************************************
-description： include the header file
-*******************************************************/
+#ifndef		_PRVTPROT_SIGNFLTR_H
+#define		_PRVTPROT_SIGNFLTR_H
 
 /*******************************************************
 description： macro definitions
 *******************************************************/
 /**********宏开关定义*********/
 
-/**********宏常量定义*********/
 
+/**********宏常量定义*********/
+#define PPSIGNFLTR_FLTRTIME   30U/*滤波时间门限*/
+
+
+#define PPSIGNFLTR_ON		1
+#define PPSIGNFLTR_OFF		1
 
 /***********宏函数***********/
+
 
 /*******************************************************
 description： struct definitions
 *******************************************************/
 
+
+
 /*******************************************************
 description： typedef definitions
 *******************************************************/
-/******enum definitions******/
+/*****struct definitions*****/
 typedef struct
 {
-	uint8_t req;
-	long reqType;
-	uint8_t CtrlSt;
-	uint64_t period;
-	uint8_t waitSt;
-	uint64_t waittime;
-}__attribute__((packed))  PP_rmtdoorCtrlSt_t; /*remote control结构体*/
+	uint8_t e_u_St;/*开/关状态*/
+	uint8_t e_u_OnFltrCnt;/*开/关开启状态滤波计时器*/
+	uint8_t e_u_OffFltrCnt;/*开/关关闭状态滤波计时器*/
+}PPsignFltrStruct;
+
+/******enum definitions******/
+typedef enum
+{
+	bdcmAuthSt,	  /*BDCM认证状态*/
+	PPSIGNFLTR_NUM	  /*外设数量*/
+}PPsignFltrEnum;
+
+/******enum definitions******/
 
 /******union definitions*****/
 
@@ -49,12 +60,7 @@ description： variable External declaration
 /*******************************************************
 description： function External declaration
 *******************************************************/
-extern void PP_doorLockCtrl_init(void);
-extern int 	PP_doorLockCtrl_mainfunction(void *task);
-extern void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
-extern void PP_doorLockCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
-extern  int PP_doorLockCtrl_start(void);
-extern int PP_doorLockCtrl_end(void);
-
-
+extern void InitPPsignFltr_Parameter(void);
+extern void TskPPsignFltr_MainFunction(void);
+extern uint8_t GetPPsignFltr_u_PeriSt(uint8_t LePPsignFltr_u_Index);
 #endif 

@@ -50,6 +50,7 @@ description£º include the header file
 #include "PrvtProt_remoteConfig.h"
 #include "PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
+#include "PrvtProt_signFltr.h"
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -161,6 +162,8 @@ int PrvtProt_init(INIT_PHASE phase)
 					PP_RmtFunc[obj].Init();
 				}
 			}
+			InitPrvtProt_SignParse_Parameter();
+			InitPPsignFltr_Parameter();
 		}
         break;
     }
@@ -223,6 +226,8 @@ static void *PrvtProt_main(void)
 	log_o(LOG_HOZON, "proprietary protocol  of hozon thread running");
 	int res;
 	int obj;
+	static unsigned long long mstsktime;
+	mstsktime = tm_get_time();
     prctl(PR_SET_NAME, "HZ_PRVT_PROT");
     while (1)
     {
@@ -231,6 +236,12 @@ static void *PrvtProt_main(void)
 			continue;
 		}
 		log_set_level(LOG_HOZON, LOG_DEBUG);
+
+		if((tm_get_time() - mstsktime) >= 10)
+		{
+			mstsktime = tm_get_time();
+			TskPPsignFltr_MainFunction();
+		}
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||

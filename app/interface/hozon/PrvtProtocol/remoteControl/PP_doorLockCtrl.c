@@ -42,8 +42,11 @@ description： include the header file
 #include "../PrvtProt.h"
 #include "../PrvtProt_cfg.h"
 #include "PP_rmtCtrl.h"
+#include "../../../gb32960/gb32960.h"
+#include "PP_canSend.h"
 #include "PP_doorLockCtrl.h"
 
+static int doorLock_success_flag = 0;
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -119,16 +122,44 @@ void PP_doorLockCtrl_init(void)
 int PP_doorLockCtrl_mainfunction(void *task)
 {
 	int res;
-	if(PP_rmtdoorCtrl.state.req == 1)
+	static int door_lock_stage = 0;
+	switch(door_lock_stage)
 	{
-		PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-		rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
-		rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
-		rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-		res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+		case 0: 
+		if(PP_rmtdoorCtrl.state.req == 1)   //判断请求是不是
+		{
+			doorLock_success_flag = 0;
+			PP_rmtdoorCtrl.state.req = 0;
+			PP_canSend_setbit(17,2,1);
+			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+			rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
+			rmtCtrl_Stpara.rvcFailureType = 3;
+			rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
+			rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
+			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+			res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+			door_lock_stage = 1;
+		}
+		break;
+		case 1://执行完
+		{
+			if(gb_data_doorlockSt() == 1 )
+			{
+				PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+				rmtCtrl_Stpara.rvcReqStatus = 2;  //开始执行
+				rmtCtrl_Stpara.rvcFailureType = 3;
+				rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
+				rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
+				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+				door_lock_stage = 0;
+				doorLock_success_flag = 1;
+			}
+		}
+		break;
+		default:
+		break;
 	}
-
-	return 0;
 }
 
 #if 0
@@ -320,6 +351,30 @@ void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 		break;
 		default:
 		break;
+	}
+}
+
+int PP_doorLockCtrl_start(void)
+{
+	if(PP_rmtdoorCtrl.state.req == 1)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int PP_doorLockCtrl_end(void)
+{
+	if(doorLock_success_flag == 1)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
 	}
 }
 

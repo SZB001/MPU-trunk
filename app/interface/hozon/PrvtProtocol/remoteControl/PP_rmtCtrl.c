@@ -42,11 +42,12 @@ description： include the header file
 #include "../PrvtProt_queue.h"
 #include "../PrvtProt_EcDc.h"
 #include "../PrvtProt_cfg.h"
-#include "../PrvtProt.h"
 #include "PP_doorLockCtrl.h"
 #include "PP_ACCtrl.h"
 #include "PP_ChargeCtrl.h"
 #include "PP_identificat.h"
+#include "../PrvtProt.h"
+#include "PP_canSend.h"
 #include "PP_rmtCtrl.h"
 
 /*******************************************************
@@ -147,7 +148,6 @@ int PP_rmtCtrl_mainfunction(void *task)
 {
 	int res;
 	int i;
-	int authst = 0;
 	res = 		PP_rmtCtrl_do_checksock((PrvtProt_task_t*)task) ||
 				PP_rmtCtrl_do_rcvMsg((PrvtProt_task_t*)task);
 
@@ -155,7 +155,9 @@ int PP_rmtCtrl_mainfunction(void *task)
 	{
 		case RMTCTRL_IDLE://空闲
 		{
-			if(1)
+			int ret ;
+			ret  = PP_doorLockCtrl_start();
+			if(ret == 1)
 			{
 				PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
 			}
@@ -163,39 +165,40 @@ int PP_rmtCtrl_mainfunction(void *task)
 		break;
 		case RMTCTRL_IDENTIFICAT_QUERY://检查认证
 		{
-			if(PP_get_identificat_flag() == 1)  //认证ok
+			if(PP_get_identificat_flag() == 1)	
 			{
 				PP_rmtCtrl_flag = RMTCTRL_COMMAND_LAUNCH;
-				log_i(LOG_HOZON,"AuthenticationState valid --- command launch");
 			}
-			else  //认证无效
+			else
 			{
-
 				PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_LAUNCH;
-				log_i(LOG_HOZON,"AuthenticationState invalid!!!!launch identificat");
 			}
 		}
 		break;
 		case RMTCTRL_IDENTIFICAT_LAUNCH://认证
 		{
+			int  authst;
 			authst = PP_identificat_mainfunction();
-			if(PP_AUTH_SUCCESS == authst)
-			{
-				PP_rmtCtrl_flag = RMTCTRL_COMMAND_LAUNCH;
-			}
-			else if(PP_AUTH_FAIL == authst)
-			{
-				//通知tsp认证失败
-				//PP_rmtCtrl_StInformTsp
-				PP_rmtCtrl_flag = RMTCTRL_IDLE;
-			}
-			else
-			{}
+   			if(PP_AUTH_SUCCESS == authst)
+   			{
+  				PP_rmtCtrl_flag = RMTCTRL_COMMAND_LAUNCH;
+				log_o(LOG_HOZON,"-------identificat success---------");
+  			}
+  			else if(PP_AUTH_FAIL == authst)
+  		    {
+    			//通知tsp认证失败
+   				//PP_rmtCtrl_StInformTsp
+    			PP_rmtCtrl_flag = RMTCTRL_IDLE;
+				log_o(LOG_HOZON,"-------identificat failed---------");
+   			}
+   			else
+   			{}
 		}
 		break;
 		case RMTCTRL_COMMAND_LAUNCH://远程控制
 		{
-			log_o(LOG_HOZON,"command ··········");
+			log_o(LOG_HOZON,"-------command---------");
+			int ret;
 			for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
 			{
 				if(PP_RmtCtrlFunc[i].mainFunc != NULL)
@@ -204,7 +207,8 @@ int PP_rmtCtrl_mainfunction(void *task)
 				}
 			}
 
-			if(1)//空闲
+			ret = PP_doorLockCtrl_end();
+			if(ret == 1)
 			{
 				PP_rmtCtrl_flag = RMTCTRL_IDLE; //远程命令执行完，回到空闲
 			}
@@ -213,6 +217,8 @@ int PP_rmtCtrl_mainfunction(void *task)
 		default:
 		break;
 	}
+
+	PP_canSend_Mainfunction();//发送控制指令
 
 	return res;
 }

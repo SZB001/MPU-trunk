@@ -75,6 +75,7 @@ description£º variable External declaration
 /*******************************************************
 description£º function External declaration
 *******************************************************/
+extern void InitPrvtProt_SignParse_Parameter(void);
 extern int PrvtProt_data_parse_surfix(int sigid, const char *sfx);
 extern uint8_t PrvtProt_SignParse_findcarSt(void);
 extern uint8_t PrvtProt_SignParse_sunroofSt(void);

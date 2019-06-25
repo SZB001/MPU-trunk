@@ -1628,14 +1628,19 @@ int dbc_get_signal_port(int id)
 
 const dbc_sig_t *dbc_get_signal_from_id(int id)
 {
-    dbc_sig_t *ret = NULL;
+    dbc_sig_t *ret;
+    dbc_sig_t retval;
 
     if (id > 0 && dbc_data != NULL && id <= dbc_data->sigcnt)
     {
         ret = dbc_data->siglst + id - 1;
+        return ret;
     }
-
-    return ret;
+    else
+    {
+    	retval.value = 0;
+    	return &retval;
+    }
 }
 
 const dbc_sig_t *dbc_get_signal_from_name(const char *name)
