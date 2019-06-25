@@ -11,13 +11,13 @@ description锛� include the header file
 
 *******************************************************/
 
-#include<stdio.h>
+#include <stdio.h>
 #include "PP_identificat.h"
 #include "can_api.h"
 #include "log.h"
 
 #define IDENTIFICAT_NUM 5
-#define IDENTIFICAT_CAN_PORT 1
+#define IDENTIFICAT_CAN_PORT 2
 
 unsigned char PP_senddata[8] = { 0 };
 unsigned char PP_recvdata[8] = { 0 };
@@ -27,7 +27,7 @@ uint64_t PP_stage1_time = 0;
 uint64_t PP_stage3_time = 0;
 static int BDM_AuthenticationStatu = 0;
 static uint64_t valid_time;
-static int cnt = 0;
+static int PP_authcnt = 0;
 typedef unsigned char UINT8 ;
 typedef unsigned int UINT32; 
 
@@ -36,11 +36,7 @@ static const UINT8 ConstSk[16]={0xA5,0x9E,0x2D,0x4B,0x49,0x18,0x0F,0x83,0x6E,0xA
 static UINT8 DataSk[16]={0x15,0x36,0xC2,0x89,0x61,0xD6,0x40,0x3F,0x9A,0xE7,0x26,0x4B,0xD9,0x96,0x7E,0x75};
 
 
-int PP_get_identificat_flag(void);
-
-int PP_identificat_mainfunction(void);
-
-void XteaEncipher(UINT8 *DataSK, UINT8 *DataChall, UINT8 *DataResp);
+static void XteaEncipher(UINT8 *DataSK, UINT8 *DataChall, UINT8 *DataResp);
 extern int can_do_send(unsigned char port, CAN_SEND_MSG *msg);
 
 extern int PrvtProtcfg_AuthenticationStatu(void);
@@ -56,8 +52,7 @@ extern int PrvtProtcfg_AuthenticationStatu(void);
 
 *澶�  娉細
 ******************************************************/
-
-void XteaEncipher(UINT8 *DataSK, UINT8 *DataChall, UINT8 *DataResp)
+static void XteaEncipher(UINT8 *DataSK, UINT8 *DataChall, UINT8 *DataResp)
 {
 	UINT32 v0, v1, i;
 	UINT32 sum, delta;
@@ -100,110 +95,121 @@ void XteaEncipher(UINT8 *DataSK, UINT8 *DataChall, UINT8 *DataResp)
 
 *澶�  娉細
 ******************************************************/
-
-
 int PP_identificat_mainfunction()
-{
+{
 	CAN_SEND_MSG msg;
-	msg.MsgID     = 0x3D2;   //娑堟伅ID
-	msg.DLC       = 8;       //鏁版嵁闀垮害
-	msg.isEID     = 0;       //鏍囧噯甯�
+	msg.MsgID     = 0x3D2;   //
+	msg.DLC       = 8;       //
+	msg.isEID     = 0;       //
 	msg.isRTR     = 0;
 	switch(PP_stage)
 	{
-		case PP_stage1:    //tbox璁よ瘉stage1锛屼富鍔ㄥ彂閫�8涓瓧鑺�00
+		case PP_stage_idle://空闲
+		{
+			PP_authcnt = 0;
+			PP_recv_can_flag = 0;
+			PP_stage = PP_stage_start;
+		}
+		break;
+		case PP_stage_start://开始认证
+		{
+			if(PP_authcnt < IDENTIFICAT_NUM)
 			{
 				memset(msg.Data,0,8*sizeof(uint8_t));
 				can_do_send(IDENTIFICAT_CAN_PORT,&msg);
-				//log_o(LOG_HOZON,"can_do_send success");
+				log_i(LOG_HOZON,"can_do_send success");
 				PP_stage1_time = tm_get_time();
-				PP_stage = PP_stage3;
-				PP_recv_can_flag = 0;
-				break;
+				PP_stage = PP_stage_waitrandom;
+				PP_authcnt++;
 			}
-		case PP_stage3:  //tbox璁よ瘉stage3,灏嗘敹鍒扮殑闅忔満鏁板姞瀵嗗彂鍑�,濡傛灉娌℃湁鏀跺埌鍥炲埌璁よ瘉stage1
+			else
 			{
-				if(( tm_get_time() - PP_stage1_time) <= 500) 
-				{	
-					if(PP_recv_can_flag == 1)
-					{
-						memset(msg.Data,0,8*sizeof(uint8_t));
-						XteaEncipher(DataSk,PP_recvdata,msg.Data);
-						can_do_send(IDENTIFICAT_CAN_PORT,&msg);
-						PP_stage = PP_stage5;
-						cnt = 0;
-						PP_stage3_time = tm_get_time();
-					}					
-				}
-				else  //濡傛灉娌℃湁鏀跺埌闅忔満鏁帮紝閲嶅彂8涓瓧鑺�00锛岀疮璁″彂5娆�
-				{
-					
-					PP_stage = PP_stage1;
-					cnt++;
-					if(cnt == IDENTIFICAT_NUM)
-					{  
-						cnt = 0;
-						//log_o(LOG_HOZON,"BDCM in trouble!!!!!!!!!");
-					}
-				}
-
-				break;
+				log_e(LOG_HOZON,"BDCM in trouble!!!!!!!!!");
+				PP_stage = PP_stage_idle;
+				return PP_AUTH_FAIL;
 			}
-		case PP_stage5:
-			{	//tbox璁よ瘉stage5锛屾敹鍒拌璇佺粨鏋�  ,浠庡浗鏍囦腑鑾峰彇淇″彿
-				if(( tm_get_time() - PP_stage3_time ) <= 500)
+		}
+		break;
+		case PP_stage_waitrandom://等待bcdm返回随机数
+		{
+			if(( tm_get_time() - PP_stage1_time) <= 500)
+			{
+				if(PP_recv_can_flag == 1)
 				{
-					if(PrvtProtcfg_AuthenticationStatu() == 1 )
-					{
-						valid_time = tm_get_time();
-						BDM_AuthenticationStatu = 1; //re璁よ瘉鎴愬姛鏍囧織
-						cnt = 0;
-						PP_stage = PP_stage1;
-						log_o(LOG_HOZON,"TBOX and DBCM certification succeeded");
-					}
+					PP_recv_can_flag = 0;
+					PP_stage = PP_stage_sendenptdata;
+					PP_authcnt = 0;
 				}
-				else
-				{
-					XteaEncipher(DataSk,PP_recvdata,msg.Data);
-					can_do_send(IDENTIFICAT_CAN_PORT,&msg);
-					PP_stage3_time = tm_get_time();
-					cnt++;
-					if(cnt == IDENTIFICAT_NUM)
-					{
-						BDM_AuthenticationStatu = 0; //璁よ瘉澶辫触
-						valid_time = 0;
-						cnt = 0;
-						PP_stage = PP_stage1;
-					}
-				}
-				break;
 			}
-		default: break;
+			else  //超时
+			{
+				PP_stage = PP_stage_start;
+			}
+		}
+		break;
+		case PP_stage_sendenptdata://发送加密数据
+		{
+			if(PP_authcnt < IDENTIFICAT_NUM)
+			{
+				memset(msg.Data,0,8*sizeof(uint8_t));
+				XteaEncipher(DataSk,PP_recvdata,msg.Data);
+				can_do_send(IDENTIFICAT_CAN_PORT,&msg);
+				PP_stage3_time = tm_get_time();
+				PP_authcnt++;
+				PP_stage = PP_stage_waitauthokst;
+			}
+			else
+			{
+				log_e(LOG_HOZON,"BDCM in trouble!!!!!!!!!");
+				PP_stage = PP_stage_idle;
+				return PP_AUTH_FAIL;
+			}
+		}
+		break;
+		case PP_stage_waitauthokst://等待认证返回是否ok状态
+		{
+			if(( tm_get_time() - PP_stage3_time ) <= 500)
+			{
+				if(PrvtProtcfg_AuthenticationStatu() == 1)
+				{
+					valid_time = tm_get_time();
+					BDM_AuthenticationStatu = 1; //
+					PP_stage = PP_stage_idle;
+					log_o(LOG_HOZON,"TBOX and DBCM certification succeeded");
+					return PP_AUTH_SUCCESS;
+				}
+			}
+			else//超时
+			{
+				PP_stage = PP_stage_sendenptdata;
+			}
+		}
+		break;
+		default:
+		break;
 	}
 	
 	return 0;
-	 	
 }
 
-
-
-
+/*
+ * 检查认证状态
+ */
 int PP_get_identificat_flag()
 {
-	//灏嗚璇佹椂闂存湁鏁堟湡璁句负4鍒�30绉�
 	if(((tm_get_time() - valid_time) < 270000) && (BDM_AuthenticationStatu  == 1) && (PrvtProtcfg_AuthenticationStatu() == 1))  //鑾峰彇can淇″彿
 	{
-		return 1;	//璁よ瘉鏈夋晥
+		return 1;
 	}
 	else
 	{
-		BDM_AuthenticationStatu = 0 ;//璁よ瘉澶辫触
+		BDM_AuthenticationStatu = 0 ;
 		return 0;
 	}
 
 }
 
-int PP_identificat_rcvdata(uint8_t *dt)  //鍦╟an瑙ｆ瀽閲岄潰璋冪敤
+int PP_identificat_rcvdata(uint8_t *dt)
 {
 	int i;
 	for(i=0;i<8;i++)

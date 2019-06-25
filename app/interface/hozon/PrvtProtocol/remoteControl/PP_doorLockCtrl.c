@@ -127,6 +127,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 		rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 		res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
 	}
+
 	return 0;
 }
 

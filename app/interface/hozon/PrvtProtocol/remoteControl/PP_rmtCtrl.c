@@ -46,6 +46,7 @@ description： include the header file
 #include "PP_doorLockCtrl.h"
 #include "PP_ACCtrl.h"
 #include "PP_ChargeCtrl.h"
+#include "PP_identificat.h"
 #include "PP_rmtCtrl.h"
 
 /*******************************************************
@@ -146,6 +147,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 {
 	int res;
 	int i;
+	int authst = 0;
 	res = 		PP_rmtCtrl_do_checksock((PrvtProt_task_t*)task) ||
 				PP_rmtCtrl_do_rcvMsg((PrvtProt_task_t*)task);
 
@@ -153,10 +155,9 @@ int PP_rmtCtrl_mainfunction(void *task)
 	{
 		case RMTCTRL_IDLE://空闲
 		{
-			PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
 			if(1)
 			{
-
+				PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
 			}
 		}
 		break;
@@ -165,20 +166,31 @@ int PP_rmtCtrl_mainfunction(void *task)
 			if(PP_get_identificat_flag() == 1)  //认证ok
 			{
 				PP_rmtCtrl_flag = RMTCTRL_COMMAND_LAUNCH;
-				//log_o(LOG_HOZON,"AuthenticationState valid --- command launch");
+				log_i(LOG_HOZON,"AuthenticationState valid --- command launch");
 			}
 			else  //认证无效
 			{
 
 				PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_LAUNCH;
-				//log_o(LOG_HOZON,"AuthenticationState invalid!!!!launch identificat");
+				log_i(LOG_HOZON,"AuthenticationState invalid!!!!launch identificat");
 			}
 		}
 		break;
 		case RMTCTRL_IDENTIFICAT_LAUNCH://认证
 		{
-			PP_identificat_mainfunction();   //认证完之后去检查认证状态
-			PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
+			authst = PP_identificat_mainfunction();
+			if(PP_AUTH_SUCCESS == authst)
+			{
+				PP_rmtCtrl_flag = RMTCTRL_COMMAND_LAUNCH;
+			}
+			else if(PP_AUTH_FAIL == authst)
+			{
+				//通知tsp认证失败
+				//PP_rmtCtrl_StInformTsp
+				PP_rmtCtrl_flag = RMTCTRL_IDLE;
+			}
+			else
+			{}
 		}
 		break;
 		case RMTCTRL_COMMAND_LAUNCH://远程控制
@@ -192,7 +204,10 @@ int PP_rmtCtrl_mainfunction(void *task)
 				}
 			}
 
-			PP_rmtCtrl_flag = RMTCTRL_IDLE; //远程命令执行完，回到空闲
+			if(1)//空闲
+			{
+				PP_rmtCtrl_flag = RMTCTRL_IDLE; //远程命令执行完，回到空闲
+			}
 		}
 		break;
 		default:

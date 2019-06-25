@@ -55,8 +55,8 @@ BO_ 601 BDM_Fr02_259: 8 BDCM
  SG_ BDMPowerMode_@2WG1000 : 3|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BDMEngineForbidStatus_@2WR1011 : 16|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMRemoteStartSt_@2WR1008 : 18|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ BDMAuthenticationStatus : 20|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ BDMAuthenticationFailCondition : 29|6@0+(1,0)[0|63] "" Vector__XXX
+ SG_ BDMAuthenticationStatus_@2WR1013 : 20|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ BDMAutheFailCondi_@2WR1014 : 29|6@0+(1,0)[0|63] "" Vector__XXX
  SG_ BDMKeyAuthenticationSt_@2WGE043 : 31|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BDMIDdeviceNo_@2WGE044 : 34|3@0+(1,0)[0|7] "" Vector__XXX
  SG_ BDMRKECmd : 43|4@0+(1,0)[0|15] "" Vector__XXX

@@ -18,7 +18,7 @@ description： macro definitions
 /**********宏开关定义*********/
 
 /**********宏常量定义*********/
-#define SP_MAX_SENDQUEUE		1024
+#define SP_MAX_SENDQUEUE		30
 
 #define SP_SENDBUFLNG			1456
 /***********宏函数***********/

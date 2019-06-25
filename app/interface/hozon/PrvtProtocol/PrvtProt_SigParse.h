@@ -41,7 +41,9 @@ description£º macro definitions
 #define PP_CANSIGN_CHARGEOFF    		0x10//
 #define PP_CANSIGN_ENGIFORBID       	0x11//
 #define PP_CANSIGN_CANCELENGIFORBID     0x12//
-#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_CANCELENGIFORBID + 1)
+#define PP_CANSIGN_AUTHEST     			0x13//
+#define PP_CANSIGN_AUTHEFAILRESION    	0x14//
+#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_AUTHEFAILRESION + 1)
 /***********ºêº¯Êý***********/
 
 
@@ -80,4 +82,6 @@ extern uint8_t PrvtProt_SignParse_RmtStartSt(void);
 extern uint8_t PrvtProt_SignParse_DrivHeatingSt(void);
 extern uint8_t PrvtProt_SignParse_PassHeatingSt(void);
 extern uint8_t PrvtProt_SignParse_cancelEngiSt(void);
+extern uint8_t PrvtProt_SignParse_autheSt(void);
+extern uint8_t PrvtProt_SignParse_authefailresion(void);
 #endif 

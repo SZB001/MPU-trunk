@@ -137,3 +137,25 @@ uint8_t PrvtProt_SignParse_cancelEngiSt(void)
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ENGIFORBID])->value: 0x0;
 	return st;
 }
+
+/*
+ 	 认证状态
+  */
+uint8_t PrvtProt_SignParse_autheSt(void)
+{
+	uint8_t st;
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AUTHEST] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AUTHEST])->value: 0x0;
+	return st;
+}
+
+/*
+ 	 认证失败原因
+  */
+uint8_t PrvtProt_SignParse_authefailresion(void)
+{
+	uint8_t st;
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AUTHEFAILRESION] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AUTHEFAILRESION])->value: 0x0;
+	return st;
+}
