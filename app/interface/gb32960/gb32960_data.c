@@ -14,6 +14,7 @@
 #include "shell_api.h"
 #include "timer.h"
 #include "../support/protocol.h"
+#include "../hozon/PrvtProtocol/PrvtProt_SigParse.h"
 
 #define GB_EXT	1//定义国标扩展信息
 
@@ -3776,7 +3777,7 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
             {
                 ret = gb_data_parse_surfix(gb_rld, (int)arg1, (const char *)arg2);
 
-
+                ret = PrvtProt_data_parse_surfix((int)arg1, (const char *)arg2);
             }
 
             break;
@@ -4169,4 +4170,70 @@ long gb_data_vehicleOdograph(void)
 long gb_data_vehicleSpeed(void)
 {
     return gb_vehicleSpeed;
+}
+
+/*
+ 	 读取门锁状态
+*/
+uint8_t gb_data_doorlockSt(void)
+{
+	uint8_t st = 0;
+	if(gb_inf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])
+	{
+		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])->value;
+	}
+	return st;
+}
+
+/*
+ 	 读取尾门状态
+*/
+uint8_t gb_data_reardoorSt(void)
+{
+	uint8_t st = 0;
+	if(gb_inf->gb_VSExt.info[GB_VS_BACKDOORST])
+	{
+		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_BACKDOORST])->value;
+	}
+	return st;
+}
+
+
+/*
+ 	 读取空调状态
+*/
+uint8_t gb_data_ACOnOffSt(void)
+{
+	uint8_t st = 0;
+	if(gb_inf->gb_VSExt.info[GB_VS_ACST])
+	{
+		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ACST])->value;
+	}
+	return st;
+}
+
+/*
+ 	 读取空调设定温度
+*/
+int gb_data_LHTemp(void)
+{
+	int st = 0;
+	if(gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])
+	{
+		st = dbc_get_signal_from_id(gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])->value;
+	}
+	return st;
+}
+
+/*
+ 	 充电状态
+*/
+uint8_t gb_data_chargeSt(void)
+{
+	uint8_t st = 0;
+	if(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])
+	{
+		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
+	}
+	return st;
 }

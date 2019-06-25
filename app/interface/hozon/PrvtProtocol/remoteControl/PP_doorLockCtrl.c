@@ -64,16 +64,19 @@ typedef struct
 }__attribute__((packed))  PrvtProt_rmtdoorCtrl_t; /*结构体*/
 
 static PrvtProt_rmtdoorCtrl_t PP_rmtdoorCtrl;
+#if 0
 static PrvtProt_pack_t 		PP_rmtdoorCtrl_Pack;
 static PrvtProt_App_rmtCtrl_t 		App_rmtdoorCtrl;
+#endif
 /*******************************************************
 description： function declaration
 *******************************************************/
 /*Global function declaration*/
 
 /*Static function declaration*/
+#if 0
 static int PP_doorLockCtrl_StatusResp(PrvtProt_task_t *task,PrvtProt_rmtdoorCtrl_t *rmtCtrl);
-
+#endif
 /******************************************************
 description： function code
 ******************************************************/
@@ -127,7 +130,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 	return 0;
 }
 
-
+#if 0
 /******************************************************
 *函数名：PP_doorLockCtrl_StatusResp
 
@@ -286,7 +289,7 @@ static int PP_doorLockCtrl_StatusResp(PrvtProt_task_t *task,PrvtProt_rmtdoorCtrl
 					18 + msgdatalen,1);
 	return res;
 }
-
+#endif
 
 /******************************************************
 *函数名：SetPP_doorLockCtrl_Request

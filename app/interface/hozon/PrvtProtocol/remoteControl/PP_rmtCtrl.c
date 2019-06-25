@@ -382,7 +382,7 @@ static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task)
 
 *返回值：
 
-*描  述：设置ecall 请求
+*描  述：设置 请求
 
 *备  注：
 ******************************************************/
