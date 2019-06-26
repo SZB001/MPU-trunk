@@ -36,5 +36,9 @@ void gps_dev_timeout(unsigned int time_id);
 void gps_set_fix_status(unsigned int status);
 void gps_dev_reset(void);
 void gps_dev_ubx_init(void);
+extern int gps_dev_ubx_import_ehpemeris(const char *file);
+int gps_get_ubx_init_sta(void);
+
+
 
 #endif

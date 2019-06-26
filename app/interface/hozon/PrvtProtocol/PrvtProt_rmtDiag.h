@@ -18,7 +18,7 @@ description： macro definitions
 /**********宏开关定义*********/
 
 /**********宏常量定义*********/
-
+#define PP_DIAG_WAITTIME    2500//等待HU响应时间
 
 /***********宏函数***********/
 
@@ -32,13 +32,29 @@ description： typedef definitions
 /******enum definitions******/
 typedef enum
 {
-	PP_ALL,//all
-	PP_TBOX,//
-    PP_HU,//
-	PP_ICU,
-	PP_UNKNOW
+	PP_RMTDIAG_RESP_REQ = 0,//
+	PP_RMTDIAG_RESP_IMAGEACQREQ,//
+	PP_RMTDIAG_MAX_RESP
+} PP_RMTDIAG_RESPTYPE;
+
+
+typedef enum
+{
+	PP_DIAG_ALL = 0,//all
+	PP_DIAG_TBOX,//
+    PP_DIAG_HU,//
+	PP_DIAG_ICU,
+	PP_DIAG_UNKNOW
 } PP_RMTDIAG_TYPE;
 
+
+typedef enum
+{
+	PP_IMAGEACQRESP_IDLE = 0,//
+	PP_IMAGEACQRESP_INFORM_HU,//通知HU
+	PP_IMAGEACQRESP_WAITHURESP,//等待HU响应
+	PP_IMAGEACQRESP_END
+} PP_RMTDIAG_IMAGEACQRESP_ST;
 
 /*****struct definitions*****/
 
@@ -47,6 +63,15 @@ typedef struct
 	uint8_t diagReq;
 	uint8_t diagType;
 	long	diageventId;
+	uint8_t ImageAcquisitionReq;
+	uint8_t dataType;
+	uint8_t cameraName;
+	uint32_t effectiveTime;
+	uint32_t sizeLimit;
+	uint8_t  result;//采集数据通知状态
+	uint8_t  failureType;//采集数据失败类型
+	char     fileName[255];//采集数据文件名
+	uint8_t  ImageAcqRespSt;
 	uint8_t waitSt;
 	uint64_t waittime;
 }PrvtProt_rmtDiagSt_t; /*结构体*/

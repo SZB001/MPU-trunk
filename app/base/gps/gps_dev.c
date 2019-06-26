@@ -9,6 +9,7 @@
 #include "com_app_def.h"
 #include "mid_def.h"
 #include "log.h"
+#include "file.h"
 #include "ubx_cfg.h"
 #include "gps_api.h"
 #include "gps_dev.h"
@@ -353,6 +354,36 @@ int gps_get_ubx_init_sta(void)
 
     return state;
 }
+void gps_dev_ubx_write_ehpemeris_data(void)
+{
+    unsigned int len;
+
+    if (gps_dev.eph_ptr && *gps_dev.eph_ptr)
+    {
+        while ((0xB5 != gps_dev.eph_ptr[0]) || (0x62 != gps_dev.eph_ptr[1]))
+        {
+            gps_dev.eph_ptr++;
+        }
+
+        len = gps_dev.eph_ptr[4] + gps_dev.eph_ptr[5] * 256 + 8;
+
+        dev_write(gps_dev.dev_fd, gps_dev.eph_ptr, len);
+        //log_e(LOG_GPS, "***************************************************************");
+        gps_dev.eph_ptr += len;
+
+        if (0 != tm_start(gps_dev.imp_timer, UBX_WRITE_INTERVAL, TIMER_TIMEOUT_REL_ONCE))
+        {
+            log_e(LOG_GPS, "start GPS_MSG_ID_IMP_TIMER error");
+            gps_dev.eph_ptr = (unsigned char *)ubx_ephemeris_data;
+        }
+    }
+    else
+    {
+        gps_dev.eph_ptr = NULL;
+        tm_stop(gps_dev.imp_timer);
+        log_o(LOG_GPS, "ehpemeris data write success");
+    }
+}
 
 int gps_dev_ubx_import_ehpemeris(const char *file)
 {
@@ -392,36 +423,6 @@ int gps_dev_ubx_import_ehpemeris(const char *file)
 }
 
 
-void gps_dev_ubx_write_ehpemeris_data(void)
-{
-    unsigned int len;
-
-    if (gps_dev.eph_ptr && *gps_dev.eph_ptr)
-    {
-        while ((0xB5 != gps_dev.eph_ptr[0]) || (0x62 != gps_dev.eph_ptr[1]))
-        {
-            gps_dev.eph_ptr++;
-        }
-
-        len = gps_dev.eph_ptr[4] + gps_dev.eph_ptr[5] * 256 + 8;
-
-        dev_write(gps_dev.dev_fd, gps_dev.eph_ptr, len);
-        //log_e(LOG_GPS, "***************************************************************");
-        gps_dev.eph_ptr += len;
-
-        if (0 != tm_start(gps_dev.imp_timer, UBX_WRITE_INTERVAL, TIMER_TIMEOUT_REL_ONCE))
-        {
-            log_e(LOG_GPS, "start GPS_MSG_ID_IMP_TIMER error");
-            gps_dev.eph_ptr = (unsigned char *)ubx_ephemeris_data;
-        }
-    }
-    else
-    {
-        gps_dev.eph_ptr = NULL;
-        tm_stop(gps_dev.imp_timer);
-        log_o(LOG_GPS, "ehpemeris data write success");
-    }
-}
 
 /****************************************************************
  function:     gps_get_fix_status

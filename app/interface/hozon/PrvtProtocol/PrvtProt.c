@@ -51,6 +51,7 @@ description£º include the header file
 #include "PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
 #include "PrvtProt_signFltr.h"
+#include "PrvtProt_SigParse.h"
 #include "PrvtProt.h"
 
 /*******************************************************

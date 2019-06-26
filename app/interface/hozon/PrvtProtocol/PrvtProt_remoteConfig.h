@@ -269,6 +269,6 @@ description£º function External declaration
 extern void PP_rmtCfg_init(void);
 extern int PP_rmtCfg_mainfunction(void *task);
 extern void PP_rmtCfg_SetCfgReq(unsigned char req);
-
+extern void PP_rmtCfg_ShowCfgPara(void);
 
 #endif 

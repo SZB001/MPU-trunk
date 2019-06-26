@@ -9,7 +9,7 @@
 #define RMTCTRL_CAN_PORT 1//can2
 
 
-static uint8_t candata[8] = { 0 };
+//static uint8_t candata[8] = { 0 };
 
 extern int can_do_send(unsigned char port, CAN_SEND_MSG *msg);
 

@@ -118,7 +118,7 @@ void PP_doorLockCtrl_init(void)
 ******************************************************/
 int PP_doorLockCtrl_mainfunction(void *task)
 {
-	int res;
+	int res = 0;
 	switch(door_lock_stage)
 	{
 		case PP_DOORLOCKCTRL_IDLE:
@@ -231,7 +231,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 		default:
 		break;
 	}
-	return 0;
+	return res;
 }
 
 /******************************************************

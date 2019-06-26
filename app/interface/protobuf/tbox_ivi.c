@@ -25,7 +25,7 @@
 static pthread_t ivi_tid;    /* thread id */
 static timer_t ivi_timer;
 static int signalpower;
-static int call_flag = 4; //电话默认是空闲状态
+static int call_flag = 5; //电话默认是空闲状态
 int tcp_fd = -1;
 ivi_client ivi_clients[MAX_IVI_NUM];
 
@@ -33,7 +33,8 @@ ivi_callrequest callrequest;
 int gps_onoff = 0;
 int network_onoff = 0;
 static unsigned char ivi_msgbuf[1024];
-
+static ivi_remotediagnos tspdiagnos;
+static int tspdiagnos_flag = 0;
 unsigned char recv_buf[MAX_IVI_NUM][IVI_MSG_SIZE];
 extern int ecall_flag ;  //正在通话的标志
 extern int bcall_flag ;
@@ -298,13 +299,12 @@ void ivi_msg_error_response_send( int fd ,Tbox__Net__Messagetype id,char *error_
 
 }
 
-void ivi_remotediagnos_response_send( int fd )
+void ivi_remotediagnos_response_send( int fd, int type)
 {
 
     int i = 0;
     int ret = 0;
     size_t szlen = 0;
-
     char send_buf[4096] = {0};
     unsigned char pro_buf[2048] = {0};
 
@@ -314,7 +314,7 @@ void ivi_remotediagnos_response_send( int fd )
         return ;
     }
     
-    Tbox__Net__TopMessage TopMsg ;
+    Tbox__Net__TopMessage TopMsg;
 	Tbox__Net__TboxRemoteDiagnose diagnos;
 	
     tbox__net__top_message__init( &TopMsg );
@@ -570,8 +570,7 @@ void ivi_callstate_response_send(int fd  )
 	else
 	{
 		call_flag = temp;	
-	}
-			
+	}		
     Tbox__Net__TopMessage TopMsg ;
     Tbox__Net__CallStatus callstate;
     tbox__net__top_message__init( &TopMsg );
@@ -1018,7 +1017,7 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
                      	callrequest.action = 2;
                     }
                     ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION);
-					ivi_remotediagnos_response_send( fd ); //ECALL触发，下发远程诊断
+					ivi_remotediagnos_response_send( fd,0); //ECALL触发，下发远程诊断
                     break;
                 }
 
@@ -1450,7 +1449,7 @@ void *ivi_main(void)
 			if(ivi_clients[0].fd > 0)
 			{
 				//按键触发ECALL，下发远程诊断命令
-				ivi_remotediagnos_response_send( ivi_clients[0].fd );
+				ivi_remotediagnos_response_send( ivi_clients[0].fd ,0);
 			}
 			log_o(LOG_IVI, "SOS trigger!!!!!");
 		}
@@ -1461,18 +1460,18 @@ void *ivi_main(void)
 			{
 				ivi_signalpower_response_send( ivi_clients[0].fd ); //如果信号强度变化，传给车机
 			}
-
-
+			
 			ivi_callstate_response_send(ivi_clients[0].fd );  //电话状态变化，传给车机
 
 //			if()  //判断TSP是否下发激活信息
 //			{
 //				ivi_activestate_response_send( ivi_clients[0].fd ); //通知车机激活成功
 //			}
-//			if() //TSP是否下发远程命令
-//			{
-//				ivi_remotediagnos_response_send( ivi_clients[0].fd );
-//			}
+			if(tspdiagnos_flag == 1) //TSP是否下发远程命令
+			{
+				tspdiagnos_flag = 0;
+				ivi_remotediagnos_response_send( ivi_clients[0].fd ,1);
+			}
 				
 		}
 	
@@ -1507,5 +1506,16 @@ int ivi_run(void)
     }
 
     return 0;
+}
+void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp)
+{
+	tspdiagnos.aid = tsp->aid;
+	tspdiagnos.mid = tsp->mid;
+	tspdiagnos.datatype = tsp->datatype;
+	tspdiagnos.cameraname = tsp->cameraname;
+	tspdiagnos.eventid = tsp->eventid;
+	tspdiagnos.effectivetime = tsp->effectivetime;
+	tspdiagnos.sizelimit =tsp->sizelimit;
+	tspdiagnos_flag = 1;
 }
 

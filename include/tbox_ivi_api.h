@@ -35,6 +35,17 @@ typedef struct{
 	int action;
 }ivi_callrequest;
 
+typedef struct{
+	uint32_t eventid;
+	uint32_t timestamp;
+	uint8_t datatype;
+	uint8_t cameraname;
+	uint32_t aid;
+	uint32_t mid;
+	uint32_t effectivetime;
+	uint32_t sizelimit;
+}ivi_remotediagnos;
+
 
 typedef enum IVI_MSG_EVENT
 {
@@ -53,6 +64,7 @@ int tbox_ivi_get_call_type(void);
 
 void tbox_ivi_clear_call_flag(void);
 
+extern void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp);
 
 
 #endif

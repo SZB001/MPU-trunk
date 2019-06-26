@@ -13,6 +13,7 @@
 extern ivi_client ivi_clients[MAX_IVI_NUM];
 extern void ivi_gps_response_send( int fd );
 extern int tbox_ivi_get_gps_onoff(void);
+extern int gps_set_task_bit(unsigned int mask);
 
 
 static long long gps_r_distance = 0;  /* realtime distance */
@@ -873,7 +874,7 @@ static void gps_decode_gga(unsigned char *buf)
 
     return;
 }
-
+#if 0
 static void gps_decode_gsa(unsigned char *buf)
 {
     double Hdop,Vdop;
@@ -900,7 +901,7 @@ static void gps_decode_gsa(unsigned char *buf)
 
     return;
 }
-
+#endif
 /****************************************************************
  function:     gps_decode_gga
  description:  decode the message received from gps

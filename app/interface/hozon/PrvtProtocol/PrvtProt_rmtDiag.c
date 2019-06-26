@@ -1,13 +1,17 @@
 /******************************************************
-ÎÄ¼şÃû£º	PrvtProt_rmtDiag.c
+æ–‡ä»¶åï¼š	PrvtProt_rmtDiag.c
 
-ÃèÊö£º	ÆóÒµË½ÓĞĞ­Òé£¨Õã½­ºÏÖÚ£©	
+æè¿°ï¼š	ä¼ä¸šç§æœ‰åè®®ï¼ˆæµ™æ±Ÿåˆä¼—ï¼‰
+
 Data			Vasion			author
+
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+
+descriptionï¼š include the header file
+
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -19,7 +23,6 @@ description£º include the header file
 #include <sys/time.h>
 #include "timer.h"
 #include <sys/prctl.h>
-
 #include <sys/types.h>
 #include <sysexits.h>	/* for EX_* exit codes */
 #include <assert.h>	/* for assert(3) */
@@ -43,14 +46,16 @@ description£º include the header file
 #include "PrvtProt_EcDc.h"
 #include "PrvtProt_cfg.h"
 #include "PrvtProt.h"
+#include "tbox_ivi_api.h"
 #include "PrvtProt_rmtDiag.h"
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¼š global variable definitions
 *******************************************************/
 
+
 /*******************************************************
-description£º static variable definitions
+descriptionï¼š static variable definitions
 *******************************************************/
 typedef struct
 {
@@ -62,16 +67,19 @@ typedef struct
 {
 	PrvtProt_rmtDiag_pack_t 	pack;
 	PrvtProt_rmtDiagSt_t	 	state;
-}__attribute__((packed))  PrvtProt_rmtDiag_t; /*½á¹¹Ìå*/
+}__attribute__((packed))  PrvtProt_rmtDiag_t; /*ç»“æ„ä½“*/
+
 
 static PrvtProt_pack_t 			PP_rmtDiag_Pack;
 static PrvtProt_rmtDiag_t		PP_rmtDiag;
 static PP_App_rmtDiag_t 		AppData_rmtDiag;
 
+static PrvtProt_TxInform_t 		diag_TxInform[PP_RMTDIAG_MAX_RESP];
 /*******************************************************
-description£º function declaration
+descriptionï¼š function declaration
 *******************************************************/
 /*Global function declaration*/
+
 
 /*Static function declaration*/
 static int PP_rmtDiag_do_checksock(PrvtProt_task_t *task);
@@ -80,21 +88,23 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 static int PP_rmtDiag_do_wait(PrvtProt_task_t *task);
 static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task);
 
-static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,uint8_t diagType,long eventid);
+static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
+//static int PP_remotImageAcquisitionReq(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
 static void PP_rmtDiag_send_cb(void * para);
 /******************************************************
-description£º function code
+descriptionï¼š function code
 ******************************************************/
+
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtDiag_init
+*å‡½æ•°åï¼šPP_rmtDiag_init
 
-*ĞÎ  ²Î£ºvoid
+*å½¢  å‚ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+*è¿”å›å€¼ï¼švoid
 
-*Ãè  Êö£º³õÊ¼»¯
+*æ  è¿°ï¼šåˆå§‹åŒ–
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 void PP_rmtDiag_init(void)
 {
@@ -102,102 +112,110 @@ void PP_rmtDiag_init(void)
 	memset(&AppData_rmtDiag,0 , sizeof(PP_App_rmtDiag_t));
 }
 
+
+
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtDiag_mainfunction
+*å‡½æ•°åï¼šPP_rmtDiag_mainfunction
 
-*ĞÎ  ²Î£ºvoid
+*å½¢  å‚ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+*è¿”å›å€¼ï¼švoid
 
-*Ãè  Êö£ºÖ÷ÈÎÎñº¯Êı
+*æ  è¿°ï¼šä¸»ä»»åŠ¡å‡½æ•°
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 int PP_rmtDiag_mainfunction(void *task)
 {
 	int res;
+
 	res = 		PP_rmtDiag_do_checksock((PrvtProt_task_t*)task) ||
 				PP_rmtDiag_do_rcvMsg((PrvtProt_task_t*)task) ||
 				PP_rmtDiag_do_wait((PrvtProt_task_t*)task) ||
 				PP_rmtDiag_do_checkrmtDiag((PrvtProt_task_t*)task);
 
-
 	return res;
 }
 
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtDiag_do_checksock
+*å‡½æ•°åï¼šPP_rmtDiag_do_checksock
 
-*ĞÎ  ²Î£ºvoid
+*å½¢  å‚ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+*è¿”å›å€¼ï¼švoid
 
-*Ãè  Êö£º¼ì²ésocketÁ¬½Ó
+*æ  è¿°ï¼šæ£€æŸ¥socketè¿æ¥
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 static int PP_rmtDiag_do_checksock(PrvtProt_task_t *task)
 {
 	if(1 == sockproxy_socketState())//socket open
 	{
-
 		return 0;
 	}
+
 	return -1;
 }
 
+
+
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtDiag_do_rcvMsg
+*å‡½æ•°åï¼šPP_rmtDiag_do_rcvMsg
 
-*ĞÎ  ²Î£ºvoid
+*å½¢  å‚ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+*è¿”å›å€¼ï¼švoid
 
-*Ãè  Êö£º½ÓÊÕÊı¾İº¯Êı
+*æ  è¿°ï¼šæ¥æ”¶æ•°æ®å‡½æ•°
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 static int PP_rmtDiag_do_rcvMsg(PrvtProt_task_t *task)
-{	
+{
 	int rlen = 0;
 	PrvtProt_pack_t rcv_pack;
+
 	memset(&rcv_pack,0 , sizeof(PrvtProt_pack_t));
 	if ((rlen = RdPP_queue(PP_REMOTE_DIAG,rcv_pack.Header.sign,sizeof(PrvtProt_pack_t))) <= 0)
     {
 		return 0;
 	}
-	
+
 	log_i(LOG_HOZON, "receive diag message");
 	protocol_dump(LOG_HOZON, "PRVT_PROT", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
-			(rlen <= 18))//ÅĞ¶ÏÊı¾İÖ¡Í·ÓĞÎó»òÕßÊı¾İ³¤¶È²»¶Ô
+			(rlen <= 18))//åˆ¤æ–­æ•°æ®å¸§å¤´æœ‰è¯¯æˆ–è€…æ•°æ®é•¿åº¦ä¸å¯¹
 	{
 		return 0;
 	}
-	
-	if(rlen > (18 + PP_MSG_DATA_LEN))//½ÓÊÕÊı¾İ³¤¶È³¬³ö»º´æbuffer³¤¶È
+
+	if(rlen > (18 + PP_MSG_DATA_LEN))//æ¥æ”¶æ•°æ®é•¿åº¦è¶…å‡ºç¼“å­˜bufferé•¿åº¦
 	{
 		return 0;
 	}
+
 	PP_rmtDiag_RxMsgHandle(task,&rcv_pack,rlen);
 
 	return 0;
 }
 
+
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtDiag_RxMsgHandle
+*å‡½æ•°åï¼šPP_rmtDiag_RxMsgHandle
 
-*ĞÎ  ²Î£ºvoid
+*å½¢  å‚ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+*è¿”å›å€¼ï¼švoid
 
-*Ãè  Êö£º½ÓÊÕÊı¾İ´¦Àí
+*æ  è¿°ï¼šæ¥æ”¶æ•°æ®å¤„ç†
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len)
 {
 	int aid;
+
 	if(PP_NGTP_TYPE != rxPack->Header.opera)
 	{
 		log_e(LOG_HOZON, "unknow package");
@@ -211,17 +229,41 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			  (MsgDataBody.aID[2] - 0x30);
 	if(PP_AID_DIAG != aid)
 	{
-		log_e(LOG_HOZON, "aid unmatch");
+		log_e(LOG_HOZON, "aid unmatch\n");
 		return;
 	}
 
 	switch(MsgDataBody.mID)
 	{
-		case PP_MID_DIAG_REQ://ÊÕµ½tspÇëÇó
+		case PP_MID_DIAG_REQ://æ”¶åˆ°tspè¯·æ±‚
 		{
-			PP_rmtDiag.state.diagReq = 1;
-			PP_rmtDiag.state.diagType = Appdata.DiagnosticReq.diagType;
-			PP_rmtDiag.state.diageventId = MsgDataBody.eventId;
+			if(0 == PP_rmtDiag.state.diagReq)
+			{
+				PP_rmtDiag.state.diagReq = 1;
+				PP_rmtDiag.state.diagType = Appdata.DiagnosticReq.diagType;
+				PP_rmtDiag.state.diageventId = MsgDataBody.eventId;
+			}
+			else
+			{
+				log_e(LOG_HOZON, "repeat diag request\n");
+			}
+		}
+		break;
+		case PP_MID_DIAG_IMAGEACQREQ://
+		{
+			if(PP_IMAGEACQRESP_IDLE == PP_rmtDiag.state.ImageAcqRespSt)
+			{
+				PP_rmtDiag.state.ImageAcquisitionReq = 1;
+				PP_rmtDiag.state.dataType    = Appdata.ImageAcquisitionReq.dataType;
+				PP_rmtDiag.state.cameraName  =  Appdata.ImageAcquisitionReq.cameraName;
+				PP_rmtDiag.state.effectiveTime = Appdata.ImageAcquisitionReq.effectiveTime;
+				PP_rmtDiag.state.sizeLimit   =  Appdata.ImageAcquisitionReq.sizeLimit;
+				PP_rmtDiag.state.diageventId = MsgDataBody.eventId;
+			}
+			else
+			{
+				log_e(LOG_HOZON, "repeat ImageAcq request\n");
+			}
 		}
 		break;
 		default:
@@ -230,71 +272,98 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 }
 
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtDiag_do_wait
+*å‡½æ•°åï¼šPP_rmtDiag_do_wait
 
-*ĞÎ  ²Î£ºvoid
+*å½¢  å‚ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+*è¿”å›å€¼ï¼švoid
 
-*Ãè  Êö£º¼ì²éÊÇ·ñÓĞÊÂ¼şµÈ´ıÓ¦´ğ
+*æ  è¿°ï¼šæ£€æŸ¥æ˜¯å¦æœ‰äº‹ä»¶ç­‰å¾…åº”ç­”
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 static int PP_rmtDiag_do_wait(PrvtProt_task_t *task)
 {
 	return 0;
 }
 
+
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtDiag_do_checkrmtDiag
+*å‡½æ•°åï¼šPP_rmtDiag_do_checkrmtDiag
 
-*ĞÎ  ²Î£º
+*å½¢  å‚ï¼š
 
-*·µ»ØÖµ£º
+*è¿”å›å€¼ï¼š
 
-*Ãè  Êö£º
+*æ  è¿°ï¼š
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 {
 	int i;
 	int res;
-	if(1 == PP_rmtDiag.state.diagReq)//
+
+	if(1 == PP_rmtDiag.state.diagReq)//è¿œç¨‹è¯Šæ–­è¯·æ±‚
 	{
-
-
-		res = PP_rmtDiag_DiagResponse(task,PP_rmtDiag.state.diagType,PP_rmtDiag.state.diageventId);
-		if(res < 0)//ÇëÇó·¢ËÍÊ§°Ü
+		if(0 == PP_rmtDiag_DiagResponse(task,&PP_rmtDiag))
 		{
-			log_e(LOG_HOZON, "socket send error, reset protocol");
-			PP_rmtDiag.state.diagReq = 0;
-			sockproxy_socketclose();//by liujian 20190514
+			memset(&diag_TxInform[PP_RMTDIAG_RESP_REQ],0,sizeof(PrvtProt_TxInform_t));
+			diag_TxInform[PP_RMTDIAG_RESP_REQ].aid = PP_AID_DIAG;
+			diag_TxInform[PP_RMTDIAG_RESP_REQ].mid = PP_MID_DIAG_RESP;
+			diag_TxInform[PP_RMTDIAG_RESP_REQ].pakgtype = PP_TXPAKG_SIGTIME;
+			SP_data_write(PP_rmtDiag_Pack.Header.sign, \
+					PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&diag_TxInform[PP_RMTDIAG_RESP_REQ]);
+			protocol_dump(LOG_HOZON, "diag_req_response", PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen,1);
 		}
-		else if(res > 0)
-		{
-			log_i(LOG_HOZON, "socket send ok");
-			PP_rmtDiag.state.diagReq = 0;
-		}
-		else
-		{}
 	}
+
+	switch(PP_rmtDiag.state.ImageAcqRespSt)
+	{
+		case PP_IMAGEACQRESP_IDLE:
+		{
+			if(1 == PP_rmtDiag.state.ImageAcquisitionReq)
+			{
+				PP_rmtDiag.state.ImageAcquisitionReq = 0;
+				PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_INFORM_HU;
+			}
+		}
+		break;
+		case PP_IMAGEACQRESP_INFORM_HU://é€šçŸ¥HU
+		{
+			ivi_remotediagnos tspInformHU;
+			tspInformHU.aid = PP_AID_DIAG;
+			tspInformHU.mid = PP_MID_DIAG_IMAGEACQREQ;
+			tspInformHU.eventid = PP_rmtDiag.state.diageventId;
+			tspInformHU.datatype = PP_rmtDiag.state.dataType;
+			tspInformHU.cameraname = PP_rmtDiag.state.cameraName;
+			tspInformHU.effectivetime = PP_rmtDiag.state.effectiveTime;
+			tspInformHU.sizelimit = PP_rmtDiag.state.sizeLimit;
+			tbox_ivi_set_tspInformHU(&tspInformHU);
+			PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
+		}
+		break;
+		default:
+		break;
+	}
+
 
 	return 0;
 }
 
+
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtDiag_DiagResponse
+*å‡½æ•°åï¼šPP_rmtDiag_DiagResponse
 
-*ĞÎ  ²Î£º
+*å½¢  å‚ï¼š
 
-*·µ»ØÖµ£º
+*è¿”å›å€¼ï¼š
 
-*Ãè  Êö£ºdiag response
+*æ  è¿°ï¼šdiag response
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
-static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,uint8_t diagType,long eventid)
+static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag)
 {
 	int msgdatalen;
 	int res = 0;
@@ -313,72 +382,141 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,uint8_t diagType,long e
 
 	/* disbody */
 	memcpy(PP_rmtDiag.pack.DisBody.aID,"140",3);
-	PP_rmtDiag.pack.DisBody.mID = 2;
+	PP_rmtDiag.pack.DisBody.mID = PP_MID_DIAG_RESP;
 	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	PP_rmtDiag.pack.DisBody.eventId = eventid;
+	PP_rmtDiag.pack.DisBody.eventId = rmtDiag->state.diageventId;
 	PP_rmtDiag.pack.DisBody.expTime = PrvtPro_getTimestamp();
 	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
 	PP_rmtDiag.pack.DisBody.testFlag = 1;
 
 	/*appdata*/
-	AppData_rmtDiag.DiagnosticResp.diagType = diagType;
-	AppData_rmtDiag.DiagnosticResp.result = 1;
-	AppData_rmtDiag.DiagnosticResp.failureType = 0;
-	for(i =0;i < 2;i++)
+	switch(rmtDiag->state.diagType)
 	{
-		memcpy(AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCode,"12345",5);
-		AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCodelen = 5;
-		AppData_rmtDiag.DiagnosticResp.diagCode[i].diagTime = 123456+i;
-		AppData_rmtDiag.DiagnosticResp.diagcodenum++;
+		case PP_DIAG_TBOX:
+		{
+			AppData_rmtDiag.DiagnosticResp.diagType = rmtDiag->state.diagType;
+			AppData_rmtDiag.DiagnosticResp.result = rmtDiag->state.result;
+			AppData_rmtDiag.DiagnosticResp.failureType = rmtDiag->state.failureType;
+			for(i =0;i < 2;i++)
+			{
+				memcpy(AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCode,"12345",5);
+				AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCodelen = 5;
+				AppData_rmtDiag.DiagnosticResp.diagCode[i].diagTime = 123456+i;
+				AppData_rmtDiag.DiagnosticResp.diagcodenum++;
+			}
+		}
+		break;
+		case PP_DIAG_HU:
+		{
+
+		}
+		break;
+		case PP_DIAG_ICU:
+		{
+
+		}
+		break;
+		default:
+		break;
 	}
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_RESP,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
-									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag))//Êı¾İ±àÂë´ò°üÊÇ·ñÍê³É
+									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag))//æ•°æ®ç¼–ç æ‰“åŒ…æ˜¯å¦å®Œæˆ
 	{
 		log_e(LOG_HOZON, "encode error\n");
 		return -1;
 	}
 
+	PP_rmtDiag_Pack.totallen = 18 + msgdatalen;
 	PP_rmtDiag_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
-	res = sockproxy_MsgSend(PP_rmtDiag_Pack.Header.sign,(18 + msgdatalen),NULL);
 
-	protocol_dump(LOG_HOZON, "xcall_response", PP_rmtDiag_Pack.Header.sign,(18 + msgdatalen),1);
 	return res;
 }
 
-/******************************************************
-*º¯ÊıÃû£ºPP_rmtDiag_send_cb
-
-*ĞÎ  ²Î£º
-
-*·µ»ØÖµ£º
-
-*Ãè  Êö£ºremote diag status response
-
-*±¸  ×¢£º
-******************************************************/
-static void PP_rmtDiag_send_cb(void * para)
-{
-	log_e(LOG_HOZON, " resp send ok");
-}
-
-
 #if 0
 /******************************************************
-*º¯ÊıÃû£ºPP_xcall_SetEcallResp
+*å‡½æ•°åï¼š
 
-*ĞÎ  ²Î£º
+*å½¢  å‚ï¼š
 
-*·µ»ØÖµ£º
+*è¿”å›å€¼ï¼š
 
-*Ãè  Êö£ºÉèÖÃecall response
+*æ  è¿°ï¼šè¿œç¨‹è¯Šæ–­( MID=4)
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
-void PP_xcall_SetEcallResp(unsigned char resp)
+static int PP_remotImageAcquisitionReq(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag)
 {
-	PP_xcall[PP_ECALL].state.resp = resp;
+	int msgdatalen;
+	int res = 0;
+	int i;
+
+	memset(&PP_rmtDiag_Pack,0 , sizeof(PrvtProt_pack_t));
+	/* header */
+	memcpy(PP_rmtDiag.pack.Header.sign,"**",2);
+	PP_rmtDiag.pack.Header.commtype.Byte = 0xe1;
+	PP_rmtDiag.pack.Header.ver.Byte = 0x30;
+	PP_rmtDiag.pack.Header.opera = 0x02;
+	PP_rmtDiag.pack.Header.ver.Byte = task->version;
+	PP_rmtDiag.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+	PP_rmtDiag.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	memcpy(&PP_rmtDiag_Pack, &PP_rmtDiag.pack.Header, sizeof(PrvtProt_pack_Header_t));
+
+	/* disbody */
+	memcpy(PP_rmtDiag.pack.DisBody.aID,"140",3);
+	PP_rmtDiag.pack.DisBody.mID = PP_MID_DIAG_RESP;
+	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
+	PP_rmtDiag.pack.DisBody.eventId = rmtDiag->state.diageventId;
+	PP_rmtDiag.pack.DisBody.expTime = PrvtPro_getTimestamp();
+	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
+	PP_rmtDiag.pack.DisBody.testFlag = 1;
+
+
+	/*app data*/
+	AppData_rmtDiag.ImageAcquisitionReq.dataType = 2;//
+	AppData_rmtDiag.ImageAcquisitionReq.cameraName = 1;//
+	AppData_rmtDiag.ImageAcquisitionReq.effectiveTime =123456;//
+	AppData_rmtDiag.ImageAcquisitionReq.sizeLimit = 100;//
+
+	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_RESP,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
+									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag))//æ•°æ®ç¼–ç æ‰“åŒ…æ˜¯å¦å®Œæˆ
+	{
+		log_e(LOG_HOZON, "encode error\n");
+		return -1;
+	}
+
+	PP_rmtDiag_Pack.totallen = 18 + msgdatalen;
+	PP_rmtDiag_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
+
+	return res;
 }
 #endif
 
+/******************************************************
+*å‡½æ•°åï¼šPP_rmtDiag_send_cb
+
+*å½¢  å‚ï¼š
+
+*è¿”å›å€¼ï¼š
+
+*æ  è¿°ï¼šremote diag status response
+
+*å¤‡  æ³¨ï¼š
+******************************************************/
+static void PP_rmtDiag_send_cb(void * para)
+{
+	PrvtProt_TxInform_t *TxInform_ptr =  (PrvtProt_TxInform_t*)para;
+
+	switch(TxInform_ptr->mid)
+	{
+		case PP_MID_DIAG_RESP:
+		{
+			PP_rmtDiag.state.diagReq = 0;
+		}
+		break;
+		default:
+		break;
+	}
+}

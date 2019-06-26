@@ -150,7 +150,7 @@ int gps_init(INIT_PHASE phase)
 {
     int ret;
 
-	unsigned int cfglen;
+//	unsigned int cfglen;
 
     log_i(LOG_GPS, "init gps thread!");
 

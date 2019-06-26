@@ -42,6 +42,18 @@ description£º include the header file
 #include "VehicleStRespInfo.h"
 #include "VSgpspos.h"
 #include "VSExtStatus.h"
+
+#include "DiagnosticReqInfo.h"
+#include "DiagnosticRespInfo.h"
+#include "DiagCode.h"
+
+#include "DiagnosticStInfo.h"
+#include "ImageAcquisitionReqInfo.h"
+#include "ImageAcquisitionRespInfo.h"
+
+#include "LogAcquisitionRespInfo.h"
+#include "LogAcquisitionResInfo.h"
+
 #include "per_encoder.h"
 #include "per_decoder.h"
 
@@ -53,9 +65,12 @@ description£º include the header file
 #include "PrvtProt_xcall.h"
 #include "PrvtProt_remoteConfig.h"
 #include "PrvtProt.h"
-#include "PrvtProt_EcDc.h"
 #include "remoteControl/PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
+
+#include "PrvtProt_rmtDiag.h"
+
+#include "PrvtProt_EcDc.h"
 /*******************************************************
 description£º global variable definitions
 *******************************************************/
@@ -81,6 +96,16 @@ static asn_TYPE_descriptor_t *pduType_Rmt_Ctrl_Bookingresp = &asn_DEF_BookingRes
 
 static asn_TYPE_descriptor_t *pduType_VS_req = &asn_DEF_VehicleStReqInfo;
 static asn_TYPE_descriptor_t *pduType_VS_resp = &asn_DEF_VehicleStRespInfo;
+
+static asn_TYPE_descriptor_t *pduType_GIAG_req = &asn_DEF_DiagnosticReqInfo;
+static asn_TYPE_descriptor_t *pduType_GIAG_resp = &asn_DEF_DiagnosticRespInfo;
+
+static asn_TYPE_descriptor_t *pduType_GIAG_st = &asn_DEF_DiagnosticStInfo;
+static asn_TYPE_descriptor_t *pduType_GIAG_imageAcqReq = &asn_DEF_ImageAcquisitionReqInfo;
+//static asn_TYPE_descriptor_t *pduType_GIAG_imageAcqResp = &asn_DEF_ImageAcquisitionRespInfo;
+
+static asn_TYPE_descriptor_t *pduType_GIAG_LogAcqResp = &asn_DEF_LogAcquisitionRespInfo;
+//static asn_TYPE_descriptor_t *pduType_GIAG_LogAcqRes = &asn_DEF_LogAcquisitionResInfo;
 
 static uint8_t tboxAppdata[PP_ECDC_DATA_LEN];
 static int tboxAppdataLen;
@@ -828,6 +853,36 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			}
 		}
 		break;
+		case ECDC_RMTDIAG_RESP:
+		{
+			PP_DiagnosticResp_t *DiagnosticResp_ptr = (PP_DiagnosticResp_t*)appchoice;
+			DiagnosticRespInfo_t DiagnosticResp;
+			struct diagCode diagcode;
+			DiagCode_t DiagCode[255];
+			//DiagCode_t *DiagCode_ptr = DiagCode;
+
+			memset(&DiagnosticResp,0 , sizeof(DiagnosticRespInfo_t));
+			DiagnosticResp.diagType = DiagnosticResp_ptr->diagType;
+			DiagnosticResp.result = DiagnosticResp_ptr->result;
+			DiagnosticResp.failureType = &(DiagnosticResp_ptr->failureType);
+			for(i = 0;i < DiagnosticResp_ptr->diagcodenum;i++)
+			{
+				DiagCode[i].diagCode.buf = DiagnosticResp_ptr->diagCode[i].diagCode;
+				DiagCode[i].diagCode.size = DiagnosticResp_ptr->diagCode[i].diagCodelen;
+				DiagCode[i].diagTime = DiagnosticResp_ptr->diagCode[i].diagTime;
+
+				ASN_SEQUENCE_ADD(&diagcode, &DiagCode[i]);
+			}
+			DiagnosticResp.diagCode = &diagcode;
+
+			ec = uper_encode(pduType_GIAG_resp,(void *) &DiagnosticResp,PrvtPro_writeout,&key);
+			if(ec.encoded  == -1)
+			{
+				log_i(LOG_HOZON, "encode:appdata rmt_diag_resp fail\n");
+				return -1;
+			}
+		}
+		break;
 		default:
 		{
 			log_e(LOG_HOZON, "unknow application request");
@@ -1338,6 +1393,53 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 
 					app_VS_ptr->VSReq.vehStatusReqType = VSReq.vehStatusReqType;
 					log_i(LOG_HOZON, "VSReq.vehStatusReqType = %d\n",app_VS_ptr->VSReq.vehStatusReqType);
+				}
+			}
+			break;
+			case PP_AID_DIAG:
+			{
+				if(PP_MID_DIAG_REQ == MID)//giag req
+				{
+					PP_DiagnosticReq_t *PP_DiagnosticReq_ptr = (PP_DiagnosticReq_t*)appData;
+
+					DiagnosticReqInfo_t DiagnosticReq;
+					DiagnosticReqInfo_t *DiagnosticReq_ptr = &DiagnosticReq;
+					memset(&DiagnosticReq,0 , sizeof(DiagnosticReqInfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_GIAG_req,(void *) &DiagnosticReq_ptr, \
+							 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_e(LOG_HOZON,   "Could not decode remote diag req data Frame\n");
+						return -1;
+					}
+
+					PP_DiagnosticReq_ptr->diagType = DiagnosticReq.diagType;
+					log_i(LOG_HOZON, "PP_DiagnosticReq_ptr->diagType = %ld\n",PP_DiagnosticReq_ptr->diagType);
+				}
+				else if(4 == MID)//giag imageAcqReq
+				{
+					PP_ImageAcquisitionReq_t *PP_ImageAcquisitionReq_ptr = (PP_ImageAcquisitionReq_t*)appData;
+
+					ImageAcquisitionReqInfo_t ImageAcquisitionReq;
+					ImageAcquisitionReqInfo_t *ImageAcquisitionReq_ptr = &ImageAcquisitionReq;
+					memset(&ImageAcquisitionReq,0 , sizeof(ImageAcquisitionReqInfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_GIAG_imageAcqReq,(void *) &ImageAcquisitionReq_ptr, \
+							 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_i(LOG_HOZON,"Could not decode application data Frame\n");
+						return -1;
+					}
+
+					PP_ImageAcquisitionReq_ptr->dataType = ImageAcquisitionReq.dataType;
+					PP_ImageAcquisitionReq_ptr->cameraName = ImageAcquisitionReq.cameraName;
+					PP_ImageAcquisitionReq_ptr->effectiveTime = ImageAcquisitionReq.effectiveTime;
+					PP_ImageAcquisitionReq_ptr->sizeLimit = ImageAcquisitionReq.sizeLimit;
+
+					fprintf(stdout, "PP_ImageAcquisitionReq_ptr->dataType = %ld\n",PP_ImageAcquisitionReq_ptr->dataType);
+					fprintf(stdout, "PP_ImageAcquisitionReq_ptr->cameraName = %ld\n",PP_ImageAcquisitionReq_ptr->cameraName);
+					fprintf(stdout, "PP_ImageAcquisitionReq_ptr->effectiveTime = %ld\n",PP_ImageAcquisitionReq_ptr->effectiveTime);
+					fprintf(stdout, "PP_ImageAcquisitionReq_ptr->sizeLimit = %ld\n",PP_ImageAcquisitionReq_ptr->sizeLimit);
 				}
 			}
 			break;
