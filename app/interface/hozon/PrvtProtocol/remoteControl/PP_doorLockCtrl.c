@@ -44,6 +44,7 @@ description： include the header file
 #include "PP_rmtCtrl.h"
 #include "../../../gb32960/gb32960.h"
 #include "PP_canSend.h"
+#include "PPrmtCtrl_cfg.h"
 #include "PP_doorLockCtrl.h"
 
 static int doorLock_success_flag = 0;
@@ -67,19 +68,15 @@ typedef struct
 }__attribute__((packed))  PrvtProt_rmtdoorCtrl_t; /*结构体*/
 
 static PrvtProt_rmtdoorCtrl_t PP_rmtdoorCtrl;
-#if 0
-static PrvtProt_pack_t 		PP_rmtdoorCtrl_Pack;
-static PrvtProt_App_rmtCtrl_t 		App_rmtdoorCtrl;
-#endif
+static int door_lock_stage = PP_DOORLOCKCTRL_IDLE;
+static unsigned long long PP_Respwaittime = 0;
 /*******************************************************
 description： function declaration
 *******************************************************/
 /*Global function declaration*/
 
 /*Static function declaration*/
-#if 0
-static int PP_doorLockCtrl_StatusResp(PrvtProt_task_t *task,PrvtProt_rmtdoorCtrl_t *rmtCtrl);
-#endif
+
 /******************************************************
 description： function code
 ******************************************************/
@@ -122,206 +119,120 @@ void PP_doorLockCtrl_init(void)
 int PP_doorLockCtrl_mainfunction(void *task)
 {
 	int res;
-	static int door_lock_stage = 0;
 	switch(door_lock_stage)
 	{
-		case 0: 
-		if(PP_rmtdoorCtrl.state.req == 1)   //判断请求是不是
+		case PP_DOORLOCKCTRL_IDLE:
 		{
-			doorLock_success_flag = 0;
-			PP_rmtdoorCtrl.state.req = 0;
-			PP_canSend_setbit(17,2,1);
-			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-			rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
-			rmtCtrl_Stpara.rvcFailureType = 3;
-			rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
-			rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
-			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-			res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
-			door_lock_stage = 1;
+			if(PP_rmtdoorCtrl.state.req == 1)   //判断请求是不是
+			{
+				PP_rmtdoorCtrl.state.req = 0;
+				doorLock_success_flag = 0;
+				door_lock_stage = PP_DOORLOCKCTRL_REQSTART;
+				if(PP_rmtdoorCtrl.state.style == RMTCTRL_TSP)//tsp
+				{
+					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+					rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
+					rmtCtrl_Stpara.rvcFailureType = 0;
+					rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
+					rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
+					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+					res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+				}
+				else//蓝牙
+				{
+
+				}
+			}
 		}
 		break;
-		case 1://执行完
+		case PP_DOORLOCKCTRL_REQSTART:
 		{
-			if(gb_data_doorlockSt() == 1 )
+			if(PP_rmtdoorCtrl.state.reqType == 0) //解锁
 			{
-				PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-				rmtCtrl_Stpara.rvcReqStatus = 2;  //开始执行
-				rmtCtrl_Stpara.rvcFailureType = 3;
+				PP_canSend_setbit(17,2,2);  //发解锁报文
+			}
+			else
+			{
+				PP_canSend_setbit(17,2,1); //发上锁报文
+			}
+
+			door_lock_stage = PP_DOORLOCKCTRL_RESPWAIT;
+			PP_Respwaittime = tm_get_time();
+		}
+		break;
+		case PP_DOORLOCKCTRL_RESPWAIT://执行等待车控响应
+		{
+			if(PP_rmtdoorCtrl.state.reqType == 0) //解锁
+			{
+				if((tm_get_time() - PP_Respwaittime) < 2000)
+				{
+					if(gb_data_doorlockSt() == 0) //门锁状态为0，解锁程成功
+					{
+						PP_canSend_resetbit(17,2);
+						doorLock_success_flag = 1;
+						door_lock_stage = PP_DOORLOCKCTRL_END;
+					}
+				}
+				else//响应超时
+				{
+					PP_canSend_resetbit(17,2);
+					doorLock_success_flag = 0;
+					door_lock_stage = PP_DOORLOCKCTRL_END;
+				}
+			}
+			else//上锁
+			{
+				if((tm_get_time() - PP_Respwaittime) < 2000)
+				{
+					if(gb_data_doorlockSt() == 1) //门锁状态为0，解锁程成功
+					{
+						PP_canSend_resetbit(17,2);
+						doorLock_success_flag = 1;
+						door_lock_stage = PP_DOORLOCKCTRL_END;
+					}
+				}
+				else//响应超时
+				{
+					PP_canSend_resetbit(17,2);
+					doorLock_success_flag = 0;
+					door_lock_stage = PP_DOORLOCKCTRL_END;
+				}
+			}
+		}
+		break;
+		case PP_DOORLOCKCTRL_END:
+		{
+			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+			memset(&rmtCtrl_Stpara,0,sizeof(PP_rmtCtrl_Stpara_t));
+			if(PP_rmtdoorCtrl.state.style == RMTCTRL_TSP)//tsp
+			{
 				rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
 				rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+				if(1 == doorLock_success_flag)
+				{
+					rmtCtrl_Stpara.rvcReqStatus = 2;  //执行完成
+					rmtCtrl_Stpara.rvcFailureType = 0;
+				}
+				else
+				{
+					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
+					rmtCtrl_Stpara.rvcFailureType = 0xff;
+				}
 				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
-				door_lock_stage = 0;
-				doorLock_success_flag = 1;
+				door_lock_stage = PP_DOORLOCKCTRL_IDLE;
+			}
+			else//蓝牙
+			{
+
 			}
 		}
 		break;
 		default:
 		break;
 	}
+	return 0;
 }
-
-#if 0
-/******************************************************
-*函数名：PP_doorLockCtrl_StatusResp
-
-*形  参：
-
-*返回值：
-
-*描  述：remote control status response
-
-*备  注：
-******************************************************/
-static int PP_doorLockCtrl_StatusResp(PrvtProt_task_t *task,PrvtProt_rmtdoorCtrl_t *rmtdoorCtrl)
-{
-	int msgdatalen;
-	int res;
-	/*header*/
-	rmtdoorCtrl->pack.Header.ver.Byte = task->version;
-	rmtdoorCtrl->pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-	rmtdoorCtrl->pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-	memcpy(&PP_rmtdoorCtrl_Pack, &rmtdoorCtrl->pack.Header, sizeof(PrvtProt_pack_Header_t));
-	/*body*/
-	rmtdoorCtrl->pack.DisBody.mID = PP_MID_RMTCTRL_RESP;
-	//rmtdoorCtrl->pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
-	rmtdoorCtrl->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtdoorCtrl->pack.DisBody.expTime   = PrvtPro_getTimestamp();
-	rmtdoorCtrl->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
-
-	/*appdata*/
-	PrvtProtcfg_gpsData_t gpsDt;
-	App_rmtdoorCtrl.CtrlResp.rvcReqType = PP_rmtdoorCtrl.state.reqType;
-	App_rmtdoorCtrl.CtrlResp.rvcReqStatus = 0;
-	App_rmtdoorCtrl.CtrlResp.rvcFailureType = 0;
-	App_rmtdoorCtrl.CtrlResp.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps状态 0-无效；1-有效;
-	App_rmtdoorCtrl.CtrlResp.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gps时间戳:系统时间(通过gps校时)
-
-	PrvtProtCfg_gpsData(&gpsDt);
-
-	if(App_rmtdoorCtrl.CtrlResp.gpsPos.gpsSt == 1)
-	{
-		if(gpsDt.is_north)
-		{
-			App_rmtdoorCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000);//纬度 x 1000000,当GPS信号无效时，值为0
-		}
-		else
-		{
-			App_rmtdoorCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//纬度 x 1000000,当GPS信号无效时，值为0
-		}
-
-		if(gpsDt.is_east)
-		{
-			App_rmtdoorCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000);//经度 x 1000000,当GPS信号无效时，值为0
-		}
-		else
-		{
-			App_rmtdoorCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//经度 x 1000000,当GPS信号无效时，值为0
-		}
-		log_i(LOG_HOZON, "PP_appData.latitude = %lf",App_rmtdoorCtrl.CtrlResp.gpsPos.latitude);
-		log_i(LOG_HOZON, "PP_appData.longitude = %lf",App_rmtdoorCtrl.CtrlResp.gpsPos.longitude);
-	}
-	else
-	{
-		App_rmtdoorCtrl.CtrlResp.gpsPos.latitude  = 0;
-		App_rmtdoorCtrl.CtrlResp.gpsPos.longitude = 0;
-	}
-	App_rmtdoorCtrl.CtrlResp.gpsPos.altitude = (long)(gpsDt.height);//高度（m）
-	if(App_rmtdoorCtrl.CtrlResp.gpsPos.altitude > 10000)
-	{
-		App_rmtdoorCtrl.CtrlResp.gpsPos.altitude = 10000;
-	}
-	App_rmtdoorCtrl.CtrlResp.gpsPos.heading = (long)(gpsDt.direction);//车头方向角度，0为正北方向
-	App_rmtdoorCtrl.CtrlResp.gpsPos.gpsSpeed = (long)(gpsDt.kms*10);//速度 x 10，单位km/h
-	App_rmtdoorCtrl.CtrlResp.gpsPos.hdop = (long)(gpsDt.hdop*10);//水平精度因子 x 10
-	if(App_rmtdoorCtrl.CtrlResp.gpsPos.hdop > 1000)
-	{
-		App_rmtdoorCtrl.CtrlResp.gpsPos.hdop = 1000;
-	}
-
-	App_rmtdoorCtrl.CtrlResp.basicSt.driverDoor = 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.driverLock = 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.passengerDoor = 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.passengerLock = 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.rearLeftDoor = 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.rearLeftLock = 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.rearRightDoor = 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.rearRightLock = 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.bootStatus = 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.bootStatusLock = 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.driverWindow = 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.passengerWindow = 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.rearLeftWindow = 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.rearRightWinow = 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.sunroofStatus = 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.engineStatus = 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.accStatus = 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.accTemp = 18	/* OPTIONAL */;//18-36
-	App_rmtdoorCtrl.CtrlResp.basicSt.accMode = 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.accBlowVolume	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.innerTemp = 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.outTemp = 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.sideLightStatus= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.dippedBeamStatus= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.mainBeamStatus= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.hazardLightStus= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.frtRightTyrePre	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.frtRightTyreTemp	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.frontLeftTyrePre	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.frontLeftTyreTemp= 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.rearRightTyrePre= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.rearRightTyreTemp= 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.rearLeftTyrePre	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.rearLeftTyreTemp	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.batterySOCExact= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.chargeRemainTim	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.availableOdomtr= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.bookingChargeSt= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.bookingChargeHour= 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.bookingChargeMin	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.chargeMode	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.chargeStatus	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.powerMode	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.speed= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.totalOdometer= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.batteryVoltage= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.batteryCurrent= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.batterySOCPrc= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.dcStatus= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.gearPosition= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.insulationRstance= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.acceleratePedalprc= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.deceleratePedalprc= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.canBusActive= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.bonnetStatus= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.lockStatus= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.gsmStatus= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.wheelTyreMotrSt= 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.vehicleAlarmSt= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.currentJourneyID= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.journeyOdom= 1;
-	App_rmtdoorCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel= 1	/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.frtRightSeatHeatLel	= 1/* OPTIONAL */;
-	App_rmtdoorCtrl.CtrlResp.basicSt.airCleanerSt	= 1/* OPTIONAL */;
-
-
-	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_RESP,PP_rmtdoorCtrl_Pack.msgdata,&msgdatalen,\
-									   &rmtdoorCtrl->pack.DisBody,&App_rmtdoorCtrl))//数据编码打包是否完成
-	{
-		log_e(LOG_HOZON, "uper error");
-		return 0;
-	}
-
-	PP_rmtdoorCtrl_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
-	res = sockproxy_MsgSend(PP_rmtdoorCtrl_Pack.Header.sign,18 + msgdatalen,NULL);
-
-	protocol_dump(LOG_HOZON, "get_remote_control_response", PP_rmtdoorCtrl_Pack.Header.sign, \
-					18 + msgdatalen,1);
-	return res;
-}
-#endif
 
 /******************************************************
 *函数名：SetPP_doorLockCtrl_Request
@@ -347,6 +258,7 @@ void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 			PP_rmtdoorCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtdoorCtrl.state.req = 1;
 			PP_rmtdoorCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+			PP_rmtdoorCtrl.state.style = RMTCTRL_TSP;
 		}
 		break;
 		default:
@@ -368,7 +280,8 @@ int PP_doorLockCtrl_start(void)
 
 int PP_doorLockCtrl_end(void)
 {
-	if(doorLock_success_flag == 1)
+	if((door_lock_stage == PP_DOORLOCKCTRL_IDLE) && \
+			(PP_rmtdoorCtrl.state.req == 0))
 	{
 		return 1;
 	}

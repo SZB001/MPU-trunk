@@ -92,9 +92,9 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 /*
  	 Ñ°³µ×´Ì¬
   */
-uint8_t PrvtProt_SignParse_findcarSt(void)
+unsigned char PrvtProt_SignParse_findcarSt(void)
 {
-	uint8_t st;
+	unsigned char st;
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_FINDCAR] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_FINDCAR])->value: 0x0;
 	return st;
@@ -103,9 +103,9 @@ uint8_t PrvtProt_SignParse_findcarSt(void)
 /*
  	 Ìì´°×´Ì¬
   */
-uint8_t PrvtProt_SignParse_sunroofSt(void)
+unsigned char PrvtProt_SignParse_sunroofSt(void)
 {
-	uint8_t st;
+	unsigned char st;
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_SUNROOFOPEN] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_SUNROOFOPEN])->value: 0x0;
 	return st;
@@ -114,9 +114,9 @@ uint8_t PrvtProt_SignParse_sunroofSt(void)
 /*
  	 Ô¶³ÌÆô¶¯×´Ì¬
   */
-uint8_t PrvtProt_SignParse_RmtStartSt(void)
+unsigned char PrvtProt_SignParse_RmtStartSt(void)
 {
-	uint8_t st;
+	unsigned char st;
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_HIGHVOIELEC] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_HIGHVOIELEC])->value: 0x0;
 	return st;
@@ -125,9 +125,9 @@ uint8_t PrvtProt_SignParse_RmtStartSt(void)
 /*
  	 Ö÷×ùÒÎ¼ÓÈÈ×´Ì¬
   */
-uint8_t PrvtProt_SignParse_DrivHeatingSt(void)
+unsigned char PrvtProt_SignParse_DrivHeatingSt(void)
 {
-	uint8_t st;
+	unsigned char st;
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_DRIVHEATING] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_DRIVHEATING])->value: 0x0;
 	return st;
@@ -136,9 +136,9 @@ uint8_t PrvtProt_SignParse_DrivHeatingSt(void)
 /*
  	 ¸±×ùÒÎ¼ÓÈÈ×´Ì¬
   */
-uint8_t PrvtProt_SignParse_PassHeatingSt(void)
+unsigned char PrvtProt_SignParse_PassHeatingSt(void)
 {
-	uint8_t st;
+	unsigned char st;
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_PASSHEATING] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_PASSHEATING])->value: 0x0;
 	return st;
@@ -147,9 +147,9 @@ uint8_t PrvtProt_SignParse_PassHeatingSt(void)
 /*
  	 ½ûÖ¹Æô¶¯×´Ì¬
   */
-uint8_t PrvtProt_SignParse_cancelEngiSt(void)
+unsigned char PrvtProt_SignParse_cancelEngiSt(void)
 {
-	uint8_t st;
+	unsigned char st;
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ENGIFORBID] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ENGIFORBID])->value: 0x0;
 	return st;
@@ -158,9 +158,9 @@ uint8_t PrvtProt_SignParse_cancelEngiSt(void)
 /*
  	 ÈÏÖ¤×´Ì¬
   */
-uint8_t PrvtProt_SignParse_autheSt(void)
+unsigned char PrvtProt_SignParse_autheSt(void)
 {
-	uint8_t st;
+	unsigned char st;
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AUTHEST] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AUTHEST])->value: 0x0;
 	return st;
@@ -169,9 +169,9 @@ uint8_t PrvtProt_SignParse_autheSt(void)
 /*
  	 ÈÏÖ¤Ê§°ÜÔ­Òò
   */
-uint8_t PrvtProt_SignParse_authefailresion(void)
+unsigned char PrvtProt_SignParse_authefailresion(void)
 {
-	uint8_t st;
+	unsigned char st;
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AUTHEFAILRESION] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AUTHEFAILRESION])->value: 0x0;
 	return st;

@@ -10,11 +10,11 @@ Data			Vasion			author
 description锛� include the header file
 
 *******************************************************/
-
 #include <stdio.h>
-#include "PP_identificat.h"
 #include "can_api.h"
 #include "log.h"
+#include "PPrmtCtrl_cfg.h"
+#include "PP_identificat.h"
 
 #define IDENTIFICAT_NUM 5
 #define IDENTIFICAT_CAN_PORT 2
@@ -38,8 +38,6 @@ static UINT8 DataSk[16]={0x15,0x36,0xC2,0x89,0x61,0xD6,0x40,0x3F,0x9A,0xE7,0x26,
 
 static void XteaEncipher(UINT8 *DataSK, UINT8 *DataChall, UINT8 *DataResp);
 extern int can_do_send(unsigned char port, CAN_SEND_MSG *msg);
-
-extern int PrvtProtcfg_AuthenticationStatu(void);
 
 /******************************************************
 *鍑芥暟鍚嶏細XteaEncipher
@@ -168,20 +166,23 @@ int PP_identificat_mainfunction()
 		break;
 		case PP_stage_waitauthokst://等待认证返回是否ok状态
 		{
-			if(( tm_get_time() - PP_stage3_time ) <= 500)
+			if(( tm_get_time() - PP_stage3_time ) >= PP_RMTCTRL_CFG_CANSIGWAITTIME)//延时一段时间后判断can信号状态
 			{
-				if(PrvtProtcfg_AuthenticationStatu() == 1)
+				if(( tm_get_time() - PP_stage3_time ) <= 500)
 				{
-					valid_time = tm_get_time();
-					BDM_AuthenticationStatu = 1; //
-					PP_stage = PP_stage_idle;
-					log_o(LOG_HOZON,"TBOX and DBCM certification succeeded");
-					return PP_AUTH_SUCCESS;
+					if(PP_rmtCtrl_cfg_AuthStatus() == 1)
+					{
+						valid_time = tm_get_time();
+						BDM_AuthenticationStatu = 1; //
+						PP_stage = PP_stage_idle;
+						log_o(LOG_HOZON,"TBOX and DBCM certification succeeded");
+						return PP_AUTH_SUCCESS;
+					}
 				}
-			}
-			else//超时
-			{
-				PP_stage = PP_stage_sendenptdata;
+				else//超时
+				{
+					PP_stage = PP_stage_sendenptdata;
+				}
 			}
 		}
 		break;
@@ -197,7 +198,7 @@ int PP_identificat_mainfunction()
  */
 int PP_get_identificat_flag()
 {
-	if(((tm_get_time() - valid_time) < 270000) && (BDM_AuthenticationStatu  == 1) && (PrvtProtcfg_AuthenticationStatu() == 1))  //鑾峰彇can淇″彿
+	if(((tm_get_time() - valid_time) < 270000) && (BDM_AuthenticationStatu  == 1))  //
 	{
 		return 1;
 	}
@@ -206,7 +207,6 @@ int PP_get_identificat_flag()
 		BDM_AuthenticationStatu = 0 ;
 		return 0;
 	}
-
 }
 
 int PP_identificat_rcvdata(uint8_t *dt)

@@ -214,6 +214,7 @@ static void *sockproxy_sendmain(void)
 							if (res < 0)
 							{
 								log_e(LOG_HOZON, "socket send error, reset protocol");
+								SP_data_put_send(rpt);
 								if(rpt->SendInform_cb != NULL)
 								{
 									TxInform_ptr->successflg = PP_TXPAKG_FAIL;
@@ -240,6 +241,7 @@ static void *sockproxy_sendmain(void)
 						}
 						else//报文过期
 						{
+							SP_data_put_send(rpt);
 							TxInform_ptr->successflg = PP_TXPAKG_FAIL;
 							TxInform_ptr->failresion = PP_TXPAKG_OUTOFDATE;
 							TxInform_ptr->txfailtime = tm_get_time();
@@ -254,6 +256,7 @@ static void *sockproxy_sendmain(void)
 						if (res < 0)
 						{
 							log_e(LOG_HOZON, "socket send error, reset protocol");
+							SP_data_put_send(rpt);
 							if(rpt->SendInform_cb != NULL)
 							{
 								TxInform_ptr->successflg = PP_TXPAKG_FAIL;
@@ -323,6 +326,7 @@ static void *sockproxy_sendmain(void)
                 if (res < 0)
                 {
                     log_e(LOG_HOZON, "socket send error, reset protocol");
+                    SP_data_put_send(rpt);
                 	if(rpt->SendInform_cb != NULL)
                 	{
                 		rpt->SendInform_cb(rpt->Inform_cb_para);
@@ -336,6 +340,7 @@ static void *sockproxy_sendmain(void)
                 }
                 else
                 {
+                	SP_data_put_send(rpt);
                 	if(rpt->SendInform_cb != NULL)
                 	{
                 		rpt->SendInform_cb(rpt->Inform_cb_para);

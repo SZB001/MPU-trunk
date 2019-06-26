@@ -77,12 +77,12 @@ description£º function External declaration
 *******************************************************/
 extern void InitPrvtProt_SignParse_Parameter(void);
 extern int PrvtProt_data_parse_surfix(int sigid, const char *sfx);
-extern uint8_t PrvtProt_SignParse_findcarSt(void);
-extern uint8_t PrvtProt_SignParse_sunroofSt(void);
-extern uint8_t PrvtProt_SignParse_RmtStartSt(void);
-extern uint8_t PrvtProt_SignParse_DrivHeatingSt(void);
-extern uint8_t PrvtProt_SignParse_PassHeatingSt(void);
-extern uint8_t PrvtProt_SignParse_cancelEngiSt(void);
-extern uint8_t PrvtProt_SignParse_autheSt(void);
-extern uint8_t PrvtProt_SignParse_authefailresion(void);
+extern unsigned char PrvtProt_SignParse_findcarSt(void);
+extern unsigned char PrvtProt_SignParse_sunroofSt(void);
+extern unsigned char PrvtProt_SignParse_RmtStartSt(void);
+extern unsigned char PrvtProt_SignParse_DrivHeatingSt(void);
+extern unsigned char PrvtProt_SignParse_PassHeatingSt(void);
+extern unsigned char PrvtProt_SignParse_cancelEngiSt(void);
+extern unsigned char PrvtProt_SignParse_autheSt(void);
+extern unsigned char PrvtProt_SignParse_authefailresion(void);
 #endif 

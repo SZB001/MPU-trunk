@@ -64,10 +64,9 @@ typedef struct
 	PrvtProt_rmtDiagSt_t	 	state;
 }__attribute__((packed))  PrvtProt_rmtDiag_t; /*结构体*/
 
-//static PrvtProt_pack_t 			PP_rmtDiag_Pack;
+static PrvtProt_pack_t 			PP_rmtDiag_Pack;
 static PrvtProt_rmtDiag_t		PP_rmtDiag;
 static PP_App_rmtDiag_t 		AppData_rmtDiag;
-
 
 /*******************************************************
 description： function declaration
@@ -263,6 +262,8 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 	int res;
 	if(1 == PP_rmtDiag.state.diagReq)//
 	{
+
+
 		res = PP_rmtDiag_DiagResponse(task,PP_rmtDiag.state.diagType,PP_rmtDiag.state.diageventId);
 		if(res < 0)//请求发送失败
 		{
@@ -298,9 +299,8 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,uint8_t diagType,long e
 	int msgdatalen;
 	int res = 0;
 	int i;
-	PrvtProt_pack_t pp_pack;
 
-	memset(&pp_pack,0 , sizeof(PrvtProt_pack_t));
+	memset(&PP_rmtDiag_Pack,0 , sizeof(PrvtProt_pack_t));
 	/* header */
 	memcpy(PP_rmtDiag.pack.Header.sign,"**",2);
 	PP_rmtDiag.pack.Header.commtype.Byte = 0xe1;
@@ -309,7 +309,7 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,uint8_t diagType,long e
 	PP_rmtDiag.pack.Header.ver.Byte = task->version;
 	PP_rmtDiag.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
 	PP_rmtDiag.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-	memcpy(&pp_pack, &PP_rmtDiag.pack.Header, sizeof(PrvtProt_pack_Header_t));
+	memcpy(&PP_rmtDiag_Pack, &PP_rmtDiag.pack.Header, sizeof(PrvtProt_pack_Header_t));
 
 	/* disbody */
 	memcpy(PP_rmtDiag.pack.DisBody.aID,"140",3);
@@ -333,17 +333,17 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,uint8_t diagType,long e
 		AppData_rmtDiag.DiagnosticResp.diagcodenum++;
 	}
 
-	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_RESP,pp_pack.msgdata,&msgdatalen,\
+	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_RESP,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
 									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag))//数据编码打包是否完成
 	{
 		log_e(LOG_HOZON, "encode error\n");
 		return -1;
 	}
 
-	pp_pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
-	res = sockproxy_MsgSend(pp_pack.Header.sign,(18 + msgdatalen),NULL);
+	PP_rmtDiag_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
+	res = sockproxy_MsgSend(PP_rmtDiag_Pack.Header.sign,(18 + msgdatalen),NULL);
 
-	protocol_dump(LOG_HOZON, "xcall_response", pp_pack.Header.sign,(18 + msgdatalen),1);
+	protocol_dump(LOG_HOZON, "xcall_response", PP_rmtDiag_Pack.Header.sign,(18 + msgdatalen),1);
 	return res;
 }
 

@@ -45,18 +45,6 @@ int PrvtProtCfg_rcvMsg(unsigned char* buf,int buflen)
 }
 
 /******************************************************
-*函数名：PrvtProtcfg_AuthenticationStatu
-*形  参：
-*返回值：int
-*描  述：   返回认证状态
-*备  注：
-******************************************************/
-int PrvtProtcfg_AuthenticationStatu(void)
-{
-	return 0;
-}
-
-/******************************************************
 *函数名：PrvtProtCfg_ecallTriggerEvent
 *形  参：
 *返回值：

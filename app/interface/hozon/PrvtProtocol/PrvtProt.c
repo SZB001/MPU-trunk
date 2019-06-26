@@ -163,7 +163,7 @@ int PrvtProt_init(INIT_PHASE phase)
 				}
 			}
 			InitPrvtProt_SignParse_Parameter();
-			InitPPsignFltr_Parameter();
+			//InitPPsignFltr_Parameter();
 		}
         break;
     }
@@ -223,11 +223,10 @@ int PrvtProt_run(void)
 ******************************************************/
 static void *PrvtProt_main(void)
 {
-	log_o(LOG_HOZON, "proprietary protocol  of hozon thread running");
 	int res;
 	int obj;
-	static unsigned long long mstsktime;
-	mstsktime = tm_get_time();
+
+	log_o(LOG_HOZON, "proprietary protocol  of hozon thread running");
     prctl(PR_SET_NAME, "HZ_PRVT_PROT");
     while (1)
     {
@@ -237,11 +236,7 @@ static void *PrvtProt_main(void)
 		}
 		log_set_level(LOG_HOZON, LOG_DEBUG);
 
-		if((tm_get_time() - mstsktime) >= 10)
-		{
-			mstsktime = tm_get_time();
-			TskPPsignFltr_MainFunction();
-		}
+		//TskPPsignFltr_MainFunction();
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
@@ -466,6 +461,11 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 					WrPP_queue(PP_REMOTE_VS,rxPack->Header.sign,len);
 				}
 				break;
+				case PP_AID_DIAG:
+				{
+					WrPP_queue(PP_REMOTE_DIAG,rxPack->Header.sign,len);
+				}
+				break;
 				default:
 				{
 					log_e(LOG_HOZON, "rcv unknow ngtp package\r\n");
@@ -537,7 +537,6 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 		PP_PackHeader_HB.tboxid = PrvtPro_BSEndianReverse(task->tboxid);
 		memcpy(&pack_Header, &PP_PackHeader_HB, sizeof(PrvtProt_pack_Header_t));
 
-		memset(&HB_TxInform,0,sizeof(PrvtProt_TxInform_t));
 		HB_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
 		HB_TxInform.eventtime = tm_get_time();
 		SP_data_write(pack_Header.sign,18,PP_HB_send_cb,&HB_TxInform);

@@ -48,6 +48,7 @@ description£º include the header file
 #include "PP_identificat.h"
 #include "../PrvtProt.h"
 #include "PP_canSend.h"
+#include "PPrmtCtrl_cfg.h"
 #include "PP_rmtCtrl.h"
 
 /*******************************************************
@@ -89,7 +90,7 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 
 static int PP_rmtCtrl_flag = 0;
 
-
+static PrvtProt_TxInform_t rmtCtrl_TxInform;
 /*******************************************************
 description£º function declaration
 *******************************************************/
@@ -721,8 +722,6 @@ int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 	PP_rmtCtrl_Pack.totallen = 18 + msgdatalen;
 	PP_rmtCtrl_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
 
-	static PrvtProt_TxInform_t rmtCtrl_TxInform;
-	memset(&rmtCtrl_TxInform,0,sizeof(PrvtProt_TxInform_t));
 	rmtCtrl_TxInform.aid = PP_AID_RMTCTRL;
 	rmtCtrl_TxInform.mid = PP_MID_RMTCTRL_RESP;
 	rmtCtrl_TxInform.pakgtype = PP_TXPAKG_CONTINUE;

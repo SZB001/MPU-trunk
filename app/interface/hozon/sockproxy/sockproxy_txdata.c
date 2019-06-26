@@ -119,7 +119,8 @@ void SP_data_write(uint8_t *data,int len,SP_sendInform_cb sendInform_cb,void *cb
 
 	if(len <= SP_SENDBUFLNG)
 	{
-		if ((node = list_get_first(&SP_free_lst)) != NULL)
+		if (((node = list_get_first(&SP_free_lst)) != NULL) || \
+				((node = list_get_first(&SP_trans_lst)) != NULL))
 		{
 			rpt = list_entry(node, SP_Send_t, link);
 			rpt->msglen  = len;

@@ -262,7 +262,7 @@ typedef struct
 #define PP_RMTCTRL_RVCBOOKINGRESP 	2
 typedef struct
 {
-	char style;//方式：tsp-1；2-蓝牙
+	/* tsp */
 	char Resptype;//回复类型：非预约-1；2-预约
 	long reqType;//请求类型
 	long eventid;//事件id
@@ -271,6 +271,11 @@ typedef struct
 
 	long bookingId;
 	long rvcReqCode;
+
+
+	/* 蓝牙 */
+
+
 }PP_rmtCtrl_Stpara_t; /*结构体*/
 /******union definitions*****/
 
