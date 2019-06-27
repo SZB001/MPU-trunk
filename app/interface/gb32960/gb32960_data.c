@@ -768,7 +768,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 
     /* odograph, scale 0.1km */
     tmp = gbinf->vehi.info[GB_VINF_ODO] ?
-          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_ODO])->value : 0xffffffff;
+          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_ODO])->value * 10 : 0xffffffff;
     buf[len++] = tmp >> 24;
     buf[len++] = tmp >> 16;
     buf[len++] = tmp >> 8;
@@ -789,7 +789,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 
     /* total SOC */
     tmp = gbinf->vehi.info[GB_VINF_SOC] ?
-          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value / 100 : 0xff;
+          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value : 0xff;
     buf[len++] = tmp;
     gb_vehicleSOC = tmp;
 
@@ -852,9 +852,22 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 	buf[len++] = tmp;
 
     /* break pad value */
-    tmp = gbinf->vehi.info[GB_VINF_BRKPAD] ?
-          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value + 100 : 0xff;
-    buf[len++] = tmp;
+	if(gbinf->vehi.info[GB_VINF_BRKPAD])
+	{
+		if(dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value == 0)
+		{
+			tmp = 101;
+		}
+		else
+		{
+			tmp = 0;
+		}
+	}
+	else
+	{
+		tmp = 0xff;
+	}
+	buf[len++] = tmp;
 
     return len;
 }
@@ -2058,6 +2071,12 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
     int i;
     int32_t  tmp = 0;
     uint32_t tmp_32 = 0;
+    int32_t  gb_xinf_maxv = 0;
+    int32_t  gb_xinf_minv = 0;
+    uint8_t xinf_volvalidflg = 1;
+    uint8_t  gb_xinf_maxt = 0;
+    uint8_t  gb_xinf_mint = 0;
+    uint8_t xinf_tempvalidflg = 1;
 
     /* data type : location data */
     buf[len++] = 0x93;//信息类型标志
@@ -2292,16 +2311,32 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		tmp = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXV])->value;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
+		gb_xinf_maxv = tmp;
 	}
 	else
 	{
 		 buf[len++] = 0xff;
 		 buf[len++] = 0xff;
+		 xinf_volvalidflg = 0;
 	}
 
 	if (gbinf->extr[GB_XINF_MINV])
 	{
 		tmp = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINV])->value;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+		gb_xinf_minv = tmp;
+	}
+	else
+	{
+		 buf[len++] = 0xff;
+		 buf[len++] = 0xff;
+		 xinf_volvalidflg = 0;
+	}
+
+	if(1 == xinf_volvalidflg)//单体压差
+	{
+		tmp = gb_xinf_maxv - gb_xinf_minv;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -2311,33 +2346,36 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	{//单体压差
-		 buf[len++] = 0xff;
-		 buf[len++] = 0xff;
-	}
-
 	if (gbinf->extr[GB_XINF_MAXT])
 	{
 		tmp = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXT])->value + 40;
 		buf[len++] = tmp;
+		gb_xinf_maxt = tmp;
 	}
 	else
 	{
 		 buf[len++] = 0xff;
+		 xinf_tempvalidflg = 0;
 	}
 
 	if (gbinf->extr[GB_XINF_MINT])
 	{
 		tmp = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINT])->value + 40;
 		buf[len++] = tmp;
+		gb_xinf_mint = tmp;
 	}
 	else
 	{
 		 buf[len++] = 0xff;
+		 xinf_tempvalidflg = 0;
 	}
 
-	{//单体温差
-		 buf[len++] = 0xff;
+	if(1 == xinf_tempvalidflg)//单体温差
+	{
+		buf[len++] = gb_xinf_maxt - gb_xinf_mint;
+	}
+	else
+	{
 		 buf[len++] = 0xff;
 	}
 

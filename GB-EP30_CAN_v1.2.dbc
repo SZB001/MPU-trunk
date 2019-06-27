@@ -595,7 +595,7 @@ BO_ 926 CLM_Fr02_39E: 8 CLM
  SG_ CLMPM25ValueValid : 32|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ CLMPM25Value : 31|8@0+(4,0)[0|1020] "" Vector__XXX
  SG_ CLMOutsideTempValid : 33|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ CLMOutsideTemp_@2WGF013 : 47|8@0+(0.5,-40)[-40|87.5] "¡æ" Vector__XXX
+ SG_ CLMOutsideTemp_@2WGF014 : 47|8@0+(0.5,-40)[-40|87.5] "¡æ" Vector__XXX
 BO_ 920 CLM_Fr03_398: 8 CLM
  SG_ CLMUncoolReason_@2WG7050 : 12|3@0+(1,0)[0|7] "" Vector__XXX
  SG_ CLMUnheatReason_@2WG7047 : 15|3@0+(1,0)[0|7] "" Vector__XXX
