@@ -49,6 +49,9 @@ description： include the header file
 #include "../PrvtProt.h"
 #include "PP_canSend.h"
 #include "PPrmtCtrl_cfg.h"
+#include "PP_autodoorCtrl.h"
+#include "PP_searchvehicle.h"
+#include "PP_sunroofCtrl.h"
 #include "PP_rmtCtrl.h"
 
 /*******************************************************
@@ -77,9 +80,9 @@ static PrvtProt_App_rmtCtrl_t 		App_rmtCtrl;
 static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 {
 	{RMTCTRL_DOORLOCK,PP_doorLockCtrl_init,	PP_doorLockCtrl_mainfunction},
-	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
-	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
-	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
+	{RMTCTRL_PANORSUNROOF,PP_sunroofctrl_init,	PP_sunroofctrl_mainfunction},
+	{RMTCTRL_AUTODOOR,PP_autodoorCtrl_init,	PP_autodoorCtrl_mainfunction},
+	{RMTCTRL_RMTSRCHVEHICLE,PP_searchvehicle_init,	PP_searchvehicle_mainfunction},
 	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
 	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
 	{RMTCTRL_AC,	  PP_ACCtrl_init, 		PP_ACCtrl_mainfunction},
@@ -157,7 +160,10 @@ int PP_rmtCtrl_mainfunction(void *task)
 		case RMTCTRL_IDLE://空闲
 		{
 			int ret ;
-			ret  = PP_doorLockCtrl_start();
+			ret  = PP_doorLockCtrl_start() ||
+				   PP_autodoorCtrl_start() ||
+				   PP_searchvehicle_start()||
+				   PP_sunroofctrl_start()   ;
 			if(ret == 1)
 			{
 				PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
@@ -208,7 +214,10 @@ int PP_rmtCtrl_mainfunction(void *task)
 				}
 			}
 
-			ret = PP_doorLockCtrl_end();
+			ret = PP_doorLockCtrl_end() ||
+				  PP_autodoorCtrl_end() ||
+				  PP_searchvehicle_end()||
+				  PP_sunroofctrl_end()  ;
 			if(ret == 1)
 			{
 				PP_rmtCtrl_flag = RMTCTRL_IDLE; //远程命令执行完，回到空闲
@@ -328,16 +337,19 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 			case PP_RMTCTRL_PNRSUNROOF://控制全景天窗
 			{
+				SetPP_sunroofctrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote PANORSUNROOF control req");
 			}
 			break;
 			case PP_RMTCTRL_AUTODOOR://控制自动门
 			{
+				SetPP_autodoorCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote AUTODOOR control req");
 			}
 			break;
 			case PP_RMTCTRL_RMTSRCHVEHICLE://远程搜索车辆
 			{
+				SetPP_searchvehicle_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote RMTSRCHVEHICLE control req");
 			}
 			break;
@@ -419,16 +431,19 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 		break;
 		case PP_RMTCTRL_PNRSUNROOF://控制全景天窗
 		{
+			PP_sunroofctrl_SetCtrlReq(req,reqType);
 			log_i(LOG_HOZON, "remote PANORSUNROOF control req");
 		}
 		break;
 		case PP_RMTCTRL_AUTODOOR://控制自动门
 		{
+			PP_autodoorCtrl_SetCtrlReq(req,reqType);
 			log_i(LOG_HOZON, "remote AUTODOOR control req");
 		}
 		break;
 		case PP_RMTCTRL_RMTSRCHVEHICLE://远程搜索车辆
 		{
+			PP_searchvehicle_SetCtrlReq(req,reqType);
 			log_i(LOG_HOZON, "remote RMTSRCHVEHICLE control req");
 		}
 		break;
@@ -469,62 +484,6 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 		break;
 	}
 }
-
-#if 0
-/******************************************************
-*函数名：PP_rmtCtrl_StatusResp
-
-*形  参：
-
-*返回值：
-
-*描  述：remote control status response
-
-*备  注：
-******************************************************/
-static int PP_rmtCtrl_StatusResp(long bookingId,unsigned int reqtype)
-{
-	int msgdatalen;
-
-	PrvtProt_rmtCtrl_pack_t rmtCtrl_pack;
-	memset(&rmtCtrl_pack.DisBody,0,sizeof(PrvtProt_rmtCtrl_pack_t));
-	/*header*/
-	memcpy(rmtCtrl_pack.Header.sign,"**",2);
-	rmtCtrl_pack.Header.ver.Byte = 0x30;
-	rmtCtrl_pack.Header.commtype.Byte = 0xe1;
-	rmtCtrl_pack.Header.opera = 0x02;
-	rmtCtrl_pack.Header.nonce  = PrvtPro_BSEndianReverse(0);
-	rmtCtrl_pack.Header.tboxid = PrvtPro_BSEndianReverse(27);
-	memcpy(&PP_rmtCtrl_Pack, &rmtCtrl_pack.Header, sizeof(PrvtProt_pack_Header_t));
-	/*body*/
-	memcpy(rmtCtrl_pack.DisBody.aID,"110",3);
-	rmtCtrl_pack.DisBody.mID = PP_MID_RMTCTRL_BOOKINGRESP;
-	rmtCtrl_pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_BOOKINGRESP;
-	rmtCtrl_pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtCtrl_pack.DisBody.expTime   = PrvtPro_getTimestamp();
-	rmtCtrl_pack.DisBody.appDataProVer = 256;
-	rmtCtrl_pack.DisBody.testFlag = 1;
-	rmtCtrl_pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
-
-	PrvtProt_App_rmtCtrl_t app_rmtCtrl;
-	/*appdata*/
-	app_rmtCtrl.CtrlbookingResp.bookingId = bookingId;
-	app_rmtCtrl.CtrlbookingResp.rvcReqCode = (long)reqtype;
-	app_rmtCtrl.CtrlbookingResp.oprTime = PrvtPro_getTimestamp();
-
-	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_BOOKINGRESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
-									   &rmtCtrl_pack.DisBody,&app_rmtCtrl))//数据编码打包是否完成
-	{
-		log_e(LOG_HOZON, "uper error");
-		return -1;
-	}
-
-	PP_rmtCtrl_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
-	//res = sockproxy_MsgSend(PP_rmtCtrl_Pack.Header.sign,18 + msgdatalen,NULL);
-	SP_data_write(PP_rmtCtrl_Pack.Header.sign,18 + msgdatalen,PP_rmtCtrl_send_cb,NULL);
-	return 0;
-}
-#endif
 
 /******************************************************
 *函数名：PP_rmtCtrl_StInformTsp

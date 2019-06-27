@@ -323,14 +323,22 @@ void ivi_remotediagnos_response_send( int fd, int type)
     TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_TBOX_REMOTEDIAGNOSE;
 
 	diagnos.vin = "111111111111111";
-//	diagnos.eventid = ;
+	if(type == 1)  //tsp触发
+	{
+		diagnos.eventid = tspdiagnos.eventid;
+		diagnos.aid = tspdiagnos.aid;
+		diagnos.mid = tspdiagnos.mid;
+		diagnos.effectivetime = tspdiagnos.effectivetime;
+		diagnos.sizelimit = tspdiagnos.sizelimit;	
+	}
+	else   //ECALL触发远程诊断
+	{
+		diagnos.aid = 170;
+		diagnos.mid = 0;
+	}
 //	diagnos.timestamp = ;
 	diagnos.datatype = TBOX__NET__DATA_TYPE_ENUM__PHOTO_TYPE;
 	diagnos.cameraname = TBOX__NET__CAMERA_NAME_ENUM__DVR_TYPE;
-	diagnos.aid = 110;
-	diagnos.mid = 119;
-	diagnos.effectivetime = 100;
-	diagnos.sizelimit = 1000;
 	
 	TopMsg.tbox_remotedaignose = &diagnos;
 	
@@ -1096,7 +1104,6 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
                 {
                     log_o(LOG_IVI,"gps nmea send once...");
                     ivi_gps_response_send( fd );
-
                     break;
                 }
 
