@@ -19,7 +19,7 @@ description： macro definitions
 /**********宏开关定义*********/
 
 /**********宏常量定义*********/
-#define PP_ECDC_DATA_LEN 	512//长度
+#define PP_ECDC_DATA_LEN 	1024//长度
 
 #define PP_ENCODE_DISBODY 	0x01//编码dispatcher header
 #define PP_ENCODE_APPDATA 	0x02//编码app data

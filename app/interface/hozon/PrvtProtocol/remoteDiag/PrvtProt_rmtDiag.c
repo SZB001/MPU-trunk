@@ -136,6 +136,8 @@ int PP_rmtDiag_mainfunction(void *task)
 				PP_rmtDiag_do_wait((PrvtProt_task_t*)task) ||
 				PP_rmtDiag_do_checkrmtDiag((PrvtProt_task_t*)task);
 
+	//PP_rmtDiag_do_rmtDiag((PrvtProt_task_t*)task);//故障主动上报
+
 	return res;
 }
 
@@ -422,13 +424,13 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 	/*appdata*/
 	switch(rmtDiag->state.diagType)
 	{
-		case PP_DIAG_TBOX:
+		case PP_DIAG_VCU:
 		{
 			log_i(LOG_HOZON, "diag tbox\n");
 			AppData_rmtDiag.DiagnosticResp.diagType = rmtDiag->state.diagType;
 			AppData_rmtDiag.DiagnosticResp.result = rmtDiag->state.result;
 			AppData_rmtDiag.DiagnosticResp.failureType = rmtDiag->state.failureType;
-			for(i =0;i < 2;i++)
+			for(i =0;i < PP_DIAG_MAX_REPORT;i++)
 			{
 				memcpy(AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCode,"12345",5);
 				AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCodelen = 5;
@@ -437,12 +439,12 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 			}
 		}
 		break;
-		case PP_DIAG_HU:
+		case PP_DIAG_BMS:
 		{
 
 		}
 		break;
-		case PP_DIAG_ICU:
+		case PP_DIAG_MCUp:
 		{
 
 		}
