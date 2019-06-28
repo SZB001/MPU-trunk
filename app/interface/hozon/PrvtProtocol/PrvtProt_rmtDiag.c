@@ -110,6 +110,8 @@ void PP_rmtDiag_init(void)
 {
 	memset(&PP_rmtDiag,0 , sizeof(PrvtProt_rmtDiag_t));
 	memset(&AppData_rmtDiag,0 , sizeof(PP_App_rmtDiag_t));
+	PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
+	PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
 }
 
 
@@ -237,8 +239,9 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 	{
 		case PP_MID_DIAG_REQ://收到tsp请求
 		{
-			if(0 == PP_rmtDiag.state.diagReq)
+			if((0 == PP_rmtDiag.state.diagReq) && (PP_DIAGRESP_IDLE == PP_rmtDiag.state.diagrespSt))
 			{
+				log_i(LOG_HOZON, "receive remote diag request\n");
 				PP_rmtDiag.state.diagReq = 1;
 				PP_rmtDiag.state.diagType = Appdata.DiagnosticReq.diagType;
 				PP_rmtDiag.state.diageventId = MsgDataBody.eventId;
@@ -253,6 +256,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		{
 			if(PP_IMAGEACQRESP_IDLE == PP_rmtDiag.state.ImageAcqRespSt)
 			{
+				log_i(LOG_HOZON, "receive remote ImageAcquisition request\n");
 				PP_rmtDiag.state.ImageAcquisitionReq = 1;
 				PP_rmtDiag.state.dataType    = Appdata.ImageAcquisitionReq.dataType;
 				PP_rmtDiag.state.cameraName  =  Appdata.ImageAcquisitionReq.cameraName;
@@ -304,19 +308,43 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 	int i;
 	int res;
 
-	if(1 == PP_rmtDiag.state.diagReq)//远程诊断请求
+	switch(PP_rmtDiag.state.diagrespSt)
 	{
-		if(0 == PP_rmtDiag_DiagResponse(task,&PP_rmtDiag))
+		case PP_DIAGRESP_IDLE:
 		{
-			memset(&diag_TxInform[PP_RMTDIAG_RESP_REQ],0,sizeof(PrvtProt_TxInform_t));
-			diag_TxInform[PP_RMTDIAG_RESP_REQ].aid = PP_AID_DIAG;
-			diag_TxInform[PP_RMTDIAG_RESP_REQ].mid = PP_MID_DIAG_RESP;
-			diag_TxInform[PP_RMTDIAG_RESP_REQ].pakgtype = PP_TXPAKG_SIGTIME;
-			SP_data_write(PP_rmtDiag_Pack.Header.sign, \
-					PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&diag_TxInform[PP_RMTDIAG_RESP_REQ]);
-			protocol_dump(LOG_HOZON, "diag_req_response", PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen,1);
+			if(1 == PP_rmtDiag.state.diagReq)//远程诊断请求
+			{
+				log_i(LOG_HOZON, "start remote diag\n");
+				PP_rmtDiag.state.diagReq = 0;
+				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_PENDING;
+			}
 		}
+		break;
+		case PP_DIAGRESP_PENDING:
+		{
+			if(0 == PP_rmtDiag_DiagResponse(task,&PP_rmtDiag))
+			{
+				memset(&diag_TxInform[PP_RMTDIAG_RESP_REQ],0,sizeof(PrvtProt_TxInform_t));
+				diag_TxInform[PP_RMTDIAG_RESP_REQ].aid = PP_AID_DIAG;
+				diag_TxInform[PP_RMTDIAG_RESP_REQ].mid = PP_MID_DIAG_RESP;
+				diag_TxInform[PP_RMTDIAG_RESP_REQ].pakgtype = PP_TXPAKG_SIGTIME;
+				diag_TxInform[PP_RMTDIAG_RESP_REQ].eventtime = tm_get_time();
+				SP_data_write(PP_rmtDiag_Pack.Header.sign, \
+						PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&diag_TxInform[PP_RMTDIAG_RESP_REQ]);
+				protocol_dump(LOG_HOZON, "diag_req_response", PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen,1);
+			}
+			PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_END;
+		}
+		break;
+		case PP_DIAGRESP_END:
+		{
+			PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
+		}
+		break;
+		default:
+		break;
 	}
+
 
 	switch(PP_rmtDiag.state.ImageAcqRespSt)
 	{
@@ -324,6 +352,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 		{
 			if(1 == PP_rmtDiag.state.ImageAcquisitionReq)
 			{
+				log_i(LOG_HOZON, "start remote ImageAcquisition\n");
 				PP_rmtDiag.state.ImageAcquisitionReq = 0;
 				PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_INFORM_HU;
 			}
@@ -346,7 +375,6 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 		default:
 		break;
 	}
-
 
 	return 0;
 }
@@ -390,11 +418,13 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
 	PP_rmtDiag.pack.DisBody.testFlag = 1;
 
+	memset(&AppData_rmtDiag.DiagnosticResp,0,sizeof(PP_DiagnosticResp_t));
 	/*appdata*/
 	switch(rmtDiag->state.diagType)
 	{
 		case PP_DIAG_TBOX:
 		{
+			log_i(LOG_HOZON, "diag tbox\n");
 			AppData_rmtDiag.DiagnosticResp.diagType = rmtDiag->state.diagType;
 			AppData_rmtDiag.DiagnosticResp.result = rmtDiag->state.result;
 			AppData_rmtDiag.DiagnosticResp.failureType = rmtDiag->state.failureType;
@@ -402,7 +432,7 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 			{
 				memcpy(AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCode,"12345",5);
 				AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCodelen = 5;
-				AppData_rmtDiag.DiagnosticResp.diagCode[i].diagTime = 123456+i;
+				AppData_rmtDiag.DiagnosticResp.diagCode[i].diagTime = PrvtPro_getTimestamp();
 				AppData_rmtDiag.DiagnosticResp.diagcodenum++;
 			}
 		}
@@ -418,11 +448,16 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 		}
 		break;
 		default:
+		{
+			AppData_rmtDiag.DiagnosticResp.diagType = rmtDiag->state.diagType;
+			AppData_rmtDiag.DiagnosticResp.result = 0;
+			AppData_rmtDiag.DiagnosticResp.diagcodenum = 0;
+		}
 		break;
 	}
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_RESP,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
-									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag))//数据编码打包是否完成
+									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag.DiagnosticResp))//数据编码打包是否完成
 	{
 		log_e(LOG_HOZON, "encode error\n");
 		return -1;
@@ -513,10 +548,34 @@ static void PP_rmtDiag_send_cb(void * para)
 	{
 		case PP_MID_DIAG_RESP:
 		{
-			PP_rmtDiag.state.diagReq = 0;
+			//PP_rmtDiag.state.diagReq = 0;
+			log_i(LOG_HOZON, "send remote diag response ok\n");
 		}
 		break;
 		default:
 		break;
 	}
 }
+
+/******************************************************
+*函数名：PP_diag_SetdiagReq
+
+*形  参：
+
+*返回值：
+
+*描  述：设置请求
+
+*备  注：
+******************************************************/
+void PP_diag_SetdiagReq(unsigned char diagType)
+{
+	log_i(LOG_HOZON, "receive remote diag request\n");
+	PP_rmtDiag.state.diagReq = 1;
+	PP_rmtDiag.state.diagType = diagType;
+	PP_rmtDiag.state.diageventId = 100;
+	PP_rmtDiag.state.result = 1;
+	PP_rmtDiag.state.failureType = 0;
+}
+
+

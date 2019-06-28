@@ -52,6 +52,8 @@ description£º include the header file
 #include "PrvtProt_VehiSt.h"
 #include "PrvtProt_signFltr.h"
 #include "PrvtProt_SigParse.h"
+#include "PrvtProt_rmtDiag.h"
+
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -79,14 +81,14 @@ typedef struct
 	PrvtProt_appData_t 		appData;
 }PrvtProt_msgData_t;
 
-
 static PrvtProt_RmtFunc_t PP_RmtFunc[PP_RMTFUNC_MAX] =
 {
 	{PP_RMTFUNC_XCALL,PP_xcall_init,	PP_xcall_mainfunction},
 	{PP_RMTFUNC_CC,	  PrvtProt_CC_init, PrvtProt_CC_mainfunction},
 	{PP_RMTFUNC_CFG,  PP_rmtCfg_init,	PP_rmtCfg_mainfunction},
 	{PP_RMTFUNC_CTRL, PP_rmtCtrl_init,	PP_rmtCtrl_mainfunction},
-	{PP_RMTFUNC_VS,   PP_VS_init,		PP_VS_mainfunction}
+	{PP_RMTFUNC_VS,   PP_VS_init,		PP_VS_mainfunction},
+	{PP_RMTFUNC_DIAG, PP_rmtDiag_init,	PP_rmtDiag_mainfunction}
 };
 
 /*******************************************************

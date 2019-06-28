@@ -47,6 +47,12 @@ typedef enum
 	PP_DIAG_UNKNOW
 } PP_RMTDIAG_TYPE;
 
+typedef enum
+{
+	PP_DIAGRESP_IDLE = 0,//
+	PP_DIAGRESP_PENDING,//
+	PP_DIAGRESP_END
+} PP_RMTDIAG_DIAGRESP_ST;
 
 typedef enum
 {
@@ -60,19 +66,20 @@ typedef enum
 
 typedef struct
 {
-	uint8_t diagReq;
-	uint8_t diagType;
-	long	diageventId;
-	uint8_t ImageAcquisitionReq;
-	uint8_t dataType;
-	uint8_t cameraName;
+	uint8_t  diagReq;
+	uint8_t  diagType;
+	long	 diageventId;
+	uint8_t  ImageAcquisitionReq;
+	uint8_t  dataType;
+	uint8_t  cameraName;
 	uint32_t effectiveTime;
 	uint32_t sizeLimit;
 	uint8_t  result;//采集数据通知状态
 	uint8_t  failureType;//采集数据失败类型
 	char     fileName[255];//采集数据文件名
+	uint8_t  diagrespSt;
 	uint8_t  ImageAcqRespSt;
-	uint8_t waitSt;
+	uint8_t  waitSt;
 	uint64_t waittime;
 }PrvtProt_rmtDiagSt_t; /*结构体*/
 
@@ -165,5 +172,6 @@ description： function External declaration
 *******************************************************/
 extern void PP_rmtDiag_init(void);
 extern int PP_rmtDiag_mainfunction(void *task);
+extern void PP_diag_SetdiagReq(unsigned char diagType);
 
 #endif 

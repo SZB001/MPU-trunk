@@ -26,6 +26,8 @@ description： include the header file
 #include "PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
 #include "PrvtProt_shell.h"
+#include "PrvtProt_rmtDiag.h"
+
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -54,6 +56,9 @@ static int PP_shell_SetTmpuSw(int argc, const char **argv);
 static int PP_shell_Seticcid(int argc, const char **argv);
 
 static int PP_shell_showpara(int argc, const char **argv);
+
+
+static int PP_shell_SetdiagReq(int argc, const char **argv);
 /******************************************************
 description： function code
 ******************************************************/
@@ -83,9 +88,11 @@ void PrvtProt_shell_init(void)
 	shell_cmd_register("hozon_setmpuSw", PP_shell_SetTmpuSw, "set HOZON mpuSw");
 	shell_cmd_register("hozon_seticcid", PP_shell_Seticcid, "set HOZON iccid");
 
-
 	/* show */
 	shell_cmd_register("hozon_showpara", PP_shell_showpara, "show HOZON parameter");
+
+	/* diag */
+	shell_cmd_register("hozon_setDiagReq", PP_shell_SetdiagReq, "set diag request");
 }
 
 
@@ -417,6 +424,33 @@ static int PP_shell_Seticcid(int argc, const char **argv)
 static int PP_shell_showpara(int argc, const char **argv)
 {
 	PrvtPro_ShowPara();
+    sleep(1);
+    return 0;
+}
+
+/******************************************************
+*函数名：PP_shell_SetdiagReq
+
+*形  参：设置
+
+
+*返回值：void
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PP_shell_SetdiagReq(int argc, const char **argv)
+{
+	unsigned int diagReq;
+    if (argc != 1)
+    {
+        shellprintf(" usage: hozon_setDiagReq <set diag request>\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &diagReq);
+	PP_diag_SetdiagReq((uint8_t)diagReq);
     sleep(1);
     return 0;
 }

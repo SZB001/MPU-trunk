@@ -241,6 +241,7 @@ static void *sockproxy_sendmain(void)
 						}
 						else//报文过期
 						{
+							log_e(LOG_HOZON, "package past due\n");
 							SP_data_put_send(rpt);
 							TxInform_ptr->successflg = PP_TXPAKG_FAIL;
 							TxInform_ptr->failresion = PP_TXPAKG_OUTOFDATE;

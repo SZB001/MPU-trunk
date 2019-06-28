@@ -94,6 +94,7 @@ typedef enum
 	PP_RMTFUNC_CFG,//远程配置
 	PP_RMTFUNC_CTRL,//远程控制
 	PP_RMTFUNC_VS,//车辆状态
+	PP_RMTFUNC_DIAG,//远程诊断
 	PP_RMTFUNC_MAX
 } PP_RMTFUNC_INDEX;
 

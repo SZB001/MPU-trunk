@@ -848,13 +848,14 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			ec = uper_encode(pduType_VS_resp,(void *) &VSResp,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
-				log_i(LOG_HOZON,  "encode:appdata rmt_VS_resp fail\n");
+				log_e(LOG_HOZON,  "encode:appdata rmt_VS_resp fail\n");
 				return -1;
 			}
 		}
 		break;
 		case ECDC_RMTDIAG_RESP:
 		{
+			log_i(LOG_HOZON, "encode:appdata rmt_diag_resp\n");
 			PP_DiagnosticResp_t *DiagnosticResp_ptr = (PP_DiagnosticResp_t*)appchoice;
 			DiagnosticRespInfo_t DiagnosticResp;
 			struct diagCode diagcode;
@@ -862,23 +863,35 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			//DiagCode_t *DiagCode_ptr = DiagCode;
 
 			memset(&DiagnosticResp,0 , sizeof(DiagnosticRespInfo_t));
+			memset(&diagcode,0 , sizeof(struct diagCode));
 			DiagnosticResp.diagType = DiagnosticResp_ptr->diagType;
+			log_i(LOG_HOZON, "DiagnosticResp.diagType = %d\n",DiagnosticResp.diagType);
 			DiagnosticResp.result = DiagnosticResp_ptr->result;
+			log_i(LOG_HOZON, "DiagnosticResp.result = %d\n",DiagnosticResp.result);
 			DiagnosticResp.failureType = &(DiagnosticResp_ptr->failureType);
-			for(i = 0;i < DiagnosticResp_ptr->diagcodenum;i++)
+			log_i(LOG_HOZON, "DiagnosticResp.failureType = %d\n",*DiagnosticResp.failureType);
+			log_i(LOG_HOZON, "DiagnosticResp_ptr.diagcodenum = %d\n",DiagnosticResp_ptr->diagcodenum);
+			if(DiagnosticResp_ptr->diagcodenum != 0)
 			{
-				DiagCode[i].diagCode.buf = DiagnosticResp_ptr->diagCode[i].diagCode;
-				DiagCode[i].diagCode.size = DiagnosticResp_ptr->diagCode[i].diagCodelen;
-				DiagCode[i].diagTime = DiagnosticResp_ptr->diagCode[i].diagTime;
+				for(i = 0;i < DiagnosticResp_ptr->diagcodenum;i++)
+				{
+					DiagCode[i].diagCode.buf = DiagnosticResp_ptr->diagCode[i].diagCode;
+					DiagCode[i].diagCode.size = DiagnosticResp_ptr->diagCode[i].diagCodelen;
+					DiagCode[i].diagTime = DiagnosticResp_ptr->diagCode[i].diagTime;
 
-				ASN_SEQUENCE_ADD(&diagcode, &DiagCode[i]);
+					ASN_SEQUENCE_ADD(&diagcode, &DiagCode[i]);
+				}
+				DiagnosticResp.diagCode = &diagcode;
 			}
-			DiagnosticResp.diagCode = &diagcode;
+			else
+			{
+				DiagnosticResp.diagCode = NULL;
+			}
 
 			ec = uper_encode(pduType_GIAG_resp,(void *) &DiagnosticResp,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
-				log_i(LOG_HOZON, "encode:appdata rmt_diag_resp fail\n");
+				log_e(LOG_HOZON, "encode:appdata rmt_diag_resp fail\n");
 				return -1;
 			}
 		}
@@ -1416,7 +1429,7 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 					PP_DiagnosticReq_ptr->diagType = DiagnosticReq.diagType;
 					log_i(LOG_HOZON, "PP_DiagnosticReq_ptr->diagType = %ld\n",PP_DiagnosticReq_ptr->diagType);
 				}
-				else if(4 == MID)//giag imageAcqReq
+				else if(PP_MID_DIAG_IMAGEACQREQ == MID)//giag imageAcqReq
 				{
 					PP_ImageAcquisitionReq_t *PP_ImageAcquisitionReq_ptr = (PP_ImageAcquisitionReq_t*)appData;
 
