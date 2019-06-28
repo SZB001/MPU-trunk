@@ -1,7 +1,7 @@
 eclipse.preferences.version=1
 encoding//app/interface/fota/fota_main.c=UTF-8
-encoding//app/interface/hozon/PrvtProtocol/PrvtProt_rmtDiag.c=UTF-8
 encoding//app/interface/hozon/PrvtProtocol/remoteControl/PP_identificat.c=UTF-8
 encoding//app/interface/hozon/PrvtProtocol/remoteControl/PP_identificat.h=UTF-8
 encoding//app/interface/hozon/PrvtProtocol/remoteControl/PP_rmtCtrl.h=UTF-8
+encoding//app/interface/hozon/PrvtProtocol/remoteDiag/PrvtProt_rmtDiag.c=UTF-8
 encoding//app/interface/protobuf/tbox_ivi.c=UTF-8

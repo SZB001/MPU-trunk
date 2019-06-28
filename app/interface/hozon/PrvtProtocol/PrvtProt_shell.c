@@ -25,8 +25,8 @@ description£º include the header file
 //#include "remoteControl/PP_doorLockCtrl.h"
 #include "PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
+#include "remoteDiag/PrvtProt_rmtDiag.h"
 #include "PrvtProt_shell.h"
-#include "PrvtProt_rmtDiag.h"
 
 /*******************************************************
 description£º global variable definitions

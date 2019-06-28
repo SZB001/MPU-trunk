@@ -1,7 +1,7 @@
 /******************************************************
-文件名：	PrvtProt_rmtDiag.c
+鏂囦欢鍚嶏細	PrvtProt_rmtDiag.c
 
-描述：	企业私有协议（浙江合众）
+鎻忚堪锛�	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級
 
 Data			Vasion			author
 
@@ -10,7 +10,7 @@ Data			Vasion			author
 
 /*******************************************************
 
-description： include the header file
+description锛� include the header file
 
 *******************************************************/
 #include <stdint.h>
@@ -38,24 +38,24 @@ description： include the header file
 #include "init.h"
 #include "log.h"
 #include "list.h"
-#include "../../support/protocol.h"
+#include "../../../support/protocol.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
-#include "PrvtProt_shell.h"
-#include "PrvtProt_queue.h"
-#include "PrvtProt_EcDc.h"
-#include "PrvtProt_cfg.h"
-#include "PrvtProt.h"
+#include "../PrvtProt_shell.h"
+#include "../PrvtProt_queue.h"
+#include "../PrvtProt_EcDc.h"
+#include "../PrvtProt_cfg.h"
+#include "../PrvtProt.h"
 #include "tbox_ivi_api.h"
 #include "PrvtProt_rmtDiag.h"
 
 /*******************************************************
-description： global variable definitions
+description锛� global variable definitions
 *******************************************************/
 
 
 /*******************************************************
-description： static variable definitions
+description锛� static variable definitions
 *******************************************************/
 typedef struct
 {
@@ -67,7 +67,7 @@ typedef struct
 {
 	PrvtProt_rmtDiag_pack_t 	pack;
 	PrvtProt_rmtDiagSt_t	 	state;
-}__attribute__((packed))  PrvtProt_rmtDiag_t; /*结构体*/
+}__attribute__((packed))  PrvtProt_rmtDiag_t; /*缁撴瀯浣�*/
 
 
 static PrvtProt_pack_t 			PP_rmtDiag_Pack;
@@ -76,7 +76,7 @@ static PP_App_rmtDiag_t 		AppData_rmtDiag;
 
 static PrvtProt_TxInform_t 		diag_TxInform[PP_RMTDIAG_MAX_RESP];
 /*******************************************************
-description： function declaration
+description锛� function declaration
 *******************************************************/
 /*Global function declaration*/
 
@@ -92,19 +92,19 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 //static int PP_remotImageAcquisitionReq(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
 static void PP_rmtDiag_send_cb(void * para);
 /******************************************************
-description： function code
+description锛� function code
 ******************************************************/
 
 /******************************************************
-*函数名：PP_rmtDiag_init
+*鍑芥暟鍚嶏細PP_rmtDiag_init
 
-*形  参：void
+*褰�  鍙傦細void
 
-*返回值：void
+*杩斿洖鍊硷細void
 
-*描  述：初始化
+*鎻�  杩帮細鍒濆鍖�
 
-*备  注：
+*澶�  娉細
 ******************************************************/
 void PP_rmtDiag_init(void)
 {
@@ -117,15 +117,15 @@ void PP_rmtDiag_init(void)
 
 
 /******************************************************
-*函数名：PP_rmtDiag_mainfunction
+*鍑芥暟鍚嶏細PP_rmtDiag_mainfunction
 
-*形  参：void
+*褰�  鍙傦細void
 
-*返回值：void
+*杩斿洖鍊硷細void
 
-*描  述：主任务函数
+*鎻�  杩帮細涓讳换鍔″嚱鏁�
 
-*备  注：
+*澶�  娉細
 ******************************************************/
 int PP_rmtDiag_mainfunction(void *task)
 {
@@ -140,15 +140,15 @@ int PP_rmtDiag_mainfunction(void *task)
 }
 
 /******************************************************
-*函数名：PP_rmtDiag_do_checksock
+*鍑芥暟鍚嶏細PP_rmtDiag_do_checksock
 
-*形  参：void
+*褰�  鍙傦細void
 
-*返回值：void
+*杩斿洖鍊硷細void
 
-*描  述：检查socket连接
+*鎻�  杩帮細妫�鏌ocket杩炴帴
 
-*备  注：
+*澶�  娉細
 ******************************************************/
 static int PP_rmtDiag_do_checksock(PrvtProt_task_t *task)
 {
@@ -163,15 +163,15 @@ static int PP_rmtDiag_do_checksock(PrvtProt_task_t *task)
 
 
 /******************************************************
-*函数名：PP_rmtDiag_do_rcvMsg
+*鍑芥暟鍚嶏細PP_rmtDiag_do_rcvMsg
 
-*形  参：void
+*褰�  鍙傦細void
 
-*返回值：void
+*杩斿洖鍊硷細void
 
-*描  述：接收数据函数
+*鎻�  杩帮細鎺ユ敹鏁版嵁鍑芥暟
 
-*备  注：
+*澶�  娉細
 ******************************************************/
 static int PP_rmtDiag_do_rcvMsg(PrvtProt_task_t *task)
 {
@@ -187,12 +187,12 @@ static int PP_rmtDiag_do_rcvMsg(PrvtProt_task_t *task)
 	log_i(LOG_HOZON, "receive diag message");
 	protocol_dump(LOG_HOZON, "PRVT_PROT", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
-			(rlen <= 18))//判断数据帧头有误或者数据长度不对
+			(rlen <= 18))//鍒ゆ柇鏁版嵁甯уご鏈夎鎴栬�呮暟鎹暱搴︿笉瀵�
 	{
 		return 0;
 	}
 
-	if(rlen > (18 + PP_MSG_DATA_LEN))//接收数据长度超出缓存buffer长度
+	if(rlen > (18 + PP_MSG_DATA_LEN))//鎺ユ敹鏁版嵁闀垮害瓒呭嚭缂撳瓨buffer闀垮害
 	{
 		return 0;
 	}
@@ -204,15 +204,15 @@ static int PP_rmtDiag_do_rcvMsg(PrvtProt_task_t *task)
 
 
 /******************************************************
-*函数名：PP_rmtDiag_RxMsgHandle
+*鍑芥暟鍚嶏細PP_rmtDiag_RxMsgHandle
 
-*形  参：void
+*褰�  鍙傦細void
 
-*返回值：void
+*杩斿洖鍊硷細void
 
-*描  述：接收数据处理
+*鎻�  杩帮細鎺ユ敹鏁版嵁澶勭悊
 
-*备  注：
+*澶�  娉細
 ******************************************************/
 static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len)
 {
@@ -237,7 +237,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 
 	switch(MsgDataBody.mID)
 	{
-		case PP_MID_DIAG_REQ://收到tsp请求
+		case PP_MID_DIAG_REQ://鏀跺埌tsp璇锋眰
 		{
 			if((0 == PP_rmtDiag.state.diagReq) && (PP_DIAGRESP_IDLE == PP_rmtDiag.state.diagrespSt))
 			{
@@ -276,15 +276,15 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 }
 
 /******************************************************
-*函数名：PP_rmtDiag_do_wait
+*鍑芥暟鍚嶏細PP_rmtDiag_do_wait
 
-*形  参：void
+*褰�  鍙傦細void
 
-*返回值：void
+*杩斿洖鍊硷細void
 
-*描  述：检查是否有事件等待应答
+*鎻�  杩帮細妫�鏌ユ槸鍚︽湁浜嬩欢绛夊緟搴旂瓟
 
-*备  注：
+*澶�  娉細
 ******************************************************/
 static int PP_rmtDiag_do_wait(PrvtProt_task_t *task)
 {
@@ -293,15 +293,15 @@ static int PP_rmtDiag_do_wait(PrvtProt_task_t *task)
 
 
 /******************************************************
-*函数名：PP_rmtDiag_do_checkrmtDiag
+*鍑芥暟鍚嶏細PP_rmtDiag_do_checkrmtDiag
 
-*形  参：
+*褰�  鍙傦細
 
-*返回值：
+*杩斿洖鍊硷細
 
-*描  述：
+*鎻�  杩帮細
 
-*备  注：
+*澶�  娉細
 ******************************************************/
 static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 {
@@ -312,7 +312,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 	{
 		case PP_DIAGRESP_IDLE:
 		{
-			if(1 == PP_rmtDiag.state.diagReq)//远程诊断请求
+			if(1 == PP_rmtDiag.state.diagReq)//杩滅▼璇婃柇璇锋眰
 			{
 				log_i(LOG_HOZON, "start remote diag\n");
 				PP_rmtDiag.state.diagReq = 0;
@@ -358,7 +358,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 			}
 		}
 		break;
-		case PP_IMAGEACQRESP_INFORM_HU://通知HU
+		case PP_IMAGEACQRESP_INFORM_HU://閫氱煡HU
 		{
 			ivi_remotediagnos tspInformHU;
 			tspInformHU.aid = PP_AID_DIAG;
@@ -381,15 +381,15 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 
 
 /******************************************************
-*函数名：PP_rmtDiag_DiagResponse
+*鍑芥暟鍚嶏細PP_rmtDiag_DiagResponse
 
-*形  参：
+*褰�  鍙傦細
 
-*返回值：
+*杩斿洖鍊硷細
 
-*描  述：diag response
+*鎻�  杩帮細diag response
 
-*备  注：
+*澶�  娉細
 ******************************************************/
 static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag)
 {
@@ -457,7 +457,7 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 	}
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_RESP,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
-									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag.DiagnosticResp))//数据编码打包是否完成
+									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag.DiagnosticResp))//鏁版嵁缂栫爜鎵撳寘鏄惁瀹屾垚
 	{
 		log_e(LOG_HOZON, "encode error\n");
 		return -1;
@@ -471,15 +471,15 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 
 #if 0
 /******************************************************
-*函数名：
+*鍑芥暟鍚嶏細
 
-*形  参：
+*褰�  鍙傦細
 
-*返回值：
+*杩斿洖鍊硷細
 
-*描  述：远程诊断( MID=4)
+*鎻�  杩帮細杩滅▼璇婃柇( MID=4)
 
-*备  注：
+*澶�  娉細
 ******************************************************/
 static int PP_remotImageAcquisitionReq(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag)
 {
@@ -516,7 +516,7 @@ static int PP_remotImageAcquisitionReq(PrvtProt_task_t *task,PrvtProt_rmtDiag_t 
 	AppData_rmtDiag.ImageAcquisitionReq.sizeLimit = 100;//
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_RESP,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
-									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag))//数据编码打包是否完成
+									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag))//鏁版嵁缂栫爜鎵撳寘鏄惁瀹屾垚
 	{
 		log_e(LOG_HOZON, "encode error\n");
 		return -1;
@@ -530,15 +530,15 @@ static int PP_remotImageAcquisitionReq(PrvtProt_task_t *task,PrvtProt_rmtDiag_t 
 #endif
 
 /******************************************************
-*函数名：PP_rmtDiag_send_cb
+*鍑芥暟鍚嶏細PP_rmtDiag_send_cb
 
-*形  参：
+*褰�  鍙傦細
 
-*返回值：
+*杩斿洖鍊硷細
 
-*描  述：remote diag status response
+*鎻�  杩帮細remote diag status response
 
-*备  注：
+*澶�  娉細
 ******************************************************/
 static void PP_rmtDiag_send_cb(void * para)
 {
@@ -558,15 +558,15 @@ static void PP_rmtDiag_send_cb(void * para)
 }
 
 /******************************************************
-*函数名：PP_diag_SetdiagReq
+*鍑芥暟鍚嶏細PP_diag_SetdiagReq
 
-*形  参：
+*褰�  鍙傦細
 
-*返回值：
+*杩斿洖鍊硷細
 
-*描  述：设置请求
+*鎻�  杩帮細璁剧疆璇锋眰
 
-*备  注：
+*澶�  娉細
 ******************************************************/
 void PP_diag_SetdiagReq(unsigned char diagType)
 {

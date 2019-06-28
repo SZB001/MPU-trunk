@@ -69,6 +69,7 @@ SUBDIRS := \
 	./app/interface/hozon/asn \
 	./app/interface/hozon/PrvtProtocol \
 	./app/interface/hozon/PrvtProtocol/remoteControl \
+	./app/interface/hozon/PrvtProtocol/remoteDiag \
 	./app/interface/hozon/sockproxy \
 	./app/interface/protobuf \
 	./app \

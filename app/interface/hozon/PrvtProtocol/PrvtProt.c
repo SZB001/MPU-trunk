@@ -52,7 +52,7 @@ description£º include the header file
 #include "PrvtProt_VehiSt.h"
 #include "PrvtProt_signFltr.h"
 #include "PrvtProt_SigParse.h"
-#include "PrvtProt_rmtDiag.h"
+#include "remoteDiag/PrvtProt_rmtDiag.h"
 
 #include "PrvtProt.h"
 
