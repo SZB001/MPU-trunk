@@ -13,5 +13,6 @@ extern void PrvtPro_SetEcallResp(unsigned char resp);
 extern void PP_rmtCfg_SetmcuSw(const char *mcuSw);
 extern void PP_rmtCfg_SetmpuSw(const char *mpuSw);
 extern void PP_rmtCfg_Seticcid(const char *iccid);
+extern void PrvtProt_Settboxsn(const char *tboxsn);
 extern void PrvtPro_ShowPara(void);
 #endif

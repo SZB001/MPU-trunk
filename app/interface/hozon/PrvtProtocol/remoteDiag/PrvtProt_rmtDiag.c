@@ -38,6 +38,7 @@ description锛� include the header file
 #include "init.h"
 #include "log.h"
 #include "list.h"
+#include "../../sockproxy/sockproxy_txdata.h"
 #include "../../../support/protocol.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"

@@ -59,6 +59,7 @@ static int PP_shell_showpara(int argc, const char **argv);
 
 
 static int PP_shell_SetdiagReq(int argc, const char **argv);
+static int PP_shell_SetTboxSN(int argc, const char **argv);
 /******************************************************
 description： function code
 ******************************************************/
@@ -87,6 +88,7 @@ void PrvtProt_shell_init(void)
 	shell_cmd_register("hozon_setmcuSw", PP_shell_SetTmcuSw, "set HOZON mcuSw");
 	shell_cmd_register("hozon_setmpuSw", PP_shell_SetTmpuSw, "set HOZON mpuSw");
 	shell_cmd_register("hozon_seticcid", PP_shell_Seticcid, "set HOZON iccid");
+	shell_cmd_register("hozon_settboxsn", PP_shell_SetTboxSN, "set tbox sn");
 
 	/* show */
 	shell_cmd_register("hozon_showpara", PP_shell_showpara, "show HOZON parameter");
@@ -451,6 +453,31 @@ static int PP_shell_SetdiagReq(int argc, const char **argv)
 
 	sscanf(argv[0], "%u", &diagReq);
 	PP_diag_SetdiagReq((uint8_t)diagReq);
+    sleep(1);
+    return 0;
+}
+
+/******************************************************
+*函数名：PP_shell_SetTboxSN
+
+*形  参：设置
+
+
+*返回值：void
+
+*描  述：
+
+*备  注：
+******************************************************/
+static int PP_shell_SetTboxSN(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: HOZON_PP_Settboxsn <set tboxsn>\r\n");
+        return -1;
+    }
+
+    PrvtProt_Settboxsn(argv[0]);
     sleep(1);
     return 0;
 }

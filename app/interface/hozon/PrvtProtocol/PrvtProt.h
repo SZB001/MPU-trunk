@@ -22,6 +22,7 @@ description： macro definitions
 #define PP_ACK_SUCCESS 	0x02//应答成功
 
 #define PP_MSG_DATA_LEN 	1024//message data 长度
+#define PP_TBOXSN_LEN 		19//tboxsn 长度
 
 #define	PP_NATIONALSTANDARD_TYPE	0//操作类型：国标类型
 #define	PP_HEARTBEAT_TYPE			1//心跳类型

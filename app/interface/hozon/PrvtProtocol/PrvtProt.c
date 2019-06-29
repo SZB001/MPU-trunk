@@ -68,6 +68,8 @@ static PrvtProt_task_t 	pp_task;
 static PrvtProt_pack_Header_t 	PP_PackHeader_HB;
 static PrvtProt_TxInform_t HB_TxInform;
 
+static char pp_tboxsn[PP_TBOXSN_LEN];
+
 typedef struct
 {
 	PrvtProt_App_Xcall_t Xcall;//xcall
@@ -147,6 +149,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			PP_PackHeader_HB.commtype.Byte = 0x70;
 			PP_PackHeader_HB.opera = 0x01;
 			PP_PackHeader_HB.msglen = 18;
+			memset(pp_tboxsn,0 , sizeof(pp_tboxsn));
 		}
         break;
         case INIT_PHASE_RESTORE:
@@ -156,6 +159,9 @@ int PrvtProt_init(INIT_PHASE phase)
 			cfglen = 4;
 			ret |= cfg_get_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, &cfglen);///* 平台通过tboxID与tboxSN映射 */
 			PP_PackHeader_HB.tboxid = pp_task.tboxid;
+
+			cfglen = 19;
+			ret |= cfg_get_para(CFG_ITEM_HOZON_TSP_TBOXSN,pp_tboxsn,&cfglen);//读取tboxsn
 
 			PrvtProt_shell_init();
 			for(obj = 0;obj < PP_RMTFUNC_MAX;obj++)
@@ -610,7 +616,8 @@ void PrvtPro_ShowPara(void)
 	log_i(LOG_HOZON, "/******************************/");
 	log_i(LOG_HOZON, "     	  public parameters 	  ");
 	log_i(LOG_HOZON, "/******************************/");
-	log_i(LOG_HOZON, "tboxid = %d",pp_task.tboxid);
+	log_i(LOG_HOZON, "tboxid = %d\n",pp_task.tboxid);
+	log_i(LOG_HOZON, "tboxsn = %s\n",pp_tboxsn);
 
 	PP_rmtCfg_ShowCfgPara();
 }
@@ -687,3 +694,23 @@ long PrvtPro_BSEndianReverse(long value)
 		   (value & 0x00FF0000U) >> 8 | (value & 0xFF000000U) >> 24;
 }
 
+/******************************************************
+*函数名:PrvtProt_Settboxsn
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：
+******************************************************/
+void PrvtProt_Settboxsn(const char *tboxsn)
+{
+	memset(pp_tboxsn, 0 , PP_TBOXSN_LEN);
+	memcpy(pp_tboxsn,tboxsn,strlen(tboxsn));
+	if (cfg_set_para(CFG_ITEM_HOZON_TSP_TBOXSN, pp_tboxsn , PP_TBOXSN_LEN))
+	{
+		log_e(LOG_HOZON, "save tboxsn failed");
+	}
+}
