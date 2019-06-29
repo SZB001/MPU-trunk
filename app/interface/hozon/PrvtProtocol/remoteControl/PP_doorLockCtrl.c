@@ -35,6 +35,7 @@ description£º include the header file
 #include "log.h"
 #include "list.h"
 #include "../../support/protocol.h"
+#include "gb32960_api.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"

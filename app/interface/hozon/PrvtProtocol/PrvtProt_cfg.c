@@ -9,9 +9,13 @@ Data			Vasion			author
 /*******************************************************
 description£º include the header file
 *******************************************************/
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 #include "gps_api.h"
 #include "at.h"
 #include "../sockproxy/sockproxy_rxdata.h"
+#include "gb32960_api.h"
 #include "PrvtProt_cfg.h"
 /*******************************************************
 description£º global variable definitions

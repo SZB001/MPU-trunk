@@ -21,6 +21,8 @@ description： macro definitions
 #define PP_DIAG_WAITTIME    2500//等待HU响应时间
 #define PP_DIAG_MAX_REPORT  80//一次最多上报的故障码数
 
+#define PP_ACTIVEDIAG_WAITTIME    5000//5s
+
 /***********宏函数***********/
 
 /*******************************************************
@@ -69,13 +71,14 @@ typedef enum
 	PP_DIAG_MFCP,
 	PP_DIAG_TBOX,
 	PP_DIAG_ACU,
-	PP_DIAG_PLG
+	PP_DIAG_PLG,
+	PP_DIAG_MAXECU,
 } PP_RMTDIAG_TYPE;
 
 typedef enum
 {
 	PP_DIAGRESP_IDLE = 0,//
-	PP_DIAGRESP_PENDING,//
+	PP_DIAGRESP_ONGOING,//
 	PP_DIAGRESP_END
 } PP_RMTDIAG_DIAGRESP_ST;
 
@@ -87,8 +90,15 @@ typedef enum
 	PP_IMAGEACQRESP_END
 } PP_RMTDIAG_IMAGEACQRESP_ST;
 
-/*****struct definitions*****/
+typedef enum
+{
+	PP_ACTIVEDIAG_PWRON = 0,//上电
+	PP_ACTIVEDIAG_CHECK,//
+	PP_ACTIVEDIAG_DIAGONGOING,//
+	PP_ACTIVEDIAG_END
+} PP_RMTDIAG_ACTIVEDIAG_ST;
 
+/*****struct definitions*****/
 typedef struct
 {
 	uint8_t  diagReq;
@@ -106,7 +116,23 @@ typedef struct
 	uint8_t  ImageAcqRespSt;
 	uint8_t  waitSt;
 	uint64_t waittime;
+
+	uint8_t  activeDiagSt;
+	uint64_t activeDiagdelaytime;
+	uint8_t	 activeDiagWeek;
 }PrvtProt_rmtDiagSt_t; /*结构体*/
+
+typedef struct
+{
+	uint32_t datetime;
+	uint8_t  diagflag;//bit 1-7 表示 星期1~7
+}PP_rmtDiag_datetime_t; /*结构体*/
+
+typedef struct
+{
+	uint8_t  week;
+	uint8_t  mask;
+}PP_rmtDiag_weekmask_t; /*结构体*/
 
 /* application data struct */
 /***********************************
@@ -137,7 +163,7 @@ typedef struct
 typedef struct
 {
 	PP_DiagnosticResp_t		diagStatus[255];
-	uint8_t faultnum;
+	uint8_t diagobjnum;
 }PP_DiagnosticStatus_t;
 
 typedef struct

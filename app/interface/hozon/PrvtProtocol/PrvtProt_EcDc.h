@@ -54,6 +54,7 @@ typedef enum
 
 	/*remote diag*/
 	ECDC_RMTDIAG_RESP,//remote diag status response
+	ECDC_RMTDIAG_STATUS,//remote diag status
 	ECDC_RMTDIAG_IMAGEACQRESP,//remote diag image acq response
 	ECDC_APP_MID_MAX
 } ECDC_APP_MID_TYPE;//应用类型

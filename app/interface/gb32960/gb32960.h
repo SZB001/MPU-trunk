@@ -47,6 +47,7 @@ extern int gb_data_noreport(void);
 extern void gb_data_set_intv(uint16_t intv);
 extern int gb_data_get_intv(void);
 extern void gb_data_set_pendflag(int flag);
+#if 0
 extern uint8_t gb_data_vehicleState(void);
 extern long gb_data_vehicleSOC(void);
 extern long gb_data_vehicleOdograph(void);
@@ -55,4 +56,7 @@ extern uint8_t gb_data_doorlockSt(void);
 extern uint8_t gb_data_reardoorSt(void);
 extern int gb_data_LHTemp(void);
 extern uint8_t gb_data_chargeSt(void);
+#endif
+
+
 #endif

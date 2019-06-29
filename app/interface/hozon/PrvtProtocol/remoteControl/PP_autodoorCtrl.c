@@ -1,13 +1,13 @@
 /******************************************************
-文件名：	PP_autodoorCtrl.c
+鏂囦欢鍚嶏細	PP_autodoorCtrl.c
 
-描述：	企业私有协议（浙江合众）	
+鎻忚堪锛�	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級	
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description： include the header file
+description锛� include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -35,6 +35,7 @@ description： include the header file
 #include "log.h"
 #include "list.h"
 #include "../../support/protocol.h"
+#include "gb32960_api.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
@@ -58,7 +59,7 @@ typedef struct
 {
 	PP_rmtautodoorCtrl_pack_t 	pack;
 	PP_rmtautodoorCtrlSt_t		state;
-}__attribute__((packed))  PrvtProt_rmtautodoorCtrl_t; /*结构体*/
+}__attribute__((packed))  PrvtProt_rmtautodoorCtrl_t; /*缁撴瀯浣�*/
 
 static PrvtProt_rmtautodoorCtrl_t PP_rmtautodoorCtrl;
 static int auto_door_stage = PP_AUTODOORCTRL_IDLE;
@@ -90,7 +91,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 		case PP_AUTODOORCTRL_IDLE:
 		{
 			
-			if(PP_rmtautodoorCtrl.state.req == 1)   //判断请求是不是
+			if(PP_rmtautodoorCtrl.state.req == 1)   //鍒ゆ柇璇锋眰鏄笉鏄�
 			{
 				PP_rmtautodoorCtrl.state.req = 0;
 				autodoor_success_flag = 0;
@@ -98,14 +99,14 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				if(PP_rmtautodoorCtrl.state.style == RMTCTRL_TSP)//tsp
 				{
 					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-					rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
+					rmtCtrl_Stpara.rvcReqStatus = 1;  //寮�濮嬫墽琛�
 					rmtCtrl_Stpara.rvcFailureType = 0;
 					rmtCtrl_Stpara.reqType =PP_rmtautodoorCtrl.state.reqType;
 					rmtCtrl_Stpara.eventid = PP_rmtautodoorCtrl.pack.DisBody.eventId;
 					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 					res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
 				}
-				else//蓝牙
+				else//钃濈墮
 				{
 
 				}
@@ -114,51 +115,51 @@ int PP_autodoorCtrl_mainfunction(void *task)
 		break;
 		case PP_AUTODOORCTR_REQSTART:
 		{
-			if(PP_rmtautodoorCtrl.state.reqType == PP_RMTCTRL_AUTODOOROPEN) //打开尾门
+			if(PP_rmtautodoorCtrl.state.reqType == PP_RMTCTRL_AUTODOOROPEN) //鎵撳紑灏鹃棬
 			{
-				PP_canSend_setbit(19,2,1);  //发打开尾门报文
+				PP_canSend_setbit(19,2,1);  //鍙戞墦寮�灏鹃棬鎶ユ枃
 			}
-			else            //关闭尾门
+			else            //鍏抽棴灏鹃棬
 			{
-				PP_canSend_setbit(19,2,2); //发关闭尾门报文
+				PP_canSend_setbit(19,2,2); //鍙戝叧闂熬闂ㄦ姤鏂�
 			}
 
 			auto_door_stage = PP_AUTODOORCTR_RESPWAIT;
 			PP_Respwaittime = tm_get_time();
 		}
 		break;
-		case PP_AUTODOORCTR_RESPWAIT://执行等待车控响应
+		case PP_AUTODOORCTR_RESPWAIT://鎵ц绛夊緟杞︽帶鍝嶅簲
 		{
-			if(PP_rmtautodoorCtrl.state.reqType == PP_RMTCTRL_AUTODOOROPEN) // 等待打开尾门结果
+			if(PP_rmtautodoorCtrl.state.reqType == PP_RMTCTRL_AUTODOOROPEN) // 绛夊緟鎵撳紑灏鹃棬缁撴灉
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(gb_data_reardoorSt() == 2) //尾门状态2，尾门开启成功
+					if(gb_data_reardoorSt() == 2) //灏鹃棬鐘舵��2锛屽熬闂ㄥ紑鍚垚鍔�
 					{
 						PP_canSend_resetbit(19,2);
 						autodoor_success_flag = 1;
 						auto_door_stage = PP_AUTODOORCTR_END;
 					}
 				}
-				else//响应超时
+				else//鍝嶅簲瓒呮椂
 				{
 					PP_canSend_resetbit(19,2);
 					autodoor_success_flag = 0;
 					auto_door_stage = PP_AUTODOORCTR_END;
 				}
 			}
-			else//等待尾门关闭结果
+			else//绛夊緟灏鹃棬鍏抽棴缁撴灉
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(gb_data_reardoorSt() == 1) //尾门状态1，尾门关闭成功
+					if(gb_data_reardoorSt() == 1) //灏鹃棬鐘舵��1锛屽熬闂ㄥ叧闂垚鍔�
 					{
 						PP_canSend_resetbit(19,2);
 						autodoor_success_flag = 1;
 						auto_door_stage = PP_AUTODOORCTR_END;
 					}
 				}
-				else//响应超时
+				else//鍝嶅簲瓒呮椂
 				{
 					PP_canSend_resetbit(19,2);
 					autodoor_success_flag = 0;
@@ -179,18 +180,18 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				if(1 == autodoor_success_flag)
 				{
-					rmtCtrl_Stpara.rvcReqStatus = 2;  //执行完成
+					rmtCtrl_Stpara.rvcReqStatus = 2;  //鎵ц瀹屾垚
 					rmtCtrl_Stpara.rvcFailureType = 0;
 				}
 				else
 				{
-					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
+					rmtCtrl_Stpara.rvcReqStatus = 3;  //鎵ц澶辫触
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
 				auto_door_stage = PP_AUTODOORCTRL_IDLE;
 			}
-			else//蓝牙
+			else//钃濈墮
 			{
 
 			}
