@@ -714,3 +714,19 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 		log_e(LOG_HOZON, "save tboxsn failed");
 	}
 }
+
+/******************************************************
+*函数名:PrvtProt_gettboxsn
+
+*形  参：
+
+*返回值：
+
+*描  述：
+
+*备  注：
+******************************************************/
+void PrvtProt_gettboxsn(char *tboxsn)
+{
+	memcpy(tboxsn,pp_tboxsn,strlen(pp_tboxsn));
+}

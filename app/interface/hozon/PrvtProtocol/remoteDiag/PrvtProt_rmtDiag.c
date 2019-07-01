@@ -50,6 +50,9 @@ description锛� include the header file
 #include "../PrvtProt_cfg.h"
 #include "../PrvtProt.h"
 #include "tbox_ivi_api.h"
+
+#include "PP_rmtDiag_cfg.h"
+
 #include "PrvtProt_rmtDiag.h"
 
 /*******************************************************
@@ -428,7 +431,7 @@ static int PP_rmtDiag_do_checkrmtImageReq(PrvtProt_task_t *task)
 
 *鎻�  杩帮細
 
-*澶�  娉細
+*澶�  娉細:每天仅上报1次
 ******************************************************/
 static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 {
@@ -770,6 +773,18 @@ void PP_diag_SetdiagReq(unsigned char diagType)
 	PP_rmtDiag.state.diageventId = 100;
 	PP_rmtDiag.state.result = 1;
 	PP_rmtDiag.state.failureType = 0;
+
+	rmtDiag_datetime.diagflag = 0;
+	if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
+	{
+		log_e(LOG_GB32960, "save rmtDiag_datetime.diagflag failed\n");
+	}
+
+	rmtDiag_datetime.datetime = 0;
+	if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGDATE, &rmtDiag_datetime.datetime, 4))
+	{
+		log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
+	}
 }
 
 
