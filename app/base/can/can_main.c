@@ -99,6 +99,7 @@ static void can_do_dumpsta(can_stat_t *state)
 
     for (i = 0; i < CAN_MAX_PORT; i++)
     {
+        #if 0
         if (can_baud[i] < 0)
         {
             shellprintf(" CAN %d: N/A\r\n", i + 1);
@@ -107,6 +108,7 @@ static void can_do_dumpsta(can_stat_t *state)
         {
             shellprintf(" CAN %d: %uk\r\n", i + 1, can_baud[i]);
         }
+        #endif
 
         pos = state->rawpos[i];
 
@@ -116,17 +118,36 @@ static void can_do_dumpsta(can_stat_t *state)
 
             if (msg->msgid != 0)
             {
-                shellprintf("  %2d  0x%08X %c: %02X %02X %02X %02X %02X %02X %02X %02X\r\n",
-                            ++no, msg->msgid, msg->exten ? 'E' : 'S',
-                            msg->Data[0], msg->Data[1], msg->Data[2], msg->Data[3],
-                            msg->Data[4], msg->Data[5], msg->Data[6], msg->Data[7]);
+                unsigned char m;
+                
+                shellprintf("  %2d  0x%08X %c:", ++no, msg->msgid, msg->exten ? 'E' : 'S');  
+
+                for(m=0; m<msg->len; m++)
+                {
+                    if((m%8) == 7)
+                    {
+                        shellprintf("%2x ", msg->Data[m]);
+                        shellprintf("\r\n");
+                    }
+                    else if(m && ((m%8)==0))
+                    {
+                        shellprintf("%21x ", msg->Data[m]);
+                    }
+                    else
+                    {
+                        shellprintf("%2x ", msg->Data[m]);
+                    }
+                }
+
+                if(msg->len%8)
+                {
+                    shellprintf("\r\n");
+                }
             }
         }
     }
-
-	shellprintf(" CAN receive all sum = %d\r\n", can_sum);
-
-    shellprintf(" --------------------------------dataover--------------------------------\r\n");
+ 
+  shellprintf(" --------------------------------dataover--------------------------------\r\n");
 }
 
 static void can_do_timeout(can_stat_t *state)
@@ -190,7 +211,7 @@ static int can_putraw(can_stat_t *state, CAN_MSG *msglst, int msgcnt)
     {
         if (msg->type == 'C')
         {
-            if ((msg->port < 1) || (msg->port > CAN_MAX_PORT))
+            if (msg->port > CAN_MAX_PORT)
             {
                 log_e(LOG_CAN, "can port error, port=%d, len=%d", msg->port, msg->len);
                 continue;

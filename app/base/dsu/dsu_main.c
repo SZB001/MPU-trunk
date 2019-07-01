@@ -53,6 +53,58 @@ static void dsu_do_wakeup(void)
     dsu_resume_record();
 }
 
+/*FUNCTION**********************************************************************
+ *
+ * Function Name: ComputeDLCValue
+ * Description  : Computes the DLC field value, given a payload size (in bytes).
+ *
+ *END**************************************************************************/
+static unsigned char dsu_computeDLCValue(unsigned char payloadSize)
+{
+    unsigned char ret;
+
+    if (payloadSize <= 8U)
+    {
+        ret = payloadSize;
+    }
+    else if ((payloadSize > 8U) && (payloadSize <= 12U))
+    {
+        ret = 9;
+    }
+    else if ((payloadSize > 12U) && (payloadSize <= 16U))
+    {
+        ret = 10;
+    }
+    else if ((payloadSize > 16U) && (payloadSize <= 20U))
+    {
+        ret = 11;
+    }
+    else if ((payloadSize > 20U) && (payloadSize <= 24U))
+    {
+        ret = 12;
+    }
+    else if ((payloadSize > 24U) && (payloadSize <= 32U))
+    {
+        ret = 13;
+    }
+    else if ((payloadSize > 32U) && (payloadSize <= 48U))
+    {
+        ret = 14;
+    }
+    else if ((payloadSize > 48U) && (payloadSize <= 64U))
+    {
+        ret = 15;
+    }
+    else
+    {
+        /* The argument is not a valid payload size */
+        ret = 0xFFU;
+    }
+
+    return ret;
+}
+
+
 static int dsu_cfg_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
                            unsigned char *new_para,
                            unsigned int len)
@@ -370,6 +422,7 @@ static void dsu_gps_callback(unsigned int event, unsigned int arg1, unsigned int
     }
 }
 
+
 static int dsu_can_callback(unsigned int event, unsigned int arg1, unsigned int arg2)
 {
     CAN_MSG *canmsg = (CAN_MSG *) arg1;
@@ -379,25 +432,99 @@ static int dsu_can_callback(unsigned int event, unsigned int arg1, unsigned int 
     /* fix bug#79, start inx when recv raw can data. */
     //0:can timeout,1:can active,but not recv raw can,2: can active and recv raw can
     static int inx_start = 0;
+	//static int cnt = 0;
     /* fix bug#85, record data to tmp_buf when disk full */
     bool is_rec = (DISK_OK == disk_stat) ? true : false;
 
-    if (DISK_FULL == disk_stat && dsu_cfg.loop)
+    int i;
+
+    if (DISK_FULL ==  disk_stat && dsu_cfg.loop)
     {
         is_rec = true;
     }
 
     if (CAN_EVENT_DATAIN == event)
     {
+        IWD_MSG  dsubuff;
+        static CAN_MSG buf[4096];
+        unsigned char *p = (unsigned char *)buf;
+        unsigned int len = 0;
         assert((int)arg2 > 0);
 
+        for(i=0; i<arg2; i++)
+        {
+            if(canmsg[i].type != 'T')
+            {
+            #if 0
+            log_o(LOG_DSU, "type:%c", canmsg[i].type);
+            log_o(LOG_DSU, "dlc:%x",  canmsg[i].len);
+			log_o(LOG_DSU, "canfd:%d",  canmsg[i].canFD);
+            log_o(LOG_DSU, "canid:%x", canmsg[i].MsgID);
+			    log_o(LOG_DSU, "data0:%x", canmsg[i].Data[0]);
+				log_o(LOG_DSU, "data1:%x", canmsg[i].Data[1]);
+				log_o(LOG_DSU, "data2:%x", canmsg[i].Data[2]);
+				log_o(LOG_DSU, "data3:%x", canmsg[i].Data[3]);
+				log_o(LOG_DSU, "data4:%x", canmsg[i].Data[4]);
+				log_o(LOG_DSU, "data5:%x", canmsg[i].Data[5]);
+				log_o(LOG_DSU, "data6:%x", canmsg[i].Data[6]);
+				log_o(LOG_DSU, "data7:%x", canmsg[i].Data[7]);
+				log_o(LOG_DSU, "data8:%x", canmsg[i].Data[8]);
+				log_o(LOG_DSU, "data9:%x", canmsg[i].Data[9]);
+
+            #endif
+			
+            #if 0
+                CAN_SEND_MSG   msgbuff;
+
+                msgbuff.PAD = 0xFF;
+                msgbuff.BRS = canmsg[i].canFD;
+                msgbuff.DLC = canmsg[i].len;
+                msgbuff.canFD = canmsg[i].canFD;
+                msgbuff.isRTR = canmsg[i].isRTR;
+                msgbuff.isEID = canmsg[i].isEID;
+                msgbuff.MsgID = canmsg[i].MsgID - 1;
+                memcpy(msgbuff.Data, canmsg[i].Data, 64);
+                can_do_send(canmsg[i].port-1, &msgbuff);
+            #endif
+                
+                dsubuff.uptime     = canmsg[i].uptime;
+                dsubuff.miscUptime = canmsg[i].miscUptime;
+                dsubuff.type       = canmsg[i].type;
+                dsubuff.port       = canmsg[i].port;
+                dsubuff.canFD      = canmsg[i].canFD;
+                dsubuff.BRS        = canmsg[i].brs;
+                dsubuff.ESI        = canmsg[i].esi;
+                dsubuff.dlc        = dsu_computeDLCValue(canmsg[i].len);            
+                if(canmsg[i].port == 1)                  /* port 1 is canFD */                
+                {
+                    dsubuff.canFDchannel = 1;
+                }
+                else
+                {
+                    dsubuff.canFDchannel = 0;
+                }
+
+                if(canmsg[i].len <= 64)
+                {
+                    memcpy(p+len, (unsigned char *)&dsubuff, sizeof(dsubuff));
+                    len += sizeof(dsubuff);
+                    memcpy(p+len, (unsigned char *)&canmsg[i].MsgID, sizeof(canmsg[i].MsgID));
+                    len += sizeof(canmsg[i].MsgID);
+                    memcpy(p+len, canmsg[i].Data, canmsg[i].len);
+                    len += canmsg[i].len;
+                }
+                
+            }
+        }
+  
         if (canmsg[arg2 - 1].type == 'T')
         {
             if (canmsg[arg2 - 1].uptime - uptime > 1 && uptime != 0)
             {
                 log_w(LOG_DSU, "can tag miss[%u,%u]", canmsg[arg2 - 1].uptime, uptime);
             }
-
+            
+            uptime = canmsg[arg2 - 1].uptime;
             if (inx_start == 0)
             {
                 inx_start = 1;
@@ -413,7 +540,7 @@ static int dsu_can_callback(unsigned int event, unsigned int arg1, unsigned int 
             {
                 if (arg2 > 1)
                 {
-                    iwdz_file_append(IWDZ_DATA_CAN, (unsigned char *) arg1, (arg2 - 1) * sizeof(CAN_MSG));
+                    iwdz_file_append(IWDZ_DATA_CAN, (unsigned char*)buf, len);
                 }
             }
 
@@ -430,7 +557,7 @@ static int dsu_can_callback(unsigned int event, unsigned int arg1, unsigned int 
                     }
                 }
 
-                iwd_file_append((unsigned char *) arg1, (arg2 - 1) * sizeof(CAN_MSG));
+                iwd_file_append((unsigned char*)buf, len);
             }
 
             // handle inx file
@@ -464,17 +591,20 @@ static int dsu_can_callback(unsigned int event, unsigned int arg1, unsigned int 
         else
         {
             inx_start = 2;
+            
+           // total += arg2;
 
             // handle iwdz file
             if (iwdz_attr.enable && is_rec)
             {
-                iwdz_file_append(IWDZ_DATA_CAN, (unsigned char *) arg1, arg2 * sizeof(CAN_MSG));
+                iwdz_file_append(IWDZ_DATA_CAN, (unsigned char*)buf, len);
             }
 
             // handle iwd file
             if (iwd_attr.enable && is_rec)
             {
-                iwd_file_append((unsigned char *) arg1, arg2 * sizeof(CAN_MSG));
+            //log_e(LOG_DSU, "dsu_can_callback iwd_file_append 888888888888 temp_id(%d),canmsg[i].data32[0](%d)",temp_id,canmsg[i].data32[0]);
+                iwd_file_append((unsigned char *)buf, len);
             }
         }
     }

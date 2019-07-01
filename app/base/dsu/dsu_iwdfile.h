@@ -37,6 +37,20 @@ typedef struct
     pthread_mutex_t mutex;          // mutex for stat;
 } IWD_ATTR;
 
+typedef struct 
+{
+    unsigned int    uptime;
+    unsigned int    miscUptime;
+    unsigned char   type;
+    unsigned short  dlc          :4;
+    unsigned short  port         :4;
+    unsigned short  canFD        :1;
+    unsigned short  BRS          :1;
+    unsigned short  ESI          :1;
+    unsigned char   canFDchannel :1;  
+} __attribute__((packed)) IWD_MSG;
+
+
 
 typedef struct _iwd_fault_info_t
 {

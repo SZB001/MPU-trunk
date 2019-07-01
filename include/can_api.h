@@ -11,17 +11,6 @@ typedef struct
 {
     uint32_t uptime;
     uint32_t miscUptime;
-    uint8_t  type;
-    union
-    {
-        uint8_t dlc;
-        struct
-        {
-            uint8_t len  : 4;
-            uint8_t port : 4;
-        };
-    };
-
     union
     {
         uint32_t MsgID; /* CAN Message ID (11-bit or 29-bit) */
@@ -31,24 +20,45 @@ typedef struct
             uint32_t exten : 1;
         };
     };
-
+    
+    unsigned int  type  : 8;   /* can message or can Tag */
+    unsigned int  len   : 7;   /* data length */
+    unsigned int  brs   : 1;   /* bit rate switch */
+    unsigned int  esi   : 1;   /* error state indicator */
+    unsigned int  canFD : 1;   /* canFD flag */
+    unsigned int  isRTR : 1;   /* RTR flag */
+    unsigned int  isEID : 1;   /* EID flag */
+    unsigned int  port  : 3;   /* can port */
+    unsigned int  res   : 9;
     union
     {
         uint32_t data32[2];
-        uint8_t  Data[8];
+        uint8_t  Data[64];
     };
 } __attribute__((packed)) CAN_MSG;
 
 typedef struct
 {
-    uint32_t RSV1  : 16;        /* Bit  0 - 15 */
-    uint32_t DLC   : 4;         /* Bit 16 - 19 */
-    uint32_t RSV2  : 10;        /* Bit 20 - 29 */
-    uint32_t isRTR : 1;         /* Bit 30 */
-    uint32_t isEID : 1;         /* Bit 31 */
-    uint32_t MsgID;             /* CAN Message ID (11-bit or 29-bit) */
-    uint8_t  Data[8];           /* CAN Message Data Bytes 0-7 */
-} __attribute__((packed)) CAN_SEND_MSG;
+    unsigned int : 13;
+    unsigned int PAD : 8;
+    unsigned int DLC : 7;
+    unsigned int BRS : 1;
+    unsigned int canFD:1;
+    unsigned int isRTR : 1;
+    unsigned int isEID : 1;
+    unsigned int MsgID;     /* CAN Message ID (11-bit or 29-bit) */
+    unsigned char Data[64]; /* CAN Message Data Bytes 0-63 */
+}CAN_SEND_MSG;
+
+typedef struct
+{
+    unsigned char rtype; /* see also CAN_REPORT_TYPE */
+    unsigned char port; /* CAN PORT */
+    unsigned int val; /* the unit of interval is ms, the minimum precision is 50ms */
+    unsigned int times; /* send times, 0: send until the stop */
+    CAN_SEND_MSG msg;
+}CAN_REPORT_CFG;
+
 
 /* can call back event */
 typedef enum

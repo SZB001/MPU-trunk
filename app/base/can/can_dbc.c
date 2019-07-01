@@ -542,16 +542,29 @@ int dbc_can_callback(uint32_t event, uint32_t par1, uint32_t par2)
         for (i = 0, canmsg = (CAN_MSG *)par1; i < par2; i++, canmsg++)
         {
             dbc_msg_t *msg;
-            uint64_t rawbit, revbit;
+            bool rawbit[512];
+            bool revbit[512];
+            bool valbit[64];
             list_t *node;
+            unsigned short m,n;
 
-            if (canmsg->type != 'C' || (msg = dbc_find_msg(dbc_data, canmsg->MsgID)) == NULL)
+          //  if (canmsg->type != 'C' || (msg = dbc_find_msg(dbc_data, canmsg->MsgID)) == NULL)
+          if(canmsg->type !='C')
             {
                 continue;
             }
 
-            memcpy(&rawbit, canmsg->Data, 8);
-            revbit = REV64(rawbit);
+            for(m=0; m<64; m++)
+            {
+                for(n=0; n<8; n++)
+                {
+                    rawbit[8*m + n] = !!(canmsg->Data[m] & (1<<n));
+                }
+            }
+            for(m=0; m<512; m++)
+            {
+                revbit[(63-m/8)*8+(m%8)] = rawbit[m];
+            }
 
             for (node = msg->siglst.next; node != &msg->siglst; node = node->next)
             {
@@ -566,14 +579,30 @@ int dbc_can_callback(uint32_t event, uint32_t par1, uint32_t par2)
 
                 if (sig->order == '1')
                 {
-                    rawval = (rawbit >> sig->start) & ((1ULL << sig->size) - 1);
+                    for(m=0; m<sig->size; m++)
+                    {
+                        valbit[m] = rawbit[m + sig->start];
+                    }
                 }
                 else
                 {
                     int start;
 
-                    start  = 57 - (sig->start & ~0x7) + (sig->start & 0x7) - sig->size;
-                    rawval = (revbit >> start) & ((1ULL << sig->size) - 1);
+                    start = 505 - (sig->start & ~0x7) + (sig->start & 0x7) - sig->size;
+
+                    for(m=0; m<sig->size; m++)
+                    {
+                        valbit[m] = revbit[m + start];
+                    }
+                }
+                 
+                rawval = 0;
+                for(m=0; m<sig->size; m++)
+                {
+                    if(valbit[m])
+                    {
+                        rawval |= (1ULL << m);
+                    }
                 }
 
                 if (sig->sign == '-' && (rawval & (1ULL << (sig->size - 1))))
