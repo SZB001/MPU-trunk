@@ -19,6 +19,7 @@ author        wangqinglong
 #include "pm_api.h"
 #include "scom_msg_def.h"
 #include "uds_diag_cond.h"
+#include "uds_diag_item_def.h"
 
 static timer_t       uds_diag_timer;
 static pthread_t     uds_tid;  /* thread id */
@@ -253,7 +254,7 @@ static void *uds_main(void)
                     {
                         if (uds_diag_available())
                         {
-                            uds_diag_all_devices();
+                            uds_diag_devices(DTC_NUM_ECALL_SWITCH, DIAG_ITEM_NUM);
                         }
                     }
                     /* used for J1939 application */

@@ -6,9 +6,21 @@
 #include "timer.h"
 #include "rds.h"
 #include "uds.h"
+#include <pthread.h>
+
 
 unsigned int UDS_GetDTCSetting(void);
-static unsigned char uds_diag_item_buf[DIAG_ITEM_BUF_LEN];
+
+
+typedef struct
+{
+    unsigned char uds_diag_item_buf[DIAG_ITEM_BUF_LEN];
+    pthread_mutex_t uds_diag_item_buf_mtx;
+} UDS_DIAG_ITEM_BUF_T;
+UDS_DIAG_ITEM_BUF_T uds_diag_item_buf_t;
+
+
+//static unsigned char uds_diag_item_buf[DIAG_ITEM_BUF_LEN];
 
 /**********************************************************************
 function:     uds_diag_para_check
@@ -95,7 +107,11 @@ int uds_diag_init(void)
     char ver[32];
     unsigned int len = 0;
 
-    memset(uds_diag_item_buf, 0, sizeof(uds_diag_item_buf));
+    pthread_mutex_lock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+    memset(uds_diag_item_buf_t.uds_diag_item_buf, 0, sizeof(uds_diag_item_buf_t.uds_diag_item_buf));  
+    pthread_mutex_unlock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+
+    //memset(uds_diag_item_buf, 0, sizeof(uds_diag_item_buf));
 
     for (i = 0; i < sizeof(diag_table) / sizeof(DIAG_ITEM_INFO); i++)
     {
@@ -127,7 +143,9 @@ int uds_diag_init(void)
 
         /* compute each para length and offset */
         diag_table[i].offset    = offset;
-        diag_table[i].confirmed = (unsigned int *)(uds_diag_item_buf + offset);
+        pthread_mutex_lock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+        diag_table[i].confirmed = (unsigned int *)(uds_diag_item_buf_t.uds_diag_item_buf + offset);
+        pthread_mutex_unlock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
         diag_table[i].len       = size + sizeof(unsigned int);  /* include confirmed flag */
         offset = offset + diag_table[i].len;
         size = 0;
@@ -141,8 +159,11 @@ int uds_diag_init(void)
     }
 
     /* get history fault information */
-    len = sizeof(uds_diag_item_buf);
-    ret = rds_get(RDS_DATA_UDS_DIAG, uds_diag_item_buf, &len, ver);
+    pthread_mutex_lock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+    len = sizeof(uds_diag_item_buf_t.uds_diag_item_buf);
+    ret = rds_get(RDS_DATA_UDS_DIAG, uds_diag_item_buf_t.uds_diag_item_buf, &len, ver);
+    pthread_mutex_unlock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+    
 
     if (0 != ret)
     {
@@ -162,6 +183,7 @@ return:       none
 void uds_diag_gen_freeze(DIAG_DEF_ITEM_ID id)
 {
     int i, j, offset;
+    offset = diag_table[id].offset + sizeof(unsigned int);
 
     for (i = 0; i < DIAG_MAX_DID_CNT; i++)
     {
@@ -175,8 +197,9 @@ void uds_diag_gen_freeze(DIAG_DEF_ITEM_ID id)
             {
                 if (diag_did_table[j].id == diag_table[id].freeze[i])
                 {
-                    offset = diag_table[id].offset + sizeof(unsigned int);
-                    diag_did_table[j].get(uds_diag_item_buf + offset, diag_did_table[j].len);
+                    pthread_mutex_lock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+                    diag_did_table[j].get(uds_diag_item_buf_t.uds_diag_item_buf + offset, diag_did_table[j].len);
+                    pthread_mutex_unlock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
                     offset += diag_did_table[j].len;
                     break;
                 }
@@ -260,9 +283,54 @@ void uds_diag_all_devices(void)
     if (is_gen_freeze)
     {
         /* save freeze frame and confirmed flag */
-        rds_update_once(RDS_DATA_UDS_DIAG, uds_diag_item_buf, sizeof(uds_diag_item_buf));
+        pthread_mutex_lock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+        rds_update_once(RDS_DATA_UDS_DIAG, uds_diag_item_buf_t.uds_diag_item_buf, 
+            sizeof(uds_diag_item_buf_t.uds_diag_item_buf));
+        pthread_mutex_unlock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
     }
 }
+
+/**************************************************************************
+function:     uds_diag_devices
+description:  Diagnostic devices based on 
+              the range of diagnostic serial numbers
+input:        DIAG_DEF_ITEM_ID id
+output:       none
+return:       none
+**************************************************************************/
+void uds_diag_devices(int startno, int endno)
+{
+    int i;
+    unsigned int  pre_confirmed;
+    unsigned char is_gen_freeze = 0;
+
+    if (0 == UDS_GetDTCSetting())
+    {
+        return;
+    }
+
+    for (i = startno; i < endno; i++)
+    {
+        pre_confirmed = *(diag_table[i].confirmed);
+        uds_diag_one_device(i);
+
+        /* new confirmed fault generated */
+        if ((0 == pre_confirmed) && (1 == *(diag_table[i].confirmed)))
+        {
+            is_gen_freeze = 1;
+        }
+    }
+
+    if (is_gen_freeze)
+    {
+        /* save freeze frame and confirmed flag */
+        pthread_mutex_lock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+        rds_update_once(RDS_DATA_UDS_DIAG, uds_diag_item_buf_t.uds_diag_item_buf, 
+            sizeof(uds_diag_item_buf_t.uds_diag_item_buf));
+        pthread_mutex_unlock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+    }
+}
+
 
 /**************************************************************************
 function:     uds_diag_get_dtc_num
@@ -450,6 +518,39 @@ int uds_diag_get_did_value(unsigned short did, unsigned char *value, unsigned in
     return 0;
 }
 
+int is_uds_diag_set_did_invalue(unsigned short did, unsigned char *value, unsigned int len)
+{
+    int i;
+
+    for (i = 0; i < sizeof(diag_did_table) / sizeof(DIAG_ITEM_DID); i++)
+    {
+        if (diag_did_table[i].id == did)
+        {
+            break;
+        }
+    }
+
+    if (i >= sizeof(diag_did_table) / sizeof(DIAG_ITEM_DID))
+    {
+        log_e(LOG_UDS, "invalid did, did:%u, len:%u", did, len);
+        return NRC_RequestOutOfRange;
+    }
+
+    if (len != diag_did_table[i].len)
+    {
+        log_e(LOG_UDS, "invalid did length, did:%u, len:%u", did, len);
+        return NRC_IncorrectMessageLengthOrInvailFormat;
+    }
+
+    if (g_u8SecurityAccess != diag_did_table[i].level)
+    {
+        log_e(LOG_UDS, "level type is not match");
+        return NRC_SecurityAccessDenied;
+    }
+    return 0;
+}
+
+
 /**************************************************************************
 function:     uds_diag_set_did_value
 description:  set did value
@@ -474,17 +575,6 @@ int uds_diag_set_did_value(unsigned short did, unsigned char *value, unsigned in
         }
     }
 
-    if (i >= sizeof(diag_did_table) / sizeof(DIAG_ITEM_DID))
-    {
-        log_e(LOG_UDS, "invalid did, did:%u, len:%u", did, len);
-        return NRC_RequestOutOfRange;
-    }
-
-    if (len != diag_did_table[i].len)
-    {
-        log_e(LOG_UDS, "invalid did length, did:%u, len:%u", did, len);
-        return NRC_IncorrectMessageLengthOrInvailFormat;
-    }
 
     if (DIAG_DATA_USHORT == diag_did_table[i].type)
     {
@@ -508,6 +598,7 @@ int uds_diag_set_did_value(unsigned short did, unsigned char *value, unsigned in
     return 0;
 }
 
+
 /**************************************************************************
 function:     uds_diag_get_freeze
 description:  get the freeze information¡¢len¡¢and num
@@ -522,7 +613,8 @@ int uds_diag_get_freeze(DIAG_DEF_ITEM_ID id, unsigned char *freeze,
                         unsigned int *len, unsigned int *did_num)
 {
     int i, j,  offset = 0, did_cnt = 0;
-
+    int current_index = 0;
+    
     *did_num = 0;
 
     if (DID_INVALID == diag_table[id].freeze[0])
@@ -550,10 +642,14 @@ int uds_diag_get_freeze(DIAG_DEF_ITEM_ID id, unsigned char *freeze,
                         return NRC_RequestOutOfRange;
                     }
 
-                    memcpy(freeze + offset, uds_diag_item_buf + diag_table[id].offset + sizeof(unsigned int),
-                           diag_did_table[j].len);
-
+                           
+                    pthread_mutex_lock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+                    memcpy(freeze + offset, uds_diag_item_buf_t.uds_diag_item_buf + diag_table[id].offset + sizeof(unsigned int) + current_index,
+                            diag_did_table[j].len);  
+                    pthread_mutex_unlock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+                    
                     offset += diag_did_table[j].len;
+                    current_index += diag_did_table[j].len;
                     break;
                 }
             }
@@ -589,13 +685,18 @@ void uds_diag_dtc_clear(void)
 {
     int i;
 
-    memset(uds_diag_item_buf, 0, sizeof(uds_diag_item_buf));
+    pthread_mutex_lock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+    memset(uds_diag_item_buf_t.uds_diag_item_buf, 0, sizeof(uds_diag_item_buf_t.uds_diag_item_buf));  
+    pthread_mutex_unlock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+
 
     for (i = 0; i < sizeof(diag_table) / sizeof(DIAG_ITEM_INFO); i++)
     {
         diag_table[i].counter = 0;
     }
 
-    rds_update_once(RDS_DATA_UDS_DIAG, uds_diag_item_buf, sizeof(uds_diag_item_buf));
+    pthread_mutex_lock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+    rds_update_once(RDS_DATA_UDS_DIAG, uds_diag_item_buf_t.uds_diag_item_buf, sizeof(uds_diag_item_buf_t.uds_diag_item_buf));
+    pthread_mutex_unlock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
 }
 

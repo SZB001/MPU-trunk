@@ -2,6 +2,8 @@
 #define __UDS_DIAG_H__
 
 #include "uds_diag_item_def.h"
+#include <pthread.h>
+
 
 typedef int (*diag_get_did_value)(unsigned char *did, unsigned int len);
 typedef int (*diag_set_did_value)(unsigned char *did, unsigned int len);
@@ -32,9 +34,11 @@ typedef struct DIAG_ITEM_DID
     unsigned short      id;
     DIAG_DATA_TYPE      type;
     unsigned int        len;
+    unsigned char       level;
     diag_get_did_value  get;
     diag_set_did_value  set;
 } DIAG_ITEM_DID;
+
 
 typedef struct DIAG_ITEM_INFO
 {
@@ -48,6 +52,7 @@ typedef struct DIAG_ITEM_INFO
     unsigned int   counter;
     unsigned int   *confirmed;    /* freeze frame is valid when the confirmed flag is true, */
     unsigned short freeze[DIAG_MAX_DID_CNT]; /* the did index which is contained in the freeze frame*/
+    pthread_mutex_t diag_item_info_mtx;
 } DIAG_ITEM_INFO;
 
 #pragma pack(1)
@@ -79,12 +84,14 @@ typedef struct
 
 #define DIAG_DID_TABLE_BEGIN()          DIAG_ITEM_DID diag_did_table[] = {
 #define DIAG_DID_TABLE_END()            };
-#define DIAG_DID_ATTR(name, id, type, len, get, set)  {(name), (id), (type), (len), (get), (set)},
+#define DIAG_DID_ATTR(name, id, type, len, level, get, set)  {(name), (id), (type), (len), (level), (get), (set)},
+
 
 
 /*==========================================================*/
 int uds_diag_init(void);
 void uds_diag_all_devices(void);
+void uds_diag_devices(int startno, int endno);
 
 
 unsigned int uds_diag_get_dtc_num(void);
@@ -99,5 +106,6 @@ int uds_diag_set_did_value(unsigned short did, unsigned char *value, unsigned in
 int uds_diag_get_freeze(DIAG_DEF_ITEM_ID id, unsigned char *freeze, unsigned int *len,
                         unsigned int *did_num);
 void uds_diag_dtc_clear(void);
+int is_uds_diag_set_did_invalue(unsigned short did, unsigned char *value, unsigned int len);
 
 #endif

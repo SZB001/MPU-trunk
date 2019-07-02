@@ -1,43 +1,88 @@
 #ifndef UDS_DID_DEF_H
 #define UDS_DID_DEF_H
 
-/*DID Logistics*/
-#define FT_DID_ECU_IDENTIFIER                           (0xF18C)
-#define FT_DID_ECU_CODE                                 (0xF1EE)
-#define FT_DID_ECU_NUMBER                               (0xF1EF)
-#define FT_DID_SYSTEM_SUPPLIER_IDENTIFIER               (0xF18A)
-#define FT_DID_REPAIR_SHOP_CODE                         (0xF198)
-#define FT_DID_TESTER_SERIAL_NUMBER                     (0xF198)
-#define FT_DID_VEHICLE_MANUFACTURER_SPARE_PART_NUMBER   (0xF187)
-#define FT_DID_UDS_VIN                                  (0xF190)
-#define FT_DID_PROGRAMMING_DATA                         (0xF199)
-#define FT_DID_SYSTEM_NAME                              (0xF197)
-#define FT_DID_ECU_HARDWARE_VERSION_NUMBER              (0xF193)
-#define FT_DID_ECU_SOFTWARE_VERSION_NUMBER              (0xF195)
-#define FT_DID_FINGERPRINTDATAIDENTIFIER                (0xF184)
 
-/*DID Configuration*/
-#define FT_DID_APN1_USER                                (0x4600)
-#define FT_DID_APN1_ADDRESS                             (0x4601)
-#define FT_DID_APN1_PASS                                (0x4602)
-#define FT_DID_APN2_USER                                (0x4603)
-#define FT_DID_APN2_ADDRESS                             (0x4604)
-#define FT_DID_APN2_PASS                                (0x4605)
-#define FT_DID_TSP_IP                                   (0x4606)
-#define FT_DID_HTTP                                     (0x4607)
-#define FT_DID_TSP_IP_PORT_NUMBER                       (0x4608)
-#define FT_DID_AVN_SERIAL_NUMBER                        (0x4609)
-#define FT_DID_PHONE                                    (0x460A)
-#define FT_DID_ICCID                                    (0x460B)
-#define FT_DID_IMSI                                     (0x460C)
-#define FT_DID_IMEI                                     (0x460D)
-#define FT_DID_VEHICLE_TYPE                             (0x460E)
 
-#define FT_DID_BRAND_PROT								(0x09FF)
-#define FT_DID_REGISTER_STATUS							(0x09FE)
+/* DynamicData DID */
+#define DID_POWER_VOLTAGE                               (0x0112)	
+#define DID_TIME                                        (0xF020)
+#define DID_ODOMETER_READING                            (0xE101)
+#define DID_VEHICLE_SPEED                               (0xB100)
+#define DID_IGNITION_STATUS                             (0xD001)
+#define DID_GPS_MODULE_STATUS                           (0x9004)
+#define DID_GPS_POSITIONING_STATUS                      (0x9005)
+#define DID_SD_CARD_STATUS                              (0x9006)
+#define DID_4G_ANTENNA_STATUS                           (0x9007)
+#define DID_PLATFORM_CONNECTION_STATUS                  (0x9009)
+#define DID_4G_ANT_SIGNAL_STRENGTH                      (0x900C)
+#define DID_CAN1_STATUS                                 (0x900D)
+#define DID_CAN2_STATUS                                 (0x900E)
 
-/*DID COMMON*/
-#define FT_DID_VOLTAGE                                  (0XA002)
-#define FT_DID_DISTANCE                                 (0XA003)
+/*20190627 caoml*/
+#define DID_ESK                                         (0x900F)
+#define DID_PKI_STATUS                                  (0x9010)
+
+/* DynamicData DID Length*/
+#define DID_LEN_POWER_VOLTAGE                               (1)	
+#define DID_LEN_TIME                                        (7)
+#define DID_LEN_ODOMETER_READING                            (3)
+#define DID_LEN_VEHICLE_SPEED                               (2)
+#define DID_LEN_IGNITION_STATUS                             (1)
+#define DID_LEN_GPS_MODULE_STATUS                           (1)
+#define DID_LEN_GPS_POSITIONING_STATUS                      (1)
+#define DID_LEN_SD_CARD_STATUS                              (1)
+#define DID_LEN_4G_ANTENNA_STATUS                           (1)
+#define DID_LEN_PLATFORM_CONNECTION_STATUS                  (1)
+#define DID_LEN_4G_ANT_SIGNAL_STRENGTH                      (1)
+#define DID_LEN_CAN1_STATUS                                 (1)
+#define DID_LEN_CAN2_STATUS                                 (1)
+
+
+/*20190627 caoml*/
+#define DID_LEN_ESK                                         (16)
+#define DID_LEN_PKI_STATUS                                  (1)
+
+
+/*  StoredData DID */
+#define DID_BOOTLOADER_IDENTIFIER                       (0XF180)
+#define DID_DIAGNOSTIC_SESSION                          (0XF186)
+#define DID_SPARE_PART_NUMBER                           (0XF187)
+#define DID_SOFTWARE_UPGRADE_VERSION                    (0XF188)
+#define DID_SOFTWARE_FIXED_VERSION                      (0XF1B0)
+#define DID_CALIBRATION_SOFTWARE_NUMBER                 (0XF1A2)
+#define DID_SUPPLIER_CODE                               (0XF18A)
+#define DID_MANUFACTURE_DATE                            (0XF18B)
+#define DID_SN                                          (0XF18C)
+#define DID_VIN                                         (0XF190)
+#define DID_HW_VERSION                                  (0XF191)
+#define DID_TESTER_SN                                   (0XF198)
+#define DID_PROGRAMMING_DATE                            (0XF199)
+#define DID_INSTALLATION_DATE                           (0XF19D)
+#define DID_CONFIGURATION_CODE                          (0XF170)
+#define DID_PHONE                                       (0X460A)
+#define DID_ICCID                                       (0X460B)
+#define DID_IMSI                                        (0X460C)
+#define DID_IMEI                                        (0X460D)
+
+/*  StoredData DID Length*/
+#define DID_LEN_BOOTLOADER_IDENTIFIER                       (8)
+#define DID_LEN_DIAGNOSTIC_SESSION                          (1)
+#define DID_LEN_SPARE_PART_NUMBER                           (13)
+#define DID_LEN_SOFTWARE_UPGRADE_VERSION                    (8)
+#define DID_LEN_SOFTWARE_FIXED_VERSION                      (8)
+#define DID_LEN_CALIBRATION_SOFTWARE_NUMBER                 (4)
+#define DID_LEN_SUPPLIER_CODE                               (3)
+#define DID_LEN_MANUFACTURE_DATE                            (4)
+#define DID_LEN_SN                                          (18)
+#define DID_LEN_VIN                                         (17)
+#define DID_LEN_HW_VERSION                                  (5)
+#define DID_LEN_TESTER_SN                                   (10)
+#define DID_LEN_PROGRAMMING_DATE                            (4)
+#define DID_LEN_INSTALLATION_DATE                           (4)
+#define DID_LEN_CONFIGURATION_CODE                          (4)
+#define DID_LEN_PHONE                                       (15)
+#define DID_LEN_ICCID                                       (20)
+#define DID_LEN_IMSI                                        (15)
+#define DID_LEN_IMEI                                        (15)
 
 #endif

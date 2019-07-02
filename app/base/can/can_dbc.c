@@ -631,6 +631,16 @@ int dbc_can_callback(uint32_t event, uint32_t par1, uint32_t par2)
                         dbc_callback_lst[j](DBC_EVENT_UPDATE, sig - dbc_data->siglst + 1, canmsg->uptime);
                     }
                 }
+
+                /* calling callback functions to inform the app module that the channel has receive data */
+                {
+                    int j;
+
+                    for (j = 0; j < DBC_MAX_CALLBACK && dbc_callback_lst[j]; j++)
+                    {
+                        dbc_callback_lst[j](DBC_EVENT_RCVED, sig - dbc_data->siglst + 1, canmsg->uptime);
+                    }
+                }
             }
         }
     }

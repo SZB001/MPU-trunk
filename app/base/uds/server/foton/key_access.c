@@ -23,6 +23,15 @@ const uint32_t wconst1 = 0xb1a24909;
 const uint32_t wconst2 = 0xde083b5f;
 */
 
+#define TOPBIT              (0x8000)
+#define POLYNOM_1           (0x8408)
+#define POLYNOM_2           (0x8025)
+#define BITMASK             (0x0080)
+#define INITIAL_REMINDER    (0xFFFE)
+#define MSG_LEN             (2) /* seed length in bytes */
+
+
+
 const uint32_t wconst1 = 0x0949a2b1;
 const uint32_t wconst2 = 0x5f3b08de;
 
@@ -73,5 +82,49 @@ uint32_t saGetKey(uint32_t wSeed, uint8_t mode)
             + (((uint32_t)(Key[0]) << 24) & 0xff000000));
     return wKey;
 }
+
+
+uint16_t calcKey(uint16_t seed)
+{
+    uint8_t bSeed[2];
+    uint16_t remainder;
+    uint8_t n;
+    uint8_t i;
+    
+    bSeed[0] = (uint8_t)(seed >> 8); /* MSB */
+    bSeed[1] = (uint8_t)seed; /* LSB */
+    
+    remainder = INITIAL_REMINDER;
+    
+    for (n = 0; n < MSG_LEN; n++)
+    {
+        /* Bring the next byte into the remainder. */
+        remainder ^= ((bSeed[n]) << 8);
+        
+        /* Perform modulo-2 division, a bit at a time. */
+        for (i = 0; i < 8; i++)
+        {
+            /* Try to divide the current data bit. */
+            if (remainder & TOPBIT)
+            {
+                if(remainder & BITMASK)
+                {
+                    remainder = (remainder << 1) ^ POLYNOM_1;
+                }
+                else
+                {
+                    remainder = (remainder << 1) ^ POLYNOM_2;
+                }
+            }
+            else
+            {
+                remainder = (remainder << 1);
+            }
+        }
+    }
+    /* The final remainder is the key */
+    return remainder;
+} 
+
 
 

@@ -4,20 +4,24 @@
 #include "uds_server.h"
 #include "key_access.h"
 
-#define RequestSeed_Secrity_Level1          0x01
+#define RequestSeed_Secrity_Level1          0x03
+#define SeedKey_Secrity_Level1              0x04
+
+#if 0
 #define RequestSeed_Secrity_Level2          0x03
 #define RequestSeed_Secrity_Level3          0x11
-#define SeedKey_Secrity_Level1              0x02
+
 #define SeedKey_Secrity_Level2              0x04
 #define SeedKey_Secrity_Level3              0x12
-
+#endif
 void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DLC)
 {
     uint8_t  Ar_u8RePDU_DATA[10], i = 0;
     static uint8_t flag, counter = 0;
     static uint32_t SecrityAccessFailCounter = 0;
     static uint32_t time = 0;
-    static uint32_t seed, key1, key2, attempt = 0;
+    static uint32_t attempt = 0;
+    static uint16_t seed, key1, key2;
     static uint32_t  current_time = 0;
 
     if (u16PDU_DLC < 2)
@@ -50,7 +54,9 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
     switch (p_u8PDU_Data[1] & suppressPosRspMsgIndicationBitMask)
     {
         case RequestSeed_Secrity_Level1:
+        #if 0
         case RequestSeed_Secrity_Level2:
+        #endif
             if (u16PDU_DLC != 2)
             {
                 uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_IncorrectMessageLengthOrInvailFormat);
@@ -72,7 +78,7 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
 
                 if (Get_SecurityAccess() == SecurityAccess_LEVEL0)
                 {
-                    seed = rand();
+                    seed = rand();//0x1234;
                     flag = 1;
                 }
                 else
@@ -83,18 +89,25 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
 
             Ar_u8RePDU_DATA[i++] =  p_u8PDU_Data[0] + POS_RESPOND_SID_MASK ;
             Ar_u8RePDU_DATA[i++] =  p_u8PDU_Data[1];
+            
+            /* Modified by caoml for HOZON */
+            #if 0
             Ar_u8RePDU_DATA[i++] = (uint8_t)(seed >> 24);
             Ar_u8RePDU_DATA[i++] = (uint8_t)(seed >> 16);
+            #endif
+
             Ar_u8RePDU_DATA[i++] = (uint8_t)(seed >> 8);
             Ar_u8RePDU_DATA[i++] = (uint8_t)seed;
 
+            #if 0
             log_o(LOG_UDS, "seed = 0X%X, key1 = 0X%X", seed, saGetKey(seed, 2));
             log_o(LOG_UDS, "seed = 0X%X, key2 = 0X%X", seed, saGetKey(seed, 4));
-
+            #endif
+            
             break;
 
         case SeedKey_Secrity_Level1:
-            if (u16PDU_DLC != 6)
+            if (u16PDU_DLC != 4)
             {
                 uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_IncorrectMessageLengthOrInvailFormat);
                 return;
@@ -113,8 +126,8 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
                 return;
             }
 
-            key1 = (p_u8PDU_Data[2] << 24) + (p_u8PDU_Data[3] << 16) + (p_u8PDU_Data[4] << 8) + p_u8PDU_Data[5];
-            key2 = saGetKey(seed, 2);
+            key1 = (p_u8PDU_Data[2] << 8) + p_u8PDU_Data[3];
+            key2 = calcKey(seed);
 
             log_o(LOG_UDS, "SeedKey_Secrity_Level1 key1 = %X, key2 = %X\r\n", key1, key2);
 
@@ -145,7 +158,7 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
             }
 
             break;
-
+        #if 0
         case SeedKey_Secrity_Level2:
             if (u16PDU_DLC != 6)
             {
@@ -198,7 +211,8 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
             }
 
             break;
-
+        #endif
+        
         default:
             uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_SubFuncationNotSupported);
             return;

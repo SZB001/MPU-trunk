@@ -9,6 +9,7 @@ author        liuzhongwen
 #include "cfg_api.h"
 #include "cfg_para_api.h"
 #include "cfg_para.h"
+#include "uds_did_def.h"
 #include "cfg_para_def.h"
 #include "dev_rw.h"
 #include "tcom_api.h"

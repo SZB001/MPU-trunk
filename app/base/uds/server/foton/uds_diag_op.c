@@ -11,6 +11,7 @@
 #include "dev_api.h"
 #include "at_api.h"
 #include "cfg_api.h"
+#include "uds_node_miss.h"
 
 /* GPS Ant status. match to mcu*/
 enum
@@ -399,5 +400,118 @@ int ft_uds_diag_power_low(void)
     }
 
     return 0;
+}
+
+
+int uds_diag_dev_missing_gw(void)
+{
+    return 0;
+}
+
+
+/****************************************************************
+function:     uds_diag_dev_can_busoff
+description:  diag can busoff
+input:        none
+output:       none
+return:       0 indicates no fault;
+              1 indicates fault
+****************************************************************/
+int uds_diag_dev_can_busoff(void)
+{
+    int status = 0;
+    status = flt_get_by_id(CAN_BUS1);
+
+    if (status == 1)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+
+}
+
+int uds_diag_dev_acu_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_ACU);
+}
+
+int uds_diag_dev_bms_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_BMS);
+}
+
+int uds_diag_dev_cdu_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_CDU);
+}
+int uds_diag_dev_mcu_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_MCU);
+}
+
+int uds_diag_dev_vcu1_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_VCU1);
+}
+
+int uds_diag_dev_eps_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_EPS);
+}
+
+int uds_diag_dev_esc_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_ESC);
+}
+int uds_diag_dev_ehb_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_EHB);
+}
+
+int uds_diag_dev_eacp_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_EACP);
+}
+
+int uds_diag_dev_ptc_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_PTC);
+}
+
+int uds_diag_dev_plg_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_PLG);
+}
+
+int uds_diag_dev_clm_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_CLM);
+}
+
+int uds_diag_dev_bdcm_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_BDCM);
+}
+
+int uds_diag_dev_alm_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_ALM);
+}
+
+int uds_diag_dev_icu_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_ICU);
+}
+
+int uds_diag_dev_ihu_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_IHU);
+}
+int uds_diag_dev_tap_can_bus_miss(void)
+{
+    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_TAP);
 }
 

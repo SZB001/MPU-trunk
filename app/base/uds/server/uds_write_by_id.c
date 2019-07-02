@@ -20,7 +20,13 @@ void UDS_SRV_WriteDataByID(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_D
 
     value = (p_u8PDU_Data[1] << 8) + p_u8PDU_Data[2];
 
-    uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_RequestCorrectlyReceivedResponsePending);
+    ret = is_uds_diag_set_did_invalue(value, &p_u8PDU_Data[3], u16PDU_DLC - 3);
+    
+    if (ret != 0)
+    {
+        uds_negative_response(tUDS, p_u8PDU_Data[0], ret);
+        return;
+    }
 
     ret = uds_diag_set_did_value(value, &p_u8PDU_Data[3], u16PDU_DLC - 3);
 

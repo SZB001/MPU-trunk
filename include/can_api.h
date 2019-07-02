@@ -78,7 +78,8 @@ typedef enum
     DBC_EVENT_RELOAD,       //p1:dbc name(char*)
     DBC_EVENT_FINISHED,     //p1:0/1
     DBC_EVENT_UPDATE,       //p1:signal id, p2:uptime
-    DBC_EVENT_RESET         //p1:uptime
+    DBC_EVENT_RESET,         //p1:uptime
+    DBC_EVENT_RCVED,        //p1:signal id, p2:uptime
 } DBC_EVENT_TYPE;
 
 /* dbc constant defination */
