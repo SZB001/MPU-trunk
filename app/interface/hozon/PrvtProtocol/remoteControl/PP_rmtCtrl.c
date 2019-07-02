@@ -52,6 +52,9 @@ description： include the header file
 #include "PP_autodoorCtrl.h"
 #include "PP_searchvehicle.h"
 #include "PP_sunroofCtrl.h"
+#include "PP_StartEngine.h"
+#include "PP_StartForbid.h"
+#include "PP_SeatHeating.h"
 #include "PP_rmtCtrl.h"
 
 /*******************************************************
@@ -83,7 +86,7 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 	{RMTCTRL_PANORSUNROOF,PP_sunroofctrl_init,	PP_sunroofctrl_mainfunction},
 	{RMTCTRL_AUTODOOR,PP_autodoorCtrl_init,	PP_autodoorCtrl_mainfunction},
 	{RMTCTRL_RMTSRCHVEHICLE,PP_searchvehicle_init,	PP_searchvehicle_mainfunction},
-	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
+	{RMTCTRL_HIGHTENSIONCTRL,PP_startengine_init,PP_startengine_mainfunction},
 	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
 	{RMTCTRL_AC,	  PP_ACCtrl_init, 		PP_ACCtrl_mainfunction},
 	{RMTCTRL_CHARGE,  PP_ChargeCtrl_init,	PP_ChargeCtrl_mainfunction},
@@ -125,8 +128,7 @@ void PP_rmtCtrl_init(void)
 {
 	int i;
 	memset(&PP_rmtCtrl,0,sizeof(PrvtProt_rmtCtrl_t));
-	memset(&App_rmtCtrl,0,sizeof(PrvtProt_App_rmtCtrl_t));
-
+	PP_canSend_init();
 	for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
 	{
 		PP_rmtCtrl.state[i].reqType = PP_RMTCTRL_UNKNOW;
@@ -161,10 +163,15 @@ int PP_rmtCtrl_mainfunction(void *task)
 		case RMTCTRL_IDLE://空闲
 		{
 			int ret ;
+			PP_rmtCtrl_checkenginetime();//15分钟之后下高压电
+		
 			ret  = PP_doorLockCtrl_start() ||
 				   PP_autodoorCtrl_start() ||
 				   PP_searchvehicle_start()||
-				   PP_sunroofctrl_start()   ;
+				   PP_sunroofctrl_start()  ||
+				   PP_startengine_start()  ||
+				   PP_seatheating_start()  ||
+				   PP_startforbid_start();;
 			if(ret == 1)
 			{
 				PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
@@ -218,7 +225,10 @@ int PP_rmtCtrl_mainfunction(void *task)
 			ret = PP_doorLockCtrl_end() ||
 				  PP_autodoorCtrl_end() ||
 				  PP_searchvehicle_end()||
-				  PP_sunroofctrl_end()  ;
+				  PP_sunroofctrl_end()  ||
+				  PP_startengine_end()  ||
+				  PP_seatheating_end()  ||
+				  PP_startforbid_end();
 			if(ret == 1)
 			{
 				PP_rmtCtrl_flag = RMTCTRL_IDLE; //远程命令执行完，回到空闲
@@ -228,8 +238,6 @@ int PP_rmtCtrl_mainfunction(void *task)
 		default:
 		break;
 	}
-
-	PP_canSend_Mainfunction();//发送控制指令
 
 	return res;
 }
@@ -377,6 +385,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 			case PP_RMTCTRL_HIGHTENSIONCTRL://高电压控制
 			{
+				SetPP_startengine_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote RMTCTRL_HIGHTENSIONCTRL control req");
 			}
 			break;
@@ -473,6 +482,7 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 		break;
 		case PP_RMTCTRL_HIGHTENSIONCTRL://高电压控制
 		{
+			PP_startengine_SetCtrlReq(req,reqType);
 			log_i(LOG_HOZON, "remote RMTCTRL_HIGHTENSIONCTRL control req");
 		}
 		break;

@@ -124,7 +124,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 	{
 		case PP_DOORLOCKCTRL_IDLE:
 		{
-			if(PP_rmtdoorCtrl.state.req == 1)   //判断请求是不是
+			if((PP_rmtdoorCtrl.state.req == 1)&&(gb_data_vehicleSOC() > 15))   //判断请求是不是
 			{
 				PP_rmtdoorCtrl.state.req = 0;
 				doorLock_success_flag = 0;
@@ -144,17 +144,24 @@ int PP_doorLockCtrl_mainfunction(void *task)
 
 				}
 			}
+			else
+			{
+				PP_rmtdoorCtrl.state.req = 0;
+				doorLock_success_flag = 0;
+				door_lock_stage = PP_DOORLOCKCTRL_END;
+				
+			}
 		}
 		break;
 		case PP_DOORLOCKCTRL_REQSTART:
 		{
 			if(PP_rmtdoorCtrl.state.reqType == 0) //解锁
 			{
-				PP_canSend_setbit(17,2,2);  //发解锁报文
+				PP_canSend_setbit(CAN_ID_440,17,2,2,NULL);  //发解锁报文
 			}
 			else
 			{
-				PP_canSend_setbit(17,2,1); //发上锁报文
+				PP_canSend_setbit(CAN_ID_440,17,2,1,NULL); //发上锁报文
 			}
 
 			door_lock_stage = PP_DOORLOCKCTRL_RESPWAIT;
@@ -169,14 +176,14 @@ int PP_doorLockCtrl_mainfunction(void *task)
 				{
 					if(gb_data_doorlockSt() == 0) //门锁状态为0，解锁程成功
 					{
-						PP_canSend_resetbit(17,2);
+						PP_canSend_resetbit(CAN_ID_440,17,2);
 						doorLock_success_flag = 1;
 						door_lock_stage = PP_DOORLOCKCTRL_END;
 					}
 				}
 				else//响应超时
 				{
-					PP_canSend_resetbit(17,2);
+					PP_canSend_resetbit(CAN_ID_440,17,2);
 					doorLock_success_flag = 0;
 					door_lock_stage = PP_DOORLOCKCTRL_END;
 				}
@@ -187,14 +194,14 @@ int PP_doorLockCtrl_mainfunction(void *task)
 				{
 					if(gb_data_doorlockSt() == 1) //门锁状态为0，解锁程成功
 					{
-						PP_canSend_resetbit(17,2);
+						PP_canSend_resetbit(CAN_ID_440,17,2);
 						doorLock_success_flag = 1;
 						door_lock_stage = PP_DOORLOCKCTRL_END;
 					}
 				}
 				else//响应超时
 				{
-					PP_canSend_resetbit(17,2);
+					PP_canSend_resetbit(CAN_ID_440,17,2);
 					doorLock_success_flag = 0;
 					door_lock_stage = PP_DOORLOCKCTRL_END;
 				}

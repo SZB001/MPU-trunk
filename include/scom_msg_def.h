@@ -13,6 +13,7 @@ typedef enum
     SCOM_TL_CHN_UDS,
     SCOM_TL_CHN_CFG,
     SCOM_TL_CHN_SHELL,
+    SCOM_TL_CHN_CUSTOM,   //私有协议
     SCOM_TL_CHN_NUM,
 } SCOM_TL_CHAN;
 
@@ -89,5 +90,14 @@ typedef enum
     SCOM_TL_CMD_FCT = (SCOM_TL_CHN_FCT << 4),
     SCOM_TL_CMD_FCT_LOG,
 } SCOM_TL_FCT_TYPE;
+
+typedef enum
+{
+    SCOM_TL_CMD_CTRL = (SCOM_TL_CHN_CUSTOM << 4),// 用于事件性或混合性报文发送
+    SCOM_MPU_MCU_VIRTUAL_ON,                     // 虚拟ON线
+    SCOM_MPU_MCU_0x440,                          // 合众，由MPU维护0x440报文内容
+    SCOM_MPU_MCU_0x445,                          // 合众，由MPU维护0x445报文内容
+    SOCM_MCU_MPU_0x526,                          // 合众，由MPU维护0x526报文内容         
+} SCOM_TL_CUSTOM_TYPE;
 
 #endif

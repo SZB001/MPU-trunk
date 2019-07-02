@@ -1,13 +1,13 @@
  /******************************************************
-鏂囦欢鍚嶏細	PP_autodoorCtrl.c
+文件名：	PP_autodoorCtrl.c
 
-鎻忚堪锛�	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級	
+描述：	企业私有协议（浙江合众）
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description锛� include the header file
+description： include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -45,6 +45,8 @@ description锛� include the header file
 #include "PP_rmtCtrl.h"
 #include "../../../gb32960/gb32960.h"
 #include "PP_canSend.h"
+#include "../PrvtProt_SigParse.h"
+
 #include "PP_searchvehicle.h"
 
 
@@ -59,7 +61,7 @@ typedef struct
 {
 	PP_rmtsearchvehicle_pack_t 	pack;
 	PP_rmtsearchvehicleSt_t		state;
-}__attribute__((packed))  PrvtProt_rmtsearchvehicle_t; /*缁撴瀯浣�*/
+}__attribute__((packed))  PrvtProt_rmtsearchvehicle_t; /*结构体*/
 
 
 static PrvtProt_rmtsearchvehicle_t PP_rmtsearchvehicle;
@@ -89,7 +91,7 @@ int PP_searchvehicle_mainfunction(void *task)
 	{
 		case PP_SEARCHVEHICLE_IDLE:
 		{
-			if(PP_rmtsearchvehicle.state.req == 1)   //鍒ゆ柇璇锋眰鏄笉鏄�
+			if((PP_rmtsearchvehicle.state.req == 1)&&(gb_data_vehicleSOC() > 15))   //判断请求是不是
 			{
 				PP_rmtsearchvehicle.state.req = 0;
 				serachvehicle_success_flag = 0;
@@ -97,46 +99,52 @@ int PP_searchvehicle_mainfunction(void *task)
 				if(PP_rmtsearchvehicle.state.style == RMTCTRL_TSP)//tsp
 				{
 					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-					rmtCtrl_Stpara.rvcReqStatus = 1;  //寮�濮嬫墽琛�
+					rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
 					rmtCtrl_Stpara.rvcFailureType = 0;
 					rmtCtrl_Stpara.reqType =PP_rmtsearchvehicle.state.reqType;
 					rmtCtrl_Stpara.eventid = PP_rmtsearchvehicle.pack.DisBody.eventId;
 					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 					res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
 				}
-				else//钃濈墮
+				else//蓝牙
 				{
 
 				}
+			}
+			else
+			{
+				PP_rmtsearchvehicle.state.req = 0;
+				serachvehicle_success_flag = 0;
+				search_vehicle_stage = PP_SEARCHVEHICLE_END;
 			}
 		}
 		break;
 		case PP_SEARCHVEHICLE_REQSTART:
 		{
-			if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN) //瀵昏溅
+			if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN) //寻车
 			{
-				PP_canSend_setbit(17,2,3);  //瀵昏溅鎶ユ枃
+				PP_canSend_setbit(CAN_ID_440,17,2,3,NULL);  //寻车报文
 			}
 			search_vehicle_stage = PP_SEARCHVEHICLE_RESPWAIT;
 			PP_Respwaittime = tm_get_time();
 		}
 		break;
-		case PP_SEARCHVEHICLE_RESPWAIT://鎵ц绛夊緟杞︽帶鍝嶅簲
+		case PP_SEARCHVEHICLE_RESPWAIT://执行等待车控响应
 		{
-			if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN) //瀵昏溅
+			if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN) //寻车
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(gb_data_doorlockSt() == 0) //闂ㄩ攣鐘舵�佷负0锛岃В閿佺▼鎴愬姛
+					if(PrvtProt_SignParse_findcarSt() == 0) //门锁状态为0，解锁程成功
 					{
-						PP_canSend_resetbit(17,2);
+						PP_canSend_resetbit(CAN_ID_440,17,2);
 						serachvehicle_success_flag = 1;
 						search_vehicle_stage = PP_SEARCHVEHICLE_END;
 					}
 				}
-				else//鍝嶅簲瓒呮椂
+				else//响应超时
 				{
-					PP_canSend_resetbit(17,2);
+					PP_canSend_resetbit(CAN_ID_440,17,2);
 					serachvehicle_success_flag = 0;
 					search_vehicle_stage = PP_SEARCHVEHICLE_END;
 				}
@@ -154,18 +162,18 @@ int PP_searchvehicle_mainfunction(void *task)
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				if(1 == serachvehicle_success_flag)
 				{
-					rmtCtrl_Stpara.rvcReqStatus = 2;  //鎵ц瀹屾垚
+					rmtCtrl_Stpara.rvcReqStatus = 2;  //执行完成
 					rmtCtrl_Stpara.rvcFailureType = 0;
 				}
 				else
 				{
-					rmtCtrl_Stpara.rvcReqStatus = 3;  //鎵ц澶辫触
+					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
 				search_vehicle_stage = PP_SEARCHVEHICLE_IDLE;
 			}
-			else//钃濈墮
+			else//蓝牙
 			{
 
 			}

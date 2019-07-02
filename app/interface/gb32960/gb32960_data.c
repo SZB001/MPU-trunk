@@ -16,6 +16,9 @@
 #include "../support/protocol.h"
 #include "../hozon/PrvtProtocol/PrvtProt_SigParse.h"
 
+extern int PP_identificat_rcvdata(uint8_t *dt);
+
+
 #define GB_EXT	1//定义国标扩展信息
 
 #define GB_MAX_PACK_CELL    800
@@ -3921,7 +3924,15 @@ static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 					counter = 0;
 					gb_data_periodic(gb_inf, gb_datintv, msg->uptime);
 				}
-
+				if(msg->MsgID == 0x3D1)
+				{
+					PP_identificat_rcvdata(msg->Data);
+					int i;
+					for(i=0;i<8;i++)
+					{
+						log_o(LOG_GB32960,"data[%d] = %d",i,msg->Data[i]);
+					}
+				}
 				msg++;
 			}
 #if GB_EXT

@@ -14,6 +14,7 @@ description锛� include the header file
 #include "can_api.h"
 #include "log.h"
 #include "PPrmtCtrl_cfg.h"
+#include "PP_canSend.h"
 #include "PP_identificat.h"
 
 #define IDENTIFICAT_NUM 5
@@ -95,11 +96,6 @@ static void XteaEncipher(UINT8 *DataSK, UINT8 *DataChall, UINT8 *DataResp)
 ******************************************************/
 int PP_identificat_mainfunction()
 {
-	CAN_SEND_MSG msg;
-	msg.MsgID     = 0x3D2;   //
-	msg.DLC       = 8;       //
-	msg.isEID     = 0;       //
-	msg.isRTR     = 0;
 	switch(PP_stage)
 	{
 		case PP_stage_idle://空闲
@@ -113,8 +109,7 @@ int PP_identificat_mainfunction()
 		{
 			if(PP_authcnt < IDENTIFICAT_NUM)
 			{
-				memset(msg.Data,0,8*sizeof(uint8_t));
-				can_do_send(IDENTIFICAT_CAN_PORT,&msg);
+				PP_canSend_setbit(CAN_ID_3D2,0,0,0,NULL);
 				log_i(LOG_HOZON,"can_do_send success");
 				PP_stage1_time = tm_get_time();
 				PP_stage = PP_stage_waitrandom;
@@ -149,9 +144,10 @@ int PP_identificat_mainfunction()
 		{
 			if(PP_authcnt < IDENTIFICAT_NUM)
 			{
-				memset(msg.Data,0,8*sizeof(uint8_t));
-				XteaEncipher(DataSk,PP_recvdata,msg.Data);
-				can_do_send(IDENTIFICAT_CAN_PORT,&msg);
+				uint8_t data[8];
+				memset(data,0,8*sizeof(uint8_t));
+				XteaEncipher(DataSk,PP_recvdata,data);
+				PP_canSend_setbit(CAN_ID_3D2,0,0,0,data);
 				PP_stage3_time = tm_get_time();
 				PP_authcnt++;
 				PP_stage = PP_stage_waitauthokst;

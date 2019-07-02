@@ -1,13 +1,13 @@
 /******************************************************
-鏂囦欢鍚嶏細	PP_autodoorCtrl.c
+文件名：	PP_autodoorCtrl.c
 
-鎻忚堪锛�	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級	
+描述：	企业私有协议（浙江合众）
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description锛� include the header file
+description： include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -45,6 +45,8 @@ description锛� include the header file
 #include "PP_rmtCtrl.h"
 #include "../../../gb32960/gb32960.h"
 #include "PP_canSend.h"
+#include "../PrvtProt_SigParse.h"
+
 #include "PP_sunroofCtrl.h"
 
 
@@ -59,7 +61,7 @@ typedef struct
 {
 	PP_rmtsunroofCtrl_pack_t 	pack;
 	PP_rmtsunroofCtrlSt_t		state;
-}__attribute__((packed))  PrvtProt_rmtsunroofCtrl_t; /*缁撴瀯浣�*/
+}__attribute__((packed))  PrvtProt_rmtsunroofCtrl_t; /*结构体*/
 
 static PrvtProt_rmtsunroofCtrl_t PP_rmtsunroofCtrl;
 static int sunroof_ctrl_stage = PP_SUNROOFCTRL_IDLE;
@@ -92,7 +94,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 		case PP_SUNROOFCTRL_IDLE:
 		{
 			
-			if(PP_rmtsunroofCtrl.state.req == 1)	//鍒ゆ柇璇锋眰鏄笉鏄�
+			if((PP_rmtsunroofCtrl.state.req == 1)&&(gb_data_vehicleSOC() > 15))	//判断请求是不是
 			{
 				PP_rmtsunroofCtrl.state.req = 0;
 				sunroof_success_flag = 0;
@@ -100,99 +102,105 @@ int PP_sunroofctrl_mainfunction(void *task)
 				if(PP_rmtsunroofCtrl.state.style == RMTCTRL_TSP)//tsp
 				{
 					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-					rmtCtrl_Stpara.rvcReqStatus = 1;  //寮�濮嬫墽琛�
+					rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
 					rmtCtrl_Stpara.rvcFailureType = 0;
 					rmtCtrl_Stpara.reqType =PP_rmtsunroofCtrl.state.reqType;
 					rmtCtrl_Stpara.eventid = PP_rmtsunroofCtrl.pack.DisBody.eventId;
 					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 					res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
 				}
-				else//钃濈墮
+				else//蓝牙
 				{
 
 				}
+			}
+			else
+			{
+				PP_rmtsunroofCtrl.state.req = 0;
+				sunroof_success_flag = 0;
+				sunroof_ctrl_stage = PP_SUNROOFCTRL_END;	
 			}
 		}
 		break;
 		case PP_SUNROOFCTRL_REQSTART:
 		{
-			if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFOPEN) //澶╃獥鎵撳紑
+			if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFOPEN) //天窗打开
 			{
-				PP_canSend_setbit(47,3,1);	
+				PP_canSend_setbit(CAN_ID_440,47,3,1,NULL);	
 			}
-			else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFCLOSE)//澶╃獥鍏抽棴
+			else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFCLOSE)//天窗关闭
 			{
-				PP_canSend_setbit(47,3,2);
+				PP_canSend_setbit(CAN_ID_440,47,3,2,NULL);
 			}
-			else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFUPWARP)//澶╃獥缈樿捣
+			else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFUPWARP)//天窗翘起
 			{
-				PP_canSend_setbit(47,3,3);
+				PP_canSend_setbit(CAN_ID_440,47,3,3,NULL);
 			}
-			else  //澶╃獥鍋滄
+			else  //天窗停止
 			{
-				PP_canSend_setbit(47,3,4);
+				PP_canSend_setbit(CAN_ID_440,47,3,4,NULL);
 			}
 			sunroof_ctrl_stage = PP_SUNROOFCTRL_RESPWAIT;
 			PP_Respwaittime = tm_get_time();
 		}
 		break;
-		case PP_SUNROOFCTRL_RESPWAIT://鎵ц绛夊緟杞︽帶鍝嶅簲
+		case PP_SUNROOFCTRL_RESPWAIT://执行等待车控响应
 		{
-			if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFOPEN) //澶╃獥鎵撳紑缁撴灉
+			if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFOPEN) //天窗打开结果
 			{
 				if((tm_get_time() - PP_Respwaittime) < 18000)
 				{
-					if(gb_data_reardoorSt() == 4) //鐘舵�佷负4锛屽ぉ绐楁墦寮�ok
+					if(PrvtProt_SignParse_sunroofSt() == 4) //状态为4，天窗打开ok
 					{
-						PP_canSend_resetbit(47,3);
+						PP_canSend_resetbit(CAN_ID_440,47,3);
 						sunroof_success_flag = 1;
 						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 					}
 				}
 				else//
 				{
-					PP_canSend_resetbit(47,3);
+					PP_canSend_resetbit(CAN_ID_440,47,3);
 					sunroof_success_flag = 0;
 					sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 				}
 			}
-			else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFCLOSE)//澶╃獥鍏抽棴缁撴灉
+			else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFCLOSE)//天窗关闭结果
 			{
 				if((tm_get_time() - PP_Respwaittime) < 18000)
 				{
-					if(gb_data_reardoorSt() == 2) //
+					if(PrvtProt_SignParse_sunroofSt() == 2) //
 					{
-						PP_canSend_resetbit(47,3);
+						PP_canSend_resetbit(CAN_ID_440,47,3);
 						sunroof_success_flag = 1;
 						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 					}
 				}
-				else//鍝嶅簲瓒呮椂
+				else//响应超时
 				{
-					PP_canSend_resetbit(47,3);
+					PP_canSend_resetbit(CAN_ID_440,47,3);
 					sunroof_success_flag = 0;
 					sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 				}
 			}
-			else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFUPWARP)//澶╃獥缈樿捣缁撴灉
+			else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFUPWARP)//天窗翘起结果
 			{
 				if((tm_get_time() - PP_Respwaittime) < 18000)
 				{
-					if(gb_data_reardoorSt() == 0) //
+					if(PrvtProt_SignParse_sunroofSt() == 0) //
 					{
-						PP_canSend_resetbit(47,3);
+						PP_canSend_resetbit(CAN_ID_440,47,3);
 						sunroof_success_flag = 1;
 						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 					}
 				}
-				else//鍝嶅簲瓒呮椂
+				else//响应超时
 				{
-					PP_canSend_resetbit(47,3);
+					PP_canSend_resetbit(CAN_ID_440,47,3);
 					sunroof_success_flag = 0;
 					sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 				}
 			}
-			else  //澶╃獥鍋滄缁撴灉
+			else  //天窗停止结果
 			{
 			
 			}
@@ -210,18 +218,18 @@ int PP_sunroofctrl_mainfunction(void *task)
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				if(1 == sunroof_success_flag)
 				{
-					rmtCtrl_Stpara.rvcReqStatus = 2;  //鎵ц瀹屾垚
+					rmtCtrl_Stpara.rvcReqStatus = 2;  //执行完成
 					rmtCtrl_Stpara.rvcFailureType = 0;
 				}
 				else
 				{
-					rmtCtrl_Stpara.rvcReqStatus = 3;  //鎵ц澶辫触
+					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
 				sunroof_ctrl_stage = PP_SUNROOFCTRL_IDLE;
 			}
-			else//钃濈墮
+			else//蓝牙
 			{
 
 			}

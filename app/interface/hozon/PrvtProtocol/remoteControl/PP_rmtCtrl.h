@@ -89,8 +89,9 @@ description： typedef definitions
 /******enum definitions******/
 typedef enum
 {
-	RMTCTRL_TSP = 1,//tsp
-	RMTCTRL_BLUETOOTH//蓝牙
+	RMTCTRL_TSP = 1, //tsp
+	RMTCTRL_BLUETOOTH, //蓝牙
+	RMTCTRL_TBOX  //TBOX
 }PP_RMTCTRL_CTRLSTYLE;//控制方式
 
 typedef enum
