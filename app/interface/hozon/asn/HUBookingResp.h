@@ -5,34 +5,41 @@
  * 	`asn1c -gen-PER`
  */
 
-#ifndef	_DiagCommand_H_
-#define	_DiagCommand_H_
+#ifndef	_HUBookingResp_H_
+#define	_HUBookingResp_H_
 
 
 #include <asn_application.h>
 
 /* Including external dependencies */
 #include <NativeInteger.h>
+#include <OCTET_STRING.h>
 #include <constr_SEQUENCE.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* DiagCommand */
-typedef struct DiagCommand {
-	long	 diagType;
+/* HUBookingResp */
+typedef struct HUBookingResp {
+	long	 rvcReqType;
+	long	 huBookingTime;
+	long	 rvcReqHours;
+	long	 rvcReqMin;
+	long	*rvcReqEq	/* OPTIONAL */;
+	OCTET_STRING_t	*rvcReqCycle	/* OPTIONAL */;
+	long	*bookingId	/* OPTIONAL */;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} DiagCommand_t;
+} HUBookingResp_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_DiagCommand;
+extern asn_TYPE_descriptor_t asn_DEF_HUBookingResp;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _DiagCommand_H_ */
+#endif	/* _HUBookingResp_H_ */
 #include <asn_internal.h>

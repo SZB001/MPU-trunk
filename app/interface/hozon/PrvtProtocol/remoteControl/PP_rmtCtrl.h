@@ -244,9 +244,23 @@ typedef struct
 
 typedef struct
 {
+	/* remote control HU booking resp */
+	long	rvcReqType;
+	long	huBookingTime;
+	long	rvcReqHours;
+	long	rvcReqMin;
+	long	rvcReqEq	/* OPTIONAL */;
+	uint8_t	rvcReqCycle[9]	/* OPTIONAL */;
+	uint8_t rvcReqCyclelen;
+	long	bookingId	/* OPTIONAL */;
+}__attribute__((packed))  App_rmtCtrlHUbookingResp_t;
+
+typedef struct
+{
 	App_rmtCtrlReq_t 	CtrlReq;
 	App_rmtCtrlResp_t 	CtrlResp;
-	App_rmtCtrlbookingResp_t CtrlbookingResp;
+	App_rmtCtrlbookingResp_t 	CtrlbookingResp;
+	App_rmtCtrlHUbookingResp_t 	CtrlHUbookingResp;
 }__attribute__((packed))  PrvtProt_App_rmtCtrl_t;
 
 
@@ -260,6 +274,7 @@ typedef struct
 
 #define PP_RMTCTRL_RVCSTATUSRESP 	1
 #define PP_RMTCTRL_RVCBOOKINGRESP 	2
+#define PP_RMTCTRL_HUBOOKINGRESP 	3
 typedef struct
 {
 	/* tsp */
@@ -272,9 +287,15 @@ typedef struct
 	long bookingId;
 	long rvcReqCode;
 
+	long	rvcReqType;
+	long	huBookingTime;
+	long	rvcReqHours;
+	long	rvcReqMin;
+	long	rvcReqEq	/* OPTIONAL */;
+	uint8_t	rvcReqCycle[8]	/* OPTIONAL */;
+	//long	HUbookingId	/* OPTIONAL */;
 
 	/* 蓝牙 */
-
 
 }PP_rmtCtrl_Stpara_t; /*结构体*/
 /******union definitions*****/

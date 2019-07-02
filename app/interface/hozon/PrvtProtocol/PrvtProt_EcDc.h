@@ -50,6 +50,7 @@ typedef enum
 	ECDC_RMTCFG_READ_RESP,//remote config read req
 	ECDC_RMTCTRL_RESP,//remote control resp
 	ECDC_RMTCTRL_BOOKINGRESP,//remote control booking resp
+	ECDC_RMTCTRL_HUBOOKINGRESP,//remote control HU booking resp
 	ECDC_RMTVS_RESP,//remote check vehi status response
 
 	/*remote diag*/

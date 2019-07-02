@@ -324,6 +324,17 @@ BookingResp ::= SEQUENCE
 	oprTime				INTEGER(0..2147483647) --	
 }
 
+HUBookingResp ::= SEQUENCE
+{
+	rvcReqType 			INTEGER(0..65535), --
+	huBookingTime 		INTEGER(0..2147483647), -- 
+	rvcReqHours			INTEGER(0..23), --	
+	rvcReqMin 			INTEGER(0..59), --	
+	rvcReqEq 			INTEGER(0..100) OPTIONAL, --	
+	rvcReqCycle 		OCTET STRING(SIZE(8)) OPTIONAL, --
+	bookingId 			INTEGER(0..2147483647) OPTIONAL -- 
+}
+
 VehicleStReqInfo ::= SEQUENCE
 {
 	vehStatusReqType	INTEGER(0..255) -- 
@@ -439,37 +450,6 @@ LogAcquisitionResInfo ::= SEQUENCE --mid = 7
 	result 				BOOLEAN, --
 	failureType			INTEGER(0..255) OPTIONAL, -- 
 	fileName 			IA5String(SIZE(1..255)) OPTIONAL -- 
-}
-
-CertificateDownloadReqInfo ::= SEQUENCE
-{
-	mid   				INTEGER(0..255), -- 
-	eventId  			INTEGER(0..2147483647), -- 
-	cerType 			INTEGER(0..255), -- 
-	infoListLength 		INTEGER(0..65535), -- 
-	infoList 			OCTET STRING(SIZE(0..65535)) -- 
-}
-
-CertificateDownloadResInfo ::= SEQUENCE
-{
-	mid   				INTEGER(0..255), -- 
-	eventId  			INTEGER(0..2147483647), -- 
-	result 				BOOLEAN, --
-	failureType 		INTEGER(0..255) OPTIONAL, --
-	certType 			INTEGER(0..255) OPTIONAL, --
-	certLength 			INTEGER(0..4294967296) OPTIONAL, --
-	certContent  		OCTET STRING(SIZE(0..4294967296)) OPTIONAL -- 
-}
-
-CertificateDownloadStatusInfo ::= SEQUENCE
-{
-	mid   				INTEGER(0..255), -- 
-	eventId  			INTEGER(0..2147483647), -- 
-	certType 			INTEGER(0..255), --
-	result 				BOOLEAN, --
-	failureType 		INTEGER(0..255) OPTIONAL, --
-	infoListLength 		INTEGER(0..65535), --
-	infoList   			OCTET STRING(SIZE(0..65535)) -- 
 }
 
 END

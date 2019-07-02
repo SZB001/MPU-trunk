@@ -38,6 +38,7 @@ description£º include the header file
 #include "RmtCtrlReqInfo.h"
 #include "RmtCtrlStRespInfo.h"
 #include "BookingResp.h"
+#include "HUBookingResp.h"
 #include "VehicleStReqInfo.h"
 #include "VehicleStRespInfo.h"
 #include "VSgpspos.h"
@@ -93,7 +94,7 @@ static asn_TYPE_descriptor_t *pduType_Cfg_read_resp = &asn_DEF_CfgReadRespInfo;
 static asn_TYPE_descriptor_t *pduType_Ctrl_Req = &asn_DEF_RmtCtrlReqInfo;
 static asn_TYPE_descriptor_t *pduType_Rmt_Ctrl_resp = &asn_DEF_RmtCtrlStRespInfo;
 static asn_TYPE_descriptor_t *pduType_Rmt_Ctrl_Bookingresp = &asn_DEF_BookingResp;
-
+static asn_TYPE_descriptor_t *pduType_Rmt_Ctrl_HUBookingresp = &asn_DEF_HUBookingResp;
 static asn_TYPE_descriptor_t *pduType_VS_req = &asn_DEF_VehicleStReqInfo;
 static asn_TYPE_descriptor_t *pduType_VS_resp = &asn_DEF_VehicleStRespInfo;
 
@@ -715,6 +716,48 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			if(ec.encoded  == -1)
 			{
 				log_i(LOG_HOZON,  "encode:appdata Ctrl_booking_resp fail\n");
+				return -1;
+			}
+		}
+		break;
+		case ECDC_RMTCTRL_HUBOOKINGRESP:
+		{
+			log_i(LOG_HOZON, "encode Ctrl_HU_booking_resp\n");
+			HUBookingResp_t ctrlHUBookingResp;
+			PrvtProt_App_rmtCtrl_t *rmtCtrlHUBookingResp_ptr = (PrvtProt_App_rmtCtrl_t*)appchoice;
+			OCTET_STRING_t rvcReqCycle;
+			memset(&ctrlHUBookingResp,0 , sizeof(HUBookingResp_t));
+
+			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+
+			ctrlHUBookingResp.rvcReqType 		= rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqType;
+			log_i(LOG_HOZON, "ctrlHUBookingResp.rvcReqType = %d\n",ctrlHUBookingResp.rvcReqType);
+
+			ctrlHUBookingResp.huBookingTime  	= rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.huBookingTime;
+			log_i(LOG_HOZON, "ctrlHUBookingResp.huBookingTime = %d\n",ctrlHUBookingResp.huBookingTime);
+
+			ctrlHUBookingResp.rvcReqHours   	= rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqHours;
+			log_i(LOG_HOZON, "ctrlHUBookingResp.rvcReqHours = %d\n",ctrlHUBookingResp.rvcReqHours);
+
+			ctrlHUBookingResp.rvcReqMin   		= rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqMin;
+			log_i(LOG_HOZON, "ctrlHUBookingResp.rvcReqMin = %d\n",ctrlHUBookingResp.rvcReqMin);
+
+			ctrlHUBookingResp.rvcReqEq  		= &rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqEq;
+			log_i(LOG_HOZON, "ctrlHUBookingResp.rvcReqEq = %d\n",*ctrlHUBookingResp.rvcReqEq);
+
+			rvcReqCycle.buf						= rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqCycle;
+			rvcReqCycle.size 					= rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqCyclelen;
+			log_i(LOG_HOZON, "rvcReqCycle.buf = %s\n",rvcReqCycle.buf);
+			log_i(LOG_HOZON, "rvcReqCycle.size = %d\n",rvcReqCycle.size);
+			ctrlHUBookingResp.rvcReqCycle 		= &rvcReqCycle;
+
+			ctrlHUBookingResp.bookingId   		= &rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.bookingId;
+			log_i(LOG_HOZON, "ctrlHUBookingResp.bookingId = %d\n",*ctrlHUBookingResp.bookingId);
+
+			ec = uper_encode(pduType_Rmt_Ctrl_HUBookingresp,(void *) &ctrlHUBookingResp,PrvtPro_writeout,&key);
+			if(ec.encoded  == -1)
+			{
+				log_i(LOG_HOZON,  "encode:appdata Ctrl_HU_booking_resp fail\n");
 				return -1;
 			}
 		}

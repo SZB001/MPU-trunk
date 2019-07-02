@@ -125,6 +125,7 @@ void PP_rmtCtrl_init(void)
 {
 	int i;
 	memset(&PP_rmtCtrl,0,sizeof(PrvtProt_rmtCtrl_t));
+	memset(&App_rmtCtrl,0,sizeof(PrvtProt_App_rmtCtrl_t));
 
 	for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
 	{
@@ -667,6 +668,36 @@ int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlbookingResp.oprTime = PrvtPro_getTimestamp();
 
 			if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_BOOKINGRESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
+											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//数据编码打包是否完成
+			{
+				log_e(LOG_HOZON, "uper error");
+				return -1;
+			}
+		}
+		break;
+		case PP_RMTCTRL_HUBOOKINGRESP://HU 预约
+		{
+			/*body*/
+			memcpy(PP_rmtCtrl.pack.DisBody.aID,"110",3);
+			PP_rmtCtrl.pack.DisBody.mID = PP_MID_RMTCTRL_HUBOOKINGRESP;
+			PP_rmtCtrl.pack.DisBody.eventId =  CtrlSt_para->eventid;
+			PP_rmtCtrl.pack.DisBody.eventTime = PrvtPro_getTimestamp();
+			PP_rmtCtrl.pack.DisBody.expTime   = PrvtPro_getTimestamp();
+			PP_rmtCtrl.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+			PP_rmtCtrl.pack.DisBody.appDataProVer = 256;
+			PP_rmtCtrl.pack.DisBody.testFlag = 1;
+
+			/*appdata*/
+			App_rmtCtrl.CtrlHUbookingResp.rvcReqType 	= CtrlSt_para->rvcReqType;
+			App_rmtCtrl.CtrlHUbookingResp.huBookingTime = CtrlSt_para->huBookingTime;
+			App_rmtCtrl.CtrlHUbookingResp.rvcReqHours 	= CtrlSt_para->rvcReqHours;
+			App_rmtCtrl.CtrlHUbookingResp.rvcReqMin 	= CtrlSt_para->rvcReqMin;
+			App_rmtCtrl.CtrlHUbookingResp.rvcReqEq 		= CtrlSt_para->rvcReqEq;
+			memcpy(App_rmtCtrl.CtrlHUbookingResp.rvcReqCycle,CtrlSt_para->rvcReqCycle,8);
+			App_rmtCtrl.CtrlHUbookingResp.rvcReqCyclelen = 8;
+			App_rmtCtrl.CtrlHUbookingResp.bookingId = CtrlSt_para->bookingId;
+
+			if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_HUBOOKINGRESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
 											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//数据编码打包是否完成
 			{
 				log_e(LOG_HOZON, "uper error");
