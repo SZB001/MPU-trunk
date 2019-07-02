@@ -57,5 +57,7 @@ extern int 	PP_doorLockCtrl_mainfunction(void *task);
 extern void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 extern void PP_doorLockCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 extern  int PP_doorLockCtrl_start(void);
+extern void ClearPP_doorLockCtrl_Request(void);
+
 extern int PP_doorLockCtrl_end(void);
 #endif 

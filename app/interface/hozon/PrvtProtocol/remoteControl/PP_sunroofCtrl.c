@@ -294,6 +294,10 @@ void SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 
 }
 
+void ClearPP_sunroofctrl_Request(void)
+{
+	PP_rmtsunroofCtrl.state.req = 0;
+}
 
 void PP_sunroofctrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {

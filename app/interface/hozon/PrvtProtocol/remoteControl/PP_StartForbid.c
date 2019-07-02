@@ -266,6 +266,10 @@ void SetPP_startforbid_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 
 }
 
+void ClearPP_startforbid_Request(void)
+{
+	PP_rmtstartforbid.state.req = 0;
+}
 
 void PP_startforbid_SetCtrlReq(unsigned char req,uint16_t reqType)
 {

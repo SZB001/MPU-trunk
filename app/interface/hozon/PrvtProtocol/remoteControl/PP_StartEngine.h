@@ -54,6 +54,8 @@ extern void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *
 
 
 extern void PP_startengine_SetCtrlReq(unsigned char req,uint16_t reqType);
+extern  void ClearPP_startengine_Request(void);
+
 extern void PP_rmtCtrl_checkenginetime(void);
 
 

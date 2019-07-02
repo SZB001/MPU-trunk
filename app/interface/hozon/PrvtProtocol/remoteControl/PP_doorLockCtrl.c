@@ -299,6 +299,11 @@ int PP_doorLockCtrl_end(void)
 	}
 }
 
+void ClearPP_doorLockCtrl_Request(void)
+{
+	PP_rmtdoorCtrl.state.req = 0;
+}
+
 /******************************************************
 *º¯ÊýÃû£ºPP_doorLockCtrl_SetCtrlReq
 

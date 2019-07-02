@@ -231,6 +231,11 @@ void SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *dispt
 	}
 }
 
+void ClearPP_searchvehicle_Request(void)
+{
+	PP_rmtsearchvehicle.state.req = 0;
+}
+
 void PP_searchvehicle_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtsearchvehicle.state.reqType = (long)reqType;

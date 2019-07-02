@@ -32,6 +32,7 @@ extern uint8_t PP_sunroofctrl_end(void);
 
 extern void SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 
+extern void ClearPP_sunroofctrl_Request(void);
 
 extern void PP_sunroofctrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 

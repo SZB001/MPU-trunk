@@ -257,6 +257,11 @@ void SetPP_autodoorCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 	}
 }
 
+void ClearPP_autodoorCtrl_Request(void)
+{
+	PP_rmtautodoorCtrl.state.req = 0;
+}
+
 void PP_autodoorCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtautodoorCtrl.state.reqType = (long)reqType;

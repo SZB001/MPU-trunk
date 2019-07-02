@@ -445,6 +445,11 @@ void SetPP_ChargeCtrl_Request(void *appdatarmtCtrl,void *disptrBody)
 	}
 }
 
+void ClearPP_ChargeCtrl_Request(void )
+{
+	PP_rmtChargeCtrl.state.req = 0;
+}
+
 /******************************************************
 *º¯ÊýÃû£ºPP_ChargeCtrl_SetCtrlReq
 

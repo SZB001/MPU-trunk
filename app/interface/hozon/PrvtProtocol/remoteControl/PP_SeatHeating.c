@@ -328,6 +328,11 @@ void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 	}
 }
 
+void ClearPP_seatheating_Request(void)
+{
+	PP_rmtseatheatCtrl.state.req = 0;
+}
+
 void PP_seatheating_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtseatheatCtrl.state.reqType = (long)reqType;

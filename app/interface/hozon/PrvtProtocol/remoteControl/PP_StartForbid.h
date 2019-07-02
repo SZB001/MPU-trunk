@@ -53,6 +53,7 @@ extern uint8_t PP_startforbid_end(void);
 
 extern void SetPP_startforbid_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 
+extern void ClearPP_startforbid_Request(void);
 
 extern void PP_startforbid_SetCtrlReq(unsigned char req,uint16_t reqType);
 

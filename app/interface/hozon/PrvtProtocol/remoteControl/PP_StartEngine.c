@@ -273,6 +273,11 @@ void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 }
 
 
+void ClearPP_startengine_Request(void)
+{
+	PP_rmtengineCtrl.state.req = 0;
+}
+
 void PP_startengine_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtengineCtrl.state.reqType = (long)reqType;

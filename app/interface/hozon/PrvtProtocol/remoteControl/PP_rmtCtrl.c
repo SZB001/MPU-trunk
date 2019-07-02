@@ -171,7 +171,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 				   PP_sunroofctrl_start()  ||
 				   PP_startengine_start()  ||
 				   PP_seatheating_start()  ||
-				   PP_startforbid_start();;
+				   PP_startforbid_start();
 			if(ret == 1)
 			{
 				PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
@@ -205,6 +205,14 @@ int PP_rmtCtrl_mainfunction(void *task)
    				//PP_rmtCtrl_StInformTsp
     			PP_rmtCtrl_flag = RMTCTRL_IDLE;
 				log_o(LOG_HOZON,"-------identificat failed---------");
+				// 清除远程控制请求
+				ClearPP_autodoorCtrl_Request();
+				ClearPP_doorLockCtrl_Request();
+				ClearPP_searchvehicle_Request();
+				ClearPP_seatheating_Request();
+				ClearPP_startengine_Request();
+				ClearPP_startforbid_Request();
+				ClearPP_sunroofctrl_Request();
    			}
    			else
    			{}

@@ -4194,7 +4194,13 @@ void gb_data_set_pendflag(int flag)
 */
 uint8_t gb_data_vehicleState(void)
 {
-   return gb_engineSt;
+	uint8_t st = 0;
+    if(gb_inf->vehi.info[GB_VINF_STATE])
+    {
+    	st = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_STATE])->value;
+    }
+
+	return st;
 }
 
 /*
@@ -4202,7 +4208,13 @@ uint8_t gb_data_vehicleState(void)
 */
 long gb_data_vehicleSOC(void)
 {
-	return  gb_vehicleSOC;
+	long soc = 0;
+	if(gb_inf->vehi.info[GB_VINF_SOC])
+	{
+		soc = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_SOC])->value;
+	}
+
+	return  soc;
 }
 
 /*
@@ -4210,7 +4222,14 @@ long gb_data_vehicleSOC(void)
 */
 long gb_data_vehicleOdograph(void)
 {
-    return gb_totalOdoMr;
+	long totalodoMr = 0;
+
+	if(gb_inf->vehi.info[GB_VINF_ODO])
+	{
+		totalodoMr = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_ODO])->value * 10;
+	}
+
+    return totalodoMr;
 }
 
 /*
@@ -4218,7 +4237,14 @@ long gb_data_vehicleOdograph(void)
 */
 long gb_data_vehicleSpeed(void)
 {
-    return gb_vehicleSpeed;
+	long Vspeed = 0;
+
+	if(gb_inf->vehi.info[GB_VINF_SPEED])
+	{
+		Vspeed = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_SPEED])->value * 10;
+	}
+
+    return Vspeed;
 }
 
 /*
