@@ -548,8 +548,8 @@ int dbc_can_callback(uint32_t event, uint32_t par1, uint32_t par2)
             list_t *node;
             unsigned short m,n;
 
-          //  if (canmsg->type != 'C' || (msg = dbc_find_msg(dbc_data, canmsg->MsgID)) == NULL)
-          if(canmsg->type !='C')
+            if (canmsg->type != 'C' || (msg = dbc_find_msg(dbc_data, canmsg->MsgID)) == NULL)
+          //if(canmsg->type !='C')
             {
                 continue;
             }
