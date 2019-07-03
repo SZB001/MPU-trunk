@@ -1,7 +1,7 @@
 /******************************************************
 鏂囦欢鍚嶏細	PP_StartEngine.c
 
-鎻忚堪锛�	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級	
+鎻忚堪锛�	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
@@ -115,7 +115,7 @@ int PP_seatheating_mainfunction(void *task)
 				PP_rmtseatheatCtrl.state.req = 0;
 				seatheat_success_flag = 0;
 				start_seatheat_stage = PP_SEATHEATING_END ;
-				
+
 			}
 		}
 		break;
@@ -125,40 +125,40 @@ int PP_seatheating_mainfunction(void *task)
 			{
 				if(PP_rmtseatheatCtrl.state.CtrlSt == 1) //涓诲骇妞呭姞鐑璴ow妗�
 				{
-					PP_canSend_setbit(CAN_ID_440,28,2,1,NULL);  
+					PP_canSend_setbit(CAN_ID_440,28,2,1,NULL);
 				}
 				else if(PP_rmtseatheatCtrl.state.CtrlSt == 2) //涓诲骇妞呭姞鐑璵id妗�
 				{
-					PP_canSend_setbit(CAN_ID_440,28,2,2,NULL); 
+					PP_canSend_setbit(CAN_ID_440,28,2,2,NULL);
 				}
-				else 
+				else
 				{
-					PP_canSend_setbit(CAN_ID_440,28,2,3,NULL); 
+					PP_canSend_setbit(CAN_ID_440,28,2,3,NULL);
 				}
-				
+
 			}
 			else if(PP_rmtseatheatCtrl.state.reqType == PP_RMTCTRL_MAINHEATCLOSE) //涓诲骇妞呭姞鐑叧闂�
 			{
-				PP_canSend_setbit(CAN_ID_440,28,2,0,NULL); 
+				PP_canSend_setbit(CAN_ID_440,28,2,0,NULL);
 			}
 			else if(PP_rmtseatheatCtrl.state.reqType == PP_RMTCTRL_PASSENGERHEATOPEN) //鍓骇妞呭姞鐑�
 			{
 				if(PP_rmtseatheatCtrl.state.CtrlSt == 1) //涓诲骇妞呭姞鐑璴ow妗�
 				{
-					PP_canSend_setbit(CAN_ID_440,30,2,1,NULL);  
+					PP_canSend_setbit(CAN_ID_440,30,2,1,NULL);
 				}
 				else if(PP_rmtseatheatCtrl.state.CtrlSt == 2) //涓诲骇妞呭姞鐑璵id妗�
 				{
-					PP_canSend_setbit(CAN_ID_440,30,2,2,NULL); 
+					PP_canSend_setbit(CAN_ID_440,30,2,2,NULL);
 				}
-				else 
+				else
 				{
-					PP_canSend_setbit(CAN_ID_440,30,2,3,NULL); 
+					PP_canSend_setbit(CAN_ID_440,30,2,3,NULL);
 				}
 			}
 			else                            //鍓骇妞呭姞鐑叧闂�
 			{
-				PP_canSend_setbit(CAN_ID_440,30,2,0,NULL);   
+				PP_canSend_setbit(CAN_ID_440,30,2,0,NULL);
 			}
 			start_seatheat_stage = PP_SEATHEATING_RESPWAIT;
 			PP_Respwaittime = tm_get_time();
@@ -181,18 +181,18 @@ int PP_seatheating_mainfunction(void *task)
 				}
 				else//鍝嶅簲瓒呮椂
 				{
-					PP_canSend_resetbit(CAN_ID_440,28,2); 
+					PP_canSend_resetbit(CAN_ID_440,28,2);
 					seatheat_success_flag = 0;
 					start_seatheat_stage = PP_SEATHEATING_END ;
 				}
 			}
 			else if (PP_rmtseatheatCtrl.state.reqType == PP_RMTCTRL_MAINHEATCLOSE) //涓诲骇妞呭姞鐑叧闂粨鏋�
 			{
-				if((tm_get_time() - PP_Respwaittime) < 2000) 
+				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
 					if(PrvtProt_SignParse_DrivHeatingSt() == 0) //
 					{
-						PP_canSend_resetbit(CAN_ID_440,28,2);  
+						PP_canSend_resetbit(CAN_ID_440,28,2);
 						seatheat_success_flag = 1;
 						start_seatheat_stage = PP_SEATHEATING_END ;
 					}
@@ -206,7 +206,7 @@ int PP_seatheating_mainfunction(void *task)
 			}
 			else if(PP_rmtseatheatCtrl.state.reqType == PP_RMTCTRL_PASSENGERHEATOPEN) //鍓骇妞呭姞鐑紑鍚粨鏋�
 			{
-				if((tm_get_time() - PP_Respwaittime) < 2000) 
+				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
 					if((PrvtProt_SignParse_DrivHeatingSt() == 1)|| \
 						(PrvtProt_SignParse_DrivHeatingSt() == 2)|| \
@@ -226,7 +226,7 @@ int PP_seatheating_mainfunction(void *task)
 			}
 			else  //鍓骇妞呭姞鐑叧闂粨鏋�
 			{
-				if((tm_get_time() - PP_Respwaittime) < 2000) 
+				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
 					if(PrvtProt_SignParse_DrivHeatingSt() == 0) //
 					{

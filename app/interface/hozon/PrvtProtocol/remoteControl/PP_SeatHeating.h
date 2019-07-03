@@ -1,9 +1,9 @@
 
 
 /******************************************************
-文件名：PP_SeatHeating.h
+鏂囦欢鍚嶏細PP_SeatHeating.h
 
-描述：	车门锁控制
+鎻忚堪锛�	杞﹂棬閿佹帶鍒�
 
 Data			  Vasion			author
 2019/05/18		   V1.0			    liujian
@@ -11,20 +11,20 @@ Data			  Vasion			author
 #ifndef		_PP_SEATHEATING_H
 #define		_PP_SEATHEATING_H
 /*******************************************************
-description： include the header file
+description锛� include the header file
 *******************************************************/
 
 /*******************************************************
-description： macro definitions
+description锛� macro definitions
 *******************************************************/
-/**********宏开关定义*********/
+/**********瀹忓紑鍏冲畾涔�*********/
 
-/**********宏常量定义*********/
+/**********瀹忓父閲忓畾涔�*********/
 #define PP_SEATHEATING_IDLE   		0
 #define PP_SEATHEATING_REQSTART  	1
 #define PP_SEATHEATING_RESPWAIT   	2
 #define PP_SEATHEATING_END    		3
-/***********宏函数***********/
+/***********瀹忓嚱鏁�***********/
 
 
 

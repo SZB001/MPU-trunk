@@ -29,15 +29,15 @@ DIAG_DID_ATTR("Power Voltage", DID_POWER_VOLTAGE, DIAG_DATA_STRING, DID_LEN_POWE
 /* developed and self-tested*/
 DIAG_DID_ATTR("Time", DID_TIME, DIAG_DATA_STRING, DID_LEN_TIME,
               SecurityAccess_LEVEL0, uds_did_get_time, NULL)
-/* to do */
+/* developed */
 DIAG_DID_ATTR("Odometer Reading",     DID_ODOMETER_READING, DIAG_DATA_STRING, DID_LEN_ODOMETER_READING,
               SecurityAccess_LEVEL0, uds_did_get_odometer_reading, NULL)
 
-/* to do */
+/* developed */
 DIAG_DID_ATTR("Vehicle Speed", DID_VEHICLE_SPEED, DIAG_DATA_STRING, DID_LEN_VEHICLE_SPEED,
               SecurityAccess_LEVEL0, uds_did_get_vehicle_speed,   NULL)
 
-/* to do */
+/* developed */
 DIAG_DID_ATTR("Ignition Status", DID_IGNITION_STATUS, DIAG_DATA_STRING, DID_LEN_IGNITION_STATUS,
               SecurityAccess_LEVEL0, uds_did_get_ignition_status,NULL)
 
@@ -49,7 +49,7 @@ DIAG_DID_ATTR("GPS Module Status", DID_GPS_MODULE_STATUS, DIAG_DATA_STRING, DID_
 DIAG_DID_ATTR("GPS Positioning Status", DID_GPS_POSITIONING_STATUS, DIAG_DATA_STRING, DID_LEN_GPS_POSITIONING_STATUS,
               SecurityAccess_LEVEL0, uds_did_get_fix_status, NULL)
 
-/*need to do*/
+/* developed */
 DIAG_DID_ATTR("SD Card Status", DID_SD_CARD_STATUS, DIAG_DATA_STRING, DID_LEN_SD_CARD_STATUS,
               SecurityAccess_LEVEL0, uds_did_get_emmc, NULL)
 
@@ -57,7 +57,7 @@ DIAG_DID_ATTR("SD Card Status", DID_SD_CARD_STATUS, DIAG_DATA_STRING, DID_LEN_SD
 DIAG_DID_ATTR("4G Antenna Status", DID_4G_ANTENNA_STATUS, DIAG_DATA_STRING, DID_LEN_4G_ANTENNA_STATUS,
               SecurityAccess_LEVEL0, uds_did_get_4G_main_ant, NULL)
 
-/* to do */
+/* developed */
 DIAG_DID_ATTR("Platform Connection Status", DID_PLATFORM_CONNECTION_STATUS, DIAG_DATA_STRING, DID_LEN_PLATFORM_CONNECTION_STATUS,
               SecurityAccess_LEVEL0, uds_did_get_platform_connection_status, NULL)
 
@@ -73,9 +73,9 @@ DIAG_DID_ATTR("CAN1 Status", DID_CAN1_STATUS, DIAG_DATA_STRING, DID_LEN_CAN1_STA
 DIAG_DID_ATTR("CAN2 Status", DID_CAN2_STATUS, DIAG_DATA_STRING, DID_LEN_CAN2_STATUS,
               SecurityAccess_LEVEL0, uds_did_get_can2, NULL)
 
-/* need to do*/
+/* developed */
 DIAG_DID_ATTR("ESK", DID_ESK, DIAG_DATA_STRING, DID_LEN_ESK,
-              SecurityAccess_LEVEL0, uds_did_get_esk, uds_did_set_esk)
+              SecurityAccess_LEVEL1, uds_did_get_esk, uds_did_set_esk)
 
 /* developed and not self-tested*/
 DIAG_DID_ATTR("PKI status", DID_PKI_STATUS, DIAG_DATA_STRING, DID_LEN_PKI_STATUS,
@@ -96,7 +96,7 @@ DIAG_DID_ATTR("Diagnostic Session", DID_DIAGNOSTIC_SESSION, DIAG_DATA_STRING, DI
 DIAG_DID_ATTR("Spare Part Number",  DID_SPARE_PART_NUMBER, DIAG_DATA_STRING, DID_LEN_SPARE_PART_NUMBER,
               SecurityAccess_LEVEL0, uds_did_get_spare_part_number, NULL)
               
-/* need to do, read only, production configuration need to do ,get finished*/
+/* read only, get finished*/
 DIAG_DID_ATTR("Software Upgrade Version",  DID_SOFTWARE_UPGRADE_VERSION, DIAG_DATA_STRING, DID_LEN_SOFTWARE_UPGRADE_VERSION,
               SecurityAccess_LEVEL0, uds_did_get_software_upgrade_version, NULL)
 
@@ -364,7 +364,7 @@ DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_GW_TBOXCAN)
 DIAG_ITEM_DTC(DTC_Missing_GW_TBOXCAN)
@@ -380,7 +380,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_BUSOFF)
 DIAG_ITEM_DTC(DTC_BUSOFF)
@@ -397,7 +397,7 @@ DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_ACU)
 DIAG_ITEM_DTC(DTC_MISSING_ACU)
@@ -413,7 +413,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_BMS)
 DIAG_ITEM_DTC(DTC_MISSING_BMS)
@@ -429,7 +429,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_CDU)
 DIAG_ITEM_DTC(DTC_MISSING_CDU)
@@ -445,7 +445,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_MCU)
 DIAG_ITEM_DTC(DTC_MISSING_MCU)
@@ -461,7 +461,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_VCU1)
 DIAG_ITEM_DTC(DTC_MISSING_VCU1)
@@ -477,7 +477,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_EPS)
 DIAG_ITEM_DTC(DTC_MISSING_EPS)
@@ -493,7 +493,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_ESC)
 DIAG_ITEM_DTC(DTC_MISSING_ESC)
@@ -509,7 +509,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_EHB)
 DIAG_ITEM_DTC(DTC_MISSING_EHB)
@@ -525,7 +525,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_EACP)
 DIAG_ITEM_DTC(DTC_MISSING_EACP)
@@ -541,7 +541,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_PTC)
 DIAG_ITEM_DTC(DTC_MISSING_PTC)
@@ -557,7 +557,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_PLG)
 DIAG_ITEM_DTC(DTC_MISSING_PLG)
@@ -573,7 +573,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_CLM)
 DIAG_ITEM_DTC(DTC_MISSING_CLM)
@@ -589,7 +589,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_BDCM)
 DIAG_ITEM_DTC(DTC_MISSING_BDCM)
@@ -605,7 +605,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_ALM)
 DIAG_ITEM_DTC(DTC_MISSING_ALM)
@@ -621,7 +621,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_ICU)
 DIAG_ITEM_DTC(DTC_MISSING_ICU)
@@ -637,7 +637,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_IHU)
 DIAG_ITEM_DTC(DTC_MISSING_IHU)
@@ -653,7 +653,7 @@ DIAG_DID(DID_TIME)
 DIAG_FREEZE_END()
 DIAG_ITEM_END()
 
-/*diag function need to do*/
+/* developed */
 DIAG_ITEM_BEGIN()
 DIAG_ITEM_ID(DTC_NUM_MISSING_TAP)
 DIAG_ITEM_DTC(DTC_MISSING_TAP)

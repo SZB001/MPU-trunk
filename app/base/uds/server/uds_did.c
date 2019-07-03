@@ -18,6 +18,7 @@
 #include "hozon_SP_api.h"/* added by caoml 2019.06.28*/
 #include "nm_api.h"
 #include "../../../../interface/hozon/PrvtProtocol/PrvtProt.h"
+#include "hozon_SP_api.h"
 
 int uds_did_get_wakup_src(unsigned char *did, unsigned int len)
 {
@@ -898,7 +899,7 @@ int uds_did_get_tbox_status(unsigned char *did, unsigned int len)
 }
 
 
-/* to do */
+/* developed */
 int uds_did_get_odometer_reading(unsigned char *did, unsigned int len)
 {
     long vehicle_odograph = 0;
@@ -916,7 +917,7 @@ int uds_did_get_odometer_reading(unsigned char *did, unsigned int len)
     return 0;
 }
 
-/* to do*/
+/* developed */
 int uds_did_get_vehicle_speed(unsigned char *did, unsigned int len)
 {
     long vehicle_speed = 0;
@@ -932,29 +933,58 @@ int uds_did_get_vehicle_speed(unsigned char *did, unsigned int len)
     return 0;
 }
 
-/* to do*/
+/* developed */
 int uds_did_get_ignition_status(unsigned char *did, unsigned int len)
 {
+    uint8_t sign;
+    int sign_len = sizeof(sign);
+
     if (DID_LEN_IGNITION_STATUS > len)
     {
         log_e(LOG_UDS, "get ignition status len error, len:%d", len);
         return UDS_INVALID_PARA;
     }
+    if (st_get(ST_ITEM_KL15_SIG, (void *)&sign, (void *)&sign_len) != 0)
+    {
+        log_e(LOG_UDS, "get ignition status len error, st_get error!");
+        did[0] = 0;
+        return 0;
+    }
 
-    memset(did, 0x00, DID_LEN_IGNITION_STATUS);
+    if(1 ==  sign)
+    {
+        did[0] |= 0x04;
+    }
+    else
+    {
+        did[0] &= 0xFB;
+    }
+     
     return 0;
 }
 
-/* to do*/
+/* developed*/
 int uds_did_get_platform_connection_status(unsigned char *did, unsigned int len)
 {
+    int platform_status = 0;
+    
     if (DID_LEN_PLATFORM_CONNECTION_STATUS > len)
     {
         log_e(LOG_UDS, "get platform connection status len error, len:%d", len);
         return UDS_INVALID_PARA;
     }
+    
+    platform_status = sockproxy_socketState();
 
-    memset(did, 0x00, DID_LEN_PLATFORM_CONNECTION_STATUS);
+    if(1 == platform_status)/*connected*/
+    {
+        did[0] = 0;
+    }
+    else
+    {
+        did[0] = 1;
+    }
+
     return 0;
 }
 

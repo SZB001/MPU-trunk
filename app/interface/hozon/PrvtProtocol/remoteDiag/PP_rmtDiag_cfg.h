@@ -63,9 +63,34 @@ typedef enum
 	PP_DIAG_ACU,
 	PP_DIAG_PLG,
 	PP_DIAG_MAXECU,
-} PP_RMTDIAG_CFG_TYPE;
-/******union definitions*****/
+} PP_RMTDIAG_CFG_ECUTYPE;
 
+typedef enum
+{
+	HCU_ABS_STATUS_CHECK_FAILED = 0,//
+	VMS_POWER_MOSFET_SC,//
+	CAN_BUS_FAULT,//
+	BMS_CAN_RX_FAILED,
+} PP_RMTDIAG_CFG_VCUFAULTTYPE;//VCUπ ’œ¿‡–Õ
+/******union definitions*******/
+
+
+/******struct definitions******/
+typedef struct
+{
+	uint8_t	 dtctype;
+	uint8_t  dtcNum[5];
+	uint16_t highmidbyte;
+	uint8_t  lowbyte;
+}PP_rmtDiagCfg_FaultCode_t; /*π ’œ¬Î*/
+
+#if 0
+typedef struct
+{
+	PP_rmtDiagCfg_FaultCode_t 	HCU_ABS_STATUS_CHECK_FAILED;
+	PP_rmtDiagCfg_FaultCode_t	VMS_POWER_MOSFET_SC;
+}PP_rmtDiagCfg_VCUFaultCode_t; /*VCUπ ’œ¬Î*/
+#endif
 /*******************************************************
 description£∫ variable External declaration
 *******************************************************/

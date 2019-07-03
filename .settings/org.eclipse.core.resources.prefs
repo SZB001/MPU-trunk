@@ -1,6 +1,7 @@
 eclipse.preferences.version=1
 encoding//app/interface/fota/fota_main.c=UTF-8
 encoding//app/interface/hozon/PrvtProtocol/remoteControl/PP_SeatHeating.c=UTF-8
+encoding//app/interface/hozon/PrvtProtocol/remoteControl/PP_SeatHeating.h=UTF-8
 encoding//app/interface/hozon/PrvtProtocol/remoteControl/PP_StartEngine.c=UTF-8
 encoding//app/interface/hozon/PrvtProtocol/remoteControl/PP_StartForbid.c=UTF-8
 encoding//app/interface/hozon/PrvtProtocol/remoteControl/PP_autodoorCtrl.c=UTF-8

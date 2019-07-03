@@ -1,7 +1,7 @@
 /******************************************************
 鏂囦欢鍚嶏細	PP_StartEngine.c
 
-鎻忚堪锛�	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級	
+鎻忚堪锛�	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
@@ -286,7 +286,8 @@ void PP_startengine_SetCtrlReq(unsigned char req,uint16_t reqType)
 
 void PP_rmtCtrl_checkenginetime(void)
 {
-	if(tm_get_time() - PP_Engine_time > 15 * 60 *1000)
+	if(((tm_get_time() - PP_Engine_time) >= 15 * 60 *1000) && \
+			(PrvtProt_SignParse_RmtStartSt() == 2))
 	{
 		PP_rmtengineCtrl.state.reqType = 0x0801;
 		PP_rmtengineCtrl.state.req = 1;
