@@ -23,6 +23,7 @@ extern "C" {
 /* DiagCode */
 typedef struct DiagCode {
 	IA5String_t	 diagCode;
+	long	 faultCodeType;
 	long	 diagTime;
 	
 	/* Context for parsing across buffer boundaries */

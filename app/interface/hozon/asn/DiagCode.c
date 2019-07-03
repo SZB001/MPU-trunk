@@ -48,6 +48,31 @@ memb_diagCode_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 }
 
 static int
+memb_faultCodeType_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 255)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
 memb_diagTime_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	long value;
@@ -77,7 +102,12 @@ static asn_per_constraints_t asn_PER_memb_diagCode_constr_2 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 0,  0,  5,  5 }	/* (SIZE(5..5)) */,
 	0, 0	/* No PER character map necessary */
 };
-static asn_per_constraints_t asn_PER_memb_diagTime_constr_3 GCC_NOTUSED = {
+static asn_per_constraints_t asn_PER_memb_faultCodeType_constr_3 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_diagTime_constr_4 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 31, -1,  0,  2147483647 }	/* (0..2147483647) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -92,12 +122,21 @@ static asn_TYPE_member_t asn_MBR_DiagCode_1[] = {
 		0,
 		"diagCode"
 		},
-	{ ATF_NOFLAGS, 0, offsetof(struct DiagCode, diagTime),
+	{ ATF_NOFLAGS, 0, offsetof(struct DiagCode, faultCodeType),
 		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
+		memb_faultCodeType_constraint_1,
+		&asn_PER_memb_faultCodeType_constr_3,
+		0,
+		"faultCodeType"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct DiagCode, diagTime),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_NativeInteger,
 		memb_diagTime_constraint_1,
-		&asn_PER_memb_diagTime_constr_3,
+		&asn_PER_memb_diagTime_constr_4,
 		0,
 		"diagTime"
 		},
@@ -107,13 +146,14 @@ static const ber_tlv_tag_t asn_DEF_DiagCode_tags_1[] = {
 };
 static const asn_TYPE_tag2member_t asn_MAP_DiagCode_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* diagCode */
-    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* diagTime */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* faultCodeType */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* diagTime */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_DiagCode_specs_1 = {
 	sizeof(struct DiagCode),
 	offsetof(struct DiagCode, _asn_ctx),
 	asn_MAP_DiagCode_tag2el_1,
-	2,	/* Count of tags in the map */
+	3,	/* Count of tags in the map */
 	0, 0, 0,	/* Optional elements (not needed) */
 	-1,	/* Start extensions */
 	-1	/* Stop extensions */
@@ -139,7 +179,7 @@ asn_TYPE_descriptor_t asn_DEF_DiagCode = {
 		/sizeof(asn_DEF_DiagCode_tags_1[0]), /* 1 */
 	0,	/* No PER visible constraints */
 	asn_MBR_DiagCode_1,
-	2,	/* Elements count */
+	3,	/* Elements count */
 	&asn_SPC_DiagCode_specs_1	/* Additional specs */
 };
 

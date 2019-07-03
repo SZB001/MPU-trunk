@@ -105,7 +105,7 @@ static asn_TYPE_descriptor_t *pduType_GIAG_st = &asn_DEF_DiagnosticStInfo;
 static asn_TYPE_descriptor_t *pduType_GIAG_imageAcqReq = &asn_DEF_ImageAcquisitionReqInfo;
 //static asn_TYPE_descriptor_t *pduType_GIAG_imageAcqResp = &asn_DEF_ImageAcquisitionRespInfo;
 
-//static asn_TYPE_descriptor_t *pduType_GIAG_LogAcqResp = &asn_DEF_LogAcquisitionRespInfo;
+static asn_TYPE_descriptor_t *pduType_GIAG_LogAcqResp = &asn_DEF_LogAcquisitionRespInfo;
 //static asn_TYPE_descriptor_t *pduType_GIAG_LogAcqRes = &asn_DEF_LogAcquisitionResInfo;
 
 static uint8_t tboxAppdata[PP_ECDC_DATA_LEN];
@@ -710,8 +710,11 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 
 			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 			ctrlBookingResp.bookingId = rmtCtrlBookingResp_ptr->CtrlbookingResp.bookingId;
+			log_i(LOG_HOZON, "ctrlBookingResp.bookingId = %d\n",ctrlBookingResp.bookingId);
 			ctrlBookingResp.oprTime = rmtCtrlBookingResp_ptr->CtrlbookingResp.oprTime;
+			log_i(LOG_HOZON, "ctrlBookingResp.oprTime = %d\n",ctrlBookingResp.oprTime);
 			ctrlBookingResp.rvcReqCode = rmtCtrlBookingResp_ptr->CtrlbookingResp.rvcReqCode;
+			log_i(LOG_HOZON, "ctrlBookingResp.rvcReqCode = %d\n",ctrlBookingResp.rvcReqCode);
 			ec = uper_encode(pduType_Rmt_Ctrl_Bookingresp,(void *) &ctrlBookingResp,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
 			{
@@ -920,6 +923,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 				{
 					DiagCode[i].diagCode.buf = DiagnosticResp_ptr->diagCode[i].diagCode;
 					DiagCode[i].diagCode.size = DiagnosticResp_ptr->diagCode[i].diagCodelen;
+					DiagCode[i].faultCodeType = DiagnosticResp_ptr->diagCode[i].faultCodeType;
 					DiagCode[i].diagTime = DiagnosticResp_ptr->diagCode[i].diagTime;
 
 					ASN_SEQUENCE_ADD(&diagcode, &DiagCode[i]);
@@ -962,6 +966,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 				{
 					DiagCode[j].diagCode.buf = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagCode;
 					DiagCode[j].diagCode.size = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagCodelen;
+					DiagCode[j].faultCodeType = DiagnosticSt_ptr->diagStatus[i].diagCode[j].faultCodeType;
 					DiagCode[j].diagTime = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagTime;
 					ASN_SEQUENCE_ADD(&diagcode[i], &DiagCode[j]);
 				}
@@ -1492,10 +1497,9 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 			break;
 			case PP_AID_DIAG:
 			{
+				PP_App_rmtDiag_t *app_rmtDiag_ptr = (PP_App_rmtDiag_t*)appData;
 				if(PP_MID_DIAG_REQ == MID)//giag req
 				{
-					PP_DiagnosticReq_t *PP_DiagnosticReq_ptr = (PP_DiagnosticReq_t*)appData;
-
 					DiagnosticReqInfo_t DiagnosticReq;
 					DiagnosticReqInfo_t *DiagnosticReq_ptr = &DiagnosticReq;
 					memset(&DiagnosticReq,0 , sizeof(DiagnosticReqInfo_t));
@@ -1507,13 +1511,11 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						return -1;
 					}
 
-					PP_DiagnosticReq_ptr->diagType = DiagnosticReq.diagType;
-					log_i(LOG_HOZON, "PP_DiagnosticReq_ptr->diagType = %ld\n",PP_DiagnosticReq_ptr->diagType);
+					app_rmtDiag_ptr->DiagnosticReq.diagType = DiagnosticReq.diagType;
+					log_i(LOG_HOZON, "app_rmtDiag_ptr->DiagnosticReq.diagType = %ld\n",app_rmtDiag_ptr->DiagnosticReq.diagType);
 				}
 				else if(PP_MID_DIAG_IMAGEACQREQ == MID)//giag imageAcqReq
 				{
-					PP_ImageAcquisitionReq_t *PP_ImageAcquisitionReq_ptr = (PP_ImageAcquisitionReq_t*)appData;
-
 					ImageAcquisitionReqInfo_t ImageAcquisitionReq;
 					ImageAcquisitionReqInfo_t *ImageAcquisitionReq_ptr = &ImageAcquisitionReq;
 					memset(&ImageAcquisitionReq,0 , sizeof(ImageAcquisitionReqInfo_t));
@@ -1525,16 +1527,41 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						return -1;
 					}
 
-					PP_ImageAcquisitionReq_ptr->dataType = ImageAcquisitionReq.dataType;
-					PP_ImageAcquisitionReq_ptr->cameraName = ImageAcquisitionReq.cameraName;
-					PP_ImageAcquisitionReq_ptr->effectiveTime = ImageAcquisitionReq.effectiveTime;
-					PP_ImageAcquisitionReq_ptr->sizeLimit = ImageAcquisitionReq.sizeLimit;
+					app_rmtDiag_ptr->ImageAcquisitionReq.dataType = ImageAcquisitionReq.dataType;
+					app_rmtDiag_ptr->ImageAcquisitionReq.cameraName = ImageAcquisitionReq.cameraName;
+					app_rmtDiag_ptr->ImageAcquisitionReq.effectiveTime = ImageAcquisitionReq.effectiveTime;
+					app_rmtDiag_ptr->ImageAcquisitionReq.sizeLimit = ImageAcquisitionReq.sizeLimit;
 
-					fprintf(stdout, "PP_ImageAcquisitionReq_ptr->dataType = %ld\n",PP_ImageAcquisitionReq_ptr->dataType);
-					fprintf(stdout, "PP_ImageAcquisitionReq_ptr->cameraName = %ld\n",PP_ImageAcquisitionReq_ptr->cameraName);
-					fprintf(stdout, "PP_ImageAcquisitionReq_ptr->effectiveTime = %ld\n",PP_ImageAcquisitionReq_ptr->effectiveTime);
-					fprintf(stdout, "PP_ImageAcquisitionReq_ptr->sizeLimit = %ld\n",PP_ImageAcquisitionReq_ptr->sizeLimit);
+					log_i(LOG_HOZON, "app_rmtDiag_ptr->ImageAcquisitionReq.dataType = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.dataType);
+					log_i(LOG_HOZON,"app_rmtDiag_ptr->ImageAcquisitionReq.cameraName = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.cameraName);
+					log_i(LOG_HOZON, "app_rmtDiag_ptr->ImageAcquisitionReq.effectiveTime = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.effectiveTime);
+					log_i(LOG_HOZON, "app_rmtDiag_ptr->ImageAcquisitionReq.sizeLimit = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.sizeLimit);
 				}
+				else if(PP_MID_DIAG_LOGACQRESP == MID)//giag logAcqReq
+				{
+					LogAcquisitionRespInfo_t LogAcquisitionResp;
+					LogAcquisitionRespInfo_t *LogAcquisitionResp_ptr = &LogAcquisitionResp;
+					memset(&LogAcquisitionResp,0 , sizeof(LogAcquisitionRespInfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_GIAG_LogAcqResp,(void *) &LogAcquisitionResp_ptr, \
+							 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_i(LOG_HOZON, "Could not decode giag logAcqReq\n");
+						return -1;
+					}
+
+					app_rmtDiag_ptr->LogAcquisitionResp.logType 	 = LogAcquisitionResp.logType;
+					app_rmtDiag_ptr->LogAcquisitionResp.logLevel 	 = LogAcquisitionResp.logLevel;
+					app_rmtDiag_ptr->LogAcquisitionResp.startTime 	 = LogAcquisitionResp.startTime;
+					app_rmtDiag_ptr->LogAcquisitionResp.durationTime = LogAcquisitionResp.durationTime;
+
+					log_i(LOG_HOZON, "app_rmtDiag_ptr->LogAcquisitionResp.logType = %ld\n",app_rmtDiag_ptr->LogAcquisitionResp.logType);
+					log_i(LOG_HOZON, "app_rmtDiag_ptr->LogAcquisitionResp.logLevel = %ld\n",app_rmtDiag_ptr->LogAcquisitionResp.logLevel);
+					log_i(LOG_HOZON, "app_rmtDiag_ptr->LogAcquisitionResp.startTime = %ld\n",app_rmtDiag_ptr->LogAcquisitionResp.startTime);
+					log_i(LOG_HOZON, "app_rmtDiag_ptr->LogAcquisitionResp.durationTime = %ld\n",app_rmtDiag_ptr->LogAcquisitionResp.durationTime);
+				}
+				else
+				{}
 			}
 			break;
 			default:

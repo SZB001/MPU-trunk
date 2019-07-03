@@ -69,9 +69,9 @@ description： macro definitions
 #define PP_MID_DIAG_RESP 	2//response
 #define PP_MID_DIAG_STATUS 			3
 #define PP_MID_DIAG_IMAGEACQREQ  	4
-#define PP_MID_DIAG_IMAGEACQRESP  	5
-#define PP_MID_DIAG_LOGACQRESP  	6
-#define PP_MID_DIAG_LOGACQRES		7
+#define PP_MID_DIAG_LOGACQRESP 		5
+//#define PP_MID_DIAG_IMAGEACQRESP  	6
+//#define PP_MID_DIAG_LOGACQRES		7
 
 #define PP_TXPAKG_FAIL 	(-1)//报文发送失败
 #define PP_TXPAKG_SUCCESS 	  1//报文发送成功

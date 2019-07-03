@@ -105,6 +105,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 static int PP_rmtDiag_do_wait(PrvtProt_task_t *task);
 static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task);
 static int PP_rmtDiag_do_checkrmtImageReq(PrvtProt_task_t *task);
+static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task);
 
 static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
 static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
@@ -134,6 +135,7 @@ void PP_rmtDiag_init(void)
 	PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
 	PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
 	PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
+	PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
 
 	cfglen = 4;
 	cfg_get_para(CFG_ITEM_HOZON_TSP_DIAGDATE,&rmtDiag_datetime.datetime,&cfglen);//读取诊断日期标志
@@ -162,7 +164,8 @@ int PP_rmtDiag_mainfunction(void *task)
 				PP_rmtDiag_do_rcvMsg((PrvtProt_task_t*)task) 	||
 				PP_rmtDiag_do_wait((PrvtProt_task_t*)task) 		||
 				PP_rmtDiag_do_checkrmtDiag((PrvtProt_task_t*)task) ||
-				PP_rmtDiag_do_checkrmtImageReq((PrvtProt_task_t*)task);
+				PP_rmtDiag_do_checkrmtImageReq((PrvtProt_task_t*)task) ||
+				PP_rmtDiag_do_checkrmtLogReq((PrvtProt_task_t*)task);
 
 	PP_rmtDiag_do_DiagActiveReport((PrvtProt_task_t*)task);//主动诊断上报
 
@@ -300,6 +303,24 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			}
 		}
 		break;
+		case PP_MID_DIAG_LOGACQRESP://tsp请求 log
+		{
+			if(PP_LOGACQRESP_IDLE == PP_rmtDiag.state.LogAcqRespSt)
+			{
+				log_i(LOG_HOZON, "receive remote LogAcquisition request\n");
+				PP_rmtDiag.state.LogAcquisitionReq = 1;
+				PP_rmtDiag.state.logType    	=  Appdata.LogAcquisitionResp.logType;
+				PP_rmtDiag.state.logLevel  		=  Appdata.LogAcquisitionResp.logLevel;
+				PP_rmtDiag.state.startTime 		=  Appdata.LogAcquisitionResp.startTime;
+				PP_rmtDiag.state.durationTime   =  Appdata.LogAcquisitionResp.durationTime;
+				PP_rmtDiag.state.diageventId 	=  MsgDataBody.eventId;
+			}
+			else
+			{
+				log_e(LOG_HOZON, "repeat logAcq request\n");
+			}
+		}
+		break;
 		default:
 		break;
 	}
@@ -412,6 +433,54 @@ static int PP_rmtDiag_do_checkrmtImageReq(PrvtProt_task_t *task)
 			tspInformHU.sizelimit = PP_rmtDiag.state.sizeLimit;
 			tbox_ivi_set_tspInformHU(&tspInformHU);
 			PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
+		}
+		break;
+		default:
+		break;
+	}
+
+	return 0;
+}
+
+/******************************************************
+*鍑芥暟鍚嶏細:PP_rmtDiag_do_checkrmtLogReq
+
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*鎻�  杩帮細
+
+*澶�  娉細
+******************************************************/
+static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task)
+{
+	switch(PP_rmtDiag.state.LogAcqRespSt)
+	{
+		case PP_LOGACQRESP_IDLE:
+		{
+			if(1 == PP_rmtDiag.state.LogAcquisitionReq)
+			{
+				log_i(LOG_HOZON, "start remote LogAcquisition\n");
+				PP_rmtDiag.state.LogAcquisitionReq = 0;
+				PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_INFORM_UPLOADLOG;
+			}
+		}
+		break;
+		case PP_LOGACQRESP_INFORM_UPLOADLOG://通知上传log
+		{
+			if(PP_LOG_TBOX == PP_rmtDiag.state.logType)
+			{//tbox上传log
+
+			}
+			else if(PP_LOG_HU == PP_rmtDiag.state.logType)
+			{//通知HU 上传log
+
+			}
+			else
+			{}
+
+			PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
 		}
 		break;
 		default:
@@ -561,6 +630,7 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 			{
 				memcpy(AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCode,"12345",5);
 				AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCodelen = 5;
+				AppData_rmtDiag.DiagnosticResp.diagCode[i].faultCodeType  = 0;
 				AppData_rmtDiag.DiagnosticResp.diagCode[i].diagTime = PrvtPro_getTimestamp();
 				AppData_rmtDiag.DiagnosticResp.diagcodenum++;
 			}
@@ -644,6 +714,7 @@ static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 		{
 			memcpy(AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].diagCode,"12345",5);
 			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].diagCodelen = 5;
+			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].faultCodeType = 1;
 			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].diagTime = PrvtPro_getTimestamp();
 			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagcodenum++;
 		}
@@ -663,68 +734,6 @@ static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 
 	return 0;
 }
-
-
-
-#if 0
-/******************************************************
-*鍑芥暟鍚嶏細
-
-*褰�  鍙傦細
-
-*杩斿洖鍊硷細
-
-*鎻�  杩帮細杩滅▼璇婃柇( MID=4)
-
-*澶�  娉細
-******************************************************/
-static int PP_remotImageAcquisitionReq(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag)
-{
-	int msgdatalen;
-	int res = 0;
-	int i;
-
-	memset(&PP_rmtDiag_Pack,0 , sizeof(PrvtProt_pack_t));
-	/* header */
-	memcpy(PP_rmtDiag.pack.Header.sign,"**",2);
-	PP_rmtDiag.pack.Header.commtype.Byte = 0xe1;
-	PP_rmtDiag.pack.Header.ver.Byte = 0x30;
-	PP_rmtDiag.pack.Header.opera = 0x02;
-	PP_rmtDiag.pack.Header.ver.Byte = task->version;
-	PP_rmtDiag.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-	PP_rmtDiag.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-	memcpy(&PP_rmtDiag_Pack, &PP_rmtDiag.pack.Header, sizeof(PrvtProt_pack_Header_t));
-
-	/* disbody */
-	memcpy(PP_rmtDiag.pack.DisBody.aID,"140",3);
-	PP_rmtDiag.pack.DisBody.mID = PP_MID_DIAG_RESP;
-	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	PP_rmtDiag.pack.DisBody.eventId = rmtDiag->state.diageventId;
-	PP_rmtDiag.pack.DisBody.expTime = PrvtPro_getTimestamp();
-	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
-	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
-	PP_rmtDiag.pack.DisBody.testFlag = 1;
-
-
-	/*app data*/
-	AppData_rmtDiag.ImageAcquisitionReq.dataType = 2;//
-	AppData_rmtDiag.ImageAcquisitionReq.cameraName = 1;//
-	AppData_rmtDiag.ImageAcquisitionReq.effectiveTime =123456;//
-	AppData_rmtDiag.ImageAcquisitionReq.sizeLimit = 100;//
-
-	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_RESP,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
-									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag))//鏁版嵁缂栫爜鎵撳寘鏄惁瀹屾垚
-	{
-		log_e(LOG_HOZON, "encode error\n");
-		return -1;
-	}
-
-	PP_rmtDiag_Pack.totallen = 18 + msgdatalen;
-	PP_rmtDiag_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
-
-	return res;
-}
-#endif
 
 /******************************************************
 *鍑芥暟鍚嶏細PP_rmtDiag_send_cb

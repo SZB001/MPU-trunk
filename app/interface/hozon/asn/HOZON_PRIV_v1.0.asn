@@ -412,8 +412,9 @@ DiagnosticRespInfo ::= SEQUENCE --mid = 2
 
 DiagCode ::= SEQUENCE
 {
-	diagCode 			IA5String(SIZE(5)), -- 
-	diagTime			INTEGER(0..2147483647) -- 
+	diagCode 			IA5String(SIZE(5)), --
+	faultCodeType 		INTEGER(0..255), --
+	diagTime			INTEGER(0..2147483647) --
 }
 
 DiagnosticStInfo ::= SEQUENCE --mid = 3
@@ -429,27 +430,12 @@ ImageAcquisitionReqInfo ::= SEQUENCE  --mid = 4
 	sizeLimit			INTEGER(0..2147483647) -- 
 }
 
-ImageAcquisitionRespInfo ::= SEQUENCE --mid = 5
-{
-	result 				BOOLEAN, --
-	failureType			INTEGER(0..255) OPTIONAL, -- 
-	fileName 			IA5String(SIZE(1..255)) OPTIONAL --
-}
-
-LogAcquisitionRespInfo ::= SEQUENCE --mid = 6
+LogAcquisitionRespInfo ::= SEQUENCE --mid = 5
 {
 	logType  			INTEGER(0..255), -- 
 	logLevel			INTEGER(0..255), -- 
 	startTime 			INTEGER(0..2147483647), -- 
 	durationTime 		INTEGER(0..65535) -- 
-}
-
-LogAcquisitionResInfo ::= SEQUENCE --mid = 7
-{
-	logType  			INTEGER(0..255), -- 
-	result 				BOOLEAN, --
-	failureType			INTEGER(0..255) OPTIONAL, -- 
-	fileName 			IA5String(SIZE(1..255)) OPTIONAL -- 
 }
 
 END

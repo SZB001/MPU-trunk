@@ -57,6 +57,18 @@ typedef enum
 
 typedef enum
 {
+	PP_LOGACQRESP_IDLE = 0,//
+	PP_LOGACQRESP_INFORM_UPLOADLOG//通知
+} PP_RMTDIAG_LOGACQRESP_ST;
+
+typedef enum
+{
+	PP_LOG_TBOX = 1,//
+	PP_LOG_HU = 2//
+} PP_RMTDIAG_LOG_TYPE;
+
+typedef enum
+{
 	PP_ACTIVEDIAG_PWRON = 0,//上电
 	PP_ACTIVEDIAG_CHECK,//
 	PP_ACTIVEDIAG_DIAGONGOING,//
@@ -85,6 +97,13 @@ typedef struct
 	uint8_t  activeDiagSt;
 	uint64_t activeDiagdelaytime;
 	uint8_t	 activeDiagWeek;
+
+	uint8_t  LogAcqRespSt;
+	uint8_t  LogAcquisitionReq;
+	uint8_t  logType;
+	uint8_t  logLevel;
+	uint32_t startTime;
+	uint16_t durationTime;
 }PrvtProt_rmtDiagSt_t; /*结构体*/
 
 typedef struct
@@ -113,6 +132,7 @@ typedef struct
 {
 	uint8_t diagCode[5];
 	uint8_t diagCodelen;
+	uint8_t faultCodeType;
 	long 	diagTime;
 }PP_DiagCode_t;
 
