@@ -46,6 +46,24 @@ typedef struct{
 	uint32_t sizelimit;
 }ivi_remotediagnos;
 
+typedef struct{
+	char *vin;
+	  uint32_t eventid;
+	  uint32_t timestamp;
+	  uint32_t aid;
+	  uint32_t mid;
+	  uint32_t starttime;
+	  uint32_t durationtime;
+	  /*
+	   *1:TBOX, 2:IHU
+	   */
+	  uint32_t channel;
+	  /*
+	   *1:ERROR, 2:WARN, 3:INFO, 4:DEBUG
+	   */
+	  uint32_t level;
+
+}ivi_logfile;
 
 typedef enum IVI_MSG_EVENT
 {
@@ -66,6 +84,6 @@ void tbox_ivi_clear_call_flag(void);
 
 extern void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp);
 
-
+extern void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp);
 #endif
 

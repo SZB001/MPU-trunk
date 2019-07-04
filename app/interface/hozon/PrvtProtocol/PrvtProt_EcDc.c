@@ -921,9 +921,10 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			{
 				for(i = 0;i < DiagnosticResp_ptr->diagcodenum;i++)
 				{
-					DiagCode[i].diagCode.buf = DiagnosticResp_ptr->diagCode[i].diagCode;
+					DiagCode[i].diagCode.buf  = DiagnosticResp_ptr->diagCode[i].diagCode;
 					DiagCode[i].diagCode.size = DiagnosticResp_ptr->diagCode[i].diagCodelen;
 					DiagCode[i].faultCodeType = DiagnosticResp_ptr->diagCode[i].faultCodeType;
+					DiagCode[i].lowByte  = DiagnosticResp_ptr->diagCode[i].lowByte;
 					DiagCode[i].diagTime = DiagnosticResp_ptr->diagCode[i].diagTime;
 
 					ASN_SEQUENCE_ADD(&diagcode, &DiagCode[i]);
@@ -967,6 +968,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					DiagCode[j].diagCode.buf = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagCode;
 					DiagCode[j].diagCode.size = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagCodelen;
 					DiagCode[j].faultCodeType = DiagnosticSt_ptr->diagStatus[i].diagCode[j].faultCodeType;
+					DiagCode[j].lowByte  = DiagnosticSt_ptr->diagStatus[i].diagCode[j].lowByte;
 					DiagCode[j].diagTime = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagTime;
 					ASN_SEQUENCE_ADD(&diagcode[i], &DiagCode[j]);
 				}

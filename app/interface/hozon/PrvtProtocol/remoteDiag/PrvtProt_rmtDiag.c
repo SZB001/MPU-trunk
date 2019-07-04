@@ -295,7 +295,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 				PP_rmtDiag.state.cameraName  =  Appdata.ImageAcquisitionReq.cameraName;
 				PP_rmtDiag.state.effectiveTime = Appdata.ImageAcquisitionReq.effectiveTime;
 				PP_rmtDiag.state.sizeLimit   =  Appdata.ImageAcquisitionReq.sizeLimit;
-				PP_rmtDiag.state.diageventId = MsgDataBody.eventId;
+				PP_rmtDiag.state.imagereqeventId = MsgDataBody.eventId;
 			}
 			else
 			{
@@ -313,7 +313,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 				PP_rmtDiag.state.logLevel  		=  Appdata.LogAcquisitionResp.logLevel;
 				PP_rmtDiag.state.startTime 		=  Appdata.LogAcquisitionResp.startTime;
 				PP_rmtDiag.state.durationTime   =  Appdata.LogAcquisitionResp.durationTime;
-				PP_rmtDiag.state.diageventId 	=  MsgDataBody.eventId;
+				PP_rmtDiag.state.logeventId 	=  MsgDataBody.eventId;
 			}
 			else
 			{
@@ -426,7 +426,7 @@ static int PP_rmtDiag_do_checkrmtImageReq(PrvtProt_task_t *task)
 			ivi_remotediagnos tspInformHU;
 			tspInformHU.aid = PP_AID_DIAG;
 			tspInformHU.mid = PP_MID_DIAG_IMAGEACQREQ;
-			tspInformHU.eventid = PP_rmtDiag.state.diageventId;
+			tspInformHU.eventid = PP_rmtDiag.state.imagereqeventId;
 			tspInformHU.datatype = PP_rmtDiag.state.dataType;
 			tspInformHU.cameraname = PP_rmtDiag.state.cameraName;
 			tspInformHU.effectivetime = PP_rmtDiag.state.effectiveTime;
@@ -475,7 +475,16 @@ static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task)
 			}
 			else if(PP_LOG_HU == PP_rmtDiag.state.logType)
 			{//通知HU 上传log
-
+				log_i(LOG_HOZON, "inform HU upload log\n");
+				ivi_logfile appointchargeSt;
+				appointchargeSt.aid = PP_AID_DIAG;
+				appointchargeSt.mid = PP_MID_DIAG_LOGACQRESP;
+				appointchargeSt.eventid = PP_rmtDiag.state.logeventId;
+				appointchargeSt.timestamp = PrvtPro_getTimestamp();
+				appointchargeSt.level = PP_rmtDiag.state.logLevel;
+				appointchargeSt.starttime = PP_rmtDiag.state.startTime;
+				appointchargeSt.durationtime = PP_rmtDiag.state.durationTime;
+				//tbox_ivi_set_tsplogfile_InformHU(&appointchargeSt);
 			}
 			else
 			{}
@@ -562,6 +571,15 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 					{
 						log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
 					}
+
+					memset(&diag_TxInform[PP_RMTDIAG_STATUS],0,sizeof(PrvtProt_TxInform_t));
+					diag_TxInform[PP_RMTDIAG_STATUS].aid = PP_AID_DIAG;
+					diag_TxInform[PP_RMTDIAG_STATUS].mid = PP_MID_DIAG_STATUS;
+					diag_TxInform[PP_RMTDIAG_STATUS].pakgtype = PP_TXPAKG_SIGTIME;
+					diag_TxInform[PP_RMTDIAG_STATUS].eventtime = tm_get_time();
+					SP_data_write(PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen, \
+							PP_rmtDiag_send_cb,&diag_TxInform[PP_RMTDIAG_STATUS]);
+					protocol_dump(LOG_HOZON, "diag_status_response", PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen,1);
 				}
 				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_END;
 				log_i(LOG_HOZON,"exit diag\n");
@@ -631,6 +649,7 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 				memcpy(AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCode,"12345",5);
 				AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCodelen = 5;
 				AppData_rmtDiag.DiagnosticResp.diagCode[i].faultCodeType  = 0;
+				AppData_rmtDiag.DiagnosticResp.diagCode[i].lowByte = 0;
 				AppData_rmtDiag.DiagnosticResp.diagCode[i].diagTime = PrvtPro_getTimestamp();
 				AppData_rmtDiag.DiagnosticResp.diagcodenum++;
 			}
@@ -715,12 +734,12 @@ static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 			memcpy(AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].diagCode,"12345",5);
 			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].diagCodelen = 5;
 			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].faultCodeType = 1;
+			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].lowByte  = 1;
 			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].diagTime = PrvtPro_getTimestamp();
 			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagcodenum++;
 		}
 		AppData_rmtDiag.DiagnosticSt.diagobjnum++;
 	}
-
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_STATUS,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
 									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag.DiagnosticSt))//鏁版嵁缂栫爜鎵撳寘鏄惁瀹屾垚
@@ -756,6 +775,24 @@ static void PP_rmtDiag_send_cb(void * para)
 		{
 			//PP_rmtDiag.state.diagReq = 0;
 			log_i(LOG_HOZON, "send remote diag response ok\n");
+		}
+		break;
+		case PP_MID_DIAG_STATUS:
+		{
+			if(PP_TXPAKG_SUCCESS != TxInform_ptr->successflg)
+			{
+				rmtDiag_datetime.diagflag = 0;
+				if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
+				{
+					log_e(LOG_GB32960, "save rmtDiag_datetime.diagflag failed\n");
+				}
+
+				rmtDiag_datetime.datetime = 0;
+				if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGDATE, &rmtDiag_datetime.datetime, 4))
+				{
+					log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
+				}
+			}
 		}
 		break;
 		default:

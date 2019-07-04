@@ -37,6 +37,7 @@ typedef enum
 {
 	PP_RMTDIAG_RESP_REQ = 0,//
 	PP_RMTDIAG_RESP_IMAGEACQREQ,//
+	PP_RMTDIAG_STATUS,//
 	PP_RMTDIAG_MAX_RESP
 } PP_RMTDIAG_RESPTYPE;
 
@@ -82,6 +83,7 @@ typedef struct
 	uint8_t  diagType;
 	long	 diageventId;
 	uint8_t  ImageAcquisitionReq;
+	long	 imagereqeventId;
 	uint8_t  dataType;
 	uint8_t  cameraName;
 	uint32_t effectiveTime;
@@ -100,6 +102,7 @@ typedef struct
 
 	uint8_t  LogAcqRespSt;
 	uint8_t  LogAcquisitionReq;
+	long	 logeventId;
 	uint8_t  logType;
 	uint8_t  logLevel;
 	uint32_t startTime;
@@ -133,6 +136,7 @@ typedef struct
 	uint8_t diagCode[5];
 	uint8_t diagCodelen;
 	uint8_t faultCodeType;
+	uint8_t lowByte;
 	long 	diagTime;
 }PP_DiagCode_t;
 
