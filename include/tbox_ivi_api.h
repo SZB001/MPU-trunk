@@ -64,6 +64,17 @@ typedef struct{
 	  uint32_t level;
 
 }ivi_logfile;
+typedef struct {
+	uint32_t timestamp;
+    uint32_t hour;
+    uint32_t min;
+    uint32_t id;
+    uint32_t targetpower;
+  /*
+  *true:effective, false:Invalid
+  */
+    uint8_t effectivestate;
+}ivi_chager;
 
 typedef enum IVI_MSG_EVENT
 {
@@ -85,5 +96,7 @@ void tbox_ivi_clear_call_flag(void);
 extern void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp);
 
 extern void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp);
+
+extern void tbox_ivi_set_tspchager_InformHU(ivi_chager *tsp);
 #endif
 

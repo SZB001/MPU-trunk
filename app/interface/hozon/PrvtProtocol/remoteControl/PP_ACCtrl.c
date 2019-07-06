@@ -1,14 +1,4 @@
-/******************************************************
-Œƒº˛√˚£∫	PP_ACCtrl.c
 
-√Ë ˆ£∫	∆Û“µÀΩ”––≠“È£®’„Ω≠∫œ÷⁄£©	
-Data			Vasion			author
-2018/1/10		V1.0			liujian
-*******************************************************/
-
-/*******************************************************
-description£∫ include the header file
-*******************************************************/
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -26,6 +16,8 @@ description£∫ include the header file
 #include "constr_TYPE.h"
 #include "asn_codecs.h"
 #include "asn_application.h"
+
+
 #include "asn_internal.h"	/* for _ASN_DEFAULT_STACK_MAX */
 #include "Bodyinfo.h"
 #include "per_encoder.h"
@@ -41,16 +33,17 @@ description£∫ include the header file
 #include "../PrvtProt_EcDc.h"
 #include "../PrvtProt.h"
 #include "../PrvtProt_cfg.h"
+#include "gb32960_api.h"
+
+#include "../PrvtProt_SigParse.h"
+
 #include "PP_rmtCtrl.h"
+#include "PP_canSend.h"
+#include "PPrmtCtrl_cfg.h"
+
 #include "PP_ACCtrl.h"
 
-/*******************************************************
-description£∫ global variable definitions
-*******************************************************/
 
-/*******************************************************
-description£∫ static variable definitions
-*******************************************************/
 typedef struct
 {
 	PrvtProt_pack_Header_t	Header;
@@ -63,31 +56,22 @@ typedef struct
 	PP_rmtACCtrlSt_t		state;
 }__attribute__((packed))  PrvtProt_rmtACCtrl_t; /*Ω·ππÃÂ*/
 
+
 static PrvtProt_rmtACCtrl_t PP_rmtACCtrl;
+static int acc_ctrl_stage = PP_ACCTRL_IDLE;
+static int acctrl_success_flag = 0;
+static unsigned long long PP_Respwaittime = 0;
+
+
+#if 0
 static PrvtProt_pack_t 		PP_rmtACCtrl_Pack;
 static PrvtProt_App_rmtCtrl_t 		App_rmtACCtrl;
-/*******************************************************
-description£∫ function declaration
-*******************************************************/
-/*Global function declaration*/
 
-/*Static function declaration*/
 static int PP_ACCtrl_StatusResp(PrvtProt_task_t *task,PrvtProt_rmtACCtrl_t *rmtCtrl);
 static int PP_ACCtrl_BookingStatusResp(PrvtProt_task_t *task,PrvtProt_rmtACCtrl_t *rmtACCtrl);
-/******************************************************
-description£∫ function code
-******************************************************/
-/******************************************************
-*∫Ø ˝√˚£∫PP_ACCtrl_init
+#endif
 
-*–Œ  ≤Œ£∫void
 
-*∑µªÿ÷µ£∫void
-
-*√Ë   ˆ£∫≥ı ºªØ
-
-*±∏  ◊¢£∫
-******************************************************/
 void PP_ACCtrl_init(void)
 {
 	memset(&PP_rmtACCtrl,0,sizeof(PrvtProt_rmtACCtrl_t));
@@ -102,17 +86,242 @@ void PP_ACCtrl_init(void)
 	PP_rmtACCtrl.pack.DisBody.testFlag = 1;
 }
 
-/******************************************************
-*∫Ø ˝√˚£∫PP_ACCtrl_mainfunction
+int PP_ACCtrl_mainfunction(void *task)
+{
+	int res = 0;
+	switch(acc_ctrl_stage)
+	{
+		case PP_ACCTRL_IDLE:
+		{
+			
+			if(PP_rmtACCtrl.state.req == 1) 	
+			{
+				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+				{
+					PP_rmtACCtrl.state.req = 0;
+					acctrl_success_flag = 0;
+					acc_ctrl_stage = PP_ACCTRL_REQSTART;
+					if(PP_rmtACCtrl.state.style == RMTCTRL_TSP)
+					{
+						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+						rmtCtrl_Stpara.rvcReqStatus = 1;    //ÊâßË°å‰∏≠
+						rmtCtrl_Stpara.rvcFailureType = 0;
+						rmtCtrl_Stpara.reqType =PP_rmtACCtrl.state.reqType;
+						rmtCtrl_Stpara.eventid = PP_rmtACCtrl.pack.DisBody.eventId;
+						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+						res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+					}
+					else//ËìùÁâô
+					{
 
-*–Œ  ≤Œ£∫void
+					}
+				}
+				else
+				{
+					PP_rmtACCtrl.state.req = 0;
+					acctrl_success_flag = 0;
+					acc_ctrl_stage = PP_ACCTRL_END;
+				}
+			}
+		}
+		break;
+		case PP_ACCTRL_REQSTART:     //‰∏ãÂèëÂºÄÁ©∫Ë∞ÉÂëΩ‰ª§
+		{
+			if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACOPEN) //Á©∫Ë∞ÉÂºÄÂêØ
+			{
+				if(PP_rmtCtrl_cfg_ACOnOffSt() == 0)//Á©∫Ë∞ÉÊ≤°ÊúâÂºÄÂêØ
+				{
+					//PP_canSend_setbit(CAN_ID_445,1,1,1,NULL);   //ÂëΩ‰ª§ÊúâÊïà
+					//PP_canSend_setbit(CAN_ID_445,14,1,1,NULL);  //Á©∫Ë∞ÉÂºÄÂêØ
+					if((PP_rmtACCtrl.state.CtrlSt > 16)&&(PP_rmtACCtrl.state.CtrlSt < 32))   //Êúâ‰º†Ê∏©Â∫¶ÂÄº
+					{
+						PP_canSend_setbit(CAN_ID_445,47,6,PP_rmtACCtrl.state.CtrlSt,NULL);  //Á©∫Ë∞ÉÂºÄÂêØ
+					}
+					else if(PP_rmtACCtrl.state.CtrlSt == 0 )
+					{
+						//Ê≤°Êúâ‰∏ãÂèëÊ∏©Â∫¶ÂÄº	
+					}
+					else
+					{
+						log_o(LOG_HOZON,"Set temperature out of range !!!!");
+					}
+				}
+				else //Á©∫Ë∞ÉÂºÄÂêØ
+				{
+					if((PP_rmtACCtrl.state.CtrlSt > 16)&&(PP_rmtACCtrl.state.CtrlSt < 32))   //Êúâ‰º†Ê∏©Â∫¶ÂÄº
+					{
+						PP_canSend_setbit(CAN_ID_445,47,6,PP_rmtACCtrl.state.CtrlSt,NULL);  //Á©∫Ë∞ÉÂºÄÂêØ
+					}
+					else if(PP_rmtACCtrl.state.CtrlSt == 0 )
+					{
+						//Ê≤°Êúâ‰∏ãÂèëÊ∏©Â∫¶ÂÄº	
+					}
+					else
+					{
+						log_o(LOG_HOZON,"Set temperature out of range !!!!");
+					}	
+				}
+			}
+			else   //ÂÖ≥Èó≠Á©∫Ë∞É         
+			{
+				//PP_canSend_resetbit(CAN_ID_445,1,1);   //
+				//PP_canSend_resetbit(CAN_ID_445,14,1);  //Á©∫Ë∞ÉÂÖ≥Èó≠
+			}
 
-*∑µªÿ÷µ£∫void
+			acc_ctrl_stage = PP_ACCTRL_RESPWAIT;
+			PP_Respwaittime = tm_get_time();
+		}
+		break;
+		case PP_ACCTRL_RESPWAIT:
+		{
+			if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACOPEN) 
+			{
+				if((tm_get_time() - PP_Respwaittime) < 2000)
+				{
+					if(PP_rmtCtrl_cfg_ACOnOffSt() == 1)   //Á©∫Ë∞ÉÂºÄÂêØÊàêÂäü
+					{
+						//PP_canSend_resetbit(CAN_ID_440,19,2);
+						acctrl_success_flag = 1;
+						acc_ctrl_stage = PP_ACCTRL_END;
+					}
+				}
+				else
+				{
+					//PP_canSend_resetbit(CAN_ID_440,19,2);
+					acctrl_success_flag = 0;
+					acc_ctrl_stage = PP_ACCTRL_END;
+				}
+			}
+			else//Á≠âÂæÖÁ©∫Ë∞ÉÂÖ≥Èó≠ÁªìÊûú
+			{
+				if((tm_get_time() - PP_Respwaittime) < 2000)
+				{
+					if(PP_rmtCtrl_cfg_ACOnOffSt() == 0) 
+					{
+						//PP_canSend_resetbit(CAN_ID_440,19,2);
+						acctrl_success_flag = 1;
+						acc_ctrl_stage = PP_ACCTRL_END;
+					}
+				}
+				else
+				{
+					//PP_canSend_resetbit(CAN_ID_440,19,2);
+					acctrl_success_flag = 0;
+					acc_ctrl_stage = PP_ACCTRL_END;
+				}
+			}
+		}
+		break;
+		case PP_ACCTRL_END:
+		{
+			
+			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+			memset(&rmtCtrl_Stpara,0,sizeof(PP_rmtCtrl_Stpara_t));
+			if(PP_rmtACCtrl.state.style == RMTCTRL_TSP)//tsp
+			{
+				rmtCtrl_Stpara.reqType =PP_rmtACCtrl.state.reqType;
+				rmtCtrl_Stpara.eventid = PP_rmtACCtrl.pack.DisBody.eventId;
+				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+				if(1 == acctrl_success_flag)
+				{
+					rmtCtrl_Stpara.rvcReqStatus = 2;  
+					rmtCtrl_Stpara.rvcFailureType = 0;
+				}
+				else
+				{
+					rmtCtrl_Stpara.rvcReqStatus = 3;  
+					rmtCtrl_Stpara.rvcFailureType = 0xff;
+				}
+				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+				acc_ctrl_stage = PP_ACCTRL_IDLE;
+			}
+			else
+			{
 
-*√Ë   ˆ£∫÷˜»ŒŒÒ∫Ø ˝
+			}
+		}
+		break;
+		default:
+		break;
+	}
+	return res;
+}
+uint8_t PP_ACCtrl_start(void)  
+{
+	if(PP_rmtACCtrl.state.req == 1)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+uint8_t PP_ACCtrl_end(void)
+{
+	if((acc_ctrl_stage = PP_ACCTRL_IDLE) && \
+			(PP_rmtACCtrl.state.req == 0))
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
+{
+	switch(ctrlstyle)
+	{
+		case RMTCTRL_TSP:
+		{
+			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
+			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
 
-*±∏  ◊¢£∫
-******************************************************/
+			log_i(LOG_HOZON, "remote auto door control req");
+			PP_rmtACCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+			PP_rmtACCtrl.state.CtrlSt = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
+			PP_rmtACCtrl.state.req = 1;
+			PP_rmtACCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+			PP_rmtACCtrl.state.style = RMTCTRL_TSP;
+		}
+		break;
+		default:
+		break;
+	}
+}
+
+void ClearPP_ACCtrl_Request(void)
+{
+	PP_rmtACCtrl.state.req = 0;
+}
+
+void PP_ACCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
+{
+	PP_rmtACCtrl.state.reqType = (long)reqType;
+	PP_rmtACCtrl.state.req = 1;
+}
+
+
+
+
+
+#if 0
+void PP_ACCtrl_init(void)
+{
+	memset(&PP_rmtACCtrl,0,sizeof(PrvtProt_rmtACCtrl_t));
+	memcpy(PP_rmtACCtrl.pack.Header.sign,"**",2);
+	PP_rmtACCtrl.pack.Header.ver.Byte = 0x30;
+	PP_rmtACCtrl.pack.Header.commtype.Byte = 0xe1;
+	PP_rmtACCtrl.pack.Header.opera = 0x02;
+	PP_rmtACCtrl.pack.Header.tboxid = 27;
+	memcpy(PP_rmtACCtrl.pack.DisBody.aID,"110",3);
+	PP_rmtACCtrl.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
+	PP_rmtACCtrl.pack.DisBody.appDataProVer = 256;
+	PP_rmtACCtrl.pack.DisBody.testFlag = 1;
+}
+
+
 int PP_ACCtrl_mainfunction(void *task)
 {
 	int res;
@@ -132,10 +341,10 @@ int PP_ACCtrl_mainfunction(void *task)
 		}
 
 		res = PP_ACCtrl_StatusResp((PrvtProt_task_t *)task,&PP_rmtACCtrl);
-		if(res < 0)//«Î«Û∑¢ÀÕ ß∞‹
+		if(res < 0)
 		{
 			log_e(LOG_HOZON, "socket send error, reset protocol");
-			sockproxy_socketclose();//by liujian 20190514
+			sockproxy_socketclose();//by liujia
 		}
 		else if(res > 0)
 		{
@@ -462,4 +671,4 @@ void PP_ACCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 	PP_rmtACCtrl.state.reqType = (long)reqType;
 	PP_rmtACCtrl.state.req = 1;
 }
-
+#endif

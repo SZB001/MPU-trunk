@@ -46,10 +46,11 @@ description： include the header file
 #include "../../../gb32960/gb32960.h"
 #include "PP_canSend.h"
 #include "../PrvtProt_SigParse.h"
+#include "PPrmtCtrl_cfg.h"
 
 #include "PP_searchvehicle.h"
 
-
+#define PP_SEARCH 1
 
 typedef struct
 {
@@ -68,7 +69,7 @@ static PrvtProt_rmtsearchvehicle_t PP_rmtsearchvehicle;
 static int search_vehicle_stage = PP_SEARCHVEHICLE_IDLE;
 static unsigned long long PP_Respwaittime = 0;
 static int serachvehicle_success_flag = 0;
-
+static int search_type = 0;
 void PP_searchvehicle_init(void)
 {
 	memset(&PP_rmtsearchvehicle,0,sizeof(PrvtProt_rmtsearchvehicle_t));
@@ -91,39 +92,43 @@ int PP_searchvehicle_mainfunction(void *task)
 	{
 		case PP_SEARCHVEHICLE_IDLE:
 		{
-			if((PP_rmtsearchvehicle.state.req == 1)&&(gb_data_vehicleSOC() > 15))   //判断请求是不是
+			if(PP_rmtsearchvehicle.state.req == 1)
 			{
-				PP_rmtsearchvehicle.state.req = 0;
-				serachvehicle_success_flag = 0;
-				search_vehicle_stage = PP_SEARCHVEHICLE_REQSTART;
-				if(PP_rmtsearchvehicle.state.style == RMTCTRL_TSP)//tsp
+				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{
-					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-					rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
-					rmtCtrl_Stpara.rvcFailureType = 0;
-					rmtCtrl_Stpara.reqType =PP_rmtsearchvehicle.state.reqType;
-					rmtCtrl_Stpara.eventid = PP_rmtsearchvehicle.pack.DisBody.eventId;
-					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-					res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
-				}
-				else//蓝牙
-				{
+					PP_rmtsearchvehicle.state.req = 0;
+					serachvehicle_success_flag = 0;
+					search_vehicle_stage = PP_SEARCHVEHICLE_REQSTART;
+					if(PP_rmtsearchvehicle.state.style == RMTCTRL_TSP)//tsp
+					{
+						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+						rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
+						rmtCtrl_Stpara.rvcFailureType = 0;
+						rmtCtrl_Stpara.reqType =PP_rmtsearchvehicle.state.reqType;
+						rmtCtrl_Stpara.eventid = PP_rmtsearchvehicle.pack.DisBody.eventId;
+						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+						res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+					}
+					else//蓝牙
+					{
 
+					}
 				}
-			}
-			else
-			{
-				PP_rmtsearchvehicle.state.req = 0;
-				serachvehicle_success_flag = 0;
-				search_vehicle_stage = PP_SEARCHVEHICLE_END;
+				else
+				{
+					PP_rmtsearchvehicle.state.req = 0;
+					serachvehicle_success_flag = 0;
+					search_vehicle_stage = PP_SEARCHVEHICLE_END;
+				}
 			}
 		}
 		break;
 		case PP_SEARCHVEHICLE_REQSTART:
 		{
-			if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN) //寻车
+			if(search_type == PP_SEARCH) //寻车
 			{
-				PP_canSend_setbit(CAN_ID_440,17,2,3,NULL);  //寻车报文
+				PP_can_send_data(PP_CAN_SEARCH,CAN_SEARCHVEHICLE,0);
+				//PP_canSend_setbit(CAN_ID_440,17,2,3,NULL);  //寻车报文
 			}
 			search_vehicle_stage = PP_SEARCHVEHICLE_RESPWAIT;
 			PP_Respwaittime = tm_get_time();
@@ -135,16 +140,17 @@ int PP_searchvehicle_mainfunction(void *task)
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(PrvtProt_SignParse_findcarSt() == 0) //门锁状态为0，解锁程成功
+					if(PP_rmtCtrl_cfg_findcarSt() == 0) //
 					{
-						PP_canSend_resetbit(CAN_ID_440,17,2);
+						//PP_canSend_resetbit(CAN_ID_440,17,2);
+						PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0);
 						serachvehicle_success_flag = 1;
 						search_vehicle_stage = PP_SEARCHVEHICLE_END;
 					}
 				}
 				else//响应超时
 				{
-					PP_canSend_resetbit(CAN_ID_440,17,2);
+					PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0);
 					serachvehicle_success_flag = 0;
 					search_vehicle_stage = PP_SEARCHVEHICLE_END;
 				}
@@ -202,11 +208,12 @@ uint8_t PP_searchvehicle_end(void)
 	if((search_vehicle_stage == PP_SEARCHVEHICLE_IDLE) && \
 			(PP_rmtsearchvehicle.state.req == 0))
 	{
-		return 1;
+		return 0;
 	}
 	else
 	{
-		return 0;
+		log_o(LOG_HOZON,"SEARCH");
+		return 1;
 	}
 }
 
@@ -222,6 +229,10 @@ void SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *dispt
 			log_i(LOG_HOZON, "remote door lock control req");
 			PP_rmtsearchvehicle.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtsearchvehicle.state.req = 1;
+			if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN)
+			{
+				search_type = PP_SEARCH;
+			}
 			PP_rmtsearchvehicle.pack.DisBody.eventId = disptrBody_ptr->eventId;
 			PP_rmtsearchvehicle.state.style = RMTCTRL_TSP;
 		}

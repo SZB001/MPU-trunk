@@ -49,8 +49,10 @@ typedef enum LOG_ID
     LOG_AUTO,
 	LOG_HOZON,
 	LOG_SOCK_PROXY,
+	LOG_PRVT_PROT,
 	LOG_IVI,
     LOG_CAN_NODE_MISS, /* add by caoml*/
+	LOG_UPER_ECDC,
     LOG_MAX,
 } LOG_ID;
 

@@ -1,13 +1,13 @@
 /******************************************************
-ÎÄ¼şÃû£º	PrvtProt_rmtCtrl.c
+æ–‡ä»¶åï¼š	PrvtProt_rmtCtrl.c
 
-ÃèÊö£º	ÆóÒµË½ÓĞĞ­Òé£¨Õã½­ºÏÖÚ£©	
+æè¿°ï¼š	ä¼ä¸šç§æœ‰åè®®ï¼ˆæµ™æ±Ÿåˆä¼—ï¼‰
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¼š include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -36,6 +36,7 @@ description£º include the header file
 #include "list.h"
 #include "../../support/protocol.h"
 #include "../sockproxy/sockproxy_txdata.h"
+#include "gb32960_api.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
@@ -58,11 +59,11 @@ description£º include the header file
 #include "PP_rmtCtrl.h"
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¼š global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¼š static variable definitions
 *******************************************************/
 typedef struct
 {
@@ -74,7 +75,9 @@ typedef struct
 {
 	PrvtProt_rmtCtrl_pack_t pack;
 	PrvtProt_rmtCtrlSt_t	state[RMTCTRL_OBJ_MAX];
-}__attribute__((packed))  PrvtProt_rmtCtrl_t; /*½á¹¹Ìå*/
+	long reqType;//è¯·æ±‚ç±»å‹
+	long eventid;//äº‹ä»¶id
+}__attribute__((packed))  PrvtProt_rmtCtrl_t; /*ç»“æ„ä½“*/
 
 static PrvtProt_rmtCtrl_t PP_rmtCtrl;
 static PrvtProt_pack_t 		PP_rmtCtrl_Pack;
@@ -87,18 +90,17 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 	{RMTCTRL_AUTODOOR,PP_autodoorCtrl_init,	PP_autodoorCtrl_mainfunction},
 	{RMTCTRL_RMTSRCHVEHICLE,PP_searchvehicle_init,	PP_searchvehicle_mainfunction},
 	{RMTCTRL_HIGHTENSIONCTRL,PP_startengine_init,PP_startengine_mainfunction},
-	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
-	{RMTCTRL_AC,	  PP_ACCtrl_init, 		PP_ACCtrl_mainfunction},
+	{RMTCTRL_AC,	  NULL, 		NULL},
 	{RMTCTRL_CHARGE,  PP_ChargeCtrl_init,	PP_ChargeCtrl_mainfunction},
-	{RMTCTRL_PANORSUNROOF,NULL,	NULL},
-	{RMTCTRL_PANORSUNROOF,NULL,	NULL}
+	{RMTCTRL_ENGINECTRL,	  PP_startforbid_init, 		PP_startforbid_mainfunction},
+	{RMTCTRL_SEATHEATINGCTRL,	  PP_seatheating_init, 		PP_seatheating_mainfunction}
 };
 
 static int PP_rmtCtrl_flag = 0;
 
 static PrvtProt_TxInform_t rmtCtrl_TxInform;
 /*******************************************************
-description£º function declaration
+descriptionï¼š function declaration
 *******************************************************/
 /*Global function declaration*/
 
@@ -111,18 +113,18 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 
 static void PP_rmtCtrl_send_cb(void * para);
 /******************************************************
-description£º function code
+descriptionï¼š function code
 ******************************************************/
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtCtrl_init
+*å‡½æ•°åï¼šPP_rmtCtrl_init
 
-*ĞÎ  ²Î£ºvoid
+*å½¢  å‚ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+*è¿”å›å€¼ï¼švoid
 
-*Ãè  Êö£º³õÊ¼»¯
+*æ  è¿°ï¼šåˆå§‹åŒ–
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 void PP_rmtCtrl_init(void)
 {
@@ -141,15 +143,15 @@ void PP_rmtCtrl_init(void)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtCtrl_mainfunction
+*å‡½æ•°åï¼šPP_rmtCtrl_mainfunction
 
-*ĞÎ  ²Î£ºvoid
+*å½¢  å‚ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+*è¿”å›å€¼ï¼švoid
 
-*Ãè  Êö£ºÖ÷ÈÎÎñº¯Êı
+*æ  è¿°ï¼šä¸»ä»»åŠ¡å‡½æ•°
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 int PP_rmtCtrl_mainfunction(void *task)
 {
@@ -160,11 +162,12 @@ int PP_rmtCtrl_mainfunction(void *task)
 
 	switch(PP_rmtCtrl_flag)
 	{
-		case RMTCTRL_IDLE://¿ÕÏĞ
+		case RMTCTRL_IDLE://ç©ºé—²
 		{
 			int ret ;
-			PP_rmtCtrl_checkenginetime();//15·ÖÖÓÖ®ºóÏÂ¸ßÑ¹µç
-		
+			PP_rmtCtrl_checkenginetime();//15åˆ†é’Ÿä¹‹åä¸‹é«˜å‹ç”µ
+			//æ£€æµ‹ç©ºè°ƒæˆ–åº§æ¤…åŠ çƒ­ä¸Šç”µæˆ–ä¸‹ç”µ
+
 			ret  = PP_doorLockCtrl_start() ||
 				   PP_autodoorCtrl_start() ||
 				   PP_searchvehicle_start()||
@@ -178,7 +181,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 			}
 		}
 		break;
-		case RMTCTRL_IDENTIFICAT_QUERY://¼ì²éÈÏÖ¤
+		case RMTCTRL_IDENTIFICAT_QUERY://æ£€æŸ¥è®¤è¯
 		{
 			if(PP_get_identificat_flag() == 1)	
 			{
@@ -190,7 +193,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 			}
 		}
 		break;
-		case RMTCTRL_IDENTIFICAT_LAUNCH://ÈÏÖ¤
+		case RMTCTRL_IDENTIFICAT_LAUNCH://è®¤è¯
 		{
 			int  authst;
 			authst = PP_identificat_mainfunction();
@@ -201,11 +204,17 @@ int PP_rmtCtrl_mainfunction(void *task)
   			}
   			else if(PP_AUTH_FAIL == authst)
   		    {
-    			//Í¨ÖªtspÈÏÖ¤Ê§°Ü
-   				//PP_rmtCtrl_StInformTsp
+    			//é€šçŸ¥tspè®¤è¯å¤±è´¥
+    			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+				rmtCtrl_Stpara.reqType = PP_rmtCtrl.reqType;
+				rmtCtrl_Stpara.eventid = PP_rmtCtrl.eventid;
+				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+				rmtCtrl_Stpara.rvcReqStatus = 3;  //æ‰§è¡Œå¤±è´¥
+				rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_BCDMAUTHFAIL;
+				PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
     			PP_rmtCtrl_flag = RMTCTRL_IDLE;
 				log_o(LOG_HOZON,"-------identificat failed---------");
-				// Çå³ıÔ¶³Ì¿ØÖÆÇëÇó
+				// æ¸…é™¤è¿œç¨‹æ§åˆ¶è¯·æ±‚
 				ClearPP_autodoorCtrl_Request();
 				ClearPP_doorLockCtrl_Request();
 				ClearPP_searchvehicle_Request();
@@ -218,7 +227,7 @@ int PP_rmtCtrl_mainfunction(void *task)
    			{}
 		}
 		break;
-		case RMTCTRL_COMMAND_LAUNCH://Ô¶³Ì¿ØÖÆ
+		case RMTCTRL_COMMAND_LAUNCH://è¿œç¨‹æ§åˆ¶
 		{
 			log_o(LOG_HOZON,"-------command---------");
 			int ret;
@@ -237,9 +246,9 @@ int PP_rmtCtrl_mainfunction(void *task)
 				  PP_startengine_end()  ||
 				  PP_seatheating_end()  ||
 				  PP_startforbid_end();
-			if(ret == 1)
+			if(ret == 0)
 			{
-				PP_rmtCtrl_flag = RMTCTRL_IDLE; //Ô¶³ÌÃüÁîÖ´ĞĞÍê£¬»Øµ½¿ÕÏĞ
+				PP_rmtCtrl_flag = RMTCTRL_IDLE; //è¿œç¨‹å‘½ä»¤æ‰§è¡Œå®Œï¼Œå›åˆ°ç©ºé—²
 			}
 		}
 		break;
@@ -251,15 +260,15 @@ int PP_rmtCtrl_mainfunction(void *task)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtCtrl_do_checksock
+*å‡½æ•°åï¼šPP_rmtCtrl_do_checksock
 
-*ĞÎ  ²Î£ºvoid
+*å½¢  å‚ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+*è¿”å›å€¼ï¼švoid
 
-*Ãè  Êö£º¼ì²ésocketÁ¬½Ó
+*æ  è¿°ï¼šæ£€æŸ¥socketè¿æ¥
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 static int PP_rmtCtrl_do_checksock(PrvtProt_task_t *task)
 {
@@ -269,21 +278,21 @@ static int PP_rmtCtrl_do_checksock(PrvtProt_task_t *task)
 		return 0;
 	}
 
-	//ÊÍ·Å×ÊÔ´
+	//é‡Šæ”¾èµ„æº
 
 	return -1;
 }
 
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtCtrl_do_rcvMsg
+*å‡½æ•°åï¼šPP_rmtCtrl_do_rcvMsg
 
-*ĞÎ  ²Î£ºvoid
+*å½¢  å‚ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+*è¿”å›å€¼ï¼švoid
 
-*Ãè  Êö£º½ÓÊÕÊı¾İº¯Êı
+*æ  è¿°ï¼šæ¥æ”¶æ•°æ®å‡½æ•°
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 static int PP_rmtCtrl_do_rcvMsg(PrvtProt_task_t *task)
 {	
@@ -298,12 +307,12 @@ static int PP_rmtCtrl_do_rcvMsg(PrvtProt_task_t *task)
 	log_i(LOG_HOZON, "receive rmt ctrl message");
 	protocol_dump(LOG_HOZON, "PRVT_PROT", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
-			(rlen <= 18))//ÅĞ¶ÏÊı¾İÖ¡Í·ÓĞÎó»òÕßÊı¾İ³¤¶È²»¶Ô
+			(rlen <= 18))//åˆ¤æ–­æ•°æ®å¸§å¤´æœ‰è¯¯æˆ–è€…æ•°æ®é•¿åº¦ä¸å¯¹
 	{
 		return 0;
 	}
 	
-	if(rlen > (18 + PP_MSG_DATA_LEN))//½ÓÊÕÊı¾İ³¤¶È³¬³ö»º´æbuffer³¤¶È
+	if(rlen > (18 + PP_MSG_DATA_LEN))//æ¥æ”¶æ•°æ®é•¿åº¦è¶…å‡ºç¼“å­˜bufferé•¿åº¦
 	{
 		return 0;
 	}
@@ -313,15 +322,15 @@ static int PP_rmtCtrl_do_rcvMsg(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtCtrl_RxMsgHandle
+*å‡½æ•°åï¼šPP_rmtCtrl_RxMsgHandle
 
-*ĞÎ  ²Î£ºvoid
+*å½¢  å‚ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+*è¿”å›å€¼ï¼švoid
 
-*Ãè  Êö£º½ÓÊÕÊı¾İ´¦Àí
+*æ  è¿°ï¼šæ¥æ”¶æ•°æ®å¤„ç†
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len)
 {
@@ -343,61 +352,63 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		return;
 	}
 
-	if(PP_MID_RMTCTRL_REQ == MsgDataBody.mID)//ÊÕµ½ÇëÇó
+	PP_rmtCtrl.eventid = MsgDataBody.eventId;
+	PP_rmtCtrl.reqType = Appdata.CtrlReq.rvcReqType;
+	if(PP_MID_RMTCTRL_REQ == MsgDataBody.mID)//æ”¶åˆ°è¯·æ±‚
 	{
 		switch((uint8_t)(Appdata.CtrlReq.rvcReqType >> 8))
 		{
-			case PP_RMTCTRL_DOORLOCK://¿ØÖÆ³µÃÅËø
+			case PP_RMTCTRL_DOORLOCK://æ§åˆ¶è½¦é—¨é”
 			{
 				SetPP_doorLockCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 			}
 			break;
-			case PP_RMTCTRL_PNRSUNROOF://¿ØÖÆÈ«¾°Ìì´°
+			case PP_RMTCTRL_PNRSUNROOF://æ§åˆ¶å…¨æ™¯å¤©çª—
 			{
 				SetPP_sunroofctrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote PANORSUNROOF control req");
 			}
 			break;
-			case PP_RMTCTRL_AUTODOOR://¿ØÖÆ×Ô¶¯ÃÅ
+			case PP_RMTCTRL_AUTODOOR://æ§åˆ¶è‡ªåŠ¨é—¨
 			{
 				SetPP_autodoorCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote AUTODOOR control req");
 			}
 			break;
-			case PP_RMTCTRL_RMTSRCHVEHICLE://Ô¶³ÌËÑË÷³µÁ¾
+			case PP_RMTCTRL_RMTSRCHVEHICLE://è¿œç¨‹æœç´¢è½¦è¾†
 			{
 				SetPP_searchvehicle_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote RMTSRCHVEHICLE control req");
 			}
 			break;
-			case PP_RMTCTRL_DETECTCAMERA://¼İÊ»Ô±¼ì²âÉãÏñÍ·
+			case PP_RMTCTRL_DETECTCAMERA://é©¾é©¶å‘˜æ£€æµ‹æ‘„åƒå¤´
 			{
 				log_i(LOG_HOZON, "remote DETECTCAMERA control req");
 			}
 			break;
-			case PP_RMTCTRL_DATARECORDER://ĞĞ³µ¼ÇÂ¼ÒÇ
+			case PP_RMTCTRL_DATARECORDER://è¡Œè½¦è®°å½•ä»ª
 			{
 				log_i(LOG_HOZON, "remote DATARECORDER control req");
 			}
 			break;
-			case PP_RMTCTRL_AC://¿Õµ÷
+			case PP_RMTCTRL_AC://ç©ºè°ƒ
 			{
-				SetPP_ACCtrl_Request(&Appdata,&MsgDataBody);
+				//SetPP_ACCtrl_Request(&Appdata,&MsgDataBody);
 			}
 			break;
-			case PP_RMTCTRL_CHARGE://³äµç
+			case PP_RMTCTRL_CHARGE://å……ç”µ
 			{
-				SetPP_ChargeCtrl_Request(&Appdata,&MsgDataBody);
+				SetPP_ChargeCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
 			}
 			break;
-			case PP_RMTCTRL_HIGHTENSIONCTRL://¸ßµçÑ¹¿ØÖÆ
+			case PP_RMTCTRL_HIGHTENSIONCTRL://é«˜ç”µå‹æ§åˆ¶
 			{
 				SetPP_startengine_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote RMTCTRL_HIGHTENSIONCTRL control req");
 			}
 			break;
-			case PP_RMTCTRL_ENGINECTRL://·¢¶¯»ú¿ØÖÆ
+			case PP_RMTCTRL_ENGINECTRL://å‘åŠ¨æœºæ§åˆ¶
 			{
 				log_i(LOG_HOZON, "remote RMTCTRL_ENGINECTRL control req");
 			}
@@ -410,15 +421,15 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 
 #if 0
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtCtrl_do_wait
+*å‡½æ•°åï¼šPP_rmtCtrl_do_wait
 
-*ĞÎ  ²Î£ºvoid
+*å½¢  å‚ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+*è¿”å›å€¼ï¼švoid
 
-*Ãè  Êö£º¼ì²éÊÇ·ñÓĞÊÂ¼şµÈ´ıÓ¦´ğ
+*æ  è¿°ï¼šæ£€æŸ¥æ˜¯å¦æœ‰äº‹ä»¶ç­‰å¾…åº”ç­”
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task)
 {
@@ -427,74 +438,153 @@ static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task)
 }
 #endif
 
+
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtCtrl_SetCtrlReq
+*å‡½æ•°åï¼šPP_rmtCtrl_BluetoothSetCtrlReq
 
-*ĞÎ  ²Î£º
+*å½¢  å‚ï¼š
 
-*·µ»ØÖµ£º
+*è¿”å›å€¼ï¼š
 
-*Ãè  Êö£ºÉèÖÃ ÇëÇó
+*æ  è¿°ï¼šè®¾ç½® è¯·æ±‚
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
-void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
+void PP_rmtCtrl_BluetoothSetCtrlReq(unsigned char obj, unsigned char cmd)
 {
-	switch((uint8_t)(reqType >> 8))
+	switch(obj)
 	{
-		case PP_RMTCTRL_DOORLOCK://¿ØÖÆ³µÃÅËø
+		case PP_RMTCTRL_DOORLOCK://æ§åˆ¶è½¦é—¨é”
 		{
-			PP_doorLockCtrl_SetCtrlReq(req,reqType);
+			SetPP_doorLockCtrl_Request(RMTCTRL_BLUETOOTH,&cmd,NULL);
 		}
 		break;
-		case PP_RMTCTRL_PNRSUNROOF://¿ØÖÆÈ«¾°Ìì´°
+		case PP_RMTCTRL_PNRSUNROOF://æ§åˆ¶å…¨æ™¯å¤©çª—
 		{
-			PP_sunroofctrl_SetCtrlReq(req,reqType);
+			//PP_sunroofctrl_SetCtrlReq(req,reqType);
 			log_i(LOG_HOZON, "remote PANORSUNROOF control req");
 		}
 		break;
-		case PP_RMTCTRL_AUTODOOR://¿ØÖÆ×Ô¶¯ÃÅ
+		case PP_RMTCTRL_AUTODOOR://æ§åˆ¶è‡ªåŠ¨é—¨
 		{
-			PP_autodoorCtrl_SetCtrlReq(req,reqType);
+			//PP_autodoorCtrl_SetCtrlReq(req,reqType);
 			log_i(LOG_HOZON, "remote AUTODOOR control req");
 		}
 		break;
-		case PP_RMTCTRL_RMTSRCHVEHICLE://Ô¶³ÌËÑË÷³µÁ¾
+		case PP_RMTCTRL_RMTSRCHVEHICLE://è¿œç¨‹æœç´¢è½¦è¾†
 		{
-			PP_searchvehicle_SetCtrlReq(req,reqType);
+			//PP_searchvehicle_SetCtrlReq(req,reqType);
 			log_i(LOG_HOZON, "remote RMTSRCHVEHICLE control req");
 		}
 		break;
-		case PP_RMTCTRL_DETECTCAMERA://¼İÊ»Ô±¼ì²âÉãÏñÍ·
+		case PP_RMTCTRL_DETECTCAMERA://é©¾é©¶å‘˜æ£€æµ‹æ‘„åƒå¤´
 		{
 			log_i(LOG_HOZON, "remote DETECTCAMERA control req");
 		}
 		break;
-		case PP_RMTCTRL_DATARECORDER://ĞĞ³µ¼ÇÂ¼ÒÇ
+		case PP_RMTCTRL_DATARECORDER://è¡Œè½¦è®°å½•ä»ª
 		{
 			//PP_doorLockCtrl_StatusResp(reqType);
 			log_i(LOG_HOZON, "remote DATARECORDER control req");
 		}
 		break;
-		case PP_RMTCTRL_AC://¿Õµ÷
+		case PP_RMTCTRL_AC://ç©ºè°ƒ
 		{
 			//PP_rmtCtrl_StatusResp(1,reqType);
 			log_i(LOG_HOZON, "remote RMTCTRL_AC control req");
 		}
 		break;
-		case PP_RMTCTRL_CHARGE://³äµç
+		case PP_RMTCTRL_CHARGE://å……ç”µ
 		{
 			//PP_rmtCtrl_StatusResp(2,reqType);
 			log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
 		}
 		break;
-		case PP_RMTCTRL_HIGHTENSIONCTRL://¸ßµçÑ¹¿ØÖÆ
+		case PP_RMTCTRL_HIGHTENSIONCTRL://é«˜ç”µå‹æ§åˆ¶
+		{
+			//PP_startengine_SetCtrlReq(req,reqType);
+			log_i(LOG_HOZON, "remote RMTCTRL_HIGHTENSIONCTRL control req");
+		}
+		break;
+		case PP_RMTCTRL_ENGINECTRL://å‘åŠ¨æœºæ§åˆ¶
+		{
+			log_i(LOG_HOZON, "remote RMTCTRL_ENGINECTRL control req");
+		}
+		break;
+		default:
+		break;
+	}
+}
+
+
+/******************************************************
+*å‡½æ•°åï¼šPP_rmtCtrl_SetCtrlReq
+
+*å½¢  å‚ï¼š
+
+*è¿”å›å€¼ï¼š
+
+*æ  è¿°ï¼šè®¾ç½® è¯·æ±‚
+
+*å¤‡  æ³¨ï¼š
+******************************************************/
+void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
+{
+	switch((uint8_t)(reqType >> 8))
+	{
+		case PP_RMTCTRL_DOORLOCK://æ§åˆ¶è½¦é—¨é”
+		{
+			PP_doorLockCtrl_SetCtrlReq(req,reqType);
+		}
+		break;
+		case PP_RMTCTRL_PNRSUNROOF://æ§åˆ¶å…¨æ™¯å¤©çª—
+		{
+			PP_sunroofctrl_SetCtrlReq(req,reqType);
+			log_i(LOG_HOZON, "remote PANORSUNROOF control req");
+		}
+		break;
+		case PP_RMTCTRL_AUTODOOR://æ§åˆ¶è‡ªåŠ¨é—¨
+		{
+			PP_autodoorCtrl_SetCtrlReq(req,reqType);
+			log_i(LOG_HOZON, "remote AUTODOOR control req");
+		}
+		break;
+		case PP_RMTCTRL_RMTSRCHVEHICLE://è¿œç¨‹æœç´¢è½¦è¾†
+		{
+			PP_searchvehicle_SetCtrlReq(req,reqType);
+			log_i(LOG_HOZON, "remote RMTSRCHVEHICLE control req");
+		}
+		break;
+		case PP_RMTCTRL_DETECTCAMERA://é©¾é©¶å‘˜æ£€æµ‹æ‘„åƒå¤´
+		{
+			log_i(LOG_HOZON, "remote DETECTCAMERA control req");
+		}
+		break;
+		case PP_RMTCTRL_DATARECORDER://è¡Œè½¦è®°å½•ä»ª
+		{
+			//PP_doorLockCtrl_StatusResp(reqType);
+			log_i(LOG_HOZON, "remote DATARECORDER control req");
+		}
+		break;
+		case PP_RMTCTRL_AC://ç©ºè°ƒ
+		{
+			//PP_rmtCtrl_StatusResp(1,reqType);
+			log_i(LOG_HOZON, "remote RMTCTRL_AC control req");
+		}
+		break;
+		case PP_RMTCTRL_CHARGE://å……ç”µ
+		{
+			//PP_rmtCtrl_StatusResp(2,reqType);
+			log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
+		}
+		break;
+		case PP_RMTCTRL_HIGHTENSIONCTRL://é«˜ç”µå‹æ§åˆ¶
 		{
 			PP_startengine_SetCtrlReq(req,reqType);
 			log_i(LOG_HOZON, "remote RMTCTRL_HIGHTENSIONCTRL control req");
 		}
 		break;
-		case PP_RMTCTRL_ENGINECTRL://·¢¶¯»ú¿ØÖÆ
+		case PP_RMTCTRL_ENGINECTRL://å‘åŠ¨æœºæ§åˆ¶
 		{
 			log_i(LOG_HOZON, "remote RMTCTRL_ENGINECTRL control req");
 		}
@@ -505,15 +595,15 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtCtrl_StInformTsp
+*å‡½æ•°åï¼šPP_rmtCtrl_StInformTsp
 
-*ĞÎ  ²Î£º
+*å½¢  å‚ï¼š
 
-*·µ»ØÖµ£º
+*è¿”å›å€¼ï¼š
 
-*Ãè  Êö£º
+*æ  è¿°ï¼š
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 {
@@ -532,7 +622,7 @@ int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 
 	switch(CtrlSt_para->Resptype)
 	{
-		case PP_RMTCTRL_RVCSTATUSRESP://·ÇÔ¤Ô¼
+		case PP_RMTCTRL_RVCSTATUSRESP://éé¢„çº¦
 		{
 			/*body*/
 			memcpy(PP_rmtCtrl.pack.DisBody.aID,"110",3);
@@ -549,8 +639,8 @@ int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.rvcReqType = CtrlSt_para->reqType;
 			App_rmtCtrl.CtrlResp.rvcReqStatus = CtrlSt_para->rvcReqStatus;
 			App_rmtCtrl.CtrlResp.rvcFailureType = CtrlSt_para->rvcFailureType;
-			App_rmtCtrl.CtrlResp.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps×´Ì¬ 0-ÎŞĞ§£»1-ÓĞĞ§;
-			App_rmtCtrl.CtrlResp.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gpsÊ±¼ä´Á:ÏµÍ³Ê±¼ä(Í¨¹ıgpsĞ£Ê±)
+			App_rmtCtrl.CtrlResp.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gpsçŠ¶æ€ 0-æ— æ•ˆï¼›1-æœ‰æ•ˆ;
+			App_rmtCtrl.CtrlResp.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gpsæ—¶é—´æˆ³:ç³»ç»Ÿæ—¶é—´(é€šè¿‡gpsæ ¡æ—¶)
 
 			PrvtProtCfg_gpsData(&gpsDt);
 
@@ -558,20 +648,20 @@ int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			{
 				if(gpsDt.is_north)
 				{
-					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000);//Î³¶È x 1000000,µ±GPSĞÅºÅÎŞĞ§Ê±£¬ÖµÎª0
+					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000);//çº¬åº¦ x 1000000,å½“GPSä¿¡å·æ— æ•ˆæ—¶ï¼Œå€¼ä¸º0
 				}
 				else
 				{
-					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//Î³¶È x 1000000,µ±GPSĞÅºÅÎŞĞ§Ê±£¬ÖµÎª0
+					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//çº¬åº¦ x 1000000,å½“GPSä¿¡å·æ— æ•ˆæ—¶ï¼Œå€¼ä¸º0
 				}
 
 				if(gpsDt.is_east)
 				{
-					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000);//¾­¶È x 1000000,µ±GPSĞÅºÅÎŞĞ§Ê±£¬ÖµÎª0
+					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000);//ç»åº¦ x 1000000,å½“GPSä¿¡å·æ— æ•ˆæ—¶ï¼Œå€¼ä¸º0
 				}
 				else
 				{
-					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//¾­¶È x 1000000,µ±GPSĞÅºÅÎŞĞ§Ê±£¬ÖµÎª0
+					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//ç»åº¦ x 1000000,å½“GPSä¿¡å·æ— æ•ˆæ—¶ï¼Œå€¼ä¸º0
 				}
 				log_i(LOG_HOZON, "PP_appData.latitude = %lf",App_rmtCtrl.CtrlResp.gpsPos.latitude);
 				log_i(LOG_HOZON, "PP_appData.longitude = %lf",App_rmtCtrl.CtrlResp.gpsPos.longitude);
@@ -581,38 +671,45 @@ int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 				App_rmtCtrl.CtrlResp.gpsPos.latitude  = 0;
 				App_rmtCtrl.CtrlResp.gpsPos.longitude = 0;
 			}
-			App_rmtCtrl.CtrlResp.gpsPos.altitude = (long)(gpsDt.height);//¸ß¶È£¨m£©
+			App_rmtCtrl.CtrlResp.gpsPos.altitude = (long)(gpsDt.height);//é«˜åº¦ï¼ˆmï¼‰
 			if(App_rmtCtrl.CtrlResp.gpsPos.altitude > 10000)
 			{
 				App_rmtCtrl.CtrlResp.gpsPos.altitude = 10000;
 			}
-			App_rmtCtrl.CtrlResp.gpsPos.heading = (long)(gpsDt.direction);//³µÍ··½Ïò½Ç¶È£¬0ÎªÕı±±·½Ïò
-			App_rmtCtrl.CtrlResp.gpsPos.gpsSpeed = (long)(gpsDt.kms*10);//ËÙ¶È x 10£¬µ¥Î»km/h
-			App_rmtCtrl.CtrlResp.gpsPos.hdop = (long)(gpsDt.hdop*10);//Ë®Æ½¾«¶ÈÒò×Ó x 10
+			App_rmtCtrl.CtrlResp.gpsPos.heading = (long)(gpsDt.direction);//è½¦å¤´æ–¹å‘è§’åº¦ï¼Œ0ä¸ºæ­£åŒ—æ–¹å‘
+			App_rmtCtrl.CtrlResp.gpsPos.gpsSpeed = (long)(gpsDt.kms*10);//é€Ÿåº¦ x 10ï¼Œå•ä½km/h
+			App_rmtCtrl.CtrlResp.gpsPos.hdop = (long)(gpsDt.hdop*10);//æ°´å¹³ç²¾åº¦å› å­ x 10
 			if(App_rmtCtrl.CtrlResp.gpsPos.hdop > 1000)
 			{
 				App_rmtCtrl.CtrlResp.gpsPos.hdop = 1000;
 			}
 
 			App_rmtCtrl.CtrlResp.basicSt.driverDoor = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.driverLock = 1;
+			App_rmtCtrl.CtrlResp.basicSt.driverLock = PP_rmtCtrl_cfg_doorlockSt();
 			App_rmtCtrl.CtrlResp.basicSt.passengerDoor = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.passengerLock = 1;
+			App_rmtCtrl.CtrlResp.basicSt.passengerLock = PP_rmtCtrl_cfg_doorlockSt();
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftDoor = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearLeftLock = 1;
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftLock = PP_rmtCtrl_cfg_doorlockSt();
 			App_rmtCtrl.CtrlResp.basicSt.rearRightDoor = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearRightLock = 1;
-			App_rmtCtrl.CtrlResp.basicSt.bootStatus = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.bootStatusLock = 1;
-			App_rmtCtrl.CtrlResp.basicSt.driverWindow = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.passengerWindow = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearLeftWindow = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearRightWinow = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.sunroofStatus = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.engineStatus = 1;
-			App_rmtCtrl.CtrlResp.basicSt.accStatus = 1;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightLock = PP_rmtCtrl_cfg_doorlockSt();
+			App_rmtCtrl.CtrlResp.basicSt.bootStatus = gb_data_reardoorSt()	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.bootStatusLock = gb_data_reardoorlockSt();
+			App_rmtCtrl.CtrlResp.basicSt.driverWindow = 0	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.passengerWindow = 0	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftWindow = 0	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightWinow = 0 /* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.sunroofStatus = PP_rmtCtrl_cfg_sunroofSt()	/* OPTIONAL */;
+			if(PP_rmtCtrl_cfg_RmtStartSt() ==0)
+			{
+				App_rmtCtrl.CtrlResp.basicSt.engineStatus = 0;
+			}
+			else
+			{
+				App_rmtCtrl.CtrlResp.basicSt.engineStatus = 1;
+			}
+			App_rmtCtrl.CtrlResp.basicSt.accStatus = PP_rmtCtrl_cfg_ACOnOffSt();
 			App_rmtCtrl.CtrlResp.basicSt.accTemp = 18	/* OPTIONAL */;//18-36
-			App_rmtCtrl.CtrlResp.basicSt.accMode = 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.accMode = gb_data_ACMode()	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.accBlowVolume	= 1/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.innerTemp = 1;
 			App_rmtCtrl.CtrlResp.basicSt.outTemp = 1;
@@ -661,14 +758,14 @@ int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.airCleanerSt	= 1/* OPTIONAL */;
 
 			if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_RESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
-											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//Êı¾İ±àÂë´ò°üÊÇ·ñÍê³É
+											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//æ•°æ®ç¼–ç æ‰“åŒ…æ˜¯å¦å®Œæˆ
 			{
 				log_e(LOG_HOZON, "uper error");
 				return -1;
 			}
 		}
 		break;
-		case PP_RMTCTRL_RVCBOOKINGRESP://Ô¤Ô¼
+		case PP_RMTCTRL_RVCBOOKINGRESP://é¢„çº¦
 		{
 			/*body*/
 			memcpy(PP_rmtCtrl.pack.DisBody.aID,"110",3);
@@ -686,14 +783,14 @@ int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlbookingResp.oprTime = PrvtPro_getTimestamp();
 
 			if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_BOOKINGRESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
-											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//Êı¾İ±àÂë´ò°üÊÇ·ñÍê³É
+											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//æ•°æ®ç¼–ç æ‰“åŒ…æ˜¯å¦å®Œæˆ
 			{
 				log_e(LOG_HOZON, "uper error");
 				return -1;
 			}
 		}
 		break;
-		case PP_RMTCTRL_HUBOOKINGRESP://HU Ô¤Ô¼
+		case PP_RMTCTRL_HUBOOKINGRESP://HU é¢„çº¦
 		{
 			/*body*/
 			memcpy(PP_rmtCtrl.pack.DisBody.aID,"110",3);
@@ -716,7 +813,7 @@ int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlHUbookingResp.bookingId = CtrlSt_para->bookingId;
 
 			if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_HUBOOKINGRESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
-											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//Êı¾İ±àÂë´ò°üÊÇ·ñÍê³É
+											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//æ•°æ®ç¼–ç æ‰“åŒ…æ˜¯å¦å®Œæˆ
 			{
 				log_e(LOG_HOZON, "uper error");
 				return -1;
@@ -743,15 +840,15 @@ int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtCtrl_send_cb
+*å‡½æ•°åï¼šPP_rmtCtrl_send_cb
 
-*ĞÎ  ²Î£º
+*å½¢  å‚ï¼š
 
-*·µ»ØÖµ£º
+*è¿”å›å€¼ï¼š
 
-*Ãè  Êö£º
+*æ  è¿°ï¼š
 
-*±¸  ×¢£º
+*å¤‡  æ³¨ï¼š
 ******************************************************/
 static void PP_rmtCtrl_send_cb(void * para)
 {

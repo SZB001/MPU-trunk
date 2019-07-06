@@ -21,7 +21,8 @@ description： macro definitions
 #define PP_DIAG_WAITTIME    2500//等待HU响应时间
 #define PP_DIAG_MAX_REPORT  80//一次最多上报的故障码数
 
-#define PP_ACTIVEDIAG_WAITTIME    5000//5s
+#define PP_DIAGACTIVEUPDATA_WAITTIME    5000//5s
+#define PP_DIAGQUERY_WAITTIME    5000//5s
 
 /***********宏函数***********/
 
@@ -44,7 +45,9 @@ typedef enum
 typedef enum
 {
 	PP_DIAGRESP_IDLE = 0,//
-	PP_DIAGRESP_ONGOING,//
+	PP_DIAGRESP_QUERYFAILREQ,//请求查询故障
+	PP_DIAGRESP_QUERYWAIT,//等待查询完成应答
+	PP_DIAGRESP_QUERYUPLOAD,//查询上报
 	PP_DIAGRESP_END
 } PP_RMTDIAG_DIAGRESP_ST;
 
@@ -75,6 +78,11 @@ typedef enum
 	PP_ACTIVEDIAG_DIAGONGOING,//
 	PP_ACTIVEDIAG_END
 } PP_RMTDIAG_ACTIVEDIAG_ST;
+
+typedef enum
+{
+	PP_RMTDIAG_ERROR_NONE = 0,//
+}PP_RMTDIAG_QUERYWRONGTYPE;
 
 /*****struct definitions*****/
 typedef struct
@@ -107,6 +115,8 @@ typedef struct
 	uint8_t  logLevel;
 	uint32_t startTime;
 	uint16_t durationTime;
+
+	uint8_t	 faultquerySt;
 }PrvtProt_rmtDiagSt_t; /*结构体*/
 
 typedef struct

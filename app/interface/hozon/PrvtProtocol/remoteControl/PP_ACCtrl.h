@@ -1,60 +1,39 @@
-/******************************************************
-文件名：PP_ACCtrl.h
 
-描述：	车门锁控制
-
-Data			  Vasion			author
-2019/05/18		   V1.0			    liujian
-*******************************************************/
 #ifndef		_PP_AC_CTRL_H
 #define		_PP_AC_CTRL_H
-/*******************************************************
-description： include the header file
-*******************************************************/
-
-/*******************************************************
-description： macro definitions
-*******************************************************/
-/**********宏开关定义*********/
-
-/**********宏常量定义*********/
 
 
-/***********宏函数***********/
+#define PP_ACCTRL_IDLE   		0
+#define PP_ACCTRL_REQSTART  	1
+#define PP_ACCTRL_RESPWAIT   	2
+#define PP_ACCTRL_END    		3
 
-/*******************************************************
-description： struct definitions
-*******************************************************/
-
-/*******************************************************
-description： typedef definitions
-*******************************************************/
 /******enum definitions******/
 typedef struct
 {
 	uint8_t req;
 	long reqType;
 	long rvcReqCode;
-	uint8_t bookingSt;//是否预约
-	uint8_t executSt;//执行状态
+	uint8_t bookingSt;
+	uint8_t executSt;
 	uint8_t CtrlSt;
 	uint64_t period;
 	uint8_t waitSt;
 	uint64_t waittime;
+	char style;
 }__attribute__((packed))  PP_rmtACCtrlSt_t; /*remote control结构体*/
 
-/******union definitions*****/
 
-/*******************************************************
-description： variable External declaration
-*******************************************************/
-
-/*******************************************************
-description： function External declaration
-*******************************************************/
 extern void PP_ACCtrl_init(void);
 extern int 	PP_ACCtrl_mainfunction(void *task);
-extern void SetPP_ACCtrl_Request(void *appdatarmtCtrl,void *disptrBody);
+
+extern uint8_t PP_ACCtrl_start(void);
+extern uint8_t PP_ACCtrl_end(void);
+extern void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
+extern void ClearPP_ACCtrl_Request(void);
 extern void PP_ACCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
+
+
+
 
 #endif 

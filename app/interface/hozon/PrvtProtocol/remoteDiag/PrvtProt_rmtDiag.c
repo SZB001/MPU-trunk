@@ -42,6 +42,7 @@ description锛� include the header file
 #include "../../../support/protocol.h"
 #include "cfg_api.h"
 #include "gb32960_api.h"
+#include "hozon_PP_api.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
@@ -80,6 +81,8 @@ static PrvtProt_pack_t 			PP_rmtDiag_Pack;
 static PrvtProt_rmtDiag_t		PP_rmtDiag;
 static PP_App_rmtDiag_t 		AppData_rmtDiag;
 
+static PP_rmtDiag_Fault_t		PP_rmtDiag_Fault;
+
 static PrvtProt_TxInform_t 		diag_TxInform[PP_RMTDIAG_MAX_RESP];
 static PP_rmtDiag_datetime_t 	rmtDiag_datetime;
 static PP_rmtDiag_weekmask_t rmtDiag_weekmask[7] =
@@ -107,7 +110,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task);
 static int PP_rmtDiag_do_checkrmtImageReq(PrvtProt_task_t *task);
 static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task);
 
-static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
+static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag,PP_rmtDiag_Fault_t *rmtDiag_Fault);
 static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
 static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task);
 //static int PP_remotImageAcquisitionReq(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
@@ -132,6 +135,8 @@ void PP_rmtDiag_init(void)
 	unsigned int cfglen;
 	memset(&PP_rmtDiag,0 , sizeof(PrvtProt_rmtDiag_t));
 	memset(&AppData_rmtDiag,0 , sizeof(PP_App_rmtDiag_t));
+	memset(&PP_rmtDiag_Fault,0 , sizeof(PP_rmtDiag_Fault_t));
+
 	PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
 	PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
 	PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
@@ -356,6 +361,7 @@ static int PP_rmtDiag_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 {
+	int ret = 0;
 	switch(PP_rmtDiag.state.diagrespSt)
 	{
 		case PP_DIAGRESP_IDLE:
@@ -363,14 +369,44 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 			if(1 == PP_rmtDiag.state.diagReq)//杩滅▼璇婃柇璇锋眰
 			{
 				log_i(LOG_HOZON, "start remote diag\n");
+				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYFAILREQ;
 				PP_rmtDiag.state.diagReq = 0;
-				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_ONGOING;
 			}
 		}
 		break;
-		case PP_DIAGRESP_ONGOING:
+		case PP_DIAGRESP_QUERYFAILREQ:
 		{
-			if(0 == PP_rmtDiag_DiagResponse(task,&PP_rmtDiag))
+			//查询请求
+			PP_rmtDiag.state.faultquerySt = 0;
+			memset(&PP_rmtDiag_Fault,0 , sizeof(PP_rmtDiag_Fault_t));
+			PP_rmtDiag.state.waittime = tm_get_time();
+			PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYWAIT;
+		}
+		break;
+		case PP_DIAGRESP_QUERYWAIT:
+		{
+			if((tm_get_time() - PP_rmtDiag.state.waittime) <= PP_DIAGQUERY_WAITTIME)
+			{
+				if(1 == PP_rmtDiag.state.faultquerySt)//查询完成
+				{
+					//读取故障码
+					PP_rmtDiag.state.result = 1;
+					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
+					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
+				}
+			}
+			else//超时
+			{
+				PP_rmtDiag.state.result = 0;
+				PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
+				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
+			}
+		}
+		break;
+		case PP_DIAGRESP_QUERYUPLOAD:
+		{
+			ret = PP_rmtDiag_DiagResponse(task,&PP_rmtDiag,&PP_rmtDiag_Fault);
+			if(ret >= 0)
 			{
 				memset(&diag_TxInform[PP_RMTDIAG_RESP_REQ],0,sizeof(PrvtProt_TxInform_t));
 				diag_TxInform[PP_RMTDIAG_RESP_REQ].aid = PP_AID_DIAG;
@@ -380,8 +416,16 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 				SP_data_write(PP_rmtDiag_Pack.Header.sign, \
 						PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&diag_TxInform[PP_RMTDIAG_RESP_REQ]);
 				protocol_dump(LOG_HOZON, "diag_req_response", PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen,1);
+
+				if(1 == ret)//上报完成
+				{
+					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_END;
+				}
 			}
-			PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_END;
+			else
+			{
+				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_END;
+			}
 		}
 		break;
 		case PP_DIAGRESP_END:
@@ -484,7 +528,7 @@ static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task)
 				appointchargeSt.level = PP_rmtDiag.state.logLevel;
 				appointchargeSt.starttime = PP_rmtDiag.state.startTime;
 				appointchargeSt.durationtime = PP_rmtDiag.state.durationTime;
-				//tbox_ivi_set_tsplogfile_InformHU(&appointchargeSt);
+				tbox_ivi_set_tsplogfile_InformHU(&appointchargeSt);
 			}
 			else
 			{}
@@ -553,7 +597,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 		break;
 		case PP_ACTIVEDIAG_DIAGONGOING:
 		{
-			if((tm_get_time() - PP_rmtDiag.state.activeDiagdelaytime) >= PP_ACTIVEDIAG_WAITTIME)//延时5s
+			if((tm_get_time() - PP_rmtDiag.state.activeDiagdelaytime) >= PP_DIAGACTIVEUPDATA_WAITTIME)//延时5s
 			{
 				if(gb_data_vehicleSpeed() <= 50)//判断车速<=5km/h,满足诊断条件
 				{
@@ -608,10 +652,12 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 
 *澶�  娉細
 ******************************************************/
-static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag)
+static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag,PP_rmtDiag_Fault_t *rmtDiag_Fault)
 {
 	int msgdatalen;
 	int i;
+	int ret = 0;
+	static uint8_t faultUpdataNum = 0;
 
 	memset(&PP_rmtDiag_Pack,0 , sizeof(PrvtProt_pack_t));
 	/* header */
@@ -636,42 +682,34 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 
 	memset(&AppData_rmtDiag.DiagnosticResp,0,sizeof(PP_DiagnosticResp_t));
 	/*appdata*/
-	switch(rmtDiag->state.diagType)
+
+	AppData_rmtDiag.DiagnosticResp.diagType = rmtDiag->state.diagType;
+	AppData_rmtDiag.DiagnosticResp.result = rmtDiag->state.result;
+	AppData_rmtDiag.DiagnosticResp.failureType = rmtDiag->state.failureType;
+	if((1 == AppData_rmtDiag.DiagnosticResp.result) && (rmtDiag_Fault->failNum > 0))
 	{
-		case PP_DIAG_VCU:
+		for(i = 0;i < PP_DIAG_MAX_REPORT;i++)
 		{
-			log_i(LOG_HOZON, "diag tbox\n");
-			AppData_rmtDiag.DiagnosticResp.diagType = rmtDiag->state.diagType;
-			AppData_rmtDiag.DiagnosticResp.result = rmtDiag->state.result;
-			AppData_rmtDiag.DiagnosticResp.failureType = rmtDiag->state.failureType;
-			for(i =0;i < PP_DIAG_MAX_REPORT;i++)
+			memcpy(AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCode,rmtDiag_Fault->faultcode[faultUpdataNum].diagcode,5);
+			AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCodelen = 5;
+			AppData_rmtDiag.DiagnosticResp.diagCode[i].faultCodeType  = rmtDiag_Fault->faultcode[faultUpdataNum].faultCodeType;
+			AppData_rmtDiag.DiagnosticResp.diagCode[i].lowByte = rmtDiag_Fault->faultcode[faultUpdataNum].lowByte;
+			AppData_rmtDiag.DiagnosticResp.diagCode[i].diagTime = rmtDiag_Fault->faultcode[faultUpdataNum].diagTime;
+			AppData_rmtDiag.DiagnosticResp.diagcodenum++;
+			faultUpdataNum++;
+
+			if(faultUpdataNum == rmtDiag_Fault->failNum)
 			{
-				memcpy(AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCode,"12345",5);
-				AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCodelen = 5;
-				AppData_rmtDiag.DiagnosticResp.diagCode[i].faultCodeType  = 0;
-				AppData_rmtDiag.DiagnosticResp.diagCode[i].lowByte = 0;
-				AppData_rmtDiag.DiagnosticResp.diagCode[i].diagTime = PrvtPro_getTimestamp();
-				AppData_rmtDiag.DiagnosticResp.diagcodenum++;
+				ret = 1;
+				break;
 			}
 		}
-		break;
-		case PP_DIAG_BMS:
-		{
-
-		}
-		break;
-		case PP_DIAG_MCUp:
-		{
-
-		}
-		break;
-		default:
-		{
-			AppData_rmtDiag.DiagnosticResp.diagType = rmtDiag->state.diagType;
-			AppData_rmtDiag.DiagnosticResp.result = 0;
-			AppData_rmtDiag.DiagnosticResp.diagcodenum = 0;
-		}
-		break;
+	}
+	else
+	{
+		ret = 1;
+		faultUpdataNum = 0;
+		AppData_rmtDiag.DiagnosticResp.diagcodenum = 0;
 	}
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_RESP,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
@@ -684,7 +722,7 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 	PP_rmtDiag_Pack.totallen = 18 + msgdatalen;
 	PP_rmtDiag_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
 
-	return 0;
+	return ret;
 }
 
 /******************************************************
@@ -833,4 +871,18 @@ void PP_diag_SetdiagReq(unsigned char diagType)
 	}
 }
 
+/******************************************************
+*鍑芥暟鍚嶏細PP_rmtDiag_queryInform_cb
 
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*鎻�  杩帮細
+
+*澶�  娉細
+******************************************************/
+void PP_rmtDiag_queryInform_cb(void)
+{
+	PP_rmtDiag.state.faultquerySt = 1;
+}

@@ -1,14 +1,4 @@
-/******************************************************
-鏂囦欢鍚嶏細	PP_StartForbid.c
 
-鎻忚堪锛�	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級	
-Data			Vasion			author
-2018/1/10		V1.0			liujian
-*******************************************************/
-
-/*******************************************************
-description锛� include the header file
-*******************************************************/
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -47,6 +37,7 @@ description锛� include the header file
 #include "PP_canSend.h"
 #include "PPrmtCtrl_cfg.h"
 #include "../PrvtProt_SigParse.h"
+#include "PPrmtCtrl_cfg.h"
 
 #include "PP_StartForbid.h"
 
@@ -67,8 +58,6 @@ static int start_forbid_stage = PP_STARTFORBID_IDLE;
 static unsigned long long PP_Respwaittime = 0;
 static int startforbid_success_flag = 0;
 
-
-
 void PP_startforbid_init(void)
 {
 	memset(&PP_rmtstartforbid,0,sizeof(PrvtProt_rmtstartforbid_t));
@@ -81,9 +70,8 @@ void PP_startforbid_init(void)
 	PP_rmtstartforbid.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
 	PP_rmtstartforbid.pack.DisBody.appDataProVer = 256;
 	PP_rmtstartforbid.pack.DisBody.testFlag = 1;
-
+	PP_rmtstartforbid.state.req = 0;
 }
-
 
 int PP_startforbid_mainfunction(void *task)
 {
@@ -92,43 +80,46 @@ int PP_startforbid_mainfunction(void *task)
 	{
 		case PP_STARTFORBID_IDLE:
 		{
-			if((PP_rmtstartforbid.state.req == 1) &&(gb_data_vehicleSOC() > 15))  //鍒ゆ柇璇锋眰鏄笉鏄�
+			if(PP_rmtstartforbid.state.req == 1)
 			{
-				PP_rmtstartforbid.state.req = 0;
-				startforbid_success_flag = 0;
-				start_forbid_stage = PP_STARTFORBID_REQSTART;
-				if(PP_rmtstartforbid.state.style == RMTCTRL_TSP)//tsp
+				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{
-					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-					rmtCtrl_Stpara.rvcReqStatus = 1;  //寮�濮嬫墽琛�
-					rmtCtrl_Stpara.rvcFailureType = 0;
-					rmtCtrl_Stpara.reqType =PP_rmtstartforbid.state.reqType;
-					rmtCtrl_Stpara.eventid = PP_rmtstartforbid.pack.DisBody.eventId;
-					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-					res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
-				}
-				else//钃濈墮
-				{
+					PP_rmtstartforbid.state.req = 0;
+					startforbid_success_flag = 0;
+					start_forbid_stage = PP_STARTFORBID_REQSTART;
+					if(PP_rmtstartforbid.state.style == RMTCTRL_TSP)//tsp
+					{
+						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+						rmtCtrl_Stpara.rvcReqStatus = 1;  
+						rmtCtrl_Stpara.rvcFailureType = 0;
+						rmtCtrl_Stpara.reqType =PP_rmtstartforbid.state.reqType;
+						rmtCtrl_Stpara.eventid = PP_rmtstartforbid.pack.DisBody.eventId;
+						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+						res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+					}
+					else
+					{
 
+					}
 				}
-			}
-			else
-			{
-				PP_rmtstartforbid.state.req = 0;
-				startforbid_success_flag = 1;
-				start_forbid_stage = PP_STARTFORBID_END;
+				else
+				{
+					PP_rmtstartforbid.state.req = 0;
+					startforbid_success_flag = 0;
+					start_forbid_stage = PP_STARTFORBID_END;
+				}
 			}
 		}
 		break;
 		case PP_STARTFORBID_REQSTART:
 		{
-			if(PP_rmtstartforbid.state.reqType == 1) //绂佹鍚姩
+			if(PP_rmtstartforbid.state.reqType == 1) 
 			{
-				PP_canSend_setbit(CAN_ID_440,31,2,1,NULL);  
+				//PP_canSend_setbit(CAN_ID_440,31,2,1,NULL);  
 			}
-			else if(PP_rmtstartforbid.state.reqType == 2) //鍙栨秷绂佹鍚姩
+			else if(PP_rmtstartforbid.state.reqType == 2) 
 			{
-				PP_canSend_setbit(CAN_ID_440,31,2,2,NULL); 
+				//PP_canSend_setbit(CAN_ID_440,31,2,2,NULL); 
 			}
 			else
 			{
@@ -137,40 +128,40 @@ int PP_startforbid_mainfunction(void *task)
 			PP_Respwaittime = tm_get_time();
 		}
 		break;
-		case PP_STARTFORBID_RESPWAIT://鎵ц绛夊緟杞︽帶鍝嶅簲
+		case PP_STARTFORBID_RESPWAIT:
 		{
-			if(PP_rmtstartforbid.state.reqType == 1) //绂佹鍚姩缁撴灉
+			if(PP_rmtstartforbid.state.reqType == 1) 
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
 					if(gb_data_doorlockSt() == 0) 
 					{
-						PP_canSend_resetbit(CAN_ID_440,31,2);
+						//PP_canSend_resetbit(CAN_ID_440,31,2);
 						startforbid_success_flag = 1;
 						start_forbid_stage = PP_STARTFORBID_END;
 					}
 				}
-				else//鍝嶅簲瓒呮椂
+				else
 				{
-					PP_canSend_resetbit(CAN_ID_440,31,2);
+					//PP_canSend_resetbit(CAN_ID_440,31,2);
 					startforbid_success_flag = 0;
 					start_forbid_stage = PP_STARTFORBID_END;
 				}
 			}
-			else if(PP_rmtstartforbid.state.reqType == 2) //鍙栨秷绂佹鍚姩缁撴灉
+			else if(PP_rmtstartforbid.state.reqType == 2)
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(gb_data_doorlockSt() == 1) //闂ㄩ攣鐘舵�佷负0锛岃В閿佺▼鎴愬姛
+					if(gb_data_doorlockSt() == 1) 
 					{
-						PP_canSend_resetbit(CAN_ID_440,31,2);
+						//PP_canSend_resetbit(CAN_ID_440,31,2);
 						startforbid_success_flag = 1;
 						start_forbid_stage = PP_STARTFORBID_END;
 					}
 				}
-				else//鍝嶅簲瓒呮椂
+				else
 				{
-					PP_canSend_resetbit(CAN_ID_440,31,2);
+					//PP_canSend_resetbit(CAN_ID_440,31,2);
 					startforbid_success_flag = 0;
 					start_forbid_stage = PP_STARTFORBID_END;
 				}
@@ -192,18 +183,18 @@ int PP_startforbid_mainfunction(void *task)
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				if(1 == startforbid_success_flag)
 				{
-					rmtCtrl_Stpara.rvcReqStatus = 2;  //鎵ц瀹屾垚
+					rmtCtrl_Stpara.rvcReqStatus = 2;  
 					rmtCtrl_Stpara.rvcFailureType = 0;
 				}
 				else
 				{
-					rmtCtrl_Stpara.rvcReqStatus = 3;  //鎵ц澶辫触
+					rmtCtrl_Stpara.rvcReqStatus = 3;  
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
 				start_forbid_stage = PP_STARTFORBID_IDLE;
 			}
-			else//钃濈墮
+			else
 			{
 
 			}
@@ -232,14 +223,14 @@ uint8_t PP_startforbid_start(void)
 
 uint8_t PP_startforbid_end(void)
 {
-	if((start_forbid_stage = PP_STARTFORBID_IDLE) && \
+	if((start_forbid_stage == PP_STARTFORBID_IDLE) && \
 			(PP_rmtstartforbid.state.req == 0))
 	{
-		return 1;
+		return 0;
 	}
 	else
-	{
-		return 0;
+	{	
+		return 1;
 	}
 }
 

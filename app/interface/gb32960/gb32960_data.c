@@ -4312,3 +4312,57 @@ uint8_t gb_data_chargeSt(void)
 	}
 	return st;
 }
+
+/*
+ 	 尾门锁状态
+*/
+uint8_t gb_data_reardoorlockSt(void)
+{
+	uint8_t st = 0;
+	if(gb_inf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//后备箱门锁
+	{
+		if(dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])->value)
+		{
+			st = 0;//上锁
+		}
+		else
+		{
+			st = 1;//解锁
+		}
+	}
+
+	return st;
+}
+
+/*
+ 	 空调模式
+*/
+uint8_t gb_data_ACMode(void)
+{
+	uint8_t acmode = 3;//自动
+	int32_t tmp;
+	if(gb_inf->gb_VSExt.info[GB_VS_ACMODE])//空调模式
+	{
+		tmp = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ACMODE])->value;
+		switch(tmp)
+		{
+			case 1:
+			case 5:
+			case 7:
+			{
+				acmode = 1;//制热
+			}
+			break;
+			case 2:
+			case 6:
+			{
+				acmode = 2;//制冷
+			}
+			break;
+			default:
+			break;
+		}
+	}
+
+	return acmode;
+}

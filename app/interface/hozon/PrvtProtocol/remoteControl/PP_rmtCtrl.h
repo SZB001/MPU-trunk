@@ -74,6 +74,19 @@ description： macro definitions
 #define PP_RMTCTRL_BANSTART				0x0900//
 #define PP_RMTCTRL_ALOWSTART			0x0901//
 
+
+//执行状态
+#define PP_RMTCTRL_EXECUTEDWAIT 	0//等待执行
+#define PP_RMTCTRL_EXECUTEDSTART 	1//开始执行
+#define PP_RMTCTRL_EXECUTEDFINISH	2//执 行完成
+#define PP_RMTCTRL_EXECUTEDFAIL		3//执行失 败
+
+
+//指令执行失败类型
+#define PP_RMTCTRL_ACCNOOFF			0x01//
+#define PP_RMTCTRL_BCDMAUTHFAIL		0x01//
+#define PP_RMTCTRL_TIMEOUTFAIL		0x01//
+
 /***********宏函数***********/
 typedef void (*PP_rmtCtrlInitObj)(void);//初始化
 typedef int (*PP_rmtCtrlmainFuncObj)(void* x);//
@@ -91,6 +104,7 @@ typedef enum
 {
 	RMTCTRL_TSP = 1, //tsp
 	RMTCTRL_BLUETOOTH, //蓝牙
+	RMTCTRL_HU,//车机
 	RMTCTRL_TBOX  //TBOX
 }PP_RMTCTRL_CTRLSTYLE;//控制方式
 
@@ -107,13 +121,12 @@ typedef enum
 	RMTCTRL_DOORLOCK = 0,//车门锁
 	RMTCTRL_PANORSUNROOF,//全景天窗
 	RMTCTRL_AUTODOOR,//自动感应门
-	RMTCTRL_RMTSRCHVEHICLE,//
-	RMTCTRL_DETECTCAMERA,
-	RMTCTRL_DATARECORDER,
-	RMTCTRL_AC,
-	RMTCTRL_CHARGE,
-	RMTCTRL_HIGHTENSIONCTRL,
-	RMTCTRL_ENGINECTRL,
+	RMTCTRL_RMTSRCHVEHICLE,//寻车
+	RMTCTRL_HIGHTENSIONCTRL,//高压电
+	RMTCTRL_AC,//空调
+	RMTCTRL_CHARGE,//充电
+	RMTCTRL_ENGINECTRL,//禁止启动
+	RMTCTRL_SEATHEATINGCTRL,//座椅加热
 	RMTCTRL_OBJ_MAX
 }PP_RMTCTRL_OBJ;
 
@@ -313,4 +326,5 @@ extern void PP_rmtCtrl_init(void);
 extern int 	PP_rmtCtrl_mainfunction(void *task);
 extern void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 extern int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para);
+extern void PP_rmtCtrl_BluetoothSetCtrlReq(unsigned char obj, unsigned char cmd);
 #endif 

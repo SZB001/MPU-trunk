@@ -45,9 +45,12 @@ description： include the header file
 #include "PP_rmtCtrl.h"
 #include "../../../gb32960/gb32960.h"
 #include "PP_canSend.h"
+#include "../PrvtProt_SigParse.h"
+#include "PPrmtCtrl_cfg.h"
 #include "PP_autodoorCtrl.h"
 
-
+#define PP_OPENDOOR  0
+#define PP_CLOSEDOOR 1
 
 typedef struct
 {
@@ -65,7 +68,7 @@ static PrvtProt_rmtautodoorCtrl_t PP_rmtautodoorCtrl;
 static int auto_door_stage = PP_AUTODOORCTRL_IDLE;
 static int autodoor_success_flag = 0;
 static unsigned long long PP_Respwaittime = 0;
-
+static int autodoor_type ;
 
 
 void PP_autodoorCtrl_init(void)
@@ -80,6 +83,7 @@ void PP_autodoorCtrl_init(void)
 	PP_rmtautodoorCtrl.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
 	PP_rmtautodoorCtrl.pack.DisBody.appDataProVer = 256;
 	PP_rmtautodoorCtrl.pack.DisBody.testFlag = 1;
+	PP_rmtautodoorCtrl.state.req = 0;
 
 }
 
@@ -89,45 +93,49 @@ int PP_autodoorCtrl_mainfunction(void *task)
 	switch(auto_door_stage)
 	{
 		case PP_AUTODOORCTRL_IDLE:
-		{
-			
-			if((PP_rmtautodoorCtrl.state.req == 1)&&(gb_data_vehicleSOC() > 15))   //判断请求是不是
+		{			
+			if(PP_rmtautodoorCtrl.state.req == 1)  //是否有请求
 			{
-				PP_rmtautodoorCtrl.state.req = 0;
-				autodoor_success_flag = 0;
-				auto_door_stage = PP_AUTODOORCTR_REQSTART;
-				if(PP_rmtautodoorCtrl.state.style == RMTCTRL_TSP)//tsp
-				{
-					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-					rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
-					rmtCtrl_Stpara.rvcFailureType = 0;
-					rmtCtrl_Stpara.reqType =PP_rmtautodoorCtrl.state.reqType;
-					rmtCtrl_Stpara.eventid = PP_rmtautodoorCtrl.pack.DisBody.eventId;
-					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-					res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
-				}
-				else//蓝牙
-				{
+				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+				{   //有请求判断是否满足远控条件
+					PP_rmtautodoorCtrl.state.req = 0;
+					autodoor_success_flag = 0;
+					auto_door_stage = PP_AUTODOORCTR_REQSTART;
+					if(PP_rmtautodoorCtrl.state.style == RMTCTRL_TSP)//tsp
+					{
+						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+						rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
+						rmtCtrl_Stpara.rvcFailureType = 0;
+						rmtCtrl_Stpara.reqType =PP_rmtautodoorCtrl.state.reqType;
+						rmtCtrl_Stpara.eventid = PP_rmtautodoorCtrl.pack.DisBody.eventId;
+						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+						res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+					}
+					else//蓝牙
+					{
 
+					}
 				}
-			}
-			else
-			{
-				PP_rmtautodoorCtrl.state.req = 0;
-				autodoor_success_flag = 0;
-				auto_door_stage = PP_AUTODOORCTR_END;
+				else
+				{
+					PP_rmtautodoorCtrl.state.req = 0;
+					autodoor_success_flag = 0;
+					auto_door_stage = PP_AUTODOORCTR_END;
+				}
 			}
 		}
 		break;
 		case PP_AUTODOORCTR_REQSTART:
 		{
-			if(PP_rmtautodoorCtrl.state.reqType == PP_RMTCTRL_AUTODOOROPEN) //打开尾门
+			if(autodoor_type == PP_OPENDOOR) //打开尾门
 			{
-				PP_canSend_setbit(CAN_ID_440,19,2,1,NULL);  //发打开尾门报文
+				PP_can_send_data(PP_CAN_AUTODOOR,CAN_OPENAUTODOOR,0);
+				
 			}
 			else            //关闭尾门
 			{
-				PP_canSend_setbit(CAN_ID_440,19,2,2,NULL); //发关闭尾门报文
+				PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLOSEAUTODOOR,0);
+				
 			}
 
 			auto_door_stage = PP_AUTODOORCTR_RESPWAIT;
@@ -136,20 +144,20 @@ int PP_autodoorCtrl_mainfunction(void *task)
 		break;
 		case PP_AUTODOORCTR_RESPWAIT://执行等待车控响应
 		{
-			if(PP_rmtautodoorCtrl.state.reqType == PP_RMTCTRL_AUTODOOROPEN) // 等待打开尾门结果
+			if(autodoor_type == PP_OPENDOOR) // 等待打开尾门结果
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(gb_data_reardoorSt() == 2) //尾门状态2，尾门开启成功
+					if(PP_rmtCtrl_cfg_reardoorSt() == 2) //尾门状态2，尾门开启成功
 					{
-						PP_canSend_resetbit(CAN_ID_440,19,2);
+						PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
 						autodoor_success_flag = 1;
 						auto_door_stage = PP_AUTODOORCTR_END;
 					}
 				}
 				else//响应超时
 				{
-					PP_canSend_resetbit(CAN_ID_440,19,2);
+					PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
 					autodoor_success_flag = 0;
 					auto_door_stage = PP_AUTODOORCTR_END;
 				}
@@ -158,16 +166,16 @@ int PP_autodoorCtrl_mainfunction(void *task)
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(gb_data_reardoorSt() == 1) //尾门状态1，尾门关闭成功
+					if(PP_rmtCtrl_cfg_reardoorSt() == 1) //尾门状态1，尾门关闭成功
 					{
-						PP_canSend_resetbit(CAN_ID_440,19,2);
+						PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
 						autodoor_success_flag = 1;
 						auto_door_stage = PP_AUTODOORCTR_END;
 					}
 				}
 				else//响应超时
 				{
-					PP_canSend_resetbit(CAN_ID_440,19,2);
+					PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
 					autodoor_success_flag = 0;
 					auto_door_stage = PP_AUTODOORCTR_END;
 				}
@@ -227,13 +235,13 @@ uint8_t PP_autodoorCtrl_end(void)
 	if((auto_door_stage == PP_AUTODOORCTRL_IDLE) && \
 			(PP_rmtautodoorCtrl.state.req == 0))
 	{
-		return 1;
+		return 0;
 	}
 	else
 	{
-		return 0;
+		log_o(LOG_HOZON,"AUTO");
+		return 1;
 	}
-	return 0;
 }
 
 void SetPP_autodoorCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
@@ -248,6 +256,14 @@ void SetPP_autodoorCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 			log_i(LOG_HOZON, "remote auto door control req");
 			PP_rmtautodoorCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtautodoorCtrl.state.req = 1;
+			if(PP_rmtautodoorCtrl.state.reqType ==PP_RMTCTRL_AUTODOOROPEN)
+			{
+				autodoor_type = PP_OPENDOOR;
+			}
+			else
+			{
+				autodoor_type = PP_CLOSEDOOR;
+			}
 			PP_rmtautodoorCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
 			PP_rmtautodoorCtrl.state.style = RMTCTRL_TSP;
 		}
@@ -265,6 +281,14 @@ void ClearPP_autodoorCtrl_Request(void)
 void PP_autodoorCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtautodoorCtrl.state.reqType = (long)reqType;
+	if(PP_rmtautodoorCtrl.state.reqType ==PP_RMTCTRL_AUTODOOROPEN)
+	{
+		autodoor_type = PP_OPENDOOR;
+	}
+	else
+	{
+		autodoor_type = PP_CLOSEDOOR;
+	}
 	PP_rmtautodoorCtrl.state.req = 1;
 }
 

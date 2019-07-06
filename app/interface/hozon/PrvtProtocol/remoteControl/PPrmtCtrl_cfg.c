@@ -1,47 +1,156 @@
 /******************************************************
-ÎÄ¼şÃû£º	PrvtProt_cfg.c
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_cfg.c
 
-ÃèÊö£º	ÆóÒµË½ÓĞĞ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ğ­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include "init.h"
+
 #include "../PrvtProt_SigParse.h"
+
+
+#include "gb32960_api.h"
 #include "PPrmtCtrl_cfg.h"
 
 
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 
 
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
 /*Static function declaration*/
 
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtCtrl_cfg_AuthStatus
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£ºint
-*Ãè  Êö£º   ·µ»ØÈÏÖ¤×´Ì¬
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCtrl_cfg_AuthStatus
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½int
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½   ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤×´Ì¬
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 unsigned char PP_rmtCtrl_cfg_AuthStatus(void)
 {
 	return PrvtProt_SignParse_autheSt();
+}
+/*
+ 	 è¯»å–è½¦è¾†çŠ¶æ€
+*/
+
+unsigned char PP_rmtCtrl_cfg_vehicleState(void)
+{
+	//return gb_data_vehicleState();
+	return 0;
+}
+
+/*
+ 	 è¯»å–è½¦é—¨é”çŠ¶æ€
+*/
+unsigned char PP_rmtCtrl_cfg_doorlockSt(void)
+{
+	return gb_data_doorlockSt();
+}
+
+
+/*
+ 	 è¯»å–å°¾é—¨çŠ¶æ€
+*/
+unsigned char PP_rmtCtrl_cfg_reardoorSt(void)
+{
+	return gb_data_reardoorSt();
+}
+
+/*
+ 	 è¯»å–ç”µé‡çŠ¶æ€
+*/
+unsigned char PP_rmtCtrl_cfg_vehicleSOC(void)
+{
+	//return gb_data_vehicleSOC();
+	return 20;
+}
+/*
+	å¯»è½¦çŠ¶æ€
+*/
+unsigned char PP_rmtCtrl_cfg_findcarSt(void)
+{
+
+	return PrvtProt_SignParse_findcarSt();
+}
+
+/*
+	å¤©çª—çŠ¶æ€
+*/
+unsigned char PP_rmtCtrl_cfg_sunroofSt(void)
+{
+	unsigned char st;
+	if(PrvtProt_SignParse_sunroofSt() == 2)
+	{
+		st = 0;//å…³é—­
+	}
+	else
+	{
+		st = 1;//å¼€å¯
+	}
+
+	 return st;
+}
+/*
+	è¿œç¨‹å¯åŠ¨çŠ¶æ€
+*/
+unsigned char PP_rmtCtrl_cfg_RmtStartSt(void)
+{
+	return PrvtProt_SignParse_RmtStartSt();
+}
+
+/*
+	ç©ºè°ƒå¯åŠ¨çŠ¶æ€
+*/
+
+unsigned char PP_rmtCtrl_cfg_ACOnOffSt(void)
+{
+	return gb_data_ACOnOffSt();
+
+}
+
+/*
+åº§æ¤…åŠ çƒ­çŠ¶æ€
+*/
+unsigned char PP_rmtCtrl_cfg_HeatingSt(uint8_t dt)
+{
+	if(dt ==0)
+	{
+		return PrvtProt_SignParse_DrivHeatingSt();
+	}
+	else
+	{
+		return PrvtProt_SignParse_PassHeatingSt();
+	}
+}
+
+/*
+ 	 è¯»å–å……ç”µçŠ¶æ€:å¼€å¯/å…³é—­:1--å¼€å¯ï¼›2--å…³é—­
+*/
+unsigned char PP_rmtCtrl_cfg_chargeSt(void)
+{
+	return 1;
 }

@@ -34,7 +34,11 @@ int gps_onoff = 0;
 int network_onoff = 0;
 static unsigned char ivi_msgbuf[1024];
 static ivi_remotediagnos tspdiagnos;
+static ivi_logfile tsplogfile;
+static ivi_chager tspchager;
 static int tspdiagnos_flag = 0;
+static int tsplogfile_flag = 0;
+static int tspchager_flag = 0;
 unsigned char recv_buf[MAX_IVI_NUM][IVI_MSG_SIZE];
 extern int ecall_flag ;  //正在通话的标志
 extern int bcall_flag ;
@@ -293,6 +297,153 @@ void ivi_msg_error_response_send( int fd ,Tbox__Net__Messagetype id,char *error_
     else
     {
         log_i(LOG_IVI, "ivi msg error send response success");
+    }
+
+    return;
+
+}
+
+void ivi_logfile_response_send( int fd)
+{
+
+    int i = 0;
+    int ret = 0;
+    size_t szlen = 0;
+    char send_buf[4096] = {0};
+    unsigned char pro_buf[2048] = {0};
+
+    if( fd < 0 )
+    {
+        log_e(LOG_IVI,"ivi_logfile_response_send fd = %d.",fd);
+        return ;
+    }
+    
+    Tbox__Net__TopMessage TopMsg;
+	Tbox__Net__IhuLogfile logfile;
+	
+    tbox__net__top_message__init( &TopMsg );
+	
+	tbox__net__ihu_logfile__init(&logfile);
+	
+    TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE;
+
+	logfile.vin = "111111111111111";
+	
+	logfile.eventid = tsplogfile.eventid;
+
+	logfile.aid = tsplogfile.aid;
+
+	logfile.mid = tsplogfile.mid;
+
+	logfile.channel = tsplogfile.channel;
+
+	logfile.starttime = tsplogfile.starttime;
+
+	logfile.level = tsplogfile.level;
+
+	logfile.durationtime = tsplogfile.durationtime;
+
+//	logfile.timestamp = 
+
+	TopMsg.ihu_logfile = &logfile;
+	
+    szlen = tbox__net__top_message__get_packed_size( &TopMsg );
+
+    tbox__net__top_message__pack(&TopMsg,pro_buf);
+    
+    memcpy(send_buf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
+
+    send_buf[IVI_PKG_S_MARKER_SIZE] = szlen >> 8;
+    send_buf[IVI_PKG_S_MARKER_SIZE + 1] = szlen;
+
+    for( i = 0; i < szlen; i ++ )
+    {
+        send_buf[ i + IVI_PKG_S_MARKER_SIZE + 2 ] = pro_buf[i];
+    }
+
+    memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
+
+    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
+
+
+    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
+    {
+        log_e(LOG_IVI, "ivi remotediagnos send response failed!!!");
+    }
+    else
+    {
+        log_i(LOG_IVI, "ivi remotediagnos send response success");
+    }
+
+    return;
+
+}
+
+void ivi_chagerappointment_response_send( int fd)
+{
+
+    int i = 0;
+    int ret = 0;
+    size_t szlen = 0;
+    char send_buf[4096] = {0};
+    unsigned char pro_buf[2048] = {0};
+
+    if( fd < 0 )
+    {
+        log_e(LOG_IVI,"ivi_chagerappointment_response_send fd = %d.",fd);
+        return ;
+    }
+    
+    Tbox__Net__TopMessage TopMsg;
+	
+	Tbox__Net__IhuChargeAppoointmentSts chager;
+	
+    tbox__net__top_message__init( &TopMsg );
+	
+	tbox__net__ihu_charge_appoointment_sts__init(&chager);
+	
+    TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS;
+
+	chager.id = tspchager.id;
+
+	chager.hour = tspchager.hour;
+
+	chager.min = tspchager.min;
+
+	chager.targetpower = tspchager.targetpower;
+
+	chager.effectivestate = tspchager.effectivestate;
+
+	chager.effectivestate = tspchager.effectivestate;
+	
+	TopMsg.ihu_charge_appoointmentsts = &chager;
+	
+    szlen = tbox__net__top_message__get_packed_size( &TopMsg );
+
+    tbox__net__top_message__pack(&TopMsg,pro_buf);
+    
+    memcpy(send_buf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
+
+    send_buf[IVI_PKG_S_MARKER_SIZE] = szlen >> 8;
+    send_buf[IVI_PKG_S_MARKER_SIZE + 1] = szlen;
+
+    for( i = 0; i < szlen; i ++ )
+    {
+        send_buf[ i + IVI_PKG_S_MARKER_SIZE + 2 ] = pro_buf[i];
+    }
+
+    memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
+
+    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
+
+
+    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
+    {
+        log_e(LOG_IVI, "ivi remotediagnos send response failed!!!");
+    }
+    else
+    {
+        log_i(LOG_IVI, "ivi remotediagnos send response success");
     }
 
     return;
@@ -913,7 +1064,22 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 			result.result = true;
 			break;
 		}
-#endif       
+#endif     
+		//TBOX回复HU设置预约充电
+		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGEAPPOINTMENTSET:
+		{
+			TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_CHARGEAPPOINTMENTSET_RESULT;
+            result.result = true;
+			break;
+		}
+		//TBOX回复HU开启即时充电
+		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGECTRL:
+		{
+			TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_CHARGECTRL_RESULT;
+            result.result = true;
+			break;
+		}
+		
         default:
         {
 
@@ -1121,10 +1287,43 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 	   		if(TopMsg->msg_result->result == true)
 	   		{
 				log_o(LOG_IVI,"remotediagnos success...");
+				tspdiagnos_flag = 0;
 	   		}
 			break;
 	   }
-         
+	   //tbox收到tsp下发上传日志的消息通知HU，回复
+	   case TBOX__NET__MESSAGETYPE__RESPONSE_IHU_LOGFILE_RESULT:
+	   	{
+			if(TopMsg->msg_result->result == true)
+			{
+				log_o(LOG_IVI,"tsplogfile success......");
+				tsplogfile_flag = 0;
+			}
+			break;
+	   	}
+	   //HU回复TBOX更新充电预约状态
+	   case TBOX__NET__MESSAGETYPE__RESPONSE_IHU_CHARGEAPPOINTMENTSTS_RESULT:
+	   	{
+			if(TopMsg->msg_result->result == true)
+			{
+				log_o(LOG_IVI,"chager appointment updata success......");
+				tspchager_flag = 0;
+			}
+			break;
+	   	}
+	   //HU设置充电预约
+	   case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGEAPPOINTMENTSET:
+	   	{
+
+			ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGEAPPOINTMENTSET);
+			break;
+	   	}
+	   case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGECTRL:
+	   	{
+
+			ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGECTRL);
+			break;
+	   	}
         default:
         {
             log_e(LOG_IVI,"recv ivi unknown message type!!!");
@@ -1182,10 +1381,7 @@ int tbox_ivi_create_tcp_socket(void)
         log_e(LOG_IVI, "Fail to setsockop, terror:%s", strerror(errno));
         return -2;
     }
-
-
     serv_addr_len = sizeof(serv_addr);
-
     if (bind(tcp_fd, (struct sockaddr *)&serv_addr, serv_addr_len) < 0)
     {
         log_e(LOG_IVI, "Fail to bind,error:%s", strerror(errno));
@@ -1198,8 +1394,8 @@ int tbox_ivi_create_tcp_socket(void)
         return -4;
     }
 
-    int flags = fcntl(tcp_fd, F_GETFL, 0);  
-    fcntl(tcp_fd, F_SETFL, flags | O_NONBLOCK);
+//    int flags = fcntl(tcp_fd, F_GETFL, 0);  
+ //   fcntl(tcp_fd, F_SETFL, flags | O_NONBLOCK);
 
     log_o(LOG_IVI, "IVI module create server socket success");
 
@@ -1248,18 +1444,15 @@ void *ivi_main(void)
     TCOM_MSG_HEADER msghdr;
     fd_set read_set;
     static MSG_RX rx_msg[MAX_IVI_NUM];
-	struct timeval timeout;
-
+//	struct timeval timeout;
     short i = 0;
     struct sockaddr_in cli_addr;
     int new_conn_fd = -1;
-
-	timeout.tv_sec = 0;
-	timeout.tv_usec = 10000;  //select函数10ms延时
     prctl(PR_SET_NAME, "IVI");
-
+	
     FD_ZERO(&read_set);
-
+//	timeout.tv_sec = 0;
+//	timeout.tv_usec = 100000;
     memset(&cli_addr, 0, sizeof(cli_addr));
 
     for (i = 0; i < MAX_IVI_NUM; i++)
@@ -1318,10 +1511,10 @@ void *ivi_main(void)
 
             log_i(LOG_IVI, "client_fd[%d]=%d", i, ivi_clients[i].fd);
         }
-
+		
         /* monitor the incoming data */
-        ret = select(max_fd + 1, &read_set, NULL, NULL, &timeout);
-
+        ret = select(max_fd + 1, &read_set, NULL, NULL, NULL);
+		
         /* the file deccriptor is readable */
         if (ret > 0)
         {
@@ -1339,7 +1532,7 @@ void *ivi_main(void)
                 {
                     if( IVI_MSG_GPS_EVENT == msghdr.msgid )
                     {
-
+						
                     }
                 }
                 else if (MPU_MID_MID_PWDG == msghdr.msgid)
@@ -1353,8 +1546,8 @@ void *ivi_main(void)
                 socklen_t len = sizeof(cli_addr);
 
                 new_conn_fd = accept(tcp_fd, (struct sockaddr *)&cli_addr, &len);
-                
-                log_o(LOG_IVI, "new client comes ,fd = %d", new_conn_fd);
+
+                log_o(LOG_IVI, "new client comes ,fd = %d ,error = %s", new_conn_fd,strerror(errno));
 
                 if (new_conn_fd < 0)
                 {
@@ -1436,7 +1629,7 @@ void *ivi_main(void)
         }
         else if (0 == ret)   /* timeout */
         {
-            //continue;   /* continue to monitor the incomging data */
+            continue;   /* continue to monitor the incomging data */
         }
         else
         {
@@ -1448,6 +1641,15 @@ void *ivi_main(void)
             log_e(LOG_IVI, "ivi_main exit, error:%s", strerror(errno));
             break;  /* thread exit abnormally */
         }
+    }
+
+    return NULL;
+}
+
+void *ivi_check(void)
+{
+	while(1)
+	{
 		if( 2 == flt_get_by_id(SOSBTN))
 		{
 			memset(&callrequest,0 ,sizeof(ivi_callrequest));
@@ -1479,12 +1681,18 @@ void *ivi_main(void)
 				tspdiagnos_flag = 0;
 				ivi_remotediagnos_response_send( ivi_clients[0].fd ,1);
 			}
-				
+			if(tsplogfile_flag == 1)
+			{
+				ivi_logfile_response_send( ivi_clients[0].fd);
+			}
+			if(tspchager_flag == 1)
+			{
+				//ivi_chagerappointment_response_send( ivi_clients[0].fd);
+			}
 		}
-	
-    }
+	}
 
-    return NULL;
+
 }
 
 /****************************************************************
@@ -1512,6 +1720,7 @@ int ivi_run(void)
         return ret;
     }
 
+	ret = pthread_create(&ivi_tid, &ta, (void *)ivi_check, NULL);
     return 0;
 }
 void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp)
@@ -1525,4 +1734,26 @@ void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp)
 	tspdiagnos.sizelimit =tsp->sizelimit;
 	tspdiagnos_flag = 1;
 }
+void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp)
+{
+	tsplogfile.aid = tsp->aid;
+	tsplogfile.mid = tsp->mid;
+	tsplogfile.eventid = tsp->eventid;
+	tsplogfile.channel = tsp->channel;
+	tsplogfile.starttime = tsp->starttime;
+	tsplogfile.level = tsp->level;
+	tsplogfile.durationtime = tsp->durationtime;
+	tsplogfile_flag = 1;
+}
+void tbox_ivi_set_tspchager_InformHU(ivi_chager *tsp)
+{
+	tspchager.id = tsp->id;
+	tspchager.hour = tsp->hour;
+	tspchager.min = tsp->min;
+	tspchager.targetpower = tsp->targetpower;
+	tspchager.timestamp = tsp->timestamp;
+	tspchager.effectivestate = tsp->effectivestate;
+	tspchager_flag = 0;
+}
+
 

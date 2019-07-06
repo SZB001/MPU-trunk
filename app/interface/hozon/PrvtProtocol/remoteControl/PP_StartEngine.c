@@ -1,7 +1,7 @@
 /******************************************************
 鏂囦欢鍚嶏細	PP_StartEngine.c
 
-鎻忚堪锛�	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級
+鎻忚堪锛�?	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級	
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
@@ -47,6 +47,7 @@ description锛� include the header file
 #include "PP_canSend.h"
 #include "PPrmtCtrl_cfg.h"
 #include "../PrvtProt_SigParse.h"
+#include "PPrmtCtrl_cfg.h"
 
 #include "PP_StartEngine.h"
 
@@ -62,7 +63,7 @@ typedef struct
 {
 	PP_rmtstartengine_pack_t 	pack;
 	PP_rmtstartengineSt_t		state;
-}__attribute__((packed))  PrvtProt_rmtstartengine_t; /*缁撴瀯浣�*/
+}__attribute__((packed))  PrvtProt_rmtstartengine_t; /*缁撴瀯浣�?*/
 
 static PrvtProt_rmtstartengine_t PP_rmtengineCtrl;
 static int start_engine_stage = PP_STARTENGINE_IDLE;
@@ -93,86 +94,93 @@ int PP_startengine_mainfunction(void *task)
 	{
 		case PP_STARTENGINE_IDLE:
 		{
-			if((PP_rmtengineCtrl.state.req == 1)&&(gb_data_vehicleSOC() > 15))   //鍒ゆ柇璇锋眰鏄笉鏄�
+		
+			if(PP_rmtengineCtrl.state.req == 1)	
 			{
-				PP_rmtengineCtrl.state.req = 0;
-				startengine_success_flag = 0;
-				start_engine_stage = PP_STARTENGINE_REQSTART;
-				if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp
+				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{
-					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-					rmtCtrl_Stpara.rvcReqStatus = 1;  //寮�濮嬫墽琛�
-					rmtCtrl_Stpara.rvcFailureType = 0;
-					rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
-					rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
-					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-					res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
-				}
-				else//钃濈墮
-				{
+					PP_rmtengineCtrl.state.req = 0;
+					startengine_success_flag = 0;
+					start_engine_stage = PP_STARTENGINE_REQSTART;
+					if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp 平台
+					{
+						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+						rmtCtrl_Stpara.rvcReqStatus = 1;            //开始执行
+						rmtCtrl_Stpara.rvcFailureType = 0;     
+						rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
+						rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
+						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+						res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+					}
+					else      //蓝牙
+					{
 
+					}
 				}
-			}
-			else
-			{
-				PP_rmtengineCtrl.state.req = 0;	
-				startengine_success_flag = 0;
-				start_engine_stage = PP_STARTENGINE_END;
+				else
+				{
+					PP_rmtengineCtrl.state.req = 0;	
+					startengine_success_flag = 0;
+					start_engine_stage = PP_STARTENGINE_END;
+				}
 			}
 		}
 		break;
 		case PP_STARTENGINE_REQSTART:
 		{
-			if(PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_POWERON) //涓婇珮鍘嬬數
+			if(PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_POWERON) //发上高压电报文
 			{
-				PP_canSend_setbit(CAN_ID_440,0,1,1,NULL);  //涓婇珮鍘嬬數
+				//PP_canSend_setbit(CAN_ID_440,0,1,1,NULL);  //将bit0置为1
+				PP_can_send_data(PP_CAN_ENGINE,CAN_STARTENGINE,CAN_ENGINEREQ);
 			}
-			else
+			else     //发下高压电报文
 			{
-				if(PrvtProt_SignParse_RmtStartSt() == 2)
+				if(PP_rmtCtrl_cfg_RmtStartSt() == 2)  //判断是否在远程启动模式下
 				{
-					PP_canSend_setbit(CAN_ID_440,1,1,1,NULL); //涓嬮珮鍘嬬數
+					//PP_canSend_setbit(CAN_ID_440,1,1,1,NULL); //将bit1置为0
+					PP_can_send_data(PP_CAN_ENGINE,CAN_CLOSEENGINE,CAN_ENGINEREQ);
 				}	
 			}
 			start_engine_stage = PP_STARTENGINE_RESPWAIT;
 			PP_Respwaittime = tm_get_time();
 		}
 		break;
-		case PP_STARTENGINE_RESPWAIT://鎵ц绛夊緟杞︽帶鍝嶅簲
+		case PP_STARTENGINE_RESPWAIT://等待BDM应答
 		{
-			if(PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_POWERON) //涓婇珮鍘嬬數缁撴灉
+			if(PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_POWERON) //上高压电应答
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(PrvtProt_SignParse_RmtStartSt() == 1) //
+					if(PP_rmtCtrl_cfg_RmtStartSt() == 2)  // 2s后在远程启动状态
 					{
-						PP_canSend_resetbit(CAN_ID_440,0,1);
-						PP_Engine_time = tm_get_time();//鑾峰彇鍙戝姩鏈哄惎鍔ㄦ垚鍔熺殑鏃堕棿
+						PP_can_send_data(PP_CAN_ENGINE,CAN_STARTENGINE,CAN_ENGINECLEAN);
+						//PP_canSend_resetbit(CAN_ID_440,0,1);  //将上高压电报文清零
+						PP_Engine_time = tm_get_time();       //记录上高压电成功的时间
 						startengine_success_flag = 1;
 						start_engine_stage = PP_STARTENGINE_END;
 					}
 				}
-				else//鍝嶅簲瓒呮椂
+				else   //BDM应答超时
 				{
-					PP_canSend_resetbit(CAN_ID_440,0,1);
+					PP_can_send_data(PP_CAN_ENGINE,CAN_STARTENGINE,CAN_ENGINECLEAN);  //将上高压电报文清零
 					startengine_success_flag = 0;
 					start_engine_stage = PP_STARTENGINE_END;
 				}
 			}
-			else//
+			else   //下高压电应答
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000) 
 				{
-					if(PrvtProt_SignParse_RmtStartSt() == 0) //
+					if(PP_rmtCtrl_cfg_RmtStartSt() == 0) 
 					{
-						PP_canSend_resetbit(CAN_ID_440,1,1);
+						PP_can_send_data(PP_CAN_ENGINE,CAN_CLOSEENGINE,CAN_ENGINECLEAN); //将下高压电报文清零
 						startengine_success_flag = 1;
 						start_engine_stage = PP_STARTENGINE_END;
 					}
 				}
-				else//鍝嶅簲瓒呮椂
+				else   //BDM 应答超时
 				{
-					PP_canSend_resetbit(CAN_ID_440,1,1);
+					PP_can_send_data(PP_CAN_ENGINE,CAN_CLOSEENGINE,CAN_ENGINECLEAN);  //将下高压电报文清零
 					startengine_success_flag = 0;
 					start_engine_stage = PP_STARTENGINE_END;
 				}
@@ -183,25 +191,25 @@ int PP_startengine_mainfunction(void *task)
 		{
 			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 			memset(&rmtCtrl_Stpara,0,sizeof(PP_rmtCtrl_Stpara_t));
-			if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp
+			if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp 平台
 			{
 				rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
 				rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				if(1 == startengine_success_flag)
 				{
-					rmtCtrl_Stpara.rvcReqStatus = 2;  //鎵ц瀹屾垚
+					rmtCtrl_Stpara.rvcReqStatus = 2;  //给平台回复执行完成
 					rmtCtrl_Stpara.rvcFailureType = 0;
 				}
 				else
 				{
-					rmtCtrl_Stpara.rvcReqStatus = 3;  //鎵ц澶辫触
+					rmtCtrl_Stpara.rvcReqStatus = 3;   //给平台回复执行完成
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
 				start_engine_stage = PP_STARTENGINE_IDLE;
 			}
-			else//钃濈墮
+			else  //蓝牙
 			{
 
 			}
@@ -232,11 +240,12 @@ uint8_t PP_startengine_end(void)
 	if((start_engine_stage == PP_STARTENGINE_IDLE) && \
 			(PP_rmtengineCtrl.state.req == 0))
 	{
-		return 1;
+		return 0;
 	}
 	else
 	{
-		return 0;
+		log_o(LOG_HOZON,"engine");
+		return 1;
 	}
 }
 void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
@@ -286,8 +295,8 @@ void PP_startengine_SetCtrlReq(unsigned char req,uint16_t reqType)
 
 void PP_rmtCtrl_checkenginetime(void)
 {
-	if(((tm_get_time() - PP_Engine_time) >= 15 * 60 *1000) && \
-			(PrvtProt_SignParse_RmtStartSt() == 2))
+	if((tm_get_time() - PP_Engine_time > 15 * 60 *1000) \
+		&& (PP_rmtCtrl_cfg_RmtStartSt() == 2))
 	{
 		PP_rmtengineCtrl.state.reqType = 0x0801;
 		PP_rmtengineCtrl.state.req = 1;

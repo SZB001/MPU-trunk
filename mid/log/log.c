@@ -46,9 +46,13 @@ log_info_t log_cfg_table[LOG_MAX] =
 	{ LOG_ERROR, "FOTA"     },
     { LOG_ERROR, "FOTONHU"  },
     { LOG_ERROR, "AUTO" 	},
-	{ LOG_ERROR, "PRVT_PROT" 	},
+	{ LOG_ERROR, "HOZON" 	},
 	{ LOG_ERROR, "SOCK_PROXY" 	},
+	{ LOG_ERROR, "PRVT_PROT" 	},
 	{ LOG_ERROR, "IVI"      },
+	{ LOG_ERROR, "CAN_NODE_MISS"      },
+	{ LOG_ERROR, "UPER_ECDC" 	},
+
 };
 
 /*********************************************

@@ -1624,6 +1624,16 @@ int gb_init(INIT_PHASE phase)
             break;
 
         case INIT_PHASE_OUTSIDE:
+
+        	//cfglen = sizeof(dbcpath);
+			//ret |= cfg_get_para(CFG_ITEM_DBC_PATH,dbcpath , &cfglen);
+			//if (NULL == strstr(dbcpath,".dbc"))
+			//{
+			//	memset(dbcpath, 0 ,sizeof(dbcpath));
+			//	log_e(LOG_PDOTA, "dbc file is empty");
+			//	pdota_setdbc(dbcpath);
+			//}
+
             cfglen = sizeof(gb_addr.url);
             ret |= cfg_get_para(CFG_ITEM_GB32960_URL, gb_addr.url, &cfglen);
             cfglen = sizeof(gb_addr.port);

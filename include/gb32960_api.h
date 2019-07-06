@@ -23,4 +23,7 @@ extern uint8_t gb_data_doorlockSt(void);
 extern uint8_t gb_data_reardoorSt(void);
 extern int gb_data_LHTemp(void);
 extern uint8_t gb_data_chargeSt(void);
+extern uint8_t gb_data_reardoorlockSt(void);
+extern uint8_t gb_data_ACMode(void);
+extern uint8_t gb_data_ACOnOffSt(void);
 #endif

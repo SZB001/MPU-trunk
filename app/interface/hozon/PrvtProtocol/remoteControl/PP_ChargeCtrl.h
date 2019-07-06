@@ -18,8 +18,18 @@ description： macro definitions
 /**********宏开关定义*********/
 
 /**********宏常量定义*********/
+#define PP_CHARGECTRL_IDLE   		0
+#define PP_CHARGECTRL_REQSTART  	1
+#define PP_CHARGECTRL_RESPWAIT   	2
+#define PP_CHARGECTRL_END    		3
 
+#define PP_COMAND_STARTCHARGE   	0x700
+#define PP_COMAND_STOPCHARGE  		0x701
+#define PP_COMAND_APPOINTCHARGE   	0x702
+#define PP_COMAND_CANCELAPPOINTCHARGE    	0x703
 
+#define PP_CHARGECTRL_OPEN   		1
+#define PP_CHARGECTRL_CLOSE  		0
 /***********宏函数***********/
 
 /*******************************************************
@@ -33,15 +43,26 @@ description： typedef definitions
 typedef struct
 {
 	uint8_t req;
-	long reqType;
-	long rvcReqCode;
+	uint8_t chargecmd;
 	uint8_t bookingSt;//是否预约
 	uint8_t executSt;//执行状态
 	uint8_t CtrlSt;
+	char 	style;//方式：tsp-1；2-蓝牙；3-HU；4-tbox
 	uint64_t period;
-	uint8_t waitSt;
+	uint8_t  waitSt;
 	uint64_t waittime;
+
+	uint8_t fail;//控制执行失败标志：0--成功；1-失败
+	uint8_t failtype;//失败类型
 }__attribute__((packed))  PP_rmtChargeCtrlSt_t; /*remote control结构体*/
+
+
+typedef struct
+{
+	//tsp
+	long 	reqType;
+	long 	rvcReqCode;
+}__attribute__((packed))  PP_rmtChargeCtrlPara_t; /*结构体*/
 
 /******union definitions*****/
 
@@ -54,9 +75,9 @@ description： function External declaration
 *******************************************************/
 extern void PP_ChargeCtrl_init(void);
 extern int 	PP_ChargeCtrl_mainfunction(void *task);
-extern void SetPP_ChargeCtrl_Request(void *appdatarmtCtrl,void *disptrBody);
+extern void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 extern void ClearPP_ChargeCtrl_Request(void );
 
 extern void PP_ChargeCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
-
+extern unsigned char PP_rmtCtrl_cfg_chargeSt(void);
 #endif 

@@ -1,15 +1,15 @@
-/******************************************************
-ÎÄ¼şÃû£º	PP_doorLockCtrl.c
+ /******************************************************
+æ–‡ä»¶åï¼š	PP_autodoorCtrl.c
 
-ÃèÊö£º	ÆóÒµË½ÓĞĞ­Òé£¨Õã½­ºÏÖÚ£©	
+æè¿°ï¼š	ä¼ä¸šç§æœ‰åè®®ï¼ˆæµ™æ±Ÿåˆä¼—ï¼‰
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¼š include the header file
 *******************************************************/
-#include <stdint.h>
+
 #include <string.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -46,16 +46,20 @@ description£º include the header file
 #include "../../../gb32960/gb32960.h"
 #include "PP_canSend.h"
 #include "PPrmtCtrl_cfg.h"
+#include "../PrvtProt_SigParse.h"
+
 #include "PP_doorLockCtrl.h"
 
 static int doorLock_success_flag = 0;
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
+#define PP_OPENDOOR  0
+#define PP_CLOSEDOOR 1
 typedef struct
 {
 	PrvtProt_pack_Header_t	Header;
@@ -66,31 +70,30 @@ typedef struct
 {
 	PP_rmtdoorCtrl_pack_t 	pack;
 	PP_rmtdoorCtrlSt_t		state;
-}__attribute__((packed))  PrvtProt_rmtdoorCtrl_t; /*½á¹¹Ìå*/
+}__attribute__((packed))  PrvtProt_rmtdoorCtrl_t; 
 
 static PrvtProt_rmtdoorCtrl_t PP_rmtdoorCtrl;
 static int door_lock_stage = PP_DOORLOCKCTRL_IDLE;
 static unsigned long long PP_Respwaittime = 0;
+static int doorctrl_type = 0;
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
 /*Static function declaration*/
 
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
+
 /******************************************************
-*º¯ÊıÃû£ºPP_rmtCtrl_init
+å‡½æ•°åPP_rmtCtrl_init
 
-*ĞÎ  ²Î£ºvoid
+inputï¼švoid
 
-*·µ»ØÖµ£ºvoid
+outputï¼švoid
 
-*Ãè  Êö£º³õÊ¼»¯
-
-*±¸  ×¢£º
 ******************************************************/
 void PP_doorLockCtrl_init(void)
 {
@@ -107,109 +110,136 @@ void PP_doorLockCtrl_init(void)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºPP_doorLockCtrl_mainfunction
+å‡½æ•°å ï¼šPP_doorLockCtrl_mainfunction
 
-*ĞÎ  ²Î£ºvoid
+input  ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+output ï¼švoid
 
-*Ãè  Êö£ºÖ÷ÈÎÎñº¯Êı
-
-*±¸  ×¢£º
 ******************************************************/
+
 int PP_doorLockCtrl_mainfunction(void *task)
 {
 	int res = 0;
 	switch(door_lock_stage)
 	{
 		case PP_DOORLOCKCTRL_IDLE:
-		{
-			if((PP_rmtdoorCtrl.state.req == 1)&&(gb_data_vehicleSOC() > 15))   //ÅĞ¶ÏÇëÇóÊÇ²»ÊÇ
+		{	
+			log_o(LOG_HOZON,"PP_DOORLOCKCTRL_IDLE\n");
+			if(PP_rmtdoorCtrl.state.req == 1)	//é—¨æ§æ˜¯å¦æœ‰è¯·æ±‚
 			{
-				PP_rmtdoorCtrl.state.req = 0;
-				doorLock_success_flag = 0;
-				door_lock_stage = PP_DOORLOCKCTRL_REQSTART;
-				if(PP_rmtdoorCtrl.state.style == RMTCTRL_TSP)//tsp
-				{
-					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-					rmtCtrl_Stpara.rvcReqStatus = 1;  //¿ªÊ¼Ö´ĞĞ
-					rmtCtrl_Stpara.rvcFailureType = 0;
-					rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
-					rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
-					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-					res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+				{	//æœ‰è¯·æ±‚çš„æ—¶å€™åˆ¤æ–­æ˜¯å¦æ»¡è¶³è¿œæ§æ¡ä»¶(ç”µé‡å¤§äº15%å’Œç”µæºè½¬æ€ä½off)
+					PP_rmtdoorCtrl.state.req = 0;
+					doorLock_success_flag = 0;
+					door_lock_stage = PP_DOORLOCKCTRL_REQSTART;
+					if(PP_rmtdoorCtrl.state.style == RMTCTRL_TSP)//tsp å¹³å°
+					{
+						log_o(LOG_HOZON,"Tsp");
+						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+						rmtCtrl_Stpara.rvcReqStatus = 1;         //æ­£åœ¨æ‰§è¡Œ
+						rmtCtrl_Stpara.rvcFailureType = 0;
+						rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
+						rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
+						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+						res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+					}
+					else// è“ç‰™
+					{
+						log_o(LOG_HOZON,"bluetooth platform");
+					}
 				}
-				else//À¶ÑÀ
+				else  //ä¸æ»¡è¶³é—¨æ§æ¡ä»¶
 				{
-
-				}
-			}
-			else
-			{
-				PP_rmtdoorCtrl.state.req = 0;
-				doorLock_success_flag = 0;
-				door_lock_stage = PP_DOORLOCKCTRL_END;
+					log_o(LOG_HOZON," low power or power state on");
+					PP_rmtdoorCtrl.state.req = 0;
+					doorLock_success_flag = 0;
+					door_lock_stage = PP_DOORLOCKCTRL_END;
 				
+				}
 			}
 		}
 		break;
-		case PP_DOORLOCKCTRL_REQSTART:
+		case PP_DOORLOCKCTRL_REQSTART:  //ä¸‹å‘é—¨æ§æŠ¥æ–‡
 		{
-			if(PP_rmtdoorCtrl.state.reqType == 0) //½âËø
+			log_o(LOG_HOZON,"PP_DOORLOCKCTRL_REQSTART\n");
+			if(doorctrl_type == PP_OPENDOOR ) //æ‰“å¼€è½¦é—¨
 			{
-				PP_canSend_setbit(CAN_ID_440,17,2,2,NULL);  //·¢½âËø±¨ÎÄ
+				PP_can_send_data(PP_CAN_DOORLOCK,CAN_OPENDOOR,0);
+				log_o(LOG_HOZON,"unlock");
 			}
-			else
+			else       //é”ä½è½¦é—¨
 			{
-				PP_canSend_setbit(CAN_ID_440,17,2,1,NULL); //·¢ÉÏËø±¨ÎÄ
+				PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLOSEDOOR,0); 
+				log_o(LOG_HOZON,"lock");
 			}
 
 			door_lock_stage = PP_DOORLOCKCTRL_RESPWAIT;
 			PP_Respwaittime = tm_get_time();
 		}
 		break;
-		case PP_DOORLOCKCTRL_RESPWAIT://Ö´ĞĞµÈ´ı³µ¿ØÏìÓ¦
+		case PP_DOORLOCKCTRL_RESPWAIT://Ö´ç­‰å¾…BDMåº”ç­”
 		{
-			if(PP_rmtdoorCtrl.state.reqType == 0) //½âËø
+			//log_o(LOG_HOZON,"PP_DOORLOCKCTRL_RESPWAIT\n");
+			//if(doorctrl_type == PP_OPENDOOR) // æ‰“å¼€è½¦é—¨ç»“æœ
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(gb_data_doorlockSt() == 0) //ÃÅËø×´Ì¬Îª0£¬½âËø³Ì³É¹¦
+					if(doorctrl_type == PP_OPENDOOR) // æ‰“å¼€è½¦é—¨ç»“æœ
 					{
-						PP_canSend_resetbit(CAN_ID_440,17,2);
-						doorLock_success_flag = 1;
-						door_lock_stage = PP_DOORLOCKCTRL_END;
+						if(PP_rmtCtrl_cfg_doorlockSt() == 0) //  æ‰“å¼€è½¦é—¨æˆåŠŸ
+						{
+							log_o(LOG_HOZON,"open door success");
+							PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //æ¸…é™¤å¼€é—¨æ ‡å¿—ä½
+							doorLock_success_flag = 1;
+							door_lock_stage = PP_DOORLOCKCTRL_END;
+						}
+					}
+					else
+					{
+						if(PP_rmtCtrl_cfg_doorlockSt() == 1) //é”é—¨æˆåŠŸ
+						{
+							log_o(LOG_HOZON,"lock door success");
+							PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); ////æ¸…é™¤é”é—¨æ ‡å¿—ä½
+							doorLock_success_flag = 1;
+							door_lock_stage = PP_DOORLOCKCTRL_END;
+						}
 					}
 				}
-				else//ÏìÓ¦³¬Ê±
+				else//BDMè¶…æ—¶
 				{
-					PP_canSend_resetbit(CAN_ID_440,17,2);
+					log_o(LOG_HOZON,"BDM timeout");
+					PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0);
 					doorLock_success_flag = 0;
 					door_lock_stage = PP_DOORLOCKCTRL_END;
 				}
 			}
-			else//ÉÏËø
+#if 0
+			else//é”é—¨
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(gb_data_doorlockSt() == 1) //ÃÅËø×´Ì¬Îª0£¬½âËø³Ì³É¹¦
+					if(PP_rmtCtrl_cfg_doorlockSt() == 1) //é”é—¨æˆåŠŸ
 					{
-						PP_canSend_resetbit(CAN_ID_440,17,2);
+						log_o(LOG_HOZON,"lock door success");
+						PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); ////æ¸…é™¤é”é—¨æ ‡å¿—ä½
 						doorLock_success_flag = 1;
 						door_lock_stage = PP_DOORLOCKCTRL_END;
 					}
 				}
-				else//ÏìÓ¦³¬Ê±
+				else//BDMè¶…æ—¶
 				{
-					PP_canSend_resetbit(CAN_ID_440,17,2);
+					PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0);
 					doorLock_success_flag = 0;
 					door_lock_stage = PP_DOORLOCKCTRL_END;
 				}
 			}
+#endif
 		}
 		break;
 		case PP_DOORLOCKCTRL_END:
 		{
+			log_o(LOG_HOZON,"PP_DOORLOCKCTRL_END\n");
 			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 			memset(&rmtCtrl_Stpara,0,sizeof(PP_rmtCtrl_Stpara_t));
 			if(PP_rmtdoorCtrl.state.style == RMTCTRL_TSP)//tsp
@@ -219,18 +249,18 @@ int PP_doorLockCtrl_mainfunction(void *task)
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				if(1 == doorLock_success_flag)
 				{
-					rmtCtrl_Stpara.rvcReqStatus = 2;  //Ö´ĞĞÍê³É
+					rmtCtrl_Stpara.rvcReqStatus = 2;  //Ö´æ‰§è¡Œå®Œæˆ
 					rmtCtrl_Stpara.rvcFailureType = 0;
 				}
 				else
 				{
-					rmtCtrl_Stpara.rvcReqStatus = 3;  //Ö´ĞĞÊ§°Ü
+					rmtCtrl_Stpara.rvcReqStatus = 3;  //Ö´æ‰§è¡Œå¤±è´¥
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
 				door_lock_stage = PP_DOORLOCKCTRL_IDLE;
 			}
-			else//À¶ÑÀ
+			else//
 			{
 
 			}
@@ -242,17 +272,16 @@ int PP_doorLockCtrl_mainfunction(void *task)
 	return res;
 }
 
+
 /******************************************************
-*º¯ÊıÃû£ºSetPP_doorLockCtrl_Request
+å‡½æ•°å SetPP_doorLockCtrl_Request   è®¾ç½®é—¨æ§è¯·æ±‚
 
-*ĞÎ  ²Î£ºvoid
+input  ï¼švoid
 
-*·µ»ØÖµ£ºvoid
+output ï¼švoid
 
-*Ãè  Êö£º
-
-*±¸  ×¢£º
 ******************************************************/
+
 void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
 	switch(ctrlstyle)
@@ -265,8 +294,23 @@ void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 			log_i(LOG_HOZON, "remote door lock control req");
 			PP_rmtdoorCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtdoorCtrl.state.req = 1;
+			if(PP_rmtdoorCtrl.state.reqType == PP_RMTCTRL_DOORLOCKOPEN)
+			{
+				doorctrl_type = PP_OPENDOOR;
+				log_o(LOG_HOZON,"PP_OPENDOOR");
+			}
+			else
+			{
+				doorctrl_type = PP_CLOSEDOOR;
+				log_o(LOG_HOZON,"PP_CLOSEDOOR");
+			}
 			PP_rmtdoorCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
 			PP_rmtdoorCtrl.state.style = RMTCTRL_TSP;
+		}
+		break;
+		case RMTCTRL_BLUETOOTH:
+		{
+
 		}
 		break;
 		default:
@@ -291,11 +335,13 @@ int PP_doorLockCtrl_end(void)
 	if((door_lock_stage == PP_DOORLOCKCTRL_IDLE) && \
 			(PP_rmtdoorCtrl.state.req == 0))
 	{
-		return 1;
+		return 0;
+		
 	}
 	else
 	{
-		return 0;
+		return 1;
+		
 	}
 }
 
@@ -304,20 +350,20 @@ void ClearPP_doorLockCtrl_Request(void)
 	PP_rmtdoorCtrl.state.req = 0;
 }
 
-/******************************************************
-*º¯ÊıÃû£ºPP_doorLockCtrl_SetCtrlReq
-
-*ĞÎ  ²Î£º
-
-*·µ»ØÖµ£º
-
-*Ãè  Êö£ºÉèÖÃecall ÇëÇó
-
-*±¸  ×¢£º
-******************************************************/
 void PP_doorLockCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtdoorCtrl.state.reqType = (long)reqType;
+	if(PP_rmtdoorCtrl.state.reqType == PP_RMTCTRL_DOORLOCKOPEN)
+	{
+		doorctrl_type = PP_OPENDOOR;
+		log_o(LOG_HOZON,"PP_OPENDOOR");
+	}
+	else
+	{
+		doorctrl_type = PP_CLOSEDOOR;
+		log_o(LOG_HOZON,"PP_CLOSEDOOR");
+	}
 	PP_rmtdoorCtrl.state.req = 1;
+	PP_rmtdoorCtrl.state.style = RMTCTRL_TSP;
 }
 

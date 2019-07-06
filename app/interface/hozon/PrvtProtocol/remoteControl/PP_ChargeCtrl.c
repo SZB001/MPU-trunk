@@ -35,6 +35,8 @@ description： include the header file
 #include "log.h"
 #include "list.h"
 #include "../../support/protocol.h"
+#include "PPrmtCtrl_cfg.h"
+#include "gb32960_api.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
@@ -42,6 +44,7 @@ description： include the header file
 #include "../PrvtProt.h"
 #include "../PrvtProt_cfg.h"
 #include "PP_rmtCtrl.h"
+#include "PP_canSend.h"
 #include "PP_ChargeCtrl.h"
 
 /*******************************************************
@@ -60,20 +63,20 @@ typedef struct
 typedef struct
 {
 	PP_rmtChargeCtrl_pack_t 	pack;
+	PP_rmtChargeCtrlPara_t		CtrlPara;
 	PP_rmtChargeCtrlSt_t		state;
 }__attribute__((packed))  PrvtProt_rmtChargeCtrl_t; /*结构体*/
 
 static PrvtProt_rmtChargeCtrl_t PP_rmtChargeCtrl;
-static PrvtProt_pack_t 		PP_rmtChargeCtrl_Pack;
-static PrvtProt_App_rmtCtrl_t 		App_rmtChargeCtrl;
+static PrvtProt_pack_t 			PP_rmtChargeCtrl_Pack;
+static PrvtProt_App_rmtCtrl_t 	App_rmtChargeCtrl;
 /*******************************************************
 description： function declaration
 *******************************************************/
 /*Global function declaration*/
 
 /*Static function declaration*/
-static int PP_ChargeCtrl_StatusResp(PrvtProt_task_t *task,PrvtProt_rmtChargeCtrl_t *rmtCtrl);
-static int PP_ChargeCtrl_BookingStatusResp(PrvtProt_task_t *task,PrvtProt_rmtChargeCtrl_t *rmtACCtrl);
+
 /******************************************************
 description： function code
 ******************************************************/
@@ -115,277 +118,124 @@ void PP_ChargeCtrl_init(void)
 ******************************************************/
 int PP_ChargeCtrl_mainfunction(void *task)
 {
-	int res;
-	static uint32_t stitch = 0;
-	static char result = 0;
-	if(PP_rmtChargeCtrl.state.req == 1)
+	switch(PP_rmtChargeCtrl.state.CtrlSt)
 	{
-		stitch++;
-		PP_rmtChargeCtrl.state.req = 0;
-		if(PP_rmtChargeCtrl.state.bookingSt == 1)
+		case PP_CHARGECTRL_IDLE:
 		{
-			PP_rmtChargeCtrl.state.executSt = 0;
-		}
-		else
-		{
-			PP_rmtChargeCtrl.state.executSt = 1;
-		}
-
-		res = PP_ChargeCtrl_StatusResp((PrvtProt_task_t *)task,&PP_rmtChargeCtrl);
-		if(res < 0)//请求发送失败
-		{
-			log_e(LOG_HOZON, "socket send error, reset protocol");
-			sockproxy_socketclose();//by liujian 20190514
-		}
-		else if(res > 0)
-		{
-			log_e(LOG_HOZON, "socket send ok, reset");
-			result = 1;
-			PP_rmtChargeCtrl.state.period = tm_get_time();
-		}
-		else
-		{}
-	}
-
-	if(1 == result)
-	{
-		if((tm_get_time() - PP_rmtChargeCtrl.state.period) > 3000)
-		{
-			result = 0;
-			if(PP_rmtChargeCtrl.state.bookingSt == 1)
+			if(PP_rmtChargeCtrl.state.req == 1)
 			{
-				(void)PP_ChargeCtrl_BookingStatusResp((PrvtProt_task_t *)task,&PP_rmtChargeCtrl);
+				if(PP_rmtCtrl_cfg_vehicleState() == 0)//电源OFF
+				{
+					if(PP_rmtChargeCtrl.state.style == RMTCTRL_TSP)//tsp 平台
+					{
+						log_o(LOG_HOZON,"start charge ctrl\n");
+						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+						rmtCtrl_Stpara.rvcReqStatus = 1;//开始执行
+						rmtCtrl_Stpara.rvcFailureType = 0;
+						rmtCtrl_Stpara.reqType = PP_rmtChargeCtrl.CtrlPara.reqType;
+						rmtCtrl_Stpara.eventid = PP_rmtChargeCtrl.pack.DisBody.eventId;
+						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+						PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+					}
+					else// 蓝牙
+					{
+						log_o(LOG_HOZON,"bluetooth platform");
+					}
+					PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_REQSTART;
+				}
+				else
+				{//电源非OFF,失败
+					log_i(LOG_HOZON,"The vehicle control condition is not satisfied\n");
+					PP_rmtChargeCtrl.state.fail     = 1;
+					PP_rmtChargeCtrl.state.failtype = PP_RMTCTRL_ACCNOOFF;
+					PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_END;
+				}
+				PP_rmtChargeCtrl.state.req = 0;
+			}
+		}
+		break;
+		case PP_CHARGECTRL_REQSTART:
+		{
+			if(PP_rmtChargeCtrl.state.chargecmd == PP_CHARGECTRL_OPEN)
+			{
+				log_o(LOG_HOZON,"request start charge\n");
+				PP_can_send_data(PP_CAN_CHAGER,CAN_STARTCHAGER,0);
 			}
 			else
 			{
-				if(stitch%2)//返回执行成功
+				log_o(LOG_HOZON,"request stop charge\n");
+				PP_can_send_data(PP_CAN_CHAGER,CAN_STOPCHAGER,0);
+			}
+			PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_RESPWAIT;
+			PP_rmtChargeCtrl.state.waittime = tm_get_time();
+		}
+		break;
+		case PP_CHARGECTRL_RESPWAIT:
+		{
+			if((tm_get_time() - PP_rmtChargeCtrl.state.waittime) < 2000)
+			{
+				if(PP_rmtChargeCtrl.state.chargecmd == PP_CHARGECTRL_OPEN)
 				{
-					PP_rmtChargeCtrl.state.executSt = 2;
-					(void)PP_ChargeCtrl_StatusResp((PrvtProt_task_t *)task,&PP_rmtChargeCtrl);
+					if(PP_rmtCtrl_cfg_chargeSt() == 1) //开启成功
+					{
+						log_o(LOG_HOZON,"open  success");
+						//PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //清除开门标志位
+						PP_rmtChargeCtrl.state.fail     = 0;
+						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
+					}
 				}
-				else//返回执行失败
+				else
 				{
-					PP_rmtChargeCtrl.state.executSt = 3;
-					(void)PP_ChargeCtrl_StatusResp((PrvtProt_task_t *)task,&PP_rmtChargeCtrl);
+					if(PP_rmtCtrl_cfg_chargeSt() == 2) //关闭成功
+					{
+						log_o(LOG_HOZON,"close  success");
+						//PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //清除开门标志位
+						PP_rmtChargeCtrl.state.fail     = 0;
+						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
+					}
 				}
 			}
+			else//超时
+			{
+				PP_can_send_data(PP_CAN_CHAGER,CAN_STOPCHAGER,0);
+				PP_rmtChargeCtrl.state.fail     = 1;
+				PP_rmtChargeCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
+				PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
+			}
 		}
-	}
+		break;
+		case PP_CHARGECTRL_END:
+		{
+			log_o(LOG_HOZON,"exit charge ctrl\n");
+			if(PP_rmtChargeCtrl.state.style   == RMTCTRL_TSP)
+			{
+				PP_rmtCtrl_Stpara_t rmtCtrl_chargeStpara;
+				memset(&rmtCtrl_chargeStpara,0,sizeof(PP_rmtCtrl_Stpara_t));
 
+				rmtCtrl_chargeStpara.reqType  = PP_rmtChargeCtrl.CtrlPara.reqType;
+				rmtCtrl_chargeStpara.eventid  = PP_rmtChargeCtrl.pack.DisBody.eventId;
+				rmtCtrl_chargeStpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;//非预约
+				if(0 == PP_rmtChargeCtrl.state.fail)
+				{
+					rmtCtrl_chargeStpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;
+					rmtCtrl_chargeStpara.rvcFailureType = 0;
+				}
+				else
+				{
+					rmtCtrl_chargeStpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFAIL;
+					rmtCtrl_chargeStpara.rvcFailureType = PP_rmtChargeCtrl.state.failtype;
+				}
+				PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_chargeStpara);
+			}
+			PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_IDLE;
+		}
+		break;
+		default:
+		break;
+	}
 
 	return 0;
 }
-
-
-/******************************************************
-*函数名：PP_ChargeCtrl_StatusResp
-
-*形  参：
-
-*返回值：
-
-*描  述：remote control status response
-
-*备  注：
-******************************************************/
-static int PP_ChargeCtrl_StatusResp(PrvtProt_task_t *task,PrvtProt_rmtChargeCtrl_t *rmtACCtrl)
-{
-	int msgdatalen;
-	int res;
-	/*header*/
-	rmtACCtrl->pack.Header.ver.Byte = task->version;
-	rmtACCtrl->pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-	rmtACCtrl->pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-	memcpy(&PP_rmtChargeCtrl_Pack, &rmtACCtrl->pack.Header, sizeof(PrvtProt_pack_Header_t));
-	/*body*/
-	rmtACCtrl->pack.DisBody.mID = PP_MID_RMTCTRL_RESP;
-	//rmtdoorCtrl->pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
-	rmtACCtrl->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtACCtrl->pack.DisBody.expTime   = PrvtPro_getTimestamp();
-	rmtACCtrl->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
-
-	/*appdata*/
-	PrvtProtcfg_gpsData_t gpsDt;
-	App_rmtChargeCtrl.CtrlResp.rvcReqType = PP_rmtChargeCtrl.state.reqType;
-	App_rmtChargeCtrl.CtrlResp.rvcReqStatus = PP_rmtChargeCtrl.state.executSt;
-	App_rmtChargeCtrl.CtrlResp.rvcFailureType = 0;
-	App_rmtChargeCtrl.CtrlResp.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps状态 0-无效；1-有效;
-	App_rmtChargeCtrl.CtrlResp.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gps时间戳:系统时间(通过gps校时)
-
-	PrvtProtCfg_gpsData(&gpsDt);
-
-	if(App_rmtChargeCtrl.CtrlResp.gpsPos.gpsSt == 1)
-	{
-		if(gpsDt.is_north)
-		{
-			App_rmtChargeCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000);//纬度 x 1000000,当GPS信号无效时，值为0
-		}
-		else
-		{
-			App_rmtChargeCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//纬度 x 1000000,当GPS信号无效时，值为0
-		}
-
-		if(gpsDt.is_east)
-		{
-			App_rmtChargeCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000);//经度 x 1000000,当GPS信号无效时，值为0
-		}
-		else
-		{
-			App_rmtChargeCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//经度 x 1000000,当GPS信号无效时，值为0
-		}
-		log_i(LOG_HOZON, "PP_appData.latitude = %lf",App_rmtChargeCtrl.CtrlResp.gpsPos.latitude);
-		log_i(LOG_HOZON, "PP_appData.longitude = %lf",App_rmtChargeCtrl.CtrlResp.gpsPos.longitude);
-	}
-	else
-	{
-		App_rmtChargeCtrl.CtrlResp.gpsPos.latitude  = 0;
-		App_rmtChargeCtrl.CtrlResp.gpsPos.longitude = 0;
-	}
-	App_rmtChargeCtrl.CtrlResp.gpsPos.altitude = (long)(gpsDt.height);//高度（m）
-	if(App_rmtChargeCtrl.CtrlResp.gpsPos.altitude > 10000)
-	{
-		App_rmtChargeCtrl.CtrlResp.gpsPos.altitude = 10000;
-	}
-	App_rmtChargeCtrl.CtrlResp.gpsPos.heading = (long)(gpsDt.direction);//车头方向角度，0为正北方向
-	App_rmtChargeCtrl.CtrlResp.gpsPos.gpsSpeed = (long)(gpsDt.kms*10);//速度 x 10，单位km/h
-	App_rmtChargeCtrl.CtrlResp.gpsPos.hdop = (long)(gpsDt.hdop*10);//水平精度因子 x 10
-	if(App_rmtChargeCtrl.CtrlResp.gpsPos.hdop > 1000)
-	{
-		App_rmtChargeCtrl.CtrlResp.gpsPos.hdop = 1000;
-	}
-
-	App_rmtChargeCtrl.CtrlResp.basicSt.driverDoor = 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.driverLock = 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.passengerDoor = 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.passengerLock = 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.rearLeftDoor = 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.rearLeftLock = 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.rearRightDoor = 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.rearRightLock = 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.bootStatus = 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.bootStatusLock = 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.driverWindow = 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.passengerWindow = 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.rearLeftWindow = 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.rearRightWinow = 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.sunroofStatus = 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.engineStatus = 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.accStatus = 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.accTemp = 18	/* OPTIONAL */;//18-36
-	App_rmtChargeCtrl.CtrlResp.basicSt.accMode = 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.accBlowVolume	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.innerTemp = 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.outTemp = 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.sideLightStatus= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.dippedBeamStatus= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.mainBeamStatus= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.hazardLightStus= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.frtRightTyrePre	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.frtRightTyreTemp	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.frontLeftTyrePre	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.frontLeftTyreTemp= 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.rearRightTyrePre= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.rearRightTyreTemp= 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.rearLeftTyrePre	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.rearLeftTyreTemp	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.batterySOCExact= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.chargeRemainTim	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.availableOdomtr= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.bookingChargeSt= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.bookingChargeHour= 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.bookingChargeMin	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.chargeMode	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.chargeStatus	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.powerMode	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.speed= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.totalOdometer= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.batteryVoltage= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.batteryCurrent= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.batterySOCPrc= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.dcStatus= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.gearPosition= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.insulationRstance= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.acceleratePedalprc= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.deceleratePedalprc= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.canBusActive= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.bonnetStatus= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.lockStatus= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.gsmStatus= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.wheelTyreMotrSt= 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.vehicleAlarmSt= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.currentJourneyID= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.journeyOdom= 1;
-	App_rmtChargeCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel= 1	/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.frtRightSeatHeatLel	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.airCleanerSt	= 1/* OPTIONAL */;
-	App_rmtChargeCtrl.CtrlResp.basicSt.srsStatus = 1;
-
-	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_RESP,PP_rmtChargeCtrl_Pack.msgdata,&msgdatalen,\
-									   &rmtACCtrl->pack.DisBody,&App_rmtChargeCtrl))//数据编码打包是否完成
-	{
-		log_e(LOG_HOZON, "uper error");
-		return 0;
-	}
-
-	PP_rmtChargeCtrl_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
-	res = sockproxy_MsgSend(PP_rmtChargeCtrl_Pack.Header.sign,18 + msgdatalen,NULL);
-
-	protocol_dump(LOG_HOZON, "get_remote_control_response", PP_rmtChargeCtrl_Pack.Header.sign, \
-					18 + msgdatalen,1);
-	return res;
-}
-
-
-/******************************************************
-*函数名：PP_ChargeCtrl_BookingStatusResp
-
-*形  参：
-
-*返回值：
-
-*描  述：remote control booking status response
-
-*备  注：
-******************************************************/
-static int PP_ChargeCtrl_BookingStatusResp(PrvtProt_task_t *task,PrvtProt_rmtChargeCtrl_t *rmtChargeCtrl)
-{
-	int msgdatalen;
-	int res;
-
-	/*header*/
-	rmtChargeCtrl->pack.Header.ver.Byte = task->version;
-	rmtChargeCtrl->pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-	rmtChargeCtrl->pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-	memcpy(&PP_rmtChargeCtrl_Pack, &rmtChargeCtrl->pack.Header, sizeof(PrvtProt_pack_Header_t));
-	/*body*/
-	rmtChargeCtrl->pack.DisBody.mID = PP_MID_RMTCTRL_BOOKINGRESP;
-	//rmtdoorCtrl->pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
-	rmtChargeCtrl->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtChargeCtrl->pack.DisBody.expTime   = PrvtPro_getTimestamp();
-	rmtChargeCtrl->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
-
-	PrvtProt_App_rmtCtrl_t app_rmtCtrl;
-	/*appdata*/
-	app_rmtCtrl.CtrlbookingResp.bookingId = 1;
-	app_rmtCtrl.CtrlbookingResp.rvcReqCode = rmtChargeCtrl->state.rvcReqCode;
-	app_rmtCtrl.CtrlbookingResp.oprTime = PrvtPro_getTimestamp();
-
-	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_BOOKINGRESP,PP_rmtChargeCtrl_Pack.msgdata,&msgdatalen,\
-									   &rmtChargeCtrl->pack.DisBody,&app_rmtCtrl))//数据编码打包是否完成
-	{
-		log_e(LOG_HOZON, "uper error");
-		return 0;
-	}
-
-	PP_rmtChargeCtrl_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
-	res = sockproxy_MsgSend(PP_rmtChargeCtrl_Pack.Header.sign,18 + msgdatalen,NULL);
-
-	protocol_dump(LOG_HOZON, "get_remote_control_booking_response", PP_rmtChargeCtrl_Pack.Header.sign, \
-					18 + msgdatalen,1);
-	return res;
-}
-
 
 
 /******************************************************
@@ -399,49 +249,64 @@ static int PP_ChargeCtrl_BookingStatusResp(PrvtProt_task_t *task,PrvtProt_rmtCha
 
 *备  注：
 ******************************************************/
-void SetPP_ChargeCtrl_Request(void *appdatarmtCtrl,void *disptrBody)
+void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
-	PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
-	PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
-	static char rvcReqCode = 0;
-	log_i(LOG_HOZON, "remote AC control req");
-	PP_rmtChargeCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-	PP_rmtChargeCtrl.state.req = 1;
-	PP_rmtChargeCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
-	PP_rmtChargeCtrl.state.bookingSt = 0;
-	if(appdatarmtCtrl_ptr->CtrlReq.rvcReqParamslen > 0)//有预约
+	switch(ctrlstyle)
 	{
-		PP_rmtChargeCtrl.state.bookingSt = 1;
-		switch(rvcReqCode)
+		case RMTCTRL_TSP:
 		{
-			case 0:
+			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
+			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
+			log_i(LOG_HOZON, "tsp remote charge control req\n");
+
+			PP_rmtChargeCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+			if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_COMAND_STARTCHARGE) || \
+					(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_COMAND_STOPCHARGE))
 			{
-				PP_rmtChargeCtrl.state.rvcReqCode = 0x0710;
+				if((PP_CHARGECTRL_IDLE == PP_rmtChargeCtrl.state.CtrlSt) && \
+						(PP_rmtChargeCtrl.state.req == 0))
+				{
+					PP_rmtChargeCtrl.state.req = 1;
+					PP_rmtChargeCtrl.CtrlPara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+					if(PP_rmtChargeCtrl.CtrlPara.reqType == PP_COMAND_STARTCHARGE)
+					{
+						PP_rmtChargeCtrl.state.chargecmd = PP_CHARGECTRL_OPEN;
+					}
+					else
+					{
+						PP_rmtChargeCtrl.state.chargecmd = PP_CHARGECTRL_CLOSE;
+					}
+					PP_rmtChargeCtrl.state.style   = RMTCTRL_TSP;
+				}
+				else
+				{
+					log_i(LOG_HOZON, "remote charge control req is excuting\n");
+				}
 			}
-			break;
-			case 1:
-			{
-				PP_rmtChargeCtrl.state.rvcReqCode = 0x0711;
+			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_COMAND_APPOINTCHARGE)
+			{//预约
+
 			}
-			break;
-			case 2:
-			{
-				PP_rmtChargeCtrl.state.rvcReqCode = 0x0700;
+			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_COMAND_CANCELAPPOINTCHARGE)
+			{//取消预约
+
 			}
-			break;
-			case 3:
-			{
-				PP_rmtChargeCtrl.state.rvcReqCode = 0x0701;
-			}
-			break;
-			default:
-			{
-				rvcReqCode = 0;
-				PP_rmtChargeCtrl.state.rvcReqCode = 0x0710;
-			}
-			break;
+			else
+			{}
 		}
-		rvcReqCode++;
+		break;
+		case RMTCTRL_BLUETOOTH:
+		{
+
+		}
+		break;
+		case RMTCTRL_HU:
+		{
+
+		}
+		break;
+		default:
+		break;
 	}
 }
 
@@ -457,13 +322,14 @@ void ClearPP_ChargeCtrl_Request(void )
 
 *返回值：
 
-*描  述：设置ecall 请求
+*描  述：设置 请求
 
 *备  注：
 ******************************************************/
 void PP_ChargeCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
-	PP_rmtChargeCtrl.state.reqType = (long)reqType;
+	PP_rmtChargeCtrl.CtrlPara.reqType = (long)reqType;
 	PP_rmtChargeCtrl.state.req = 1;
 }
+
 

@@ -107,7 +107,7 @@ unsigned char PrvtProt_SignParse_sunroofSt(void)
 {
 	unsigned char st;
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_SUNROOFOPEN] ?
-				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_SUNROOFOPEN])->value: 0x0;
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_SUNROOFOPEN])->value: 0xff;
 	return st;
 }
 
