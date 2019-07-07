@@ -82,6 +82,14 @@ static PrvtProt_rmtDiag_t		PP_rmtDiag;
 static PP_App_rmtDiag_t 		AppData_rmtDiag;
 
 static PP_rmtDiag_Fault_t		PP_rmtDiag_Fault;
+typedef struct
+{
+	PP_rmtDiag_Fault_t	 		code[PP_DIAG_MAXECU];
+	uint8_t 					currdiagtype;//当前诊断类型
+	uint8_t 					rptfaultcnt[PP_DIAG_MAXECU];//当前诊断的ecu上报的故障码计数
+	uint8_t						totalfaultCnt;
+}__attribute__((packed))  PP_rmtDiag_allFault_t;
+static PP_rmtDiag_allFault_t	PP_rmtDiag_allFault;
 
 static PrvtProt_TxInform_t 		diag_TxInform[PP_RMTDIAG_MAX_RESP];
 static PP_rmtDiag_datetime_t 	rmtDiag_datetime;
@@ -376,8 +384,9 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 		break;
 		case PP_DIAGRESP_QUERYFAILREQ:
 		{
-			//查询请求
 			PP_rmtDiag.state.faultquerySt = 0;
+			log_i(LOG_HOZON, "diagType = %d\n",PP_rmtDiag.state.diagType);
+			setPPrmtDiagCfg_QueryFaultReq(PP_rmtDiag.state.diagType);
 			memset(&PP_rmtDiag_Fault,0 , sizeof(PP_rmtDiag_Fault_t));
 			PP_rmtDiag.state.waittime = tm_get_time();
 			PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYWAIT;
@@ -389,7 +398,8 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 			{
 				if(1 == PP_rmtDiag.state.faultquerySt)//查询完成
 				{
-					//读取故障码
+					getPPrmtDiagCfg_Faultcode(PP_rmtDiag.state.diagType,&PP_rmtDiag_Fault);//读取故障码
+					log_i(LOG_HOZON, "PP_rmtDiag.state.diagType = %d and PP_rmtDiag_Fault.failNum = %d\n",PP_rmtDiag.state.diagType,PP_rmtDiag_Fault.faultNum);
 					PP_rmtDiag.state.result = 1;
 					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
 					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
@@ -419,6 +429,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 
 				if(1 == ret)//上报完成
 				{
+					log_i(LOG_HOZON, "fault report finish\n");
 					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_END;
 				}
 			}
@@ -559,15 +570,17 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 {
 	static uint8_t tm_wday;
 	static uint32_t tm_datetime;
+	int i;
+	int ret;
 	switch(PP_rmtDiag.state.activeDiagSt)
 	{
 		case PP_ACTIVEDIAG_PWRON:
 		{
-			PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECK;
+			PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKREPORTST;
 			PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 		}
 		break;
-		case PP_ACTIVEDIAG_CHECK:
+		case PP_ACTIVEDIAG_CHECKREPORTST:
 		{
 			char *wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 			time_t timep;
@@ -591,42 +604,101 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 			else
 			{
 				log_i(LOG_HOZON,"start to daig report\n");
-				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_DIAGONGOING;
+				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKVEHICOND;
 			}
 		}
 		break;
-		case PP_ACTIVEDIAG_DIAGONGOING:
+		case PP_ACTIVEDIAG_CHECKVEHICOND:
 		{
-			if((tm_get_time() - PP_rmtDiag.state.activeDiagdelaytime) >= PP_DIAGACTIVEUPDATA_WAITTIME)//延时5s
+			if((tm_get_time() - PP_rmtDiag.state.activeDiagdelaytime) >= PP_DIAGPWRON_WAITTIME)//延时5s
 			{
 				if(gb_data_vehicleSpeed() <= 50)//判断车速<=5km/h,满足诊断条件
 				{
 					log_i(LOG_HOZON,"vehicle speed <= 5km/h,start diag\n");
-					PP_remotDiagnosticStatus(task,&PP_rmtDiag);
-
-					rmtDiag_datetime.diagflag = rmtDiag_weekmask[tm_wday].mask;
-					if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
-					{
-						log_e(LOG_GB32960, "save rmtDiag_datetime.diagflag failed\n");
-					}
-
-					rmtDiag_datetime.datetime = tm_datetime;
-					if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGDATE, &rmtDiag_datetime.datetime, 4))
-					{
-						log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
-					}
-
-					memset(&diag_TxInform[PP_RMTDIAG_STATUS],0,sizeof(PrvtProt_TxInform_t));
-					diag_TxInform[PP_RMTDIAG_STATUS].aid = PP_AID_DIAG;
-					diag_TxInform[PP_RMTDIAG_STATUS].mid = PP_MID_DIAG_STATUS;
-					diag_TxInform[PP_RMTDIAG_STATUS].pakgtype = PP_TXPAKG_SIGTIME;
-					diag_TxInform[PP_RMTDIAG_STATUS].eventtime = tm_get_time();
-					SP_data_write(PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen, \
-							PP_rmtDiag_send_cb,&diag_TxInform[PP_RMTDIAG_STATUS]);
-					protocol_dump(LOG_HOZON, "diag_status_response", PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen,1);
+					PP_rmtDiag.state.faultquerySt = 1;
+					setPPrmtDiagCfg_QueryFaultReq(PP_DIAG_ALL);//请求查询所有故障码
+					memset(&PP_rmtDiag_allFault,0 , sizeof(PP_rmtDiag_allFault_t));
+					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUREYWAIT;
 				}
+				else
+				{
+					log_e(LOG_HOZON,"vehicle speed > 5km/h,exit acyive diag\n");
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_END;
+				}
+			}
+		}
+		break;
+		case PP_ACTIVEDIAG_QUREYWAIT:
+		{
+			if((tm_get_time() - PP_rmtDiag.state.activeDiagdelaytime) <= PP_DIAGQUERYALL_WAITTIME)//
+			{
+				if(1 == PP_rmtDiag.state.faultquerySt)//查询完成
+				{
+					for(i=1;i <= PP_DIAG_MAXECU;i++)
+					{
+						getPPrmtDiagCfg_Faultcode(i,&PP_rmtDiag_allFault.code[i-1]);//读取故障码
+						log_i(LOG_HOZON, "PP_rmtDiag_allFault.code[%d].faultNum = %d\n",i-1,PP_rmtDiag_allFault.code[i-1].faultNum);
+					}
+					PP_rmtDiag_allFault.currdiagtype = PP_DIAG_VCU;
+					PP_rmtDiag.state.result = 1;
+					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
+					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
+				}
+			}
+			else//超时
+			{
+				log_e(LOG_HOZON, "diag active report is timeout\n");
+				PP_rmtDiag.state.result = 0;
+				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_NONE;
+				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
+			}
+		}
+		break;
+		case PP_ACTIVEDIAG_QUERYUPLOAD:
+		{
+			if((tm_get_time() - PP_rmtDiag.state.activeDiagdelaytime) < 10)//延时10ms
+			{
+				return 0;
+			}
+
+			ret = PP_remotDiagnosticStatus(task,&PP_rmtDiag);
+			if(ret >= 0)
+			{
+				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+				memset(&diag_TxInform[PP_RMTDIAG_STATUS],0,sizeof(PrvtProt_TxInform_t));
+				diag_TxInform[PP_RMTDIAG_STATUS].aid = PP_AID_DIAG;
+				diag_TxInform[PP_RMTDIAG_STATUS].mid = PP_MID_DIAG_STATUS;
+				diag_TxInform[PP_RMTDIAG_STATUS].pakgtype = PP_TXPAKG_SIGTIME;
+				diag_TxInform[PP_RMTDIAG_STATUS].eventtime = tm_get_time();
+				SP_data_write(PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen, \
+						PP_rmtDiag_send_cb,&diag_TxInform[PP_RMTDIAG_STATUS]);
+				protocol_dump(LOG_HOZON, "diag_status_response", PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen,1);
+
+				if(ret ==1)//all数据打包发送完成
+				{
+					if(1 == PP_rmtDiag.state.result)//诊断成功
+					{
+						rmtDiag_datetime.diagflag = rmtDiag_weekmask[tm_wday].mask;
+						if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
+						{
+							log_e(LOG_GB32960, "save rmtDiag_datetime.diagflag failed\n");
+						}
+
+						rmtDiag_datetime.datetime = tm_datetime;
+						if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGDATE, &rmtDiag_datetime.datetime, 4))
+						{
+							log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
+						}
+					}
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_END;
+				}
+			}
+			else
+			{
 				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_END;
-				log_i(LOG_HOZON,"exit diag\n");
 			}
 		}
 		break;
@@ -657,7 +729,7 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 	int msgdatalen;
 	int i;
 	int ret = 0;
-	static uint8_t faultUpdataNum = 0;
+	static uint8_t faultUpdataCnt = 0;
 
 	memset(&PP_rmtDiag_Pack,0 , sizeof(PrvtProt_pack_t));
 	/* header */
@@ -680,26 +752,26 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
 	PP_rmtDiag.pack.DisBody.testFlag = 1;
 
-	memset(&AppData_rmtDiag.DiagnosticResp,0,sizeof(PP_DiagnosticResp_t));
 	/*appdata*/
-
+	memset(&AppData_rmtDiag.DiagnosticResp,0,sizeof(PP_DiagnosticResp_t));
 	AppData_rmtDiag.DiagnosticResp.diagType = rmtDiag->state.diagType;
 	AppData_rmtDiag.DiagnosticResp.result = rmtDiag->state.result;
 	AppData_rmtDiag.DiagnosticResp.failureType = rmtDiag->state.failureType;
-	if((1 == AppData_rmtDiag.DiagnosticResp.result) && (rmtDiag_Fault->failNum > 0))
+	if((1 == AppData_rmtDiag.DiagnosticResp.result) && (rmtDiag_Fault->faultNum > 0))
 	{
 		for(i = 0;i < PP_DIAG_MAX_REPORT;i++)
 		{
-			memcpy(AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCode,rmtDiag_Fault->faultcode[faultUpdataNum].diagcode,5);
+			memcpy(AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCode,rmtDiag_Fault->faultcode[faultUpdataCnt].diagcode,5);
 			AppData_rmtDiag.DiagnosticResp.diagCode[i].diagCodelen = 5;
-			AppData_rmtDiag.DiagnosticResp.diagCode[i].faultCodeType  = rmtDiag_Fault->faultcode[faultUpdataNum].faultCodeType;
-			AppData_rmtDiag.DiagnosticResp.diagCode[i].lowByte = rmtDiag_Fault->faultcode[faultUpdataNum].lowByte;
-			AppData_rmtDiag.DiagnosticResp.diagCode[i].diagTime = rmtDiag_Fault->faultcode[faultUpdataNum].diagTime;
+			AppData_rmtDiag.DiagnosticResp.diagCode[i].faultCodeType  = rmtDiag_Fault->faultcode[faultUpdataCnt].faultCodeType;
+			AppData_rmtDiag.DiagnosticResp.diagCode[i].lowByte = rmtDiag_Fault->faultcode[faultUpdataCnt].lowByte;
+			AppData_rmtDiag.DiagnosticResp.diagCode[i].diagTime = rmtDiag_Fault->faultcode[faultUpdataCnt].diagTime;
 			AppData_rmtDiag.DiagnosticResp.diagcodenum++;
-			faultUpdataNum++;
+			faultUpdataCnt++;
 
-			if(faultUpdataNum == rmtDiag_Fault->failNum)
+			if(faultUpdataCnt == rmtDiag_Fault->faultNum)
 			{
+				faultUpdataCnt = 0;
 				ret = 1;
 				break;
 			}
@@ -708,7 +780,7 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 	else
 	{
 		ret = 1;
-		faultUpdataNum = 0;
+		faultUpdataCnt = 0;
 		AppData_rmtDiag.DiagnosticResp.diagcodenum = 0;
 	}
 
@@ -716,6 +788,7 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag.DiagnosticResp))//鏁版嵁缂栫爜鎵撳寘鏄惁瀹屾垚
 	{
 		log_e(LOG_HOZON, "encode error\n");
+		faultUpdataCnt = 0;
 		return -1;
 	}
 
@@ -739,7 +812,7 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag)
 {
 	int msgdatalen;
-	int i,j;
+	int ret = 0;
 
 	memset(&PP_rmtDiag_Pack,0 , sizeof(PrvtProt_pack_t));
 	/* header */
@@ -761,35 +834,95 @@ static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
 	PP_rmtDiag.pack.DisBody.testFlag = 1;
+
 	/*app data*/
-	for(i=0;i<(PP_DIAG_MAXECU -1);i++)
+	memset(&AppData_rmtDiag.DiagnosticSt,0,sizeof(PP_DiagnosticStatus_t));
+	uint8_t index_i = 0;
+	uint8_t index_j = 0;
+	uint8_t diagType;
+	for(diagType = PP_rmtDiag_allFault.currdiagtype;diagType <= PP_DIAG_MAXECU;diagType++)
 	{
-		AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagType = i+1;//
-		AppData_rmtDiag.DiagnosticSt.diagStatus[i].result = 1;
-		AppData_rmtDiag.DiagnosticSt.diagStatus[i].failureType = 0;
-		for(j=0;j<2;j++)
-		{
-			memcpy(AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].diagCode,"12345",5);
-			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].diagCodelen = 5;
-			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].faultCodeType = 1;
-			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].lowByte  = 1;
-			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagCode[j].diagTime = PrvtPro_getTimestamp();
-			AppData_rmtDiag.DiagnosticSt.diagStatus[i].diagcodenum++;
-		}
 		AppData_rmtDiag.DiagnosticSt.diagobjnum++;
+		AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagType = diagType;//
+		AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].result = PP_rmtDiag.state.result;
+		AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].failureType = PP_rmtDiag.state.failureType;
+		if((1 == PP_rmtDiag.state.result) && (PP_rmtDiag_allFault.code[diagType-1].faultNum > 0))
+		{
+			for(index_j = 0;index_j < 255;index_j++)
+			{
+				memcpy(AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagCode[index_j].diagCode, \
+						PP_rmtDiag_allFault.code[diagType-1].faultcode[PP_rmtDiag_allFault.rptfaultcnt[diagType-1]].diagcode,5);
+				AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagCode[index_j].diagCodelen = 5;
+
+				AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagCode[index_j].faultCodeType = \
+						PP_rmtDiag_allFault.code[diagType-1].faultcode[PP_rmtDiag_allFault.rptfaultcnt[diagType-1]].faultCodeType;
+
+				AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagCode[index_j].lowByte  = \
+						PP_rmtDiag_allFault.code[diagType-1].faultcode[PP_rmtDiag_allFault.rptfaultcnt[diagType-1]].lowByte;
+
+				AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagCode[index_j].diagTime = \
+						PP_rmtDiag_allFault.code[diagType-1].faultcode[PP_rmtDiag_allFault.rptfaultcnt[diagType-1]].diagTime;
+
+				PP_rmtDiag_allFault.rptfaultcnt[diagType-1]++;
+				PP_rmtDiag_allFault.totalfaultCnt++;
+				AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagcodenum++;
+				if(PP_rmtDiag_allFault.totalfaultCnt < PP_DIAG_MAX_REPORT)
+				{
+					if(PP_rmtDiag_allFault.rptfaultcnt[diagType-1] == PP_rmtDiag_allFault.code[diagType-1].faultNum)
+					{
+						break;
+					}
+				}
+				else
+				{//数据量大时，分多次上报，当前待上报数据打包完
+					PP_rmtDiag_allFault.totalfaultCnt = 0;
+					//PP_rmtDiag_allFault.currdiagtype = diagType;
+					if(PP_rmtDiag_allFault.rptfaultcnt[diagType-1] < PP_rmtDiag_allFault.code[diagType-1].faultNum)
+					{
+						PP_rmtDiag_allFault.currdiagtype = diagType;
+					}
+					else
+					{
+						PP_rmtDiag_allFault.currdiagtype = diagType + 1;
+					}
+
+					if(PP_rmtDiag_allFault.currdiagtype > PP_DIAG_MAXECU)
+					{
+						ret = 1;//all数据处理完
+					}
+					goto rmtDiagStDataPacking;
+				}
+			}
+		}
+		else
+		{
+			AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagcodenum = 0;
+		}
+
+		index_i++;
+
+		if(diagType >= PP_DIAG_MAXECU)//
+		{
+			ret = 1;//all数据处理完
+			goto rmtDiagStDataPacking;
+		}
 	}
 
-	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_STATUS,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
-									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag.DiagnosticSt))//鏁版嵁缂栫爜鎵撳寘鏄惁瀹屾垚
+
+rmtDiagStDataPacking:
 	{
-		log_e(LOG_HOZON, "encode error\n");
-		return -1;
+		if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_STATUS,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
+										   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag.DiagnosticSt))//鏁版嵁缂栫爜鎵撳寘鏄惁瀹屾垚
+		{
+			log_e(LOG_HOZON, "encode error\n");
+			return -1;
+		}
+
+		PP_rmtDiag_Pack.totallen = 18 + msgdatalen;
+		PP_rmtDiag_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
 	}
 
-	PP_rmtDiag_Pack.totallen = 18 + msgdatalen;
-	PP_rmtDiag_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
-
-	return 0;
+	return ret;
 }
 
 /******************************************************
@@ -849,25 +982,33 @@ static void PP_rmtDiag_send_cb(void * para)
 
 *澶�  娉細
 ******************************************************/
-void PP_diag_SetdiagReq(unsigned char diagType)
+void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 {
-	log_i(LOG_HOZON, "receive remote diag request\n");
-	PP_rmtDiag.state.diagReq = 1;
-	PP_rmtDiag.state.diagType = diagType;
-	PP_rmtDiag.state.diageventId = 100;
-	PP_rmtDiag.state.result = 1;
-	PP_rmtDiag.state.failureType = 0;
-
-	rmtDiag_datetime.diagflag = 0;
-	if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
+	if(0 == reqtype)
 	{
-		log_e(LOG_GB32960, "save rmtDiag_datetime.diagflag failed\n");
+		log_i(LOG_HOZON, "receive remote diag request\n");
+		PP_rmtDiag.state.diagReq = 1;
+		PP_rmtDiag.state.diagType = diagType;
+		PP_rmtDiag.state.diageventId = 100;
+		PP_rmtDiag.state.result = 1;
+		PP_rmtDiag.state.failureType = 0;
+
 	}
-
-	rmtDiag_datetime.datetime = 0;
-	if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGDATE, &rmtDiag_datetime.datetime, 4))
+	else//主动上报所有故障码
 	{
-		log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
+		log_i(LOG_HOZON, " diag fault code active report request\n");
+		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
+		rmtDiag_datetime.diagflag = 0;
+		if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
+		{
+			log_e(LOG_GB32960, "save rmtDiag_datetime.diagflag failed\n");
+		}
+
+		rmtDiag_datetime.datetime = 0;
+		if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGDATE, &rmtDiag_datetime.datetime, 4))
+		{
+			log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
+		}
 	}
 }
 

@@ -952,31 +952,39 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			struct DiagnosticRespInfo DiagnosticResp[255];
 			struct diagCode diagcode[255];
 			DiagCode_t DiagCode[255];
-			//struct diagStatus diagStatus[255];
-
-			//DiagCode_t *DiagCode_ptr = &DiagCode;
 
 			memset(&DiagnosticSt,0 , sizeof(DiagnosticStInfo_t));
 			for(i = 0;i<DiagnosticSt_ptr->diagobjnum;i++)
 			{
 				DiagnosticResp[i].diagType = DiagnosticSt_ptr->diagStatus[i].diagType;
-				log_i(LOG_UPER_ECDC, "DiagnosticResp.diagType = %d\n",DiagnosticResp[i].diagType);
+				log_i(LOG_UPER_ECDC, "DiagnosticResp[%d].diagType = %d",i,DiagnosticResp[i].diagType);
 				DiagnosticResp[i].result = DiagnosticSt_ptr->diagStatus[i].result;
+				log_i(LOG_UPER_ECDC, "DiagnosticResp[%d].result = %d",i,DiagnosticResp[i].result);
 				DiagnosticResp[i].failureType = &DiagnosticSt_ptr->diagStatus[i].failureType;
-				for(j = 0;j<DiagnosticSt_ptr->diagStatus[i].diagcodenum;j++)
+				log_i(LOG_UPER_ECDC, "DiagnosticResp[%d].failureType = %d",i,*DiagnosticResp[i].failureType);
+				if((1 == DiagnosticResp[i].result) && (DiagnosticSt_ptr->diagStatus[i].diagcodenum > 0))
 				{
-					DiagCode[j].diagCode.buf = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagCode;
-					DiagCode[j].diagCode.size = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagCodelen;
-					DiagCode[j].faultCodeType = DiagnosticSt_ptr->diagStatus[i].diagCode[j].faultCodeType;
-					DiagCode[j].lowByte  = DiagnosticSt_ptr->diagStatus[i].diagCode[j].lowByte;
-					DiagCode[j].diagTime = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagTime;
-					ASN_SEQUENCE_ADD(&diagcode[i], &DiagCode[j]);
+					log_i(LOG_UPER_ECDC, "DiagnosticSt_ptr->diagStatus[%d].diagcodenum = %d",i,DiagnosticSt_ptr->diagStatus[i].diagcodenum);
+					for(j = 0;j < DiagnosticSt_ptr->diagStatus[i].diagcodenum;j++)
+					{
+						DiagCode[j].diagCode.buf = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagCode;
+						DiagCode[j].diagCode.size = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagCodelen;
+						DiagCode[j].faultCodeType = DiagnosticSt_ptr->diagStatus[i].diagCode[j].faultCodeType;
+						DiagCode[j].lowByte  = DiagnosticSt_ptr->diagStatus[i].diagCode[j].lowByte;
+						DiagCode[j].diagTime = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagTime;
+						ASN_SEQUENCE_ADD(&diagcode[i], &DiagCode[j]);
+					}
+					DiagnosticResp[i].diagCode = &diagcode[i];
 				}
-				DiagnosticResp[i].diagCode = &diagcode[i];
+				else
+				{
+					DiagnosticResp[i].diagCode = NULL;
+				}
 				ASN_SEQUENCE_ADD(&DiagnosticSt, &DiagnosticResp[i]);
 			}
 
 			ec = uper_encode(pduType_GIAG_st,(void *) &DiagnosticSt,PrvtPro_writeout,&key);
+			//ASN_STRUCT_FREE(asn_DEF_DiagnosticStInfo, &DiagnosticSt);
 			if(ec.encoded  == -1)
 			{
 				log_e(LOG_UPER_ECDC, "encode:appdata rmt_diag_status fail\n");
@@ -1690,9 +1698,10 @@ static int PrvtPro_writeout(const void *buffer,size_t size,void *key)
 {
 	int i;
 	log_i(LOG_UPER_ECDC, "PrvtPro_writeout <<<");
+	log_i(LOG_UPER_ECDC, "the size = %d\n",size);
 	if(size > PP_ECDC_DATA_LEN)
 	{
-		log_i(LOG_UPER_ECDC, "the size of data greater than PP_MSG_DATA_LEN");
+		log_e(LOG_UPER_ECDC, "the size = %d  greater than PP_MSG_DATA_LEN = %d",size,PP_ECDC_DATA_LEN);
 		return 0;
 	}
 	

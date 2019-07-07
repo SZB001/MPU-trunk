@@ -19,11 +19,11 @@ description： macro definitions
 
 /**********宏常量定义*********/
 #define PP_DIAG_WAITTIME    2500//等待HU响应时间
-#define PP_DIAG_MAX_REPORT  80//一次最多上报的故障码数
+#define PP_DIAG_MAX_REPORT  50//一次最多上报的故障码数
 
-#define PP_DIAGACTIVEUPDATA_WAITTIME    5000//5s
-#define PP_DIAGQUERY_WAITTIME    5000//5s
-
+#define PP_DIAGPWRON_WAITTIME    	5000//5s
+#define PP_DIAGQUERY_WAITTIME    	5000//5s
+#define PP_DIAGQUERYALL_WAITTIME	5000//5s
 /***********宏函数***********/
 
 /*******************************************************
@@ -74,8 +74,10 @@ typedef enum
 typedef enum
 {
 	PP_ACTIVEDIAG_PWRON = 0,//上电
-	PP_ACTIVEDIAG_CHECK,//
-	PP_ACTIVEDIAG_DIAGONGOING,//
+	PP_ACTIVEDIAG_CHECKREPORTST,//检查上报情况
+	PP_ACTIVEDIAG_CHECKVEHICOND,//检查车况
+	PP_ACTIVEDIAG_QUREYWAIT,//
+	PP_ACTIVEDIAG_QUERYUPLOAD,//
 	PP_ACTIVEDIAG_END
 } PP_RMTDIAG_ACTIVEDIAG_ST;
 
@@ -222,6 +224,6 @@ description： function External declaration
 *******************************************************/
 extern void PP_rmtDiag_init(void);
 extern int PP_rmtDiag_mainfunction(void *task);
-extern void PP_diag_SetdiagReq(unsigned char diagType);
+extern void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype);
 
 #endif 

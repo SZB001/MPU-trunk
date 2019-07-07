@@ -445,14 +445,16 @@ static int PP_shell_showpara(int argc, const char **argv)
 static int PP_shell_SetdiagReq(int argc, const char **argv)
 {
 	unsigned int diagReq;
-    if (argc != 1)
+	unsigned int reqtype;
+    if (argc != 2)
     {
         shellprintf(" usage: hozon_setDiagReq <set diag request>\r\n");
         return -1;
     }
 
 	sscanf(argv[0], "%u", &diagReq);
-	PP_diag_SetdiagReq((uint8_t)diagReq);
+	sscanf(argv[1], "%u", &reqtype);
+	PP_diag_SetdiagReq((uint8_t)diagReq,(uint8_t)reqtype);
     sleep(1);
     return 0;
 }

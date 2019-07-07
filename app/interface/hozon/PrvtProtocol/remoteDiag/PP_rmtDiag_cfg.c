@@ -12,7 +12,9 @@ description： include the header file
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include "init.h"
 
+#include "hozon_PP_api.h"
 #include "PP_rmtDiag_cfg.h"
 /*******************************************************
 description： global variable definitions
@@ -46,3 +48,35 @@ int PPrmtDiagCfg_ecallTriggerEvent(void)
 	return 0;
 }
 
+/******************************************************
+*函数名：setPPrmtDiagCfg_QueryFaultReq
+*形  参：
+*返回值：
+*描  述：
+*备  注：
+******************************************************/
+void setPPrmtDiagCfg_QueryFaultReq(uint8_t obj)
+{
+	PP_rmtDiag_queryInform_cb();
+}
+
+/******************************************************
+*函数名：getPPrmtDiagCfg_Faultcode
+*形  参：
+*返回值：
+*描  述
+*备  注：
+******************************************************/
+void getPPrmtDiagCfg_Faultcode(uint8_t obj,void *rmtDiag_Fault)
+{
+	uint8_t i;
+	PP_rmtDiag_Fault_t *rmtDiag_Fault_ptr = (PP_rmtDiag_Fault_t*)rmtDiag_Fault;
+	rmtDiag_Fault_ptr->faultNum = obj -1;
+	for(i = 0;i < rmtDiag_Fault_ptr->faultNum;i++)
+	{
+		memcpy(rmtDiag_Fault_ptr->faultcode[i].diagcode,"12345",5);
+		rmtDiag_Fault_ptr->faultcode[i].faultCodeType  = 1;
+		rmtDiag_Fault_ptr->faultcode[i].lowByte = 0;
+		rmtDiag_Fault_ptr->faultcode[i].diagTime = 123456789;
+	}
+}

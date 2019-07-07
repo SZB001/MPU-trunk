@@ -18,7 +18,7 @@ description： macro definitions
 /**********宏开关定义*********/
 
 /**********宏常量定义*********/
-
+#define PP_DIAG_MAXECU	28
 
 /***********宏函数***********/
 
@@ -61,8 +61,7 @@ typedef enum
 	PP_DIAG_MFCP,
 	PP_DIAG_TBOX,
 	PP_DIAG_ACU,
-	PP_DIAG_PLG,
-	PP_DIAG_MAXECU,
+	PP_DIAG_PLG
 } PP_RMTDIAG_CFG_ECUTYPE;
 
 typedef enum
@@ -98,5 +97,6 @@ description： variable External declaration
 /*******************************************************
 description： function External declaration
 *******************************************************/
-
+extern void setPPrmtDiagCfg_QueryFaultReq(uint8_t obj);
+extern void getPPrmtDiagCfg_Faultcode(uint8_t obj,void *rmtDiag_Fault);
 #endif 
