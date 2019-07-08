@@ -1,7 +1,7 @@
 /******************************************************
 鏂囦欢鍚嶏細	PP_StartEngine.c
 
-鎻忚堪锛�?	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級	
+鎻忚堪锛�?	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
@@ -63,7 +63,7 @@ typedef struct
 {
 	PP_rmtstartengine_pack_t 	pack;
 	PP_rmtstartengineSt_t		state;
-}__attribute__((packed))  PrvtProt_rmtstartengine_t; /*缁撴瀯浣�?*/
+}__attribute__((packed))  PrvtProt_rmtstartengine_t; /*缁撴瀯浣�?*/
 
 static PrvtProt_rmtstartengine_t PP_rmtengineCtrl;
 static int start_engine_stage = PP_STARTENGINE_IDLE;

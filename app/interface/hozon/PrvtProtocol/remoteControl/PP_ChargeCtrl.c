@@ -65,6 +65,8 @@ typedef struct
 	PP_rmtChargeCtrl_pack_t 	pack;
 	PP_rmtChargeCtrlPara_t		CtrlPara;
 	PP_rmtChargeCtrlSt_t		state;
+	uint8_t fail;//控制执行失败标志：0--成功；1-失败
+	uint8_t failtype;//失败类型
 }__attribute__((packed))  PrvtProt_rmtChargeCtrl_t; /*结构体*/
 
 static PrvtProt_rmtChargeCtrl_t PP_rmtChargeCtrl;
@@ -146,8 +148,8 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				else
 				{//电源非OFF,失败
 					log_i(LOG_HOZON,"The vehicle control condition is not satisfied\n");
-					PP_rmtChargeCtrl.state.fail     = 1;
-					PP_rmtChargeCtrl.state.failtype = PP_RMTCTRL_ACCNOOFF;
+					PP_rmtChargeCtrl.fail     = 1;
+					PP_rmtChargeCtrl.failtype = PP_RMTCTRL_ACCNOOFF;
 					PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_END;
 				}
 				PP_rmtChargeCtrl.state.req = 0;
@@ -176,30 +178,33 @@ int PP_ChargeCtrl_mainfunction(void *task)
 			{
 				if(PP_rmtChargeCtrl.state.chargecmd == PP_CHARGECTRL_OPEN)
 				{
-					if(PP_rmtCtrl_cfg_chargeSt() == 1) //开启成功
+					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1) //开启成功
 					{
-						log_o(LOG_HOZON,"open  success");
+						log_o(LOG_HOZON,"open  success\n");
 						//PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //清除开门标志位
-						PP_rmtChargeCtrl.state.fail     = 0;
+						PP_rmtChargeCtrl.state.chargeSt = 1;//充电中
+						PP_rmtChargeCtrl.fail     = 0;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
 					}
 				}
 				else
 				{
-					if(PP_rmtCtrl_cfg_chargeSt() == 2) //关闭成功
+					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 2) //关闭成功
 					{
-						log_o(LOG_HOZON,"close  success");
+						log_o(LOG_HOZON,"close  success\n");
+						PP_rmtChargeCtrl.state.chargeSt = 0;//未充电
 						//PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //清除开门标志位
-						PP_rmtChargeCtrl.state.fail     = 0;
+						PP_rmtChargeCtrl.fail     = 0;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
 					}
 				}
 			}
 			else//超时
 			{
+				log_e(LOG_HOZON,"Instruction execution timeout\n");
 				PP_can_send_data(PP_CAN_CHAGER,CAN_STOPCHAGER,0);
-				PP_rmtChargeCtrl.state.fail     = 1;
-				PP_rmtChargeCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
+				PP_rmtChargeCtrl.fail     = 1;
+				PP_rmtChargeCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 				PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
 			}
 		}
@@ -215,7 +220,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				rmtCtrl_chargeStpara.reqType  = PP_rmtChargeCtrl.CtrlPara.reqType;
 				rmtCtrl_chargeStpara.eventid  = PP_rmtChargeCtrl.pack.DisBody.eventId;
 				rmtCtrl_chargeStpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;//非预约
-				if(0 == PP_rmtChargeCtrl.state.fail)
+				if(0 == PP_rmtChargeCtrl.fail)
 				{
 					rmtCtrl_chargeStpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;
 					rmtCtrl_chargeStpara.rvcFailureType = 0;
@@ -223,7 +228,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				else
 				{
 					rmtCtrl_chargeStpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFAIL;
-					rmtCtrl_chargeStpara.rvcFailureType = PP_rmtChargeCtrl.state.failtype;
+					rmtCtrl_chargeStpara.rvcFailureType = PP_rmtChargeCtrl.failtype;
 				}
 				PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_chargeStpara);
 			}
@@ -235,6 +240,43 @@ int PP_ChargeCtrl_mainfunction(void *task)
 	}
 
 	return 0;
+}
+
+/******************************************************
+*函数名：PP_ChargeCtrl_chargeStMonitor
+
+*形  参：void
+
+*返回值：void
+
+*描  述：
+
+*备  注：
+******************************************************/
+void PP_ChargeCtrl_chargeStMonitor(void)
+{
+	if(1 == PP_rmtChargeCtrl.state.chargeSt)
+	{
+		if((PP_RMTCTRL_CFG_CHARGEFINISH == PP_rmtCtrl_cfg_chargeSt()) || \
+				(PP_RMTCTRL_CFG_CHARGEFAIL == PP_rmtCtrl_cfg_chargeSt()))
+		{
+			if(PP_RMTCTRL_CFG_CHARGEFINISH == PP_rmtCtrl_cfg_chargeSt())//充电完成
+			{
+
+			}
+
+			//上报充电结果给TSP
+		}
+		else
+		{}
+	}
+	else
+	{
+		if(PP_RMTCTRL_CFG_CHARGEING == PP_rmtCtrl_cfg_chargeSt())//检测到充电中
+		{
+			PP_rmtChargeCtrl.state.chargeSt = 1;
+		}
+	}
 }
 
 

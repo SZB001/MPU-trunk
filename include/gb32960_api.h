@@ -26,4 +26,5 @@ extern uint8_t gb_data_chargeSt(void);
 extern uint8_t gb_data_reardoorlockSt(void);
 extern uint8_t gb_data_ACMode(void);
 extern uint8_t gb_data_ACOnOffSt(void);
+extern uint8_t gb_data_chargeOnOffSt(void);
 #endif

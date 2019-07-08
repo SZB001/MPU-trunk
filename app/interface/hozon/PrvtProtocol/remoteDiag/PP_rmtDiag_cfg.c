@@ -71,7 +71,7 @@ void getPPrmtDiagCfg_Faultcode(uint8_t obj,void *rmtDiag_Fault)
 {
 	uint8_t i;
 	PP_rmtDiag_Fault_t *rmtDiag_Fault_ptr = (PP_rmtDiag_Fault_t*)rmtDiag_Fault;
-	rmtDiag_Fault_ptr->faultNum = obj -1;
+	rmtDiag_Fault_ptr->faultNum = 80;
 	for(i = 0;i < rmtDiag_Fault_ptr->faultNum;i++)
 	{
 		memcpy(rmtDiag_Fault_ptr->faultcode[i].diagcode,"12345",5);

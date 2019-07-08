@@ -148,9 +148,49 @@ unsigned char PP_rmtCtrl_cfg_HeatingSt(uint8_t dt)
 }
 
 /*
- 	 读取充电状态:开启/关闭:1--开启；2--关闭
+ 	 读取充电开关状态:1--开启；2--关闭
+*/
+unsigned char PP_rmtCtrl_cfg_chargeOnOffSt(void)
+{
+	uint8_t OnOffSt = 0;
+	if((gb_data_chargeOnOffSt() == 1) && (PrvtProt_SignParse_chrgAptEnSt() == 0))
+	{
+		OnOffSt = 1;
+	}
+	return OnOffSt;
+}
+
+/*
+ 	 读取充电状态:0-未充电；1 -充电中；2-充电完成；3-充电失败
+ PP_RMTCTRL_CFG_NOTCHARGE			0//未充电
+ PP_RMTCTRL_CFG_CHARGEING			1//充电中
+ PP_RMTCTRL_CFG_CHARGEFINISH			2//充电完成
+ PP_RMTCTRL_CFG_CHARGEFAIL
 */
 unsigned char PP_rmtCtrl_cfg_chargeSt(void)
 {
-	return 1;
+	uint8_t chargeSt = PP_RMTCTRL_CFG_NOTCHARGE;
+	uint8_t tmp = 0;
+
+	tmp = gb_data_chargeSt();
+	if(tmp == 0)
+	{
+		chargeSt = PP_RMTCTRL_CFG_NOTCHARGE;
+	}
+	else if(tmp == 3)
+	{
+		chargeSt = PP_RMTCTRL_CFG_CHARGEFINISH;
+	}
+	else if(tmp == 4)
+	{
+		chargeSt = PP_RMTCTRL_CFG_CHARGEFAIL;
+	}
+	else if((tmp == 1) || (tmp == 2) || (tmp == 6))
+	{
+		chargeSt = PP_RMTCTRL_CFG_CHARGEING;
+	}
+	else
+	{}
+
+	return chargeSt;
 }

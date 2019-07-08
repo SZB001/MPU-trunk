@@ -21,6 +21,10 @@ description： macro definitions
 #define PP_RMTCTRL_CFG_CANSIGWAITTIME		200//can信号状态延时判决等待时间
 
 
+#define PP_RMTCTRL_CFG_NOTCHARGE			0//未充电
+#define PP_RMTCTRL_CFG_CHARGEING			1//充电中
+#define PP_RMTCTRL_CFG_CHARGEFINISH			2//充电完成
+#define PP_RMTCTRL_CFG_CHARGEFAIL			3//充电失败
 /***********宏函数***********/
 
 
@@ -53,4 +57,6 @@ extern unsigned char PP_rmtCtrl_cfg_findcarSt(void);
 extern unsigned char PP_rmtCtrl_cfg_RmtStartSt(void);
 extern unsigned char  PP_rmtCtrl_cfg_ACOnOffSt(void);
 extern unsigned char PP_rmtCtrl_cfg_HeatingSt(uint8_t dt);
+extern unsigned char PP_rmtCtrl_cfg_chargeOnOffSt(void);
+extern unsigned char PP_rmtCtrl_cfg_chargeSt(void);
 #endif 

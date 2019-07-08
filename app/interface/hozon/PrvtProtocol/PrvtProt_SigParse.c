@@ -90,6 +90,17 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 }
 
 /*
+ 	 预约充电使能状态
+  */
+unsigned char PrvtProt_SignParse_chrgAptEnSt(void)
+{
+	unsigned char st;
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CHARGEAPPOINTEN] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CHARGEAPPOINTEN])->value: 0x0;
+	return st;
+}
+
+/*
  	 寻车状态
   */
 unsigned char PrvtProt_SignParse_findcarSt(void)

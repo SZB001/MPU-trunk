@@ -632,6 +632,7 @@ static uint8_t gb_engineSt = 2;//熄火
 static long    gb_totalOdoMr = 0;//总计里程
 static long    gb_vehicleSOC = 0;//电量
 static long    gb_vehicleSpeed = 0;//速度
+static uint8_t gb_chargeSt = 0;//
 
 #if GB_EXT
 /* event report */
@@ -1771,10 +1772,12 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = 0xff;//定时充电状态
     buf[len++] = 0xff;//定时开始充电时间小时
     buf[len++] = 0xff;//定时开始充电 时间分钟
-	if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEST])//
+	if(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])//
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEST])->value;
-		if((tmp>=0)&&(tmp<=2))
+		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
+		gb_chargeSt = tmp;//
+		//log_o(LOG_HOZON, "gb_chargeSt =  %d\n",gb_chargeSt);
+		if((tmp>=0)&&(tmp<=7))
 		{
 			buf[len++] = tmp;
 		}
@@ -2420,7 +2423,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEST])//
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEST])->value;
-		if((tmp>=0)&&(tmp<=6))
+		if((tmp>=0)&&(tmp<=1))
 		{
 			buf[len++] = tmp;
 		}
@@ -4305,12 +4308,13 @@ int gb_data_LHTemp(void)
 */
 uint8_t gb_data_chargeSt(void)
 {
-	uint8_t st = 0;
-	if(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])
-	{
-		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
-	}
-	return st;
+	//uint8_t st = 0;
+	//if(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])
+	//{
+	//	st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
+	//}
+
+	return gb_chargeSt;
 }
 
 /*
@@ -4365,4 +4369,19 @@ uint8_t gb_data_ACMode(void)
 	}
 
 	return acmode;
+}
+
+/*
+ 	 充电开/关状态
+*/
+uint8_t gb_data_chargeOnOffSt(void)
+{
+	uint8_t chargeSt = 0;
+
+	if(gb_inf->gb_ConpSt.info[GB_CMPT_CHARGEST])
+	{
+		chargeSt = dbc_get_signal_from_id(gb_inf->gb_ConpSt.info[GB_CMPT_CHARGEST])->value;
+	}
+
+	return chargeSt;
 }

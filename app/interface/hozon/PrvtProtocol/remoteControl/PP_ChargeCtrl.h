@@ -51,9 +51,7 @@ typedef struct
 	uint64_t period;
 	uint8_t  waitSt;
 	uint64_t waittime;
-
-	uint8_t fail;//控制执行失败标志：0--成功；1-失败
-	uint8_t failtype;//失败类型
+	uint8_t  chargeSt;//充电状态：1-充电中；0-未充电
 }__attribute__((packed))  PP_rmtChargeCtrlSt_t; /*remote control结构体*/
 
 
@@ -79,5 +77,5 @@ extern void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *d
 extern void ClearPP_ChargeCtrl_Request(void );
 
 extern void PP_ChargeCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
-extern unsigned char PP_rmtCtrl_cfg_chargeSt(void);
+extern void PP_ChargeCtrl_chargeStMonitor(void);
 #endif 

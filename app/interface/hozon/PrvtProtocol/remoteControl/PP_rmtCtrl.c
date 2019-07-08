@@ -168,6 +168,8 @@ int PP_rmtCtrl_mainfunction(void *task)
 			PP_rmtCtrl_checkenginetime();//15分钟之后下高压电
 			//检测空调或座椅加热上电或下电
 
+			PP_ChargeCtrl_chargeStMonitor();//监测充电状态
+
 			ret  = PP_doorLockCtrl_start() ||
 				   PP_autodoorCtrl_start() ||
 				   PP_searchvehicle_start()||
