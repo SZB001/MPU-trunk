@@ -60,8 +60,20 @@ typedef struct
 	//tsp
 	long 	reqType;
 	long 	rvcReqCode;
+	long 	bookingId;
 }__attribute__((packed))  PP_rmtChargeCtrlPara_t; /*结构体*/
 
+
+typedef struct
+{
+	//预约记录
+	uint8_t  validFlg;
+	uint32_t id;
+	uint8_t  hour;
+	uint8_t  min;
+	uint8_t  targetSOC;
+	uint8_t  period;
+}__attribute__((packed))  PP_rmtCharge_AppointBook_t; /*结构体*/
 /******union definitions*****/
 
 /*******************************************************
@@ -77,5 +89,5 @@ extern void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *d
 extern void ClearPP_ChargeCtrl_Request(void );
 
 extern void PP_ChargeCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
-extern void PP_ChargeCtrl_chargeStMonitor(void);
+extern void PP_ChargeCtrl_chargeStMonitor(void *task);
 #endif 
