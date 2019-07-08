@@ -59,4 +59,6 @@ extern unsigned char  PP_rmtCtrl_cfg_ACOnOffSt(void);
 extern unsigned char PP_rmtCtrl_cfg_HeatingSt(uint8_t dt);
 extern unsigned char PP_rmtCtrl_cfg_chargeOnOffSt(void);
 extern unsigned char PP_rmtCtrl_cfg_chargeSt(void);
+extern unsigned char PP_rmtCtrl_cfg_chargeGunCnctSt(void);
+extern unsigned char PP_rmtCtrl_cfg_readyLightSt(void);
 #endif 

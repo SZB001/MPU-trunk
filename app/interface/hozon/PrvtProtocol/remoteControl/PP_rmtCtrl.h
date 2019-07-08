@@ -86,7 +86,7 @@ description： macro definitions
 #define PP_RMTCTRL_ACCNOOFF			0x01//
 #define PP_RMTCTRL_BCDMAUTHFAIL		0x01//
 #define PP_RMTCTRL_TIMEOUTFAIL		0x01//
-
+#define PP_RMTCTRL_CHRGGUNUNCONNT		0x01//
 /***********宏函数***********/
 typedef void (*PP_rmtCtrlInitObj)(void);//初始化
 typedef int (*PP_rmtCtrlmainFuncObj)(void* x);//

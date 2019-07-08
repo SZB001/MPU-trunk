@@ -126,7 +126,8 @@ int PP_ChargeCtrl_mainfunction(void *task)
 		{
 			if(PP_rmtChargeCtrl.state.req == 1)
 			{
-				if(PP_rmtCtrl_cfg_vehicleState() == 0)//电源OFF
+				if((PP_rmtCtrl_cfg_chargeGunCnctSt() == 1) && \
+						(PP_rmtCtrl_cfg_readyLightSt() == 0))//充电枪连接 && 车辆非行驶状态
 				{
 					if(PP_rmtChargeCtrl.state.style == RMTCTRL_TSP)//tsp 平台
 					{
@@ -146,10 +147,10 @@ int PP_ChargeCtrl_mainfunction(void *task)
 					PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_REQSTART;
 				}
 				else
-				{//电源非OFF,失败
+				{//
 					log_i(LOG_HOZON,"The vehicle control condition is not satisfied\n");
 					PP_rmtChargeCtrl.fail     = 1;
-					PP_rmtChargeCtrl.failtype = PP_RMTCTRL_ACCNOOFF;
+					PP_rmtChargeCtrl.failtype = PP_RMTCTRL_CHRGGUNUNCONNT;
 					PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_END;
 				}
 				PP_rmtChargeCtrl.state.req = 0;

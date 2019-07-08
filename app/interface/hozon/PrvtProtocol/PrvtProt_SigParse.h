@@ -44,7 +44,8 @@ description£º macro definitions
 #define PP_CANSIGN_AUTHEST     			0x13//
 #define PP_CANSIGN_AUTHEFAILRESION    	0x14//
 #define PP_CANSIGN_CHARGEAPPOINTEN    	0x15//
-#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_CHARGEAPPOINTEN + 1)
+#define PP_CANSIGN_READYLIGHTST    		0x16//
+#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_READYLIGHTST + 1)
 /***********ºêº¯Êý***********/
 
 
@@ -87,4 +88,5 @@ extern unsigned char PrvtProt_SignParse_cancelEngiSt(void);
 extern unsigned char PrvtProt_SignParse_autheSt(void);
 extern unsigned char PrvtProt_SignParse_authefailresion(void);
 extern unsigned char PrvtProt_SignParse_chrgAptEnSt(void);
+extern unsigned char PrvtProt_SignParse_readyLightSt(void);
 #endif 

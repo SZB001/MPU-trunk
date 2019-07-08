@@ -90,6 +90,17 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 }
 
 /*
+ 	 运动就绪状态
+  */
+unsigned char PrvtProt_SignParse_readyLightSt(void)
+{
+	unsigned char st;
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_READYLIGHTST] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_READYLIGHTST])->value: 0x0;
+	return st;
+}
+
+/*
  	 预约充电使能状态
   */
 unsigned char PrvtProt_SignParse_chrgAptEnSt(void)

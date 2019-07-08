@@ -355,7 +355,7 @@ BO_ 1251 VCU_Fr03_4E3: 8 VCU1
  SG_ VCU3Checksum : 63|8@0+(1,0)[0|255] "" Vector__XXX
 BO_ 1236 VCU_Fr04_4D4: 8 VCU1
  SG_ VCU4VINEolUnImplnt : 11|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ VCU4READYLightSts : 12|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ VCU4READYLightSts_@2WR1016 : 12|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU4HVReady : 13|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU4ChgWake : 14|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU4VINImps : 15|1@0+(1,0)[0|1] "" Vector__XXX

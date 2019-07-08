@@ -4385,3 +4385,18 @@ uint8_t gb_data_chargeOnOffSt(void)
 
 	return chargeSt;
 }
+
+/*
+ 	 ³äµçÇ¹Á¬½Ó×´Ì¬
+*/
+uint8_t gb_data_chargeGunCnctSt(void)
+{
+	uint8_t chargeGunCnctSt = 0;
+	if (gb_inf->vehi.info[GB_VINF_CHARGE])
+	{
+		chargeGunCnctSt = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_CHARGE])->value;
+	}
+
+	return chargeGunCnctSt;
+}
+

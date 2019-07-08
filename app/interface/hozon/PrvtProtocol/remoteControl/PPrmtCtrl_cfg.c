@@ -194,3 +194,27 @@ unsigned char PP_rmtCtrl_cfg_chargeSt(void)
 
 	return chargeSt;
 }
+
+/*
+ 	 充电枪连接状态:1--连接；0-未连接
+*/
+unsigned char PP_rmtCtrl_cfg_chargeGunCnctSt(void)
+{
+	uint8_t chargeGunCnctSt = 0;
+
+	chargeGunCnctSt = gb_data_chargeGunCnctSt();
+	if((1 == chargeGunCnctSt) || (2 == chargeGunCnctSt))
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
+/*
+ 	 运动就绪状态:
+*/
+unsigned char PP_rmtCtrl_cfg_readyLightSt(void)
+{
+	return PrvtProt_SignParse_readyLightSt();
+}
