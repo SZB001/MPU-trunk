@@ -19,7 +19,7 @@ description： macro definitions
 
 /**********宏常量定义*********/
 #define PP_DIAG_WAITTIME    2500//等待HU响应时间
-#define PP_DIAG_MAX_REPORT  50//一次最多上报的故障码数
+#define PP_DIAG_MAX_REPORT  80//一次最多上报的故障码数
 
 #define PP_DIAGPWRON_WAITTIME    	5000//5s
 #define PP_DIAGQUERY_WAITTIME    	5000//5s

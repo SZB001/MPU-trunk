@@ -98,7 +98,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 			{
 				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{   //有请求判断是否满足远控条件
-					PP_rmtautodoorCtrl.state.req = 0;
+					
 					autodoor_success_flag = 0;
 					auto_door_stage = PP_AUTODOORCTR_REQSTART;
 					if(PP_rmtautodoorCtrl.state.style == RMTCTRL_TSP)//tsp
@@ -122,6 +122,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 					autodoor_success_flag = 0;
 					auto_door_stage = PP_AUTODOORCTR_END;
 				}
+				PP_rmtautodoorCtrl.state.req = 0;
 			}
 		}
 		break;
@@ -203,12 +204,13 @@ int PP_autodoorCtrl_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
-				auto_door_stage = PP_AUTODOORCTRL_IDLE;
+				
 			}
 			else//蓝牙
 			{
 
 			}
+			auto_door_stage = PP_AUTODOORCTRL_IDLE;
 		}
 		break;
 		default:

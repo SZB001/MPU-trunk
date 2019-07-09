@@ -41,6 +41,7 @@
 
 #include "PP_StartForbid.h"
 
+static int forbidaction = 0;
 typedef struct
 {
 	PrvtProt_pack_Header_t	Header;
@@ -84,7 +85,7 @@ int PP_startforbid_mainfunction(void *task)
 			{
 				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{
-					PP_rmtstartforbid.state.req = 0;
+					
 					startforbid_success_flag = 0;
 					start_forbid_stage = PP_STARTFORBID_REQSTART;
 					if(PP_rmtstartforbid.state.style == RMTCTRL_TSP)//tsp
@@ -108,18 +109,19 @@ int PP_startforbid_mainfunction(void *task)
 					startforbid_success_flag = 0;
 					start_forbid_stage = PP_STARTFORBID_END;
 				}
+				PP_rmtstartforbid.state.req = 0;
 			}
 		}
 		break;
 		case PP_STARTFORBID_REQSTART:
 		{
-			if(PP_rmtstartforbid.state.reqType == 1) 
+			if(forbidaction == 1)  //禁止启动
 			{
-				//PP_canSend_setbit(CAN_ID_440,31,2,1,NULL);  
+				PP_can_send_data(PP_CAN_FORBID,CAN_STARTFORBID,0) ;
 			}
-			else if(PP_rmtstartforbid.state.reqType == 2) 
+			else if(forbidaction== 0)  
 			{
-				//PP_canSend_setbit(CAN_ID_440,31,2,2,NULL); 
+				PP_can_send_data(PP_CAN_FORBID,CAN_NOFORBID,0) ;
 			}
 			else
 			{
@@ -130,38 +132,38 @@ int PP_startforbid_mainfunction(void *task)
 		break;
 		case PP_STARTFORBID_RESPWAIT:
 		{
-			if(PP_rmtstartforbid.state.reqType == 1) 
+			if(forbidaction == 1) 
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(gb_data_doorlockSt() == 0) 
+					if(PP_rmtCtrl_cfg_cancelEngiSt() == 0) 
 					{
-						//PP_canSend_resetbit(CAN_ID_440,31,2);
+						PP_can_send_data(PP_CAN_FORBID,CAN_FORBIDCLEAN,0) ;
 						startforbid_success_flag = 1;
 						start_forbid_stage = PP_STARTFORBID_END;
 					}
 				}
 				else
 				{
-					//PP_canSend_resetbit(CAN_ID_440,31,2);
+					PP_can_send_data(PP_CAN_FORBID,CAN_FORBIDCLEAN,0) ;
 					startforbid_success_flag = 0;
 					start_forbid_stage = PP_STARTFORBID_END;
 				}
 			}
-			else if(PP_rmtstartforbid.state.reqType == 2)
+			else if(forbidaction == 0)
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(gb_data_doorlockSt() == 1) 
+					if(PP_rmtCtrl_cfg_cancelEngiSt() == 1) 
 					{
-						//PP_canSend_resetbit(CAN_ID_440,31,2);
+						PP_can_send_data(PP_CAN_FORBID,CAN_FORBIDCLEAN,0) ;
 						startforbid_success_flag = 1;
 						start_forbid_stage = PP_STARTFORBID_END;
 					}
 				}
 				else
 				{
-					//PP_canSend_resetbit(CAN_ID_440,31,2);
+					PP_can_send_data(PP_CAN_FORBID,CAN_FORBIDCLEAN,0) ;
 					startforbid_success_flag = 0;
 					start_forbid_stage = PP_STARTFORBID_END;
 				}
@@ -192,12 +194,13 @@ int PP_startforbid_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
-				start_forbid_stage = PP_STARTFORBID_IDLE;
+				
 			}
 			else
 			{
-
+				
 			}
+			start_forbid_stage = PP_STARTFORBID_IDLE;
 		}
 		break;
 		default:
@@ -247,8 +250,21 @@ void SetPP_startforbid_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			log_i(LOG_HOZON, "remote door lock control req");
 			PP_rmtstartforbid.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtstartforbid.state.req = 1;
+			if(PP_rmtstartforbid.state.reqType == PP_RMTCTRL_BANSTART)
+			{
+				forbidaction = 1;	 //禁止启动
+			}
+			else
+			{
+				forbidaction = 0;	
+			}
 			PP_rmtstartforbid.pack.DisBody.eventId = disptrBody_ptr->eventId;
 			PP_rmtstartforbid.state.style = RMTCTRL_TSP;
+		}
+		break;
+		case RMTCTRL_BLUETOOTH:
+		{
+
 		}
 		break;
 		default:
@@ -266,6 +282,14 @@ void PP_startforbid_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtstartforbid.state.reqType = (long)reqType;
 	PP_rmtstartforbid.state.req = 1;
+	if(PP_rmtstartforbid.state.reqType == PP_RMTCTRL_BANSTART)
+	{
+		forbidaction = 1;	 //禁止启动
+	}
+	else
+	{
+		forbidaction = 0;	 
+	}
 
 }
 

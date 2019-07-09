@@ -413,6 +413,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			case PP_RMTCTRL_ENGINECTRL://发动机控制
 			{
 				log_i(LOG_HOZON, "remote RMTCTRL_ENGINECTRL control req");
+				SetPP_startforbid_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 			}
 			break;
 			default:
@@ -479,18 +480,7 @@ void PP_rmtCtrl_BluetoothSetCtrlReq(unsigned char obj, unsigned char cmd)
 			log_i(LOG_HOZON, "remote RMTSRCHVEHICLE control req");
 		}
 		break;
-		case PP_RMTCTRL_DETECTCAMERA://驾驶员检测摄像头
-		{
-			log_i(LOG_HOZON, "remote DETECTCAMERA control req");
-		}
-		break;
-		case PP_RMTCTRL_DATARECORDER://行车记录仪
-		{
-			//PP_doorLockCtrl_StatusResp(reqType);
-			log_i(LOG_HOZON, "remote DATARECORDER control req");
-		}
-		break;
-		case PP_RMTCTRL_AC://空调
+		case PP_RMTCTRL_AC://¿Õµ÷
 		{
 			//PP_rmtCtrl_StatusResp(1,reqType);
 			log_i(LOG_HOZON, "remote RMTCTRL_AC control req");
@@ -536,13 +526,14 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 	{
 		case PP_RMTCTRL_DOORLOCK://控制车门锁
 		{
+			log_o(LOG_HOZON,"DOORLOCK");
 			PP_doorLockCtrl_SetCtrlReq(req,reqType);
 		}
 		break;
 		case PP_RMTCTRL_PNRSUNROOF://控制全景天窗
 		{
 			PP_sunroofctrl_SetCtrlReq(req,reqType);
-			log_i(LOG_HOZON, "remote PANORSUNROOF control req");
+			log_o(LOG_HOZON, "remote PANORSUNROOF control req");
 		}
 		break;
 		case PP_RMTCTRL_AUTODOOR://控制自动门
@@ -588,6 +579,7 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 		break;
 		case PP_RMTCTRL_ENGINECTRL://发动机控制
 		{
+			PP_startforbid_SetCtrlReq(req,reqType);
 			log_i(LOG_HOZON, "remote RMTCTRL_ENGINECTRL control req");
 		}
 		break;

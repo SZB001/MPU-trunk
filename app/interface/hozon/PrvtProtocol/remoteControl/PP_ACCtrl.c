@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
-#include  <errno.h>
+#include <errno.h>
 #include <sys/times.h>
 #include <sys/time.h>
 #include "timer.h"
@@ -43,6 +43,10 @@
 
 #include "PP_ACCtrl.h"
 
+#define PP_OPEN_ACC  1
+#define PP_CLOSE_ACC 2
+#define PP_SETH_ACC  3
+
 
 typedef struct
 {
@@ -61,8 +65,8 @@ static PrvtProt_rmtACCtrl_t PP_rmtACCtrl;
 static int acc_ctrl_stage = PP_ACCTRL_IDLE;
 static int acctrl_success_flag = 0;
 static unsigned long long PP_Respwaittime = 0;
-
-
+static int acc_type = 0;
+static int temp = 0;
 #if 0
 static PrvtProt_pack_t 		PP_rmtACCtrl_Pack;
 static PrvtProt_App_rmtCtrl_t 		App_rmtACCtrl;
@@ -98,7 +102,6 @@ int PP_ACCtrl_mainfunction(void *task)
 			{
 				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{
-					PP_rmtACCtrl.state.req = 0;
 					acctrl_success_flag = 0;
 					acc_ctrl_stage = PP_ACCTRL_REQSTART;
 					if(PP_rmtACCtrl.state.style == RMTCTRL_TSP)
@@ -116,65 +119,36 @@ int PP_ACCtrl_mainfunction(void *task)
 
 					}
 				}
-				else
+				else   //不满足远控条件
 				{
-					PP_rmtACCtrl.state.req = 0;
 					acctrl_success_flag = 0;
 					acc_ctrl_stage = PP_ACCTRL_END;
 				}
+				PP_rmtACCtrl.state.req = 0;
 			}
 		}
 		break;
 		case PP_ACCTRL_REQSTART:     //下发开空调命令
 		{
-			if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACOPEN) //空调开启
+			if(acc_type == PP_OPEN_ACC) //空调开启
 			{
-				if(PP_rmtCtrl_cfg_ACOnOffSt() == 0)//空调没有开启
-				{
-					//PP_canSend_setbit(CAN_ID_445,1,1,1,NULL);   //命令有效
-					//PP_canSend_setbit(CAN_ID_445,14,1,1,NULL);  //空调开启
-					if((PP_rmtACCtrl.state.CtrlSt > 16)&&(PP_rmtACCtrl.state.CtrlSt < 32))   //有传温度值
-					{
-						PP_canSend_setbit(CAN_ID_445,47,6,PP_rmtACCtrl.state.CtrlSt,NULL);  //空调开启
-					}
-					else if(PP_rmtACCtrl.state.CtrlSt == 0 )
-					{
-						//没有下发温度值	
-					}
-					else
-					{
-						log_o(LOG_HOZON,"Set temperature out of range !!!!");
-					}
-				}
-				else //空调开启
-				{
-					if((PP_rmtACCtrl.state.CtrlSt > 16)&&(PP_rmtACCtrl.state.CtrlSt < 32))   //有传温度值
-					{
-						PP_canSend_setbit(CAN_ID_445,47,6,PP_rmtACCtrl.state.CtrlSt,NULL);  //空调开启
-					}
-					else if(PP_rmtACCtrl.state.CtrlSt == 0 )
-					{
-						//没有下发温度值	
-					}
-					else
-					{
-						log_o(LOG_HOZON,"Set temperature out of range !!!!");
-					}	
-				}
+				PP_can_send_data(PP_CAN_ACCTRL,CAN_OPENACC,0);	
 			}
-			else   //关闭空调         
+			else if (acc_type == PP_CLOSE_ACC)  //关闭空调         
 			{
-				//PP_canSend_resetbit(CAN_ID_445,1,1);   //
-				//PP_canSend_resetbit(CAN_ID_445,14,1);  //空调关闭
+				PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);
 			}
-
+			else
+			{
+				PP_can_send_data(PP_CAN_ACCTRL,CAN_SETACCTEP,temp);
+			}
 			acc_ctrl_stage = PP_ACCTRL_RESPWAIT;
 			PP_Respwaittime = tm_get_time();
 		}
 		break;
 		case PP_ACCTRL_RESPWAIT:
 		{
-			if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACOPEN) 
+			if(acc_type == PP_OPEN_ACC) 
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
@@ -192,7 +166,7 @@ int PP_ACCtrl_mainfunction(void *task)
 					acc_ctrl_stage = PP_ACCTRL_END;
 				}
 			}
-			else//等待空调关闭结果
+			else if (acc_type == PP_CLOSE_ACC)  //
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
@@ -205,10 +179,27 @@ int PP_ACCtrl_mainfunction(void *task)
 				}
 				else
 				{
-					//PP_canSend_resetbit(CAN_ID_440,19,2);
 					acctrl_success_flag = 0;
 					acc_ctrl_stage = PP_ACCTRL_END;
 				}
+			}
+			else 
+			{
+				if((tm_get_time() - PP_Respwaittime) < 2000)
+				{
+					if(PP_rmtCtrl_cfg_ACOnOffSt() == 0) 
+					{
+						//PP_canSend_resetbit(CAN_ID_440,19,2);
+						acctrl_success_flag = 1;
+						acc_ctrl_stage = PP_ACCTRL_END;
+					}
+				}
+				else
+				{
+					acctrl_success_flag = 0;
+					acc_ctrl_stage = PP_ACCTRL_END;
+				}
+
 			}
 		}
 		break;
@@ -281,6 +272,27 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 			log_i(LOG_HOZON, "remote auto door control req");
 			PP_rmtACCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtACCtrl.state.CtrlSt = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
+			if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACOPEN)
+			{
+				acc_type = PP_OPEN_ACC;   //开启空调
+			}
+			else if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACCLOSE)
+			{
+				acc_type = PP_CLOSE_ACC;  //关闭空调
+			}
+			else if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACAPPOINTOPEN)
+			{
+
+			}
+			else if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACCANCELAPPOINT)
+			{
+				
+			}
+			else
+			{
+				temp = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
+				acc_type = PP_SETH_ACC;   //设置温度
+			}
 			PP_rmtACCtrl.state.req = 1;
 			PP_rmtACCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
 			PP_rmtACCtrl.state.style = RMTCTRL_TSP;
@@ -300,6 +312,26 @@ void PP_ACCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtACCtrl.state.reqType = (long)reqType;
 	PP_rmtACCtrl.state.req = 1;
+	if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACOPEN)
+	{
+		acc_type = PP_OPEN_ACC;
+	}
+	else if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACCLOSE)
+	{
+		acc_type = PP_CLOSE_ACC;
+	}
+	else if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACAPPOINTOPEN)
+	{
+
+	}
+	else if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACCANCELAPPOINT)
+	{
+			
+	}
+	else
+	{
+		acc_type = PP_SETH_ACC;
+	}
 }
 
 

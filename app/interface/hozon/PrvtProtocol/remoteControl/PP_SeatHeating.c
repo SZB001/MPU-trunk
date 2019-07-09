@@ -55,10 +55,13 @@ typedef struct
 	int         start_seatheat_stage ;
 	unsigned long long PP_Respwaittime;
 	int         seatheat_success_flag;
+	int seatheat_type ;
+	int8_t level;
 }__attribute__((packed))  PrvtProt_rmtseatheating_t;
 
 static PrvtProt_rmtseatheating_t PP_rmtseatheatCtrl[PP_seatheating_max];
-static uint8_t level[PP_seatheating_max];
+ 
+
 void PP_seatheating_init(void)
 {
 	int i;
@@ -98,7 +101,7 @@ int PP_seatheating_mainfunction(void *task)
 					{
 						PP_rmtseatheatCtrl[i].state.req = 0;
 						PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
-						PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_REQSTART;
+						
 						if(PP_rmtseatheatCtrl[i].state.style == RMTCTRL_TSP)//tsp平台
 						{
 							PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
@@ -120,18 +123,20 @@ int PP_seatheating_mainfunction(void *task)
 						PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END;
 						
 					}
+					PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_REQSTART;
 				}
+				
 			}
 			break;
 			case PP_SEATHEATING_REQSTART:        
 			{
 				if(i == 0)
 				{
-					PP_can_send_data(PP_CAN_SEATHEAT,level[i],CAN_SEATHEATMAIN);
+					PP_can_send_data(PP_CAN_SEATHEAT,PP_rmtseatheatCtrl[i].level,CAN_SEATHEATMAIN);
 				}
 				else
 				{
-					PP_can_send_data(PP_CAN_SEATHEAT,level[i],CAN_SEATHEATPASS);
+					PP_can_send_data(PP_CAN_SEATHEAT,PP_rmtseatheatCtrl[i].level,CAN_SEATHEATPASS);
 				}
 			    PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_RESPWAIT;
 			    PP_rmtseatheatCtrl[i].PP_Respwaittime = tm_get_time();
@@ -143,7 +148,7 @@ int PP_seatheating_mainfunction(void *task)
 			    {
 			        if((tm_get_time() - PP_rmtseatheatCtrl[i].PP_Respwaittime) < 2000)
 			        {
-			            if(PP_rmtCtrl_cfg_HeatingSt(i) == level[i])
+			            if(PP_rmtCtrl_cfg_HeatingSt(i) == PP_rmtseatheatCtrl[i].level)
 			            {
 			      		   
 			               PP_rmtseatheatCtrl[i].seatheat_success_flag = 1;
@@ -260,7 +265,7 @@ void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 				PP_rmtseatheatCtrl[PP_seatheating_drviver].state.req = 1;
 				PP_rmtseatheatCtrl[PP_seatheating_drviver].pack.DisBody.eventId = disptrBody_ptr->eventId;
 				PP_rmtseatheatCtrl[PP_seatheating_drviver].state.style = RMTCTRL_TSP;
-				level[PP_seatheating_drviver] = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
+				PP_rmtseatheatCtrl[PP_seatheating_drviver].level = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
 			}
 			else
 			{
@@ -269,7 +274,7 @@ void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 				PP_rmtseatheatCtrl[PP_seatheating_passenger].state.req = 1;
 				PP_rmtseatheatCtrl[PP_seatheating_passenger].pack.DisBody.eventId = disptrBody_ptr->eventId;
 				PP_rmtseatheatCtrl[PP_seatheating_passenger].state.style = RMTCTRL_TSP;
-				level[PP_seatheating_passenger] = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
+				PP_rmtseatheatCtrl[PP_seatheating_passenger].level = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
 			}
 		}
 		break;

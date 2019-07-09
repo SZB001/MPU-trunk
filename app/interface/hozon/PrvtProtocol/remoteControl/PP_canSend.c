@@ -1,9 +1,8 @@
 /**********************************************
-			鍚堜紬杩滄帶can鎶ユ枃鍙戦��
-
-ID 锛�0x3D2   TBOX涓诲姩璁よ瘉璇锋眰
-ID 锛�0x440  
-ID : 0x445  杩滅▼鎺у埗鍛戒护鎶ユ枃
+			合众远控can报文发送
+ID ：0x3D2   TBOX主动认证请求
+ID ：0x440  
+ID : 0x445  远程控制命令报文
 **********************************************/
 
 #include <stdio.h>
@@ -64,7 +63,7 @@ int PP_canSend_init(void)
 {
 	shell_can_init();
 	memset(&canmsg_3D2,0,sizeof(PP_can_msg_info_t));
-	canmsg_3D2.typ = PP_CAN_TYP_EVENT;  //浜嬩欢鎶ユ枃
+	canmsg_3D2.typ = PP_CAN_TYP_EVENT;  //事件报文
 	canmsg_3D2.len =8;
 	canmsg_3D2.id = CAN_ID_3D2;
 	canmsg_3D2.port = 1;
@@ -74,7 +73,7 @@ int PP_canSend_init(void)
 }
 
 /*************************************************
-	MPU鍙戦�佽櫄鎷無n绾垮敜閱扢CU
+	MPU发送虚拟on线唤醒MCU
 **************************************************/
 int PP_send_virtual_on_to_mcu(unsigned char on)
 {
@@ -103,7 +102,7 @@ int PP_send_virtual_on_to_mcu(unsigned char on)
 
 /***********************************************
 
-PP_send_event_info_to_mcu 鐢ㄤ簬鍙戦�佷簨浠舵�ф姤鏂�3D2
+PP_send_event_info_to_mcu 用于发送事件性报文3D2
 
 ************************************************/
 
@@ -142,7 +141,7 @@ int PP_send_event_info_to_mcu(PP_can_msg_info_t *caninfo)
 }
 
 /********************************************************
-PP_send_cycle_info_to_mcu 鐢ㄤ簬鍙戦�佸懆鏈熸�ф姤鏂� 440 
+PP_send_cycle_info_to_mcu 用于发送周期性报文 440 
 ********************************************************/
 int PP_send_cycle_ID440_to_mcu(uint8_t *dt)
 {
@@ -159,7 +158,7 @@ int PP_send_cycle_ID440_to_mcu(uint8_t *dt)
 }
 
 /********************************************************
-PP_send_cycle_info_to_mcu 鐢ㄤ簬鍙戦�佸懆鏈熸�ф姤鏂� 445 
+PP_send_cycle_info_to_mcu 用于发送周期性报文 445 
 ********************************************************/
 int PP_send_cycle_ID445_to_mcu(uint8_t *dt)
 {
@@ -175,7 +174,7 @@ int PP_send_cycle_ID445_to_mcu(uint8_t *dt)
     return 0;
 }
 /********************************************************
-PP_send_cycle_info_to_mcu 鐢ㄤ簬鍙戦�佸懆鏈熸�ф姤鏂� 526
+PP_send_cycle_info_to_mcu 用于发送周期性报文 526
 ********************************************************/
 int PP_send_cycle_ID526_to_mcu(uint8_t *dt)
 {
@@ -193,30 +192,28 @@ int PP_send_cycle_ID526_to_mcu(uint8_t *dt)
 void PP_can_unpack(uint64_t data,uint8_t *dt)
 {
 	int i;
-	log_o(LOG_HOZON,"PP_can_unpack");
 	memset(dt,0,8*sizeof(uint8_t));
 	for(i=7;i>=0;i--)
 	{
 		dt[i] = (uint8_t) (data >> (i*8));
-		log_o(LOG_HOZON,"dt[%d]=%d",i,dt[i]);
 	}
 
 }
 /***************************************************************************
-鍑芥暟鍚嶏細PP_canSend_setbit       鍔熻兘锛氬皢8涓瓧鑺備腑鏌愪竴浣嶇疆浣�
-id    锛氭姤鏂嘔D
-bit   锛氳捣濮嬬殑bit浣�
-bitl  锛氬崰鍑犱釜bit
-data  锛氬叿浣撶殑鏁版嵁
-*dt   锛氭鍙傛暟鐢ㄤ簬鍙戦��3D2鎶ユ枃鐨勫彂閫侊紝鍏朵綑ID鐨勫寘鏂囷紝姝ゅ弬鏁板～NULL
+函数名：PP_canSend_setbit       功能：将8个字节中某一位置位
+id    ：报文ID
+bit   ：起始的bit位
+bitl  ：占几个bit
+data  ：具体的数据
+*dt   ：此参数用于发送3D2报文的发送，其余ID的包文，此参数填NULL
 ****************************************************************************/
 void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uint8_t *dt)
 {
 	int i;
 	if(id == CAN_ID_440)
 	{
-		ID440_data &= ~(uint64_t)(((1<<bitl)-1) << (bit-1)) ; //鍐嶇Щ浣�
-		ID440_data |= (uint64_t)data << (bit-1);      //缃綅
+		ID440_data &= ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
+		ID440_data |= (uint64_t)data << (bit-bitl+1);      //置位
 		
 		PP_can_unpack(ID440_data,can_data);
 		for(i=0;i<8;i++)
@@ -227,15 +224,15 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 	}
 	else if(id == CAN_ID_445)
 	{
-		ID445_data &= ~(((1<<bitl)-1) << (bit-1)) ; //鍐嶇Щ浣�
-		ID445_data |= (uint64_t)data << (bit-1);      //缃綅
+		ID445_data &= ~(((1<<bitl)-1) << (bit-1)) ; //再移位
+		ID445_data |= (uint64_t)data << (bit-1);      //置位
 		PP_can_unpack(ID445_data,can_data);
 		PP_send_cycle_ID445_to_mcu(can_data);
 	}
 	else if(id == CAN_ID_526)
 	{
-		ID526_data &= ~(((1<<bitl)-1) << (bit-1)) ; //鍐嶇Щ浣�
-		ID526_data |= (uint64_t)data << (bit-1);      //缃綅
+		ID526_data &= ~(((1<<bitl)-1) << (bit-1)) ; //再移位
+		ID526_data |= (uint64_t)data << (bit-1);      //置位
 		PP_can_unpack(ID526_data,can_data);
 		PP_send_cycle_ID526_to_mcu(can_data);
 	}
@@ -257,46 +254,7 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 		PP_send_event_info_to_mcu(&canmsg_3D2);
 	}
 }
-#if 0
-/***************************************************************************
-PP_canSend_resetbit       鍔熻兘锛氬皢8涓瓧鑺備腑鏌愪竴浣嶇疆浣�
-id    锛氭姤鏂嘔D
-bit   锛氳捣濮嬬殑bit浣�
-bitl  锛氬崰鍑犱釜bit
-****************************************************************************/
-void PP_canSend_resetbit(unsigned int id,int bit,int bitl)
-{
-	int i;
-	if(id == CAN_ID_440)
-	{
-		for(i = 0 ; i < bitl ; i++)
-		{
-			ID440_data[bit/8] &= ~(1 << (bit/8 - i));
-		}	
-		PP_send_cycle_ID440_to_mcu(ID440_data);
-	}
-	else if (id == CAN_ID_445)
-	{
-		for(i = 0 ; i < bitl ; i++)
-		{
-			ID445_data[bit/8] &= ~(1 << (bit/8 - i));
-		}
-		PP_send_cycle_ID445_to_mcu(ID445_data);
-	}
-	else if(id == CAN_ID_526)
-	{
-		for(i = 0 ; i < bitl ; i++)
-		{
-			ID526_data[bit/8] &= ~(1 << (bit/8 - i));
-		}
-		PP_send_cycle_ID526_to_mcu(ID526_data);
-	}
-	else  //3D2
-	{
-		
-	}
-}
-#endif
+
 void PP_can_send_data(int type,uint8_t data,uint8_t para)
 {
 	switch(type)
@@ -307,6 +265,7 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 			break;
 		case PP_CAN_SUNROOF:
 			PP_canSend_setbit(CAN_ID_440,47,3,data,NULL);
+			log_o(LOG_HOZON,"data = %d",data);
 			break;
 		case PP_CAN_AUTODOOR:
 			PP_canSend_setbit(CAN_ID_440,19,2,data,NULL);
@@ -315,54 +274,43 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 			PP_canSend_setbit(CAN_ID_440,17,2,data,NULL);
 			break;
 		case PP_CAN_ENGINE:
-
-			PP_canSend_setbit(CAN_ID_440,data,1,para,NULL);
+			PP_canSend_setbit(CAN_ID_440,1,2,data,NULL);
 			break;
-		case PP_CAN_ACCTRL:
+		case PP_CAN_ACCTRL://空调控制
+			{
+				switch(data)
+				{
+					case CAN_OPENACC:
+						PP_canSend_setbit(CAN_ID_445,1,1,1,NULL);//有效
+						PP_canSend_setbit(CAN_ID_445,14,1,1,NULL);//开启
+						break;
+					case CAN_CLOSEACC:
+						PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//有效
+						PP_canSend_setbit(CAN_ID_445,14,1,0,NULL);//开启
+						break;
+					case CAN_SETACCTEP:
+						PP_canSend_setbit(CAN_ID_445,47,6,para,NULL); //设置温度
+						break;
+					case CAN_APPOINTACC:
+						break;
+					default:
+						break;
+				}	
+			}
 			break;
 		case PP_CAN_CHAGER:
 			PP_canSend_setbit(CAN_ID_440,3,1,data,NULL);
 			break;
 		case PP_CAN_FORBID:
+			PP_canSend_setbit(CAN_ID_440,31,2,data,NULL);
 			break;
 		case PP_CAN_SEATHEAT:
 			PP_canSend_setbit(CAN_ID_440,para,2,data,NULL);
 			break;
+		case PP_CAN_IDENTIFICAT:
 		default:
 			break;
 
 	}
 }
-#if 0
-void PP_can_clear_data(int type)
-{
-	switch(type)
-	{
-		case PP_CAN_DOORLOCK:
-			PP_canSend_resetbit(CAN_ID_440,17,2);
-			break;
-		case PP_CAN_SUNROOF:
-			PP_canSend_resetbit(CAN_ID_440,47,3);
-			break;
-		case PP_CAN_AUTODOOR:
-			PP_canSend_resetbit(CAN_ID_440,17,2);
-			break;
-		case PP_CAN_SEARCH:
-			break;
-		case PP_CAN_ENGINE:
-			break;
-		case PP_CAN_ACCTRL:
-			break;
-		case PP_CAN_CHAGER:
-			break;
-		case PP_CAN_FORBID:
-			break;
-		case PP_CAN_SEATHEAT:
-			break;
-		default:
-			break;
-
-	}
-}
-#endif
 

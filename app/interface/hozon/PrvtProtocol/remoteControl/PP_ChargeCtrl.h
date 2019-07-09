@@ -73,7 +73,15 @@ typedef struct
 	uint8_t  min;
 	uint8_t  targetSOC;
 	uint8_t  period;
+	uint32_t eventId;
 }__attribute__((packed))  PP_rmtCharge_AppointBook_t; /*结构体*/
+
+typedef struct
+{
+	//预约周期
+	uint8_t  week;
+	uint8_t  mask;
+} PP_rmtCharge_Appointperiod_t; /*结构体*/
 /******union definitions*****/
 
 /*******************************************************

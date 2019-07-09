@@ -96,7 +96,7 @@ int PP_searchvehicle_mainfunction(void *task)
 			{
 				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{
-					PP_rmtsearchvehicle.state.req = 0;
+					
 					serachvehicle_success_flag = 0;
 					search_vehicle_stage = PP_SEARCHVEHICLE_REQSTART;
 					if(PP_rmtsearchvehicle.state.style == RMTCTRL_TSP)//tsp
@@ -113,6 +113,7 @@ int PP_searchvehicle_mainfunction(void *task)
 					{
 
 					}
+					
 				}
 				else
 				{
@@ -120,15 +121,17 @@ int PP_searchvehicle_mainfunction(void *task)
 					serachvehicle_success_flag = 0;
 					search_vehicle_stage = PP_SEARCHVEHICLE_END;
 				}
-			}
+				PP_rmtsearchvehicle.state.req = 0;
+			}	
 		}
 		break;
 		case PP_SEARCHVEHICLE_REQSTART:
 		{
+			log_o(LOG_HOZON,"PP_SEARCHVEHICLE_REQSTART");
 			if(search_type == PP_SEARCH) //寻车
 			{
 				PP_can_send_data(PP_CAN_SEARCH,CAN_SEARCHVEHICLE,0);
-				//PP_canSend_setbit(CAN_ID_440,17,2,3,NULL);  //寻车报文
+				log_o(LOG_HOZON,"ppppp %d",CAN_SEARCHVEHICLE);
 			}
 			search_vehicle_stage = PP_SEARCHVEHICLE_RESPWAIT;
 			PP_Respwaittime = tm_get_time();
@@ -136,21 +139,21 @@ int PP_searchvehicle_mainfunction(void *task)
 		break;
 		case PP_SEARCHVEHICLE_RESPWAIT://执行等待车控响应
 		{
+			log_o(LOG_HOZON,"PP_SEARCHVEHICLE_RESPWAIT");
 			if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN) //寻车
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
 					if(PP_rmtCtrl_cfg_findcarSt() == 0) //
 					{
-						//PP_canSend_resetbit(CAN_ID_440,17,2);
-						PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0);
+						PP_can_send_data(PP_CAN_SEARCH,CAN_CLEANSEARCH,0);
 						serachvehicle_success_flag = 1;
 						search_vehicle_stage = PP_SEARCHVEHICLE_END;
 					}
 				}
 				else//响应超时
 				{
-					PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0);
+					PP_can_send_data(PP_CAN_SEARCH,CAN_CLEANSEARCH,0);
 					serachvehicle_success_flag = 0;
 					search_vehicle_stage = PP_SEARCHVEHICLE_END;
 				}
@@ -177,12 +180,13 @@ int PP_searchvehicle_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
-				search_vehicle_stage = PP_SEARCHVEHICLE_IDLE;
+				
 			}
 			else//蓝牙
 			{
 
 			}
+			search_vehicle_stage = PP_SEARCHVEHICLE_IDLE;
 		}
 		break;
 		default:
@@ -251,6 +255,10 @@ void PP_searchvehicle_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtsearchvehicle.state.reqType = (long)reqType;
 	PP_rmtsearchvehicle.state.req = 1;
+	if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN)
+	{
+		search_type = PP_SEARCH;
+	}
 }
 
 

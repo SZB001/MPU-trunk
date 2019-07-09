@@ -218,3 +218,24 @@ unsigned char PP_rmtCtrl_cfg_readyLightSt(void)
 {
 	return PrvtProt_SignParse_readyLightSt();
 }
+
+/*
+	绂佹鍚姩鐘舵€?
+*/
+
+unsigned char PP_rmtCtrl_cfg_cancelEngiSt(void)
+{
+	 return PrvtProt_SignParse_cancelEngiSt();
+
+}
+
+/*
+	鑾峰彇绌鸿皟娓╁害
+*/
+
+unsigned char PP_rmtCtrl_cfg_LHTemp(void)
+{
+
+	return gb_data_LHTemp();
+}
+

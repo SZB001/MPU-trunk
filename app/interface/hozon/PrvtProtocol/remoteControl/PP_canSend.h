@@ -5,13 +5,14 @@
 #define CAN_ID_440 0x440
 #define CAN_ID_445 0x445
 #define CAN_ID_526 0x526
+
 /***********doorctrl***********/
 #define CAN_CLEANDOOR 0
 #define CAN_CLOSEDOOR 1
 #define CAN_OPENDOOR  2
 /**********search**************/
+#define CAN_CLEANSEARCH   0
 #define CAN_SEARCHVEHICLE 3
-
 /***********sunroofctrl*********/
 #define CAN_SUNROOFCLEAN   0
 #define CAN_SUNROOFOPEN    1
@@ -31,13 +32,22 @@
 #define CAN_SEATHEATPASS   30
 /**********engine****************/
 #define CAN_ENGINECLEAN 0
-#define CAN_ENGINEREQ   1
-#define CAN_STARTENGINE 0
-#define CAN_CLOSEENGINE 1
-
+#define CAN_STARTENGINE 1
+#define CAN_CLOSEENGINE 2
 /************chager**************/
-#define CAN_STOPCHAGER 	0
+#define CAN_STOPCHAGER 0
 #define CAN_STARTCHAGER 1
+/************forbid**************/
+#define CAN_FORBIDCLEAN  0
+#define CAN_STARTFORBID  1
+#define CAN_NOFORBID     2
+/************ACC****************/
+#define CAN_OPENACC   1
+#define CAN_SETACCTEP 2
+#define CAN_CLOSEACC 3
+#define CAN_CLEANACC 4
+#define CAN_APPOINTACC 5
+#define CAN_CANCELAPPOINTACC 6
 
 typedef enum
 {
@@ -50,26 +60,27 @@ typedef enum
     PP_CAN_CHAGER,
     PP_CAN_FORBID,
     PP_CAN_SEATHEAT,
+    PP_CAN_IDENTIFICAT,
     PP_CAN_CTRL_TYP_MAX,
 } PP_can_ctrl_typ;
 
 
 typedef enum
 {
-    PP_CAN_TYP_EVENT = 1,//浜嬩欢鍨嬫姤鏂�
-    PP_CAN_TYP_MIX,//娣峰悎鎶ユ枃
+    PP_CAN_TYP_EVENT = 1,//事件型报文
+    PP_CAN_TYP_MIX,//混合报文
     PP_CAN_TYP_MAX,
 } PP_can_typ;
 
 typedef struct
 {
-    PP_can_typ typ;//鎶ユ枃绫诲瀷
-    unsigned int id;//鎶ユ枃ID
-    unsigned char port;//鎶ユ枃鍙戦�佺鍙�
-    unsigned char data[8];//鎶ユ枃绫诲瀷
-    unsigned char len;//鎶ユ枃闀垮害
-    unsigned char times_event;//浜嬩欢鎶ユ枃鍙戦�佺殑娆℃暟
-    unsigned int period;//浜嬩欢鎶ユ枃鍙戦�佸懆鏈�
+    PP_can_typ typ;//报文类型
+    unsigned int id;//报文ID
+    unsigned char port;//报文发送端口
+    unsigned char data[8];//报文类型
+    unsigned char len;//报文长度
+    unsigned char times_event;//事件报文发送的次数
+    unsigned int period;//事件报文发送周期
 } PP_can_msg_info_t;
 
 

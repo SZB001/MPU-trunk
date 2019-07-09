@@ -101,7 +101,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 			{
 				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{
-					PP_rmtsunroofCtrl.state.req = 0;
+					
 					sunroof_success_flag = 0;
 					sunroof_ctrl_stage = PP_SUNROOFCTRL_REQSTART;
 					if(PP_rmtsunroofCtrl.state.style == RMTCTRL_TSP)//tsp
@@ -118,6 +118,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 					{
 
 					}
+					PP_rmtsunroofCtrl.state.req = 0;
 				}
 				else
 				{
@@ -130,6 +131,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 		break;
 		case PP_SUNROOFCTRL_REQSTART:
 		{
+			log_o(LOG_HOZON,"PP_SUNROOFCTRL_REQSTART");
 			if(sunroof_type == PP_SUNROOFOPEN) //天窗打开
 			{
 				PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFOPEN,0);
@@ -158,6 +160,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 				{
 					if(PP_rmtCtrl_cfg_sunroofSt() == 4) //状态为4，天窗打开ok
 					{
+						log_o(LOG_HOZON,"PP_SUNROOFCTRL_OPEN SUCCESS");
 						PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
 						sunroof_success_flag = 1;
 						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
@@ -214,7 +217,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 		break;
 		case PP_SUNROOFCTRL_END:
 		{
-			
+			log_o(LOG_HOZON,"PP_SUNROOFCTRL_END");
 			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 			memset(&rmtCtrl_Stpara,0,sizeof(PP_rmtCtrl_Stpara_t));
 			if(PP_rmtsunroofCtrl.state.style == RMTCTRL_TSP)//tsp
@@ -233,12 +236,13 @@ int PP_sunroofctrl_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
-				sunroof_ctrl_stage = PP_SUNROOFCTRL_IDLE;
+				
 			}
 			else//蓝牙
 			{
 
 			}
+			sunroof_ctrl_stage = PP_SUNROOFCTRL_IDLE;
 		}
 		break;
 		default:
