@@ -112,7 +112,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 						rmtCtrl_Stpara.reqType =PP_rmtsunroofCtrl.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtsunroofCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+						res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 					}
 					else//蓝牙
 					{
@@ -236,7 +236,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
-				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+				res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 				
 			}
 			else//蓝牙
@@ -275,12 +275,12 @@ uint8_t PP_sunroofctrl_end(void)
 			(PP_rmtsunroofCtrl.state.req == 0))
 	{
 		
-		return 0;
+		return 1;
 	}
 	else
 	{
-		log_o(LOG_HOZON,"ROOF");
-		return 1;
+		//log_o(LOG_HOZON,"ROOF");
+		return 0;
 	}
 }
 

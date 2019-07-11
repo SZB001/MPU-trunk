@@ -52,11 +52,11 @@ descriptionÔºö include the header file
 
 static int doorLock_success_flag = 0;
 /*******************************************************
-description£∫ global variable definitions
+descriptionÔøΩÔøΩ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£∫ static variable definitions
+descriptionÔøΩÔøΩ static variable definitions
 *******************************************************/
 #define PP_OPENDOOR  0
 #define PP_CLOSEDOOR 1
@@ -77,14 +77,14 @@ static int door_lock_stage = PP_DOORLOCKCTRL_IDLE;
 static unsigned long long PP_Respwaittime = 0;
 static int doorctrl_type = 0;
 /*******************************************************
-description£∫ function declaration
+descriptionÔøΩÔøΩ function declaration
 *******************************************************/
 /*Global function declaration*/
 
 /*Static function declaration*/
 
 /******************************************************
-description£∫ function code
+descriptionÔøΩÔøΩ function code
 ******************************************************/
 
 /******************************************************
@@ -140,7 +140,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 						rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+						res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 					}
 					else// ËìùÁâô
 					{
@@ -233,7 +233,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcReqStatus = 3;  //÷¥ÊâßË°åÂ§±Ë¥•
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
-				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+				res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 				
 			}
 			else//
@@ -312,12 +312,12 @@ int PP_doorLockCtrl_end(void)
 	if((door_lock_stage == PP_DOORLOCKCTRL_IDLE) && \
 			(PP_rmtdoorCtrl.state.req == 0))
 	{
-		return 0;
+		return 1;
 		
 	}
 	else
 	{
-		return 1;
+		return 0;
 		
 	}
 }

@@ -110,7 +110,7 @@ int PP_seatheating_mainfunction(void *task)
 							rmtCtrl_Stpara.reqType =PP_rmtseatheatCtrl[i].state.reqType;
 							rmtCtrl_Stpara.eventid = PP_rmtseatheatCtrl[i].pack.DisBody.eventId;
 							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-							res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+							res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 						}
 						else
 						{
@@ -201,7 +201,7 @@ int PP_seatheating_mainfunction(void *task)
 						rmtCtrl_Stpara.rvcReqStatus = 3;  
 						rmtCtrl_Stpara.rvcFailureType = 0xff;
 					}
-					res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+					res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 					PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_IDLE;
 				}
 				else
@@ -238,12 +238,12 @@ uint8_t PP_seatheating_end(void)
 			(PP_rmtseatheatCtrl[1].start_seatheat_stage == PP_SEATHEATING_IDLE) &&
 			(PP_rmtseatheatCtrl[1].state.req == 0))
 	{
-		return 0;
+		return 1;
 	}
 	else
 	{
-		log_o(LOG_HOZON,"seat");
-		return 1;
+		//log_o(LOG_HOZON,"seat");
+		return 0;
 	}
 }
 

@@ -1,7 +1,7 @@
 /******************************************************
 鏂囦欢鍚嶏細	PP_StartEngine.c
 
-鎻忚堪锛�?	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級	
+鎻忚堪锛�?	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
@@ -65,7 +65,7 @@ typedef struct
 {
 	PP_rmtstartengine_pack_t 	pack;
 	PP_rmtstartengineSt_t		state;
-}__attribute__((packed))  PrvtProt_rmtstartengine_t; /*缁撴瀯浣�?*/
+}__attribute__((packed))  PrvtProt_rmtstartengine_t; /*缁撴瀯浣�?*/
 
 static PrvtProt_rmtstartengine_t PP_rmtengineCtrl;
 static int start_engine_stage = PP_STARTENGINE_IDLE;
@@ -109,7 +109,7 @@ int PP_startengine_mainfunction(void *task)
 						rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+						res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 					}
 					else      //蓝牙
 					{
@@ -206,7 +206,7 @@ int PP_startengine_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcReqStatus = 3;   //给平台回复执行完成
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
-				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+				res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 				
 			}
 			else  //蓝牙
@@ -241,12 +241,12 @@ uint8_t PP_startengine_end(void)
 	if((start_engine_stage == PP_STARTENGINE_IDLE) && \
 			(PP_rmtengineCtrl.state.req == 0))
 	{
-		return 0;
+		return 1;
 	}
 	else
 	{
-		log_o(LOG_HOZON,"engine");
-		return 1;
+		//log_o(LOG_HOZON,"engine");
+		return 0;
 	}
 }
 void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)

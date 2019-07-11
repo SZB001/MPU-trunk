@@ -168,7 +168,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 						rmtCtrl_Stpara.reqType = PP_rmtChargeCtrl.CtrlPara.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtChargeCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+						PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 					}
 					else if(PP_rmtChargeCtrl.state.style == RMTCTRL_TBOX)//
 					{
@@ -264,7 +264,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 					rmtCtrl_chargeStpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFAIL;
 					rmtCtrl_chargeStpara.rvcFailureType = PP_rmtChargeCtrl.failtype;
 				}
-				PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_chargeStpara);
+				PP_rmtCtrl_StInformTsp(task,&rmtCtrl_chargeStpara);
 			}
 			else if(PP_rmtChargeCtrl.state.style   == RMTCTRL_TBOX)
 			{
@@ -283,7 +283,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 					rmtCtrl_chargeStpara.bookingId  = PP_rmtChargeCtrl.CtrlPara.bookingId;
 					rmtCtrl_chargeStpara.eventid  = PP_rmtChargeCtrl.pack.DisBody.eventId;
 					rmtCtrl_chargeStpara.Resptype = PP_RMTCTRL_RVCBOOKINGRESP;//预约
-					PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_chargeStpara);
+					PP_rmtCtrl_StInformTsp(task,&rmtCtrl_chargeStpara);
 				}
 			}
 			PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_IDLE;
@@ -340,7 +340,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 						log_i(LOG_HOZON,"%s %d:%d:%d\n", wday[localdatetime->tm_wday], \
 								localdatetime->tm_hour, localdatetime->tm_min, localdatetime->tm_sec);
 						appointPerformFlg = 1;
-						SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,NULL,NULL);
+						SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,NULL,NULL,NULL);
 						log_i(LOG_HOZON,"Duplicate appointment\n");
 					}
 				}
@@ -362,7 +362,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 						localdatetime->tm_hour, localdatetime->tm_min, localdatetime->tm_sec);
 
 				PP_rmtCharge_AppointBook.validFlg = 0;
-				SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,NULL,NULL);
+				SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,NULL,NULL,NULL);
 				(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
 
 				//inform HU appointment status
@@ -406,7 +406,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 			}
 			rmtCtrl_chargeStpara.eventid  = PP_rmtChargeCtrl.pack.DisBody.eventId;
 			rmtCtrl_chargeStpara.Resptype = PP_RMTCTRL_RVCBOOKINGRESP;//预约
-			PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_chargeStpara);
+			PP_rmtCtrl_StInformTsp(task,&rmtCtrl_chargeStpara);
 		}
 		else
 		{}
@@ -432,16 +432,19 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 
 *备  注：
 ******************************************************/
-void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
+void SetPP_ChargeCtrl_Request(char ctrlstyle,void *task,void *appdatarmtCtrl,void *disptrBody)
 {
 	uint32_t appointId = 0;
 	ivi_chargeAppointSt		ivi_chargeSt;
+
 	switch(ctrlstyle)
 	{
 		case RMTCTRL_TSP:
 		{
 			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
 			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
+			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+
 			log_i(LOG_HOZON, "tsp remote charge control req\n");
 
 			PP_rmtChargeCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
@@ -502,10 +505,20 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				tbox_ivi_set_tspchager_InformHU(&ivi_chargeSt);
 
 				//inform TSP the Reservation instruction issued status
-
+				//PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+				rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
+				rmtCtrl_Stpara.rvcFailureType = 0;
+				rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+				rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
+				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+				PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 			}
 			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_COMAND_CANCELAPPOINTCHARGE)
 			{//取消预约
+				//PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+				rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+				rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
+				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] << 24;
 				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[1] << 16;
 				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[2] << 8;
@@ -513,6 +526,9 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				if(PP_rmtCharge_AppointBook.id == appointId)
 				{
 					PP_rmtCharge_AppointBook.validFlg  = 0;
+					rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
+					rmtCtrl_Stpara.rvcFailureType = 0;
+
 					//inform HU appointment status
 					ivi_chargeSt.id = PP_rmtCharge_AppointBook.id;
 					ivi_chargeSt.hour = PP_rmtCharge_AppointBook.hour;
@@ -527,7 +543,11 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				else
 				{
 					log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
+					rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFAIL;//执行失败
+					rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_INVALID_ID;
 				}
+
+				PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 			}
 			else
 			{}

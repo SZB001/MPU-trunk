@@ -109,7 +109,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 						rmtCtrl_Stpara.reqType =PP_rmtautodoorCtrl.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtautodoorCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+						res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 					}
 					else//蓝牙
 					{
@@ -203,7 +203,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
-				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+				res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
 				
 			}
 			else//蓝牙
@@ -237,12 +237,12 @@ uint8_t PP_autodoorCtrl_end(void)
 	if((auto_door_stage == PP_AUTODOORCTRL_IDLE) && \
 			(PP_rmtautodoorCtrl.state.req == 0))
 	{
-		return 0;
+		return 1;
 	}
 	else
 	{
-		log_o(LOG_HOZON,"AUTO");
-		return 1;
+		//log_o(LOG_HOZON,"AUTO");
+		return 0;
 	}
 }
 

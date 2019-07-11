@@ -93,7 +93,7 @@ description£º function External declaration
 *******************************************************/
 extern void PP_ChargeCtrl_init(void);
 extern int 	PP_ChargeCtrl_mainfunction(void *task);
-extern void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
+extern void SetPP_ChargeCtrl_Request(char ctrlstyle,void *task,void *appdatarmtCtrl,void *disptrBody);
 extern void ClearPP_ChargeCtrl_Request(void );
 
 extern void PP_ChargeCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);

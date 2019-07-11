@@ -217,7 +217,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
 				rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_BCDMAUTHFAIL;
-				PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+				PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
     			PP_rmtCtrl_flag = RMTCTRL_IDLE;
 				log_o(LOG_HOZON,"-------identificat failed---------");
 				// 清除远程控制请求
@@ -237,7 +237,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 		case RMTCTRL_COMMAND_LAUNCH://远程控制
 		{
 			log_o(LOG_HOZON,"-------command---------");
-			int ret;
+			int ifend;
 			for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
 			{
 				if(PP_RmtCtrlFunc[i].mainFunc != NULL)
@@ -246,16 +246,16 @@ int PP_rmtCtrl_mainfunction(void *task)
 				}
 			}
 
-			ret = PP_doorLockCtrl_end() ||
-				  PP_autodoorCtrl_end() ||
-				  PP_searchvehicle_end()||
-				  PP_sunroofctrl_end()  ||
-				  PP_startengine_end()  ||
-				  PP_seatheating_end()  ||
-				  PP_ChargeCtrl_end()	||
-				  PP_ACCtrl_end()	    ||
+			ifend = PP_doorLockCtrl_end() &&
+				  PP_autodoorCtrl_end()   &&
+				  PP_searchvehicle_end()  &&
+				  PP_sunroofctrl_end()    &&
+				  PP_startengine_end()    &&
+				  PP_seatheating_end()    &&
+				  PP_ChargeCtrl_end()	  &&
+				  PP_ACCtrl_end()	      &&
 				  PP_startforbid_end();
-			if(ret == 0)
+			if(ifend == 1)
 			{
 				PP_can_mcu_sleep();//休眠
 				PP_rmtCtrl_flag = RMTCTRL_IDLE; //远程命令执行完，回到空闲
@@ -410,7 +410,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 			case PP_RMTCTRL_CHARGE://充电
 			{
-				SetPP_ChargeCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+				SetPP_ChargeCtrl_Request(RMTCTRL_TSP,task,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
 			}
 			break;

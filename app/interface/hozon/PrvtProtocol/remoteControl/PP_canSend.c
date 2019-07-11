@@ -18,11 +18,13 @@ static uint64_t ID445_data;
 static uint64_t ID526_data;
 static uint8_t can_data[8];
 
+static uint64_t lastsendtime;
+
+
 
 
 int shell_can_init()
-{
-	
+{	
 	return 0;
 }
 int PP_canSend_init(void)
@@ -227,11 +229,14 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 ****************************************************/
 void PP_can_send_cycle(void)
 {
-	
-	PP_can_unpack(ID440_data,can_data);
-	PP_send_cycle_ID440_to_mcu(can_data);
-	PP_can_unpack(ID445_data,can_data);
-	PP_send_cycle_ID445_to_mcu(can_data);
+	if(tm_get_time() - lastsendtime > 20)    //20ms
+	{
+		PP_can_unpack(ID440_data,can_data);
+		PP_send_cycle_ID440_to_mcu(can_data);
+		PP_can_unpack(ID445_data,can_data);
+		PP_send_cycle_ID445_to_mcu(can_data);
+		lastsendtime = tm_get_time();
+	}
 	
 }
 /**************************************
