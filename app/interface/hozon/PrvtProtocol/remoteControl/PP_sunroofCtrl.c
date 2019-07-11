@@ -168,6 +168,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 				}
 				else//
 				{
+					log_o(LOG_HOZON,"sunroof timeout\n");
 					PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
 					sunroof_success_flag = 0;
 					sunroof_ctrl_stage = PP_SUNROOFCTRL_END;

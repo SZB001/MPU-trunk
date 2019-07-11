@@ -19,44 +19,10 @@ static uint64_t ID526_data;
 static uint8_t can_data[8];
 
 
-void hozon_can_440_send(void)
-{
-#if 0
-	PP_can_msg_info_t caninfo;
-	caninfo.data[0] = 0x00;
-	caninfo.data[1] = 0x11;
-	caninfo.data[2] = 0x22;
-	caninfo.data[3] = 0x33;
-	caninfo.data[4] = 0x44;
-	caninfo.data[5] = 0x55;
-	caninfo.data[6] = 0x66;
-	caninfo.data[7] = 0x77;
-	int len = 0;
-	unsigned char buf[64] = {0};
-    memcpy(buf + len, caninfo.data, 8*sizeof(uint8_t));
-    len += 8*sizeof(uint8_t);
-	scom_tl_send_frame(SCOM_MPU_MCU_0x440, SCOM_TL_SINGLE_FRAME, 0, buf, len);
-	log_o(LOG_HOZON,"440 send");
-#endif 
-
-	PP_canSend_setbit(CAN_ID_440,17,2,2,NULL);
-}
-
-void hozon_can_on_send(void)
-{
-	int len = 1;
-	unsigned char buf[1] ;
-	buf[0] = 1;
-
-	scom_tl_send_frame(SCOM_MPU_MCU_VIRTUAL_ON, SCOM_TL_SINGLE_FRAME, 0, buf, len);
-	log_o(LOG_HOZON,"440 on");
-	
-}
 
 int shell_can_init()
 {
-	shell_cmd_register("hozon_can_440", hozon_can_440_send, "set HOZON PrvtProt remote control data");
-	shell_cmd_register("hozon_can_on", hozon_can_on_send, "set HOZON PrvtProt remote control data");
+	
 	return 0;
 }
 int PP_canSend_init(void)
@@ -214,7 +180,7 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 	{
 		ID440_data &= ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
 		ID440_data |= (uint64_t)data << (bit-bitl+1);      //置位
-		
+		PP_send_virtual_on_to_mcu(1);
 		PP_can_unpack(ID440_data,can_data);
 		for(i=0;i<8;i++)
 		{
@@ -224,6 +190,7 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 	}
 	else if(id == CAN_ID_445)
 	{
+		PP_send_virtual_on_to_mcu(1);
 		ID445_data &= ~(((1<<bitl)-1) << (bit-1)) ; //再移位
 		ID445_data |= (uint64_t)data << (bit-1);      //置位
 		PP_can_unpack(ID445_data,can_data);
@@ -231,6 +198,7 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 	}
 	else if(id == CAN_ID_526)
 	{
+		PP_send_virtual_on_to_mcu(1);
 		ID526_data &= ~(((1<<bitl)-1) << (bit-1)) ; //再移位
 		ID526_data |= (uint64_t)data << (bit-1);      //置位
 		PP_can_unpack(ID526_data,can_data);
@@ -254,7 +222,41 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 		PP_send_event_info_to_mcu(&canmsg_3D2);
 	}
 }
+/***************************************************
+		广播440 445报文
+****************************************************/
+void PP_can_send_cycle(void)
+{
+	
+	PP_can_unpack(ID440_data,can_data);
+	PP_send_cycle_ID440_to_mcu(can_data);
+	PP_can_unpack(ID445_data,can_data);
+	PP_send_cycle_ID445_to_mcu(can_data);
+	
+}
+/**************************************
+			唤醒MCU
+***************************************/
+void PP_can_mcu_awaken(void)
+{
+	int i;
+	for(i=0;i<10;i++)
+	{
+		PP_send_virtual_on_to_mcu(1);
+	}
+}
 
+/**************************************
+			休眠MCU
+***************************************/
+void PP_can_mcu_sleep(void)
+{
+	PP_send_virtual_on_to_mcu(0);
+}
+
+/******************************************************
+		远程控制报文发送
+*******************************************************/
 void PP_can_send_data(int type,uint8_t data,uint8_t para)
 {
 	switch(type)
@@ -291,8 +293,6 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 					case CAN_SETACCTEP:
 						PP_canSend_setbit(CAN_ID_445,47,6,para,NULL); //设置温度
 						break;
-					case CAN_APPOINTACC:
-						break;
 					default:
 						break;
 				}	
@@ -307,10 +307,26 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 		case PP_CAN_SEATHEAT:
 			PP_canSend_setbit(CAN_ID_440,para,2,data,NULL);
 			break;
-		case PP_CAN_IDENTIFICAT:
 		default:
 			break;
 
 	}
 }
 
+/*****************************************************
+		远程控制认证报文发送
+*****************************************************/
+void PP_can_send_identificat(uint8_t type,uint8_t *dt)
+{
+	switch(type)
+	{
+		case PP_CAN_RANDOM:
+			PP_canSend_setbit(CAN_ID_3D2,0,0,0,dt);
+			break;
+		case PP_CAN_XTEAENCIPHER:
+			PP_canSend_setbit(CAN_ID_3D2,0,0,0,dt);
+			break;
+		default:
+			break;	
+	}
+}

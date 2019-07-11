@@ -34,6 +34,8 @@
 #include "../PrvtProt.h"
 #include "../PrvtProt_cfg.h"
 #include "gb32960_api.h"
+#include "cfg_api.h"
+
 
 #include "../PrvtProt_SigParse.h"
 
@@ -43,10 +45,13 @@
 
 #include "PP_ACCtrl.h"
 
-#define PP_OPEN_ACC  1
-#define PP_CLOSE_ACC 2
-#define PP_SETH_ACC  3
+#define PP_OPEN_ACC      1
+#define PP_CLOSE_ACC     2
+#define PP_SETH_ACC      3
+#define PP_APPOINTACC    4
+#define PP_CANCELAPPOINT 5
 
+#define ACC_APPOINT_NUM 10
 
 typedef struct
 {
@@ -57,28 +62,35 @@ typedef struct
 typedef struct
 {
 	PP_rmtACCtrl_pack_t 	pack;
+	PP_rmtACCtrlPara_t      CtrlPara;
 	PP_rmtACCtrlSt_t		state;
+	uint8_t fail;//ÊéßÂà∂ÊâßË°åÂ§±Ë¥•Ê†áÂøóÔºö0--ÊàêÂäüÔºõ1-Â§±Ë¥•
+	uint8_t failtype;//Â§±Ë¥•Á±ªÂûã
 }__attribute__((packed))  PrvtProt_rmtACCtrl_t; /*Ω·ππÃÂ*/
 
 
 static PrvtProt_rmtACCtrl_t PP_rmtACCtrl;
-static int acc_ctrl_stage = PP_ACCTRL_IDLE;
-static int acctrl_success_flag = 0;
-static unsigned long long PP_Respwaittime = 0;
-static int acc_type = 0;
-static int temp = 0;
-#if 0
-static PrvtProt_pack_t 		PP_rmtACCtrl_Pack;
-static PrvtProt_App_rmtCtrl_t 		App_rmtACCtrl;
 
-static int PP_ACCtrl_StatusResp(PrvtProt_task_t *task,PrvtProt_rmtACCtrl_t *rmtCtrl);
-static int PP_ACCtrl_BookingStatusResp(PrvtProt_task_t *task,PrvtProt_rmtACCtrl_t *rmtACCtrl);
-#endif
+static PP_rmtAC_AppointBook_t  PP_rmtac_AppointBook[ACC_APPOINT_NUM] ;
+static PP_rmtAc_Appointperiod_t PP_rmtAc_Appointperiod[7] =
+{
+	{0,0x01},//ÊòüÊúü7
+	{1,0x40}, //ÊòüÊúü1
+	{2,0x20},//ÊòüÊúü2
+	{3,0x10},//ÊòüÊúü3
+	{4,0x08},//ÊòüÊúü4
+	{5,0x04},//ÊòüÊúü5
+	{6,0x02},//ÊòüÊúü6
+};
 
 
 void PP_ACCtrl_init(void)
 {
+	int res;
+	int i;
+	uint32_t len;
 	memset(&PP_rmtACCtrl,0,sizeof(PrvtProt_rmtACCtrl_t));
+	memset(&PP_rmtac_AppointBook,0,10*sizeof(PP_rmtAC_AppointBook_t));
 	memcpy(PP_rmtACCtrl.pack.Header.sign,"**",2);
 	PP_rmtACCtrl.pack.Header.ver.Byte = 0x30;
 	PP_rmtACCtrl.pack.Header.commtype.Byte = 0xe1;
@@ -88,31 +100,50 @@ void PP_ACCtrl_init(void)
 	PP_rmtACCtrl.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
 	PP_rmtACCtrl.pack.DisBody.appDataProVer = 256;
 	PP_rmtACCtrl.pack.DisBody.testFlag = 1;
+	len = ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t);
+	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,&len);  //Ëé∑ÂèñÂ∑≤ÊúâÁöÑÈ¢ÑÁ∫¶
+	if(res==0) 
+	{
+		for(i=0;i<ACC_APPOINT_NUM;i++)
+		{
+			if(PP_rmtac_AppointBook[i].validFlg == 1)
+			{
+				log_e(LOG_HOZON,"There are currently reservation records\n");
+				log_e(LOG_HOZON, "PP_rmtac_AppointBook[%d].id = %d\n",i,PP_rmtac_AppointBook[i].id);
+				log_e(LOG_HOZON, "PP_rmtac_AppointBook[%d].hour = %d\n",i,PP_rmtac_AppointBook[i].hour);
+				log_e(LOG_HOZON, "PP_rmtac_AppointBook[%d].min = %d\n",i,PP_rmtac_AppointBook[i].min);
+				log_e(LOG_HOZON, "PP_rmtac_AppointBook[%d].period = %d\n",i,PP_rmtac_AppointBook[i].period);
+			}
+		}
+	}
 }
+
 
 int PP_ACCtrl_mainfunction(void *task)
 {
 	int res = 0;
-	switch(acc_ctrl_stage)
+	switch(PP_rmtACCtrl.state.CtrlSt)
 	{
 		case PP_ACCTRL_IDLE:
 		{
-			
 			if(PP_rmtACCtrl.state.req == 1) 	
 			{
 				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{
-					acctrl_success_flag = 0;
-					acc_ctrl_stage = PP_ACCTRL_REQSTART;
+					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_REQSTART;
 					if(PP_rmtACCtrl.state.style == RMTCTRL_TSP)
 					{
 						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 						rmtCtrl_Stpara.rvcReqStatus = 1;    //ÊâßË°å‰∏≠
 						rmtCtrl_Stpara.rvcFailureType = 0;
-						rmtCtrl_Stpara.reqType =PP_rmtACCtrl.state.reqType;
+						rmtCtrl_Stpara.reqType =PP_rmtACCtrl.CtrlPara.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtACCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 						res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+					}
+					else if(PP_rmtACCtrl.state.style == RMTCTRL_TBOX)//tbox
+					{
+						log_o(LOG_HOZON,"tbox platform\n");
 					}
 					else//ËìùÁâô
 					{
@@ -121,85 +152,63 @@ int PP_ACCtrl_mainfunction(void *task)
 				}
 				else   //‰∏çÊª°Ë∂≥ËøúÊéßÊù°‰ª∂
 				{
-					acctrl_success_flag = 0;
-					acc_ctrl_stage = PP_ACCTRL_END;
+					PP_rmtACCtrl.fail = 0;
+					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 				}
 				PP_rmtACCtrl.state.req = 0;
 			}
 		}
 		break;
-		case PP_ACCTRL_REQSTART:     //‰∏ãÂèëÂºÄÁ©∫Ë∞ÉÂëΩ‰ª§
+		case PP_ACCTRL_REQSTART:     //‰∏ãÂèëÁ©∫Ë∞ÉÂëΩ‰ª§
 		{
-			if(acc_type == PP_OPEN_ACC) //Á©∫Ë∞ÉÂºÄÂêØ
+			if(PP_rmtACCtrl.state.accmd == PP_OPEN_ACC)    //ÂºÄÂêØÁ©∫Ë∞ÉÂëΩ‰ª§
 			{
-				PP_can_send_data(PP_CAN_ACCTRL,CAN_OPENACC,0);	
+				log_o(LOG_HOZON,"request start ac\n");
+				PP_can_send_data(PP_CAN_ACCTRL,CAN_OPENACC,0);
 			}
-			else if (acc_type == PP_CLOSE_ACC)  //ÂÖ≥Èó≠Á©∫Ë∞É         
+			else if(PP_rmtACCtrl.state.accmd == PP_CLOSE_ACC)  
 			{
+				log_o(LOG_HOZON,"request stop ac\n");     //ÂÖ≥Èó≠Á©∫Ë∞É
 				PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);
 			}
 			else
 			{
-				PP_can_send_data(PP_CAN_ACCTRL,CAN_SETACCTEP,temp);
+				PP_can_send_data(PP_CAN_ACCTRL,CAN_SETACCTEP,0);  //ËÆæÁΩÆÊ∏©Â∫¶Ë¶ÅÂ∏¶‰∏Ä‰∏™ÂèÇÊï∞
 			}
-			acc_ctrl_stage = PP_ACCTRL_RESPWAIT;
-			PP_Respwaittime = tm_get_time();
+			PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_RESPWAIT;
+			PP_rmtACCtrl.state.waittime = tm_get_time();
 		}
 		break;
 		case PP_ACCTRL_RESPWAIT:
 		{
-			if(acc_type == PP_OPEN_ACC) 
+			if((tm_get_time() - PP_rmtACCtrl.state.waittime) < 2000)
 			{
-				if((tm_get_time() - PP_Respwaittime) < 2000)
+				if(PP_rmtACCtrl.state.accmd == PP_OPEN_ACC)    //ÂºÄÂêØÁ©∫Ë∞ÉÂëΩ‰ª§
 				{
-					if(PP_rmtCtrl_cfg_ACOnOffSt() == 1)   //Á©∫Ë∞ÉÂºÄÂêØÊàêÂäü
+					if(PP_rmtCtrl_cfg_ACOnOffSt() == 1) //ÂºÄÂêØÊàêÂäü
 					{
-						//PP_canSend_resetbit(CAN_ID_440,19,2);
-						acctrl_success_flag = 1;
-						acc_ctrl_stage = PP_ACCTRL_END;
+						log_o(LOG_HOZON,"open  success\n");
+						PP_rmtACCtrl.fail     = 0;
+						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 					}
 				}
 				else
 				{
-					//PP_canSend_resetbit(CAN_ID_440,19,2);
-					acctrl_success_flag = 0;
-					acc_ctrl_stage = PP_ACCTRL_END;
+					if(PP_rmtCtrl_cfg_ACOnOffSt() == 0) //ÂÖ≥Èó≠ÊàêÂäü
+					{
+						log_o(LOG_HOZON,"close  success\n");
+						PP_rmtACCtrl.fail     = 0;
+						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
+					}
 				}
 			}
-			else if (acc_type == PP_CLOSE_ACC)  //
+			else//Ë∂ÖÊó∂
 			{
-				if((tm_get_time() - PP_Respwaittime) < 2000)
-				{
-					if(PP_rmtCtrl_cfg_ACOnOffSt() == 0) 
-					{
-						//PP_canSend_resetbit(CAN_ID_440,19,2);
-						acctrl_success_flag = 1;
-						acc_ctrl_stage = PP_ACCTRL_END;
-					}
-				}
-				else
-				{
-					acctrl_success_flag = 0;
-					acc_ctrl_stage = PP_ACCTRL_END;
-				}
-			}
-			else 
-			{
-				if((tm_get_time() - PP_Respwaittime) < 2000)
-				{
-					if(PP_rmtCtrl_cfg_ACOnOffSt() == 0) 
-					{
-						//PP_canSend_resetbit(CAN_ID_440,19,2);
-						acctrl_success_flag = 1;
-						acc_ctrl_stage = PP_ACCTRL_END;
-					}
-				}
-				else
-				{
-					acctrl_success_flag = 0;
-					acc_ctrl_stage = PP_ACCTRL_END;
-				}
-
+				log_e(LOG_HOZON,"Instruction execution timeout\n");
+				PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);  
+				PP_rmtACCtrl.fail     = 1;
+				PP_rmtACCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
+				PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 			}
 		}
 		break;
@@ -210,10 +219,10 @@ int PP_ACCtrl_mainfunction(void *task)
 			memset(&rmtCtrl_Stpara,0,sizeof(PP_rmtCtrl_Stpara_t));
 			if(PP_rmtACCtrl.state.style == RMTCTRL_TSP)//tsp
 			{
-				rmtCtrl_Stpara.reqType =PP_rmtACCtrl.state.reqType;
+				rmtCtrl_Stpara.reqType =PP_rmtACCtrl.CtrlPara.reqType;
 				rmtCtrl_Stpara.eventid = PP_rmtACCtrl.pack.DisBody.eventId;
-				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-				if(1 == acctrl_success_flag)
+				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;//ÈùûÈ¢ÑÁ∫¶
+				if(0 == PP_rmtACCtrl.fail)
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 2;  
 					rmtCtrl_Stpara.rvcFailureType = 0;
@@ -223,13 +232,14 @@ int PP_ACCtrl_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcReqStatus = 3;  
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
-				res = PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
-				acc_ctrl_stage = PP_ACCTRL_IDLE;
+				PP_rmtCtrl_StInformTsp((PrvtProt_task_t *)task,&rmtCtrl_Stpara);
+				
 			}
 			else
 			{
 
 			}
+			PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_IDLE;
 		}
 		break;
 		default:
@@ -250,57 +260,203 @@ uint8_t PP_ACCtrl_start(void)
 }
 uint8_t PP_ACCtrl_end(void)
 {
-	if((acc_ctrl_stage = PP_ACCTRL_IDLE) && \
+	if((PP_rmtACCtrl.state.CtrlSt == PP_ACCTRL_IDLE) && \
 			(PP_rmtACCtrl.state.req == 0))
 	{
 		return 0;
 	}
 	else
 	{
+		log_o(LOG_HOZON,"ACC");
 		return 1;
 	}
 }
+void PP_ACCtrl_Delete_Appoint(int index)
+{
+	
+}
+int PP_ACC_Appoint_invalid()
+{	
+	int i;
+	for(i=0;i<ACC_APPOINT_NUM;i++)
+	{
+		if(PP_rmtac_AppointBook[i].validFlg == 0)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
+	uint32_t appointId = 0;
 	switch(ctrlstyle)
 	{
 		case RMTCTRL_TSP:
 		{
 			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
 			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
-
-			log_i(LOG_HOZON, "remote auto door control req");
-			PP_rmtACCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-			PP_rmtACCtrl.state.CtrlSt = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
-			if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACOPEN)
+			PP_rmtACCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+			if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACOPEN) || (appdatarmtCtrl_ptr->CtrlReq.rvcReqType== PP_RMTCTRL_ACCLOSE)\
+				||(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_SETTEMP))
 			{
-				acc_type = PP_OPEN_ACC;   //ÂºÄÂêØÁ©∫Ë∞É
+				if((PP_ACCTRL_IDLE == PP_rmtACCtrl.state.CtrlSt) && \
+						(PP_rmtACCtrl.state.req == 0))      //Ê≤°ÊúâÂú®ÊâßË°åÂÖ∂‰ªñÁöÑÂºÄÂêØÁ©∫Ë∞ÉÂëΩ‰ª§
+				{
+					PP_rmtACCtrl.state.req = 1;
+					PP_rmtACCtrl.state.bookingSt = 0;//ÈùûÈ¢ÑÁ∫¶Á©∫Ë∞É
+					PP_rmtACCtrl.CtrlPara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+					if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACOPEN)
+					{
+						PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
+					}
+					else if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACCLOSE)
+					{
+						PP_rmtACCtrl.state.accmd = PP_CLOSE_ACC;
+					}
+					else   //ËÆæÁΩÆÁ©∫Ë∞ÉÊ∏©Â∫¶
+					{
+						PP_rmtACCtrl.state.accmd = PP_SETH_ACC;
+					}
+					PP_rmtACCtrl.state.style   = RMTCTRL_TSP;
+				}
+				else
+				{
+					log_i(LOG_HOZON, "remote charge control req is excuting\n");
+				}
 			}
-			else if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACCLOSE)
+			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACAPPOINTOPEN)
 			{
-				acc_type = PP_CLOSE_ACC;  //ÂÖ≥Èó≠Á©∫Ë∞É
+				int index;
+				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] << 24;
+				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[1] << 16;
+				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[2] << 8;
+				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[3];
+				index = PP_ACC_Appoint_invalid();
+				if(index == -1)
+				{
+					log_o(LOG_HOZON,"Air conditioning reservation more than 10");
+				}
+				else
+				{
+					PP_rmtac_AppointBook[index].id = appointId;
+					PP_rmtac_AppointBook[index].hour = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[4];
+					PP_rmtac_AppointBook[index].min = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[5];
+					PP_rmtac_AppointBook[index].period = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[7];
+					PP_rmtac_AppointBook[index].eventId = disptrBody_ptr->eventId;
+					PP_rmtac_AppointBook[index].validFlg  = 1;	
+					log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].id = %d\n",index,PP_rmtac_AppointBook[index].id);
+					log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].hour = %d\n",index,PP_rmtac_AppointBook[index].hour);
+					log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].min = %d\n",index,PP_rmtac_AppointBook[index].min);
+					log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].period = %d\n",index,PP_rmtac_AppointBook[index].period);
+					log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].eventId = %d\n",index,PP_rmtac_AppointBook[index].eventId);
+				}
+				(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t));
 			}
-			else if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACAPPOINTOPEN)
+			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACCANCELAPPOINT)
 			{
-
-			}
-			else if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACCANCELAPPOINT)
-			{
-				
+				int i;
+				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] << 24;
+				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[1] << 16;
+				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[2] << 8;
+				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[3];
+				for(i=0;i<ACC_APPOINT_NUM;i++)
+				{
+					if(PP_rmtac_AppointBook[i].id == appointId)  //Âà†Èô§‰∏Ä‰∫õÊó†ÊïàÈ¢ÑÁ∫¶
+					{
+						PP_rmtac_AppointBook[i].validFlg  = 0;
+						log_i(LOG_HOZON, "cancel appointment\n");
+					}
+					else
+					{
+						log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
+					}
+				}
 			}
 			else
 			{
-				temp = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
-				acc_type = PP_SETH_ACC;   //ËÆæÁΩÆÊ∏©Â∫¶
+			
 			}
-			PP_rmtACCtrl.state.req = 1;
-			PP_rmtACCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
-			PP_rmtACCtrl.state.style = RMTCTRL_TSP;
 		}
 		break;
+		case RMTCTRL_TBOX:
+		{
+			int i = *(int *)appdatarmtCtrl;
+			PP_rmtACCtrl.state.req = 1;
+			PP_rmtACCtrl.state.bookingSt = 1;//È¢ÑÁ∫¶ÂºÄÂêØÁ©∫Ë∞É
+			PP_rmtACCtrl.CtrlPara.bookingId = PP_rmtac_AppointBook[i].id;
+			PP_rmtACCtrl.pack.DisBody.eventId = PP_rmtac_AppointBook[i].eventId;
+			PP_rmtACCtrl.state.style   = RMTCTRL_TBOX;
+		}
 		default:
 		break;
 	}
+}
+/******************************************************
+*ÂáΩÊï∞ÂêçÔºöPP_AcCtrl_acStMonitor
+
+*ÂΩ¢  ÂèÇÔºövoid
+
+*ËøîÂõûÂÄºÔºövoid
+
+*Êèè  Ëø∞Ôºö
+
+*Â§á  Ê≥®Ôºö
+******************************************************/
+void PP_AcCtrl_acStMonitor(void *task)
+{
+	int i;
+	static uint8_t appointPerformFlg = 0;
+	
+	/*Ê£ÄÊü•È¢ÑÁ∫¶ÂºÄÂêØÁ©∫Ë∞É*/
+	for(i=0;i<ACC_APPOINT_NUM;i++)
+	{
+		if(PP_rmtac_AppointBook[i].validFlg == 1)
+		{
+			char *wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+			time_t timep;
+			struct tm *localdatetime;
+
+			time(&timep);  //Ëé∑Âèñ‰ªé1970/01/01 00:00:00 Âà∞Áé∞Âú®ÁöÑÁßíÊï∞
+			localdatetime = localtime(&timep);//ÂèñÂæóÂΩìÂú∞Êó∂Èó¥
+			if(PP_rmtac_AppointBook[i].period & 0x80)//ÈáçÂ§ç
+			{
+				if(PP_rmtAc_Appointperiod[localdatetime->tm_wday].mask & PP_rmtac_AppointBook[i].period)
+				{
+					if((localdatetime->tm_hour == PP_rmtac_AppointBook[i].hour) && \
+										(localdatetime->tm_min == PP_rmtac_AppointBook[i].min))
+					{
+						log_i(LOG_HOZON,"%d-%d-%d ",(1900+localdatetime->tm_year), \
+							(1 +localdatetime->tm_mon), localdatetime->tm_mday);
+						log_i(LOG_HOZON,"%s %d:%d:%d\n", wday[localdatetime->tm_wday], \
+							localdatetime->tm_hour, localdatetime->tm_min, localdatetime->tm_sec);
+						log_i(LOG_HOZON,"Air conditioning reservation time is up, turn on the air conditioner");
+						if(appointPerformFlg == 0)
+						{
+							appointPerformFlg = 1;
+							SetPP_ACCtrl_Request(RMTCTRL_TBOX,(void *)&i,NULL);
+						}
+					}
+					else
+					{
+						appointPerformFlg = 0;
+					}
+				}
+			}
+			else
+			{ //‰∏çÈáçÂ§ç
+				if((localdatetime->tm_hour == PP_rmtac_AppointBook[i].hour) && \
+						(localdatetime->tm_min == PP_rmtac_AppointBook[i].min))
+				{
+					SetPP_ACCtrl_Request(RMTCTRL_TBOX,(void *)&i,NULL);
+					PP_rmtac_AppointBook[i].validFlg = 0;
+					(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,10*sizeof(PP_rmtAC_AppointBook_t));
+				}
+			}
+		}
+	}
+
 }
 
 void ClearPP_ACCtrl_Request(void)
@@ -310,397 +466,10 @@ void ClearPP_ACCtrl_Request(void)
 
 void PP_ACCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
-	PP_rmtACCtrl.state.reqType = (long)reqType;
-	PP_rmtACCtrl.state.req = 1;
-	if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACOPEN)
-	{
-		acc_type = PP_OPEN_ACC;
-	}
-	else if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACCLOSE)
-	{
-		acc_type = PP_CLOSE_ACC;
-	}
-	else if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACAPPOINTOPEN)
-	{
-
-	}
-	else if(PP_rmtACCtrl.state.reqType == PP_RMTCTRL_ACCANCELAPPOINT)
-	{
-			
-	}
-	else
-	{
-		acc_type = PP_SETH_ACC;
-	}
-}
-
-
-
-
-
-#if 0
-void PP_ACCtrl_init(void)
-{
-	memset(&PP_rmtACCtrl,0,sizeof(PrvtProt_rmtACCtrl_t));
-	memcpy(PP_rmtACCtrl.pack.Header.sign,"**",2);
-	PP_rmtACCtrl.pack.Header.ver.Byte = 0x30;
-	PP_rmtACCtrl.pack.Header.commtype.Byte = 0xe1;
-	PP_rmtACCtrl.pack.Header.opera = 0x02;
-	PP_rmtACCtrl.pack.Header.tboxid = 27;
-	memcpy(PP_rmtACCtrl.pack.DisBody.aID,"110",3);
-	PP_rmtACCtrl.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
-	PP_rmtACCtrl.pack.DisBody.appDataProVer = 256;
-	PP_rmtACCtrl.pack.DisBody.testFlag = 1;
-}
-
-
-int PP_ACCtrl_mainfunction(void *task)
-{
-	int res;
-	static uint32_t stitch = 0;
-	static char result = 0;
-	if(PP_rmtACCtrl.state.req == 1)
-	{
-		stitch++;
-		PP_rmtACCtrl.state.req = 0;
-		if(PP_rmtACCtrl.state.bookingSt == 1)
-		{
-			PP_rmtACCtrl.state.executSt = 0;
-		}
-		else
-		{
-			PP_rmtACCtrl.state.executSt = 1;
-		}
-
-		res = PP_ACCtrl_StatusResp((PrvtProt_task_t *)task,&PP_rmtACCtrl);
-		if(res < 0)
-		{
-			log_e(LOG_HOZON, "socket send error, reset protocol");
-			sockproxy_socketclose();//by liujia
-		}
-		else if(res > 0)
-		{
-			log_e(LOG_HOZON, "socket send ok, reset");
-			result = 1;
-			PP_rmtACCtrl.state.period = tm_get_time();
-		}
-		else
-		{}
-	}
-
-	if(1 == result)
-	{
-		if((tm_get_time() - PP_rmtACCtrl.state.period) > 3000)
-		{
-			result = 0;
-			if(PP_rmtACCtrl.state.bookingSt == 1)
-			{
-				(void)PP_ACCtrl_BookingStatusResp((PrvtProt_task_t *)task,&PP_rmtACCtrl);
-			}
-			else
-			{
-				if(stitch%2)//∑µªÿ÷¥––≥…π¶
-				{
-					PP_rmtACCtrl.state.executSt = 2;
-					(void)PP_ACCtrl_StatusResp((PrvtProt_task_t *)task,&PP_rmtACCtrl);
-				}
-				else//∑µªÿ÷¥–– ß∞‹
-				{
-					PP_rmtACCtrl.state.executSt = 3;
-					(void)PP_ACCtrl_StatusResp((PrvtProt_task_t *)task,&PP_rmtACCtrl);
-				}
-			}
-		}
-	}
-
-
-	return 0;
-}
-
-
-/******************************************************
-*∫Ø ˝√˚£∫PP_ACCtrl_StatusResp
-
-*–Œ  ≤Œ£∫
-
-*∑µªÿ÷µ£∫
-
-*√Ë   ˆ£∫remote control status response
-
-*±∏  ◊¢£∫
-******************************************************/
-static int PP_ACCtrl_StatusResp(PrvtProt_task_t *task,PrvtProt_rmtACCtrl_t *rmtACCtrl)
-{
-	int msgdatalen;
-	int res;
-	/*header*/
-	rmtACCtrl->pack.Header.ver.Byte = task->version;
-	rmtACCtrl->pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-	rmtACCtrl->pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-	memcpy(&PP_rmtACCtrl_Pack, &rmtACCtrl->pack.Header, sizeof(PrvtProt_pack_Header_t));
-	/*body*/
-	rmtACCtrl->pack.DisBody.mID = PP_MID_RMTCTRL_RESP;
-	//rmtdoorCtrl->pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
-	rmtACCtrl->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtACCtrl->pack.DisBody.expTime   = PrvtPro_getTimestamp();
-	rmtACCtrl->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
-
-	/*appdata*/
-	PrvtProtcfg_gpsData_t gpsDt;
-	App_rmtACCtrl.CtrlResp.rvcReqType = PP_rmtACCtrl.state.reqType;
-	App_rmtACCtrl.CtrlResp.rvcReqStatus = PP_rmtACCtrl.state.executSt;
-	App_rmtACCtrl.CtrlResp.rvcFailureType = 0;
-	App_rmtACCtrl.CtrlResp.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps◊¥Ã¨ 0-Œﬁ–ß£ª1-”––ß;
-	App_rmtACCtrl.CtrlResp.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gps ±º‰¥¡:œµÕ≥ ±º‰(Õ®π˝gps–£ ±)
-
-	PrvtProtCfg_gpsData(&gpsDt);
-
-	if(App_rmtACCtrl.CtrlResp.gpsPos.gpsSt == 1)
-	{
-		if(gpsDt.is_north)
-		{
-			App_rmtACCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000);//Œ≥∂» x 1000000,µ±GPS–≈∫≈Œﬁ–ß ±£¨÷µŒ™0
-		}
-		else
-		{
-			App_rmtACCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//Œ≥∂» x 1000000,µ±GPS–≈∫≈Œﬁ–ß ±£¨÷µŒ™0
-		}
-
-		if(gpsDt.is_east)
-		{
-			App_rmtACCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000);//æ≠∂» x 1000000,µ±GPS–≈∫≈Œﬁ–ß ±£¨÷µŒ™0
-		}
-		else
-		{
-			App_rmtACCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//æ≠∂» x 1000000,µ±GPS–≈∫≈Œﬁ–ß ±£¨÷µŒ™0
-		}
-		log_i(LOG_HOZON, "PP_appData.latitude = %lf",App_rmtACCtrl.CtrlResp.gpsPos.latitude);
-		log_i(LOG_HOZON, "PP_appData.longitude = %lf",App_rmtACCtrl.CtrlResp.gpsPos.longitude);
-	}
-	else
-	{
-		App_rmtACCtrl.CtrlResp.gpsPos.latitude  = 0;
-		App_rmtACCtrl.CtrlResp.gpsPos.longitude = 0;
-	}
-	App_rmtACCtrl.CtrlResp.gpsPos.altitude = (long)(gpsDt.height);//∏ﬂ∂»£®m£©
-	if(App_rmtACCtrl.CtrlResp.gpsPos.altitude > 10000)
-	{
-		App_rmtACCtrl.CtrlResp.gpsPos.altitude = 10000;
-	}
-	App_rmtACCtrl.CtrlResp.gpsPos.heading = (long)(gpsDt.direction);//≥µÕ∑∑ΩœÚΩ«∂»£¨0Œ™’˝±±∑ΩœÚ
-	App_rmtACCtrl.CtrlResp.gpsPos.gpsSpeed = (long)(gpsDt.kms*10);//ÀŸ∂» x 10£¨µ•Œªkm/h
-	App_rmtACCtrl.CtrlResp.gpsPos.hdop = (long)(gpsDt.hdop*10);//ÀÆ∆Ωæ´∂»“Ú◊” x 10
-	if(App_rmtACCtrl.CtrlResp.gpsPos.hdop > 1000)
-	{
-		App_rmtACCtrl.CtrlResp.gpsPos.hdop = 1000;
-	}
-
-	App_rmtACCtrl.CtrlResp.basicSt.driverDoor = 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.driverLock = 1;
-	App_rmtACCtrl.CtrlResp.basicSt.passengerDoor = 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.passengerLock = 1;
-	App_rmtACCtrl.CtrlResp.basicSt.rearLeftDoor = 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.rearLeftLock = 1;
-	App_rmtACCtrl.CtrlResp.basicSt.rearRightDoor = 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.rearRightLock = 1;
-	App_rmtACCtrl.CtrlResp.basicSt.bootStatus = 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.bootStatusLock = 1;
-	App_rmtACCtrl.CtrlResp.basicSt.driverWindow = 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.passengerWindow = 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.rearLeftWindow = 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.rearRightWinow = 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.sunroofStatus = 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.engineStatus = 1;
-	App_rmtACCtrl.CtrlResp.basicSt.accStatus = 1;
-	App_rmtACCtrl.CtrlResp.basicSt.accTemp = 18	/* OPTIONAL */;//18-36
-	App_rmtACCtrl.CtrlResp.basicSt.accMode = 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.accBlowVolume	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.innerTemp = 1;
-	App_rmtACCtrl.CtrlResp.basicSt.outTemp = 1;
-	App_rmtACCtrl.CtrlResp.basicSt.sideLightStatus= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.dippedBeamStatus= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.mainBeamStatus= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.hazardLightStus= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.frtRightTyrePre	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.frtRightTyreTemp	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.frontLeftTyrePre	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.frontLeftTyreTemp= 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.rearRightTyrePre= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.rearRightTyreTemp= 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.rearLeftTyrePre	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.rearLeftTyreTemp	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.batterySOCExact= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.chargeRemainTim	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.availableOdomtr= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.bookingChargeSt= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.bookingChargeHour= 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.bookingChargeMin	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.chargeMode	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.chargeStatus	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.powerMode	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.speed= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.totalOdometer= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.batteryVoltage= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.batteryCurrent= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.batterySOCPrc= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.dcStatus= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.gearPosition= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.insulationRstance= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.acceleratePedalprc= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.deceleratePedalprc= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.canBusActive= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.bonnetStatus= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.lockStatus= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.gsmStatus= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.wheelTyreMotrSt= 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.vehicleAlarmSt= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.currentJourneyID= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.journeyOdom= 1;
-	App_rmtACCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel= 1	/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.frtRightSeatHeatLel	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.airCleanerSt	= 1/* OPTIONAL */;
-	App_rmtACCtrl.CtrlResp.basicSt.srsStatus = 1;
-
-
-	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_RESP,PP_rmtACCtrl_Pack.msgdata,&msgdatalen,\
-									   &rmtACCtrl->pack.DisBody,&App_rmtACCtrl))// ˝æ›±‡¬Î¥Ú∞¸ «∑ÒÕÍ≥…
-	{
-		log_e(LOG_HOZON, "uper error");
-		return 0;
-	}
-
-	PP_rmtACCtrl_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
-	res = sockproxy_MsgSend(PP_rmtACCtrl_Pack.Header.sign,18 + msgdatalen,NULL);
-
-	protocol_dump(LOG_HOZON, "get_remote_control_response", PP_rmtACCtrl_Pack.Header.sign, \
-					18 + msgdatalen,1);
-	return res;
-}
-
-
-/******************************************************
-*∫Ø ˝√˚£∫PP_ACCtrl_BookingStatusResp
-
-*–Œ  ≤Œ£∫
-
-*∑µªÿ÷µ£∫
-
-*√Ë   ˆ£∫remote control booking status response
-
-*±∏  ◊¢£∫
-******************************************************/
-static int PP_ACCtrl_BookingStatusResp(PrvtProt_task_t *task,PrvtProt_rmtACCtrl_t *rmtACCtrl)
-{
-	int msgdatalen;
-	int res;
-
-	/*header*/
-	rmtACCtrl->pack.Header.ver.Byte = task->version;
-	rmtACCtrl->pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-	rmtACCtrl->pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
-	memcpy(&PP_rmtACCtrl_Pack, &rmtACCtrl->pack.Header, sizeof(PrvtProt_pack_Header_t));
-	/*body*/
-	rmtACCtrl->pack.DisBody.mID = PP_MID_RMTCTRL_BOOKINGRESP;
-	//rmtdoorCtrl->pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
-	rmtACCtrl->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtACCtrl->pack.DisBody.expTime   = PrvtPro_getTimestamp();
-	rmtACCtrl->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
-
-	PrvtProt_App_rmtCtrl_t app_rmtCtrl;
-	/*appdata*/
-	app_rmtCtrl.CtrlbookingResp.bookingId = 1;
-	app_rmtCtrl.CtrlbookingResp.rvcReqCode = rmtACCtrl->state.rvcReqCode;
-	app_rmtCtrl.CtrlbookingResp.oprTime = PrvtPro_getTimestamp();
-
-	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_BOOKINGRESP,PP_rmtACCtrl_Pack.msgdata,&msgdatalen,\
-									   &rmtACCtrl->pack.DisBody,&app_rmtCtrl))// ˝æ›±‡¬Î¥Ú∞¸ «∑ÒÕÍ≥…
-	{
-		log_e(LOG_HOZON, "uper error");
-		return 0;
-	}
-
-	PP_rmtACCtrl_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
-	res = sockproxy_MsgSend(PP_rmtACCtrl_Pack.Header.sign,18 + msgdatalen,NULL);
-
-	protocol_dump(LOG_HOZON, "get_remote_control_booking_response", PP_rmtACCtrl_Pack.Header.sign, \
-					18 + msgdatalen,1);
-	return res;
-}
-
-
-
-/******************************************************
-*∫Ø ˝√˚£∫SetPP_ACCtrl_Request
-
-*–Œ  ≤Œ£∫void
-
-*∑µªÿ÷µ£∫void
-
-*√Ë   ˆ£∫
-
-*±∏  ◊¢£∫
-******************************************************/
-void SetPP_ACCtrl_Request(void *appdatarmtCtrl,void *disptrBody)
-{
-	PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
-	PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
-	static char rvcReqCode = 0;
-	log_i(LOG_HOZON, "remote AC control req");
-	PP_rmtACCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-	PP_rmtACCtrl.state.req = 1;
-	PP_rmtACCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
-	PP_rmtACCtrl.state.bookingSt = 0;
-	if(appdatarmtCtrl_ptr->CtrlReq.rvcReqParamslen > 0)//”–‘§‘º
-	{
-		PP_rmtACCtrl.state.bookingSt = 1;
-		switch(rvcReqCode)
-		{
-			case 0:
-			{
-				PP_rmtACCtrl.state.rvcReqCode = 0x0610;
-			}
-			break;
-			case 1:
-			{
-				PP_rmtACCtrl.state.rvcReqCode = 0x0611;
-			}
-			break;
-			case 2:
-			{
-				PP_rmtACCtrl.state.rvcReqCode = 0x0600;
-			}
-			break;
-			case 3:
-			{
-				PP_rmtACCtrl.state.rvcReqCode = 0x0601;
-			}
-			break;
-			default:
-			{
-				rvcReqCode = 0;
-				PP_rmtACCtrl.state.rvcReqCode = 0x0610;
-			}
-			break;
-		}
-		rvcReqCode++;
-	}
-}
-
-/******************************************************
-*∫Ø ˝√˚£∫PP_ACCtrl_SetCtrlReq
-
-*–Œ  ≤Œ£∫
-
-*∑µªÿ÷µ£∫
-
-*√Ë   ˆ£∫…Ë÷√ecall «Î«Û
-
-*±∏  ◊¢£∫
-******************************************************/
-void PP_ACCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
-{
-	PP_rmtACCtrl.state.reqType = (long)reqType;
+	PP_rmtACCtrl.CtrlPara.reqType = (long)reqType;
 	PP_rmtACCtrl.state.req = 1;
 }
-#endif
+
+
+
+

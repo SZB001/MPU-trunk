@@ -127,7 +127,6 @@ int PP_searchvehicle_mainfunction(void *task)
 		break;
 		case PP_SEARCHVEHICLE_REQSTART:
 		{
-			log_o(LOG_HOZON,"PP_SEARCHVEHICLE_REQSTART");
 			if(search_type == PP_SEARCH) //寻车
 			{
 				PP_can_send_data(PP_CAN_SEARCH,CAN_SEARCHVEHICLE,0);
@@ -139,13 +138,13 @@ int PP_searchvehicle_mainfunction(void *task)
 		break;
 		case PP_SEARCHVEHICLE_RESPWAIT://执行等待车控响应
 		{
-			log_o(LOG_HOZON,"PP_SEARCHVEHICLE_RESPWAIT");
 			if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN) //寻车
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(PP_rmtCtrl_cfg_findcarSt() == 0) //
+					if(PP_rmtCtrl_cfg_findcarSt() == 1) //
 					{
+						log_i(LOG_HOZON,"search vehicle success!!!!!\n");
 						PP_can_send_data(PP_CAN_SEARCH,CAN_CLEANSEARCH,0);
 						serachvehicle_success_flag = 1;
 						search_vehicle_stage = PP_SEARCHVEHICLE_END;

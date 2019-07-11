@@ -35,7 +35,7 @@ int network_onoff = 0;
 static unsigned char ivi_msgbuf[1024];
 static ivi_remotediagnos tspdiagnos;
 static ivi_logfile tsplogfile;
-static ivi_chager tspchager;
+static ivi_chargeAppointSt tspchager;
 static int tspdiagnos_flag = 0;
 static int tsplogfile_flag = 0;
 static int tspchager_flag = 0;
@@ -1135,6 +1135,10 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 
     msg_len = (msg_len1 << 8) + msg_len2;
 
+	if(msg_len > 2048)
+	{
+		msg_len = 2048;
+	}
     log_o(LOG_IVI,"msg_len = %d.",msg_len);
 
     for(i = 0; i < msg_len; i ++ )
@@ -1394,8 +1398,8 @@ int tbox_ivi_create_tcp_socket(void)
         return -4;
     }
 
-//    int flags = fcntl(tcp_fd, F_GETFL, 0);  
- //   fcntl(tcp_fd, F_SETFL, flags | O_NONBLOCK);
+    int flags = fcntl(tcp_fd, F_GETFL, 0);  
+    fcntl(tcp_fd, F_SETFL, flags | O_NONBLOCK);
 
     log_o(LOG_IVI, "IVI module create server socket success");
 
@@ -1745,7 +1749,7 @@ void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp)
 	tsplogfile.durationtime = tsp->durationtime;
 	tsplogfile_flag = 1;
 }
-void tbox_ivi_set_tspchager_InformHU(ivi_chager *tsp)
+void tbox_ivi_set_tspchager_InformHU(ivi_chargeAppointSt *tsp)
 {
 	tspchager.id = tsp->id;
 	tspchager.hour = tsp->hour;

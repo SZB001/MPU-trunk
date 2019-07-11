@@ -51,6 +51,8 @@ description锛� include the header file
 
 #include "PP_StartEngine.h"
 
+#define PP_POWERON  1
+#define PP_POWEROFF 0
 
 
 typedef struct
@@ -85,7 +87,6 @@ void PP_startengine_init(void)
 	PP_rmtengineCtrl.pack.DisBody.testFlag = 1;
 
 }
-
 int PP_startengine_mainfunction(void *task)
 {
 
@@ -94,12 +95,10 @@ int PP_startengine_mainfunction(void *task)
 	{
 		case PP_STARTENGINE_IDLE:
 		{
-		
 			if(PP_rmtengineCtrl.state.req == 1)	
 			{
 				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{
-					
 					startengine_success_flag = 0;
 					start_engine_stage = PP_STARTENGINE_REQSTART;
 					if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp 平台
@@ -129,16 +128,16 @@ int PP_startengine_mainfunction(void *task)
 		break;
 		case PP_STARTENGINE_REQSTART:
 		{
-			if(enginecation == 1) //发上高压电报文
+			if(enginecation == PP_POWERON) //发上高压电报文
 			{
-				//PP_canSend_setbit(CAN_ID_440,0,1,1,NULL);  //将bit0置为1
+				
 				PP_can_send_data(PP_CAN_ENGINE,CAN_STARTENGINE,0);
 			}
 			else     //发下高压电报文
 			{
 				if(PP_rmtCtrl_cfg_RmtStartSt() == 2)  //判断是否在远程启动模式下
 				{
-					//PP_canSend_setbit(CAN_ID_440,1,1,1,NULL); //将bit1置为0
+					
 					PP_can_send_data(PP_CAN_ENGINE,CAN_CLOSEENGINE,0);
 				}	
 			}
@@ -148,7 +147,7 @@ int PP_startengine_mainfunction(void *task)
 		break;
 		case PP_STARTENGINE_RESPWAIT://等待BDM应答
 		{
-			if(enginecation == 1) //上高压电应答
+			if(enginecation == PP_POWERON) //上高压电应答
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
@@ -258,17 +257,15 @@ void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 		{
 			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
 			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
-
-			log_i(LOG_HOZON, "remote door lock control req");
 			PP_rmtengineCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtengineCtrl.state.req = 1;
 			if(PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_POWERON)
 			{
-				enginecation = 1;  //上高压电
+				enginecation = PP_POWERON;  //上高压电
 			}
 			else
 			{
-				enginecation = 0; //下高压电
+				enginecation = PP_POWERON; //下高压电
 			}
 			PP_rmtengineCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
 			PP_rmtengineCtrl.state.style = RMTCTRL_TSP;
@@ -280,6 +277,14 @@ void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 		case RMTCTRL_TBOX:
 		{
 //			PP_rmtengineCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+			if(PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_POWERON)
+			{
+				enginecation = PP_POWERON;  //上高压电
+			}
+			else
+			{
+				enginecation = PP_POWERON; //下高压电
+			}
 //			PP_rmtengineCtrl.state.req = 1;
 //			PP_rmtengineCtrl.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
 //			PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;

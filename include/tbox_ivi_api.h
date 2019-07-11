@@ -74,7 +74,7 @@ typedef struct {
   *true:effective, false:Invalid
   */
     uint8_t effectivestate;
-}ivi_chager;
+}ivi_chargeAppointSt;
 
 typedef enum IVI_MSG_EVENT
 {
@@ -97,6 +97,6 @@ extern void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp);
 
 extern void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp);
 
-extern void tbox_ivi_set_tspchager_InformHU(ivi_chager *tsp);
+extern void tbox_ivi_set_tspchager_InformHU(ivi_chargeAppointSt *tsp);
 #endif
 

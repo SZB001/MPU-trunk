@@ -98,4 +98,7 @@ extern void ClearPP_ChargeCtrl_Request(void );
 
 extern void PP_ChargeCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 extern void PP_ChargeCtrl_chargeStMonitor(void *task);
+extern int PP_ChargeCtrl_start(void);
+extern int PP_ChargeCtrl_end(void);
+extern void ClearPP_ChargeCtrl_Request(void);
 #endif 

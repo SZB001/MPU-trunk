@@ -60,10 +60,16 @@ typedef enum
     PP_CAN_CHAGER,
     PP_CAN_FORBID,
     PP_CAN_SEATHEAT,
-    PP_CAN_IDENTIFICAT,
     PP_CAN_CTRL_TYP_MAX,
 } PP_can_ctrl_typ;
 
+
+typedef enum
+{
+	PP_CAN_RANDOM = 0,
+	PP_CAN_XTEAENCIPHER,
+    PP_CAN_IDENTIFICAT_TYP_MAX,
+} PP_can_identificat_typ;
 
 typedef enum
 {
@@ -90,12 +96,16 @@ extern int scom_tl_send_frame(unsigned char msg_type, unsigned char frame_type,
 
 extern int PP_canSend_init(void);
 
-extern void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uint8_t *dt);
-
-extern void PP_canSend_resetbit(unsigned int id,int bit,int bitl);
-
 extern void PP_can_send_data(int type,uint8_t data,uint8_t para);
 
 extern void PP_can_clear_data(int type);
+
+extern void PP_can_send_cycle(void);
+
+extern void PP_can_mcu_awaken(void);
+
+extern void PP_can_mcu_sleep(void);
+
+extern void PP_can_send_identificat(uint8_t type,uint8_t *dt);
 #endif
 

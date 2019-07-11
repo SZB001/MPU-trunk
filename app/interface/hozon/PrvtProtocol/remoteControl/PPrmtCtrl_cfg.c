@@ -102,6 +102,7 @@ unsigned char PP_rmtCtrl_cfg_findcarSt(void)
 */
 unsigned char PP_rmtCtrl_cfg_sunroofSt(void)
 {
+	#if 0
 	unsigned char st;
 	if(PrvtProt_SignParse_sunroofSt() == 2)
 	{
@@ -113,6 +114,8 @@ unsigned char PP_rmtCtrl_cfg_sunroofSt(void)
 	}
 
 	 return st;
+	#endif 
+	return PrvtProt_SignParse_sunroofSt();
 }
 /*
 	远程启动状态

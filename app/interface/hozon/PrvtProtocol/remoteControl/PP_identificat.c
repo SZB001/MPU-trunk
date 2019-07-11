@@ -109,7 +109,8 @@ int PP_identificat_mainfunction()
 		{
 			if(PP_authcnt < IDENTIFICAT_NUM)
 			{
-				PP_canSend_setbit(CAN_ID_3D2,0,0,0,NULL);
+				//PP_canSend_setbit(CAN_ID_3D2,0,0,0,NULL);
+				PP_can_send_identificat(PP_CAN_RANDOM,NULL);
 				log_i(LOG_HOZON,"can_do_send success");
 				PP_stage1_time = tm_get_time();
 				PP_stage = PP_stage_waitrandom;
@@ -147,7 +148,8 @@ int PP_identificat_mainfunction()
 				uint8_t data[8];
 				memset(data,0,8*sizeof(uint8_t));
 				XteaEncipher(DataSk,PP_recvdata,data);
-				PP_canSend_setbit(CAN_ID_3D2,0,0,0,data);
+				//PP_canSend_setbit(CAN_ID_3D2,0,0,0,data);
+				PP_can_send_identificat(PP_CAN_XTEAENCIPHER,data);
 				PP_stage3_time = tm_get_time();
 				PP_authcnt++;
 				PP_stage = PP_stage_waitauthokst;

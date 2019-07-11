@@ -125,7 +125,6 @@ int PP_doorLockCtrl_mainfunction(void *task)
 	{
 		case PP_DOORLOCKCTRL_IDLE:
 		{	
-			//log_o(LOG_HOZON,"PP_DOORLOCKCTRL_IDLE\n");
 			if(PP_rmtdoorCtrl.state.req == 1)	//门控是否有请求
 			{
 				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
@@ -162,7 +161,6 @@ int PP_doorLockCtrl_mainfunction(void *task)
 		break;
 		case PP_DOORLOCKCTRL_REQSTART:  //下发门控报文
 		{
-			//log_o(LOG_HOZON,"PP_DOORLOCKCTRL_REQSTART\n");
 			if(doorctrl_type == PP_OPENDOOR ) //打开车门
 			{
 				PP_can_send_data(PP_CAN_DOORLOCK,CAN_OPENDOOR,0);

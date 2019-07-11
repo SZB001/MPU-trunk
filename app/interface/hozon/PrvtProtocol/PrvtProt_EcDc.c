@@ -1477,7 +1477,10 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						memcpy(app_rmtCtrl_ptr->CtrlReq.rvcReqParams,RmtCtrlReq.rvcReqParams->buf, \
 																	RmtCtrlReq.rvcReqParams->size);
 						app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen = RmtCtrlReq.rvcReqParams->size;
-						log_i(LOG_UPER_ECDC, "RmtCtrlReq.rvcReqParams = %s\n",app_rmtCtrl_ptr->CtrlReq.rvcReqParams);
+						for(i= 0;i<app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen;i++)
+						{
+							log_i(LOG_UPER_ECDC, "RmtCtrlReq.rvcReqParams = 0x%x ",app_rmtCtrl_ptr->CtrlReq.rvcReqParams[i]);
+						}
 						log_i(LOG_UPER_ECDC, "RmtCtrlReq.rvcReqParamslen = %d\n",app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen);
 					}
 				}

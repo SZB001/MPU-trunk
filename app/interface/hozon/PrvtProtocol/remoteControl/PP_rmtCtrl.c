@@ -85,15 +85,15 @@ static PrvtProt_App_rmtCtrl_t 		App_rmtCtrl;
 
 static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 {
-	{RMTCTRL_DOORLOCK,PP_doorLockCtrl_init,	PP_doorLockCtrl_mainfunction},
-	{RMTCTRL_PANORSUNROOF,PP_sunroofctrl_init,	PP_sunroofctrl_mainfunction},
-	{RMTCTRL_AUTODOOR,PP_autodoorCtrl_init,	PP_autodoorCtrl_mainfunction},
-	{RMTCTRL_RMTSRCHVEHICLE,PP_searchvehicle_init,	PP_searchvehicle_mainfunction},
-	{RMTCTRL_HIGHTENSIONCTRL,PP_startengine_init,PP_startengine_mainfunction},
-	{RMTCTRL_AC,	  NULL, 		NULL},
-	{RMTCTRL_CHARGE,  PP_ChargeCtrl_init,	PP_ChargeCtrl_mainfunction},
-	{RMTCTRL_ENGINECTRL,	  PP_startforbid_init, 		PP_startforbid_mainfunction},
-	{RMTCTRL_SEATHEATINGCTRL,	  PP_seatheating_init, 		PP_seatheating_mainfunction}
+	{RMTCTRL_DOORLOCK,       PP_doorLockCtrl_init,	PP_doorLockCtrl_mainfunction},
+	{RMTCTRL_PANORSUNROOF,   PP_sunroofctrl_init,	PP_sunroofctrl_mainfunction},
+	{RMTCTRL_AUTODOOR,       PP_autodoorCtrl_init,	PP_autodoorCtrl_mainfunction},
+	{RMTCTRL_RMTSRCHVEHICLE, PP_searchvehicle_init,	PP_searchvehicle_mainfunction},
+	{RMTCTRL_HIGHTENSIONCTRL,PP_startengine_init,   PP_startengine_mainfunction},
+	{RMTCTRL_AC,	         PP_ACCtrl_init, 	    PP_ACCtrl_mainfunction},
+	{RMTCTRL_CHARGE,         PP_ChargeCtrl_init,	PP_ChargeCtrl_mainfunction},
+	{RMTCTRL_ENGINECTRL,	 PP_startforbid_init, 	PP_startforbid_mainfunction},
+	{RMTCTRL_SEATHEATINGCTRL,PP_seatheating_init, 	PP_seatheating_mainfunction}
 };
 
 static int PP_rmtCtrl_flag = 0;
@@ -169,6 +169,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 			//检测空调或座椅加热上电或下电
 
 			PP_ChargeCtrl_chargeStMonitor(task);//监测充电状态
+			PP_AcCtrl_acStMonitor(task);        //查询空调预约时间
 
 			ret  = PP_doorLockCtrl_start() ||
 				   PP_autodoorCtrl_start() ||
@@ -176,9 +177,12 @@ int PP_rmtCtrl_mainfunction(void *task)
 				   PP_sunroofctrl_start()  ||
 				   PP_startengine_start()  ||
 				   PP_seatheating_start()  ||
+				   PP_ChargeCtrl_start()   ||
+				    PP_ACCtrl_start()	   ||
 				   PP_startforbid_start();
 			if(ret == 1)
 			{
+				PP_can_mcu_awaken();//唤醒
 				PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
 			}
 		}
@@ -224,6 +228,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 				ClearPP_startengine_Request();
 				ClearPP_startforbid_Request();
 				ClearPP_sunroofctrl_Request();
+				ClearPP_ChargeCtrl_Request();
    			}
    			else
    			{}
@@ -247,9 +252,12 @@ int PP_rmtCtrl_mainfunction(void *task)
 				  PP_sunroofctrl_end()  ||
 				  PP_startengine_end()  ||
 				  PP_seatheating_end()  ||
+				  PP_ChargeCtrl_end()	||
+				  PP_ACCtrl_end()	    ||
 				  PP_startforbid_end();
 			if(ret == 0)
 			{
+				PP_can_mcu_sleep();//休眠
 				PP_rmtCtrl_flag = RMTCTRL_IDLE; //远程命令执行完，回到空闲
 			}
 		}
@@ -257,7 +265,9 @@ int PP_rmtCtrl_mainfunction(void *task)
 		default:
 		break;
 	}
-
+	
+	PP_can_send_cycle();//广播440 445报文
+	
 	return res;
 }
 
@@ -395,7 +405,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 			case PP_RMTCTRL_AC://空调
 			{
-				//SetPP_ACCtrl_Request(&Appdata,&MsgDataBody);
+				SetPP_ACCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 			}
 			break;
 			case PP_RMTCTRL_CHARGE://充电

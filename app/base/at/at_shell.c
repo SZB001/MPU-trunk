@@ -107,6 +107,38 @@ int at_shell_setbcall(int argc, const char **argv)
 
     return ret;
 }
+/****************************************************************
+function:     at_shell_setecall
+description:  set ecall
+input:        unsigned int argc, para count;
+              unsigned char **argv, para list
+output:       none
+return:       0 indicates success;
+              others indicates failed
+****************************************************************/
+int at_shell_setecall(int argc, const char **argv)
+{
+    int ret;
+
+    if (argc != 1)
+    {
+        shellprintf("usage:setbcall xxx\r\n");
+        return -1;
+    }
+
+    ret = cfg_set_para(CFG_ITEM_ECALL, (unsigned char *)argv[0], 32);
+
+    if (ret != 0)
+    {
+        shellprintf("set ecall failed,ret=%d\r\n", ret);
+    }
+    else
+    {
+        shellprintf("set ecall ok\r\n");
+    }
+
+    return ret;
+}
 
 /****************************************************************
 function:     at_shell_setwhitelist
@@ -553,6 +585,7 @@ int at_shell_init(INIT_PHASE phase)
             shell_cmd_register("makecall",     at_shell_makecall,    "make call");
             shell_cmd_register("seticall",     at_shell_seticall,    "set icall");
             shell_cmd_register("setbcall",     at_shell_setbcall,    "set bcall");
+			shell_cmd_register("setecall",     at_shell_setecall,    "set ecall");
             shell_cmd_register("setwhitelist", at_shell_setwhitelist, "set whitelist");
             shell_cmd_register("setnet", at_shell_set_net_type, "set net type 2G/3G/4G/auto");
             shell_cmd_register("setwifi", at_shell_set_wifi, "set wifi on/off");
