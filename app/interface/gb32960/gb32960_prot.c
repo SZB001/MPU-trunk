@@ -1400,11 +1400,11 @@ static void *gb_main(void)
                 break;
 
             case PM_MSG_RUNNING:
-            	 powerOffFlag = 1;
+            	 powerOffFlag = 0;
             	break;
             case PM_MSG_OFF:
                 gb_data_emergence(0);
-                powerOffFlag = 0;
+                powerOffFlag = 1;
                 break;
 
             case GB_MSG_CANON:
