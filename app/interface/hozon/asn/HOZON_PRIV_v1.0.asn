@@ -331,7 +331,7 @@ HUBookingResp ::= SEQUENCE
 	rvcReqHours			INTEGER(0..23), --	
 	rvcReqMin 			INTEGER(0..59), --	
 	rvcReqEq 			INTEGER(0..100) OPTIONAL, --	
-	rvcReqCycle 		OCTET STRING(SIZE(8)) OPTIONAL, --
+	rvcReqCycle 		OCTET STRING(SIZE(1)) OPTIONAL, --
 	bookingId 			INTEGER(0..2147483647) OPTIONAL -- 
 }
 

@@ -64,8 +64,8 @@ typedef struct
 	PP_rmtACCtrl_pack_t 	pack;
 	PP_rmtACCtrlPara_t      CtrlPara;
 	PP_rmtACCtrlSt_t		state;
-	uint8_t fail;//鎺у埗鎵ц澶辫触鏍囧織锛�0--鎴愬姛锛�1-澶辫触
-	uint8_t failtype;//澶辫触绫诲瀷
+	uint8_t fail;//
+	uint8_t failtype;//
 }__attribute__((packed))  PrvtProt_rmtACCtrl_t; /*结构体*/
 
 
@@ -74,13 +74,13 @@ static PrvtProt_rmtACCtrl_t PP_rmtACCtrl;
 static PP_rmtAC_AppointBook_t  PP_rmtac_AppointBook[ACC_APPOINT_NUM] ;
 static PP_rmtAc_Appointperiod_t PP_rmtAc_Appointperiod[7] =
 {
-	{0,0x01},//鏄熸湡7
-	{1,0x40}, //鏄熸湡1
-	{2,0x20},//鏄熸湡2
-	{3,0x10},//鏄熸湡3
-	{4,0x08},//鏄熸湡4
-	{5,0x04},//鏄熸湡5
-	{6,0x02},//鏄熸湡6
+	{0,0x01},//星期7
+	{1,0x40}, //星期1
+	{2,0x20},//星期2
+	{3,0x10},//星期3
+	{4,0x08},//星期4
+	{5,0x04},//星期5
+	{6,0x02},//星期6
 };
 
 
@@ -101,12 +101,12 @@ void PP_ACCtrl_init(void)
 	PP_rmtACCtrl.pack.DisBody.appDataProVer = 256;
 	PP_rmtACCtrl.pack.DisBody.testFlag = 1;
 	len = ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t);
-	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,&len);  //鑾峰彇宸叉湁鐨勯绾�
+	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,&len);  //从ROM中读出空调预约记录
 	if(res==0) 
 	{
 		for(i=0;i<ACC_APPOINT_NUM;i++)
 		{
-			if(PP_rmtac_AppointBook[i].validFlg == 1)
+			if(PP_rmtac_AppointBook[i].validFlg == 1)  //将有效的预约记录打印出来
 			{
 				log_e(LOG_HOZON,"There are currently reservation records\n");
 				log_e(LOG_HOZON, "PP_rmtac_AppointBook[%d].id = %d\n",i,PP_rmtac_AppointBook[i].id);
@@ -131,27 +131,28 @@ int PP_ACCtrl_mainfunction(void *task)
 				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{
 					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_REQSTART;
-					if(PP_rmtACCtrl.state.style == RMTCTRL_TSP)
+					if(PP_rmtACCtrl.state.style == RMTCTRL_TSP)   //tsp平台
 					{
 						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-						rmtCtrl_Stpara.rvcReqStatus = 1;    //鎵ц涓�
+						rmtCtrl_Stpara.rvcReqStatus = 1;    //开始执行
 						rmtCtrl_Stpara.rvcFailureType = 0;
 						rmtCtrl_Stpara.reqType =PP_rmtACCtrl.CtrlPara.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtACCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 					}
 					else if(PP_rmtACCtrl.state.style == RMTCTRL_TBOX)//tbox
 					{
 						log_o(LOG_HOZON,"tbox platform\n");
 					}
-					else//钃濈墮
+					else//蓝牙
 					{
 
 					}
 				}
-				else   //涓嶆弧瓒宠繙鎺ф潯浠�
+				else   //不满足远控条件
 				{
+					log_i(LOG_HOZON,"The vehicle control condition is not satisfied\n");
 					PP_rmtACCtrl.fail = 0;
 					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 				}
@@ -159,21 +160,21 @@ int PP_ACCtrl_mainfunction(void *task)
 			}
 		}
 		break;
-		case PP_ACCTRL_REQSTART:     //涓嬪彂绌鸿皟鍛戒护
+		case PP_ACCTRL_REQSTART:     //下发报文
 		{
-			if(PP_rmtACCtrl.state.accmd == PP_OPEN_ACC)    //寮�鍚┖璋冨懡浠�
+			if(PP_rmtACCtrl.state.accmd == PP_OPEN_ACC)    //打开空调
 			{
 				log_o(LOG_HOZON,"request start ac\n");
 				PP_can_send_data(PP_CAN_ACCTRL,CAN_OPENACC,0);
 			}
-			else if(PP_rmtACCtrl.state.accmd == PP_CLOSE_ACC)  
+			else if(PP_rmtACCtrl.state.accmd == PP_CLOSE_ACC)  //关闭空调
 			{
-				log_o(LOG_HOZON,"request stop ac\n");     //鍏抽棴绌鸿皟
+				log_o(LOG_HOZON,"request stop ac\n");     
 				PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);
 			}
-			else
-			{
-				PP_can_send_data(PP_CAN_ACCTRL,CAN_SETACCTEP,0);  //璁剧疆娓╁害瑕佸甫涓�涓弬鏁�
+			else                                               //设置空调温度
+			{   log_o(LOG_HOZON,"Set the air conditioning temperature\n"); 
+				PP_can_send_data(PP_CAN_ACCTRL,CAN_SETACCTEP,0); 
 			}
 			PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_RESPWAIT;
 			PP_rmtACCtrl.state.waittime = tm_get_time();
@@ -183,9 +184,9 @@ int PP_ACCtrl_mainfunction(void *task)
 		{
 			if((tm_get_time() - PP_rmtACCtrl.state.waittime) < 2000)
 			{
-				if(PP_rmtACCtrl.state.accmd == PP_OPEN_ACC)    //寮�鍚┖璋冨懡浠�
+				if(PP_rmtACCtrl.state.accmd == PP_OPEN_ACC)    //打开空调结果
 				{
-					if(PP_rmtCtrl_cfg_ACOnOffSt() == 1) //寮�鍚垚鍔�
+					if(PP_rmtCtrl_cfg_ACOnOffSt() == 1)    //打开成功
 					{
 						log_o(LOG_HOZON,"open  success\n");
 						PP_rmtACCtrl.fail     = 0;
@@ -194,7 +195,7 @@ int PP_ACCtrl_mainfunction(void *task)
 				}
 				else
 				{
-					if(PP_rmtCtrl_cfg_ACOnOffSt() == 0) //鍏抽棴鎴愬姛
+					if(PP_rmtCtrl_cfg_ACOnOffSt() == 0)   // 关闭成功
 					{
 						log_o(LOG_HOZON,"close  success\n");
 						PP_rmtACCtrl.fail     = 0;
@@ -202,7 +203,7 @@ int PP_ACCtrl_mainfunction(void *task)
 					}
 				}
 			}
-			else//瓒呮椂
+			else//超时
 			{
 				log_e(LOG_HOZON,"Instruction execution timeout\n");
 				PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);  
@@ -221,7 +222,7 @@ int PP_ACCtrl_mainfunction(void *task)
 			{
 				rmtCtrl_Stpara.reqType =PP_rmtACCtrl.CtrlPara.reqType;
 				rmtCtrl_Stpara.eventid = PP_rmtACCtrl.pack.DisBody.eventId;
-				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;//闈為绾�
+				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;//
 				if(0 == PP_rmtACCtrl.fail)
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 2;  
@@ -232,10 +233,10 @@ int PP_ACCtrl_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcReqStatus = 3;  
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
-				PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
 			}
-			else
+			else  //蓝牙
 			{
 
 			}
@@ -302,10 +303,10 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 				||(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_SETTEMP))
 			{
 				if((PP_ACCTRL_IDLE == PP_rmtACCtrl.state.CtrlSt) && \
-						(PP_rmtACCtrl.state.req == 0))      //娌℃湁鍦ㄦ墽琛屽叾浠栫殑寮�鍚┖璋冨懡浠�
+						(PP_rmtACCtrl.state.req == 0))      //空闲
 				{
 					PP_rmtACCtrl.state.req = 1;
-					PP_rmtACCtrl.state.bookingSt = 0;//闈為绾︾┖璋�
+					PP_rmtACCtrl.state.bookingSt = 0;      //非预约
 					PP_rmtACCtrl.CtrlPara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 					if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACOPEN)
 					{
@@ -315,7 +316,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 					{
 						PP_rmtACCtrl.state.accmd = PP_CLOSE_ACC;
 					}
-					else   //璁剧疆绌鸿皟娓╁害
+					else   //设置温度
 					{
 						PP_rmtACCtrl.state.accmd = PP_SETH_ACC;
 					}
@@ -384,9 +385,9 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 		{
 			int i = *(int *)appdatarmtCtrl;
 			PP_rmtACCtrl.state.req = 1;
-			PP_rmtACCtrl.state.bookingSt = 1;//棰勭害寮�鍚┖璋�
-			PP_rmtACCtrl.CtrlPara.bookingId = PP_rmtac_AppointBook[i].id;
-			PP_rmtACCtrl.pack.DisBody.eventId = PP_rmtac_AppointBook[i].eventId;
+			PP_rmtACCtrl.state.bookingSt = 1;//预约
+			PP_rmtACCtrl.CtrlPara.bookingId = PP_rmtac_AppointBook[i].id; //ID
+			PP_rmtACCtrl.pack.DisBody.eventId = PP_rmtac_AppointBook[i].eventId; //eventid
 			PP_rmtACCtrl.state.style   = RMTCTRL_TBOX;
 		}
 		default:
@@ -394,22 +395,24 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 	}
 }
 /******************************************************
-*鍑芥暟鍚嶏細PP_AcCtrl_acStMonitor
+*函数名：PP_AcCtrl_chargeStMonitor
 
-*褰�  鍙傦細void
+*形  参：void
 
-*杩斿洖鍊硷細void
+*返回值：void
 
-*鎻�  杩帮細
+*描  述：
 
-*澶�  娉細
+*备  注：
 ******************************************************/
+
+
 void PP_AcCtrl_acStMonitor(void *task)
 {
 	int i;
 	static uint8_t appointPerformFlg = 0;
 	
-	/*妫�鏌ラ绾﹀紑鍚┖璋�*/
+	/*Check appointment to turn on air conditioner*/
 	for(i=0;i<ACC_APPOINT_NUM;i++)
 	{
 		if(PP_rmtac_AppointBook[i].validFlg == 1)
@@ -418,9 +421,9 @@ void PP_AcCtrl_acStMonitor(void *task)
 			time_t timep;
 			struct tm *localdatetime;
 
-			time(&timep);  //鑾峰彇浠�1970/01/01 00:00:00 鍒扮幇鍦ㄧ殑绉掓暟
-			localdatetime = localtime(&timep);//鍙栧緱褰撳湴鏃堕棿
-			if(PP_rmtac_AppointBook[i].period & 0x80)//閲嶅
+			time(&timep);  //获取从1970.1.1 00:00:00到现在的秒数
+			localdatetime = localtime(&timep);//获取本地时间
+			if(PP_rmtac_AppointBook[i].period & 0x80)//重复
 			{
 				if(PP_rmtAc_Appointperiod[localdatetime->tm_wday].mask & PP_rmtac_AppointBook[i].period)
 				{
@@ -445,7 +448,7 @@ void PP_AcCtrl_acStMonitor(void *task)
 				}
 			}
 			else
-			{ //涓嶉噸澶�
+			{ //不重复
 				if((localdatetime->tm_hour == PP_rmtac_AppointBook[i].hour) && \
 						(localdatetime->tm_min == PP_rmtac_AppointBook[i].min))
 				{

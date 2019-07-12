@@ -79,10 +79,10 @@ typedef struct
 	long eventid;//事件id
 }__attribute__((packed))  PrvtProt_rmtCtrl_t; /*结构体*/
 
-static PrvtProt_rmtCtrl_t PP_rmtCtrl;
-static PrvtProt_pack_t 		PP_rmtCtrl_Pack;
-static PrvtProt_App_rmtCtrl_t 		App_rmtCtrl;
-
+static PrvtProt_rmtCtrl_t 		PP_rmtCtrl;
+static PrvtProt_pack_t 			PP_rmtCtrl_Pack;
+static PrvtProt_App_rmtCtrl_t 	App_rmtCtrl;
+static PrvtProt_task_t			PP_rmtCtrl_task;
 static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 {
 	{RMTCTRL_DOORLOCK,       PP_doorLockCtrl_init,	PP_doorLockCtrl_mainfunction},
@@ -97,8 +97,8 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 };
 
 static int PP_rmtCtrl_flag = 0;
-
-static PrvtProt_TxInform_t rmtCtrl_TxInform;
+#define PP_TXINFORMNODE_NUM 100
+static PrvtProt_TxInform_t rmtCtrl_TxInform[PP_TXINFORMNODE_NUM];
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -112,6 +112,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 //static int PP_rmtCtrl_StatusResp(long bookingId,unsigned int reqtype);
 
 static void PP_rmtCtrl_send_cb(void * para);
+static int PP_rmtCtrl_getIdleNode(void);
 /******************************************************
 description： function code
 ******************************************************/
@@ -140,6 +141,10 @@ void PP_rmtCtrl_init(void)
 		}
 	}
 
+	for(i = 0;i < PP_TXINFORMNODE_NUM;i++)
+	{
+		memset(&rmtCtrl_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
+	}
 }
 
 /******************************************************
@@ -157,8 +162,14 @@ int PP_rmtCtrl_mainfunction(void *task)
 {
 	int res;
 	int i;
-	res = 		PP_rmtCtrl_do_checksock((PrvtProt_task_t*)task) ||
-				PP_rmtCtrl_do_rcvMsg((PrvtProt_task_t*)task);
+	PrvtProt_task_t* task_ptr = (PrvtProt_task_t*)task;
+
+	PP_rmtCtrl_task.nonce = task_ptr->nonce;
+	PP_rmtCtrl_task.tboxid = task_ptr->tboxid;
+	PP_rmtCtrl_task.version = task_ptr->version;
+
+	res = 	PP_rmtCtrl_do_checksock(task_ptr) ||
+			PP_rmtCtrl_do_rcvMsg(task_ptr);
 
 	switch(PP_rmtCtrl_flag)
 	{
@@ -168,8 +179,8 @@ int PP_rmtCtrl_mainfunction(void *task)
 			PP_rmtCtrl_checkenginetime();//15分钟之后下高压电
 			//检测空调或座椅加热上电或下电
 
-			PP_ChargeCtrl_chargeStMonitor(task);//监测充电状态
-			PP_AcCtrl_acStMonitor(task);        //查询空调预约时间
+			PP_ChargeCtrl_chargeStMonitor(task_ptr);//监测充电状态
+			PP_AcCtrl_acStMonitor(task_ptr);        //查询空调预约时间
 
 			ret  = PP_doorLockCtrl_start() ||
 				   PP_autodoorCtrl_start() ||
@@ -217,18 +228,18 @@ int PP_rmtCtrl_mainfunction(void *task)
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
 				rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_BCDMAUTHFAIL;
-				PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
     			PP_rmtCtrl_flag = RMTCTRL_IDLE;
 				log_o(LOG_HOZON,"-------identificat failed---------");
 				// 清除远程控制请求
-				ClearPP_autodoorCtrl_Request();
-				ClearPP_doorLockCtrl_Request();
-				ClearPP_searchvehicle_Request();
-				ClearPP_seatheating_Request();
-				ClearPP_startengine_Request();
-				ClearPP_startforbid_Request();
-				ClearPP_sunroofctrl_Request();
-				ClearPP_ChargeCtrl_Request();
+				PP_autodoorCtrl_ClearStatus();
+				PP_doorLockCtrl_ClearStatus();
+				PP_searchvehicle_ClearStatus();
+				PP_seatheating_ClearStatus();
+				PP_startengine_ClearStatus();
+				PP_startforbid_ClearStatus();
+				PP_sunroofctrl_ClearStatus();
+				PP_ChargeCtrl_ClearStatus();
    			}
    			else
    			{}
@@ -242,7 +253,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 			{
 				if(PP_RmtCtrlFunc[i].mainFunc != NULL)
 				{
-					PP_RmtCtrlFunc[i].mainFunc((PrvtProt_task_t*)task);
+					PP_RmtCtrlFunc[i].mainFunc(task_ptr);
 				}
 			}
 
@@ -410,7 +421,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 			case PP_RMTCTRL_CHARGE://充电
 			{
-				SetPP_ChargeCtrl_Request(RMTCTRL_TSP,task,&Appdata,&MsgDataBody);
+				SetPP_ChargeCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
 			}
 			break;
@@ -463,7 +474,7 @@ static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task)
 
 *备  注：
 ******************************************************/
-void PP_rmtCtrl_BluetoothSetCtrlReq(unsigned char obj, unsigned char cmd)
+void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 {
 	switch(obj)
 	{
@@ -518,6 +529,32 @@ void PP_rmtCtrl_BluetoothSetCtrlReq(unsigned char obj, unsigned char cmd)
 	}
 }
 
+
+/******************************************************
+*函数名：PP_rmtCtrl_HuCtrlReq
+
+*形  参：
+
+*返回值：
+
+*描  述：设置 请求
+
+*备  注：
+******************************************************/
+void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara)
+{
+	switch(obj)
+	{
+		case PP_RMTCTRL_CHARGE://充电
+		{
+			SetPP_ChargeCtrl_Request(RMTCTRL_HU,cmdpara,NULL);
+			log_i(LOG_HOZON, "HU charge req");
+		}
+		break;
+		default:
+		break;
+	}
+}
 
 /******************************************************
 *函数名：PP_rmtCtrl_SetCtrlReq
@@ -609,19 +646,18 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 
 *备  注：
 ******************************************************/
-int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
+int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 {
 	int msgdatalen;
 	int res = 0;
 
-	PrvtProt_task_t* task_ptr = (PrvtProt_task_t*)task;
 	/*header*/
 	memcpy(PP_rmtCtrl.pack.Header.sign,"**",2);
 	PP_rmtCtrl.pack.Header.commtype.Byte = 0xe1;
 	PP_rmtCtrl.pack.Header.opera = 0x02;
-	PP_rmtCtrl.pack.Header.ver.Byte = task_ptr->version;
-	PP_rmtCtrl.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task_ptr->nonce);
-	PP_rmtCtrl.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task_ptr->tboxid);
+	PP_rmtCtrl.pack.Header.ver.Byte = PP_rmtCtrl_task.version;
+	PP_rmtCtrl.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)PP_rmtCtrl_task.nonce);
+	PP_rmtCtrl.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)PP_rmtCtrl_task.tboxid);
 	memcpy(&PP_rmtCtrl_Pack, &PP_rmtCtrl.pack.Header, sizeof(PrvtProt_pack_Header_t));
 
 	switch(CtrlSt_para->Resptype)
@@ -812,8 +848,9 @@ int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlHUbookingResp.rvcReqHours 	= CtrlSt_para->rvcReqHours;
 			App_rmtCtrl.CtrlHUbookingResp.rvcReqMin 	= CtrlSt_para->rvcReqMin;
 			App_rmtCtrl.CtrlHUbookingResp.rvcReqEq 		= CtrlSt_para->rvcReqEq;
-			memcpy(App_rmtCtrl.CtrlHUbookingResp.rvcReqCycle,CtrlSt_para->rvcReqCycle,8);
-			App_rmtCtrl.CtrlHUbookingResp.rvcReqCyclelen = 8;
+			//memcpy(App_rmtCtrl.CtrlHUbookingResp.rvcReqCycle,CtrlSt_para->rvcReqCycle,8);
+			App_rmtCtrl.CtrlHUbookingResp.rvcReqCycle = CtrlSt_para->rvcReqCycle;
+			App_rmtCtrl.CtrlHUbookingResp.rvcReqCyclelen = 1;
 			App_rmtCtrl.CtrlHUbookingResp.bookingId = CtrlSt_para->bookingId;
 
 			if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_HUBOOKINGRESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
@@ -831,11 +868,12 @@ int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para)
 	PP_rmtCtrl_Pack.totallen = 18 + msgdatalen;
 	PP_rmtCtrl_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
 
-	rmtCtrl_TxInform.aid = PP_AID_RMTCTRL;
-	rmtCtrl_TxInform.mid = PP_MID_RMTCTRL_RESP;
-	rmtCtrl_TxInform.pakgtype = PP_TXPAKG_CONTINUE;
+	int i = PP_rmtCtrl_getIdleNode();
+	rmtCtrl_TxInform[i].aid = PP_AID_RMTCTRL;
+	rmtCtrl_TxInform[i].mid = PP_rmtCtrl.pack.DisBody.mID;
+	rmtCtrl_TxInform[i].pakgtype = PP_TXPAKG_CONTINUE;
 
-	SP_data_write(PP_rmtCtrl_Pack.Header.sign,PP_rmtCtrl_Pack.totallen,PP_rmtCtrl_send_cb,&rmtCtrl_TxInform);
+	SP_data_write(PP_rmtCtrl_Pack.Header.sign,PP_rmtCtrl_Pack.totallen,PP_rmtCtrl_send_cb,&rmtCtrl_TxInform[i]);
 
 	protocol_dump(LOG_HOZON, "get_remote_control_response", PP_rmtCtrl_Pack.Header.sign, \
 					18 + msgdatalen,1);
@@ -864,4 +902,29 @@ static void PP_rmtCtrl_send_cb(void * para)
 	log_i(LOG_HOZON, "successflg = %d",TxInform_ptr->successflg);
 	log_i(LOG_HOZON, "failresion = %d",TxInform_ptr->failresion);
 	log_i(LOG_HOZON, "txfailtime = %d",TxInform_ptr->txfailtime);
+
+	TxInform_ptr->idleflag = 0;
+	if(TxInform_ptr->mid == PP_MID_RMTCTRL_HUBOOKINGRESP)
+	{
+		if(TxInform_ptr->successflg == PP_TXPAKG_SUCCESS)
+		{
+			PP_ChargeCtrl_send_cb();
+		}
+	}
+}
+
+
+static int PP_rmtCtrl_getIdleNode(void)
+{
+	int i;
+	int res = 0;
+	for(i = 0;i < PP_TXINFORMNODE_NUM;i++)
+	{
+		if(rmtCtrl_TxInform[i].idleflag == 0)
+		{
+			res = i;
+			break;
+		}
+	}
+	return res;
 }

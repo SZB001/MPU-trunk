@@ -109,7 +109,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 						rmtCtrl_Stpara.reqType =PP_rmtautodoorCtrl.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtautodoorCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 					}
 					else//蓝牙
 					{
@@ -203,7 +203,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
-				res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
 			}
 			else//蓝牙
@@ -275,7 +275,7 @@ void SetPP_autodoorCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 	}
 }
 
-void ClearPP_autodoorCtrl_Request(void)
+void PP_autodoorCtrl_ClearStatus(void)
 {
 	PP_rmtautodoorCtrl.state.req = 0;
 }

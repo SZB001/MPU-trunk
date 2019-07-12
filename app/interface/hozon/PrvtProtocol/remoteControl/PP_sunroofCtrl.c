@@ -112,7 +112,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 						rmtCtrl_Stpara.reqType =PP_rmtsunroofCtrl.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtsunroofCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 					}
 					else//蓝牙
 					{
@@ -236,7 +236,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
-				res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
 			}
 			else//蓝牙
@@ -322,7 +322,7 @@ void SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 
 }
 
-void ClearPP_sunroofctrl_Request(void)
+void PP_sunroofctrl_ClearStatus(void)
 {
 	PP_rmtsunroofCtrl.state.req = 0;
 }

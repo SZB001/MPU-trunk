@@ -1,8 +1,8 @@
 
 /******************************************************
-文件名：PP_StartForbid.h
+鏂囦欢鍚嶏細PP_StartForbid.h
 
-描述：	车门锁控制
+鎻忚堪锛�	杞﹂棬閿佹帶鍒�
 
 Data			  Vasion			author
 2019/05/18		   V1.0			    liujian
@@ -10,20 +10,20 @@ Data			  Vasion			author
 #ifndef		_PP_STARTFORBID_H
 #define		_PP_STARTFORBID_H
 /*******************************************************
-description： include the header file
+description锛� include the header file
 *******************************************************/
 
 /*******************************************************
-description： macro definitions
+description锛� macro definitions
 *******************************************************/
-/**********宏开关定义*********/
+/**********瀹忓紑鍏冲畾涔�*********/
 
-/**********宏常量定义*********/
+/**********瀹忓父閲忓畾涔�*********/
 #define PP_STARTFORBID_IDLE   		0
 #define PP_STARTFORBID_REQSTART  	1
 #define PP_STARTFORBID_RESPWAIT   	2
 #define PP_STARTFORBID_END    		3
-/***********宏函数***********/
+/***********瀹忓嚱鏁�***********/
 
 
 
@@ -53,7 +53,7 @@ extern uint8_t PP_startforbid_end(void);
 
 extern void SetPP_startforbid_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 
-extern void ClearPP_startforbid_Request(void);
+extern void PP_startforbid_ClearStatus(void);
 
 extern void PP_startforbid_SetCtrlReq(unsigned char req,uint16_t reqType);
 

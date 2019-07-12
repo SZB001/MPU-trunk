@@ -109,7 +109,7 @@ int PP_startengine_mainfunction(void *task)
 						rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 					}
 					else      //蓝牙
 					{
@@ -206,7 +206,7 @@ int PP_startengine_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcReqStatus = 3;   //给平台回复执行完成
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
-				res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
 			}
 			else  //蓝牙
@@ -297,7 +297,7 @@ void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 }
 
 
-void ClearPP_startengine_Request(void)
+void PP_startengine_ClearStatus(void)
 {
 	PP_rmtengineCtrl.state.req = 0;
 }

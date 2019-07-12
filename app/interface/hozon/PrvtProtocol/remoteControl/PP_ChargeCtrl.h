@@ -52,6 +52,8 @@ typedef struct
 	uint8_t  waitSt;
 	uint64_t waittime;
 	uint8_t  chargeSt;//充电状态：1-充电中；0-未充电
+
+	uint8_t  dataUpdata;
 }__attribute__((packed))  PP_rmtChargeCtrlSt_t; /*remote control结构体*/
 
 
@@ -67,6 +69,7 @@ typedef struct
 typedef struct
 {
 	//预约记录
+	uint8_t  appointType;//预约记录类型：1-tsp;3-HU
 	uint8_t  validFlg;
 	uint32_t id;
 	uint8_t  hour;
@@ -74,6 +77,12 @@ typedef struct
 	uint8_t  targetSOC;
 	uint8_t  period;
 	uint32_t eventId;
+
+	uint16_t rvcReqType;
+	uint32_t huBookingTime;
+	uint32_t HUbookingId;
+
+	uint8_t	bookupdataflag;//预约记录更新到tsp标志:0-默认；1-上报中；2-上报失败；3-上报完成
 }__attribute__((packed))  PP_rmtCharge_AppointBook_t; /*结构体*/
 
 typedef struct
@@ -93,12 +102,12 @@ description： function External declaration
 *******************************************************/
 extern void PP_ChargeCtrl_init(void);
 extern int 	PP_ChargeCtrl_mainfunction(void *task);
-extern void SetPP_ChargeCtrl_Request(char ctrlstyle,void *task,void *appdatarmtCtrl,void *disptrBody);
-extern void ClearPP_ChargeCtrl_Request(void );
+extern void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 
 extern void PP_ChargeCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 extern void PP_ChargeCtrl_chargeStMonitor(void *task);
 extern int PP_ChargeCtrl_start(void);
 extern int PP_ChargeCtrl_end(void);
-extern void ClearPP_ChargeCtrl_Request(void);
+extern void PP_ChargeCtrl_ClearStatus(void);
+extern void PP_ChargeCtrl_send_cb(void);
 #endif 

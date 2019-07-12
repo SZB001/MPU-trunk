@@ -1,7 +1,7 @@
 /******************************************************
-文件名：PP_StartEngine.h
+鏂囦欢鍚嶏細PP_StartEngine.h
 
-描述：	车门锁控制
+鎻忚堪锛�	杞﹂棬閿佹帶鍒�
 
 Data			  Vasion			author
 2019/05/18		   V1.0			    liujian
@@ -9,20 +9,20 @@ Data			  Vasion			author
 #ifndef		_PP_STARTENGINE_H
 #define		_PP_STARTENGINE_H
 /*******************************************************
-description： include the header file
+description锛� include the header file
 *******************************************************/
 
 /*******************************************************
-description： macro definitions
+description锛� macro definitions
 *******************************************************/
-/**********宏开关定义*********/
+/**********瀹忓紑鍏冲畾涔�*********/
 
-/**********宏常量定义*********/
+/**********瀹忓父閲忓畾涔�*********/
 #define PP_STARTENGINE_IDLE   		0
 #define PP_STARTENGINE_REQSTART  	1
 #define PP_STARTENGINE_RESPWAIT   	2
 #define PP_STARTENGINE_END    		3
-/***********宏函数***********/
+/***********瀹忓嚱鏁�***********/
 
 
 
@@ -54,7 +54,7 @@ extern void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *
 
 
 extern void PP_startengine_SetCtrlReq(unsigned char req,uint16_t reqType);
-extern  void ClearPP_startengine_Request(void);
+extern  void PP_startengine_ClearStatus(void);
 
 extern void PP_rmtCtrl_checkenginetime(void);
 

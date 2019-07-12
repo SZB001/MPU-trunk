@@ -107,7 +107,7 @@ int PP_searchvehicle_mainfunction(void *task)
 						rmtCtrl_Stpara.reqType =PP_rmtsearchvehicle.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtsearchvehicle.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 					}
 					else//蓝牙
 					{
@@ -178,7 +178,7 @@ int PP_searchvehicle_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
-				res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
 			}
 			else//蓝牙
@@ -245,7 +245,7 @@ void SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *dispt
 	}
 }
 
-void ClearPP_searchvehicle_Request(void)
+void PP_searchvehicle_ClearStatus(void)
 {
 	PP_rmtsearchvehicle.state.req = 0;
 }

@@ -14,6 +14,7 @@ extern int gb32960_getNetworkSt(void);
 extern void gb32960_getURL(void* ipaddr);
 extern int gb32960_getAllowSleepSt(void);
 extern int gb32960_getsuspendSt(void);
+extern unsigned char gb32960_PowerOffSt(void);
 
 extern uint8_t gb_data_vehicleState(void);
 extern long gb_data_vehicleSOC(void);

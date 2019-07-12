@@ -218,6 +218,7 @@ typedef struct
 
 typedef struct
 {
+	uint8_t idleflag;
 	int aid;
 	int mid;
 	char pakgtype;//报文类型:1-持续型（持续发送直到发送成功）；2-单次触发型（发送失败丢弃）；3-单次时效性（发送失败丢弃，同时报文具有时效性）

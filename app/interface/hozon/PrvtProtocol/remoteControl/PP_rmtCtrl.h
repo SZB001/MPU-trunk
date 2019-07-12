@@ -83,11 +83,13 @@ description： macro definitions
 
 
 //指令执行失败类型
-#define PP_RMTCTRL_ACCNOOFF			0x01//
-#define PP_RMTCTRL_BCDMAUTHFAIL		0x01//
-#define PP_RMTCTRL_TIMEOUTFAIL		0x01//
-#define PP_RMTCTRL_CHRGGUNUNCONNT	0x01//
-#define PP_RMTCTRL_INVALID_ID		0x01//
+#define PP_RMTCTRL_ACCNOOFF				0x01//power mode != OFF
+#define PP_RMTCTRL_UNKNOWCMD			0x02//unknow command
+#define PP_RMTCTRL_OTHERCMDEXECTING		0x03//Other instructions are executing
+#define PP_RMTCTRL_BCDMAUTHFAIL			0x04//bcm auth fail
+#define PP_RMTCTRL_TIMEOUTFAIL			0x05//command executed timeout
+#define PP_RMTCTRL_CHRGGUNUNCONNT		0x06//充电枪未连接
+#define PP_RMTCTRL_INVALID_ID			0x07//无效的预约ID
 
 
 /***********宏函数***********/
@@ -267,7 +269,7 @@ typedef struct
 	long	rvcReqHours;
 	long	rvcReqMin;
 	long	rvcReqEq	/* OPTIONAL */;
-	uint8_t	rvcReqCycle[9]	/* OPTIONAL */;
+	uint8_t	rvcReqCycle	/* OPTIONAL */;
 	uint8_t rvcReqCyclelen;
 	long	bookingId	/* OPTIONAL */;
 }__attribute__((packed))  App_rmtCtrlHUbookingResp_t;
@@ -309,8 +311,8 @@ typedef struct
 	long	rvcReqHours;
 	long	rvcReqMin;
 	long	rvcReqEq	/* OPTIONAL */;
-	uint8_t	rvcReqCycle[8]	/* OPTIONAL */;
-	//long	HUbookingId	/* OPTIONAL */;
+	uint8_t	rvcReqCycle	/* OPTIONAL */;
+	long	HUbookingId	/* OPTIONAL */;
 
 	/* 蓝牙 */
 
@@ -328,6 +330,6 @@ description： function External declaration
 extern void PP_rmtCtrl_init(void);
 extern int 	PP_rmtCtrl_mainfunction(void *task);
 extern void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
-extern int PP_rmtCtrl_StInformTsp(void *task,PP_rmtCtrl_Stpara_t *CtrlSt_para);
-extern void PP_rmtCtrl_BluetoothSetCtrlReq(unsigned char obj, unsigned char cmd);
+extern int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para);
+//extern void PP_rmtCtrl_BluetoothSetCtrlReq(unsigned char obj, unsigned char cmd);
 #endif 

@@ -30,7 +30,7 @@ extern void SetPP_autodoorCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void 
 
 extern void PP_autodoorCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 
-extern void ClearPP_autodoorCtrl_Request(void);
+extern void PP_autodoorCtrl_ClearStatus(void);
 
 #endif
 

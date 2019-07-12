@@ -60,6 +60,8 @@ typedef enum
     PP_CAN_CHAGER,
     PP_CAN_FORBID,
     PP_CAN_SEATHEAT,
+    PP_CAN_OTAREQ,
+    PP_CAN_CERTIFICATE,
     PP_CAN_CTRL_TYP_MAX,
 } PP_can_ctrl_typ;
 

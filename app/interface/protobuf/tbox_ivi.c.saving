@@ -1678,6 +1678,15 @@ void *ivi_main(void)
     return NULL;
 }
 
+
+/****************************************************************
+function:     ivi_check
+description:  startup data communciation module
+input:        none
+output:       none
+return:       0 indicates success;
+              others indicates failed
+*****************************************************************/
 void *ivi_check(void)
 {
 	while(1)
@@ -1755,8 +1764,21 @@ int ivi_run(void)
     }
 
 	ret = pthread_create(&ivi_tid, &ta, (void *)ivi_check, NULL);
+	
+    if (ret != 0)
+    {
+        log_e(LOG_IVI, "pthread_create(ivi_check) failed, error:%s", strerror(errno));
+        return ret;
+    }
     return 0;
 }
+
+/********************************************************************************
+	TSP下发远程采集视频和图像，TBOX要通知车机
+函数名：tbox_ivi_set_tspInformHU
+input：ivi_remotediagnos
+output:void
+********************************************************************************/
 void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp)
 {
 	tspdiagnos.aid = tsp->aid;
@@ -1768,6 +1790,17 @@ void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp)
 	tspdiagnos.sizelimit =tsp->sizelimit;
 	tspdiagnos_flag = 1;
 }
+
+/********************************************************************************
+	TSP下发给车机下发上传日志文件，TBOX要通知车机
+	
+函数名：tbox_ivi_set_tsplogfile_InformHU
+
+input：ivi_remotediagnos
+
+output:void
+
+********************************************************************************/
 void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp)
 {
 	tsplogfile.aid = tsp->aid;
@@ -1779,6 +1812,17 @@ void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp)
 	tsplogfile.durationtime = tsp->durationtime;
 	tsplogfile_flag = 1;
 }
+
+/********************************************************************************
+	TSP下发给充电预约，TBOX要同步给车机
+	
+函数名：tbox_ivi_set_tspchager_InformHU
+
+input：ivi_chargeAppointSt
+
+output:void
+
+********************************************************************************/
 void tbox_ivi_set_tspchager_InformHU(ivi_chargeAppointSt *tsp)
 {
 	tspchager.id = tsp->id;

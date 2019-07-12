@@ -32,4 +32,6 @@ extern void PP_rmtCfg_SetmpuSw(const char *mpuSw);
 extern void PP_rmtCfg_Seticcid(const char *iccid);
 extern void PrvtProt_Settboxsn(const char *tboxsn);
 extern void PrvtPro_ShowPara(void);
+extern void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd);
+extern void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara);
 #endif

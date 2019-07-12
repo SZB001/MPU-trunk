@@ -20,9 +20,6 @@ static uint8_t can_data[8];
 
 static uint64_t lastsendtime;
 
-
-
-
 int shell_can_init()
 {	
 	return 0;
@@ -37,6 +34,9 @@ int PP_canSend_init(void)
 	canmsg_3D2.port = 1;
 	canmsg_3D2.period = 100;  //100ms
 	canmsg_3D2.times_event = 1;
+	//初始化445报文数据
+	ID445_data |= (uint64_t)1 << 46;
+	ID445_data |= (uint64_t)1 << 54;
 	return 0;
 }
 
@@ -229,7 +229,7 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 ****************************************************/
 void PP_can_send_cycle(void)
 {
-	if(tm_get_time() - lastsendtime > 20)    //20ms
+	if(tm_get_time() - lastsendtime > 50)    //50ms
 	{
 		PP_can_unpack(ID440_data,can_data);
 		PP_send_cycle_ID440_to_mcu(can_data);
@@ -310,8 +310,13 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 			PP_canSend_setbit(CAN_ID_440,31,2,data,NULL);
 			break;
 		case PP_CAN_SEATHEAT:
-			PP_canSend_setbit(CAN_ID_440,para,2,data,NULL);
+			PP_canSend_setbit(CAN_ID_445,para,2,data,NULL);
 			break;
+		case PP_CAN_OTAREQ:
+			PP_canSend_setbit(CAN_ID_440,39,2,data,NULL);
+			break;
+		case PP_CAN_CERTIFICATE:
+			PP_canSend_setbit(CAN_ID_440,23,1,data,NULL);
 		default:
 			break;
 

@@ -35,7 +35,7 @@ extern void SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void
 
 extern void PP_searchvehicle_SetCtrlReq(unsigned char req,uint16_t reqType);
 
-extern  void ClearPP_searchvehicle_Request(void);
+extern  void PP_searchvehicle_ClearStatus(void);
 
 
 

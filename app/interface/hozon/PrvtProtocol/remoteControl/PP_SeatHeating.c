@@ -110,7 +110,7 @@ int PP_seatheating_mainfunction(void *task)
 							rmtCtrl_Stpara.reqType =PP_rmtseatheatCtrl[i].state.reqType;
 							rmtCtrl_Stpara.eventid = PP_rmtseatheatCtrl[i].pack.DisBody.eventId;
 							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-							res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+							res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 						}
 						else
 						{
@@ -201,7 +201,7 @@ int PP_seatheating_mainfunction(void *task)
 						rmtCtrl_Stpara.rvcReqStatus = 3;  
 						rmtCtrl_Stpara.rvcFailureType = 0xff;
 					}
-					res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+					res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 					PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_IDLE;
 				}
 				else
@@ -283,7 +283,7 @@ void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 	}
 }
 
-void ClearPP_seatheating_Request(void)
+void PP_seatheating_ClearStatus(void)
 {
 	PP_rmtseatheatCtrl[0].state.req = 0;
 	PP_rmtseatheatCtrl[1].state.req = 0;

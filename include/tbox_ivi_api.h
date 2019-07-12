@@ -70,6 +70,7 @@ typedef struct {
     uint32_t min;
     uint32_t id;
     uint32_t targetpower;
+	uint16_t cmd;
   /*
   *true:effective, false:Invalid
   */

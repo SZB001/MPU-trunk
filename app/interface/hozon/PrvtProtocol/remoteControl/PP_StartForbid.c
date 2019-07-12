@@ -96,7 +96,7 @@ int PP_startforbid_mainfunction(void *task)
 						rmtCtrl_Stpara.reqType =PP_rmtstartforbid.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtstartforbid.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 					}
 					else
 					{
@@ -193,7 +193,7 @@ int PP_startforbid_mainfunction(void *task)
 					rmtCtrl_Stpara.rvcReqStatus = 3;  
 					rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
-				res = PP_rmtCtrl_StInformTsp(task,&rmtCtrl_Stpara);
+				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
 			}
 			else
@@ -273,7 +273,7 @@ void SetPP_startforbid_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 
 }
 
-void ClearPP_startforbid_Request(void)
+void PP_startforbid_ClearStatus(void)
 {
 	PP_rmtstartforbid.state.req = 0;
 }

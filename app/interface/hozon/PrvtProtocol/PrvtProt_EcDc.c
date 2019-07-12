@@ -50,10 +50,10 @@ description£º include the header file
 
 #include "DiagnosticStInfo.h"
 #include "ImageAcquisitionReqInfo.h"
-#include "ImageAcquisitionRespInfo.h"
+//#include "ImageAcquisitionRespInfo.h"
 
 #include "LogAcquisitionRespInfo.h"
-#include "LogAcquisitionResInfo.h"
+//#include "LogAcquisitionResInfo.h"
 
 #include "per_encoder.h"
 #include "per_decoder.h"
@@ -748,9 +748,9 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			ctrlHUBookingResp.rvcReqEq  		= &rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqEq;
 			log_i(LOG_UPER_ECDC, "ctrlHUBookingResp.rvcReqEq = %d\n",*ctrlHUBookingResp.rvcReqEq);
 
-			rvcReqCycle.buf						= rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqCycle;
+			rvcReqCycle.buf						= &rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqCycle;
 			rvcReqCycle.size 					= rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqCyclelen;
-			log_i(LOG_UPER_ECDC, "rvcReqCycle.buf = %s\n",rvcReqCycle.buf);
+			log_i(LOG_UPER_ECDC, "rvcReqCycle.buf = %x\n",*rvcReqCycle.buf);
 			log_i(LOG_UPER_ECDC, "rvcReqCycle.size = %d\n",rvcReqCycle.size);
 			ctrlHUBookingResp.rvcReqCycle 		= &rvcReqCycle;
 

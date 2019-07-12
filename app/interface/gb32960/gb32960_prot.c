@@ -103,6 +103,8 @@ static char       gb_iccid[21];
 static char       gb_battcode[64];
 static int        gb_allow_sleep;
 static char gbnosend = 0;
+static char powerOffFlag = 0;
+
 //static gb_stat_t *socket_st = NULL;
 static gb_stat_t state;
 static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void));
@@ -1398,8 +1400,11 @@ static void *gb_main(void)
                 break;
 
             case PM_MSG_RUNNING:
+            	 powerOffFlag = 1;
+            	break;
             case PM_MSG_OFF:
                 gb_data_emergence(0);
+                powerOffFlag = 0;
                 break;
 
             case GB_MSG_CANON:
@@ -1848,4 +1853,7 @@ int gb32960_getsuspendSt(void)
 	return (!state.suspend && !gb_data_noreport());
 }
  
- 
+unsigned char gb32960_PowerOffSt(void)
+{
+	return powerOffFlag;
+}
