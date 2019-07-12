@@ -433,7 +433,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 	if(PowerOffSt == 1)//掉电
 	{
 		/*
-		 * 掉电保存预约记录
+		 * 掉电保存预约记录，掉电前发生异常复位，则会导致预约记录丢失
 		* */
 		if(PP_rmtChargeCtrl.state.dataUpdata == 1)
 		{

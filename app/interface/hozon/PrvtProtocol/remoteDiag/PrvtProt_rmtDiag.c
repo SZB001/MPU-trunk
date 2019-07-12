@@ -659,7 +659,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 		break;
 		case PP_ACTIVEDIAG_QUERYUPLOAD:
 		{
-			if((tm_get_time() - PP_rmtDiag.state.activeDiagdelaytime) < 10)//延时10ms
+			if((tm_get_time() - PP_rmtDiag.state.activeDiagdelaytime) < 50)//延时50ms
 			{
 				return 0;
 			}

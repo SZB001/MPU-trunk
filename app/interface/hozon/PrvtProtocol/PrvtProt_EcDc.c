@@ -984,7 +984,12 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			}
 
 			ec = uper_encode(pduType_GIAG_st,(void *) &DiagnosticSt,PrvtPro_writeout,&key);
-			//ASN_STRUCT_FREE(asn_DEF_DiagnosticStInfo, &DiagnosticSt);
+			// Õ∑≈ADD
+			for(i = 0;i<DiagnosticSt_ptr->diagobjnum;i++)
+			{
+				asn_set_empty(&diagcode[i]);
+			}
+			asn_set_empty(&DiagnosticSt);
 			if(ec.encoded  == -1)
 			{
 				log_e(LOG_UPER_ECDC, "encode:appdata rmt_diag_status fail\n");
