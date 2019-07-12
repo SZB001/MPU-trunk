@@ -103,7 +103,7 @@ static char       gb_iccid[21];
 static char       gb_battcode[64];
 static int        gb_allow_sleep;
 static char gbnosend = 0;
-static char powerOffFlag = 0;
+static char powerOffFlag = 0xff;
 
 //static gb_stat_t *socket_st = NULL;
 static gb_stat_t state;
@@ -1397,6 +1397,7 @@ static void *gb_main(void)
 
             case PM_MSG_EMERGENCY:
                 gb_data_emergence(1);
+                powerOffFlag = 1;
                 break;
 
             case PM_MSG_RUNNING:

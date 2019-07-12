@@ -313,7 +313,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 	//int res;
 	PP_rmtCtrl_Stpara_t rmtCtrl_chargeStpara;
 	static uint8_t appointPerformFlg = 0;
-
+	static uint64_t delaytime;
 /*
  *	检查预约充电
  * */
@@ -343,10 +343,14 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 						SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,NULL,NULL);
 						log_i(LOG_HOZON,"Duplicate appointment\n");
 					}
+					delaytime = tm_get_time();
 				}
 				else
 				{
-					appointPerformFlg = 0;
+					if((tm_get_time() - delaytime) > 3000)//滤波延时3s
+					{
+						appointPerformFlg = 0;
+					}
 				}
 			}
 		}
@@ -422,10 +426,15 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 	}
 
 /*
- * 检查掉电
+ * 检查掉电/上电
  * */
-	if(gb32960_PowerOffSt() == 1)
+	uint8_t PowerOffSt;
+	PowerOffSt = gb32960_PowerOffSt();
+	if(PowerOffSt == 1)//掉电
 	{
+		/*
+		 * 掉电保存预约记录
+		* */
 		if(PP_rmtChargeCtrl.state.dataUpdata == 1)
 		{
 			if(PP_rmtCharge_AppointBook.bookupdataflag == 1)
@@ -438,26 +447,30 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 			PP_rmtChargeCtrl.state.dataUpdata = 0;
 		}
 	}
-
-/*
- * 上电检查预约记录是否需要重新上报更新到tsp
- * */
-	if(PP_rmtCharge_AppointBook.bookupdataflag ==2)
+	else if(PowerOffSt == 0)
 	{
-		//inform TSP the Reservation instruction issued status
-		rmtCtrl_chargeStpara.rvcReqType 	= PP_rmtCharge_AppointBook.rvcReqType;
-		rmtCtrl_chargeStpara.huBookingTime 	= PP_rmtCharge_AppointBook.huBookingTime;
-		rmtCtrl_chargeStpara.rvcReqHours  	= PP_rmtCharge_AppointBook.hour;
-		rmtCtrl_chargeStpara.rvcReqMin		= PP_rmtCharge_AppointBook.min;
-		rmtCtrl_chargeStpara.rvcReqEq		= PP_rmtCharge_AppointBook.targetSOC	/* OPTIONAL */;
-		rmtCtrl_chargeStpara.rvcReqCycle	= PP_rmtCharge_AppointBook.period	/* OPTIONAL */;
-		rmtCtrl_chargeStpara.HUbookingId	= PP_rmtCharge_AppointBook.id;
-		rmtCtrl_chargeStpara.eventid 		= PP_rmtCharge_AppointBook.eventId;
-		rmtCtrl_chargeStpara.Resptype 		= PP_RMTCTRL_HUBOOKINGRESP;
-		PP_rmtCtrl_StInformTsp(&rmtCtrl_chargeStpara);
-		PP_rmtCharge_AppointBook.bookupdataflag = 1;
-		PP_rmtChargeCtrl.state.dataUpdata = 1;
+		/*
+		 * 上电检查预约记录是否需要重新上报更新到tsp
+		 * */
+			if(PP_rmtCharge_AppointBook.bookupdataflag ==2)
+			{
+				//inform TSP the Reservation instruction issued status
+				rmtCtrl_chargeStpara.rvcReqType 	= PP_rmtCharge_AppointBook.rvcReqType;
+				rmtCtrl_chargeStpara.huBookingTime 	= PP_rmtCharge_AppointBook.huBookingTime;
+				rmtCtrl_chargeStpara.rvcReqHours  	= PP_rmtCharge_AppointBook.hour;
+				rmtCtrl_chargeStpara.rvcReqMin		= PP_rmtCharge_AppointBook.min;
+				rmtCtrl_chargeStpara.rvcReqEq		= PP_rmtCharge_AppointBook.targetSOC	/* OPTIONAL */;
+				rmtCtrl_chargeStpara.rvcReqCycle	= PP_rmtCharge_AppointBook.period	/* OPTIONAL */;
+				rmtCtrl_chargeStpara.HUbookingId	= PP_rmtCharge_AppointBook.id;
+				rmtCtrl_chargeStpara.eventid 		= PP_rmtCharge_AppointBook.eventId;
+				rmtCtrl_chargeStpara.Resptype 		= PP_RMTCTRL_HUBOOKINGRESP;
+				PP_rmtCtrl_StInformTsp(&rmtCtrl_chargeStpara);
+				PP_rmtCharge_AppointBook.bookupdataflag = 1;
+				PP_rmtChargeCtrl.state.dataUpdata = 1;
+			}
 	}
+	else
+	{}
 }
 
 
