@@ -1,13 +1,13 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_EcDc.c
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_EcDc.c
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©,±à½âÂë	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½	
 Data			Vasion			author
 2019/4/29		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -73,11 +73,11 @@ description£º include the header file
 
 #include "PrvtProt_EcDc.h"
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 static asn_TYPE_descriptor_t *pduType_Body = &asn_DEF_Bodyinfo;
 static asn_TYPE_descriptor_t *pduType_XcallReq = &asn_DEF_XcallReqinfo;
@@ -114,7 +114,7 @@ static uint8_t tboxDisBodydata[PP_ECDC_DATA_LEN];
 static int tboxDisBodydataLen;
 
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
@@ -124,18 +124,18 @@ static int PrvtPro_writeout(const void *buffer,size_t size,void *key);
 static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,void *RxAppdata);
 #endif
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_msgPackage
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_msgPackage
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºÊý¾Ý´ò°ü±àÂë
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					   void *disptrBody, void *appchoice)
@@ -159,7 +159,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 	Bodydata.testFlag		= NULL;/* OPTIONAL */
 	Bodydata.result			= NULL;/* OPTIONAL */
 /*********************************************
-	Ìî³ä dispatcher bodyºÍapplication data
+	ï¿½ï¿½ï¿½ dispatcher bodyï¿½ï¿½application data
 *********************************************/	
 	Bodydata.aID.buf = DisptrBody->aID;
 	log_i(LOG_UPER_ECDC, "Bodydata.aID = %s\n",Bodydata.aID.buf);
@@ -243,14 +243,14 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			log_i(LOG_UPER_ECDC, "XcallResp.engineSt = %d",XcallResp.engineSt);
 			log_i(LOG_UPER_ECDC, "XcallResp.ttOdoMeter = %d",XcallResp.ttOdoMeter);
 
-			Rvspos.gpsSt = XcallResp_ptr->gpsPos.gpsSt;//gps×´Ì¬ 0-ÎÞÐ§£»1-ÓÐÐ§
-			Rvspos.gpsTimestamp = XcallResp_ptr->gpsPos.gpsTimestamp;//gpsÊ±¼ä´Á
-			Rvspos.latitude = XcallResp_ptr->gpsPos.latitude;//Î³¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
-			Rvspos.longitude = XcallResp_ptr->gpsPos.longitude;//¾­¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
-			Rvspos.altitude = XcallResp_ptr->gpsPos.altitude;//¸ß¶È£¨m£©
-			Rvspos.heading = XcallResp_ptr->gpsPos.heading;//³µÍ··½Ïò½Ç¶È£¬0ÎªÕý±±·½Ïò
-			Rvspos.gpsSpeed = XcallResp_ptr->gpsPos.gpsSpeed;//ËÙ¶È x 10£¬µ¥Î»km/h
-			Rvspos.hdop = XcallResp_ptr->gpsPos.hdop;//Ë®Æ½¾«¶ÈÒò×Ó x 10
+			Rvspos.gpsSt = XcallResp_ptr->gpsPos.gpsSt;//gps×´Ì¬ 0-ï¿½ï¿½Ð§ï¿½ï¿½1-ï¿½ï¿½Ð§
+			Rvspos.gpsTimestamp = XcallResp_ptr->gpsPos.gpsTimestamp;//gpsÊ±ï¿½ï¿½ï¿½
+			Rvspos.latitude = XcallResp_ptr->gpsPos.latitude;//Î³ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
+			Rvspos.longitude = XcallResp_ptr->gpsPos.longitude;//ï¿½ï¿½ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
+			Rvspos.altitude = XcallResp_ptr->gpsPos.altitude;//ï¿½ß¶È£ï¿½mï¿½ï¿½
+			Rvspos.heading = XcallResp_ptr->gpsPos.heading;//ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½Ç¶È£ï¿½0Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			Rvspos.gpsSpeed = XcallResp_ptr->gpsPos.gpsSpeed;//ï¿½Ù¶ï¿½ x 10ï¿½ï¿½ï¿½ï¿½Î»km/h
+			Rvspos.hdop = XcallResp_ptr->gpsPos.hdop;//Ë®Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ x 10
 			XcallResp.gpsPos.list.array = &Rvspos_ptr;
 			XcallResp.gpsPos.list.size =0;
 			XcallResp.gpsPos.list.count =1;
@@ -611,14 +611,14 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			RmtCtrlResp.rvcReqStatus 		= rmtCtrlResp_ptr->CtrlResp.rvcReqStatus;
 			RmtCtrlResp.rvcFailureType 		= &(rmtCtrlResp_ptr->CtrlResp.rvcFailureType);
 
-			rmtCtrlRvspos.gpsSt 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.gpsSt;//gps×´Ì¬ 0-ÎÞÐ§£»1-ÓÐÐ§
-			rmtCtrlRvspos.gpsTimestamp 		= rmtCtrlResp_ptr->CtrlResp.gpsPos.gpsTimestamp;//gpsÊ±¼ä´Á
-			rmtCtrlRvspos.latitude 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.latitude;//Î³¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
-			rmtCtrlRvspos.longitude 		= rmtCtrlResp_ptr->CtrlResp.gpsPos.longitude;//¾­¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
-			rmtCtrlRvspos.altitude 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.altitude;//¸ß¶È£¨m£©
-			rmtCtrlRvspos.heading 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.heading;//³µÍ··½Ïò½Ç¶È£¬0ÎªÕý±±·½Ïò
-			rmtCtrlRvspos.gpsSpeed 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.gpsSpeed;//ËÙ¶È x 10£¬µ¥Î»km/h
-			rmtCtrlRvspos.hdop 				= rmtCtrlResp_ptr->CtrlResp.gpsPos.hdop;//Ë®Æ½¾«¶ÈÒò×Ó x 10
+			rmtCtrlRvspos.gpsSt 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.gpsSt;//gps×´Ì¬ 0-ï¿½ï¿½Ð§ï¿½ï¿½1-ï¿½ï¿½Ð§
+			rmtCtrlRvspos.gpsTimestamp 		= rmtCtrlResp_ptr->CtrlResp.gpsPos.gpsTimestamp;//gpsÊ±ï¿½ï¿½ï¿½
+			rmtCtrlRvspos.latitude 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.latitude;//Î³ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
+			rmtCtrlRvspos.longitude 		= rmtCtrlResp_ptr->CtrlResp.gpsPos.longitude;//ï¿½ï¿½ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
+			rmtCtrlRvspos.altitude 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.altitude;//ï¿½ß¶È£ï¿½mï¿½ï¿½
+			rmtCtrlRvspos.heading 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.heading;//ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½Ç¶È£ï¿½0Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			rmtCtrlRvspos.gpsSpeed 			= rmtCtrlResp_ptr->CtrlResp.gpsPos.gpsSpeed;//ï¿½Ù¶ï¿½ x 10ï¿½ï¿½ï¿½ï¿½Î»km/h
+			rmtCtrlRvspos.hdop 				= rmtCtrlResp_ptr->CtrlResp.gpsPos.hdop;//Ë®Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ x 10
 			RmtCtrlResp.gpsPosition.list.array = &rmtCtrlRvspos_ptr;
 			RmtCtrlResp.gpsPosition.list.size = 0;
 			RmtCtrlResp.gpsPosition.list.count =1;
@@ -792,14 +792,14 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 
 			VSResp.statusTime = rmtVSResp_ptr->VSResp.statusTime;
 
-			VSgpspos.gpsSt = rmtVSResp_ptr->VSResp.gpsPos.gpsSt;//gps×´Ì¬ 0-ÎÞÐ§£»1-ÓÐÐ§
-			VSgpspos.gpsTimestamp = rmtVSResp_ptr->VSResp.gpsPos.gpsTimestamp;//gpsÊ±¼ä´Á
-			VSgpspos.latitude = rmtVSResp_ptr->VSResp.gpsPos.latitude;//Î³¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
-			VSgpspos.longitude = rmtVSResp_ptr->VSResp.gpsPos.longitude;//¾­¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
-			VSgpspos.altitude = rmtVSResp_ptr->VSResp.gpsPos.altitude;//¸ß¶È£¨m£©
-			VSgpspos.heading = rmtVSResp_ptr->VSResp.gpsPos.heading;//³µÍ··½Ïò½Ç¶È£¬0ÎªÕý±±·½Ïò
-			VSgpspos.gpsSpeed = rmtVSResp_ptr->VSResp.gpsPos.gpsSpeed;//ËÙ¶È x 10£¬µ¥Î»km/h
-			VSgpspos.hdop = rmtVSResp_ptr->VSResp.gpsPos.hdop;//Ë®Æ½¾«¶ÈÒò×Ó x 10
+			VSgpspos.gpsSt = rmtVSResp_ptr->VSResp.gpsPos.gpsSt;//gps×´Ì¬ 0-ï¿½ï¿½Ð§ï¿½ï¿½1-ï¿½ï¿½Ð§
+			VSgpspos.gpsTimestamp = rmtVSResp_ptr->VSResp.gpsPos.gpsTimestamp;//gpsÊ±ï¿½ï¿½ï¿½
+			VSgpspos.latitude = rmtVSResp_ptr->VSResp.gpsPos.latitude;//Î³ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
+			VSgpspos.longitude = rmtVSResp_ptr->VSResp.gpsPos.longitude;//ï¿½ï¿½ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
+			VSgpspos.altitude = rmtVSResp_ptr->VSResp.gpsPos.altitude;//ï¿½ß¶È£ï¿½mï¿½ï¿½
+			VSgpspos.heading = rmtVSResp_ptr->VSResp.gpsPos.heading;//ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½Ç¶È£ï¿½0Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+			VSgpspos.gpsSpeed = rmtVSResp_ptr->VSResp.gpsPos.gpsSpeed;//ï¿½Ù¶ï¿½ x 10ï¿½ï¿½ï¿½ï¿½Î»km/h
+			VSgpspos.hdop = rmtVSResp_ptr->VSResp.gpsPos.hdop;//Ë®Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ x 10
 			VSResp.vsgpsPos.list.array = &VSgpspos_ptr;
 			VSResp.vsgpsPos.list.size =0;
 			VSResp.vsgpsPos.list.count =1;
@@ -937,6 +937,8 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			}
 
 			ec = uper_encode(pduType_GIAG_resp,(void *) &DiagnosticResp,PrvtPro_writeout,&key);
+			//é‡Šæ”¾ADD
+			asn_set_empty(&diagcode);
 			if(ec.encoded  == -1)
 			{
 				log_e(LOG_UPER_ECDC, "encode:appdata rmt_diag_resp fail\n");
@@ -984,7 +986,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			}
 
 			ec = uper_encode(pduType_GIAG_st,(void *) &DiagnosticSt,PrvtPro_writeout,&key);
-			//ÊÍ·ÅADD
+			//é‡Šæ”¾ADD
 			for(i = 0;i<DiagnosticSt_ptr->diagobjnum;i++)
 			{
 				asn_set_empty(&diagcode[i]);
@@ -1005,7 +1007,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 	}
 	
 /*********************************************
-				±àÂë
+				encode body
 *********************************************/
 	DisptrBody->appDataLen = tboxAppdataLen;
 	protocol_dump(LOG_UPER_ECDC, "uper encode:appdata", tboxAppdata,tboxAppdataLen, 0);
@@ -1024,10 +1026,10 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 	log_i(LOG_UPER_ECDC, "uper encode dis body end");
 	
 /*********************************************
-				Ìî³ä message data
+				message data package
 *********************************************/	
 	int tboxmsglen = 0;
-	msgData[tboxmsglen++] = tboxDisBodydataLen +1;//Ìî³ä dispatcher header
+	msgData[tboxmsglen++] = tboxDisBodydataLen +1;//ï¿½ï¿½ï¿½ dispatcher header
 	for(i = 0;i < tboxDisBodydataLen;i++)
 	{
 		msgData[tboxmsglen++]= tboxDisBodydata[i];
@@ -1036,10 +1038,10 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 	{
 		msgData[tboxmsglen++]= tboxAppdata[i];
 	}
-	*msgDataLen = 1 + tboxDisBodydataLen + tboxAppdataLen;//Ìî³ä message data lengtn
+	*msgDataLen = 1 + tboxDisBodydataLen + tboxAppdataLen;//ï¿½ï¿½ï¿½ message data lengtn
 
 /*********************************************
-			½âÂë
+			decode
 *********************************************/
 #if 1
 	PrvtProt_DisptrBody_t disbody;
@@ -1061,21 +1063,23 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			PrvtPro_decodeMsgData(msgData,*msgDataLen,&disbody,&rmtCfgappdata);
 		}
 		break;
+		default:
+		break;
 	}
 #endif
 	return 0;
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_decodeMsgData
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_decodeMsgData
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º½âÂëmessage data
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½message data
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisBody,void *appData)
 {
@@ -1593,15 +1597,15 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 
 #if 0
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_showMsgData
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_showMsgData
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºmessage data ´òÓ¡
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½message data ï¿½ï¿½Ó¡
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,void *RxAppdata)
 {
@@ -1692,15 +1696,15 @@ static void PrvtPro_showMsgData(uint8_t type,Bodyinfo_t *RxBodydata,void *RxAppd
 }
 #endif
 /******************************************************
-*º¯ÊýÃû£ºstatic void PrvtPro_writeout
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½static void PrvtPro_writeout
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PrvtPro_writeout(const void *buffer,size_t size,void *key)
 {
