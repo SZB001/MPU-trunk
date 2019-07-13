@@ -1,13 +1,13 @@
 /******************************************************
-ÎÄ¼şÃû£º	PP_ACCtrl.c
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PP_ACCtrl.c
 
-ÃèÊö£º	ÆóÒµË½ÓĞĞ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ğ­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -50,11 +50,11 @@ description£º include the header file
 #include "PP_ChargeCtrl.h"
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 typedef struct
 {
@@ -67,9 +67,9 @@ typedef struct
 	PP_rmtChargeCtrl_pack_t 	pack;
 	PP_rmtChargeCtrlPara_t		CtrlPara;
 	PP_rmtChargeCtrlSt_t		state;
-	uint8_t fail;//¿ØÖÆÖ´ĞĞÊ§°Ü±êÖ¾£º0--³É¹¦£»1-Ê§°Ü
-	uint8_t failtype;//Ê§°ÜÀàĞÍ
-}__attribute__((packed))  PrvtProt_rmtChargeCtrl_t; /*½á¹¹Ìå*/
+	uint8_t fail;//æ‰§è¡Œå¤±è´¥çŠ¶æ€ï¼š1-å¤±è´¥
+	uint8_t failtype;//å¤±è´¥ç±»å‹
+}__attribute__((packed))  PrvtProt_rmtChargeCtrl_t; /*ï¿½á¹¹ï¿½ï¿½*/
 
 static PrvtProt_rmtChargeCtrl_t PP_rmtChargeCtrl;
 //static PrvtProt_pack_t 			PP_rmtChargeCtrl_Pack;
@@ -78,34 +78,34 @@ static PP_rmtCharge_AppointBook_t		PP_rmtCharge_AppointBook;
 
 static PP_rmtCharge_Appointperiod_t PP_rmtCharge_Appointperiod[7] =
 {
-	{0,0x01},//ĞÇÆÚ7
-	{1,0x40}, //ĞÇÆÚ1
-	{2,0x20},//ĞÇÆÚ2
-	{3,0x10},//ĞÇÆÚ3
-	{4,0x08},//ĞÇÆÚ4
-	{5,0x04},//ĞÇÆÚ5
-	{6,0x02},//ĞÇÆÚ6
+	{0,0x01},//æ˜ŸæœŸ7
+	{1,0x40}, //æ˜ŸæœŸ1
+	{2,0x20},//æ˜ŸæœŸ2
+	{3,0x10},//æ˜ŸæœŸ3
+	{4,0x08},//æ˜ŸæœŸ4
+	{5,0x04},//æ˜ŸæœŸ5
+	{6,0x02},//æ˜ŸæœŸ6
 };
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
 /*Static function declaration*/
 
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 /******************************************************
-*º¯ÊıÃû£ºPP_ChargeCtrl_init
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_ChargeCtrl_init
 
-*ĞÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º³õÊ¼»¯
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PP_ChargeCtrl_init(void)
 {
@@ -122,7 +122,7 @@ void PP_ChargeCtrl_init(void)
 	PP_rmtChargeCtrl.pack.DisBody.appDataProVer = 256;
 	PP_rmtChargeCtrl.pack.DisBody.testFlag = 1;
 
-	//¶ÁÈ¡ÅäÖÃ
+	//è¯»å–è®°å½•
 	len = 32;
 	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,&len);
 	if((res==0) && (PP_rmtCharge_AppointBook.validFlg == 1))
@@ -137,15 +137,15 @@ void PP_ChargeCtrl_init(void)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºPP_ChargeCtrl_mainfunction
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_ChargeCtrl_mainfunction
 
-*ĞÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£ºÖ÷ÈÎÎñº¯Êı
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int PP_ChargeCtrl_mainfunction(void *task)
 {
@@ -156,14 +156,14 @@ int PP_ChargeCtrl_mainfunction(void *task)
 			if(PP_rmtChargeCtrl.state.req == 1)
 			{
 				if((PP_rmtCtrl_cfg_chargeGunCnctSt() == 1) && \
-						(PP_rmtCtrl_cfg_readyLightSt() == 0))//³äµçÇ¹Á¬½Ó && ³µÁ¾·ÇĞĞÊ»×´Ì¬
+						(PP_rmtCtrl_cfg_readyLightSt() == 0))//å……ç”µæªè¿æ¥ && è½¦è¾†éè¿åŠ¨æ¨¡å¼×´Ì¬
 				{
 					log_o(LOG_HOZON,"start charge ctrl\n");
-					if(PP_rmtChargeCtrl.state.style == RMTCTRL_TSP)//tsp Æ½Ì¨
+					if(PP_rmtChargeCtrl.state.style == RMTCTRL_TSP)//tsp
 					{
 						log_o(LOG_HOZON,"tsp platform\n");
 						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-						rmtCtrl_Stpara.rvcReqStatus = 1;//¿ªÊ¼Ö´ĞĞ
+						rmtCtrl_Stpara.rvcReqStatus = 1;//ï¿½ï¿½Ê¼Ö´ï¿½ï¿½
 						rmtCtrl_Stpara.rvcFailureType = 0;
 						rmtCtrl_Stpara.reqType = PP_rmtChargeCtrl.CtrlPara.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtChargeCtrl.pack.DisBody.eventId;
@@ -174,7 +174,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 					{
 						log_o(LOG_HOZON,"tbox platform\n");
 					}
-					else// À¶ÑÀ
+					else//
 					{
 						log_o(LOG_HOZON,"bluetooth platform\n");
 					}
@@ -213,28 +213,28 @@ int PP_ChargeCtrl_mainfunction(void *task)
 			{
 				if(PP_rmtChargeCtrl.state.chargecmd == PP_CHARGECTRL_OPEN)
 				{
-					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1) //¿ªÆô³É¹¦
+					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1) //å……ç”µå¼€å¯
 					{
 						log_o(LOG_HOZON,"open  success\n");
-						//PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //Çå³ı¿ªÃÅ±êÖ¾Î»
-						PP_rmtChargeCtrl.state.chargeSt = 1;//³äµçÖĞ
+						//PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å±ï¿½Ö¾Î»
+						PP_rmtChargeCtrl.state.chargeSt = 1;//ï¿½ï¿½ï¿½ï¿½ï¿½
 						PP_rmtChargeCtrl.fail     = 0;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
 					}
 				}
 				else
 				{
-					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 2) //¹Ø±Õ³É¹¦
+					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 2) //å……ç”µå…³é—­
 					{
 						log_o(LOG_HOZON,"close  success\n");
-						PP_rmtChargeCtrl.state.chargeSt = 0;//Î´³äµç
-						//PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //Çå³ı¿ªÃÅ±êÖ¾Î»
+						PP_rmtChargeCtrl.state.chargeSt = 0;//Î´ï¿½ï¿½ï¿½
+						//PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å±ï¿½Ö¾Î»
 						PP_rmtChargeCtrl.fail     = 0;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
 					}
 				}
 			}
-			else//³¬Ê±
+			else//ï¿½ï¿½Ê±
 			{
 				log_e(LOG_HOZON,"Instruction execution timeout\n");
 				PP_can_send_data(PP_CAN_CHAGER,CAN_STOPCHAGER,0);
@@ -253,7 +253,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 			{
 				rmtCtrl_chargeStpara.reqType  = PP_rmtChargeCtrl.CtrlPara.reqType;
 				rmtCtrl_chargeStpara.eventid  = PP_rmtChargeCtrl.pack.DisBody.eventId;
-				rmtCtrl_chargeStpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;//·ÇÔ¤Ô¼
+				rmtCtrl_chargeStpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;//éé¢„çº¦
 				if(0 == PP_rmtChargeCtrl.fail)
 				{
 					rmtCtrl_chargeStpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;
@@ -270,16 +270,16 @@ int PP_ChargeCtrl_mainfunction(void *task)
 			{
 				if(PP_rmtChargeCtrl.state.bookingSt == 1)
 				{
-					if(PP_rmtChargeCtrl.state.chargeSt == 1)//³äµç°´Ô¤Ô¼¿ªÆô
-					{
+					if(PP_rmtChargeCtrl.state.chargeSt == 1)
+					{//æŒ‰é¢„çº¦å¼€å¯å……ç”µ
 						rmtCtrl_chargeStpara.rvcReqCode = 0x710;
 					}
-					else//³äµç°´Ô¤Ô¼ÎŞ·¨¿ªÆô
+					else
 					{
 						rmtCtrl_chargeStpara.rvcReqCode = 0x711;
 					}
 
-					//ÉÏ±¨Ô¤Ô¼³äµç½á¹û¸øTSP
+					//inform TSP
 					rmtCtrl_chargeStpara.bookingId  = PP_rmtChargeCtrl.CtrlPara.bookingId;
 					rmtCtrl_chargeStpara.eventid  = PP_rmtChargeCtrl.pack.DisBody.eventId;
 					rmtCtrl_chargeStpara.Resptype = PP_RMTCTRL_RVCBOOKINGRESP;//Ô¤Ô¼
@@ -297,25 +297,23 @@ int PP_ChargeCtrl_mainfunction(void *task)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºPP_ChargeCtrl_chargeStMonitor
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_ChargeCtrl_chargeStMonitor
 
-*ĞÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PP_ChargeCtrl_chargeStMonitor(void *task)
 {
-	//unsigned int len;
-	//int res;
 	PP_rmtCtrl_Stpara_t rmtCtrl_chargeStpara;
 	static uint8_t appointPerformFlg = 0;
 	static uint64_t delaytime;
 /*
- *	¼ì²éÔ¤Ô¼³äµç
+ *	æ£€æŸ¥é¢„çº¦
  * */
 	if(PP_rmtCharge_AppointBook.validFlg == 1)
 	{
@@ -324,10 +322,10 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 		struct tm *localdatetime;
 
 		time(&timep);
-		localdatetime = localtime(&timep);//È¡µÃµ±µØÊ±¼ä
+		localdatetime = localtime(&timep);
 
-		if(PP_rmtCharge_AppointBook.period & 0x80)//ÖØ¸´
-		{
+		if(PP_rmtCharge_AppointBook.period & 0x80)
+		{//é‡å¤é¢„çº¦
 			if(PP_rmtCharge_Appointperiod[localdatetime->tm_wday].mask & PP_rmtCharge_AppointBook.period)
 			{
 				if((localdatetime->tm_hour == PP_rmtCharge_AppointBook.hour) && \
@@ -347,7 +345,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 				}
 				else
 				{
-					if((tm_get_time() - delaytime) > 3000)//ÂË²¨ÑÓÊ±3s
+					if((tm_get_time() - delaytime) > 3000)//å»¶è¿Ÿ3sæ»¤æ³¢
 					{
 						appointPerformFlg = 0;
 					}
@@ -355,7 +353,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 			}
 		}
 		else
-		{//²»ÖØ¸´
+		{//ä¸é‡å¤
 			if((localdatetime->tm_hour == PP_rmtCharge_AppointBook.hour) && \
 					(localdatetime->tm_min == PP_rmtCharge_AppointBook.min))
 			{
@@ -385,14 +383,14 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 	}
 
 /*
- * 	³äµç½øĞĞÖĞ£¬¼ì²é³äµçÍê³É×´Ì¬
+ * 	æ£€æŸ¥å……ç”µå®ŒæˆçŠ¶å†µ×´Ì¬
  *  */
 	if(1 == PP_rmtChargeCtrl.state.chargeSt)
 	{
 		if((PP_RMTCTRL_CFG_CHARGEFINISH == PP_rmtCtrl_cfg_chargeSt()) || \
 				(PP_RMTCTRL_CFG_CHARGEFAIL == PP_rmtCtrl_cfg_chargeSt()))
 		{
-			if(PP_RMTCTRL_CFG_CHARGEFINISH == PP_rmtCtrl_cfg_chargeSt())//³äµçÍê³É
+			if(PP_RMTCTRL_CFG_CHARGEFINISH == PP_rmtCtrl_cfg_chargeSt())//charge finish
 			{
 				rmtCtrl_chargeStpara.rvcReqCode = 0x700;
 			}
@@ -400,7 +398,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 			{
 				rmtCtrl_chargeStpara.rvcReqCode = 0x701;
 			}
-			//ÉÏ±¨³äµç½á¹û¸øTSP
+			//inform TSP
 			memset(&rmtCtrl_chargeStpara,0,sizeof(PP_rmtCtrl_Stpara_t));
 			if(1 == PP_rmtChargeCtrl.state.bookingSt)
 			{
@@ -419,21 +417,21 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 	}
 	else
 	{
-		if(PP_RMTCTRL_CFG_CHARGEING == PP_rmtCtrl_cfg_chargeSt())//¼ì²âµ½³äµçÖĞ
+		if(PP_RMTCTRL_CFG_CHARGEING == PP_rmtCtrl_cfg_chargeSt())//ï¿½ï¿½âµ½ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			PP_rmtChargeCtrl.state.chargeSt = 1;
 		}
 	}
 
 /*
- * ¼ì²éµôµç/ÉÏµç
+ * æ£€æŸ¥ä¸Šç”µ/æ‰ç”µ
  * */
 	uint8_t PowerOffSt;
 	PowerOffSt = gb32960_PowerOffSt();
-	if(PowerOffSt == 1)//µôµç
+	if(PowerOffSt == 1)//æ‰ç”µ
 	{
 		/*
-		 * µôµç±£´æÔ¤Ô¼¼ÇÂ¼£¬µôµçÇ°·¢ÉúÒì³£¸´Î»£¬Ôò»áµ¼ÖÂÔ¤Ô¼¼ÇÂ¼¶ªÊ§
+		 * æ£€æŸ¥æ˜¯å¦æœ‰æ•°æ®æ›´æ–°ï¼Œæ³¨æ„è‹¥åœ¨æ­¤å‰å‡ºç°å¼‚å¸¸å¤ä½ï¼Œä¼šå¯¼è‡´è®°å½•ä¸¢å¤±
 		* */
 		if(PP_rmtChargeCtrl.state.dataUpdata == 1)
 		{
@@ -442,7 +440,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 				PP_rmtCharge_AppointBook.bookupdataflag = 2;
 			}
 
-			//±£´æÔ¤Ô¼¼ÇÂ¼
+			//ä¿å­˜è®°å½•
 			(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
 			PP_rmtChargeCtrl.state.dataUpdata = 0;
 		}
@@ -450,7 +448,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 	else if(PowerOffSt == 0)
 	{
 		/*
-		 * ÉÏµç¼ì²éÔ¤Ô¼¼ÇÂ¼ÊÇ·ñĞèÒªÖØĞÂÉÏ±¨¸üĞÂµ½tsp
+		 * ä¸Šç”µæ£€æŸ¥æ˜¯å¦é¢„çº¦è®°å½•åŒæ­¥åˆ°tsp
 		 * */
 			if(PP_rmtCharge_AppointBook.bookupdataflag ==2)
 			{
@@ -475,15 +473,15 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 
 
 /******************************************************
-*º¯ÊıÃû£ºSetPP_ChargeCtrl_Request
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SetPP_ChargeCtrl_Request
 
-*ĞÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
@@ -508,7 +506,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 						(PP_rmtChargeCtrl.state.req == 0))
 				{
 					PP_rmtChargeCtrl.state.req = 1;
-					PP_rmtChargeCtrl.state.bookingSt = 0;//·ÇÔ¤Ô¼³äµç
+					PP_rmtChargeCtrl.state.bookingSt = 0;//ï¿½ï¿½Ô¤Ô¼ï¿½ï¿½ï¿½
 					PP_rmtChargeCtrl.CtrlPara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 					if(PP_rmtChargeCtrl.CtrlPara.reqType == PP_COMAND_STARTCHARGE)
 					{
@@ -526,7 +524,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				}
 			}
 			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_COMAND_APPOINTCHARGE)
-			{//Ô¤Ô¼
+			{//é¢„çº¦
 				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] << 24;
 				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[1] << 16;
 				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[2] << 8;
@@ -546,7 +544,6 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.period = %d\n",PP_rmtCharge_AppointBook.period);
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.eventId = %d\n",PP_rmtCharge_AppointBook.eventId);
 
-				//±£´æÔ¤Ô¼¼ÇÂ¼
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
 				//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
 
@@ -561,7 +558,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 
 				//inform TSP the Reservation instruction issued status
 				//PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-				rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//Ö´ĞĞÍê³É
+				rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//Ö´ï¿½ï¿½ï¿½ï¿½ï¿½
 				rmtCtrl_Stpara.rvcFailureType = 0;
 				rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 				rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
@@ -569,7 +566,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 			}
 			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_COMAND_CANCELAPPOINTCHARGE)
-			{//È¡ÏûÔ¤Ô¼
+			{//å–æ¶ˆé¢„çº¦
 				log_i(LOG_HOZON, "TSP cancel appointment\n");
 				rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 				rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
@@ -582,7 +579,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				{
 					PP_rmtCharge_AppointBook.appointType = RMTCTRL_TSP;
 					PP_rmtCharge_AppointBook.validFlg  = 0;
-					rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//Ö´ĞĞÍê³É
+					rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//Ö´ï¿½ï¿½ï¿½ï¿½ï¿½
 					rmtCtrl_Stpara.rvcFailureType = 0;
 
 					//inform HU appointment status
@@ -600,7 +597,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				//else
 				//{
 				//	log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
-				//	rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFAIL;//Ö´ĞĞÊ§°Ü
+				//	rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFAIL;//Ö´ï¿½ï¿½Ê§ï¿½ï¿½
 				//	rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_INVALID_ID;
 				//}
 
@@ -626,7 +623,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 						(PP_rmtChargeCtrl.state.req == 0))
 				{
 					PP_rmtChargeCtrl.state.req = 1;
-					PP_rmtChargeCtrl.state.bookingSt = 0;//·ÇÔ¤Ô¼³äµç
+					PP_rmtChargeCtrl.state.bookingSt = 0;//ï¿½ï¿½Ô¤Ô¼ï¿½ï¿½ï¿½
 					if(ivi_chargeAppointSt_ptr->cmd == PP_COMAND_STARTCHARGE)
 					{
 						log_i(LOG_HOZON, "HU charge open request\n");
@@ -646,8 +643,8 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 					log_i(LOG_HOZON, "remote charge control req is excuting\n");
 				}
 			}
-			else if(ivi_chargeAppointSt_ptr->cmd == PP_COMAND_APPOINTCHARGE)//³äµçÔ¤Ô¼
-			{
+			else if(ivi_chargeAppointSt_ptr->cmd == PP_COMAND_APPOINTCHARGE)
+			{//é¢„çº¦å……ç”µ
 				PP_rmtCharge_AppointBook.appointType = RMTCTRL_HU;
 				PP_rmtCharge_AppointBook.rvcReqType = PP_COMAND_APPOINTCHARGE;
 				PP_rmtCharge_AppointBook.id = ivi_chargeAppointSt_ptr->id;
@@ -667,7 +664,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.period = %d\n",PP_rmtCharge_AppointBook.period);
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.eventId = %d\n",PP_rmtCharge_AppointBook.eventId);
 
-				//±£´æÔ¤Ô¼¼ÇÂ¼
+				//ä¿å­˜è®°å½•
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
 				//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
 
@@ -684,7 +681,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 			}
 			else if(ivi_chargeAppointSt_ptr->cmd == PP_COMAND_CANCELAPPOINTCHARGE)
-			{//È¡ÏûÔ¤Ô¼
+			{//å–æ¶ˆé¢„çº¦å……ç”µ
 				log_i(LOG_HOZON, "HU cancel appointment\n");
 				//if(ivi_chargeAppointSt_ptr->id == PP_rmtCharge_AppointBook.id)
 				{
@@ -701,7 +698,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 
 					PP_rmtCharge_AppointBook.bookupdataflag = 1;
 
-					//±£´æÔ¤Ô¼¼ÇÂ¼
+					//ä¿å­˜è®°å½•
 					PP_rmtChargeCtrl.state.dataUpdata = 1;
 					//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
 
@@ -729,7 +726,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 		case RMTCTRL_TBOX:
 		{
 			PP_rmtChargeCtrl.state.req = 1;
-			PP_rmtChargeCtrl.state.bookingSt = 1;//Ô¤Ô¼³äµç
+			PP_rmtChargeCtrl.state.bookingSt = 1;//é¢„çº¦çŠ¶æ€
 			PP_rmtChargeCtrl.CtrlPara.bookingId = PP_rmtCharge_AppointBook.id;
 			PP_rmtChargeCtrl.pack.DisBody.eventId = PP_rmtCharge_AppointBook.eventId;
 			PP_rmtChargeCtrl.state.style   = RMTCTRL_TBOX;
@@ -741,15 +738,15 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 }
 
 /******************************************************
-*º¯ÊıÃû£ºPP_ChargeCtrl_SetCtrlReq
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_ChargeCtrl_SetCtrlReq
 
-*ĞÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºÉèÖÃ ÇëÇó
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PP_ChargeCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
