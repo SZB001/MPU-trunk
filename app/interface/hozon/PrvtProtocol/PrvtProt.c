@@ -1,13 +1,13 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt.c
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt.c
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -53,15 +53,15 @@ description£º include the header file
 #include "PrvtProt_signFltr.h"
 #include "PrvtProt_SigParse.h"
 #include "remoteDiag/PrvtProt_rmtDiag.h"
-
+#include "PrvtProt_CertDownload.h"
 #include "PrvtProt.h"
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 static PrvtProt_heartbeat_t PP_heartbeat;
 static PrvtProt_task_t 	pp_task;
@@ -94,7 +94,7 @@ static PrvtProt_RmtFunc_t PP_RmtFunc[PP_RMTFUNC_MAX] =
 };
 
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
@@ -111,18 +111,18 @@ static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len);
 
 static void PP_HB_send_cb(void * para);
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 /******************************************************
-*º¯ÊýÃû£ºPrvtProt_init
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtProt_init
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º³õÊ¼»¯
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int PrvtProt_init(INIT_PHASE phase)
 {
@@ -140,8 +140,8 @@ int PrvtProt_init(INIT_PHASE phase)
 			PP_heartbeat.waitSt = 0;
 			PP_heartbeat.waittime = 0;
 			pp_task.suspend = 0;
-			pp_task.nonce = 0;/* TCP»á»°ID ÓÉTSPÆ½Ì¨²úÉú */
-			pp_task.version = 0x30;/* ´ó/Ð¡°æ±¾(ÓÉTSPÆ½Ì¨¶¨Òå)*/
+			pp_task.nonce = 0;/* TCPï¿½á»°ID ï¿½ï¿½TSPÆ½Ì¨ï¿½ï¿½ï¿½ï¿½ */
+			pp_task.version = 0x30;/* ï¿½ï¿½/Ð¡ï¿½æ±¾(ï¿½ï¿½TSPÆ½Ì¨ï¿½ï¿½ï¿½ï¿½)*/
 
 			memset(&PP_PackHeader_HB,0 , sizeof(PrvtProt_pack_Header_t));
 			memcpy(PP_PackHeader_HB.sign,"**",2);
@@ -157,11 +157,11 @@ int PrvtProt_init(INIT_PHASE phase)
         case INIT_PHASE_OUTSIDE:
 		{
 			cfglen = 4;
-			ret |= cfg_get_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, &cfglen);///* Æ½Ì¨Í¨¹ýtboxIDÓëtboxSNÓ³Éä */
+			ret |= cfg_get_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, &cfglen);///* Æ½Ì¨Í¨ï¿½ï¿½tboxIDï¿½ï¿½tboxSNÓ³ï¿½ï¿½ */
 			PP_PackHeader_HB.tboxid = pp_task.tboxid;
 
 			cfglen = 19;
-			ret |= cfg_get_para(CFG_ITEM_HOZON_TSP_TBOXSN,pp_tboxsn,&cfglen);//¶ÁÈ¡tboxsn
+			ret |= cfg_get_para(CFG_ITEM_HOZON_TSP_TBOXSN,pp_tboxsn,&cfglen);//ï¿½ï¿½È¡tboxsn
 
 			PrvtProt_shell_init();
 			for(obj = 0;obj < PP_RMTFUNC_MAX;obj++)
@@ -172,6 +172,7 @@ int PrvtProt_init(INIT_PHASE phase)
 				}
 			}
 			InitPrvtProt_SignParse_Parameter();
+			PP_CertDownload_init();
 			//InitPPsignFltr_Parameter();
 		}
         break;
@@ -182,15 +183,15 @@ int PrvtProt_init(INIT_PHASE phase)
 
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtProt_run
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtProt_run
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º´´½¨ÈÎÎñÏß³Ì
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int PrvtProt_run(void)
 { 	
@@ -220,15 +221,15 @@ int PrvtProt_run(void)
 
 #if PP_THREAD
 /******************************************************
-*º¯ÊýÃû£ºPrvtProt_main
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtProt_main
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£ºÖ÷ÈÎÎñº¯Êý
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void *PrvtProt_main(void)
 {
@@ -246,6 +247,7 @@ static void *PrvtProt_main(void)
 		log_set_level(LOG_HOZON, LOG_DEBUG);
 
 		//TskPPsignFltr_MainFunction();
+		PP_CertDownload_mainfunction(&pp_task);
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
@@ -266,15 +268,15 @@ static void *PrvtProt_main(void)
 #endif
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_do_checksock
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_do_checksock
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º¼ì²ésocketÁ¬½Ó
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½socketï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PrvtPro_do_checksock(PrvtProt_task_t *task)
 {
@@ -287,15 +289,15 @@ static int PrvtPro_do_checksock(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_do_rcvMsg
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_do_rcvMsg
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º½ÓÊÕÊý¾Ýº¯Êý
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýºï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 {	
@@ -312,12 +314,12 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 	log_i(LOG_HOZON, "HOZON private protocol receive message");
 	protocol_dump(LOG_HOZON, "PRVT_PROT", rcvbuf, rlen, 0);
 	if((rcvbuf[0] != 0x2A) || (rcvbuf[1] != 0x2A) || \
-			(rlen < 18))//ÅÐ¶ÏÊý¾ÝÖ¡Í·ÓÐÎó»òÕßÊý¾Ý³¤¶È²»¶Ô
+			(rlen < 18))//
 	{
 		return 0;
 	}
 	
-	if(rlen > (18 + PP_MSG_DATA_LEN))//½ÓÊÕÊý¾Ý³¤¶È³¬³ö»º´æbuffer³¤¶È
+	if(rlen > (18 + PP_MSG_DATA_LEN))//
 	{
 		return 0;
 	}
@@ -329,15 +331,15 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_makeUpPack
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_makeUpPack
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º½ÓÊÕÊý¾Ý½â°ü
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len)
 {
@@ -351,13 +353,13 @@ static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len)
 	{
 		switch(rcvstep)
 		{
-			case 0://½ÓÊÕ°æ±¾ºÅ
+			case 0:
 			{
 				RxPack->Header.ver.Byte = input[rlen++];
 				rcvstep = 1;
 			}
 			break;
-			case 1://½ÓÊÕtcp»á»°id
+			case 1:
 			{
 				RxPack->Header.nonce = (RxPack->Header.nonce << 8) + input[rlen++];
 				if(7 == rlen)
@@ -366,25 +368,25 @@ static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len)
 				}
 			}
 			break;	
-			case 2://±àÂë¡¢Á¬½ÓµÈ·½Ê½
+			case 2:
 			{
 				RxPack->Header.commtype.Byte = input[rlen++];
 				rcvstep = 3;
 			}
 			break;	
-			case 3://¼ÓÃÜ¡¢Ç©Ãû·½Ê½
+			case 3:
 			{
 				RxPack->Header.safetype.Byte = input[rlen++];
 				rcvstep = 4;
 			}
 			break;
-			case 4://²Ù×÷ÀàÐÍ
+			case 4:
 			{
 				RxPack->Header.opera = input[rlen++];
 				rcvstep = 5;
 			}
 			break;
-			case 5://±¨ÎÄ³¤¶È
+			case 5:
 			{
 				RxPack->Header.msglen = (RxPack->Header.msglen << 8) + input[rlen++];
 				if(14 == rlen)
@@ -415,35 +417,35 @@ static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_rcvMsgCallback
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_rcvMsgCallback
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º½ÓÊÕÊý¾Ý´¦Àí
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len)
 {
 	int aid;
 	switch(rxPack->Header.opera)
 	{
-		case PP_NATIONALSTANDARD_TYPE:
+		case PP_OPERATETYPE_NS:
 		{
 			
 		}
 		break;
-		case PP_HEARTBEAT_TYPE://½ÓÊÕµ½ÐÄÌø°ü
+		case PP_OPERATETYPE_HEARTBEAT://å¿ƒè·³
 		{
 			log_i(LOG_HOZON, "heart beat is ok");
-			PP_heartbeat.state = 1;//Õý³£ÐÄÌø
+			PP_heartbeat.state = 1;
 			PP_heartbeat.waitSt = 0;
 		}
 		break;
-		case PP_NGTP_TYPE://ngtp
-		{//½âÂë³öÊý¾Ý£¬Ð´Èë¶ÔÓ¦µÄ¶ÓÁÐ
+		case PP_OPERATETYPE_NGTP://ngtp
+		{
 			PrvtProt_DisptrBody_t MsgDataBody;
 			PrvtPro_decodeMsgData(rxPack->msgdata,(len - 18),&MsgDataBody,NULL);
 			aid = (MsgDataBody.aID[0] - 0x30)*100 +  (MsgDataBody.aID[1] - 0x30)*10 + \
@@ -483,6 +485,11 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 			}
 		}
 		break;
+		case PP_OPERATETYPE_CERTDL:
+		{
+			WrPP_queue(PP_CERT_DL,rxPack->Header.sign,len);
+		}
+		break;
 		default:
 		{
 			log_e(LOG_HOZON, "unknow package");
@@ -492,19 +499,19 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_do_wait
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_do_wait
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º¼ì²éÊÇ·ñÓÐÊÂ¼þµÈ´ýÓ¦´ð
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½È´ï¿½Ó¦ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PrvtPro_do_wait(PrvtProt_task_t *task)
 {
-    if (!PP_heartbeat.waitSt)//Ã»ÓÐÊÂ¼þµÈ´ýÓ¦´ð
+    if (!PP_heartbeat.waitSt)//Ã»ï¿½ï¿½ï¿½Â¼ï¿½ï¿½È´ï¿½Ó¦ï¿½ï¿½
     {
         return 0;
     }
@@ -514,7 +521,7 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
         if (PP_heartbeat.waitSt == 1)
         {
         	PP_heartbeat.waitSt = 0;
-        	PP_heartbeat.state = 0;//ÐÄÌø²»Õý³£
+        	PP_heartbeat.state = 0;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             log_e(LOG_HOZON, "heartbeat time out");
         }
         else
@@ -524,15 +531,15 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtProt_do_heartbeat
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtProt_do_heartbeat
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£ºÐÄÌøÈÎÎñ
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 {
@@ -557,15 +564,15 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_HB_send_cb
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_HB_send_cb
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void PP_HB_send_cb(void * para)
 {
@@ -585,15 +592,15 @@ static void PP_HB_send_cb(void * para)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_SetHeartBeatPeriod
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_SetHeartBeatPeriod
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºÉèÖÃÐÄÌøÖÜÆÚ
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PrvtPro_SetHeartBeatPeriod(unsigned char period)
 {
@@ -601,15 +608,15 @@ void PrvtPro_SetHeartBeatPeriod(unsigned char period)
 }
 
 /******************************************************
-*º¯ÊýÃû:PrvtPro_ShowPara
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:PrvtPro_ShowPara
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º²ÎÊýÏÔÊ¾
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾
 
-*±¸  ×¢£º²âÊÔÓÃ
+*ï¿½ï¿½  ×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ******************************************************/
 void PrvtPro_ShowPara(void)
 {
@@ -623,15 +630,15 @@ void PrvtPro_ShowPara(void)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_getTimestamp
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_getTimestamp
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º»ñÈ¡Ê±¼ä´Á
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 long PrvtPro_getTimestamp(void)
 {
@@ -642,15 +649,15 @@ long PrvtPro_getTimestamp(void)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_Setsuspend
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_Setsuspend
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºÉèÖÃÔÝÍ£
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PrvtPro_Setsuspend(unsigned char suspend)
 {
@@ -658,15 +665,15 @@ void PrvtPro_Setsuspend(unsigned char suspend)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_SettboxId
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_SettboxId
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºÉèÖÃÔÝÍ£
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PrvtPro_SettboxId(uint32_t tboxid)
 {
@@ -678,15 +685,15 @@ void PrvtPro_SettboxId(uint32_t tboxid)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_BSEndianReverse
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_BSEndianReverse
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º´ó¶ËÄ£Ê½ºÍÐ¡¶ËÄ£Ê½»¥Ïà×ª»»
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½ï¿½ï¿½Ð¡ï¿½ï¿½Ä£Ê½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 long PrvtPro_BSEndianReverse(long value)
 {
@@ -695,15 +702,15 @@ long PrvtPro_BSEndianReverse(long value)
 }
 
 /******************************************************
-*º¯ÊýÃû:PrvtProt_Settboxsn
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:PrvtProt_Settboxsn
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PrvtProt_Settboxsn(const char *tboxsn)
 {
@@ -716,15 +723,15 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 }
 
 /******************************************************
-*º¯ÊýÃû:PrvtProt_gettboxsn
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:PrvtProt_gettboxsn
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PrvtProt_gettboxsn(char *tboxsn)
 {

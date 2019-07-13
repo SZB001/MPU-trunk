@@ -1,13 +1,13 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_VehiSt.c
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_VehiSt.c
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -47,11 +47,11 @@ description£º include the header file
 #include "PrvtProt_VehiSt.h"
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 typedef struct
 {
@@ -63,7 +63,7 @@ typedef struct
 {
 	PrvtProt_VS_pack_t 		pack;
 	PrvtProt_VSSt_t	 		state;
-}__attribute__((packed))  PrvtProt_VS_t; /*½á¹¹Ìå*/
+}__attribute__((packed))  PrvtProt_VS_t; /*ï¿½á¹¹ï¿½ï¿½*/
 
 static PrvtProt_pack_t 		PP_VS_Pack;
 static PrvtProt_VS_t		PP_rmtVS;
@@ -71,7 +71,7 @@ static PrvtProt_App_VS_t	PP_VS_appdata;
 
 static PrvtProt_TxInform_t VS_TxInform;
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
@@ -86,18 +86,18 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS);
 static void PP_VS_send_cb(void * para);
 
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 /******************************************************
-*º¯ÊýÃû£ºPP_VS_init
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_VS_init
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º³õÊ¼»¯
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PP_VS_init(void)
 {
@@ -116,15 +116,15 @@ void PP_VS_init(void)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_VS_mainfunction
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_VS_mainfunction
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£ºÖ÷ÈÎÎñº¯Êý
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int PP_VS_mainfunction(void *task)
 {
@@ -137,15 +137,15 @@ int PP_VS_mainfunction(void *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_VS_do_checksock
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_VS_do_checksock
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º¼ì²ésocketÁ¬½Ó
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½socketï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_VS_do_checksock(PrvtProt_task_t *task)
 {
@@ -158,15 +158,15 @@ static int PP_VS_do_checksock(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_VS_do_rcvMsg
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_VS_do_rcvMsg
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º½ÓÊÕÊý¾Ýº¯Êý
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýºï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_VS_do_rcvMsg(PrvtProt_task_t *task)
 {	
@@ -181,12 +181,12 @@ static int PP_VS_do_rcvMsg(PrvtProt_task_t *task)
 	log_i(LOG_HOZON, "receive vehi status message");
 	protocol_dump(LOG_HOZON, "PRVT_PROT", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
-			(rlen <= 18))//ÅÐ¶ÏÊý¾ÝÖ¡Í·ÓÐÎó»òÕßÊý¾Ý³¤¶È²»¶Ô
+			(rlen <= 18))//ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡Í·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½È²ï¿½ï¿½ï¿½
 	{
 		return 0;
 	}
 	
-	if(rlen > (18 + PP_MSG_DATA_LEN))//½ÓÊÕÊý¾Ý³¤¶È³¬³ö»º´æbuffer³¤¶È
+	if(rlen > (18 + PP_MSG_DATA_LEN))//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½È³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bufferï¿½ï¿½ï¿½ï¿½
 	{
 		return 0;
 	}
@@ -196,20 +196,20 @@ static int PP_VS_do_rcvMsg(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_VS_RxMsgHandle
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_VS_RxMsgHandle
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º½ÓÊÕÊý¾Ý´¦Àí
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void PP_VS_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len)
 {
 	int aid;
-	if(PP_NGTP_TYPE != rxPack->Header.opera)
+	if(PP_OPERATETYPE_NGTP != rxPack->Header.opera)
 	{
 		log_e(LOG_HOZON, "unknow package");
 		return;
@@ -228,7 +228,7 @@ static void PP_VS_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int 
 
 	switch(MsgDataBody.mID)
 	{
-		case PP_MID_VS_REQ://ÊÕµ½tsp²éÑ¯ÇëÇó
+		case PP_MID_VS_REQ://ï¿½Õµï¿½tspï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½
 		{
 			PP_rmtVS.state.req = Appdata.VSReq.vehStatusReqType;
 			PP_rmtVS.pack.DisBody.eventId = MsgDataBody.eventId;
@@ -240,15 +240,15 @@ static void PP_VS_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int 
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_xcall_do_wait
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_xcall_do_wait
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º¼ì²éÊÇ·ñÓÐÊÂ¼þµÈ´ýÓ¦´ð
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½È´ï¿½Ó¦ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_VS_do_wait(PrvtProt_task_t *task)
 {
@@ -256,15 +256,15 @@ static int PP_VS_do_wait(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_xcall_do_checkXcall
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_xcall_do_checkXcall
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º¼ì²éecallµÈÇëÇó
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ecallï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 {
@@ -281,7 +281,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 		break;
 		case PP_VS_BASICSTATUS:
 		{
-			PP_VS_appdata.VSResp.ExtSt.validFlg = 0;//²»ÉÏ±¨ext statusÊý¾Ý
+			PP_VS_appdata.VSResp.ExtSt.validFlg = 0;//ï¿½ï¿½ï¿½Ï±ï¿½ext statusï¿½ï¿½ï¿½ï¿½
 			if(0 == PP_VS_VehiStatusResp(task,&PP_rmtVS))
 			{
 				memset(&VS_TxInform,0,sizeof(PrvtProt_TxInform_t));
@@ -298,7 +298,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 		break;
 		case PP_VS_EXTSTATUS:
 		{
-			PP_VS_appdata.VSResp.ExtSt.validFlg = 1;//ÉÏ±¨ext statusÊý¾Ý
+			PP_VS_appdata.VSResp.ExtSt.validFlg = 1;//ï¿½Ï±ï¿½ext statusï¿½ï¿½ï¿½ï¿½
 			if(0 == PP_VS_VehiStatusResp(task,&PP_rmtVS))
 			{
 				memset(&VS_TxInform,0,sizeof(PrvtProt_TxInform_t));
@@ -321,15 +321,15 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_VS_VehiStatusResp
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_VS_VehiStatusResp
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºremote vehi status response
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½remote vehi status response
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 {
@@ -349,10 +349,10 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 
 	/*appdata*/
 	PrvtProtcfg_gpsData_t gpsDt;
-	PP_VS_appdata.VSResp.statusTime = PrvtPro_getTimestamp();//0±íÊ¾Á¢¼´Ö´ÐÐ
+	PP_VS_appdata.VSResp.statusTime = PrvtPro_getTimestamp();//0ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½
 
-	PP_VS_appdata.VSResp.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps×´Ì¬ 0-ÎÞÐ§£»1-ÓÐÐ§;
-	PP_VS_appdata.VSResp.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gpsÊ±¼ä´Á:ÏµÍ³Ê±¼ä(Í¨¹ýgpsÐ£Ê±)
+	PP_VS_appdata.VSResp.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps×´Ì¬ 0-ï¿½ï¿½Ð§ï¿½ï¿½1-ï¿½ï¿½Ð§;
+	PP_VS_appdata.VSResp.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gpsÊ±ï¿½ï¿½ï¿½:ÏµÍ³Ê±ï¿½ï¿½(Í¨ï¿½ï¿½gpsÐ£Ê±)
 
 	PrvtProtCfg_gpsData(&gpsDt);
 
@@ -360,20 +360,20 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	{
 		if(gpsDt.is_north)
 		{
-			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(gpsDt.latitude*10000);//Î³¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
+			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(gpsDt.latitude*10000);//Î³ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
 		}
 		else
 		{
-			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//Î³¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
+			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//Î³ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
 		}
 
 		if(gpsDt.is_east)
 		{
-			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(gpsDt.longitude*10000);//¾­¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
+			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(gpsDt.longitude*10000);//ï¿½ï¿½ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
 		}
 		else
 		{
-			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//¾­¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
+			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//ï¿½ï¿½ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
 		}
 		log_i(LOG_HOZON, "PP_appData.latitude = %lf",PP_VS_appdata.VSResp.gpsPos.latitude);
 		log_i(LOG_HOZON, "PP_appData.longitude = %lf",PP_VS_appdata.VSResp.gpsPos.longitude);
@@ -383,14 +383,14 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 		PP_VS_appdata.VSResp.gpsPos.latitude  = 0;
 		PP_VS_appdata.VSResp.gpsPos.longitude = 0;
 	}
-	PP_VS_appdata.VSResp.gpsPos.altitude = (long)(gpsDt.height);//¸ß¶È£¨m£©
+	PP_VS_appdata.VSResp.gpsPos.altitude = (long)(gpsDt.height);//ï¿½ß¶È£ï¿½mï¿½ï¿½
 	if(PP_VS_appdata.VSResp.gpsPos.altitude > 10000)
 	{
 		PP_VS_appdata.VSResp.gpsPos.altitude = 10000;
 	}
-	PP_VS_appdata.VSResp.gpsPos.heading = (long)(gpsDt.direction);//³µÍ··½Ïò½Ç¶È£¬0ÎªÕý±±·½Ïò
-	PP_VS_appdata.VSResp.gpsPos.gpsSpeed = (long)(gpsDt.kms*10);//ËÙ¶È x 10£¬µ¥Î»km/h
-	PP_VS_appdata.VSResp.gpsPos.hdop = (long)(gpsDt.hdop*10);//Ë®Æ½¾«¶ÈÒò×Ó x 10
+	PP_VS_appdata.VSResp.gpsPos.heading = (long)(gpsDt.direction);//ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½Ç¶È£ï¿½0Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	PP_VS_appdata.VSResp.gpsPos.gpsSpeed = (long)(gpsDt.kms*10);//ï¿½Ù¶ï¿½ x 10ï¿½ï¿½ï¿½ï¿½Î»km/h
+	PP_VS_appdata.VSResp.gpsPos.hdop = (long)(gpsDt.hdop*10);//Ë®Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ x 10
 	if(PP_VS_appdata.VSResp.gpsPos.hdop > 1000)
 	{
 		PP_VS_appdata.VSResp.gpsPos.hdop = 1000;
@@ -463,14 +463,14 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	PP_VS_appdata.VSResp.basicSt.airCleanerSt	= 1/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.srsStatus = 1;
 
-	if(PP_VS_appdata.VSResp.ExtSt.validFlg == 1)//ÉÏ±¨ext statusÊý¾Ý
+	if(PP_VS_appdata.VSResp.ExtSt.validFlg == 1)//ï¿½Ï±ï¿½ext statusï¿½ï¿½ï¿½ï¿½
 	{
 		PP_VS_appdata.VSResp.ExtSt.alertSize = 1;//
 		PP_VS_appdata.VSResp.ExtSt.alertIds[0] = 1;
 	}
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTVS_RESP,PP_VS_Pack.msgdata,&msgdatalen,\
-									   &rmtVS->pack.DisBody,&PP_VS_appdata))//Êý¾Ý±àÂë´ò°üÊÇ·ñÍê³É
+									   &rmtVS->pack.DisBody,&PP_VS_appdata))//ï¿½ï¿½ï¿½Ý±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 	{
 		log_e(LOG_HOZON, "uper error");
 		return -1;
@@ -483,15 +483,15 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_VS_SetVSReq
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_VS_SetVSReq
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºÉèÖÃecall ÇëÇó
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ecall ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PP_VS_SetVSReq(unsigned char req)
 {
@@ -500,15 +500,15 @@ void PP_VS_SetVSReq(unsigned char req)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_VS_send_cb
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_VS_send_cb
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void PP_VS_send_cb(void * para)
 {

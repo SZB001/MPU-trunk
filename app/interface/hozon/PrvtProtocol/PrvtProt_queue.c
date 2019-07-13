@@ -1,17 +1,17 @@
 /******************************************************
-ÎÄ¼şÃû£º	
-ÃèÊö£º
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 Data			Vasion			author
 2019/4/17		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include "PrvtProt_queue.h"
 
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
@@ -19,37 +19,37 @@ description£º function declaration
 static PPObj_t PPObj[PP_MAX];
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 static void ClrPP_queue(void);
 
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 
 /******************************************************
-*º¯ÊıÃû£ºPP_queue_Init
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£º
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_queue_Init
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PP_queue_Init(void)
 {
-	ClrPP_queue();//Çå»º´æ¶ÓÁĞ
+	ClrPP_queue();//ï¿½å»ºï¿½ï¿½ï¿½ï¿½ï¿½
 }
 
 
 /******************************************************
-*º¯ÊıÃû£ºWrPP_queue
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£ºĞ´Êı¾İµ½Êı¾İ¶ÓÁĞ
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½WrPP_queue
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½Ğ´ï¿½ï¿½ï¿½İµï¿½ï¿½ï¿½ï¿½İ¶ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int WrPP_queue(unsigned char  obj,unsigned char* data,int len)
 {
@@ -62,7 +62,7 @@ int WrPP_queue(unsigned char  obj,unsigned char* data,int len)
 		PPObj[obj].PPCache[PPObj[obj].HeadLabel].data[Lng] = data[Lng];
 	}
 	PPObj[obj].PPCache[PPObj[obj].HeadLabel].len = len;
-	PPObj[obj].PPCache[PPObj[obj].HeadLabel].NonEmptyFlg = 1U;/*ÖÃ·Ç¿Õ±êÖ¾*/
+	PPObj[obj].PPCache[PPObj[obj].HeadLabel].NonEmptyFlg = 1U;
 	PPObj[obj].HeadLabel++;
 	if(PP_QUEUE_LNG == PPObj[obj].HeadLabel)
 	{
@@ -74,30 +74,30 @@ int WrPP_queue(unsigned char  obj,unsigned char* data,int len)
 
 
 /******************************************************
-*º¯ÊıÃû:RdPP_queue
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£º¶ÁÈ¡Êı¾İ
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:RdPP_queue
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int RdPP_queue(unsigned char  obj,unsigned char* data,int len)
 {	
 	int Lng;
 	if(0U == PPObj[obj].PPCache[PPObj[obj].TialLabel].NonEmptyFlg)
 	{
-		return 0;//ÎŞÊı¾İ
+		return 0;//
 	}
 		
 	if(PPObj[obj].PPCache[PPObj[obj].TialLabel].len > len)
 	{
-		return -1;//Òç³ö´íÎó
+		return -1;//
 	}
 
 	for(Lng = 0U;Lng < PPObj[obj].PPCache[PPObj[obj].TialLabel].len;Lng++)
 	{
 		data[Lng] =PPObj[obj].PPCache[PPObj[obj].TialLabel].data[Lng];
 	}
-	PPObj[obj].PPCache[PPObj[obj].TialLabel].NonEmptyFlg = 0U;	/*Çå·Ç¿Õ±êÖ¾*/
+	PPObj[obj].PPCache[PPObj[obj].TialLabel].NonEmptyFlg = 0U;
 		
 	PPObj[obj].TialLabel++;
 	if(PP_QUEUE_LNG == PPObj[obj].TialLabel)
@@ -108,11 +108,11 @@ int RdPP_queue(unsigned char  obj,unsigned char* data,int len)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºClrUnlockLogCache_Queue
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£ºÇåÊı¾İ¶ÓÁĞ
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ClrUnlockLogCache_Queue
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ¶ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void ClrPP_queue(void)
 {

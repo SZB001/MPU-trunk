@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt.h
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt.h
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 
 Data			  Vasion			author
 2019/04/16		   V1.0			    liujian
@@ -9,24 +9,31 @@ Data			  Vasion			author
 #ifndef		_PRVTPROT_H
 #define		_PRVTPROT_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
-#define PP_ACK_WAIT 	0x01//µÈ´ý³É¹¦
-#define PP_ACK_SUCCESS 	0x02//Ó¦´ð³É¹¦
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
+#define PP_ACK_WAIT 	0x01//ï¿½È´ï¿½ï¿½É¹ï¿½
+#define PP_ACK_SUCCESS 	0x02//Ó¦ï¿½ï¿½É¹ï¿½
 
-#define PP_MSG_DATA_LEN 	1024//message data ³¤¶È
-#define PP_TBOXSN_LEN 		19//tboxsn ³¤¶È
+#define PP_MSG_DATA_LEN 	1024//message data ï¿½ï¿½ï¿½ï¿½
+#define PP_TBOXSN_LEN 		19//tboxsn ï¿½ï¿½ï¿½ï¿½
 
-#define	PP_NATIONALSTANDARD_TYPE	0//²Ù×÷ÀàÐÍ£º¹ú±êÀàÐÍ
-#define	PP_HEARTBEAT_TYPE			1//ÐÄÌøÀàÐÍ
-#define	PP_NGTP_TYPE				2//NGTPÀàÐÍ
+//OperationType
+#define	PP_OPERATETYPE_NS			0//NationalStandard
+#define	PP_OPERATETYPE_HEARTBEAT	1//Heartbeat
+#define	PP_OPERATETYPE_NGTP			2//NGTP
+#define	PP_OPERATETYPE_OTA			3//ota
+#define	PP_OPERATETYPE_RESULT		4//result
+#define	PP_OPERATETYPE_CERTDL		5//CertDownload
+#define	PP_OPERATETYPE_KEYEXC		6//KeyExchange
+#define	PP_OPERATETYPE_FOTA			7//FOTA
+#define	PP_OPERATETYPE_FILEUPLOAD	8//FileUpload
 
 /* xcall */
 //AID
@@ -58,12 +65,12 @@ description£º macro definitions
 #define PP_MID_RMTCTRL_BOOKINGRESP 	3//remote ctrl booking response
 #define PP_MID_RMTCTRL_HUBOOKINGRESP 	4//remote ctrl HU booking response
 
-#define PP_AID_VS	 		130//³µÁ¾×´Ì¬
+#define PP_AID_VS	 		130//ï¿½ï¿½ï¿½ï¿½×´Ì¬
 //MID
 #define PP_MID_VS_REQ 	1//VS request
 #define PP_MID_VS_RESP 	2//VS response
 
-#define PP_AID_DIAG	 		140//Ô¶³ÌÕï¶Ï
+#define PP_AID_DIAG	 		140//Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
 //MID
 #define PP_MID_DIAG_REQ 	1//request
 #define PP_MID_DIAG_RESP 	2//response
@@ -73,78 +80,78 @@ description£º macro definitions
 //#define PP_MID_DIAG_IMAGEACQRESP  	6
 //#define PP_MID_DIAG_LOGACQRES		7
 
-#define PP_TXPAKG_FAIL 	(-1)//±¨ÎÄ·¢ËÍÊ§°Ü
-#define PP_TXPAKG_SUCCESS 	  1//±¨ÎÄ·¢ËÍ³É¹¦
+#define PP_TXPAKG_FAIL 	(-1)//ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½Ê§ï¿½ï¿½
+#define PP_TXPAKG_SUCCESS 	  1//ï¿½ï¿½ï¿½Ä·ï¿½ï¿½Í³É¹ï¿½
 
-/***********ºêº¯Êý***********/
-typedef void (*PrvtProt_InitObj)(void);//³õÊ¼»¯
+/***********ï¿½êº¯ï¿½ï¿½***********/
+typedef void (*PrvtProt_InitObj)(void);//ï¿½ï¿½Ê¼ï¿½ï¿½
 typedef int (*PrvtProt_mainFuncObj)(void* x);//
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 typedef enum
 {
 	PP_RMTFUNC_XCALL = 0,//XCALL
-	PP_RMTFUNC_CC,//ºô½ÐÖÐÐÄ
-	PP_RMTFUNC_CFG,//Ô¶³ÌÅäÖÃ
-	PP_RMTFUNC_CTRL,//Ô¶³Ì¿ØÖÆ
-	PP_RMTFUNC_VS,//³µÁ¾×´Ì¬
-	PP_RMTFUNC_DIAG,//Ô¶³ÌÕï¶Ï
+	PP_RMTFUNC_CC,//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	PP_RMTFUNC_CFG,//Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	PP_RMTFUNC_CTRL,//Ô¶ï¿½Ì¿ï¿½ï¿½ï¿½
+	PP_RMTFUNC_VS,//ï¿½ï¿½ï¿½ï¿½×´Ì¬
+	PP_RMTFUNC_DIAG,//Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
 	PP_RMTFUNC_MAX
 } PP_RMTFUNC_INDEX;
 
 typedef enum
 {
-	PP_TXPAKG_UNKOWNTYPE = 0,//Î´ÖªÀàÐÍ
-	PP_TXPAKG_CONTINUE,//ÖÜÆÚÐÍ
-	PP_TXPAKG_SIGTRIG,//µ¥´Î´¥·¢ÐÍ
-	PP_TXPAKG_SIGTIME//µ¥´ÎÊ±Ð§ÐÍ
+	PP_TXPAKG_UNKOWNTYPE = 0,//Î´Öªï¿½ï¿½ï¿½ï¿½
+	PP_TXPAKG_CONTINUE,//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	PP_TXPAKG_SIGTRIG,//ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½
+	PP_TXPAKG_SIGTIME//ï¿½ï¿½ï¿½ï¿½Ê±Ð§ï¿½ï¿½
 } PP_TXPAKG_TYPE;
 
 typedef enum
 {
-	PP_TXPAKG_UNKOWNFAIL = 0,//Î´ÖªÀàÐÍ
+	PP_TXPAKG_UNKOWNFAIL = 0,//Î´Öªï¿½ï¿½ï¿½ï¿½
 	PP_TXPAKG_TXFAIL,
-	PP_TXPAKG_OUTOFDATE//±¨ÎÄ¹ýÆÚ
+	PP_TXPAKG_OUTOFDATE//ï¿½ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½
 } PP_TXPAKG_FAILTYPE;
 
 typedef enum
 {
 	PP_IDLE = 0,//
-    PP_HEARTBEAT,//µÈ´ýÐÄÌøÏìÓ¦×´Ì¬
+    PP_HEARTBEAT,//ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦×´Ì¬
 } PP_WAIT_STATE;
 
 /*****struct definitions*****/
 typedef struct 
 {		
-	unsigned char sign[2U];/* ÆðÊ¼·û±êÖ¾Î»£¬È¡Öµ0x2A£¬0x2A*/
+	unsigned char sign[2U];/* ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ö¾Î»ï¿½ï¿½È¡Öµ0x2Aï¿½ï¿½0x2A*/
 	union
 	{
 		unsigned char Byte;/* */
 		struct 
 		{		
-			unsigned char mnr : 4;/* Ð¡°æ±¾(ÓÉTSPÆ½Ì¨¶¨Òå)*/
-			unsigned char mjr : 4;/* ´ó°æ±¾(ÓÉTSPÆ½Ì¨¶¨Òå)*/
+			unsigned char mnr : 4;/* Ð¡ï¿½æ±¾(ï¿½ï¿½TSPÆ½Ì¨ï¿½ï¿½ï¿½ï¿½)*/
+			unsigned char mjr : 4;/* ï¿½ï¿½æ±¾(ï¿½ï¿½TSPÆ½Ì¨ï¿½ï¿½ï¿½ï¿½)*/
 		}bits; /**/
 	}ver;
-	unsigned long int nonce;/* TCP»á»°ID ÓÉTSPÆ½Ì¨²úÉú */
+	unsigned long int nonce;/* TCPï¿½á»°ID ï¿½ï¿½TSPÆ½Ì¨ï¿½ï¿½ï¿½ï¿½ */
 	
 	union
 	{
 		unsigned char Byte;/* */
 		struct 
 		{		
-			unsigned char encode : 4;/* ±àÂë·½Ê½0£ºnone£»1NGTP£»2£ºGZIP£»3£ºJSON*/	
-			unsigned char mode : 1;/* ÀàÐÍ0£ºnormal£»1£ºdebug*/
-			unsigned char connt  : 1;/* Á¬½Ó·½Ê½0£º¶ÌÁ¬½Ó£»1£º³¤Á¬½Ó*/
-			unsigned char asyn : 1;/* Í¨Ñ¶·½Ê½0£ºÍ¬²½£»1£ºÒì²½*/
-			unsigned char dir  : 1;/* ±¨ÎÄ·½Ïò0£ºTo Tbox£»1£ºTo TSP*/
+			unsigned char encode : 4;/* ï¿½ï¿½ï¿½ë·½Ê½0ï¿½ï¿½noneï¿½ï¿½1NGTPï¿½ï¿½2ï¿½ï¿½GZIPï¿½ï¿½3ï¿½ï¿½JSON*/	
+			unsigned char mode : 1;/* ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½normalï¿½ï¿½1ï¿½ï¿½debug*/
+			unsigned char connt  : 1;/* ï¿½ï¿½ï¿½Ó·ï¿½Ê½0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó£ï¿½1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
+			unsigned char asyn : 1;/* Í¨Ñ¶ï¿½ï¿½Ê½0ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½1ï¿½ï¿½ï¿½ì²½*/
+			unsigned char dir  : 1;/* ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½0ï¿½ï¿½To Tboxï¿½ï¿½1ï¿½ï¿½To TSP*/
 		}bits; /**/
 	}commtype;
 	
@@ -153,41 +160,41 @@ typedef struct
 		unsigned char Byte;/* */
 		struct 
 		{		
-			unsigned char encrypt   : 4;/* ¼ÓÃÜ·½Ê½0£ºnone£»1£ºAES128£»2£ºAES256£»3RSA2048*/
-			unsigned char signature : 4;/* Ç©Ãû·½Ê½:0 -- none ;1 -- SHA1;2 -- SHA256*/	
+			unsigned char encrypt   : 4;/* ï¿½ï¿½ï¿½Ü·ï¿½Ê½0ï¿½ï¿½noneï¿½ï¿½1ï¿½ï¿½AES128ï¿½ï¿½2ï¿½ï¿½AES256ï¿½ï¿½3RSA2048*/
+			unsigned char signature : 4;/* Ç©ï¿½ï¿½ï¿½ï¿½Ê½:0 -- none ;1 -- SHA1;2 -- SHA256*/	
 		}bits; /**/
 	}safetype;
 	
-	unsigned char opera;/* ²Ù×÷ÀàÐÍ:0 -- national standard ;1 -- heartbeat;2 -- ngtp ;3 -- OTA */
-	unsigned long int msglen;/* ±¨ÎÄ³¤¶È */
-	unsigned long int tboxid;/* Æ½Ì¨Í¨¹ýtboxIDÓëtboxSNÓ³Éä */
-}__attribute__((packed)) PrvtProt_pack_Header_t; /*±¨ÎÄÍ·½á¹¹Ìå*/ 
+	unsigned char opera;/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:0 -- national standard ;1 -- heartbeat;2 -- ngtp ;3 -- OTA */
+	unsigned long int msglen;/* ï¿½ï¿½ï¿½Ä³ï¿½ï¿½ï¿½ */
+	unsigned long int tboxid;/* Æ½Ì¨Í¨ï¿½ï¿½tboxIDï¿½ï¿½tboxSNÓ³ï¿½ï¿½ */
+}__attribute__((packed)) PrvtProt_pack_Header_t; /*ï¿½ï¿½ï¿½ï¿½Í·ï¿½á¹¹ï¿½ï¿½*/ 
 
 typedef struct 
 {		
 	PrvtProt_pack_Header_t Header;/* */
-	unsigned char msgdata[PP_MSG_DATA_LEN];/* ÏûÏ¢Ìå */
-	unsigned char msgtype;/* ÏûÏ¢ÀàÐÍ */
-	int totallen;//Êý¾Ý×Ü³¤¶È
-}__attribute__((packed)) PrvtProt_pack_t; /*±¨ÎÄ½á¹¹Ìå*/
+	unsigned char msgdata[PP_MSG_DATA_LEN];/* ï¿½ï¿½Ï¢ï¿½ï¿½ */
+	unsigned char msgtype;/* ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½ */
+	int totallen;//ï¿½ï¿½ï¿½ï¿½ï¿½Ü³ï¿½ï¿½ï¿½
+}__attribute__((packed)) PrvtProt_pack_t; /*ï¿½ï¿½ï¿½Ä½á¹¹ï¿½ï¿½*/
 
 typedef struct 
 {		
-	uint64_t  timer;/* ÐÄÌø¼ÆÊ±Æ÷ */
-	//uint8_t ackFlag;/* Ó¦´ð±êÖ¾:2-µÈ´ýÓ¦´ð£»1-³É¹¦Ó¦´ð */
-	uint8_t state;/* ÐÄÌø×´Ì¬ 1- Õý³£ */
-	uint8_t period;/* ÐÄÌøÖÜÆÚuints£ºÃë*/
-	PP_WAIT_STATE waitSt;/* µÈ´ýÏìÓ¦µÄ×´Ì¬ */
-	uint64_t waittime;/* µÈ´ýÏìÓ¦µÄÊ±¼ä */
-}__attribute__((packed))  PrvtProt_heartbeat_t; /*ÐÄÌø½á¹¹Ìå*/
+	uint64_t  timer;/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ */
+	//uint8_t ackFlag;/* Ó¦ï¿½ï¿½ï¿½Ö¾:2-ï¿½È´ï¿½Ó¦ï¿½ï¿½1-ï¿½É¹ï¿½Ó¦ï¿½ï¿½ */
+	uint8_t state;/* ï¿½ï¿½ï¿½ï¿½×´Ì¬ 1- ï¿½ï¿½ï¿½ï¿½ */
+	uint8_t period;/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½uintsï¿½ï¿½ï¿½ï¿½*/
+	PP_WAIT_STATE waitSt;/* ï¿½È´ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½×´Ì¬ */
+	uint64_t waittime;/* ï¿½È´ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Ê±ï¿½ï¿½ */
+}__attribute__((packed))  PrvtProt_heartbeat_t; /*ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½*/
 
 typedef struct 
 {	
-	char suspend;/* ÔÝÍ£ */
-	uint32_t nonce;/* TCP»á»°ID ÓÉTSPÆ½Ì¨²úÉú */
-	unsigned char version;/* ´ó/Ð¡°æ±¾(ÓÉTSPÆ½Ì¨¶¨Òå)*/
-	uint32_t tboxid;/* Æ½Ì¨Í¨¹ýtboxIDÓëtboxSNÓ³Éä */
-}__attribute__((packed))  PrvtProt_task_t; /* ÈÎÎñ²ÎÊý½á¹¹Ìå*/
+	char suspend;/* ï¿½ï¿½Í£ */
+	uint32_t nonce;/* TCPï¿½á»°ID ï¿½ï¿½TSPÆ½Ì¨ï¿½ï¿½ï¿½ï¿½ */
+	unsigned char version;/* ï¿½ï¿½/Ð¡ï¿½æ±¾(ï¿½ï¿½TSPÆ½Ì¨ï¿½ï¿½ï¿½ï¿½)*/
+	uint32_t tboxid;/* Æ½Ì¨Í¨ï¿½ï¿½tboxIDï¿½ï¿½tboxSNÓ³ï¿½ï¿½ */
+}__attribute__((packed))  PrvtProt_task_t; /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½*/
 
 /* Dispatcher Body struct */
 typedef struct
@@ -212,31 +219,31 @@ typedef struct
 typedef struct
 {
 	char funcObj;
-	PrvtProt_InitObj Init;//³õÊ¼»¯
+	PrvtProt_InitObj Init;//ï¿½ï¿½Ê¼ï¿½ï¿½
 	PrvtProt_mainFuncObj mainFunc;//
-}PrvtProt_RmtFunc_t; /*½á¹¹Ìå*/
+}PrvtProt_RmtFunc_t; /*ï¿½á¹¹ï¿½ï¿½*/
 
 typedef struct
 {
 	uint8_t idleflag;
 	int aid;
 	int mid;
-	char pakgtype;//±¨ÎÄÀàÐÍ:1-³ÖÐøÐÍ£¨³ÖÐø·¢ËÍÖ±µ½·¢ËÍ³É¹¦£©£»2-µ¥´Î´¥·¢ÐÍ£¨·¢ËÍÊ§°Ü¶ªÆú£©£»3-µ¥´ÎÊ±Ð§ÐÔ£¨·¢ËÍÊ§°Ü¶ªÆú£¬Í¬Ê±±¨ÎÄ¾ßÓÐÊ±Ð§ÐÔ£©
-	uint64_t eventtime;//ÊÂ¼þ²úÉúÊ±µÄÊ±¼ä
-	char successflg;//±¨ÎÄ·¢ËÍÍê³É±êÖ¾£º-1 - Ê§°Ü£»1 - ³É¹¦£»Ä¬ÈÏ0
+	char pakgtype;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:1-ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½Í³É¹ï¿½ï¿½ï¿½ï¿½ï¿½2-ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3-ï¿½ï¿½ï¿½ï¿½Ê±Ð§ï¿½Ô£ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü¶ï¿½ï¿½ï¿½ï¿½ï¿½Í¬Ê±ï¿½ï¿½ï¿½Ä¾ï¿½ï¿½ï¿½Ê±Ð§ï¿½Ô£ï¿½
+	uint64_t eventtime;//ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ê±ï¿½ï¿½
+	char successflg;//ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½É±ï¿½Ö¾ï¿½ï¿½-1 - Ê§ï¿½Ü£ï¿½1 - ï¿½É¹ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½0
 	uint8_t failresion;
-	uint64_t txfailtime;//·¢ËÍÊ§°ÜµÄÊ±¼ä
-}PrvtProt_TxInform_t; /*½á¹¹Ìå*/
+	uint64_t txfailtime;//ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Üµï¿½Ê±ï¿½ï¿½
+}PrvtProt_TxInform_t; /*ï¿½á¹¹ï¿½ï¿½*/
 
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
-//extern PrvtProt_appData_t 		PP_appData;//¹²ÓÃµÄ½á¹¹Ìå£¨app dataÊý¾Ý´ò°üÊ±Ê¹ÓÃ£©
+//extern PrvtProt_appData_t 		PP_appData;//ï¿½ï¿½ï¿½ÃµÄ½á¹¹ï¿½å£¨app dataï¿½ï¿½ï¿½Ý´ï¿½ï¿½Ê±Ê¹ï¿½Ã£ï¿½
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern long PrvtPro_BSEndianReverse(long value);
 extern long PrvtPro_getTimestamp(void);

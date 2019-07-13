@@ -1,13 +1,13 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_remoteCfg.c
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_remoteCfg.c
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -48,11 +48,11 @@ description£º include the header file
 #include "PrvtProt_remoteConfig.h"
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 typedef struct
 {
@@ -64,7 +64,7 @@ typedef struct
 {
 	PrvtProt_rmtCfg_pack_t 	pack;
 	PrvtProt_rmtCfgSt_t	 	state;
-}__attribute__((packed))  PrvtProt_rmtCfg_t; /*½á¹¹Ìå*/
+}__attribute__((packed))  PrvtProt_rmtCfg_t; /*ï¿½á¹¹ï¿½ï¿½*/
 
 static PrvtProt_pack_t 			PP_rmtCfg_Pack;
 static PrvtProt_rmtCfg_t		PP_rmtCfg;
@@ -72,7 +72,7 @@ static PrvtProt_App_rmtCfg_t 	AppData_rmtCfg;
 
 static PrvtProt_TxInform_t rmtCfg_TxInform;
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
@@ -91,18 +91,18 @@ static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,Pr
 
 static void PP_rmtCfg_send_cb(void * para);
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_init
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_init
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º³õÊ¼»¯
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PP_rmtCfg_init(void)
 {
@@ -135,10 +135,10 @@ void PP_rmtCfg_init(void)
 	}
 
 	len = 18;
-	res = cfg_get_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);//¶ÁÈ¡vin
+	res = cfg_get_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);//ï¿½ï¿½È¡vin
 	AppData_rmtCfg.checkReq.vehicleVinlen = 17;
 
-	res = PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//¶ÁÈ¡iccid
+	res = PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//ï¿½ï¿½È¡iccid
 	AppData_rmtCfg.checkReq.iccIDlen = 20;
 
 	memcpy(AppData_rmtCfg.checkReq.btMacAddr,"000000000000",strlen("000000000000"));
@@ -148,7 +148,7 @@ void PP_rmtCfg_init(void)
 	memcpy(AppData_rmtCfg.checkReq.cfgVersion,"00000000000000000000000000000000",strlen("00000000000000000000000000000000"));
 	AppData_rmtCfg.checkReq.cfgVersionlen = strlen("00000000000000000000000000000000");
 
-	//¶ÁÈ¡ÅäÖÃ
+	//ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
 	len = 512;
 	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,&len);
 	if((res==0) && (AppData_rmtCfg.ReadResp.cfgsuccess == 1))
@@ -169,15 +169,15 @@ void PP_rmtCfg_init(void)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_mainfunction
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_mainfunction
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£ºÖ÷ÈÎÎñº¯Êý
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int PP_rmtCfg_mainfunction(void *task)
 {
@@ -191,15 +191,15 @@ int PP_rmtCfg_mainfunction(void *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_do_checksock
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_do_checksock
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º¼ì²ésocketÁ¬½Ó
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½socketï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_rmtCfg_do_checksock(PrvtProt_task_t *task)
 {
@@ -208,21 +208,21 @@ static int PP_rmtCfg_do_checksock(PrvtProt_task_t *task)
 
 		return 0;
 	}
-	//ÊÍ·Å×ÊÔ´
+	//ï¿½Í·ï¿½ï¿½ï¿½Ô´
 	PP_rmtCfg_reset(&PP_rmtCfg);
 	return -1;
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_do_rcvMsg
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_do_rcvMsg
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º½ÓÊÕÊý¾Ýº¯Êý
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýºï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_rmtCfg_do_rcvMsg(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {	
@@ -237,12 +237,12 @@ static int PP_rmtCfg_do_rcvMsg(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 	log_i(LOG_HOZON, "receive remote config message");
 	protocol_dump(LOG_HOZON, "remote_config_message", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
-			(rlen <= 18))//ÅÐ¶ÏÊý¾ÝÖ¡Í·ÓÐÎó»òÕßÊý¾Ý³¤¶È²»¶Ô
+			(rlen <= 18))//ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡Í·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½È²ï¿½ï¿½ï¿½
 	{
 		return 0;
 	}
 	
-	if(rlen > (18 + PP_MSG_DATA_LEN))//½ÓÊÕÊý¾Ý³¤¶È³¬³ö»º´æbuffer³¤¶È
+	if(rlen > (18 + PP_MSG_DATA_LEN))//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½È³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bufferï¿½ï¿½ï¿½ï¿½
 	{
 		return 0;
 	}
@@ -252,21 +252,21 @@ static int PP_rmtCfg_do_rcvMsg(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_RxMsgHandle
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_RxMsgHandle
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º½ÓÊÕÊý¾Ý´¦Àí
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,PrvtProt_pack_t* rxPack,int len)
 {
 	int aid;
 	int i;
-	if(PP_NGTP_TYPE != rxPack->Header.opera)
+	if(PP_OPERATETYPE_NGTP != rxPack->Header.opera)
 	{
 		log_e(LOG_HOZON, "unknow package");
 		return;
@@ -290,7 +290,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 	{
 		case PP_MID_CHECK_CFG_RESP://check remote config response
 		{
-			if(PP_rmtCfg.state.waitSt == PP_RMTCFG_CHECK_WAIT_RESP)//½ÓÊÕµ½»Ø¸´
+			if(PP_rmtCfg.state.waitSt == PP_RMTCFG_CHECK_WAIT_RESP)//ï¿½ï¿½ï¿½Õµï¿½ï¿½Ø¸ï¿½
 			{
 				if((1 == AppData_rmtCfg.checkResp.needUpdate) \
 						/*&& (PP_rmtCfg_strcmp(AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkReq.cfgVersion,32)!=0)*/)
@@ -305,7 +305,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 		break;
 		case PP_MID_GET_CFG_RESP://get remote config response
 		{
-			if(rmtCfg->state.waitSt == PP_RMTCFG_GET_WAIT_RESP)//½ÓÊÕµ½»Ø¸´
+			if(rmtCfg->state.waitSt == PP_RMTCFG_GET_WAIT_RESP)//ï¿½ï¿½ï¿½Õµï¿½ï¿½Ø¸ï¿½
 			{
 				rmtCfg->state.waitSt = 0;
 
@@ -313,13 +313,13 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 			}
 		}
 		break;
-		case PP_MID_CONN_CFG_REQ://TAP Ïò TCU ·¢ËÍÅäÖÃ¸üÐÂÇëÇó£¬ TCU Ñ¡ÔñºÏÊÊµÄÊ±»úÈ¥ºóÌ¨ÇëÇóÊý¾Ý
+		case PP_MID_CONN_CFG_REQ://TAP ï¿½ï¿½ TCU ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ TCU Ñ¡ï¿½ï¿½ï¿½ï¿½Êµï¿½Ê±ï¿½ï¿½È¥ï¿½ï¿½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			PP_rmtCfg.state.req 	= 0;
 			PP_rmtCfg.state.reqCnt 	= 0;
 			PP_rmtCfg.state.waitSt  = PP_RMTCFG_WAIT_IDLE;
 			PP_rmtCfg.state.CfgSt 	= PP_RMTCFG_CFG_IDLE;
-			rmtCfg->state.cfgAccept = 1;//½ÓÊÜÅäÖÃ¸üÐÂÇëÇó
+			rmtCfg->state.cfgAccept = 1;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			if(0 == PP_rmtCfg_ConnResp(task,rmtCfg,&MsgDataBody))
 			{
 				memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
@@ -333,7 +333,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 			}
 		}
 		break;
-		case PP_MID_READ_CFG_REQ://TAP Ïò TCU ¶ÁÅäÖÃÇëÇó
+		case PP_MID_READ_CFG_REQ://TAP ï¿½ï¿½ TCU ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			memset(AppData_rmtCfg.ReadResp.readreq,0,PP_RMTCFG_SETID_MAX);
 			for(i = 0; i < AppData_rmtCfg.ReadReq.SettingIdlen;i++)
@@ -365,15 +365,15 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_do_wait
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_do_wait
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º¼ì²éÊÇ·ñÓÐÊÂ¼þµÈ´ýÓ¦´ð
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½È´ï¿½Ó¦ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_rmtCfg_do_wait(PrvtProt_task_t *task)
 {
@@ -384,7 +384,7 @@ static int PP_rmtCfg_do_wait(PrvtProt_task_t *task)
 
 	if(PP_rmtCfg.state.waitSt == PP_RMTCFG_CHECK_WAIT_RESP)
 	{
-		if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//µÈ´ýÏìÓ¦³¬Ê±
+		if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//ï¿½È´ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Ê±
 		{
 			log_e(LOG_HOZON, "check cfg response time out");
 			PP_rmtCfg.state.reqCnt = 0;
@@ -396,7 +396,7 @@ static int PP_rmtCfg_do_wait(PrvtProt_task_t *task)
 	}
 	else if(PP_rmtCfg.state.waitSt == PP_RMTCFG_GET_WAIT_RESP)
 	{
-		 if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//µÈ´ýÏìÓ¦³¬Ê±
+		 if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//ï¿½È´ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Ê±
 		 {
 			 log_e(LOG_HOZON, "get cfg response time out");
 			 PP_rmtCfg.state.reqCnt = 0;
@@ -408,7 +408,7 @@ static int PP_rmtCfg_do_wait(PrvtProt_task_t *task)
 	}
 	else if(PP_rmtCfg.state.waitSt == PP_RMTCFG_END_WAIT_SENDRESP)
 	{
-		 if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//µÈ´ýÏìÓ¦³¬Ê±
+		 if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//ï¿½È´ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½Ê±
 		 {
 			 PP_rmtCfg.state.reqCnt = 0;
 			 PP_rmtCfg.state.req = 0;
@@ -421,15 +421,15 @@ static int PP_rmtCfg_do_wait(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_do_checkConfig
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_do_checkConfig
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º¼ì²éÅäÖÃ
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
@@ -440,8 +440,8 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 	}
 
 	if(!AppData_rmtCfg.checkReq.iccID[0])
-	{//iccidÎÞÐ§
-		(void)PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//¶ÁÈ¡iccid
+	{//iccidï¿½ï¿½Ð§
+		(void)PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//ï¿½ï¿½È¡iccid
 	}
 
 	switch(rmtCfg->state.CfgSt)
@@ -479,7 +479,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				protocol_dump(LOG_HOZON, "cfg_read_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 
-			rmtCfg->state.waitSt 	= PP_RMTCFG_CHECK_WAIT_RESP;//µÈ´ý¼ì²é¼ì²éÅäÖÃÇëÇóÏìÓ¦
+			rmtCfg->state.waitSt 	= PP_RMTCFG_CHECK_WAIT_RESP;//ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦
 			rmtCfg->state.CfgSt 	= PP_CHECK_CFG_RESP;
 			rmtCfg->state.waittime 	= tm_get_time();
 		}
@@ -516,7 +516,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				protocol_dump(LOG_HOZON, "cfg_read_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 
-			rmtCfg->state.waitSt 	= PP_RMTCFG_GET_WAIT_RESP;//µÈ´ýÇëÇóÏìÓ¦
+			rmtCfg->state.waitSt 	= PP_RMTCFG_GET_WAIT_RESP;//ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦
 			rmtCfg->state.CfgSt 	= PP_GET_CFG_RESP;
 			rmtCfg->state.waittime 	= tm_get_time();
 		}
@@ -527,10 +527,10 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 			rmtCfg->state.CfgSt = PP_RMTCFG_CFG_END;
 		}
 		break;
-		case PP_RMTCFG_CFG_END://½áÊøÅäÖÃ
+		case PP_RMTCFG_CFG_END://ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		{
 			if(AppData_rmtCfg.getResp.result == 1)
-			{//»º´æÅäÖÃ£¬²¢Í¨Öª·þÎñÆ÷ÅäÖÃÍê³É×´Ì¬
+			{//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½Í¨Öªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
 				AppData_rmtCfg.getResp.result = 0;
 				memcpy(AppData_rmtCfg.ReadResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion, \
 														  AppData_rmtCfg.checkResp.cfgVersionlen);
@@ -556,7 +556,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				protocol_dump(LOG_HOZON, "cfg_read_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 
-			rmtCfg->state.waitSt 	= PP_RMTCFG_END_WAIT_SENDRESP;//µÈ´ýÏìÓ¦
+			rmtCfg->state.waitSt 	= PP_RMTCFG_END_WAIT_SENDRESP;//ï¿½È´ï¿½ï¿½ï¿½Ó¦
 			rmtCfg->state.waittime 	= tm_get_time();
 		}
 		break;
@@ -568,15 +568,15 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_checkRequest
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_checkRequest
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºcheck remote config request
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½check remote config request
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
@@ -602,7 +602,7 @@ static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 	/*appdata*/
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_CHECK_REQ,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//Êý¾Ý±àÂë´ò°üÊÇ·ñÍê³É
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//ï¿½ï¿½ï¿½Ý±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 	{
 		log_e(LOG_HOZON, "uper error");
 		return -1;
@@ -615,15 +615,15 @@ static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_getRequest
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_getRequest
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºget remote config request
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½get remote config request
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_rmtCfg_getRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
@@ -651,7 +651,7 @@ static int PP_rmtCfg_getRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 	AppData_rmtCfg.getReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_GET_REQ,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//Êý¾Ý±àÂë´ò°üÊÇ·ñÍê³É
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//ï¿½ï¿½ï¿½Ý±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 	{
 		log_e(LOG_HOZON, "uper error");
 		return -1;
@@ -664,15 +664,15 @@ static int PP_rmtCfg_getRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_CfgEndRequest
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_CfgEndRequest
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºremote config end request
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½remote config end request
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
@@ -707,7 +707,7 @@ static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtC
 	AppData_rmtCfg.EndReq.cfgVersionlen = AppData_rmtCfg.checkReq.cfgVersionlen;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_END_REQ,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//Êý¾Ý±àÂë´ò°üÊÇ·ñÍê³É
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//ï¿½ï¿½ï¿½Ý±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 	{
 		log_e(LOG_HOZON, "uper error");
 		return -1;
@@ -720,15 +720,15 @@ static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtC
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_ConnResp
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_ConnResp
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º response of remote config request
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ response of remote config request
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,PrvtProt_DisptrBody_t *MsgDataBody)
 {
@@ -760,7 +760,7 @@ static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,Pr
 	}
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_CONN_RESP,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//Êý¾Ý±àÂë´ò°üÊÇ·ñÍê³É
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//ï¿½ï¿½ï¿½Ý±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 	{
 		log_e(LOG_HOZON, "uper error");
 		return -1;
@@ -773,15 +773,15 @@ static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,Pr
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_ReadCfgResp
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_ReadCfgResp
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º response of remote read config request
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ response of remote read config request
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,PrvtProt_DisptrBody_t *MsgDataBody)
 {
@@ -808,7 +808,7 @@ static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg
 	AppData_rmtCfg.ReadResp.result = 1;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_READ_RESP,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//Êý¾Ý±àÂë´ò°üÊÇ·ñÍê³É
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//ï¿½ï¿½ï¿½Ý±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 	{
 		log_e(LOG_HOZON, "uper error");
 		return -1;
@@ -821,15 +821,15 @@ static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg
 }
 
 /******************************************************
-*º¯ÊýÃû:PP_rmtCfg_SetCfgReq
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:PP_rmtCfg_SetCfgReq
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºÉèÖÃ ÇëÇó
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PP_rmtCfg_SetCfgReq(unsigned char req)
 {
@@ -839,15 +839,15 @@ void PP_rmtCfg_SetCfgReq(unsigned char req)
 }
 
 /******************************************************
-*º¯ÊýÃû:PP_rmtCfg_SetmcuSw
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:PP_rmtCfg_SetmcuSw
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PP_rmtCfg_SetmcuSw(const char *mcuSw)
 {
@@ -861,15 +861,15 @@ void PP_rmtCfg_SetmcuSw(const char *mcuSw)
 }
 
 /******************************************************
-*º¯ÊýÃû:PP_rmtCfg_SetmpuSw
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:PP_rmtCfg_SetmpuSw
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PP_rmtCfg_SetmpuSw(const char *mpuSw)
 {
@@ -883,15 +883,15 @@ void PP_rmtCfg_SetmpuSw(const char *mpuSw)
 }
 
 /******************************************************
-*º¯ÊýÃû:PP_rmtCfg_Seticcid
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:PP_rmtCfg_Seticcid
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º²âÊÔÓÃ
+*ï¿½ï¿½  ×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ******************************************************/
 void PP_rmtCfg_Seticcid(const char *iccid)
 {
@@ -900,15 +900,15 @@ void PP_rmtCfg_Seticcid(const char *iccid)
 }
 
 /******************************************************
-*º¯ÊýÃû:PP_rmtCfg_ShowCfgPara
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:PP_rmtCfg_ShowCfgPara
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º²âÊÔÓÃ
+*ï¿½ï¿½  ×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ******************************************************/
 void PP_rmtCfg_ShowCfgPara(void)
 {
@@ -969,15 +969,15 @@ void PP_rmtCfg_ShowCfgPara(void)
 
 #if 0
 /******************************************************
-*º¯ÊýÃû:PP_rmtCfg_strcmp
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:PP_rmtCfg_strcmp
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º×Ö·û´®±È½Ï
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½È½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_rmtCfg_strcmp(unsigned char* str1,unsigned char* str2,int len)
 {
@@ -994,15 +994,15 @@ static int PP_rmtCfg_strcmp(unsigned char* str1,unsigned char* str2,int len)
 #endif
 
 /******************************************************
-*º¯ÊýÃû:PP_rmtCfg_reset
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:PP_rmtCfg_reset
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º×Ö·û´®±È½Ï
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½È½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void PP_rmtCfg_reset(PrvtProt_rmtCfg_t *rmtCfg)
 {
@@ -1018,15 +1018,15 @@ static void PP_rmtCfg_reset(PrvtProt_rmtCfg_t *rmtCfg)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_rmtCfg_send_cb
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_rmtCfg_send_cb
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void PP_rmtCfg_send_cb(void * para)
 {
@@ -1058,7 +1058,7 @@ static void PP_rmtCfg_send_cb(void * para)
 		break;
 		case PP_MID_CHECK_CFG_REQ:
 		{
-			if(PP_TXPAKG_FAIL == TxInform_ptr->successflg)//ÇëÇó·¢ËÍÊ§°Ü
+			if(PP_TXPAKG_FAIL == TxInform_ptr->successflg)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½
 			{
 				PP_rmtCfg.state.req = 0;
 				PP_rmtCfg.state.reqCnt = 0;
@@ -1070,7 +1070,7 @@ static void PP_rmtCfg_send_cb(void * para)
 		break;
 		case PP_MID_GET_CFG_REQ:
 		{
-			if(PP_TXPAKG_FAIL == TxInform_ptr->successflg)//ÇëÇó·¢ËÍÊ§°Ü
+			if(PP_TXPAKG_FAIL == TxInform_ptr->successflg)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½
 			{
 				PP_rmtCfg.state.req = 0;
 				PP_rmtCfg.state.reqCnt = 0;
@@ -1082,14 +1082,14 @@ static void PP_rmtCfg_send_cb(void * para)
 		break;
 		case PP_MID_CFG_END:
 		{
-			if(PP_TXPAKG_SUCCESS == TxInform_ptr->successflg)//·¢ËÍok
+			if(PP_TXPAKG_SUCCESS == TxInform_ptr->successflg)//ï¿½ï¿½ï¿½ï¿½ok
 			{
 				log_i(LOG_HOZON, "remote config take effect\r\n");
 				if(PP_rmtCfg.state.cfgsuccess == 1)
 				{
 					PP_rmtCfg.state.cfgsuccess = 0;
 					AppData_rmtCfg.ReadResp.cfgsuccess = 1;
-					//±£´æÅäÖÃ£¬Ê¹ÓÃÐÂµÄÅäÖÃ
+					//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½Ê¹ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½ï¿½ï¿½
 					(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
 
 					memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersionlen);

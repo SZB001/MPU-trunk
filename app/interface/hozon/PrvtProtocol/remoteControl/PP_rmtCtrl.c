@@ -247,7 +247,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 		break;
 		case RMTCTRL_COMMAND_LAUNCH://远程控制
 		{
-			log_o(LOG_HOZON,"-------command---------");
+			//log_o(LOG_HOZON,"-------command---------");
 			int ifend;
 			for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
 			{
@@ -358,7 +358,7 @@ static int PP_rmtCtrl_do_rcvMsg(PrvtProt_task_t *task)
 static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len)
 {
 	int aid;
-	if(PP_NGTP_TYPE != rxPack->Header.opera)
+	if(PP_OPERATETYPE_NGTP != rxPack->Header.opera)
 	{
 		log_e(LOG_HOZON, "unknow package");
 		return;

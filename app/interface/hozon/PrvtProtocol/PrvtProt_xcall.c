@@ -1,13 +1,13 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_xcall.c
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_xcall.c
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -47,11 +47,11 @@ description£º include the header file
 #include "PrvtProt_xcall.h"
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 typedef struct
 {
@@ -65,7 +65,7 @@ typedef struct
 	PrvtProt_xcall_pack_t 	packResp;
 	PrvtProt_xcallSt_t	 	state;
 	char 					Type;
-}__attribute__((packed))  PrvtProt_xcall_t; /*xcall½á¹¹Ìå*/
+}__attribute__((packed))  PrvtProt_xcall_t; /*xcallï¿½á¹¹ï¿½ï¿½*/
 
 static PrvtProt_pack_t 		PP_Xcall_Pack;
 
@@ -80,7 +80,7 @@ static PrvtProt_App_Xcall_t	Appdata_Xcall =
 static PrvtProt_TxInform_t Xcall_TxInform[PP_XCALL_MAX];
 
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
@@ -94,18 +94,18 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 
 static void PP_xcall_send_cb(void * para);
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 /******************************************************
-*º¯ÊýÃû£ºPP_xcall_init
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_xcall_init
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º³õÊ¼»¯
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PP_xcall_init(void)
 {
@@ -133,15 +133,15 @@ void PP_xcall_init(void)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_xcall_mainfunction
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_xcall_mainfunction
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£ºÖ÷ÈÎÎñº¯Êý
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int PP_xcall_mainfunction(void *task)
 {
@@ -154,15 +154,15 @@ int PP_xcall_mainfunction(void *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_xcall_do_checksock
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_xcall_do_checksock
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º¼ì²ésocketÁ¬½Ó
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½socketï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_xcall_do_checksock(PrvtProt_task_t *task)
 {
@@ -175,15 +175,15 @@ static int PP_xcall_do_checksock(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_xcall_do_rcvMsg
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_xcall_do_rcvMsg
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º½ÓÊÕÊý¾Ýº¯Êý
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýºï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_xcall_do_rcvMsg(PrvtProt_task_t *task)
 {	
@@ -198,12 +198,12 @@ static int PP_xcall_do_rcvMsg(PrvtProt_task_t *task)
 	log_i(LOG_HOZON, "receive xcall message");
 	protocol_dump(LOG_HOZON, "PRVT_PROT", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
-			(rlen <= 18))//ÅÐ¶ÏÊý¾ÝÖ¡Í·ÓÐÎó»òÕßÊý¾Ý³¤¶È²»¶Ô
+			(rlen <= 18))//ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡Í·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½È²ï¿½ï¿½ï¿½
 	{
 		return 0;
 	}
 	
-	if(rlen > (18 + PP_MSG_DATA_LEN))//½ÓÊÕÊý¾Ý³¤¶È³¬³ö»º´æbuffer³¤¶È
+	if(rlen > (18 + PP_MSG_DATA_LEN))//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½È³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bufferï¿½ï¿½ï¿½ï¿½
 	{
 		return 0;
 	}
@@ -213,20 +213,20 @@ static int PP_xcall_do_rcvMsg(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_xcall_RxMsgHandle
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_xcall_RxMsgHandle
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º½ÓÊÕÊý¾Ý´¦Àí
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len)
 {
 	int aid;
-	if(PP_NGTP_TYPE != rxPack->Header.opera)
+	if(PP_OPERATETYPE_NGTP != rxPack->Header.opera)
 	{
 		log_e(LOG_HOZON, "unknow package");
 		return;
@@ -246,9 +246,9 @@ static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,i
 	switch(MsgDataBody.mID)
 	{
 #if 0
-		case PP_MID_XCALL_RESP://ÊÕµ½xcall response»Ø¸´
+		case PP_MID_XCALL_RESP://ï¿½Õµï¿½xcall responseï¿½Ø¸ï¿½
 		{
-			if(PP_xcall[PP_ECALL].state.waitSt == 1)//½ÓÊÕµ½»Ø¸´
+			if(PP_xcall[PP_ECALL].state.waitSt == 1)//ï¿½ï¿½ï¿½Õµï¿½ï¿½Ø¸ï¿½
 			{
 				PP_xcall[PP_ECALL].state.waitSt = 0;
 				log_i(LOG_HOZON, "\necall ok\n");
@@ -256,7 +256,7 @@ static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,i
 		}
 		break;
 #endif
-		case PP_MID_XCALL_REQ://ÊÕµ½tsp²éÑ¯ÇëÇó
+		case PP_MID_XCALL_REQ://ï¿½Õµï¿½tspï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½
 		{
 			if((Appdata.xcallType >=1) && (Appdata.xcallType <= 3))
 			{
@@ -275,15 +275,15 @@ static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,i
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_xcall_do_wait
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_xcall_do_wait
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º¼ì²éÊÇ·ñÓÐÊÂ¼þµÈ´ýÓ¦´ð
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½È´ï¿½Ó¦ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_xcall_do_wait(PrvtProt_task_t *task)
 {
@@ -304,26 +304,26 @@ static int PP_xcall_do_wait(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_xcall_do_checkXcall
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_xcall_do_checkXcall
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º¼ì²éecallµÈÇëÇó
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ecallï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 {
 
 	/* ecall */
-	if(PrvtProtCfg_ecallTriggerEvent())//ecall´¥·¢
+	if(PrvtProtCfg_ecallTriggerEvent())//ecallï¿½ï¿½ï¿½ï¿½
 	{
 		PP_xcall[PP_ECALL].state.req = 1;
 	}
 
-	if(1 == PP_xcall[PP_ECALL].state.req)//ecall´¥·¢
+	if(1 == PP_xcall[PP_ECALL].state.req)//ecallï¿½ï¿½ï¿½ï¿½
 	{
 		log_i(LOG_HOZON, "ecall trig\n");
 		PP_xcall[PP_ECALL].state.req = 0;
@@ -378,15 +378,15 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_xcall_xcallResponse
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_xcall_xcallResponse
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºxcall response
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½xcall response
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 {
@@ -425,33 +425,33 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	log_i(LOG_HOZON, "longitude = %lf",gpsDt.longitude);
 	log_i(LOG_HOZON, "altitude = %lf",gpsDt.height);
 	Appdata_Xcall.xcallType = PP_xcall[XcallType].Type;//xcall type:ecall/icall/bcall
-	Appdata_Xcall.engineSt = PrvtProtCfg_engineSt();//Æô¶¯×´Ì¬£»1-Ï¨»ð£»2-Æô¶¯
-	Appdata_Xcall.totalOdoMr = PrvtProtCfg_totalOdoMr();//Àï³ÌÓÐÐ§·¶Î§£º0 - 1000000£¨km£©
+	Appdata_Xcall.engineSt = PrvtProtCfg_engineSt();//ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½1-Ï¨ï¿½ï¿½2-ï¿½ï¿½ï¿½ï¿½
+	Appdata_Xcall.totalOdoMr = PrvtProtCfg_totalOdoMr();//ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½Î§ï¿½ï¿½0 - 1000000ï¿½ï¿½kmï¿½ï¿½
 	if(Appdata_Xcall.totalOdoMr > 1000000)
 	{
 		Appdata_Xcall.totalOdoMr = 1000000;
 	}
 
-	Appdata_Xcall.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps×´Ì¬ 0-ÎÞÐ§£»1-ÓÐÐ§
-	Appdata_Xcall.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gpsÊ±¼ä´Á:ÏµÍ³Ê±¼ä(Í¨¹ýgpsÐ£Ê±)
+	Appdata_Xcall.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps×´Ì¬ 0-ï¿½ï¿½Ð§ï¿½ï¿½1-ï¿½ï¿½Ð§
+	Appdata_Xcall.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gpsÊ±ï¿½ï¿½ï¿½:ÏµÍ³Ê±ï¿½ï¿½(Í¨ï¿½ï¿½gpsÐ£Ê±)
 	if(Appdata_Xcall.gpsPos.gpsSt == 1)
 	{
 		if(gpsDt.is_north)
 		{
-			Appdata_Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000);//Î³¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
+			Appdata_Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000);//Î³ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
 		}
 		else
 		{
-			Appdata_Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//Î³¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
+			Appdata_Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//Î³ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
 		}
 
 		if(gpsDt.is_east)
 		{
-			Appdata_Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000);//¾­¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
+			Appdata_Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000);//ï¿½ï¿½ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
 		}
 		else
 		{
-			Appdata_Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//¾­¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
+			Appdata_Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//ï¿½ï¿½ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
 		}
 		log_i(LOG_HOZON, "PP_appData.latitude = %lf",Appdata_Xcall.gpsPos.latitude);
 		log_i(LOG_HOZON, "PP_appData.longitude = %lf",Appdata_Xcall.gpsPos.longitude);
@@ -462,24 +462,24 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 		Appdata_Xcall.gpsPos.longitude = 0;
 	}
 
-	Appdata_Xcall.gpsPos.altitude = (long)gpsDt.height;//¸ß¶È£¨m£©
+	Appdata_Xcall.gpsPos.altitude = (long)gpsDt.height;//ï¿½ß¶È£ï¿½mï¿½ï¿½
 	if(Appdata_Xcall.gpsPos.altitude > 10000)
 	{
 		Appdata_Xcall.gpsPos.altitude = 10000;
 	}
-	Appdata_Xcall.gpsPos.heading = (long)gpsDt.direction;//³µÍ··½Ïò½Ç¶È£¬0ÎªÕý±±·½Ïò
-	Appdata_Xcall.gpsPos.gpsSpeed = (long)gpsDt.kms*10;//ËÙ¶È x 10£¬µ¥Î»km/h
-	Appdata_Xcall.gpsPos.hdop = (long)gpsDt.hdop*10;//Ë®Æ½¾«¶ÈÒò×Ó x 10
+	Appdata_Xcall.gpsPos.heading = (long)gpsDt.direction;//ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½Ç¶È£ï¿½0Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	Appdata_Xcall.gpsPos.gpsSpeed = (long)gpsDt.kms*10;//ï¿½Ù¶ï¿½ x 10ï¿½ï¿½ï¿½ï¿½Î»km/h
+	Appdata_Xcall.gpsPos.hdop = (long)gpsDt.hdop*10;//Ë®Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ x 10
 	if(Appdata_Xcall.gpsPos.hdop > 1000)
 	{
 		Appdata_Xcall.gpsPos.hdop = 1000;
 	}
-	Appdata_Xcall.srsSt = 1;//°²È«ÆøÄÒ×´Ì¬ 1- Õý³££»2 - µ¯³ö
-	Appdata_Xcall.updataTime = PrvtPro_getTimestamp();//Êý¾ÝÊ±¼ä´Á
-	Appdata_Xcall.battSOCEx = PrvtProtCfg_vehicleSOC();//³µÁ¾µç³ØÊ£ÓàµçÁ¿£º0-10000£¨0%-100%£©
+	Appdata_Xcall.srsSt = 1;//ï¿½ï¿½È«ï¿½ï¿½ï¿½ï¿½×´Ì¬ 1- ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½2 - ï¿½ï¿½ï¿½ï¿½
+	Appdata_Xcall.updataTime = PrvtPro_getTimestamp();//ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½
+	Appdata_Xcall.battSOCEx = PrvtProtCfg_vehicleSOC();//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0-10000ï¿½ï¿½0%-100%ï¿½ï¿½
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_XCALL_RESP,PP_Xcall_Pack.msgdata,&msgdatalen,\
-									   &PP_xcall[XcallType].packResp.DisBody,&Appdata_Xcall))//Êý¾Ý±àÂë´ò°üÊÇ·ñÍê³É
+									   &PP_xcall[XcallType].packResp.DisBody,&Appdata_Xcall))//ï¿½ï¿½ï¿½Ý±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 	{
 		log_e(LOG_HOZON, "encode error\n");
 		return -1;
@@ -492,15 +492,15 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_xcall_send_cb
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_xcall_send_cb
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºremote control status response
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½remote control status response
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void PP_xcall_send_cb(void * para)
 {
@@ -515,15 +515,15 @@ static void PP_xcall_send_cb(void * para)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_xcall_SetXcallReq
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_xcall_SetXcallReq
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£ºÉèÖÃecall ÇëÇó
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ecall ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PP_xcall_SetXcallReq(unsigned char req)
 {

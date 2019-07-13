@@ -264,7 +264,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 {
 	int aid;
 
-	if(PP_NGTP_TYPE != rxPack->Header.opera)
+	if(PP_OPERATETYPE_NGTP != rxPack->Header.opera)
 	{
 		log_e(LOG_HOZON, "unknow package");
 		return;
