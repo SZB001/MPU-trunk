@@ -166,6 +166,10 @@ void PP_rmtCfg_init(void)
 		AppData_rmtCfg.ReadResp.EXTEND.extendConfigValid= 0;
 		AppData_rmtCfg.ReadResp.FICM.ficmConfigValid = 0;
 	}
+
+	PP_rmtCfg.state.avtivecheckflag = 0;
+	PP_rmtCfg.state.iccidValid = 0;
+	PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
 }
 
 /******************************************************
@@ -439,29 +443,45 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		return 0;
 	}
 
+	if(0 == PP_rmtCfg.state.avtivecheckflag)
+	{//上电主动查询配置
+		PP_rmtCfg.state.req  = 1;
+		PP_rmtCfg.state.reqCnt = 0;
+		PP_rmtCfg.state.period = tm_get_time();
+		PP_rmtCfg.state.delaytime = tm_get_time();
+		PP_rmtCfg.state.avtivecheckflag = 1;
+	}
+
 	if(!AppData_rmtCfg.checkReq.iccID[0])
-	{//iccid��Ч
-		(void)PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//��ȡiccid
+	{//get iccid
+		(void)PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));
+	}
+	else
+	{
+		PP_rmtCfg.state.iccidValid = 1;
 	}
 
 	switch(rmtCfg->state.CfgSt)
 	{
 		case PP_RMTCFG_CFG_IDLE:
 		{
-			if((1 == rmtCfg->state.req) && (rmtCfg->state.reqCnt < PP_RETRANSMIT_TIMES))
+			if((1 == PP_rmtCfg.state.iccidValid) || ((tm_get_time() - PP_rmtCfg.state.delaytime) >= 30000))
 			{
-				if((tm_get_time() - rmtCfg->state.period) >= RMTCFG_DELAY_TIME)
+				if((1 == rmtCfg->state.req) && (rmtCfg->state.reqCnt < PP_RETRANSMIT_TIMES))
 				{
-					log_i(LOG_HOZON, "start request remote config\r\n");
-					rmtCfg->state.CfgSt = PP_CHECK_CFG_REQ;
-					rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
-					rmtCfg->state.reqCnt++;
+					if((tm_get_time() - rmtCfg->state.period) >= RMTCFG_DELAY_TIME)
+					{
+						log_i(LOG_HOZON, "start request remote config\r\n");
+						rmtCfg->state.CfgSt = PP_CHECK_CFG_REQ;
+						rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
+						rmtCfg->state.reqCnt++;
+					}
 				}
-			}
-			else
-			{
-				rmtCfg->state.reqCnt = 0;
-				rmtCfg->state.req = 0;
+				else
+				{
+					rmtCfg->state.reqCnt = 0;
+					rmtCfg->state.req = 0;
+				}
 			}
 		}
 		break;

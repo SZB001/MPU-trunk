@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_remoteConfig.h
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_remoteConfig.h
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 
 Data			  Vasion			author
 2019/04/16		   V1.0			    liujian
@@ -9,39 +9,39 @@ Data			  Vasion			author
 #ifndef		_PRVTPROT_REMOTE_CFG_H
 #define		_PRVTPROT_REMOTE_CFG_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
-#define RMTCFG_DELAY_TIME 		5000//
-//#define PP_XCALL_ACK_WAIT 	0x01//Ó¦´ð³É¹¦
-//#define PP_XCALL_ACK_SUCCESS 	0x02//Ó¦´ð³É¹¦
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
+#define RMTCFG_DELAY_TIME 		1500//
+//#define PP_XCALL_ACK_WAIT 	0x01//Ó¦ï¿½ï¿½É¹ï¿½
+//#define PP_XCALL_ACK_SUCCESS 	0x02//Ó¦ï¿½ï¿½É¹ï¿½
 
-/***********ºêº¯Êý***********/
+/***********ï¿½êº¯ï¿½ï¿½***********/
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 
 typedef enum
 {
 	PP_RMTCFG_CFG_IDLE = 0,//
-	PP_CHECK_CFG_REQ,//¼ì²éÔ¶³ÌÅäÖÃ
+	PP_CHECK_CFG_REQ,//ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	PP_CHECK_CFG_RESP,//
 	PP_GET_CFG_REQ,//
 	PP_GET_CFG_RESP,//
 	PP_RMTCFG_CFG_END,//
-} PP_RMTCFG_STATE_MACHINE;//×´Ì¬»ú
+} PP_RMTCFG_STATE_MACHINE;//×´Ì¬ï¿½ï¿½
 
 typedef enum
 {
@@ -49,7 +49,7 @@ typedef enum
 	PP_RMTCFG_CHECK_WAIT_RESP,//
 	PP_RMTCFG_GET_WAIT_RESP,//
 	PP_RMTCFG_END_WAIT_SENDRESP,//end cfg send response
-} PP_RMTCFG_WAIT_STATE;//µÈ´ý×´Ì¬
+} PP_RMTCFG_WAIT_STATE;//ï¿½È´ï¿½×´Ì¬
 
 typedef enum
 {
@@ -70,12 +70,15 @@ typedef struct
 	uint64_t period;
 	uint8_t waitSt;
 	uint64_t waittime;
+	uint8_t iccidValid;
+	uint64_t delaytime;
+	uint8_t  avtivecheckflag;
 
 	/* remote config */
-	uint8_t needUpdata;//ÅäÖÃÊÇ·ñÐèÒª¸üÐÂ
-	uint8_t cfgAccept;//ÅäÖÃÊÇ·ñ½ÓÊÜ
-	uint8_t cfgsuccess;//ÅäÖÃÊÇ·ñ³É¹¦
-}__attribute__((packed))  PrvtProt_rmtCfgSt_t; /*remote config½á¹¹Ìå*/
+	uint8_t needUpdata;//ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½
+	uint8_t cfgAccept;//ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
+	uint8_t cfgsuccess;//ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É¹ï¿½
+}__attribute__((packed))  PrvtProt_rmtCfgSt_t; /*remote configï¿½á¹¹ï¿½ï¿½*/
 
 /***********************************
 			remote config
@@ -86,7 +89,7 @@ typedef struct
 	uint8_t mpuSw[11];
 	uint8_t vehicleVin[18];
 	uint8_t iccID[21];
-	uint8_t btMacAddr[13];//À¶ÑÀmacµØÖ·
+	uint8_t btMacAddr[13];//ï¿½ï¿½ï¿½ï¿½macï¿½ï¿½Ö·
 	uint8_t configSw[6];
 	uint8_t cfgVersion[33];
 	uint8_t mcuSwlen;
@@ -260,11 +263,11 @@ typedef struct
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern void PP_rmtCfg_init(void);
 extern int PP_rmtCfg_mainfunction(void *task);
