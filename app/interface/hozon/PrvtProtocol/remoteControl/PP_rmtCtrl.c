@@ -97,7 +97,7 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 };
 
 static int PP_rmtCtrl_flag = 0;
-#define PP_TXINFORMNODE_NUM 300
+#define PP_TXINFORMNODE_NUM 100
 static PrvtProt_TxInform_t rmtCtrl_TxInform[PP_TXINFORMNODE_NUM];
 /*******************************************************
 description： function declaration
@@ -240,6 +240,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 				PP_startforbid_ClearStatus();
 				PP_sunroofctrl_ClearStatus();
 				PP_ChargeCtrl_ClearStatus();
+				ClearPP_ACCtrl_Request();
    			}
    			else
    			{}

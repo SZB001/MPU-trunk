@@ -600,11 +600,11 @@ CFG_MEMBER_BEGIN()
 CFG_MEMBER("hozon remote ctrl appointment", CFG_DATA_STRING, 32)
 CFG_MEMBER_END()
 CFG_ITEM_END()
-//�յ�ԤԼ
+//�յ�ԤԼ
 CFG_ITEM_BEGIN()
 CFG_ITEM_ID(CFG_ITEM_HOZON_TSP_RMTACAPPOINT)
 CFG_MEMBER_BEGIN()
-CFG_MEMBER("hozon remote ctrl ac appointment", CFG_DATA_STRING, 90)
+CFG_MEMBER("hozon remote ctrl ac appointment", CFG_DATA_STRING, 100)
 CFG_MEMBER_END()
 CFG_ITEM_END()
 

@@ -441,6 +441,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 			}
 
 			//保存记录
+			log_o(LOG_HOZON,"save charge para when power off\n");
 			(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
 			PP_rmtChargeCtrl.state.dataUpdata = 0;
 		}

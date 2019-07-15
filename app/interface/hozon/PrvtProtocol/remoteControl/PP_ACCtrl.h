@@ -20,7 +20,7 @@ typedef struct
 	uint64_t period;
 	uint8_t  waitSt;
 	uint64_t waittime;
-	uint8_t  acSt;//充电状态：1-开启中；0-未开启
+	uint8_t  dataUpdata;
 }__attribute__((packed))  PP_rmtACCtrlSt_t; /*remote control�ṹ��*/
 
 typedef struct
@@ -41,6 +41,7 @@ typedef struct
 	uint8_t  min;
 	uint8_t  period;
 	uint8_t eventId;
+	uint8_t	bookupdataflag;
 }__attribute__((packed))  PP_rmtAC_AppointBook_t; /*结构体*/
 
 typedef struct

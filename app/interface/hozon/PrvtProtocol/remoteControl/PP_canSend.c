@@ -236,8 +236,7 @@ void PP_can_send_cycle(void)
 		PP_can_unpack(ID445_data,can_data);
 		PP_send_cycle_ID445_to_mcu(can_data);
 		lastsendtime = tm_get_time();
-	}
-	
+	}	
 }
 /**************************************
 			唤醒MCU

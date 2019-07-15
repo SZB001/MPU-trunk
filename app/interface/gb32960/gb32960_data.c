@@ -19,14 +19,14 @@
 extern int PP_identificat_rcvdata(uint8_t *dt);
 
 
-#define GB_EXT	1//¶¨Òå¹ú±êÀ©Õ¹ĞÅÏ¢
+#define GB_EXT	1//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½Ï¢
 
 #define GB_MAX_PACK_CELL    800
 #define GB_MAX_PACK_TEMP    800
 #define GB_MAX_FUEL_TEMP    200
 #define GB_MAX_FUEL_INFO    16
 #define GB_MAX_VEHI_INFO    16
-#define GB_MAX_WARN_INFO    (32 + 59)//33-91ÎªÀ©Õ¹±¨¾¯Êı¾İ
+#define GB_MAX_WARN_INFO    (32 + 59)//33-91Îªï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 #define GB_MAX_MOTOR_INFO   8
 #define GB_MAX_ENGIN_INFO   4
 #define GB_MAX_EXTR_INFO    16
@@ -42,7 +42,7 @@ extern int PP_identificat_rcvdata(uint8_t *dt);
 #define GB_EVT_PASSBELTLAMP_ON     	0x05
 #define GB_EVT_LEFTTURNLAMP_ON     	0x06
 #define GB_EVT_RIGHTTURNLAMP_ON    	0x07
-#define GB_EVT_NEARLAMP_ON       	0x08//½ü¹âµÆ
+#define GB_EVT_NEARLAMP_ON       	0x08//ï¿½ï¿½ï¿½ï¿½ï¿½
 #define GB_EVT_HIGHBEAMLAMP_ON      0x09
 #define GB_EVT_LEFTDRVDOOR_OPEN     0x0a
 #define GB_EVT_RIGHTDRVDOOR_OPEN    0x0b
@@ -52,28 +52,28 @@ extern int PP_identificat_rcvdata(uint8_t *dt);
 #define GB_MAX_EVENT_INFO   (GB_EVT_TAILDOOR_OPEN + 1)
 
 /* vehi state extend information index */
-#define GB_VS_DRIDOORLOCKST       	0x00//¼İÊ»²àÃÅËø×´Ì¬
+#define GB_VS_DRIDOORLOCKST       	0x00//ï¿½ï¿½Ê»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
 #define GB_VS_PASSDOORLOCKST      	0x01
 #define GB_VS_LRDOORLOCKST       	0x02
 #define GB_VS_RRDOORLOCKST         	0x03
-#define GB_VS_REARDDOORLOCKST     	0x04//ºó±¸ÏäÃÅËø×´Ì¬
+#define GB_VS_REARDDOORLOCKST     	0x04//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
 #define GB_VS_DRIWINDOWST     		0x05
 #define GB_VS_PASSWINDOWST     		0x06
 #define GB_VS_LRWINDOWST    		0x07
 #define GB_VS_RRWINDOWST       		0x08//
-#define GB_VS_UPWINDOWST      		0x09//Ìì´°×´Ì¬
+#define GB_VS_UPWINDOWST      		0x09//ï¿½ì´°×´Ì¬
 #define GB_VS_DRIDOORST     		0x0a
 #define GB_VS_PASSDOORST		    0x0b
 #define GB_VS_LRDOORST		      	0x0c
 #define GB_VS_RRDOORST		      	0x0d
-#define GB_VS_BACKDOORST		    0x0e//ºó±¸ÏäÃÅ×´Ì¬
+#define GB_VS_BACKDOORST		    0x0e//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
 #define GB_VS_ACST		    		0x0f
 #define GB_VS_ACTEMP		    	0x10
 #define GB_VS_ACMODE		    	0x11
 #define GB_VS_AIRVOLUME		    	0x12
 #define GB_VS_INTEMP		    	0x13
 #define GB_VS_OUTTEMP		   		0x14
-#define GB_VS_HLAMPST		    	0x15//Ë«ÉÁ×´Ì¬
+#define GB_VS_HLAMPST		    	0x15//Ë«ï¿½ï¿½×´Ì¬
 #define GB_VS_SLAMPST		    	0x16
 #define GB_VS_NEARLAMPST		    0x17
 #define GB_VS_HEADLIGHTST		    0x18
@@ -90,7 +90,7 @@ extern int PP_identificat_rcvdata(uint8_t *dt);
 #define GB_VS_LRTYRETEMP		    0x23
 #define GB_VS_LRTYREPRESSURE		0x24
 #define GB_VS_REMAINCHRGTIME		0x25
-#define GB_VS_FIXTIMECHARGEST		0x26//¶¨Ê±³äµç×´Ì¬
+#define GB_VS_FIXTIMECHARGEST		0x26//ï¿½ï¿½Ê±ï¿½ï¿½ï¿½×´Ì¬
 #define GB_VS_FIXSTARTCHRG_HOUR		0x27
 #define GB_VS_FIXSTARTCHRG_MIN		0x28
 #define GB_VS_FSCHARGEST		    0x29
@@ -113,8 +113,8 @@ extern int PP_identificat_rcvdata(uint8_t *dt);
 #define GB_VS_STEERWHEELANGLE		0x3A
 #define GB_VS_TRIP					0x3B
 #define GB_VS_SUBTOTALTRVLTIME		0x3C
-#define GB_VS_TIPC					0x3D//Ë²Ê±µçºÄ
-#define GB_VS_TAPC					0x3E//Æ½¾ùµçºÄ
+#define GB_VS_TIPC					0x3D//Ë²Ê±ï¿½ï¿½ï¿½
+#define GB_VS_TAPC					0x3E//Æ½ï¿½ï¿½ï¿½ï¿½ï¿½
 #define GB_VS_SUBPC					0x3F
 #define GB_VS_ESCACTIVEST			0x40
 #define GB_VS_ESCDISABLEST			0x41
@@ -142,7 +142,7 @@ extern int PP_identificat_rcvdata(uint8_t *dt);
 #define GB_CMPT_BATCIRCWTRPUMWRKST      0x08//
 #define GB_CMPT_CRASHOUTPUTST       	0x09//
 #define GB_CMPT_WORKMODE       			0x0A//
-#define GB_CMPT_CTRLTORQUE       		0x0B//µç»úÊµ¼ÊÅ¤¾Ø
+#define GB_CMPT_CTRLTORQUE       		0x0B//ï¿½ï¿½ï¿½Êµï¿½ï¿½Å¤ï¿½ï¿½
 #define GB_CMPT_MTRSENSEROTA       		0x0C//
 #define GB_CMPT_MAXAVAILTORQUE       	0x0D//
 #define GB_CMPT_POSBATTCONTST       	0x0E//
@@ -162,7 +162,7 @@ extern int PP_identificat_rcvdata(uint8_t *dt);
 #define GB_CMPT_ENGFASTCHGPORTTEMP      0x1C//
 #define GB_CMPT_POSSLOWCHGPORTTEMP      0x1D//
 #define GB_CMPT_NEGSLOWCHGPORTTEMP      0x1E//
-#define GB_CMPT_CHARGEST     			0x1F//¿ì³ä»½ĞÑ×´Ì¬
+#define GB_CMPT_CHARGEST     			0x1F//ï¿½ï¿½ä»½ï¿½ï¿½×´Ì¬
 #define GB_CMPT_PWRBATTHEATST       	0x20//
 #define GB_CMPT_BATTVOLTAGE       		0x21//
 #define GB_CMPT_HDSAHTOTALCPSUM      	0x22//
@@ -211,9 +211,9 @@ extern int PP_identificat_rcvdata(uint8_t *dt);
 #endif
 
 /* alarm fault information index */
-//¿É³äµç´¢ÄÜ×°ÖÃ¹ÊÕÏ
+//ï¿½É³ï¿½ç´¢ï¿½ï¿½×°ï¿½Ã¹ï¿½ï¿½ï¿½
 #define GB_AF_BATTRISEFAST       		0x00//
-// ÆäËû¹ÊÕÏ
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 #define GB_AF_FLTYRESENSORLOST       	0x01//
 #define GB_AF_FLTYRELEAK       			0x02//
 #define GB_AF_FLTYRELOWPRESSUREWARN     0x03//
@@ -326,12 +326,12 @@ extern int PP_identificat_rcvdata(uint8_t *dt);
 #define GB_DATA_FUELCELL    0x0A
 #define GB_DATA_VIRTUAL     0x0B
 #if GB_EXT
-#define GB_DATA_EVENT     	0x0C//ÊÂ¼şÊı¾İ
-#define GB_DATA_CONPST     	0x0E//Áã²¿¼ş×´Ì¬Êı¾İ
-#define GB_DATA_VSEXT     	0x0F//³µÁ¾×´Ì¬À©Õ¹Êı¾İ
+#define GB_DATA_EVENT     	0x0C//ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½
+#define GB_DATA_CONPST     	0x0E//ï¿½ã²¿ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½
+#define GB_DATA_VSEXT     	0x0F//ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ï¿½
 
 #endif
-#define GB_DATA_ALARMFAULT  0x05//±¨¾¯-¹ÊÕÏ´úÂë
+#define GB_DATA_ALARMFAULT  0x05//ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½
 
 /* report data type */
 #define GB_RPTTYPE_REALTM   0x02
@@ -414,7 +414,7 @@ typedef struct
 	uint8_t newst[GB_MAX_VSE_INFO];
 }gb_VehiStExt_t;
 
-/* Áã²¿¼ş state information structure */
+/* ï¿½ã²¿ï¿½ï¿½ state information structure */
 typedef struct
 {
     int info[GB_MAX_CMPT_INFO];
@@ -429,7 +429,7 @@ typedef struct
 
 static gb_alarmCode_t	gb_alarmCode[GB_MAX_WARN_INFO] =
 {
-	{0x0000},//0~31,¶ÔÓ¦¹ú±ê,´Ë´¦È«0--²»Ê¹ÓÃ
+	{0x0000},//0~31,ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½,ï¿½Ë´ï¿½È«0--ï¿½ï¿½Ê¹ï¿½ï¿½
 	{0x0000},
 	{0x0000},
 	{0x0000},
@@ -482,8 +482,8 @@ static gb_alarmCode_t	gb_alarmCode[GB_MAX_WARN_INFO] =
 	{0x0013},
 	{0x0014},
 	{0x0015},
-	{0x0016},//³µÔØ³äµçÆ÷Ç·Ñ¹¸æ¾¯
-	{0x0016},//³µÔØ³äµçÆ÷Ç·Ñ¹¸æ¾¯
+	{0x0016},//ï¿½ï¿½ï¿½Ø³ï¿½ï¿½ï¿½ï¿½Ç·Ñ¹ï¿½æ¾¯
+	{0x0016},//ï¿½ï¿½ï¿½Ø³ï¿½ï¿½ï¿½ï¿½Ç·Ñ¹ï¿½æ¾¯
 	{0x0017},
 	{0x0018},
 	{0x0019},
@@ -499,7 +499,7 @@ static gb_alarmCode_t	gb_alarmCode[GB_MAX_WARN_INFO] =
 	{0x0023},
 	{0x0024},
 	{0x0025},
-	{0x0026},//µç»úÒì³£¸æ¾¯
+	{0x0026},//ï¿½ï¿½ï¿½ï¿½ì³£ï¿½æ¾¯
 	{0x0027},
 	{0x0028},
 	{0x0029},
@@ -519,12 +519,12 @@ static gb_alarmCode_t	gb_alarmCode[GB_MAX_WARN_INFO] =
 	{0x0037},
 	{0x0038},
 	{0x0039},
-	{0x0026}//µç»úÒì³£¸æ¾¯
+	{0x0026}//ï¿½ï¿½ï¿½ï¿½ì³£ï¿½æ¾¯
 };
 
 #endif
 
-/* ±¨¾¯-¹ÊÕÏ information structure */
+/* ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ï¿½ information structure */
 typedef struct
 {
     int info[GB_MAX_AF_INFO];
@@ -628,10 +628,10 @@ static uint16_t gb_datintv;
 #define GROUP_SIZE(inf)     RDUP_DIV((inf)->batt.cell_cnt, 200)
 
 
-static uint8_t gb_engineSt = 2;//Ï¨»ğ
-static long    gb_totalOdoMr = 0;//×Ü¼ÆÀï³Ì
-static long    gb_vehicleSOC = 0;//µçÁ¿
-static long    gb_vehicleSpeed = 0;//ËÙ¶È
+static uint8_t gb_engineSt = 2;//Ï¨ï¿½ï¿½
+static long    gb_totalOdoMr = 0;//ï¿½Ü¼ï¿½ï¿½ï¿½ï¿½
+static long    gb_vehicleSOC = 0;//ï¿½ï¿½ï¿½ï¿½
+static long    gb_vehicleSpeed = 0;//ï¿½Ù¶ï¿½
 static uint8_t gb_chargeSt = 0;//
 
 #if GB_EXT
@@ -818,24 +818,36 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
         switch (sft)
         {
             case '1'...'6':
+			{
                 tmp = sft - '0';
-                break;
-
+			}
+            break;
             case 'R':
+            {
                 tmp = 13;
-                break;
-
+            }
+            break;
+            case 'S':
             case 'D':
+            {
                 tmp = 14;
-                break;
-
+            }
+            break;
             case 'P':
+            {
                 tmp = 15;
-                break;
-
+            }
+            break;
+            case 'N':
+            {
+            	tmp = 0;
+            }
+            break;
             default:
+            {
                 tmp = 0;
-                break;
+            }
+            break;
         }
         buf[len++] = tmp;
     }
@@ -1282,7 +1294,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     battFaultNum_ptr =  &buf[len++];
     *battFaultNum_ptr = 0;
 
-    //µç³ØÉıÎÂ¹ı¿ì
+    //ç”µæ± æ¸©å‡è¿‡å¿«æ•…éšœ
     for (i = 0; i < 3; i++)
     {
 		if (gbinf->warn[i][0x36] &&
@@ -1307,7 +1319,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     uint8_t *otherFaultNum_ptr;
     otherFaultNum_ptr =  &buf[len++];
     *otherFaultNum_ptr = 0;
-    for(i = 0; i < 4; i++)//¶ÔÓ¦4¸öÂÖÌ¥
+    for(i = 0; i < 4; i++)//ï¿½ï¿½Ó¦4ï¿½ï¿½ï¿½ï¿½Ì¥
     {
     	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRESENSORLOST + 6*i])
 		{
@@ -1487,24 +1499,24 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     int tmp = 0;
 
     /* data type : location data */
-    buf[len++] = 0x91;//ĞÅÏ¢ÀàĞÍ±êÖ¾
+    buf[len++] = 0x91;//ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½Í±ï¿½Ö¾
 
-    /* ³µÃÅËø state */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ state */
     if(gbinf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])->value)
         {
-            buf[len++] = 0;//¼İÊ»²àÃÅËøÉÏËø
-            buf[len++] = 0;//¸±¼İÊ»²àÃÅËøÉÏËø
-            buf[len++] = 0;//×óºóÃÅËøÉÏËø
-            buf[len++] = 0;//ÓÒºóÃÅËøÉÏËø
+            buf[len++] = 0;//ï¿½ï¿½Ê»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            buf[len++] = 0;//ï¿½ï¿½ï¿½ï¿½Ê»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            buf[len++] = 0;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+            buf[len++] = 0;//ï¿½Òºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         }
         else
         {
-        	 buf[len++] = 1;//½âËø
-        	 buf[len++] = 1;//½âËø
-        	 buf[len++] = 1;//½âËø
-        	 buf[len++] = 1;//½âËø
+        	 buf[len++] = 1;//ï¿½ï¿½ï¿½ï¿½
+        	 buf[len++] = 1;//ï¿½ï¿½ï¿½ï¿½
+        	 buf[len++] = 1;//ï¿½ï¿½ï¿½ï¿½
+        	 buf[len++] = 1;//ï¿½ï¿½ï¿½ï¿½
         }
     }
     else
@@ -1515,15 +1527,15 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//ºó±¸ÏäÃÅËø
+    if(gbinf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])->value)
         {
-            buf[len++] = 0;//ÉÏËø
+            buf[len++] = 0;//ï¿½ï¿½ï¿½ï¿½
         }
         else
         {
-        	 buf[len++] = 1;//½âËø
+        	 buf[len++] = 1;//ï¿½ï¿½ï¿½ï¿½
         }
     }
     else
@@ -1531,24 +1543,24 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    /* ³µ´° state */
-    buf[len++] = 0xff;//¼İÊ»²à´°×´Ì¬
-    buf[len++] = 0xff;//¸±¼İÊ»²à´°×´Ì¬
-    buf[len++] = 0xff;//×óºó´°×´Ì¬
-    buf[len++] = 0xff;//ÓÒºó´°×´Ì¬
-    buf[len++] = 0xff;//Ìì´°×´Ì¬
+    /* ï¿½ï¿½ï¿½ï¿½ state */
+    buf[len++] = 0xff;//ï¿½ï¿½Ê»ï¿½à´°×´Ì¬
+    buf[len++] = 0xff;//ï¿½ï¿½ï¿½ï¿½Ê»ï¿½à´°×´Ì¬
+    buf[len++] = 0xff;//ï¿½ï¿½ï¿½×´Ì¬
+    buf[len++] = 0xff;//ï¿½Òºï¿½×´Ì¬
+    buf[len++] = 0xff;//ï¿½ì´°×´Ì¬
 
-    /* ³µÃÅ state */
+    /* ï¿½ï¿½ï¿½ï¿½ state */
     for(i = 0; i < 4; i++)
     {
         if(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN+i])
         {
-            if(2 == dbc_get_signal_from_id(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN+i])->value)//¿ª
+            if(2 == dbc_get_signal_from_id(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN+i])->value)//ï¿½ï¿½
             {
                 buf[len++] = 1;
                 gbinf->gb_VSExt.oldst[GB_VS_DRIDOORST+i]  = 1;
             }
-            else if(0 == dbc_get_signal_from_id(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN])->value)//¹Ø
+            else if(0 == dbc_get_signal_from_id(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN])->value)//ï¿½ï¿½
             {
             	 buf[len++] = 0;
             	 gbinf->gb_VSExt.oldst[GB_VS_DRIDOORST+i]  = 0;
@@ -1565,11 +1577,11 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         }
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_BACKDOORST])//ºó±¸ÏäÃÅ×´Ì¬
+    if(gbinf->gb_VSExt.info[GB_VS_BACKDOORST])//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_BACKDOORST])->value)
         {
-            buf[len++] = 1;//¿ªÆô
+            buf[len++] = 1;//ï¿½ï¿½ï¿½ï¿½
         }
         else
         {
@@ -1581,12 +1593,12 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    /* ¿Õµ÷ĞÅÏ¢ */
+    /* ï¿½Õµï¿½ï¿½ï¿½Ï¢ */
     if(gbinf->gb_VSExt.info[GB_VS_ACST])//
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACST])->value)
         {
-            buf[len++] = 1;//¿ªÆô
+            buf[len++] = 1;//ï¿½ï¿½ï¿½ï¿½
         }
         else
         {
@@ -1607,7 +1619,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_ACMODE])//¿Õµ÷Ä£Ê½
+    if(gbinf->gb_VSExt.info[GB_VS_ACMODE])//ï¿½Õµï¿½Ä£Ê½
     {
     	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACMODE])->value;
     	switch(tmp)
@@ -1616,13 +1628,13 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 			case 5:
 			case 7:
 			{
-				 buf[len++] = 1;//ÖÆÈÈ
+				 buf[len++] = 1;//ï¿½ï¿½ï¿½ï¿½
 			}
 			break;
 			case 2:
 			case 6:
 			{
-				 buf[len++] = 2;//ÖÆÀä
+				 buf[len++] = 2;//ï¿½ï¿½ï¿½ï¿½
 			}
 			break;
 			default:
@@ -1664,8 +1676,8 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    /* ³µµÆ×´Ì¬ */
-    if(gbinf->gb_VSExt.info[GB_VS_HLAMPST])//Ë«ÉÁ×´Ì¬
+    /* ï¿½ï¿½ï¿½ï¿½×´Ì¬ */
+    if(gbinf->gb_VSExt.info[GB_VS_HLAMPST])//Ë«ï¿½ï¿½×´Ì¬
 	{
 		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_HLAMPST])->value;
 	}
@@ -1674,7 +1686,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		buf[len++] = 0xff;
 	}
 
-    if(gbinf->event.info[GB_EVT_POSLAMP_ON])//Ğ¡µÆ
+    if(gbinf->event.info[GB_EVT_POSLAMP_ON])//Ğ¡ï¿½ï¿½
 	{
 		buf[len++] = dbc_get_signal_from_id(gbinf->event.info[GB_EVT_POSLAMP_ON])->value;
 	}
@@ -1732,7 +1744,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		buf[len++] = 0xff;
 	}
 
-    /* ³µÌ¥ĞÅÏ¢ */
+    /* ï¿½ï¿½Ì¥ï¿½ï¿½Ï¢ */
     for(i=0;i<4;i++)
     {
         if(gbinf->gb_VSExt.info[GB_VS_RFTYRETEMP+2*i])//
@@ -1756,7 +1768,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     	}
     }
 
-    /* ³äµçĞÅÏ¢ */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ */
     if(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])//
 	{
     	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])->value;
@@ -1769,9 +1781,9 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		buf[len++] = 0xff;
 	}
 
-    buf[len++] = 0xff;//¶¨Ê±³äµç×´Ì¬
-    buf[len++] = 0xff;//¶¨Ê±¿ªÊ¼³äµçÊ±¼äĞ¡Ê±
-    buf[len++] = 0xff;//¶¨Ê±¿ªÊ¼³äµç Ê±¼ä·ÖÖÓ
+    buf[len++] = 0xff;//ï¿½ï¿½Ê±ï¿½ï¿½ï¿½×´Ì¬
+    buf[len++] = 0xff;//ï¿½ï¿½Ê±ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ğ¡Ê±
+    buf[len++] = 0xff;//ï¿½ï¿½Ê±ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ Ê±ï¿½ï¿½ï¿½ï¿½ï¿½
 	if(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])//
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
@@ -1791,11 +1803,11 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-    /* »ù±¾×´Ì¬ */
-    buf[len++] = 0xff;//·äÎÑÍøÂç×´Ì¬
-    buf[len++] = 0xff;//·äÎÑÍøÂçĞÅºÅÇ¿¶È
+    /* ï¿½ï¿½ï¿½ï¿½×´Ì¬ */
+    buf[len++] = 0xff;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
+    buf[len++] = 0xff;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Åºï¿½Ç¿ï¿½ï¿½
     buf[len++] = 0xff;//canÍ¨Ñ¶×´Ì¬
-    buf[len++] = 0xff;//12V Ğîµç³ØµçÑ¹
+    buf[len++] = 0xff;//12V ï¿½ï¿½ï¿½Øµï¿½Ñ¹
     if(gbinf->vehi.info[GB_VINF_SOC])
     {
     	tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value;
@@ -1808,7 +1820,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     	 buf[len++] = 0xff;
     	 buf[len++] = 0xff;
     }
-    if(gbinf->gb_VSExt.info[GB_VS_ENDURANCEMILE])//Ğøº½Àï³Ì
+    if(gbinf->gb_VSExt.info[GB_VS_ENDURANCEMILE])//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     {
     	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ENDURANCEMILE])->value * 10;
     	buf[len++] = tmp >> 8;
@@ -1829,7 +1841,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     	 buf[len++] = 0xff;
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_PARKST])//×¤³µ×´Ì¬
+    if(gbinf->gb_VSExt.info[GB_VS_PARKST])//×¤ï¿½ï¿½×´Ì¬
     {
     	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_PARKST])->value;
     }
@@ -1837,7 +1849,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     {
     	 buf[len++] = 0xff;
     }
-    if (gbinf->vehi.info[GB_VINF_STATE])//Æô¶¯×´Ì¬
+    if (gbinf->vehi.info[GB_VINF_STATE])//ï¿½ï¿½ï¿½ï¿½×´Ì¬
     {
         if(dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_STATE])->value)
         {
@@ -1853,10 +1865,10 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    /* ÔË¶¯×´Ì¬ */
+    /* ï¿½Ë¶ï¿½×´Ì¬ */
     for(i = 0;i<2;i++)
     {
-        if(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])//¼ÓËÙ¶Èx,y
+        if(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])//ï¿½ï¿½ï¿½Ù¶ï¿½x,y
         {
         	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])->value + 1023) * 100;
         	buf[len++] = tmp >> 8;
@@ -1868,7 +1880,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         	 buf[len++] = 0xff;
         }
     }
-    if(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])//¼ÓËÙ¶Èz
+    if(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])//ï¿½ï¿½ï¿½Ù¶ï¿½z
     {
     	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])->value + 4095) * 100;
     	buf[len++] = tmp >> 8;
@@ -1882,7 +1894,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
     for(i = 0;i<4;i++)
     {
-		if(gbinf->gb_VSExt.info[GB_VS_FLTYRERSPEED +i])//³µÂÖ×ªËÙ
+		if(gbinf->gb_VSExt.info[GB_VS_FLTYRERSPEED +i])//ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
 		{
 			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FLTYRERSPEED +i])->value * 10;
 			buf[len++] = tmp >> 8;
@@ -1907,7 +1919,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_VSExt.info[GB_VS_TRIP])//Ğ¡¼ÆÀï³Ì
+	if(gbinf->gb_VSExt.info[GB_VS_TRIP])//Ğ¡ï¿½ï¿½ï¿½ï¿½ï¿½
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TRIP])->value * 10;
 		buf[len++] = tmp >> 8;
@@ -1919,7 +1931,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_VSExt.info[GB_VS_SUBTOTALTRVLTIME])//Ğ¡¼ÆĞĞÊ»Ê±¼ä
+	if(gbinf->gb_VSExt.info[GB_VS_SUBTOTALTRVLTIME])//Ğ¡ï¿½ï¿½ï¿½ï¿½Ê»Ê±ï¿½ï¿½
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_SUBTOTALTRVLTIME])->value;
 		buf[len++] = tmp >> 8;
@@ -1933,7 +1945,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
     for(i = 0;i<3;i++)
     {
-		if(gbinf->gb_VSExt.info[GB_VS_TIPC+i])//Ë²Ê±/Æ½¾ù/Ğ¡¼ÆµçºÄ
+		if(gbinf->gb_VSExt.info[GB_VS_TIPC+i])//Ë²Ê±/Æ½ï¿½ï¿½/Ğ¡ï¿½Æµï¿½ï¿½
 		{
 			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TIPC+i])->value * 10;
 			buf[len++] = tmp >> 8;
@@ -1946,7 +1958,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		}
     }
 
-    /* À©Õ¹×´Ì¬ĞÅÏ¢ */
+    /* ï¿½ï¿½Õ¹×´Ì¬ï¿½ï¿½Ï¢ */
 	if(gbinf->gb_VSExt.info[GB_VS_ESCACTIVEST])//
 	{
 		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ESCACTIVEST])->value;
@@ -1998,7 +2010,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
 	for(i = 0;i<2;i++)
 	{
-		if(gbinf->gb_VSExt.info[GB_VS_MAINDRIBELTST+i])//Ö÷/¸±¼İÊ»°²È«´ø×´Ì¬
+		if(gbinf->gb_VSExt.info[GB_VS_MAINDRIBELTST+i])//ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½Ê»ï¿½ï¿½È«ï¿½ï¿½×´Ì¬
 		{
 			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_MAINDRIBELTST+i])->value;
 			if(tmp == 0)
@@ -2028,17 +2040,17 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 	{
 		 buf[len++] = 0xff;
 	}
-	buf[len++] = 0xff;//Ô¤Áô1
-	buf[len++] = 0xff;//Ô¤Áô2
-	buf[len++] = 0xff;//Ô¤Áô3
+	buf[len++] = 0xff;//Ô¤ï¿½ï¿½1
+	buf[len++] = 0xff;//Ô¤ï¿½ï¿½2
+	buf[len++] = 0xff;//Ô¤ï¿½ï¿½3
 	buf[len++] = 0xff;
-	buf[len++] = 0xff;//Ô¤Áô4
+	buf[len++] = 0xff;//Ô¤ï¿½ï¿½4
 	buf[len++] = 0xff;
 
     return len;
 }
 
-/*³µÁ¾Î»ÖÃÀ©Õ¹Êı¾İ*/
+/*ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ï¿½*/
 static uint32_t gb_data_save_VehiPosExt(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0;
@@ -2048,21 +2060,21 @@ static uint32_t gb_data_save_VehiPosExt(gb_info_t *gbinf, uint8_t *buf)
 	gps_get_snap(&gps_snap);
 
     /* data type : location data */
-    buf[len++] = 0x92;//ĞÅÏ¢ÀàĞÍ±êÖ¾
+    buf[len++] = 0x92;//ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½Í±ï¿½Ö¾
 
-    tmp = gps_snap.kms * 10;//³µÔØÖÕ¶ËµÄËÙ¶È
+    tmp = gps_snap.kms * 10;//ï¿½ï¿½ï¿½ï¿½ï¿½Õ¶Ëµï¿½ï¿½Ù¶ï¿½
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    tmp =gps_snap.hdop * 10;//¶¨Î»¾«¶È
+    tmp =gps_snap.hdop * 10;//ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    tmp = gps_snap.direction;//·½Ïò
+    tmp = gps_snap.direction;//ï¿½ï¿½ï¿½ï¿½
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    tmp =  gps_snap.msl * 10;//¸ß¶È
+    tmp =  gps_snap.msl * 10;//ï¿½ß¶ï¿½
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
@@ -2070,7 +2082,7 @@ static uint32_t gb_data_save_VehiPosExt(gb_info_t *gbinf, uint8_t *buf)
 }
 
 
-/*Áã²¿¼ş×´Ì¬Êı¾İ*/
+/*ï¿½ã²¿ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½*/
 static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0;
@@ -2085,10 +2097,10 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
     uint8_t xinf_tempvalidflg = 1;
 
     /* data type : location data */
-    buf[len++] = 0x93;//ĞÅÏ¢ÀàĞÍ±êÖ¾
+    buf[len++] = 0x93;//ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½Í±ï¿½Ö¾
 
-    /* Õû³µ¿ØÖÆÆ÷ */
-	if(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETTORQUE])//µ±Ç°µç»úÄ¿±êÅ¤¾Ø
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	if(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETTORQUE])//ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½Å¤ï¿½ï¿½
 	{
 		tmp = (dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETTORQUE])->value + 1024) * 20;
 		buf[len++] = tmp >> 8;
@@ -2112,7 +2124,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_ConpSt.info[GB_CMPT_SYSST])//ÉÏÏÂµç×´Ì¬
+	if(gbinf->gb_ConpSt.info[GB_CMPT_SYSST])//ï¿½ï¿½ï¿½Âµï¿½×´Ì¬
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_SYSST])->value;
 		if((tmp>=0)&&(tmp<=5))
@@ -2129,7 +2141,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_ConpSt.info[GB_CMPT_PWRUPST])//¸ßÑ¹ÉÏµç×´Ì¬
+	if(gbinf->gb_ConpSt.info[GB_CMPT_PWRUPST])//ï¿½ï¿½Ñ¹ï¿½Ïµï¿½×´Ì¬
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PWRUPST])->value;
 		if((tmp>=0)&&(tmp<=5))
@@ -2146,7 +2158,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_ConpSt.info[GB_CMPT_PWRDWNST])//¸ßÑ¹ÏÂµç×´Ì¬
+	if(gbinf->gb_ConpSt.info[GB_CMPT_PWRDWNST])//ï¿½ï¿½Ñ¹ï¿½Âµï¿½×´Ì¬
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PWRDWNST])->value;
 		if((tmp>=0)&&(tmp<=6))
@@ -2232,7 +2244,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-    /* µç»ú¿ØÖÆÆ÷ */
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 	if(gbinf->gb_ConpSt.info[GB_CMPT_WORKMODE])//
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_WORKMODE])->value;
@@ -2250,7 +2262,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_ConpSt.info[GB_CMPT_CTRLTORQUE])//µç»úÊµ¼ÊÅ¤¾Ø
+	if(gbinf->gb_ConpSt.info[GB_CMPT_CTRLTORQUE])//ï¿½ï¿½ï¿½Êµï¿½ï¿½Å¤ï¿½ï¿½
 	{
 		tmp = (dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CTRLTORQUE])->value + 1024) * 20;
 		buf[len++] = tmp >> 8;
@@ -2262,7 +2274,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_ConpSt.info[GB_CMPT_WORKMODE])//Çı¶¯µ±Ç°Ğı×ª·½Ïò
+	if(gbinf->gb_ConpSt.info[GB_CMPT_WORKMODE])//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_WORKMODE])->value;
 		if((tmp>=0)&&(tmp<=7))
@@ -2291,8 +2303,8 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-    /* µç³Ø¹ÜÀíÏµÍ³ */
-	for(i=0;i<4;i++)//Õı¡¢¸º¡¢Ô¤³äµç£¬¿ì³ä¼ÌµçÆ÷±ÕºÏ×´Ì¬
+    /* ï¿½ï¿½Ø¹ï¿½ï¿½ï¿½ÏµÍ³ */
+	for(i=0;i<4;i++)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¤ï¿½ï¿½ç£¬ï¿½ï¿½ï¿½Ìµï¿½ï¿½ï¿½ï¿½Õºï¿½×´Ì¬
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_POSBATTCONTST+i])//
 		{
@@ -2340,7 +2352,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 xinf_volvalidflg = 0;
 	}
 
-	if(1 == xinf_volvalidflg)//µ¥ÌåÑ¹²î
+	if(1 == xinf_volvalidflg)//ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½
 	{
 		tmp = gb_xinf_maxv - gb_xinf_minv;
 		buf[len++] = tmp >> 8;
@@ -2376,7 +2388,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 xinf_tempvalidflg = 0;
 	}
 
-	if(1 == xinf_tempvalidflg)//µ¥ÌåÎÂ²î
+	if(1 == xinf_tempvalidflg)//ï¿½ï¿½ï¿½ï¿½ï¿½Â²ï¿½
 	{
 		buf[len++] = gb_xinf_maxt - gb_xinf_mint;
 	}
@@ -2385,7 +2397,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	for(i=0;i<3;i++)//¿ì³äCC/CP¡¢Âı³äCCÁ¬½Ó×´Ì¬
+	for(i=0;i<3;i++)//ï¿½ï¿½ï¿½CC/CPï¿½ï¿½ï¿½ï¿½ï¿½ï¿½CCï¿½ï¿½ï¿½ï¿½×´Ì¬
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGECCSIG+i])//
 		{
@@ -2405,7 +2417,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		}
 	}
 
-	for(i=0;i<4;i++)//¿ì³ä¡¢Âı³ä¿ÚÎÂ¶È
+	for(i=0;i<4;i++)//ï¿½ï¿½ä¡¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¶ï¿½
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_POSFASTCHGPORTTEMP+i])//
 		{
@@ -2466,7 +2478,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	   buf[len++] = 0xff;
    }
 
-	for(i=0;i<2;i++)//¶¯Á¦µç³Ø×Ü¡¢¿ÉÓÃÈİÁ¿
+	for(i=0;i<2;i++)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_HDSAHTOTALCPSUM+i])//
 		{
@@ -2497,7 +2509,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_ConpSt.info[GB_CMPT_REQOUTPUTMODE])//¶¯Á¦µç³Ø³äµçÇëÇó
+	if(gbinf->gb_ConpSt.info[GB_CMPT_REQOUTPUTMODE])//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_REQOUTPUTMODE])->value;
 		if((tmp>=0)&&(tmp<=3))
@@ -2538,7 +2550,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	/* ³µÔØ³äµç»ú */
+	/* ï¿½ï¿½ï¿½Ø³ï¿½ï¿½ï¿½ */
 	if(gbinf->vehi.info[GB_VINF_CHARGE])//
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_VINF_CHARGE])->value;
@@ -2556,7 +2568,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if (gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])//³äµç»ú×î´óÊä³ö¹¦ÂÊ
+	if (gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])->value * 200;
 		buf[len++] = tmp >> 8;
@@ -2568,7 +2580,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	for(i=0;i<4;i++)//³äµçÊäÈë¡¢Êä³öµçÑ¹µçÁ÷
+	for(i=0;i<4;i++)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë¡¢ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEOUTVOLT])
 		{
@@ -2617,7 +2629,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	/* ¿Õµ÷¿ØÖÆÆ÷CLM */
+	/* ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½CLM */
 	if(gbinf->gb_VSExt.info[GB_VS_ACST])//
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACST])->value;
@@ -2652,7 +2664,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	for(i=0;i<3;i++)//´µÃæ£¬´µ½Å£¬´µ´°Ä£Ê½
+	for(i=0;i<3;i++)//ï¿½ï¿½ï¿½æ£¬ï¿½ï¿½ï¿½Å£ï¿½ï¿½ï¿½ï¿½ï¿½Ä£Ê½
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_VENTMODE+i])//
 		{
@@ -2672,7 +2684,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		}
 	}
 
-	for(i=0;i<2;i++)//Ö÷¸±¼İÉèÖÃÎÂ¶È
+	for(i=0;i<2;i++)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¶ï¿½
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_LHTEMP+i])//
 		{
@@ -2771,7 +2783,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	/* Ñ¹Ëõ»úEAC */
+	/* Ñ¹ï¿½ï¿½ï¿½ï¿½EAC */
 	if(gbinf->gb_ConpSt.info[GB_CMPT_EACBASEST])//
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_EACBASEST])->value;
@@ -2789,7 +2801,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	for(i=0;i<2;i++)//Ñ¹Ëõ»úÄ¿±ê¡¢Êµ¼Ê×ªËÙ
+	for(i=0;i<2;i++)//Ñ¹ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ê¡¢Êµï¿½ï¿½×ªï¿½ï¿½
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_EACSPEEDSET+i])
 		{
@@ -2803,7 +2815,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	}
 
 	if(gbinf->gb_ConpSt.info[GB_CMPT_EACHIGHVOLT])
-	{//EAC¸ßÑ¹¹©µçµçÑ¹
+	{//EACï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¹
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_EACHIGHVOLT])->value;
 		 buf[len++] = tmp >> 8;
 		 buf[len++] = tmp;
@@ -2827,7 +2839,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	for(i=0;i<2;i++)//ÀäÈ´Òº½ø¡¢³ö¿ÚÎÂ¶È
+	for(i=0;i<2;i++)//ï¿½ï¿½È´Òºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¶ï¿½
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_CLNTTEMPIN+i])
 		{
@@ -2892,17 +2904,17 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	}
 
 
-	{//Ô¤Áô1
+	{//Ô¤ï¿½ï¿½1
 		 buf[len++] = 0xff;
 	}
-	{//Ô¤Áô2
+	{//Ô¤ï¿½ï¿½2
 		 buf[len++] = 0xff;
 	}
-	{//Ô¤Áô3
+	{//Ô¤ï¿½ï¿½3
 		 buf[len++] = 0xff;
 		 buf[len++] = 0xff;
 	}
-	{//Ô¤Áô4
+	{//Ô¤ï¿½ï¿½4
 		 buf[len++] = 0xff;
 		 buf[len++] = 0xff;
 	}
@@ -2910,7 +2922,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
     return len;
 }
 
-/* À©Õ¹±¨¾¯Êı¾İ */
+/* ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
 static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0, i, j;
@@ -2922,8 +2934,8 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     /* data type : warn extend information */
     buf[len++] = 0x94;
 
-    warnlvl_ptr = &buf[len++];//×î¸ß±¨¾¯µÈ¼¶
-    warnnum_ptr = &buf[len++];//±¨¾¯Êı
+    warnlvl_ptr = &buf[len++];//ï¿½ï¿½ß±ï¿½ï¿½ï¿½ï¿½È¼ï¿½
+    warnnum_ptr = &buf[len++];//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     *warnlvl_ptr = 0;
     *warnnum_ptr = 0;
 
@@ -2938,36 +2950,36 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
             // index 3,as a relevance channel,if the is two canid used for on warning
             {
             	warnvalue = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
-            	if(j == 0x50)//ÖÆÀä²»ÏìÓ¦¹ÊÕÏ
+            	if(j == 0x50)//åˆ¶å†·ä¸å·¥ä½œåŸå› -å‹ç¼©æœºæ•…éšœ
             	{
             		switch(warnvalue)
             		{
-            			case 0x01://ÖÆÀä²»ÏìÓ¦Ô­Òò-Ñ¹Ëõ»ú¹ÊÕÏ
+            			case 0x01://å‹ç¼©æœºæ•…éšœ
             			{
             				warn_code = 48;
             			}
             			break;
-            			case 0x02://ÖÆÀä²»ÏìÓ¦Ô­Òò-µç×ÓÅòÕÍ·§¹ÊÕÏ
+            			case 0x02://ç”µå­è†¨èƒ€é˜€æ•…éšœ
             			{
             				warn_code = 49;
             			}
             			break;
-            			case 0x03://ÖÆÀä²»ÏìÓ¦Ô­Òò-HV ¹ÊÕÏ
+            			case 0x03://HV æ•…éšœ
             			{
             				warn_code = 50;
             			}
             			break;
-            			case 0x04://ÖÆÀä²»ÏìÓ¦Ô­Òò-Ñ¹Á¦´«¸ĞÆ÷¹ÊÕÏ
+            			case 0x04://å‹åŠ›ä¼ æ„Ÿå™¨æ•…éšœ
             			{
             				warn_code = 51;
             			}
             			break;
-            			case 0x05://ÖÆÀä²»ÏìÓ¦Ô­Òò-ÀäÈ´·çÉÈ¹ÊÕÏ
+            			case 0x05://å†·å´é£æ‰‡æ•…éšœ
             			{
             				warn_code = 52;
             			}
             			break;
-            			case 0x06://ÖÆÀä²»ÏìÓ¦Ô­Òò-Õô·¢Æ÷ÎÂ¶È´«¸ĞÆ÷¹ÊÕÏ
+            			case 0x06://è’¸å‘å™¨æ¸©åº¦ä¼ æ„Ÿå™¨æ•…éšœ
             			{
             				warn_code = 53;
             			}
@@ -2981,26 +2993,26 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	        	(*warnlvl_ptr)  = i + 1;
     	        	ac_warnflag=1;
             	}
-            	else if(j == 0x47)//ÖÆÈÈ²»ÏìÓ¦¹ÊÕÏ
+            	else if(j == 0x47)//åˆ¶çƒ­ä¸å“åº”åŸå› 
             	{
             		switch(warnvalue)
             		{
-            			case 0x01://PTC¹ÊÕÏ
+            			case 0x01://PTCæ•…éšœ
             			{
             				warn_code = 54;
             			}
             			break;
-            			case 0x02://HV¹ÊÕÏ
+            			case 0x02://HVæ•…éšœ
             			{
             				warn_code = 55;
             			}
             			break;
-            			case 0x03://PTCË®±Ã¹ÊÕÏ
+            			case 0x03://PTCæ°´æ³µæ•…éšœ
             			{
             				warn_code = 56;
             			}
             			break;
-            			case 0x04://ÈıÍ¨Ë®·§¹ÊÕÏ
+            			case 0x04://ä¸‰é€šæ°´é˜€æ•…éšœ
             			{
             				warn_code = 57;
             			}
@@ -3024,7 +3036,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
             }
         }
 
-        //MCU ÄÚ²¿ IGBT ¹ıÎÂ£¨U Ïà£©
+        //MCU ï¿½Ú²ï¿½ IGBT ï¿½ï¿½ï¿½Â£ï¿½U ï¿½à£©
 		if (gbinf->warn[i][0x0f] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x0f])->value ||
 		(gbinf->warn[3][0x0f] &&
@@ -3038,7 +3050,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //µ¥ÌåĞîµç³Ø¹ıÑ¹±¨¾¯
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¹ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½
 		if (gbinf->warn[i][0x05] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x05])->value ||
 		(gbinf->warn[3][0x05] &&
@@ -3052,7 +3064,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //µµÎ»ĞÅºÅ¹ÊÕÏ
+        //ï¿½ï¿½Î»ï¿½ÅºÅ¹ï¿½ï¿½ï¿½
 		if (gbinf->warn[i][0x33] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x33])->value ||
 		(gbinf->warn[3][0x33] &&
@@ -3066,7 +3078,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //µç»úÒì³£±¨¾¯
+        //ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½
 		if (gbinf->warn[i][0x0b] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x0b])->value ||
 		(gbinf->warn[3][0x0b] &&
@@ -3080,7 +3092,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //µç»úÒì³£±¨¾¯
+        //ï¿½ï¿½ï¿½ï¿½ì³£ï¿½ï¿½ï¿½ï¿½
 		if (gbinf->warn[i][0x0f] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x0f])->value ||
 		(gbinf->warn[3][0x0f] &&
@@ -3094,7 +3106,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //¶¯Á¦µç³Øµ¥ÌåµçÑ¹¹ıÑ¹±£»¤
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½
 		if (gbinf->warn[i][0x05] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x05])->value ||
 		(gbinf->warn[3][0x05] &&
@@ -3108,7 +3120,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //¶¯Á¦µç³Øµ¥ÌåµçÑ¹Ç·Ñ¹±£»¤¹ÊÕÏ
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Øµï¿½ï¿½ï¿½ï¿½Ñ¹Ç·Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if (gbinf->warn[i][0x06] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x06])->value ||
 		(gbinf->warn[3][0x06] &&
@@ -3122,7 +3134,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //¶¯Á¦µç³ØÎÂ¶È¹ı¸ß±£»¤¹ÊÕÏ
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¶È¹ï¿½ï¿½ß±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if (gbinf->warn[i][0x01] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x01])->value ||
 		(gbinf->warn[3][0x01] &&
@@ -3138,7 +3150,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 
     }
 
-    if(ac_warnflag)//¿Õµ÷²»¹¤×÷±¨¾¯
+    if(ac_warnflag)//ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     {
 		warn_code = 47;
     	buf[len++] = warn_code >> 8;
@@ -3147,7 +3159,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	//(*warnlvl_ptr)  = i + 1;
     }
 
-    //TBOX ¹ÊÕÏ±¨¾¯
+    //TBOX ï¿½ï¿½ï¿½Ï±ï¿½ï¿½ï¿½
     if(1)
     {
 		warn_code = 13;
@@ -3157,7 +3169,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	(*warnlvl_ptr)  = 0 + 1;
     }
 
-    //Óë BMS Í¨Ñ¶¶ªÊ§
+    //ï¿½ï¿½ BMS Í¨Ñ¶ï¿½ï¿½Ê§
     if(1)
     {
 		warn_code = 37;
@@ -3167,7 +3179,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	(*warnlvl_ptr)  = 2 + 1;
     }
 
-    //Óë MCU Í¨Ñ¶¶ªÊ§
+    //ï¿½ï¿½ MCU Í¨Ñ¶ï¿½ï¿½Ê§
     if(1)
     {
 		warn_code = 38;
@@ -3177,7 +3189,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	//(*warnlvl_ptr)  = 0 + 1;
     }
 
-    //ÍÏ³µÌáĞÑ
+    //ï¿½Ï³ï¿½ï¿½ï¿½ï¿½ï¿½
     if(1)
     {
 		warn_code = 45;
@@ -3967,7 +3979,7 @@ static int gb_shell_dumpgb(int argc, const char **argv)
     }
     else
     {
-        shellprintf(" [³µÁ¾ĞÅÏ¢]\r\n");
+        shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢]\r\n");
         gb_disp_vinf(&gb_inf->vehi);
 
         if (gb_inf->vehi.vehi_type == GB_VEHITYPE_ELECT ||
@@ -3977,31 +3989,31 @@ static int gb_shell_dumpgb(int argc, const char **argv)
 
             for (i = 0; i < gb_inf->motor_cnt; i++)
             {
-                shellprintf(" [µç»úĞÅÏ¢-%d]\r\n", i + 1);
+                shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢-%d]\r\n", i + 1);
                 gb_disp_minf(&gb_inf->motor[i]);
             }
             
-            shellprintf(" [È¼ÁÏµç³ØĞÅÏ¢]\r\n");
+            shellprintf(" [È¼ï¿½Ïµï¿½ï¿½ï¿½ï¿½Ï¢]\r\n");
             gb_disp_finf(&gb_inf->fuelcell);
 
-            shellprintf(" [µç³ØĞÅÏ¢]\r\n");
+            shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢]\r\n");
             gb_disp_binf(&gb_inf->batt);
-            shellprintf(" [¼«ÖµĞÅÏ¢]  (Èç¹ûÈ«²¿Î´¶¨Òå£¬ÔòÓÉÖÕ¶Ë¼ÆËã)\r\n");
+            shellprintf(" [ï¿½ï¿½Öµï¿½ï¿½Ï¢]  (ï¿½ï¿½ï¿½È«ï¿½ï¿½Î´ï¿½ï¿½ï¿½å£¬ï¿½ï¿½ï¿½ï¿½ï¿½Õ¶Ë¼ï¿½ï¿½ï¿½)\r\n");
             gb_disp_xinf(gb_inf->extr);
         }
 
         if (gb_inf->vehi.vehi_type == GB_VEHITYPE_GASFUEL ||
             gb_inf->vehi.vehi_type == GB_VEHITYPE_HYBIRD)
         {
-            shellprintf(" [·¢¶¯»úĞÅÏ¢]\r\n");
+            shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢]\r\n");
             gb_disp_einf(&gb_inf->engin);
         }
 
-        shellprintf(" [±¨¾¯ĞÅÏ¢-1¼¶]\r\n");
+        shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢-1ï¿½ï¿½]\r\n");
         gb_disp_winf(gb_inf->warn[0]);
-        shellprintf(" [±¨¾¯ĞÅÏ¢-2¼¶]\r\n");
+        shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢-2ï¿½ï¿½]\r\n");
         gb_disp_winf(gb_inf->warn[1]);
-        shellprintf(" [±¨¾¯ĞÅÏ¢-3¼¶]\r\n");
+        shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢-3ï¿½ï¿½]\r\n");
         gb_disp_winf(gb_inf->warn[2]);
     }
 
@@ -4193,7 +4205,7 @@ void gb_data_set_pendflag(int flag)
 }
 
 /*
- 	 ¶ÁÈ¡³µÁ¾×´Ì¬
+ 	 ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½×´Ì¬
 */
 uint8_t gb_data_vehicleState(void)
 {
@@ -4207,7 +4219,7 @@ uint8_t gb_data_vehicleState(void)
 }
 
 /*
- 	 ¶ÁÈ¡³µÁ¾Ê£ÓàµçÁ¿
+ 	 ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Ê£ï¿½ï¿½ï¿½ï¿½ï¿½
 */
 long gb_data_vehicleSOC(void)
 {
@@ -4221,7 +4233,7 @@ long gb_data_vehicleSOC(void)
 }
 
 /*
- 	 ¶ÁÈ¡³µÁ¾×ÜÀï³Ì
+ 	 ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 */
 long gb_data_vehicleOdograph(void)
 {
@@ -4236,7 +4248,7 @@ long gb_data_vehicleOdograph(void)
 }
 
 /*
- 	 ¶ÁÈ¡³µÁ¾ËÙ¶È
+ 	 ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½
 */
 long gb_data_vehicleSpeed(void)
 {
@@ -4251,7 +4263,7 @@ long gb_data_vehicleSpeed(void)
 }
 
 /*
- 	 ¶ÁÈ¡ÃÅËø×´Ì¬
+ 	 ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½×´Ì¬
 */
 uint8_t gb_data_doorlockSt(void)
 {
@@ -4264,7 +4276,7 @@ uint8_t gb_data_doorlockSt(void)
 }
 
 /*
- 	 ¶ÁÈ¡Î²ÃÅ×´Ì¬
+ 	 ï¿½ï¿½È¡Î²ï¿½ï¿½×´Ì¬
 */
 uint8_t gb_data_reardoorSt(void)
 {
@@ -4278,7 +4290,7 @@ uint8_t gb_data_reardoorSt(void)
 
 
 /*
- 	 ¶ÁÈ¡¿Õµ÷×´Ì¬
+ 	 ï¿½ï¿½È¡ï¿½Õµï¿½×´Ì¬
 */
 uint8_t gb_data_ACOnOffSt(void)
 {
@@ -4291,7 +4303,7 @@ uint8_t gb_data_ACOnOffSt(void)
 }
 
 /*
- 	 ¶ÁÈ¡¿Õµ÷Éè¶¨ÎÂ¶È
+ 	 ï¿½ï¿½È¡ï¿½Õµï¿½ï¿½è¶¨ï¿½Â¶ï¿½
 */
 int gb_data_LHTemp(void)
 {
@@ -4304,7 +4316,7 @@ int gb_data_LHTemp(void)
 }
 
 /*
- 	 ³äµç×´Ì¬
+ 	 ï¿½ï¿½ï¿½×´Ì¬
 */
 uint8_t gb_data_chargeSt(void)
 {
@@ -4318,20 +4330,20 @@ uint8_t gb_data_chargeSt(void)
 }
 
 /*
- 	 Î²ÃÅËø×´Ì¬
+ 	 Î²ï¿½ï¿½ï¿½ï¿½×´Ì¬
 */
 uint8_t gb_data_reardoorlockSt(void)
 {
 	uint8_t st = 0;
-	if(gb_inf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//ºó±¸ÏäÃÅËø
+	if(gb_inf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	{
 		if(dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])->value)
 		{
-			st = 0;//ÉÏËø
+			st = 0;//ï¿½ï¿½ï¿½ï¿½
 		}
 		else
 		{
-			st = 1;//½âËø
+			st = 1;//ï¿½ï¿½ï¿½ï¿½
 		}
 	}
 
@@ -4339,13 +4351,13 @@ uint8_t gb_data_reardoorlockSt(void)
 }
 
 /*
- 	 ¿Õµ÷Ä£Ê½
+ 	 ï¿½Õµï¿½Ä£Ê½
 */
 uint8_t gb_data_ACMode(void)
 {
-	uint8_t acmode = 3;//×Ô¶¯
+	uint8_t acmode = 3;//ï¿½Ô¶ï¿½
 	int32_t tmp;
-	if(gb_inf->gb_VSExt.info[GB_VS_ACMODE])//¿Õµ÷Ä£Ê½
+	if(gb_inf->gb_VSExt.info[GB_VS_ACMODE])//ï¿½Õµï¿½Ä£Ê½
 	{
 		tmp = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ACMODE])->value;
 		switch(tmp)
@@ -4354,13 +4366,13 @@ uint8_t gb_data_ACMode(void)
 			case 5:
 			case 7:
 			{
-				acmode = 1;//ÖÆÈÈ
+				acmode = 1;//ï¿½ï¿½ï¿½ï¿½
 			}
 			break;
 			case 2:
 			case 6:
 			{
-				acmode = 2;//ÖÆÀä
+				acmode = 2;//ï¿½ï¿½ï¿½ï¿½
 			}
 			break;
 			default:
@@ -4372,7 +4384,7 @@ uint8_t gb_data_ACMode(void)
 }
 
 /*
- 	 ³äµç¿ª/¹Ø×´Ì¬
+ 	 ï¿½ï¿½ç¿ª/ï¿½ï¿½×´Ì¬
 */
 uint8_t gb_data_chargeOnOffSt(void)
 {
@@ -4387,7 +4399,7 @@ uint8_t gb_data_chargeOnOffSt(void)
 }
 
 /*
- 	 ³äµçÇ¹Á¬½Ó×´Ì¬
+ 	 ï¿½ï¿½ï¿½Ç¹ï¿½ï¿½ï¿½ï¿½×´Ì¬
 */
 uint8_t gb_data_chargeGunCnctSt(void)
 {
