@@ -465,7 +465,8 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 	{
 		case PP_RMTCFG_CFG_IDLE:
 		{
-			if((1 == PP_rmtCfg.state.iccidValid) || ((tm_get_time() - PP_rmtCfg.state.delaytime) >= 30000))
+			if(((1 == PP_rmtCfg.state.iccidValid) && ((tm_get_time() - PP_rmtCfg.state.delaytime) >= 15000)) || \
+					((tm_get_time() - PP_rmtCfg.state.delaytime) >= 30000))
 			{
 				if((1 == rmtCfg->state.req) && (rmtCfg->state.reqCnt < PP_RETRANSMIT_TIMES))
 				{
