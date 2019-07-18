@@ -1261,6 +1261,19 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 
     for (i = 0; i < 3; i++)
     {
+		if(gbinf->warn[i][5])
+		{
+			gbinf->warn[i][2] = gbinf->warn[i][5];
+		}
+
+		if(gbinf->warn[i][6])
+		{
+			gbinf->warn[i][3] = gbinf->warn[i][6];
+		}
+    }
+
+    for (i = 0; i < 3; i++)
+    {
         for (j = 0; j < 32; j++)
         {
             if (gbinf->warn[i][j] && 
@@ -2931,6 +2944,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     uint16_t warn_code = 0;
     uint8_t ac_warnflag=0;
     uint8_t warnvalue = 0;
+    uint8_t Abnormalheat_warnflag = 0;
     /* data type : warn extend information */
     buf[len++] = 0x94;
 
@@ -2938,6 +2952,13 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     warnnum_ptr = &buf[len++];//������
     *warnlvl_ptr = 0;
     *warnnum_ptr = 0;
+    for (i = 0; i < 3; i++)
+    {
+    	if(gbinf->warn[i][10])
+    	{//动力电池电压不均衡保护故障
+    		gbinf->warn[i][62] = gbinf->warn[i][10];
+    	}
+    }
 
     for (i = 0; i < 3; i++)
     {
@@ -3000,21 +3021,25 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
             			case 0x01://PTC故障
             			{
             				warn_code = 54;
+            				Abnormalheat_warnflag = 1;
             			}
             			break;
             			case 0x02://HV故障
             			{
             				warn_code = 55;
+            				Abnormalheat_warnflag = 1;
             			}
             			break;
             			case 0x03://PTC水泵故障
             			{
             				warn_code = 56;
+            				Abnormalheat_warnflag = 1;
             			}
             			break;
             			case 0x04://三通水阀故障
             			{
             				warn_code = 57;
+            				Abnormalheat_warnflag = 1;
             			}
             			break;
             			default:
@@ -3156,6 +3181,15 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	buf[len++] = warn_code >> 8;
     	buf[len++] = warn_code;
     	(*warnnum_ptr)++;
+    	//(*warnlvl_ptr)  = i + 1;
+    }
+
+    if(Abnormalheat_warnflag)//整车加热异常
+    {
+    	warn_code = 39;
+		buf[len++] = warn_code >> 8;
+		buf[len++] = warn_code;
+		(*warnnum_ptr)++;
     	//(*warnlvl_ptr)  = i + 1;
     }
 

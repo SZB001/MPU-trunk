@@ -615,7 +615,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 				if(gb_data_vehicleSpeed() <= 50)//判断车速<=5km/h,满足诊断条件
 				{
 					log_i(LOG_HOZON,"vehicle speed <= 5km/h,start diag\n");
-					PP_rmtDiag.state.faultquerySt = 1;
+					PP_rmtDiag.state.faultquerySt = 0;
 					setPPrmtDiagCfg_QueryFaultReq(PP_DIAG_ALL);//请求查询所有故障码
 					memset(&PP_rmtDiag_allFault,0 , sizeof(PP_rmtDiag_allFault_t));
 					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
@@ -638,6 +638,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 					for(i=1;i <= PP_DIAG_MAXECU;i++)
 					{
 						getPPrmtDiagCfg_Faultcode(i,&PP_rmtDiag_allFault.code[i-1]);//读取故障码
+						log_i(LOG_HOZON, "PP_rmtDiag_allFault.code[%d].sueecss = %d\n",i-1,PP_rmtDiag_allFault.code[i-1].sueecss);
 						log_i(LOG_HOZON, "PP_rmtDiag_allFault.code[%d].faultNum = %d\n",i-1,PP_rmtDiag_allFault.code[i-1].faultNum);
 					}
 					PP_rmtDiag_allFault.currdiagtype = PP_DIAG_VCU;

@@ -185,7 +185,7 @@ BO_ 631 BMS_Fr07_277: 8 BMS
  SG_ BMS7IsolSuperSts : 17|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7TempDiffSts_@2WG7200 : 19|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7DiagSts : 21|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ BMS7CellConsistencySts_@2WG703E : 23|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ BMS7CellConsistencySts_@2WG720A : 23|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7BatteryState : 25|2@0+(1,0)[0|3] "" Vector__XXX
 BO_ 1288 BMS_Fr08_508: 8 BMS
  SG_ BMS8ChargeCCSig_@2WGE018 : 0|1@0+(1,0)[0|1] "" Vector__XXX

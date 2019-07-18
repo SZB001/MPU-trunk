@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_rmtDiag.h
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_rmtDiag.h
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 
 Data			  Vasion			author
 2019/04/16		   V1.0			    liujian
@@ -9,29 +9,29 @@ Data			  Vasion			author
 #ifndef		_PRVTPROT_RMTDIAG_H
 #define		_PRVTPROT_RMTDIAG_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
-#define PP_DIAG_WAITTIME    2500//µÈ´ýHUÏìÓ¦Ê±¼ä
-#define PP_DIAG_MAX_REPORT  80//Ò»´Î×î¶àÉÏ±¨µÄ¹ÊÕÏÂëÊý
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
+#define PP_DIAG_WAITTIME    2500//ï¿½È´ï¿½HUï¿½ï¿½Ó¦Ê±ï¿½ï¿½
+#define PP_DIAG_MAX_REPORT  80//Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 #define PP_DIAGPWRON_WAITTIME    	5000//5s
 #define PP_DIAGQUERY_WAITTIME    	5000//5s
-#define PP_DIAGQUERYALL_WAITTIME	5000//5s
-/***********ºêº¯Êý***********/
+#define PP_DIAGQUERYALL_WAITTIME	45000//45s
+/***********ï¿½êº¯ï¿½ï¿½***********/
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 typedef enum
@@ -45,9 +45,9 @@ typedef enum
 typedef enum
 {
 	PP_DIAGRESP_IDLE = 0,//
-	PP_DIAGRESP_QUERYFAILREQ,//ÇëÇó²éÑ¯¹ÊÕÏ
-	PP_DIAGRESP_QUERYWAIT,//µÈ´ý²éÑ¯Íê³ÉÓ¦´ð
-	PP_DIAGRESP_QUERYUPLOAD,//²éÑ¯ÉÏ±¨
+	PP_DIAGRESP_QUERYFAILREQ,//ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½
+	PP_DIAGRESP_QUERYWAIT,//ï¿½È´ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½
+	PP_DIAGRESP_QUERYUPLOAD,//ï¿½ï¿½Ñ¯ï¿½Ï±ï¿½
 	PP_DIAGRESP_END
 } PP_RMTDIAG_DIAGRESP_ST;
 
@@ -55,7 +55,7 @@ typedef enum
 {
 	PP_IMAGEACQRESP_IDLE = 0,//
 	PP_IMAGEACQRESP_INFORM_HU,//Í¨ÖªHU
-	PP_IMAGEACQRESP_WAITHURESP,//µÈ´ýHUÏìÓ¦
+	PP_IMAGEACQRESP_WAITHURESP,//ï¿½È´ï¿½HUï¿½ï¿½Ó¦
 	PP_IMAGEACQRESP_END
 } PP_RMTDIAG_IMAGEACQRESP_ST;
 
@@ -73,9 +73,9 @@ typedef enum
 
 typedef enum
 {
-	PP_ACTIVEDIAG_PWRON = 0,//ÉÏµç
-	PP_ACTIVEDIAG_CHECKREPORTST,//¼ì²éÉÏ±¨Çé¿ö
-	PP_ACTIVEDIAG_CHECKVEHICOND,//¼ì²é³µ¿ö
+	PP_ACTIVEDIAG_PWRON = 0,//ï¿½Ïµï¿½
+	PP_ACTIVEDIAG_CHECKREPORTST,//ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ï¿½ï¿½ï¿½
+	PP_ACTIVEDIAG_CHECKVEHICOND,//ï¿½ï¿½é³µï¿½ï¿½
 	PP_ACTIVEDIAG_QUREYWAIT,//
 	PP_ACTIVEDIAG_QUERYUPLOAD,//
 	PP_ACTIVEDIAG_END
@@ -98,9 +98,9 @@ typedef struct
 	uint8_t  cameraName;
 	uint32_t effectiveTime;
 	uint32_t sizeLimit;
-	uint8_t  result;//²É¼¯Êý¾ÝÍ¨Öª×´Ì¬
-	uint8_t  failureType;//²É¼¯Êý¾ÝÊ§°ÜÀàÐÍ
-	char     fileName[255];//²É¼¯Êý¾ÝÎÄ¼þÃû
+	uint8_t  result;//ï¿½É¼ï¿½ï¿½ï¿½ï¿½ï¿½Í¨Öª×´Ì¬
+	uint8_t  failureType;//ï¿½É¼ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	char     fileName[255];//ï¿½É¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½
 	uint8_t  diagrespSt;
 	uint8_t  ImageAcqRespSt;
 	uint8_t  waitSt;
@@ -119,19 +119,19 @@ typedef struct
 	uint16_t durationTime;
 
 	uint8_t	 faultquerySt;
-}PrvtProt_rmtDiagSt_t; /*½á¹¹Ìå*/
+}PrvtProt_rmtDiagSt_t; /*ï¿½á¹¹ï¿½ï¿½*/
 
 typedef struct
 {
 	uint32_t datetime;
-	uint8_t  diagflag;//bit 1-7 ±íÊ¾ ÐÇÆÚ1~7
-}PP_rmtDiag_datetime_t; /*½á¹¹Ìå*/
+	uint8_t  diagflag;//bit 1-7 ï¿½ï¿½Ê¾ ï¿½ï¿½ï¿½ï¿½1~7
+}PP_rmtDiag_datetime_t; /*ï¿½á¹¹ï¿½ï¿½*/
 
 typedef struct
 {
 	uint8_t  week;
 	uint8_t  mask;
-}PP_rmtDiag_weekmask_t; /*½á¹¹Ìå*/
+}PP_rmtDiag_weekmask_t; /*ï¿½á¹¹ï¿½ï¿½*/
 
 /* application data struct */
 /***********************************
@@ -216,11 +216,11 @@ typedef struct
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern void PP_rmtDiag_init(void);
 extern int PP_rmtDiag_mainfunction(void *task);
