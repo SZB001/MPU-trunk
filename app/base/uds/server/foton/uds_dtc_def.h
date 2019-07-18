@@ -14,7 +14,6 @@
 #define DTC_BATTERY_AGED                            "9C0801"
 #define DTC_POWER_VOLTAGE_HIGH                      "9C1017"
 #define DTC_POWER_VOLTAGE_LOW                       "9C1116"
-#define DTC_Missing_GW_TBOXCAN                      "C04688"
 #define DTC_BUSOFF                                  "D10016"
 
 #define DTC_MISSING_ACU                         "C17000"

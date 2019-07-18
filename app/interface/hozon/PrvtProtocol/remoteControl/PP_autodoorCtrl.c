@@ -280,6 +280,8 @@ void PP_autodoorCtrl_ClearStatus(void)
 	PP_rmtautodoorCtrl.state.req = 0;
 }
 
+/************************shell命令测试使用**************************/
+
 void PP_autodoorCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtautodoorCtrl.state.reqType = (long)reqType;
@@ -294,6 +296,7 @@ void PP_autodoorCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 	PP_rmtautodoorCtrl.state.req = 1;
 }
 
+/************************shell命令测试使用**************************/
 
 
 

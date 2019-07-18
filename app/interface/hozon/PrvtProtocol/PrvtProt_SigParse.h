@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_SigParse.h
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_SigParse.h
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 
 Data			  Vasion			author
 2019/04/16		   V1.0			    liujian
@@ -9,19 +9,19 @@ Data			  Vasion			author
 #ifndef		_PRVTPROT_SIGPARSE_H
 #define		_PRVTPROT_SIGPARSE_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
 #define PP_RMTCTRL_CANSIGN  0x01//
 
 
-// ÆäËû¹ÊÕÏ
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 #define PP_CANSIGN_DOORLOCK       		0x00//
 #define PP_CANSIGN_DOORUNLOCK       	0x01//
 #define PP_CANSIGN_FINDCAR       		0x02//
@@ -45,12 +45,13 @@ description£º macro definitions
 #define PP_CANSIGN_AUTHEFAILRESION    	0x14//
 #define PP_CANSIGN_CHARGEAPPOINTEN    	0x15//
 #define PP_CANSIGN_READYLIGHTST    		0x16//
-#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_READYLIGHTST + 1)
-/***********ºêº¯Êý***********/
+#define PP_CANSIGN_OTAMODEFAILSTS    	0x17//
+#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_OTAMODEFAILSTS + 1)
+/***********ï¿½êº¯ï¿½ï¿½***********/
 
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 typedef struct
 {
@@ -64,18 +65,18 @@ typedef struct
 
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern void InitPrvtProt_SignParse_Parameter(void);
 extern int PrvtProt_data_parse_surfix(int sigid, const char *sfx);
@@ -89,4 +90,5 @@ extern unsigned char PrvtProt_SignParse_autheSt(void);
 extern unsigned char PrvtProt_SignParse_authefailresion(void);
 extern unsigned char PrvtProt_SignParse_chrgAptEnSt(void);
 extern unsigned char PrvtProt_SignParse_readyLightSt(void);
+extern unsigned char PrvtProt_SignParse_OtaFailSts(void);
 #endif 

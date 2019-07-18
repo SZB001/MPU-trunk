@@ -278,6 +278,8 @@ void PP_startforbid_ClearStatus(void)
 	PP_rmtstartforbid.state.req = 0;
 }
 
+/************************shell命令测试使用**************************/
+
 void PP_startforbid_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtstartforbid.state.reqType = (long)reqType;
@@ -293,6 +295,7 @@ void PP_startforbid_SetCtrlReq(unsigned char req,uint16_t reqType)
 
 }
 
+/************************shell命令测试使用**************************/
 
 
 

@@ -55,8 +55,9 @@ static int remote_diag_shell_get_result(int argc, const char **argv)
         
         log_buf_dump(LOG_UDS, "remote diag result diagcode:", pp_rmtdiag_fault.faultcode[dtc_num].diagcode,5);
         log_buf_dump(LOG_UDS, "remote diag result lowByte", &(pp_rmtdiag_fault.faultcode[dtc_num].lowByte),1);
-        log_o(LOG_REMOTE_DIAG, "cmd status:%d", pp_rmtdiag_fault.faultcode[dtc_num].faultCodeType);
+        log_o(LOG_REMOTE_DIAG, "cmd status:%d\n", pp_rmtdiag_fault.faultcode[dtc_num].faultCodeType);
     }
+    log_o(LOG_REMOTE_DIAG, "pp_rmtdiag_fault.sueecss:%d\n", pp_rmtdiag_fault.sueecss);
     return 0;
 }
 

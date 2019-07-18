@@ -420,7 +420,28 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 			case PP_RMTCTRL_AC://空调
 			{
-				SetPP_ACCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+				switch(Appdata.CtrlReq.rvcReqType)
+				{
+					case PP_RMTCTRL_ACOPEN:
+					case PP_RMTCTRL_ACCLOSE:
+					case PP_RMTCTRL_ACAPPOINTOPEN:
+					case PP_RMTCTRL_ACCANCELAPPOINT:
+					case PP_RMTCTRL_SETTEMP:
+					{
+						SetPP_ACCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+					}
+					break;
+					case PP_RMTCTRL_MAINHEATOPEN:
+					case PP_RMTCTRL_MAINHEATCLOSE:
+					case PP_RMTCTRL_PASSENGERHEATOPEN:
+					case PP_RMTCTRL_PASSENGERHEATCLOSE:
+					{
+						SetPP_seatheating_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+					}
+					break;
+					default:
+					break;
+				}
 			}
 			break;
 			case PP_RMTCTRL_CHARGE://充电
@@ -612,8 +633,28 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 		break;
 		case PP_RMTCTRL_AC://空调
 		{
-			//PP_rmtCtrl_StatusResp(1,reqType);
-			log_i(LOG_HOZON, "remote RMTCTRL_AC control req");
+			switch(reqType)
+			{
+				case PP_RMTCTRL_ACOPEN:
+				case PP_RMTCTRL_ACCLOSE:
+				case PP_RMTCTRL_ACAPPOINTOPEN:
+				case PP_RMTCTRL_ACCANCELAPPOINT:
+				case PP_RMTCTRL_SETTEMP:
+				{
+					PP_ACCtrl_SetCtrlReq(req,reqType);
+				}
+				break;
+				case PP_RMTCTRL_MAINHEATOPEN:
+				case PP_RMTCTRL_MAINHEATCLOSE:
+				case PP_RMTCTRL_PASSENGERHEATOPEN:
+				case PP_RMTCTRL_PASSENGERHEATCLOSE:
+				{
+					PP_seatheating_SetCtrlReq(req,reqType);
+				}
+				break;
+				default:
+				break;
+			}
 		}
 		break;
 		case PP_RMTCTRL_CHARGE://充电

@@ -1,13 +1,13 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_SigParse.c
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_SigParse.c
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include "init.h"
 #include "log.h"
@@ -16,34 +16,34 @@ description£º include the header file
 #include "at.h"
 #include "PrvtProt_SigParse.h"
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 
 
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
 /*Static function declaration*/
 static PP_canSign_t PP_canSign;
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 /******************************************************
-*º¯ÊýÃû£ºInitPPsignFltr_Parameter
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½InitPPsignFltr_Parameter
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void InitPrvtProt_SignParse_Parameter(void)
 {
@@ -52,11 +52,11 @@ void InitPrvtProt_SignParse_Parameter(void)
 
 
 /******************************************************
-*º¯ÊýÃû£ºPrvtProt_data_parse_surfix
-*ÐÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£º¶ÁÈ¡Êý¾Ý
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtProt_data_parse_surfix
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 {
@@ -90,7 +90,18 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 }
 
 /*
- 	 ÔË¶¯¾ÍÐ÷×´Ì¬
+ *	 OTAæ¨¡å¼å¤±è´¥åŽŸå› ×´Ì¬
+  */
+unsigned char PrvtProt_SignParse_OtaFailSts(void)
+{
+	unsigned char st;
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_OTAMODEFAILSTS] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_OTAMODEFAILSTS])->value: 0x0;
+	return st;
+}
+
+/*
+ 	 ï¿½Ë¶ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
   */
 unsigned char PrvtProt_SignParse_readyLightSt(void)
 {
@@ -101,7 +112,7 @@ unsigned char PrvtProt_SignParse_readyLightSt(void)
 }
 
 /*
- 	 Ô¤Ô¼³äµçÊ¹ÄÜ×´Ì¬
+ 	 Ô¤Ô¼ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½×´Ì¬
   */
 unsigned char PrvtProt_SignParse_chrgAptEnSt(void)
 {
@@ -112,7 +123,7 @@ unsigned char PrvtProt_SignParse_chrgAptEnSt(void)
 }
 
 /*
- 	 Ñ°³µ×´Ì¬
+ 	 Ñ°ï¿½ï¿½×´Ì¬
   */
 unsigned char PrvtProt_SignParse_findcarSt(void)
 {
@@ -123,7 +134,7 @@ unsigned char PrvtProt_SignParse_findcarSt(void)
 }
 
 /*
- 	 Ìì´°×´Ì¬
+ 	 ï¿½ì´°×´Ì¬
   */
 unsigned char PrvtProt_SignParse_sunroofSt(void)
 {
@@ -134,7 +145,7 @@ unsigned char PrvtProt_SignParse_sunroofSt(void)
 }
 
 /*
- 	 Ô¶³ÌÆô¶¯×´Ì¬
+ 	 Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬
   */
 unsigned char PrvtProt_SignParse_RmtStartSt(void)
 {
@@ -145,7 +156,7 @@ unsigned char PrvtProt_SignParse_RmtStartSt(void)
 }
 
 /*
- 	 Ö÷×ùÒÎ¼ÓÈÈ×´Ì¬
+ 	 ï¿½ï¿½ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½×´Ì¬
   */
 unsigned char PrvtProt_SignParse_DrivHeatingSt(void)
 {
@@ -156,7 +167,7 @@ unsigned char PrvtProt_SignParse_DrivHeatingSt(void)
 }
 
 /*
- 	 ¸±×ùÒÎ¼ÓÈÈ×´Ì¬
+ 	 ï¿½ï¿½ï¿½ï¿½ï¿½Î¼ï¿½ï¿½ï¿½×´Ì¬
   */
 unsigned char PrvtProt_SignParse_PassHeatingSt(void)
 {
@@ -167,7 +178,7 @@ unsigned char PrvtProt_SignParse_PassHeatingSt(void)
 }
 
 /*
- 	 ½ûÖ¹Æô¶¯×´Ì¬
+ 	 ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½×´Ì¬
   */
 unsigned char PrvtProt_SignParse_cancelEngiSt(void)
 {
@@ -178,7 +189,7 @@ unsigned char PrvtProt_SignParse_cancelEngiSt(void)
 }
 
 /*
- 	 ÈÏÖ¤×´Ì¬
+ 	 ï¿½ï¿½Ö¤×´Ì¬
   */
 unsigned char PrvtProt_SignParse_autheSt(void)
 {
@@ -189,7 +200,7 @@ unsigned char PrvtProt_SignParse_autheSt(void)
 }
 
 /*
- 	 ÈÏÖ¤Ê§°ÜÔ­Òò
+ 	 ï¿½ï¿½Ö¤Ê§ï¿½ï¿½Ô­ï¿½ï¿½
   */
 unsigned char PrvtProt_SignParse_authefailresion(void)
 {

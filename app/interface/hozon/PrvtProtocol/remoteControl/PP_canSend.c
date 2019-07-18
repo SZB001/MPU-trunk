@@ -62,7 +62,7 @@ int PP_send_virtual_on_to_mcu(unsigned char on)
     }
 
     log_o(LOG_HOZON,
-          "############### send virtual on to mcu:%u #################", on);
+  		"############### send virtual on to mcu:%u #################", on);
 
     return 0;
 }
@@ -310,8 +310,8 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 			switch(data)
 			{
 				case CAN_STARTCHAGER:
-					PP_canSend_setbit(CAN_ID_440,3,1,1,NULL);
 					PP_canSend_setbit(CAN_ID_440,4,1,0,NULL);
+					PP_canSend_setbit(CAN_ID_440,3,1,1,NULL);
 				break;
 				case CAN_STOPCHAGER:
 					PP_canSend_setbit(CAN_ID_440,3,1,0,NULL);
@@ -321,6 +321,7 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 					break;
 				case CAN_CANCELAPPOINT:
 					PP_canSend_setbit(CAN_ID_440,4,1,0,NULL);
+					break;
 				default:
 					break;	
 			}

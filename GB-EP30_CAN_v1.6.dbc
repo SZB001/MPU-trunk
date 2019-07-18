@@ -448,7 +448,7 @@ BO_ 1301 BDM_Fr0A_515: 8 BDCM
  SG_ BDMCO2Value : 15|16@0+(1,0)[0|5000] "ug/m3" Vector__XXX
  SG_ BDMCO2DensitySts : 3|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BDMRLSWiperRequest_@2WGE046 : 55|3@0+(1,0)[0|7] "" Vector__XXX
- SG_ BDMTBOXOTAModeFailSts : 47|3@0+(1,0)[0|7] "" Vector__XXX
+ SG_ BDMTBOXOTAModeFailSts_@2WR1017 : 47|3@0+(1,0)[0|7] "" Vector__XXX
 BO_ 1328 TBOX_Fr01_530: 8 TBOX
  SG_ CalendarDay : 20|5@0+(1,0)[0|31] "days" Vector__XXX
  SG_ CalendarMonth : 11|4@0+(1,0)[0|15] "" Vector__XXX

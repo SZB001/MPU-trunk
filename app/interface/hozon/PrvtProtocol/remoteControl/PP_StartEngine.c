@@ -1,14 +1,4 @@
-/******************************************************
-鏂囦欢鍚嶏細	PP_StartEngine.c
 
-鎻忚堪锛�?	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級
-Data			Vasion			author
-2018/1/10		V1.0			liujian
-*******************************************************/
-
-/*******************************************************
-description锛� include the header file
-*******************************************************/
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -70,7 +60,7 @@ typedef struct
 static PrvtProt_rmtstartengine_t PP_rmtengineCtrl;
 static int start_engine_stage = PP_STARTENGINE_IDLE;
 static unsigned long long PP_Respwaittime = 0;
-static int startengine_success_flag = 0;
+static int startengine_success_flag = 0;  //0默认状态，1上电成功，2，下电成功，3操作失败
 static unsigned long long PP_Engine_time = 0;
 static int enginecation = 0;
 void PP_startengine_init(void)
@@ -95,35 +85,41 @@ int PP_startengine_mainfunction(void *task)
 	{
 		case PP_STARTENGINE_IDLE:
 		{
-			if(PP_rmtengineCtrl.state.req == 1)	
+			if(PP_rmtCtrl_cfg_RmtStartSt() == 0)   //上电走此流程
 			{
-				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+				if((PP_rmtengineCtrl.state.req == 1)|| (PP_get_seat_requestpower_flag() == 1 )||(PP_get_ac_requestpower_flag() == 1))
 				{
-					startengine_success_flag = 0;
-					start_engine_stage = PP_STARTENGINE_REQSTART;
-					if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp 平台
-					{
-						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-						rmtCtrl_Stpara.rvcReqStatus = 1;            //开始执行
-						rmtCtrl_Stpara.rvcFailureType = 0;     
-						rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
-						rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
-						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+					log_o(LOG_HOZON,"request power on!!\n");
+					if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+					{	
+						start_engine_stage = PP_STARTENGINE_REQSTART;
+						enginecation = PP_POWERON;
+						startengine_success_flag = 0;
 					}
-					else      //蓝牙
+					else
 					{
-
+						start_engine_stage = PP_STARTENGINE_END;
+						startengine_success_flag = 3;
 					}
+					
 				}
+			}
+		
+			if((PP_rmtengineCtrl.state.req == 1)&&(enginecation == PP_POWEROFF)) //下电流程
+			{
+				if(PP_rmtCtrl_cfg_RmtStartSt() == 2)
+				{
+					start_engine_stage = PP_STARTENGINE_REQSTART;
+					startengine_success_flag = 0;
+				}
+		
 				else
 				{
-					PP_rmtengineCtrl.state.req = 0;	
-					startengine_success_flag = 0;
 					start_engine_stage = PP_STARTENGINE_END;
+					startengine_success_flag = 3;
 				}
-				PP_rmtengineCtrl.state.req = 0;
 			}
+			PP_rmtengineCtrl.state.req = 0;
 		}
 		break;
 		case PP_STARTENGINE_REQSTART:
@@ -137,7 +133,6 @@ int PP_startengine_mainfunction(void *task)
 			{
 				if(PP_rmtCtrl_cfg_RmtStartSt() == 2)  //判断是否在远程启动模式下
 				{
-					
 					PP_can_send_data(PP_CAN_ENGINE,CAN_CLOSEENGINE,0);
 				}	
 			}
@@ -147,72 +142,72 @@ int PP_startengine_mainfunction(void *task)
 		break;
 		case PP_STARTENGINE_RESPWAIT://等待BDM应答
 		{
-			if(enginecation == PP_POWERON) //上高压电应答
+			if((tm_get_time() - PP_Respwaittime) < 2000)
 			{
-				if((tm_get_time() - PP_Respwaittime) < 2000)
+				if(enginecation == PP_POWERON) //上高压电应答
 				{
 					if(PP_rmtCtrl_cfg_RmtStartSt() == 2)  // 2s后在远程启动状态
 					{
 						PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);
-						//PP_canSend_resetbit(CAN_ID_440,0,1);  //将上高压电报文清零
 						PP_Engine_time = tm_get_time();       //记录上高压电成功的时间
-						startengine_success_flag = 1;
+						startengine_success_flag = 1;  //上电成功
+						PP_set_seat_requestpower_flag();
+						PP_set_ac_requestpower_flag();
+						log_o(LOG_HOZON,"Success on high voltage\n");
 						start_engine_stage = PP_STARTENGINE_END;
 					}
 				}
-				else   //BDM应答超时
-				{
-					PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);  //将上高压电报文清零
-					startengine_success_flag = 0;
-					start_engine_stage = PP_STARTENGINE_END;
-				}
-			}
-			else   //下高压电应答
-			{
-				if((tm_get_time() - PP_Respwaittime) < 2000) 
+				else   //下高压电应答
 				{
 					if(PP_rmtCtrl_cfg_RmtStartSt() == 0) 
 					{
 						PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0); //将下高压电报文清零
-						startengine_success_flag = 1;
+						PP_can_send_data(PP_CAN_SEATHEAT,0,CAN_SEATHEATMAIN);//下电将座椅加热报文清掉
+						PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);//下电将空调开启报文关闭
+						PP_set_seat_requestpower_flag(); //清除下电标志
+						PP_set_ac_requestpower_flag();   //清除下电标志
+						startengine_success_flag = 2;   //下电成功
+						log_o(LOG_HOZON,"Successful under high voltage\n");
 						start_engine_stage = PP_STARTENGINE_END;
 					}
 				}
-				else   //BDM 应答超时
-				{
-					PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);  //将下高压电报文清零
-					startengine_success_flag = 0;
-					start_engine_stage = PP_STARTENGINE_END;
-				}
 			}
+			else   //BDM 应答超时
+			{
+				PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);  
+				PP_set_seat_requestpower_flag();
+				PP_set_ac_requestpower_flag();
+				startengine_success_flag = 3;   //操作失败
+				start_engine_stage = PP_STARTENGINE_END;
+			}
+			
 		}
 		break;
 		case PP_STARTENGINE_END:
 		{
 			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-			memset(&rmtCtrl_Stpara,0,sizeof(PP_rmtCtrl_Stpara_t));
-			if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp 平台
+			if(enginecation == PP_POWERON )
 			{
-				rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
-				rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
-				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-				if(1 == startengine_success_flag)
-				{
-					rmtCtrl_Stpara.rvcReqStatus = 2;  //给平台回复执行完成
-					rmtCtrl_Stpara.rvcFailureType = 0;
-				}
-				else
-				{
-					rmtCtrl_Stpara.rvcReqStatus = 3;   //给平台回复执行完成
-					rmtCtrl_Stpara.rvcFailureType = 0xff;
-				}
-				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-				
+				rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWERON ;
 			}
-			else  //蓝牙
+			else
 			{
-
+				rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWEROFF ;
 			}
+			rmtCtrl_Stpara.eventid = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
+			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+			if((1 == startengine_success_flag)||(2 == startengine_success_flag))
+			{
+				rmtCtrl_Stpara.rvcReqStatus = 2; 
+				rmtCtrl_Stpara.rvcFailureType = 0;
+				log_o(LOG_HOZON,"success");
+			}
+			else
+			{
+				rmtCtrl_Stpara.rvcReqStatus = 3;  
+				rmtCtrl_Stpara.rvcFailureType = 0xff;
+			}
+			res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 			start_engine_stage = PP_STARTENGINE_IDLE;
 		}
 		break;
@@ -222,19 +217,25 @@ int PP_startengine_mainfunction(void *task)
 	return res;
 }
 
+uint8_t PP_get_powerst()
+{
+	return startengine_success_flag;
+	
+}
 
 uint8_t PP_startengine_start(void) 
 {
 	if(PP_rmtengineCtrl.state.req == 1)
 	{
+		//log_o(LOG_HOZON,"engine start\n");
+		//log_o(LOG_HOZON, "flag = %d",PP_get_seat_requestpower_flag());
 		return 1;
 	}
 	else
-	{
+	{	//log_o(LOG_HOZON, "flag = %d",PP_get_seat_requestpower_flag());
 		return 0;
 	}
 }
-
 
 uint8_t PP_startengine_end(void)
 {
@@ -271,13 +272,13 @@ void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			PP_rmtengineCtrl.state.style = RMTCTRL_TSP;
 		}
 		break;
-		case RMTCTRL_BLUETOOTH:	
-		break;
-		
 		case RMTCTRL_TBOX:
 		{
-//			PP_rmtengineCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-			if(PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_POWERON)
+			long *cmd = (long *)appdatarmtCtrl;
+			PP_rmtengineCtrl.state.reqType = *cmd;
+			//判断是否有座椅加热和空调开启时
+			if((PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_MAINHEATOPEN)||\
+				(PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_ACOPEN))
 			{
 				enginecation = PP_POWERON;  //上高压电
 			}
@@ -285,23 +286,133 @@ void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			{
 				enginecation = PP_POWERON; //下高压电
 			}
-//			PP_rmtengineCtrl.state.req = 1;
-//			PP_rmtengineCtrl.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
-//			PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;
+			PP_rmtengineCtrl.state.req = 1;
+			PP_rmtengineCtrl.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
+			PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;
 		}		
 		break;
-		
+		case RMTCTRL_BLUETOOTH:	
+		{
+			
+		}
+		break;
 		default:
 		break;
 	}
 }
 
-
 void PP_startengine_ClearStatus(void)
 {
 	PP_rmtengineCtrl.state.req = 0;
 }
+/*****************************************************************************************
+函数名：PP_rmtCtrl_checkenginetime
+功能    ：高压上下电检测
+上电条件：空调开启请求上电、者座椅加热开启请求上电
+下电条件：上电计时15分钟、空调关闭请求下电(座椅加热未开启)、座椅加热关闭请求下电(空调未开启)
+*******************************************************************************************/
+void PP_rmtCtrl_checkenginetime(void)
+{
 
+	if(PP_rmtCtrl_cfg_RmtStartSt() == 0)    //上电
+	{
+		if((PP_get_seat_requestpower_flag() == 1 )||(PP_get_ac_requestpower_flag() == 1))
+		{
+			log_o(LOG_HOZON, "flag = %d",PP_get_seat_requestpower_flag());
+			enginecation = PP_POWERON;  
+			PP_rmtengineCtrl.state.req = 1;
+		}
+	}
+	if(PP_rmtCtrl_cfg_RmtStartSt() == 2)   
+	{
+		if((PP_get_seat_requestpower_flag() == 1 )||(PP_get_ac_requestpower_flag() == 1))
+		{
+			
+			PP_set_seat_requestpower_flag();  //当已经上了，又有请求上电的，清除标志
+			PP_set_ac_requestpower_flag();
+		}
+		if((tm_get_time() - PP_Engine_time > 15 * 60 * 1000) \
+			&& (PP_rmtCtrl_cfg_RmtStartSt() == 2)) //15分钟到请求下电
+		{
+			enginecation = PP_POWEROFF;
+			PP_rmtengineCtrl.state.req = 1;
+		}
+		if(PP_get_ac_requestpower_flag() == 2)  //空调关闭请求下电
+		{
+			//座椅加热也未开启，下电
+			
+			if((PP_rmtCtrl_cfg_HeatingSt(0) == 0)&&(PP_rmtCtrl_cfg_HeatingSt(1) == 0))
+			{
+				enginecation = PP_POWEROFF;
+				PP_rmtengineCtrl.state.req = 1;
+			}
+		}
+		if(PP_get_seat_requestpower_flag() == 2)  //座椅加热关闭请求下电
+		{
+			if(PP_rmtCtrl_cfg_ACOnOffSt() == 0)   //空调也未开启，下电
+			{
+				enginecation = PP_POWEROFF;
+				PP_rmtengineCtrl.state.req = 1;
+		
+			}
+		}
+			
+	}
+}
+
+/************负责高压上下电管理**************/
+/*************shell命令测试使用***************/
+void PP_powermanagement_request(long cmd)
+{
+	switch(cmd)
+	{
+		case PP_RMTCTRL_MAINHEATOPEN:
+		case PP_RMTCTRL_PASSENGERHEATOPEN:
+		case PP_RMTCTRL_ACOPEN:
+		{
+			enginecation = PP_POWERON;  //上高压电
+			PP_rmtengineCtrl.state.req = 1;
+			//PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;  //上高压电不区分平台
+		}
+		break;
+		case PP_RMTCTRL_ACCLOSE:
+		{
+			if((PP_rmtCtrl_cfg_HeatingSt(0) == 0) && (PP_rmtCtrl_cfg_HeatingSt(1) == 0)) //座椅加热也已关闭
+			{
+				enginecation = PP_POWEROFF;  //下高压电
+				PP_rmtengineCtrl.state.req = 1;	
+			}
+		}
+		break;
+		case PP_RMTCTRL_MAINHEATCLOSE:
+		{
+			if((PP_rmtCtrl_cfg_HeatingSt(1) == 0) && (PP_rmtCtrl_cfg_ACOnOffSt()  == 0)) //副驾关闭且空调关闭
+			{
+				enginecation = PP_POWEROFF;  //下高压电
+				PP_rmtengineCtrl.state.req = 1;	
+			}
+		}
+		break;
+		case PP_RMTCTRL_PASSENGERHEATCLOSE:
+		{
+			if((PP_rmtCtrl_cfg_HeatingSt(0) == 0) && (PP_rmtCtrl_cfg_ACOnOffSt()  == 0)) //主驾关闭且空调关闭
+			{
+				enginecation = PP_POWEROFF;  //下高压电
+				PP_rmtengineCtrl.state.req = 1;	
+			}
+		}
+		break;	
+		default:
+		break;
+	}
+
+
+}
+
+
+
+
+/************************shell命令测试使用**************************/
 void PP_startengine_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtengineCtrl.state.reqType = (long)reqType;
@@ -315,14 +426,5 @@ void PP_startengine_SetCtrlReq(unsigned char req,uint16_t reqType)
 		enginecation = 0; //下高压电
 	}
 }
-
-void PP_rmtCtrl_checkenginetime(void)
-{
-	if((tm_get_time() - PP_Engine_time > 15 * 60 *1000) \
-		&& (PP_rmtCtrl_cfg_RmtStartSt() == 2))
-	{
-		PP_rmtengineCtrl.state.reqType = 0x0801;
-		PP_rmtengineCtrl.state.req = 1;
-	}
-}
+/************************shell命令测试使用**************************/
 

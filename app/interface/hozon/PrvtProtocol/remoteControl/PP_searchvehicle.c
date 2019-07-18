@@ -249,6 +249,7 @@ void PP_searchvehicle_ClearStatus(void)
 {
 	PP_rmtsearchvehicle.state.req = 0;
 }
+/************************shell命令测试使用**************************/
 
 void PP_searchvehicle_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
@@ -259,6 +260,7 @@ void PP_searchvehicle_SetCtrlReq(unsigned char req,uint16_t reqType)
 		search_type = PP_SEARCH;
 	}
 }
+/************************shell命令测试使用**************************/
 
 
 

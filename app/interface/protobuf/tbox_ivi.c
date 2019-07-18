@@ -11,6 +11,7 @@
 #include <sys/types.h>  
 #include <sys/socket.h> 
 #include <pthread.h>
+#include "shell_api.h"
 
 #include "timer.h"
 #include "msg_parse.h"
@@ -1436,6 +1437,36 @@ int tbox_ivi_create_tcp_socket(void)
     return 0;
 }
 
+int tbox_ivi_hu_charge_ctrl(int argc, const char **argv)
+{
+	unsigned int rmtCtrlReqtype;
+	unsigned int hour;
+	unsigned int min;
+	ivi_chargeAppointSt chargectrl;
+    if (argc != 3)
+    {
+        shellprintf(" usage: HOZON_PP_SetRemoteCtrlReq <remote ctrl req>\r\n");
+        return -1;
+    }
+	sscanf(argv[0], "%u", &rmtCtrlReqtype);
+	sscanf(argv[1], "%u", &hour);
+	sscanf(argv[2], "%u", &min);
+	log_o(LOG_IVI,"--------------HU chargeCtrl ------------------");
+	chargectrl.cmd = rmtCtrlReqtype;
+	chargectrl.effectivestate = 1;
+	chargectrl.hour = hour;
+	chargectrl.min = min;
+	chargectrl.id = 1111;
+	chargectrl.targetpower = 90;
+	PP_rmtCtrl_HuCtrlReq(PP_RMTCTRL_CHARGE,(void *)&chargectrl);
+	return 0;
+}
+
+void tbox_shell_init(void)
+{
+	shell_cmd_register("HuChargeCtrl", tbox_ivi_hu_charge_ctrl, "HU charge CTRL");
+	
+}
 
 int ivi_init(INIT_PHASE phase)
 {
@@ -1458,6 +1489,7 @@ int ivi_init(INIT_PHASE phase)
 
         case INIT_PHASE_OUTSIDE:
             {
+            	tbox_shell_init();
                 ret = tm_create(TIMER_REL, IVI_MSG_GPS_EVENT, MPU_MID_IVI, &ivi_timer);
 
                 if (ret != 0)
@@ -1767,6 +1799,7 @@ void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp)
 	tspdiagnos.effectivetime = tsp->effectivetime;
 	tspdiagnos.sizelimit =tsp->sizelimit;
 	tspdiagnos_flag = 1;
+	log_o(LOG_IVI,"dignos\n");
 }
 void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp)
 {

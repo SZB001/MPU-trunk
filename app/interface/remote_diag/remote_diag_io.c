@@ -480,6 +480,9 @@ int PP_get_remote_result(uint8_t obj, PP_rmtDiag_Fault_t * pp_rmtdiag_fault)
     unsigned char DTC_temp[4];
     unsigned char * response;
     remote_diag_response_arr_t * response_arr = get_remote_diag_response();
+
+    pp_rmtdiag_fault->sueecss = 0;/* 默认执行失败 满足成功条件再置成功 */
+    
     /* 轮询查找匹配结果 */
     for(response_size=0;response_size<response_arr->remote_diag_response_size;response_size++)
     {
@@ -514,7 +517,12 @@ int PP_get_remote_result(uint8_t obj, PP_rmtDiag_Fault_t * pp_rmtdiag_fault)
                 {
                 }
             }
-            
+
+            /* 执行结果中有该ECU的结果，且该结果正常，则执行成功，其它情况都认为执行失败 */
+            if(REMOTE_DIAG_CMD_RESULT_OK == response_arr->remote_diag_response[response_size].result_type)
+            {
+                pp_rmtdiag_fault->sueecss = 1;
+            }
         }
     }
     pp_rmtdiag_fault->faultNum = dtc_num;
