@@ -24,6 +24,84 @@ static pthread_mutex_t uds_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 #define UDS_PROXY_LOCK()    pthread_mutex_lock(&uds_mtx)
 #define UDS_PROXY_UNLOCK()  pthread_mutex_unlock(&uds_mtx)
+
+/*更改tbox uds server 模式，本地诊断 or 远程诊断，只有在默认会话，并未解锁安全等级时可更改模式*/
+int uds_set_uds_server_mode(uint8_t        mode)
+{
+    int ret = 0;
+
+    if(mode == uds_server.mode)
+    {
+        return 0;
+    }
+    else
+    {
+        if((g_u8CurrentSessionType == SESSION_TYPE_DEFAULT) && (g_u8SecurityAccess ==SecurityAccess_LEVEL0))
+        {
+            uds_server.mode = mode;
+            ret = 0;
+        }
+        else
+        {
+            log_e(LOG_UDS, "uds server change mode error,g_u8CurrentSessionType:%d,g_u8SecurityAccess:%d",
+                g_u8CurrentSessionType,g_u8SecurityAccess);
+            ret = 1;
+        }
+    }
+
+    return ret;
+}
+
+
+/*
+    0:不是MCU返回的远程诊断响应
+    1:是MCU返回的远程诊断响应*/
+int is_remote_diag_response(unsigned char * msg)
+{
+    int ret = 0;
+    int msg_type = msg[0];
+    msg++;
+    unsigned int can_id = 0;
+    switch (msg_type)
+    {
+        case MSG_ID_UDS_S_ACK:/*设置UDS server*/
+            ret = 0;
+            break;
+            
+        case MSG_ID_UDS_C_ACK:/*设置UDS client*/
+            ret = 1;
+            break;
+            
+        case MSG_ID_UDS_CFM:
+            can_id = msg[0] | (msg[1] << 8) | (msg[2] << 16) | (msg[3] << 24);
+            if (can_id == uds_server.can_id_res)
+            {
+                ret = 0;
+            }
+            else if (can_id == uds_client.can_id_req)
+            {
+                ret = 1;
+            }
+            break;
+            
+        case MSG_ID_UDS_IND:
+            can_id = msg[0] | (msg[1] << 8) | (msg[2] << 16) | (msg[3] << 24);
+            if (can_id == uds_server.can_id_fun || can_id == uds_server.can_id_phy)
+            {
+                ret = 0;
+            }
+            else
+            {
+                ret = 1;
+            }
+            break;
+        default:
+            log_e(LOG_UDS, "unknown message: %x", msg_type);
+            break;
+    }
+    return ret;
+}
+
 /****************************************************************
 function:     uds_proxy_init
 description:  init uds config

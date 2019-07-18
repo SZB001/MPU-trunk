@@ -420,7 +420,7 @@ return:       0 indicates no fault;
 int uds_diag_dev_can_busoff(void)
 {
     int status = 0;
-    status = flt_get_by_id(CAN_BUS1);
+    status = flt_get_by_id(CAN_BUS2);
 
     if (status == 1)
     {

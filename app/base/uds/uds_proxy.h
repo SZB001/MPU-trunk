@@ -18,5 +18,7 @@ void  uds_set_timer(UDS_T *uds, UDS_TIMER_E  name, uint8_t switch_value);
 
 /***distribute confirm¡¢indication frame***/
 void uds_proxy(uint8_t *msg, uint16_t length);
+int is_remote_diag_response(unsigned char * msg);
+int uds_set_uds_server_mode(uint8_t        mode);
 
 #endif

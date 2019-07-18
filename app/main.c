@@ -29,6 +29,7 @@
 #include "hozon_PP_api.h"
 #include "tbox_ivi_api.h"
 #include "uds_node_miss.h"
+#include "remote_diag_api.h"
 
 int main(int argc , char **argv)
 {
@@ -65,6 +66,7 @@ int main(int argc , char **argv)
 		sockproxy_init,
 		ivi_init,
 		uds_node_miss_init,/* add by caoml*/
+		remote_diag_init,/* add by caoml*/
     };
 
     static module_run_fn run_tbl[] =
@@ -92,6 +94,7 @@ int main(int argc , char **argv)
 		sockproxy_run,
 		ivi_run,
 		uds_node_miss_run,/* add by caoml*/
+		remote_diag_run,/* add by caoml*/
     };
 
     log_init();

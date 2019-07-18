@@ -13,6 +13,7 @@ typedef struct
 
 typedef struct
 {
+	uint8_t sueecss;
 	uint8_t faultNum;//������
 	PP_rmtDiag_faultcode_t faultcode[255];
 }PP_rmtDiag_Fault_t;

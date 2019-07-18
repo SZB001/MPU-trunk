@@ -7,6 +7,7 @@
 #include "uds_proxy.h"
 #include "log.h"
 #include "scom_msg_def.h"
+#include "remote_diag_api.h"
 
 
 /*******************************************************************************************
@@ -55,9 +56,18 @@ uint32_t uds_data_request(UDS_T *uds, UDS_TL_ID msg_id, uint32_t can_id, uint8_t
     
     uds->sid = pdu_data[0];
     uds->can_id_req = can_id;
-    
-    log_buf_dump(LOG_UDS, "<<<<<<<<<<<<<<<<<<uds send<<<<<<<<<<<<<<<<<<<", data, pos);
-    return scom_tl_send_frame(SCOM_TL_CMD_UDS_MSG, SCOM_TL_SINGLE_FRAME, 0, data, pos);
+
+    /* Ô¶³ÌÕï¶Ï·ÖÖ§ */
+    if (uds->mode == UDS_TYPE_REMOTEDIAG)
+    {
+        remote_diag_send_tbox_response(data, pos);
+        return 0;
+    }
+    else
+    {
+        log_buf_dump(LOG_UDS, "<<<<<<<<<<<<<<<<<<uds send<<<<<<<<<<<<<<<<<<<", data, pos);
+        return scom_tl_send_frame(SCOM_TL_CMD_UDS_MSG, SCOM_TL_SINGLE_FRAME, 0, data, pos);
+    }
 }
 
 /*************************************************************************************
@@ -75,7 +85,7 @@ uint32_t  uds_positive_response(UDS_T *uds, uint32_t can_id, uint16_t pdu_dlc, u
 {
     uint32_t  ret = 0;
 
-    if (uds->mode == UDS_TYPE_SERVER)
+    if ((uds->mode == UDS_TYPE_SERVER) || (uds->mode == UDS_TYPE_REMOTEDIAG))
     {
         if ((NULL != pdu_data) && (pdu_dlc <= UDS_SERVER_MAX_BYTE))
         {
@@ -84,9 +94,10 @@ uint32_t  uds_positive_response(UDS_T *uds, uint32_t can_id, uint16_t pdu_dlc, u
                 g_u8suppressPosRspMsgIndicationFlag = 0;
                 return 0;
             }
-            else if ((g_u32DiagID == uds->can_id_phy) && (pdu_data[0] == SID_NegativeResponse) &&
+            else if ((g_u32DiagID == uds->can_id_fun) && (pdu_data[0] == SID_NegativeResponse) &&
                      ((pdu_data[2] == NRC_ServiceNotSupported) ||
                       (pdu_data[2] == NRC_SubFuncationNotSupported) ||
+                      (pdu_data[2] == NRC_ServiceNotSupportedInActiveSession) ||
                       (pdu_data[2] == NRC_RequestOutOfRange)))
             {
                 g_u8suppressPosRspMsgIndicationFlag = 0;

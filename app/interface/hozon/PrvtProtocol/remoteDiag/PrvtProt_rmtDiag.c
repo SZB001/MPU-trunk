@@ -400,7 +400,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 				{
 					getPPrmtDiagCfg_Faultcode(PP_rmtDiag.state.diagType,&PP_rmtDiag_Fault);//读取故障码
 					log_i(LOG_HOZON, "PP_rmtDiag.state.diagType = %d and PP_rmtDiag_Fault.failNum = %d\n",PP_rmtDiag.state.diagType,PP_rmtDiag_Fault.faultNum);
-					PP_rmtDiag.state.result = 1;
+					PP_rmtDiag.state.result = PP_rmtDiag_Fault.sueecss;
 					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
 					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
 				}
@@ -844,7 +844,7 @@ static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 	{
 		AppData_rmtDiag.DiagnosticSt.diagobjnum++;
 		AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagType = diagType;//
-		AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].result = PP_rmtDiag.state.result;
+		AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].result = PP_rmtDiag_allFault.code[diagType-1].sueecss;
 		AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].failureType = PP_rmtDiag.state.failureType;
 		if((1 == PP_rmtDiag.state.result) && (PP_rmtDiag_allFault.code[diagType-1].faultNum > 0))
 		{

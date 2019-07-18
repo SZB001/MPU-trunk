@@ -232,13 +232,42 @@ static void *uds_main(void)
                     if (UDS_SCOM_MSG_IND == msgheader.msgid)
                     {
                         log_buf_dump(LOG_UDS, ">>>>>>>>>>>>>uds recv>>>>>>>>>>>>>", uds_msgbuf, msgheader.msglen);
-                        uds_proxy(uds_msgbuf, msgheader.msglen);
+
+                        if(0 == is_remote_diag_response(uds_msgbuf))
+                        {
+                            /* 处理本地诊断请求 */
+                            if(0 == uds_set_uds_server_mode(UDS_TYPE_SERVER))
+                            {
+                                uds_proxy(uds_msgbuf, msgheader.msglen);
+                            }
+                        }
+                        else
+                        {
+                            /* 处理MCU返回的远程诊断响应*/
+                            uds_proxy(uds_msgbuf, msgheader.msglen);
+                        }
+
                     }
                     else if (MPU_MID_MID_PWDG == msgheader.msgid)
                     {
                         pwdg_feed(MPU_MID_UDS);
                     }
                 }
+
+                /* 远程诊断 发送的诊断T-Box请求 */
+                else if (MPU_MID_REMOTE_DIAG == msgheader.sender)
+                {
+                    if (UDS_SCOM_MSG_IND == msgheader.msgid)
+                    {
+                        log_buf_dump(LOG_UDS, ">>>>>>>>>>>>>uds recv remote msg>>>>>>>>>>>>>", uds_msgbuf,
+                                     msgheader.msglen);
+                        if(0 == uds_set_uds_server_mode(UDS_TYPE_REMOTEDIAG))
+                        {
+                            uds_proxy(uds_msgbuf, msgheader.msglen);
+                        }
+                    }
+                }
+                
                 else if (MPU_MID_PM == msgheader.sender)
                 {
                     if (PM_MSG_SLEEP == msgheader.msgid

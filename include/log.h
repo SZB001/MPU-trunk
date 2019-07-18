@@ -53,6 +53,7 @@ typedef enum LOG_ID
 	LOG_IVI,
     LOG_CAN_NODE_MISS, /* add by caoml*/
 	LOG_UPER_ECDC,
+	LOG_REMOTE_DIAG,
     LOG_MAX,
 } LOG_ID;
 

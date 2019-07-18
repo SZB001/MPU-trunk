@@ -16,6 +16,8 @@ description£º include the header file
 
 #include "hozon_PP_api.h"
 #include "PP_rmtDiag_cfg.h"
+#include "remote_diag_api.h"
+#include "mid_def.h"
 /*******************************************************
 description£º global variable definitions
 *******************************************************/
@@ -57,7 +59,8 @@ int PPrmtDiagCfg_ecallTriggerEvent(void)
 ******************************************************/
 void setPPrmtDiagCfg_QueryFaultReq(uint8_t obj)
 {
-	PP_rmtDiag_queryInform_cb();
+    remote_diag_request(MPU_MID_REMOTE_DIAG, (char *)(&obj), 1);
+	/*PP_rmtDiag_queryInform_cb();*/
 }
 
 /******************************************************
@@ -69,9 +72,10 @@ void setPPrmtDiagCfg_QueryFaultReq(uint8_t obj)
 ******************************************************/
 void getPPrmtDiagCfg_Faultcode(uint8_t obj,void *rmtDiag_Fault)
 {
+    #if 0
 	uint8_t i;
 	PP_rmtDiag_Fault_t *rmtDiag_Fault_ptr = (PP_rmtDiag_Fault_t*)rmtDiag_Fault;
-	rmtDiag_Fault_ptr->faultNum = obj -1;
+	rmtDiag_Fault_ptr->faultNum = 3;
 	for(i = 0;i < rmtDiag_Fault_ptr->faultNum;i++)
 	{
 		memcpy(rmtDiag_Fault_ptr->faultcode[i].diagcode,"12345",5);
@@ -79,4 +83,6 @@ void getPPrmtDiagCfg_Faultcode(uint8_t obj,void *rmtDiag_Fault)
 		rmtDiag_Fault_ptr->faultcode[i].lowByte = 0;
 		rmtDiag_Fault_ptr->faultcode[i].diagTime = 123456789;
 	}
+	#endif
+	PP_get_remote_result(obj,rmtDiag_Fault);
 }

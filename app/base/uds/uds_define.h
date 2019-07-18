@@ -10,6 +10,8 @@
 
 #define  UDS_TYPE_CLIENT    1
 #define  UDS_TYPE_SERVER    2
+#define  UDS_TYPE_REMOTEDIAG    3
+
 
 #define  UDS_SERVER_MAX_BYTE    4096
 #define  UDS_FF_PUD_DLC_MAX     (6)
