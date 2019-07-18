@@ -84,14 +84,7 @@
     <storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
     	
     <storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings">
-        		
-        <doc-comment-owner id="org.eclipse.cdt.internal.ui.text.doctools.NullDocCommentOwner">
-            			
-            <path value=""/>
-            		
-        </doc-comment-owner>
-        	
-    </storageModule>
+	</storageModule>
     	
     <storageModule moduleId="scannerConfiguration">
         		
@@ -144,6 +137,16 @@
             <autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
             		
         </scannerConfigBuildInfo>
+        	
+    </storageModule>
+    	
+    <storageModule moduleId="refreshScope" versionNumber="2">
+        		
+        <configuration configurationName="Build (GNU)">
+            			
+            <resource resourceType="PROJECT" workspacePath="/mpu"/>
+            		
+        </configuration>
         	
     </storageModule>
     

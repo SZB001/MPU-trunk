@@ -90,7 +90,7 @@ description： macro definitions
 #define PP_RMTCTRL_TIMEOUTFAIL			0x05//command executed timeout
 #define PP_RMTCTRL_CHRGGUNUNCONNT		0x06//充电枪未连接
 #define PP_RMTCTRL_INVALID_ID			0x07//无效的预约ID
-
+#define PP_RMTCTRL_READYLIGHTON			0x08//运动模式
 
 /***********宏函数***********/
 typedef void (*PP_rmtCtrlInitObj)(void);//初始化
@@ -333,4 +333,6 @@ extern int 	PP_rmtCtrl_mainfunction(void *task);
 extern void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 extern int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para);
 //extern void PP_rmtCtrl_BluetoothSetCtrlReq(unsigned char obj, unsigned char cmd);
+extern void SetPP_rmtCtrl_Awaken(void);
+extern unsigned char GetPP_rmtCtrl_Sleep(void);
 #endif 

@@ -74,13 +74,14 @@ int uds_did_get_time(unsigned char *did, unsigned int len)
     did[3] = bcd2bin_2dit(time.hour);
     did[4] = bcd2bin_2dit(time.min);
     did[5] = bcd2bin_2dit(time.sec);*/
-
-	did[0] = bin2bcd_2dit(time.year - 2000);
-    did[1] = bin2bcd_2dit(time.mon);
-    did[2] = bin2bcd_2dit(time.mday);
-    did[3] = bin2bcd_2dit(time.hour);
-    did[4] = bin2bcd_2dit(time.min);
-    did[5] = bin2bcd_2dit(time.sec);
+    
+    did[0] = time.year%256;
+	did[1] = time.year/256;
+    did[2] = time.mon;
+    did[3] = time.mday;
+    did[4] = time.hour;
+    did[5] = time.min;
+    did[6] = time.sec;
     
     return 0;
 }

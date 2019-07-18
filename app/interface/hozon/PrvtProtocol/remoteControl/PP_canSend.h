@@ -37,6 +37,8 @@
 /************chager**************/
 #define CAN_STOPCHAGER 0
 #define CAN_STARTCHAGER 1
+#define CAN_SETAPPOINT 2
+#define CAN_CANCELAPPOINT 3
 /************forbid**************/
 #define CAN_FORBIDCLEAN  0
 #define CAN_STARTFORBID  1

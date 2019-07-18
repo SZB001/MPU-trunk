@@ -99,6 +99,7 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 static int PP_rmtCtrl_flag = 0;
 #define PP_TXINFORMNODE_NUM 100
 static PrvtProt_TxInform_t rmtCtrl_TxInform[PP_TXINFORMNODE_NUM];
+static uint8_t PP_rmtCtrl_sleepflag = 0;
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -258,14 +259,14 @@ int PP_rmtCtrl_mainfunction(void *task)
 				}
 			}
 
-			ifend = PP_doorLockCtrl_end() &&
-				  PP_autodoorCtrl_end()   &&
-				  PP_searchvehicle_end()  &&
-				  PP_sunroofctrl_end()    &&
-				  PP_startengine_end()    &&
-				  PP_seatheating_end()    &&
-				  PP_ChargeCtrl_end()	  &&
-				  PP_ACCtrl_end()	      &&
+			ifend = PP_doorLockCtrl_end() &&	\
+				  PP_autodoorCtrl_end()   &&	\
+				  PP_searchvehicle_end()  &&	\
+				  PP_sunroofctrl_end()    &&	\
+				  PP_startengine_end()    &&	\
+				  PP_seatheating_end()    &&	\
+				  PP_ChargeCtrl_end()	  &&	\
+				  PP_ACCtrl_end()	      &&	\
 				  PP_startforbid_end();
 			if(ifend == 1)
 			{
@@ -280,6 +281,8 @@ int PP_rmtCtrl_mainfunction(void *task)
 	
 	PP_can_send_cycle();//广播440 445报文
 	
+	PP_rmtCtrl_sleepflag = GetPP_ChargeCtrl_Sleep();
+
 	return res;
 }
 
@@ -928,4 +931,39 @@ static int PP_rmtCtrl_getIdleNode(void)
 		}
 	}
 	return res;
+}
+
+
+/******************************************************
+*������:SetPP_rmtCtrl_Awaken
+
+*��  �Σ�
+
+*����ֵ��
+
+*��  ����
+
+*��  ע��
+******************************************************/
+void SetPP_rmtCtrl_Awaken(void)
+{
+	PP_rmtCtrl_sleepflag = 0;
+	//SetPP_ChargeCtrl_Awaken();
+}
+
+/******************************************************
+*������:GetPrvtProt_Sleep
+
+*��  �Σ�
+
+*����ֵ��
+
+*��  ����
+
+*��  ע��
+******************************************************/
+unsigned char GetPP_rmtCtrl_Sleep(void)
+{
+	//return ( && GetPP_ChargeCtrl_Sleep());
+	return PP_rmtCtrl_sleepflag;
 }

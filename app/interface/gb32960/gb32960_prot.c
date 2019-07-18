@@ -21,6 +21,7 @@
 #include "pm_api.h"
 #include "at.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 
 #define PROT_LOGIN      0x01
 #define PROT_REPORT     0x02
@@ -600,7 +601,7 @@ static int gb_do_checksock(gb_stat_t *state)
 	{}
 #else
 	if((1 == sockproxy_socketState()) && \
-			!gb_allow_sleep)//socket open && gbË¯ÃßÌõ¼þ²»Âú×ã
+			!gb_allow_sleep)//socket open && gbË¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	{
 		
 		 return 0;
@@ -1334,7 +1335,8 @@ static void gb_show_status(gb_stat_t *state)
     shellprintf("  server url  : %s : %u\r\n", gb_addr.url, gb_addr.port);
     shellprintf("  vin         : %s\r\n", gb_vin);
 
-
+    shellprintf(" gb allow sleep : %s\r\n", gb_allow_sleep?"yes":"no");
+    shellprintf("pp allow sleep : %s\r\n", GetPrvtProt_Sleep()?"yes":"no");
     shellprintf("  rpt period  : %u s\r\n", gb_data_get_intv());
     shellprintf("  srv timeout : %u s\r\n", gb_timeout);
     shellprintf("  reg period  : %u s\r\n", gb_regintv);
@@ -1402,6 +1404,7 @@ static void *gb_main(void)
 
             case PM_MSG_RUNNING:
             	 powerOffFlag = 0;
+            	 SetPrvtProt_Awaken();
             	break;
             case PM_MSG_OFF:
                 gb_data_emergence(0);
@@ -1459,13 +1462,13 @@ static void *gb_main(void)
 
 		if(gbnosend != 0) continue;
 		
-        res = gb_do_checksock(&state) ||	//¼ì²ésocketÁ¬½Ó
-              gb_do_receive(&state) ||		//socketÊý¾Ý½ÓÊÕ
-              gb_do_wait(&state) ||			//³¬Ê±µÈ´ý£¨µÇÈë»òµÇ³ö£©
-              gb_do_login(&state) ||		//µÇÈë
-              gb_do_suspend(&state) ||		//Í¨ÐÅÔÝÍ£
-              gb_do_report(&state) ||		//·¢ÉúÊµÊ±ÐÅÏ¢
-              gb_do_logout(&state);			//µÇ³ö
+        res = gb_do_checksock(&state) ||	//ï¿½ï¿½ï¿½socketï¿½ï¿½ï¿½ï¿½
+              gb_do_receive(&state) ||		//socketï¿½ï¿½ï¿½Ý½ï¿½ï¿½ï¿½
+              gb_do_wait(&state) ||			//ï¿½ï¿½Ê±ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç³ï¿½ï¿½ï¿½
+              gb_do_login(&state) ||		//ï¿½ï¿½ï¿½ï¿½
+              gb_do_suspend(&state) ||		//Í¨ï¿½ï¿½ï¿½ï¿½Í£
+              gb_do_report(&state) ||		//ï¿½ï¿½ï¿½ï¿½ÊµÊ±ï¿½ï¿½Ï¢
+              gb_do_logout(&state);			//ï¿½Ç³ï¿½
 
     }
 
@@ -1586,13 +1589,13 @@ int gb_run(void)
 			break;
 	}
 
-	res = gb_do_checksock(&state) ||	//¼ì²ésocketÁ¬½Ó
-		  gb_do_receive(&state) ||		//socketÊý¾Ý½ÓÊÕ
-		  gb_do_wait(&state) ||			//³¬Ê±µÈ´ý£¨µÇÈë»òµÇ³ö£©
-		  gb_do_login(&state) ||		//µÇÈë
-		  gb_do_suspend(&state) ||		//Í¨ÐÅÔÝÍ£
-		  gb_do_report(&state) ||		//·¢ÉúÊµÊ±ÐÅÏ¢
-		  gb_do_logout(&state);			//µÇ³ö
+	res = gb_do_checksock(&state) ||	//ï¿½ï¿½ï¿½socketï¿½ï¿½ï¿½ï¿½
+		  gb_do_receive(&state) ||		//socketï¿½ï¿½ï¿½Ý½ï¿½ï¿½ï¿½
+		  gb_do_wait(&state) ||			//ï¿½ï¿½Ê±ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç³ï¿½ï¿½ï¿½
+		  gb_do_login(&state) ||		//ï¿½ï¿½ï¿½ï¿½
+		  gb_do_suspend(&state) ||		//Í¨ï¿½ï¿½ï¿½ï¿½Í£
+		  gb_do_report(&state) ||		//ï¿½ï¿½ï¿½ï¿½ÊµÊ±ï¿½ï¿½Ï¢
+		  gb_do_logout(&state);			//ï¿½Ç³ï¿½
 
 	return res;
 #endif
@@ -1601,7 +1604,7 @@ int gb_run(void)
 
 static int gb_allow_sleep_handler(PM_EVT_ID id)
 {
-    return gb_allow_sleep;
+    return (gb_allow_sleep && GetPrvtProt_Sleep());
 }
 
 int gb_init(INIT_PHASE phase)
@@ -1777,14 +1780,14 @@ int gb_set_timeout(uint16_t timeout)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºgb32960_MsgSend
-*ÐÎ  ²Î£º
-		Msg -- Êý¾Ý
-		len -- Êý¾Ý³¤¶È
-		sync -- »Øµ÷º¯Êý
-*·µ»ØÖµ£º
-*Ãè  Êö£º·¢ËÍÊý¾Ý
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gb32960_MsgSend
+*ï¿½ï¿½  ï¿½Î£ï¿½
+		Msg -- ï¿½ï¿½ï¿½ï¿½
+		len -- ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½
+		sync -- ï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void))
 {
@@ -1798,13 +1801,13 @@ static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void))
 }
 
 /******************************************************
-*º¯ÊýÃû£ºgb32960_getNetworkSt
-*ÐÎ  ²Î£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gb32960_getNetworkSt
+*ï¿½ï¿½  ï¿½Î£ï¿½
 		
 		
-*·µ»ØÖµ£º
-*Ãè  Êö£º»ñÈ¡ÍøÂç×´Ì¬
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½×´Ì¬
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int gb32960_getNetworkSt(void)
 {
@@ -1812,13 +1815,13 @@ int gb32960_getNetworkSt(void)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºgb32960_getURL
-*ÐÎ  ²Î£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gb32960_getURL
+*ï¿½ï¿½  ï¿½Î£ï¿½
 		
 		
-*·µ»ØÖµ£º
-*Ãè  Êö£º»ñÈ¡url
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡url
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void gb32960_getURL(void* ipaddr)
 {
@@ -1827,13 +1830,13 @@ void gb32960_getURL(void* ipaddr)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºgb32960_getAllowSleepSt
-*ÐÎ  ²Î£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gb32960_getAllowSleepSt
+*ï¿½ï¿½  ï¿½Î£ï¿½
 		
 		
-*·µ»ØÖµ£º
-*Ãè  Êö£º»ñÈ¡ÔÊÐíË¯Ãß±êÖ¾
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Ë¯ï¿½ß±ï¿½Ö¾
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int gb32960_getAllowSleepSt(void)
 {
@@ -1841,13 +1844,13 @@ int gb32960_getAllowSleepSt(void)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºgb32960_getsuspendSt
-*ÐÎ  ²Î£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gb32960_getsuspendSt
+*ï¿½ï¿½  ï¿½Î£ï¿½
 		
 		
-*·µ»ØÖµ£ºture -- tcpÔÝÍ£
-*Ãè  Êö£º»ñÈ¡ÔÝÍ£×´Ì¬
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ture -- tcpï¿½ï¿½Í£
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½Í£×´Ì¬
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int gb32960_getsuspendSt(void)
 {

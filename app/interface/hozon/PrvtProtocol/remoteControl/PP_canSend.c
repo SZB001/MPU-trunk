@@ -1,8 +1,8 @@
 /**********************************************
 			合众远控can报文发送
-ID ：0x3D2   TBOX主动认证请求
-ID ：0x440  
-ID : 0x445  远程控制命令报文
+	ID ：0x3D2   TBOX主动认证请求
+	ID ：0x440  
+	ID : 0x445  远程控制命令报文
 **********************************************/
 
 #include <stdio.h>
@@ -193,16 +193,20 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 	else if(id == CAN_ID_445)
 	{
 		PP_send_virtual_on_to_mcu(1);
-		ID445_data &= ~(((1<<bitl)-1) << (bit-1)) ; //再移位
-		ID445_data |= (uint64_t)data << (bit-1);      //置位
+		ID445_data &=  ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
+		ID445_data |= (uint64_t)data << (bit-bitl+1);      //置位
 		PP_can_unpack(ID445_data,can_data);
+		for(i=0;i<8;i++)
+		{
+			log_o(LOG_HOZON,"ID445_data[%d] = %d",i,can_data[i]);
+		}
 		PP_send_cycle_ID445_to_mcu(can_data);
 	}
 	else if(id == CAN_ID_526)
 	{
 		PP_send_virtual_on_to_mcu(1);
-		ID526_data &= ~(((1<<bitl)-1) << (bit-1)) ; //再移位
-		ID526_data |= (uint64_t)data << (bit-1);      //置位
+		ID526_data &=  ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
+		ID526_data |= (uint64_t)data << (bit-bitl+1);      //置位
 		PP_can_unpack(ID526_data,can_data);
 		PP_send_cycle_ID526_to_mcu(can_data);
 	}
@@ -303,7 +307,23 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 			}
 			break;
 		case PP_CAN_CHAGER:
-			PP_canSend_setbit(CAN_ID_440,3,1,data,NULL);
+			switch(data)
+			{
+				case CAN_STARTCHAGER:
+					PP_canSend_setbit(CAN_ID_440,3,1,1,NULL);
+					PP_canSend_setbit(CAN_ID_440,4,1,0,NULL);
+				break;
+				case CAN_STOPCHAGER:
+					PP_canSend_setbit(CAN_ID_440,3,1,0,NULL);
+					break;
+				case CAN_SETAPPOINT:
+					PP_canSend_setbit(CAN_ID_440,4,1,1,NULL);
+					break;
+				case CAN_CANCELAPPOINT:
+					PP_canSend_setbit(CAN_ID_440,4,1,0,NULL);
+				default:
+					break;	
+			}
 			break;
 		case PP_CAN_FORBID:
 			PP_canSend_setbit(CAN_ID_440,31,2,data,NULL);

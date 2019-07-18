@@ -8,12 +8,12 @@ typedef struct
 	uint8_t	 diagcode[PP_RMTDIAG_FAILCODE_LEN];
 	uint8_t	 faultCodeType;
 	uint8_t	 lowByte;
-	uint32_t diagTime;//Ê±¼ä´Á
+	uint32_t diagTime;//Ê±ï¿½ï¿½ï¿½
 }PP_rmtDiag_faultcode_t;
 
 typedef struct
 {
-	uint8_t faultNum;//¹ÊÕÏÊý
+	uint8_t faultNum;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	PP_rmtDiag_faultcode_t faultcode[255];
 }PP_rmtDiag_Fault_t;
 
@@ -34,4 +34,7 @@ extern void PrvtProt_Settboxsn(const char *tboxsn);
 extern void PrvtPro_ShowPara(void);
 extern void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd);
 extern void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara);
+
+extern void SetPrvtProt_Awaken(void);
+extern unsigned char GetPrvtProt_Sleep(void);
 #endif

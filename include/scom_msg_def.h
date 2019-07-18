@@ -97,7 +97,9 @@ typedef enum
     SCOM_MPU_MCU_VIRTUAL_ON,                     // 虚拟ON线
     SCOM_MPU_MCU_0x440,                          // 合众，由MPU维护0x440报文内容
     SCOM_MPU_MCU_0x445,                          // 合众，由MPU维护0x445报文内容
-    SOCM_MCU_MPU_0x526,                          // 合众，由MPU维护0x526报文内容         
+    SOCM_MCU_MPU_0x526,                          // 合众，由MPU维护0x526报文内容   
+    SCOM_MCU_MPU_0x3d2,
+    SCOM_MPU_MCU_CAN_CTRL,                          // 电咖数据CAN收发控制，由MPU下发。add by caoml	
 } SCOM_TL_CUSTOM_TYPE;
 
 #endif

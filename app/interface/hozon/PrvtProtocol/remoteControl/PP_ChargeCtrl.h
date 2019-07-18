@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼şÃû£ºPP_ChargeCtrl.h
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½PP_ChargeCtrl.h
 
-ÃèÊö£º	³µÃÅËø¿ØÖÆ
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 Data			  Vasion			author
 2019/05/18		   V1.0			    liujian
@@ -9,15 +9,17 @@ Data			  Vasion			author
 #ifndef		_PP_CHARGE_CTRL_H
 #define		_PP_CHARGE_CTRL_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
+#define PP_CHARGECTRL_APPOINTHOLDTIME   (6*60*60*1000)
+
 #define PP_CHARGECTRL_IDLE   		0
 #define PP_CHARGECTRL_REQSTART  	1
 #define PP_CHARGECTRL_RESPWAIT   	2
@@ -30,31 +32,44 @@ description£º macro definitions
 
 #define PP_CHARGECTRL_OPEN   		1
 #define PP_CHARGECTRL_CLOSE  		0
-/***********ºêº¯Êı***********/
+
+
+#define PP_APPOINTCHARGE_IDLE   	0
+#define PP_APPOINTCHARGE_READY	    1
+#define PP_APPOINTCHARGE_ONGOING   	2
+#define PP_APPOINTCHARGE_SUCCESS  	3
+#define PP_APPOINTCHARGE_UNCONNT  	4//å……ç”µæªæœªè¿æ¥
+#define PP_APPOINTCHARGE_SPORT		5//è¿åŠ¨æ¨¡å¼
+#define PP_APPOINTCHARGE_ABNRSHUTDOWN	6//å¼‚å¸¸å…³é—­
+/***********ï¿½êº¯ï¿½ï¿½***********/
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 typedef struct
 {
 	uint8_t req;
 	uint8_t chargecmd;
-	uint8_t bookingSt;//ÊÇ·ñÔ¤Ô¼
-	uint8_t executSt;//Ö´ĞĞ×´Ì¬
+	uint8_t bookingSt;//ï¿½Ç·ï¿½Ô¤Ô¼
+	uint8_t executSt;//Ö´ï¿½ï¿½×´Ì¬
 	uint8_t CtrlSt;
-	char 	style;//·½Ê½£ºtsp-1£»2-À¶ÑÀ£»3-HU£»4-tbox
+	char 	style;//ï¿½ï¿½Ê½ï¿½ï¿½tsp-1ï¿½ï¿½2-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3-HUï¿½ï¿½4-tbox
 	uint64_t period;
 	uint8_t  waitSt;
 	uint64_t waittime;
-	uint8_t  chargeSt;//³äµç×´Ì¬£º1-³äµçÖĞ£»0-Î´³äµç
+	uint8_t  chargeSt;//ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½1-ï¿½ï¿½ï¿½ï¿½Ğ£ï¿½0-Î´ï¿½ï¿½ï¿½
 
 	uint8_t  dataUpdata;
-}__attribute__((packed))  PP_rmtChargeCtrlSt_t; /*remote control½á¹¹Ìå*/
+
+	uint8_t appointcharge;
+	uint8_t appointchargeSt;
+	uint64_t appointchargeTimer;
+}__attribute__((packed))  PP_rmtChargeCtrlSt_t; /*remote control*/
 
 
 typedef struct
@@ -63,13 +78,13 @@ typedef struct
 	long 	reqType;
 	long 	rvcReqCode;
 	long 	bookingId;
-}__attribute__((packed))  PP_rmtChargeCtrlPara_t; /*½á¹¹Ìå*/
+}__attribute__((packed))  PP_rmtChargeCtrlPara_t; /*ï¿½á¹¹ï¿½ï¿½*/
 
 
 typedef struct
 {
-	//Ô¤Ô¼¼ÇÂ¼
-	uint8_t  appointType;//Ô¤Ô¼¼ÇÂ¼ÀàĞÍ£º1-tsp;3-HU
+	//Ô¤Ô¼ï¿½ï¿½Â¼
+	uint8_t  appointType;//Ô¤Ô¼ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Í£ï¿½1-tsp;3-HU
 	uint8_t  validFlg;
 	uint32_t id;
 	uint8_t  hour;
@@ -82,23 +97,23 @@ typedef struct
 	uint32_t huBookingTime;
 	uint32_t HUbookingId;
 
-	uint8_t	bookupdataflag;//Ô¤Ô¼¼ÇÂ¼¸üĞÂµ½tsp±êÖ¾:0-Ä¬ÈÏ£»1-ÉÏ±¨ÖĞ£»2-ÉÏ±¨Ê§°Ü£»3-ÉÏ±¨Íê³É
-}__attribute__((packed))  PP_rmtCharge_AppointBook_t; /*½á¹¹Ìå*/
+	uint8_t	bookupdataflag;//Ô¤Ô¼ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½tspï¿½ï¿½Ö¾:0-Ä¬ï¿½Ï£ï¿½1-ï¿½Ï±ï¿½ï¿½Ğ£ï¿½2-ï¿½Ï±ï¿½Ê§ï¿½Ü£ï¿½3-ï¿½Ï±ï¿½ï¿½ï¿½ï¿½
+}__attribute__((packed))  PP_rmtCharge_AppointBook_t; /*ï¿½á¹¹ï¿½ï¿½*/
 
 typedef struct
 {
-	//Ô¤Ô¼ÖÜÆÚ
+	//Ô¤Ô¼ï¿½ï¿½ï¿½ï¿½
 	uint8_t  week;
 	uint8_t  mask;
-} PP_rmtCharge_Appointperiod_t; /*½á¹¹Ìå*/
+} PP_rmtCharge_Appointperiod_t; /*ï¿½á¹¹ï¿½ï¿½*/
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern void PP_ChargeCtrl_init(void);
 extern int 	PP_ChargeCtrl_mainfunction(void *task);
@@ -110,4 +125,6 @@ extern int PP_ChargeCtrl_start(void);
 extern int PP_ChargeCtrl_end(void);
 extern void PP_ChargeCtrl_ClearStatus(void);
 extern void PP_ChargeCtrl_send_cb(void);
+//extern void SetPP_ChargeCtrl_Awaken(void);
+extern unsigned char GetPP_ChargeCtrl_Sleep(void);
 #endif 

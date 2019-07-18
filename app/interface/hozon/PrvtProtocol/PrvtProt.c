@@ -93,6 +93,7 @@ static PrvtProt_RmtFunc_t PP_RmtFunc[PP_RMTFUNC_MAX] =
 	{PP_RMTFUNC_DIAG, PP_rmtDiag_init,	PP_rmtDiag_mainfunction}
 };
 
+static uint8_t PP_sleepflag = 0;
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -261,6 +262,8 @@ static void *PrvtProt_main(void)
 				PP_RmtFunc[obj].mainFunc(&pp_task);
 			}
 		}
+
+		PP_sleepflag = GetPP_rmtCtrl_Sleep();
     }
 	(void)res;
     return NULL;
@@ -736,4 +739,37 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 void PrvtProt_gettboxsn(char *tboxsn)
 {
 	memcpy(tboxsn,pp_tboxsn,strlen(pp_tboxsn));
+}
+
+/******************************************************
+*������:SetPrvtProt_Awaken
+
+*��  �Σ�
+
+*����ֵ��
+
+*��  ����
+
+*��  ע��
+******************************************************/
+void SetPrvtProt_Awaken(void)
+{
+	PP_sleepflag = 0;
+	SetPP_rmtCtrl_Awaken();
+}
+
+/******************************************************
+*������:GetPrvtProt_Sleep
+
+*��  �Σ�
+
+*����ֵ��
+
+*��  ����
+
+*��  ע��
+******************************************************/
+unsigned char GetPrvtProt_Sleep(void)
+{
+	return PP_sleepflag;
 }
