@@ -1,13 +1,13 @@
 /******************************************************
-ÎÄ¼şÃû£º	PP_rmtDiag_cfg.c
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PP_rmtDiag_cfg.c
 
-ÃèÊö£º	ÆóÒµË½ÓĞĞ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ğ­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -19,31 +19,31 @@ description£º include the header file
 #include "remote_diag_api.h"
 #include "mid_def.h"
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 
 
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
 /*Static function declaration*/
 
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 
 /******************************************************
-*º¯ÊıÃû£ºPPrmtDiagCfg_ecallTriggerEvent
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£º¶ÁÈ¡ecall´¥·¢×´Ì¬
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PPrmtDiagCfg_ecallTriggerEvent
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ecallï¿½ï¿½ï¿½ï¿½×´Ì¬
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int PPrmtDiagCfg_ecallTriggerEvent(void)
 {
@@ -51,11 +51,11 @@ int PPrmtDiagCfg_ecallTriggerEvent(void)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºsetPPrmtDiagCfg_QueryFaultReq
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£º
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½setPPrmtDiagCfg_QueryFaultReq
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void setPPrmtDiagCfg_QueryFaultReq(uint8_t obj)
 {
@@ -64,11 +64,11 @@ void setPPrmtDiagCfg_QueryFaultReq(uint8_t obj)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºgetPPrmtDiagCfg_Faultcode
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½getPPrmtDiagCfg_Faultcode
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void getPPrmtDiagCfg_Faultcode(uint8_t obj,void *rmtDiag_Fault)
 {
@@ -85,4 +85,16 @@ void getPPrmtDiagCfg_Faultcode(uint8_t obj,void *rmtDiag_Fault)
 	}
 	#endif
 	PP_get_remote_result(obj,rmtDiag_Fault);
+}
+
+/******************************************************
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½getPPrmtDiagCfg_NodeFault
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ è¯»å–èŠ‚ç‚¹æ•…éšœ
+*ï¿½ï¿½  ×¢ï¿½ï¿½
+******************************************************/
+void getPPrmtDiagCfg_NodeFault(PP_rmtDiag_NodeFault_t *rmtDiag_NodeFault)
+{
+
 }

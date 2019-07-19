@@ -18,6 +18,13 @@ typedef struct
 	PP_rmtDiag_faultcode_t faultcode[255];
 }PP_rmtDiag_Fault_t;
 
+typedef struct
+{
+	uint8_t tboxFault;
+	uint8_t BMSMiss;
+	uint8_t MCUMiss;
+}PP_rmtDiag_NodeFault_t;
+
 extern void PP_rmtDiag_queryInform_cb(void);
 
 extern int PrvtProt_init(INIT_PHASE phase);
@@ -38,4 +45,6 @@ extern void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara);
 
 extern void SetPrvtProt_Awaken(void);
 extern unsigned char GetPrvtProt_Sleep(void);
+extern void getPPrmtDiagCfg_NodeFault(PP_rmtDiag_NodeFault_t *rmtDiag_NodeFault);
+
 #endif

@@ -15,7 +15,7 @@
 #include "timer.h"
 #include "../support/protocol.h"
 #include "../hozon/PrvtProtocol/PrvtProt_SigParse.h"
-
+#include "hozon_PP_api.h"
 extern int PP_identificat_rcvdata(uint8_t *dt);
 
 
@@ -429,7 +429,7 @@ typedef struct
 
 static gb_alarmCode_t	gb_alarmCode[GB_MAX_WARN_INFO] =
 {
-	{0x0000},//0~31,��Ӧ����,�˴�ȫ0--��ʹ��
+	{0x0000},//0~31,国标告警
 	{0x0000},
 	{0x0000},
 	{0x0000},
@@ -461,7 +461,7 @@ static gb_alarmCode_t	gb_alarmCode[GB_MAX_WARN_INFO] =
 	{0x0000},
 	{0x0000},
 	{0x0000},
-	{0x0001},
+	{0x0001},//国标扩展告警
 	{0x0002},
 	{0x0003},
 	{0x0004},
@@ -477,23 +477,24 @@ static gb_alarmCode_t	gb_alarmCode[GB_MAX_WARN_INFO] =
 	{0x000E},
 	{0x000F},
 	{0x0010},
+	{0x0010},
 	{0x0011},
 	{0x0012},
 	{0x0013},
 	{0x0014},
 	{0x0015},
 	{0x0016},//���س����Ƿѹ�澯
-	{0x0016},//���س����Ƿѹ�澯
+	//{0x0016},//���س����Ƿѹ�澯
 	{0x0017},
 	{0x0018},
 	{0x0019},
-	{0x001A},
-	{0x001B},
-	{0x001C},
+	{0x001A},//电机异常告警
+	{0x001B},//动力电池单体电压过压保护
+	{0x001C},//动力电池单体电压欠压保护故障
 	{0x001D},
 	{0x001E},
 	{0x001F},
-	{0x0020},
+	{0x0020},//动力电池温度过高保护故障
 	{0x0021},
 	{0x0022},
 	{0x0023},
@@ -3061,7 +3062,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
             }
         }
 
-        //MCU �ڲ� IGBT ���£�U �ࣩ
+        //MCU 内部 IGBT 过温（U 相） ࣩ
 		if (gbinf->warn[i][0x0f] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x0f])->value ||
 		(gbinf->warn[3][0x0f] &&
@@ -3075,7 +3076,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //�������ع�ѹ����
+        //单体蓄电池过压报警
 		if (gbinf->warn[i][0x05] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x05])->value ||
 		(gbinf->warn[3][0x05] &&
@@ -3089,7 +3090,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //��λ�źŹ���
+        //档位信号故障
 		if (gbinf->warn[i][0x33] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x33])->value ||
 		(gbinf->warn[3][0x33] &&
@@ -3103,7 +3104,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //����쳣����
+        //电机异常报警
 		if (gbinf->warn[i][0x0b] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x0b])->value ||
 		(gbinf->warn[3][0x0b] &&
@@ -3117,7 +3118,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //����쳣����
+        //电机异常报警
 		if (gbinf->warn[i][0x0f] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x0f])->value ||
 		(gbinf->warn[3][0x0f] &&
@@ -3131,7 +3132,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //������ص����ѹ��ѹ����
+        //动力电池单体电压过压保护
 		if (gbinf->warn[i][0x05] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x05])->value ||
 		(gbinf->warn[3][0x05] &&
@@ -3145,7 +3146,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //������ص����ѹǷѹ��������
+        //动力电池单体电压欠压保护故障
 		if (gbinf->warn[i][0x06] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x06])->value ||
 		(gbinf->warn[3][0x06] &&
@@ -3159,7 +3160,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	(*warnlvl_ptr)  = i + 1;
 		}
 
-        //��������¶ȹ��߱�������
+        //动力电池温度过高保护故障
 		if (gbinf->warn[i][0x01] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x01])->value ||
 		(gbinf->warn[3][0x01] &&
@@ -3175,7 +3176,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 
     }
 
-    if(ac_warnflag)//�յ�����������
+    if(ac_warnflag)//空调不工作
     {
 		warn_code = 47;
     	buf[len++] = warn_code >> 8;
@@ -3193,8 +3194,10 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	//(*warnlvl_ptr)  = i + 1;
     }
 
-    //TBOX ���ϱ���
-    if(1)
+    PP_rmtDiag_NodeFault_t NodeFault;
+    getPPrmtDiagCfg_NodeFault(&NodeFault);
+    //TBOX 故障报警
+    if(NodeFault.tboxFault)
     {
 		warn_code = 13;
     	buf[len++] = warn_code >> 8;
@@ -3203,8 +3206,8 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	(*warnlvl_ptr)  = 0 + 1;
     }
 
-    //�� BMS ͨѶ��ʧ
-    if(1)
+    //与BMS通讯丢失
+    if(NodeFault.BMSMiss)
     {
 		warn_code = 37;
     	buf[len++] = warn_code >> 8;
@@ -3213,8 +3216,8 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	(*warnlvl_ptr)  = 2 + 1;
     }
 
-    //�� MCU ͨѶ��ʧ
-    if(1)
+    //与MCU通讯丢失
+    if(NodeFault.MCUMiss)
     {
 		warn_code = 38;
     	buf[len++] = warn_code >> 8;
@@ -3223,8 +3226,8 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	//(*warnlvl_ptr)  = 0 + 1;
     }
 
-    //�ϳ�����
-    if(1)
+    //拖车提醒
+    if(0)
     {
 		warn_code = 45;
     	buf[len++] = warn_code >> 8;

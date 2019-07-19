@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼þÃû£º	PP_rmtDiag_cfg.h
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PP_rmtDiag_cfg.h
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 
 Data			  Vasion			author
 2019/04/16		   V1.0			    liujian
@@ -9,26 +9,26 @@ Data			  Vasion			author
 #ifndef		_PP_RMTDIAG_CFG_H
 #define		_PP_RMTDIAG_CFG_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
 #define PP_DIAG_MAXECU	28
 
-/***********ºêº¯Êý***********/
+/***********ï¿½êº¯ï¿½ï¿½***********/
 
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 typedef enum
@@ -70,7 +70,7 @@ typedef enum
 	VMS_POWER_MOSFET_SC,//
 	CAN_BUS_FAULT,//
 	BMS_CAN_RX_FAILED,
-} PP_RMTDIAG_CFG_VCUFAULTTYPE;//VCU¹ÊÕÏÀàÐÍ
+} PP_RMTDIAG_CFG_VCUFAULTTYPE;//VCUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 /******union definitions*******/
 
 
@@ -81,21 +81,21 @@ typedef struct
 	uint8_t  dtcNum[5];
 	uint16_t highmidbyte;
 	uint8_t  lowbyte;
-}PP_rmtDiagCfg_FaultCode_t; /*¹ÊÕÏÂë*/
+}PP_rmtDiagCfg_FaultCode_t; /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 
 #if 0
 typedef struct
 {
 	PP_rmtDiagCfg_FaultCode_t 	HCU_ABS_STATUS_CHECK_FAILED;
 	PP_rmtDiagCfg_FaultCode_t	VMS_POWER_MOSFET_SC;
-}PP_rmtDiagCfg_VCUFaultCode_t; /*VCU¹ÊÕÏÂë*/
+}PP_rmtDiagCfg_VCUFaultCode_t; /*VCUï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 #endif
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern void setPPrmtDiagCfg_QueryFaultReq(uint8_t obj);
 extern void getPPrmtDiagCfg_Faultcode(uint8_t obj,void *rmtDiag_Fault);
