@@ -615,7 +615,7 @@ BO_ 920 CLM_Fr03_398: 8 CLM
  SG_ CLMUnheatReason_@2WG7047 : 15|3@0+(1,0)[0|7] "" Vector__XXX
  SG_ CLMThermalSts_@2WGF011 : 31|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ CLMInsideTemp_@2WGF013 : 7|8@0+(0.5,-40)[-40|87.5] "" Vector__XXX
- SG_ CLMOutletTemp_@2WGF010 : 23|8@0+(0.5,-40)[-40|87.5] "" Vector__XXX
+ SG_ CLMOutletTemp_@2WGF010 : 23|8@0+(0.5,-50)[-50|75] "" Vector__XXX
 BO_ 542 ICU_Fr01_21E: 8 ICU
  SG_ ICUBrakeFluidLow_@2WG704A : 10|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ ICU�ڵ㶪ʧ_@2N015 : 10|1@0+(1,0)[0|1] "" Vector__XXX

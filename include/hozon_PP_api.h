@@ -46,5 +46,7 @@ extern void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara);
 extern void SetPrvtProt_Awaken(void);
 extern unsigned char GetPrvtProt_Sleep(void);
 extern void getPPrmtDiagCfg_NodeFault(PP_rmtDiag_NodeFault_t *rmtDiag_NodeFault);
-
+extern unsigned char GetPP_ChargeCtrl_appointSt(void);
+extern unsigned char GetPP_ChargeCtrl_appointHour(void);
+extern unsigned char GetPP_ChargeCtrl_appointMin(void);
 #endif

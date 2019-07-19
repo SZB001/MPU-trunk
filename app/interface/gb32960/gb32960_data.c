@@ -1515,7 +1515,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     /* data type : location data */
     buf[len++] = 0x91;//��Ϣ���ͱ�־
 
-    /* ������ state */
+    /* door lock state */
     if(gbinf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])->value)
@@ -1541,15 +1541,15 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//��������
+    if(gbinf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])->value)
         {
-            buf[len++] = 0;//����
+            buf[len++] = 0;//
         }
         else
         {
-        	 buf[len++] = 1;//����
+        	 buf[len++] = 1;//
         }
     }
     else
@@ -1624,16 +1624,16 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_ACTEMP])//
+    if(gbinf->gb_VSExt.info[GB_VS_ACTEMP])//空调温度
     {
-    	 buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value + 18) * 2;
+    	 buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value + 16) * 2;
     }
     else
     {
         buf[len++] = 0xff;
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_ACMODE])//�յ�ģʽ
+    if(gbinf->gb_VSExt.info[GB_VS_ACMODE])//空调模式
     {
     	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACMODE])->value;
     	switch(tmp)
@@ -1642,13 +1642,13 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 			case 5:
 			case 7:
 			{
-				 buf[len++] = 1;//����
+				 buf[len++] = 1;//制热
 			}
 			break;
 			case 2:
 			case 6:
 			{
-				 buf[len++] = 2;//����
+				 buf[len++] = 2;//制冷
 			}
 			break;
 			default:
@@ -1690,7 +1690,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    /* ����״̬ */
+    /* 车灯状态 */
     if(gbinf->gb_VSExt.info[GB_VS_HLAMPST])//˫��״̬
 	{
 		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_HLAMPST])->value;
@@ -1758,7 +1758,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		buf[len++] = 0xff;
 	}
 
-    /* ��̥��Ϣ */
+    /* 车胎信息 */
     for(i=0;i<4;i++)
     {
         if(gbinf->gb_VSExt.info[GB_VS_RFTYRETEMP+2*i])//
@@ -1782,7 +1782,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     	}
     }
 
-    /* �����Ϣ */
+    /* 充电信息 */
     if(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])//
 	{
     	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])->value;
@@ -1795,22 +1795,57 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		buf[len++] = 0xff;
 	}
 
-    buf[len++] = 0xff;//��ʱ���״̬
-    buf[len++] = 0xff;//��ʱ��ʼ���ʱ��Сʱ
-    buf[len++] = 0xff;//��ʱ��ʼ��� ʱ�����
+    if(GetPP_ChargeCtrl_appointSt())
+    {
+		buf[len++] = 1;//定时充电状态״̬
+		buf[len++] = GetPP_ChargeCtrl_appointHour();//定时充电小时
+		buf[len++] = GetPP_ChargeCtrl_appointMin();//定时充电分钟
+    }
+    else
+    {
+		buf[len++] = 0;//定时充电状态״̬
+		buf[len++] = 0xff;//定时充电小时
+		buf[len++] = 0xff;//定时充电分钟
+    }
+
+    uint8_t chargeSt;
 	if(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])//
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
 		gb_chargeSt = tmp;//
-		//log_o(LOG_HOZON, "gb_chargeSt =  %d\n",gb_chargeSt);
-		if((tmp>=0)&&(tmp<=7))
+		switch(tmp)
 		{
-			buf[len++] = tmp;
+			case 0:
+			case 3:
+			case 5://未充电
+			{
+				chargeSt = 0;
+			}
+			break;
+			case 1:
+			case 6://慢充
+			{
+				chargeSt = 1;
+			}
+			break;
+			case 2://快充
+			{
+				chargeSt = 2;
+			}
+			break;
+			case 4://异常
+			{
+				chargeSt = 0xfe;
+			}
+			break;
+			default://无效
+			{
+				chargeSt = 0xff;
+			}
+			break;
 		}
-		else
-		{
-			buf[len++] = 0xfe;
-		}
+
+		buf[len++] = chargeSt;
 	}
 	else
 	{
@@ -1855,14 +1890,44 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     	 buf[len++] = 0xff;
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_PARKST])//פ��״̬
+    uint8_t parkSt = 0;
+    if(gbinf->gb_VSExt.info[GB_VS_PARKST])//驻车状态״̬
     {
-    	buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_PARKST])->value;
+    	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_PARKST])->value;
+    	switch(tmp)
+    	{
+    		case 0:
+    		case 2://无效
+    		{
+    			parkSt = 0xff;
+    		}
+    		break;
+    		case 1://关闭
+    		{
+    			parkSt = 0;
+    		}
+    		break;
+    		case 4://开启
+    		{
+    			parkSt = 1;
+    		}
+    		break;
+    		case 3://异常
+    		{
+    			parkSt = 0xfe;
+    		}
+    		break;
+    		default:
+    			parkSt = 0xff;
+    		break;
+    	}
+    	buf[len++] = parkSt;
     }
     else
     {
     	 buf[len++] = 0xff;
     }
+
     if (gbinf->vehi.info[GB_VINF_STATE])//����״̬
     {
         if(dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_STATE])->value)
@@ -1879,10 +1944,10 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    /* �˶�״̬ */
+    /* 运动状态 */
     for(i = 0;i<2;i++)
     {
-        if(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])//���ٶ�x,y
+        if(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])//加速度x、y
         {
         	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])->value + 1023) * 100;
         	buf[len++] = tmp >> 8;
@@ -1894,7 +1959,8 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         	 buf[len++] = 0xff;
         }
     }
-    if(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])//���ٶ�z
+
+    if(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])////加速度z
     {
     	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])->value + 4095) * 100;
     	buf[len++] = tmp >> 8;

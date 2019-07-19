@@ -873,3 +873,26 @@ unsigned char GetPP_ChargeCtrl_Sleep(void)
 	return PP_ChargeCtrl_Sleepflag;
 }
 
+/*
+ * 定时充电状态
+ */
+unsigned char GetPP_ChargeCtrl_appointSt(void)
+{
+	return PP_rmtCharge_AppointBook.validFlg;
+}
+
+/*
+ * 定时充电小时
+ */
+unsigned char GetPP_ChargeCtrl_appointHour(void)
+{
+	return PP_rmtCharge_AppointBook.hour;
+}
+
+/*
+ * 定时充电分钟
+ */
+unsigned char GetPP_ChargeCtrl_appointMin(void)
+{
+	return PP_rmtCharge_AppointBook.min;
+}
