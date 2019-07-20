@@ -1989,7 +1989,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
 	if(gbinf->gb_VSExt.info[GB_VS_STEERWHEELANGLE])//
 	{
-		tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_STEERWHEELANGLE])->value + 7200) * 10;
+		tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_STEERWHEELANGLE])->value + 720) * 10;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -1999,7 +1999,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_VSExt.info[GB_VS_TRIP])//С�����
+	if(gbinf->gb_VSExt.info[GB_VS_TRIP])//小计里程
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TRIP])->value * 10;
 		buf[len++] = tmp >> 8;
