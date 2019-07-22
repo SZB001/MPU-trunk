@@ -61,8 +61,8 @@ int PP_send_virtual_on_to_mcu(unsigned char on)
         return -2;
     }
 
-    log_o(LOG_HOZON,
-  		"############### send virtual on to mcu:%u #################", on);
+   		// log_o(LOG_HOZON,
+  			//"############### send virtual on to mcu:%u #################", on);
 
     return 0;
 }
@@ -177,17 +177,19 @@ data  ：具体的数据
 ****************************************************************************/
 void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uint8_t *dt)
 {
-	int i;
+	//int i;
 	if(id == CAN_ID_440)
 	{
 		ID440_data &= ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
 		ID440_data |= (uint64_t)data << (bit-bitl+1);      //置位
 		PP_send_virtual_on_to_mcu(1);
 		PP_can_unpack(ID440_data,can_data);
+		#if 0
 		for(i=0;i<8;i++)
 		{
 			log_o(LOG_HOZON,"ID440_data[%d] = %d",i,can_data[i]);
 		}
+		#endif
 		PP_send_cycle_ID440_to_mcu(can_data);
 	}
 	else if(id == CAN_ID_445)
@@ -196,10 +198,12 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 		ID445_data &=  ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
 		ID445_data |= (uint64_t)data << (bit-bitl+1);      //置位
 		PP_can_unpack(ID445_data,can_data);
+		#if 0
 		for(i=0;i<8;i++)
 		{
 			log_o(LOG_HOZON,"ID445_data[%d] = %d",i,can_data[i]);
 		}
+		#endif
 		PP_send_cycle_ID445_to_mcu(can_data);
 	}
 	else if(id == CAN_ID_526)
@@ -252,6 +256,8 @@ void PP_can_mcu_awaken(void)
 	{
 		PP_send_virtual_on_to_mcu(1);
 	}
+	 log_o(LOG_HOZON,
+  			"############### send virtual on to mcu:1 #################");
 }
 
 /**************************************
@@ -260,6 +266,8 @@ void PP_can_mcu_awaken(void)
 void PP_can_mcu_sleep(void)
 {
 	PP_send_virtual_on_to_mcu(0);
+	 log_o(LOG_HOZON,
+  			"############### send virtual on to mcu:0 #################");
 }
 
 /******************************************************
@@ -271,11 +279,9 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 	{
 		case PP_CAN_DOORLOCK:
 			PP_canSend_setbit(CAN_ID_440,17,2,data,NULL);
-			log_o(LOG_HOZON,"data = %d",data);
 			break;
 		case PP_CAN_SUNROOF:
 			PP_canSend_setbit(CAN_ID_440,47,3,data,NULL);
-			log_o(LOG_HOZON,"data = %d",data);
 			break;
 		case PP_CAN_AUTODOOR:
 			PP_canSend_setbit(CAN_ID_440,19,2,data,NULL);

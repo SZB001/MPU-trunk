@@ -86,11 +86,12 @@ description： macro definitions
 #define PP_RMTCTRL_ACCNOOFF				0x01//power mode != OFF
 #define PP_RMTCTRL_UNKNOWCMD			0x02//unknow command
 #define PP_RMTCTRL_OTHERCMDEXECTING		0x03//Other instructions are executing
-#define PP_RMTCTRL_BCDMAUTHFAIL			0x04//bcm auth fail
-#define PP_RMTCTRL_TIMEOUTFAIL			0x05//command executed timeout
-#define PP_RMTCTRL_CHRGGUNUNCONNT		0x06//充电枪未连接
-#define PP_RMTCTRL_INVALID_ID			0x07//无效的预约ID
-#define PP_RMTCTRL_READYLIGHTON			0x08//运动模式
+#define PP_RMTCTRL_BCDMAUTHFAIL			0x05//bcm auth fail
+#define PP_RMTCTRL_TIMEOUTFAIL			0x06//command executed timeout
+#define PP_RMTCTRL_CHRGGUNUNCONNT		0x07//充电枪未连接
+#define PP_RMTCTRL_INVALID_ID			0x08//无效的预约ID
+#define PP_RMTCTRL_READYLIGHTON			0x09//运动模式
+#define PP_RMTCTRL_UPPOWERFAIL          0x04//上电失败
 
 /***********宏函数***********/
 typedef void (*PP_rmtCtrlInitObj)(void);//初始化
@@ -338,6 +339,8 @@ extern void PP_set_seat_requestpower_flag();
 extern void PP_powermanagement_request(long cmd);
 extern void PP_set_ac_requestpower_flag();
 extern int PP_get_ac_requestpower_flag();
+extern void PP_seatheating_ClearStatus(void);
+extern void PP_ACCtrl_ClearStatus(void);
 //extern void PP_rmtCtrl_BluetoothSetCtrlReq(unsigned char obj, unsigned char cmd);
 extern void SetPP_rmtCtrl_Awaken(void);
 extern unsigned char GetPP_rmtCtrl_Sleep(void);

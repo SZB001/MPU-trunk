@@ -133,7 +133,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 					door_lock_stage = PP_DOORLOCKCTRL_REQSTART;
 					if(PP_rmtdoorCtrl.state.style == RMTCTRL_TSP)//tsp 平台
 					{
-						log_o(LOG_HOZON,"Tsp");
+						//log_o(LOG_HOZON,"Tsp");
 						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 						rmtCtrl_Stpara.rvcReqStatus = 1;         //正在执行
 						rmtCtrl_Stpara.rvcFailureType = 0;
@@ -153,7 +153,6 @@ int PP_doorLockCtrl_mainfunction(void *task)
 					PP_rmtdoorCtrl.state.req = 0;
 					doorLock_success_flag = 0;
 					door_lock_stage = PP_DOORLOCKCTRL_END;
-				
 				}
 				PP_rmtdoorCtrl.state.req = 0;
 			}
@@ -164,12 +163,10 @@ int PP_doorLockCtrl_mainfunction(void *task)
 			if(doorctrl_type == PP_OPENDOOR ) //打开车门
 			{
 				PP_can_send_data(PP_CAN_DOORLOCK,CAN_OPENDOOR,0);
-				log_o(LOG_HOZON,"unlock");
 			}
 			else       //锁住车门
 			{
 				PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLOSEDOOR,0); 
-				log_o(LOG_HOZON,"lock");
 			}
 
 			door_lock_stage = PP_DOORLOCKCTRL_RESPWAIT;

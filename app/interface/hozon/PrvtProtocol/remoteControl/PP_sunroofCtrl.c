@@ -131,7 +131,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 		break;
 		case PP_SUNROOFCTRL_REQSTART:
 		{
-			log_o(LOG_HOZON,"PP_SUNROOFCTRL_REQSTART");
+			//log_o(LOG_HOZON,"PP_SUNROOFCTRL_REQSTART");
 			if(sunroof_type == PP_SUNROOFOPEN) //天窗打开
 			{
 				PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFOPEN,0);
@@ -156,7 +156,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 		{
 			if(sunroof_type == PP_SUNROOFOPEN) //天窗打开结果
 			{
-				if((tm_get_time() - PP_Respwaittime) < 18000)
+				if((tm_get_time() - PP_Respwaittime) < 35000)
 				{
 					if(PP_rmtCtrl_cfg_sunroofSt() == 4) //状态为4，天窗打开ok
 					{
@@ -166,7 +166,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 					}
 				}
-				else//
+				else
 				{
 					log_o(LOG_HOZON,"sunroof timeout\n");
 					PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
@@ -176,10 +176,11 @@ int PP_sunroofctrl_mainfunction(void *task)
 			}
 			else if(sunroof_type == PP_SUNROOFCLOSE)//天窗关闭结果
 			{
-				if((tm_get_time() - PP_Respwaittime) < 18000)
+				if((tm_get_time() - PP_Respwaittime) < 35000)
 				{
 					if(PP_rmtCtrl_cfg_sunroofSt() == 2) //
 					{
+						log_o(LOG_HOZON,"PP_SUNROOFCTRL_CLOSE SUCCESS");
 						PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
 						sunroof_success_flag = 1;
 						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
@@ -194,10 +195,11 @@ int PP_sunroofctrl_mainfunction(void *task)
 			}
 			else if(sunroof_type == SUNROOFUPWARP)//天窗翘起结果
 			{
-				if((tm_get_time() - PP_Respwaittime) < 18000)
+				if((tm_get_time() - PP_Respwaittime) < 35000)
 				{
 					if(PP_rmtCtrl_cfg_sunroofSt() == 0) //
 					{
+						log_o(LOG_HOZON,"PP_SUNROOFCTRL_UPWARP SUCCESS");
 						PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
 						sunroof_success_flag = 1;
 						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
@@ -218,7 +220,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 		break;
 		case PP_SUNROOFCTRL_END:
 		{
-			log_o(LOG_HOZON,"PP_SUNROOFCTRL_END");
+			//log_o(LOG_HOZON,"PP_SUNROOFCTRL_END");
 			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 			memset(&rmtCtrl_Stpara,0,sizeof(PP_rmtCtrl_Stpara_t));
 			if(PP_rmtsunroofCtrl.state.style == RMTCTRL_TSP)//tsp
@@ -347,6 +349,7 @@ void PP_sunroofctrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 		sunroof_type = SUNROOFSTOP;
 	}
 	PP_rmtsunroofCtrl.state.req = 1;
+	PP_rmtsunroofCtrl.state.style = RMTCTRL_TSP;
 
 }
 

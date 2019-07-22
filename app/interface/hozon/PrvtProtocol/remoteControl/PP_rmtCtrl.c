@@ -190,7 +190,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 				   PP_startengine_start()  ||
 				   PP_seatheating_start()  ||
 				   PP_ChargeCtrl_start()   ||
-				    PP_ACCtrl_start()	   ||
+				   PP_ACCtrl_start()	   ||
 				   PP_startforbid_start();
 			if(ret == 1)
 			{
@@ -241,7 +241,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 				PP_startforbid_ClearStatus();
 				PP_sunroofctrl_ClearStatus();
 				PP_ChargeCtrl_ClearStatus();
-				ClearPP_ACCtrl_Request();
+				PP_ACCtrl_ClearStatus();
    			}
    			else
    			{}
@@ -748,8 +748,8 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 				{
 					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//经度 x 1000000,当GPS信号无效时，值为0
 				}
-				log_i(LOG_HOZON, "PP_appData.latitude = %lf",App_rmtCtrl.CtrlResp.gpsPos.latitude);
-				log_i(LOG_HOZON, "PP_appData.longitude = %lf",App_rmtCtrl.CtrlResp.gpsPos.longitude);
+				//log_i(LOG_HOZON, "PP_appData.latitude = %lf",App_rmtCtrl.CtrlResp.gpsPos.latitude);
+				//log_i(LOG_HOZON, "PP_appData.longitude = %lf",App_rmtCtrl.CtrlResp.gpsPos.longitude);
 			}
 			else
 			{

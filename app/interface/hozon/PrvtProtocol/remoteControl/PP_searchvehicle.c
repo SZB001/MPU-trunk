@@ -145,7 +145,7 @@ int PP_searchvehicle_mainfunction(void *task)
 					if(PP_rmtCtrl_cfg_findcarSt() == 1) //
 					{
 						log_i(LOG_HOZON,"search vehicle success!!!!!\n");
-						PP_can_send_data(PP_CAN_SEARCH,CAN_CLEANSEARCH,0);
+						//PP_can_send_data(PP_CAN_SEARCH,CAN_CLEANSEARCH,0);
 						serachvehicle_success_flag = 1;
 						search_vehicle_stage = PP_SEARCHVEHICLE_END;
 					}
@@ -259,6 +259,7 @@ void PP_searchvehicle_SetCtrlReq(unsigned char req,uint16_t reqType)
 	{
 		search_type = PP_SEARCH;
 	}
+	PP_rmtsearchvehicle.state.style = RMTCTRL_TSP;
 }
 /************************shell命令测试使用**************************/
 

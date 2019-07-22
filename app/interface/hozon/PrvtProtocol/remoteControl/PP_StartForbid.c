@@ -136,8 +136,9 @@ int PP_startforbid_mainfunction(void *task)
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(PP_rmtCtrl_cfg_cancelEngiSt() == 0) 
+					if(PP_rmtCtrl_cfg_cancelEngiSt() == 1) 
 					{
+						log_o(LOG_HOZON,"forbidstart");
 						PP_can_send_data(PP_CAN_FORBID,CAN_FORBIDCLEAN,0) ;
 						startforbid_success_flag = 1;
 						start_forbid_stage = PP_STARTFORBID_END;
@@ -154,8 +155,9 @@ int PP_startforbid_mainfunction(void *task)
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(PP_rmtCtrl_cfg_cancelEngiSt() == 1) 
+					if(PP_rmtCtrl_cfg_cancelEngiSt() == 0) 
 					{
+						log_o(LOG_HOZON,"cancel forbidstart");
 						PP_can_send_data(PP_CAN_FORBID,CAN_FORBIDCLEAN,0) ;
 						startforbid_success_flag = 1;
 						start_forbid_stage = PP_STARTFORBID_END;
@@ -292,7 +294,7 @@ void PP_startforbid_SetCtrlReq(unsigned char req,uint16_t reqType)
 	{
 		forbidaction = 0;	 
 	}
-
+	PP_rmtstartforbid.state.style = RMTCTRL_TSP;
 }
 
 /************************shell命令测试使用**************************/

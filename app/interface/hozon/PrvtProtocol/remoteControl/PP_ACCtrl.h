@@ -57,7 +57,7 @@ extern int 	PP_ACCtrl_mainfunction(void *task);
 extern uint8_t PP_ACCtrl_start(void);
 extern uint8_t PP_ACCtrl_end(void);
 extern void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
-extern void ClearPP_ACCtrl_Request(void);
+extern void PP_ACCtrl_ClearStatus(void);
 extern void PP_ACCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 extern void PP_AcCtrl_acStMonitor(void *task);
 

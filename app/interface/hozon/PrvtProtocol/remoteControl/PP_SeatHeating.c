@@ -170,6 +170,7 @@ int PP_seatheating_mainfunction(void *task)
 			         else //超时
 			        {
 			           	PP_can_send_data(PP_CAN_SEATHEAT,CAN_CLOSESEATHEAT,CAN_SEATHEATMAIN);
+						seat_requestpower_flag = 2;  //座椅加热开启失败请求下电
 			            PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
 			            PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
 			        }
@@ -322,13 +323,15 @@ void PP_set_seat_requestpower_flag()
 /************************shell命令测试使用**************************/
 void PP_seatheating_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
-	long cmd;
-	PP_rmtseatheatCtrl[0].state.reqType = (long)reqType;
-	PP_rmtseatheatCtrl[0].state.req = 1;
-	PP_rmtseatheatCtrl[0].state.style = RMTCTRL_TSP;
-	cmd = PP_rmtseatheatCtrl[0].state.reqType;
+	
+	PP_rmtseatheatCtrl[1].state.reqType = (long)reqType;
+	PP_rmtseatheatCtrl[1].state.req = 1;
+	PP_rmtseatheatCtrl[1].state.style = RMTCTRL_TSP;
 	log_o(LOG_HOZON,"request seatheat \n");
-	PP_powermanagement_request(cmd);
+	if(PP_rmtseatheatCtrl[1].state.reqType == PP_RMTCTRL_MAINHEATOPEN)
+	{
+		seat_requestpower_flag = 1;  //请求上电
+	}
 }
 /************************shell命令测试使用**************************/
 

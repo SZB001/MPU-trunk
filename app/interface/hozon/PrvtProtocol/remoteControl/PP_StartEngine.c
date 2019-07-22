@@ -75,7 +75,6 @@ void PP_startengine_init(void)
 	PP_rmtengineCtrl.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
 	PP_rmtengineCtrl.pack.DisBody.appDataProVer = 256;
 	PP_rmtengineCtrl.pack.DisBody.testFlag = 1;
-
 }
 int PP_startengine_mainfunction(void *task)
 {
@@ -99,7 +98,7 @@ int PP_startengine_mainfunction(void *task)
 					else
 					{
 						start_engine_stage = PP_STARTENGINE_END;
-						startengine_success_flag = 3;
+						startengine_success_flag = 3;  //不满足条件，失败标志位置起来
 					}
 					
 				}
@@ -116,7 +115,7 @@ int PP_startengine_mainfunction(void *task)
 				else
 				{
 					start_engine_stage = PP_STARTENGINE_END;
-					startengine_success_flag = 3;
+					startengine_success_flag = 3;  //不满足条件，失败标志位置起来
 				}
 			}
 			PP_rmtengineCtrl.state.req = 0;
@@ -175,8 +174,10 @@ int PP_startengine_mainfunction(void *task)
 			else   //BDM 应答超时
 			{
 				PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);  
-				PP_set_seat_requestpower_flag();
+				PP_set_seat_requestpower_flag();  
+				PP_seatheating_ClearStatus();
 				PP_set_ac_requestpower_flag();
+				PP_ACCtrl_ClearStatus();
 				startengine_success_flag = 3;   //操作失败
 				start_engine_stage = PP_STARTENGINE_END;
 			}
@@ -194,13 +195,13 @@ int PP_startengine_mainfunction(void *task)
 			{
 				rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWEROFF ;
 			}
-			rmtCtrl_Stpara.eventid = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
+			rmtCtrl_Stpara.eventid = 0;
 			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 			if((1 == startengine_success_flag)||(2 == startengine_success_flag))
 			{
 				rmtCtrl_Stpara.rvcReqStatus = 2; 
 				rmtCtrl_Stpara.rvcFailureType = 0;
-				log_o(LOG_HOZON,"success");
+				//log_o(LOG_HOZON,"success");
 			}
 			else
 			{
@@ -227,12 +228,10 @@ uint8_t PP_startengine_start(void)
 {
 	if(PP_rmtengineCtrl.state.req == 1)
 	{
-		//log_o(LOG_HOZON,"engine start\n");
-		//log_o(LOG_HOZON, "flag = %d",PP_get_seat_requestpower_flag());
 		return 1;
 	}
 	else
-	{	//log_o(LOG_HOZON, "flag = %d",PP_get_seat_requestpower_flag());
+	{	
 		return 0;
 	}
 }
@@ -246,7 +245,6 @@ uint8_t PP_startengine_end(void)
 	}
 	else
 	{
-		//log_o(LOG_HOZON,"engine");
 		return 0;
 	}
 }
@@ -263,15 +261,18 @@ void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			if(PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_POWERON)
 			{
 				enginecation = PP_POWERON;  //上高压电
+				log_o(LOG_HOZON, "TSP request power on\n");
 			}
 			else
 			{
 				enginecation = PP_POWERON; //下高压电
+				log_o(LOG_HOZON,"TSP request to shut down the engine\n");
 			}
 			PP_rmtengineCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
 			PP_rmtengineCtrl.state.style = RMTCTRL_TSP;
 		}
 		break;
+#if 0
 		case RMTCTRL_TBOX:
 		{
 			long *cmd = (long *)appdatarmtCtrl;
@@ -291,6 +292,7 @@ void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;
 		}		
 		break;
+#endif
 		case RMTCTRL_BLUETOOTH:	
 		{
 			
@@ -304,6 +306,8 @@ void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 void PP_startengine_ClearStatus(void)
 {
 	PP_rmtengineCtrl.state.req = 0;
+	PP_set_seat_requestpower_flag();  
+	PP_set_ac_requestpower_flag();
 }
 /*****************************************************************************************
 函数名：PP_rmtCtrl_checkenginetime
@@ -314,35 +318,45 @@ void PP_startengine_ClearStatus(void)
 void PP_rmtCtrl_checkenginetime(void)
 {
 
-	if(PP_rmtCtrl_cfg_RmtStartSt() == 0)    //上电
+	if(PP_rmtCtrl_cfg_RmtStartSt() == 0)    //在没有上电的情况下
 	{
+		if(PP_get_seat_requestpower_flag() == 2)
+		{
+			PP_set_seat_requestpower_flag();  //当已经下电了，又有请求下电的，清除标志
+		}
+		if(PP_get_ac_requestpower_flag() == 2)
+		{
+			PP_set_ac_requestpower_flag();    //当已经下电了，又有请求下电的，清除标志
+		}
 		if((PP_get_seat_requestpower_flag() == 1 )||(PP_get_ac_requestpower_flag() == 1))
 		{
-			log_o(LOG_HOZON, "flag = %d",PP_get_seat_requestpower_flag());
+			log_o(LOG_HOZON, "Have seat heating or air conditioning turned on, request power on\n");
 			enginecation = PP_POWERON;  
 			PP_rmtengineCtrl.state.req = 1;
 		}
 	}
-	if(PP_rmtCtrl_cfg_RmtStartSt() == 2)   
+	if(PP_rmtCtrl_cfg_RmtStartSt() == 2)   //在已经上高压电的情况下 
 	{
-		if((PP_get_seat_requestpower_flag() == 1 )||(PP_get_ac_requestpower_flag() == 1))
+		if(PP_get_seat_requestpower_flag() == 1 )
 		{
-			
-			PP_set_seat_requestpower_flag();  //当已经上了，又有请求上电的，清除标志
-			PP_set_ac_requestpower_flag();
+			PP_set_seat_requestpower_flag();  //当已经上电了，又有请求上电的，清除标志
 		}
-		if((tm_get_time() - PP_Engine_time > 15 * 60 * 1000) \
-			&& (PP_rmtCtrl_cfg_RmtStartSt() == 2)) //15分钟到请求下电
+		if(PP_get_ac_requestpower_flag() == 1)
+		{
+			PP_set_ac_requestpower_flag(); //当已经上电了，又有请求上电的，清除标志
+		}
+		if(tm_get_time() - PP_Engine_time > 3 * 60 * 1000) //15分钟到请求下电
 		{
 			enginecation = PP_POWEROFF;
 			PP_rmtengineCtrl.state.req = 1;
+			log_o(LOG_HOZON,"15 minutes have arrived, request to shut down the engine\n");
 		}
 		if(PP_get_ac_requestpower_flag() == 2)  //空调关闭请求下电
 		{
 			//座椅加热也未开启，下电
-			
 			if((PP_rmtCtrl_cfg_HeatingSt(0) == 0)&&(PP_rmtCtrl_cfg_HeatingSt(1) == 0))
 			{
+				log_o(LOG_HOZON,"Air conditioning is off, request to power off\n");
 				enginecation = PP_POWEROFF;
 				PP_rmtengineCtrl.state.req = 1;
 			}
@@ -351,12 +365,12 @@ void PP_rmtCtrl_checkenginetime(void)
 		{
 			if(PP_rmtCtrl_cfg_ACOnOffSt() == 0)   //空调也未开启，下电
 			{
+				log_o(LOG_HOZON,"The seat is heated off and the request is powered off\n");
 				enginecation = PP_POWEROFF;
 				PP_rmtengineCtrl.state.req = 1;
 		
 			}
 		}
-			
 	}
 }
 

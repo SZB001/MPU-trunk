@@ -4313,7 +4313,7 @@ void gb_data_set_pendflag(int flag)
 uint8_t gb_data_vehicleState(void)
 {
 	uint8_t st = 0;
-    if(gb_inf->vehi.info[GB_VINF_STATE])
+    if(gb_inf && gb_inf->vehi.info[GB_VINF_STATE])
     {
     	st = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_STATE])->value;
     }
@@ -4327,7 +4327,7 @@ uint8_t gb_data_vehicleState(void)
 long gb_data_vehicleSOC(void)
 {
 	long soc = 0;
-	if(gb_inf->vehi.info[GB_VINF_SOC])
+	if(gb_inf && gb_inf->vehi.info[GB_VINF_SOC])
 	{
 		soc = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_SOC])->value;
 	}
@@ -4342,7 +4342,7 @@ long gb_data_vehicleOdograph(void)
 {
 	long totalodoMr = 0;
 
-	if(gb_inf->vehi.info[GB_VINF_ODO])
+	if(gb_inf && gb_inf->vehi.info[GB_VINF_ODO])
 	{
 		totalodoMr = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_ODO])->value * 10;
 	}
@@ -4357,7 +4357,7 @@ long gb_data_vehicleSpeed(void)
 {
 	long Vspeed = 0;
 
-	if(gb_inf->vehi.info[GB_VINF_SPEED])
+	if(gb_inf && gb_inf->vehi.info[GB_VINF_SPEED])
 	{
 		Vspeed = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_SPEED])->value * 10;
 	}
@@ -4371,7 +4371,7 @@ long gb_data_vehicleSpeed(void)
 uint8_t gb_data_doorlockSt(void)
 {
 	uint8_t st = 0;
-	if(gb_inf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])
 	{
 		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])->value;
 	}
@@ -4384,7 +4384,7 @@ uint8_t gb_data_doorlockSt(void)
 uint8_t gb_data_reardoorSt(void)
 {
 	uint8_t st = 0;
-	if(gb_inf->gb_VSExt.info[GB_VS_BACKDOORST])
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_BACKDOORST])
 	{
 		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_BACKDOORST])->value;
 	}
@@ -4398,7 +4398,7 @@ uint8_t gb_data_reardoorSt(void)
 uint8_t gb_data_ACOnOffSt(void)
 {
 	uint8_t st = 0;
-	if(gb_inf->gb_VSExt.info[GB_VS_ACST])
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_ACST])
 	{
 		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ACST])->value;
 	}
@@ -4411,7 +4411,7 @@ uint8_t gb_data_ACOnOffSt(void)
 int gb_data_LHTemp(void)
 {
 	int st = 0;
-	if(gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])
+	if(gb_inf && gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])
 	{
 		st = dbc_get_signal_from_id(gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])->value;
 	}
@@ -4438,7 +4438,7 @@ uint8_t gb_data_chargeSt(void)
 uint8_t gb_data_reardoorlockSt(void)
 {
 	uint8_t st = 0;
-	if(gb_inf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//��������
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//��������
 	{
 		if(dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])->value)
 		{
@@ -4460,7 +4460,7 @@ uint8_t gb_data_ACMode(void)
 {
 	uint8_t acmode = 3;//�Զ�
 	int32_t tmp;
-	if(gb_inf->gb_VSExt.info[GB_VS_ACMODE])//�յ�ģʽ
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_ACMODE])//�յ�ģʽ
 	{
 		tmp = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ACMODE])->value;
 		switch(tmp)
@@ -4493,7 +4493,7 @@ uint8_t gb_data_chargeOnOffSt(void)
 {
 	uint8_t chargeSt = 0;
 
-	if(gb_inf->gb_ConpSt.info[GB_CMPT_CHARGEST])
+	if(gb_inf && gb_inf->gb_ConpSt.info[GB_CMPT_CHARGEST])
 	{
 		chargeSt = dbc_get_signal_from_id(gb_inf->gb_ConpSt.info[GB_CMPT_CHARGEST])->value;
 	}
@@ -4507,7 +4507,7 @@ uint8_t gb_data_chargeOnOffSt(void)
 uint8_t gb_data_chargeGunCnctSt(void)
 {
 	uint8_t chargeGunCnctSt = 0;
-	if (gb_inf->vehi.info[GB_VINF_CHARGE])
+	if (gb_inf && gb_inf->vehi.info[GB_VINF_CHARGE])
 	{
 		chargeGunCnctSt = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_CHARGE])->value;
 	}

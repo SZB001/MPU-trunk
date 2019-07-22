@@ -43,6 +43,7 @@
 #include "PP_canSend.h"
 #include "PPrmtCtrl_cfg.h"
 
+
 #include "PP_ACCtrl.h"
 
 #define PP_OPEN_ACC      1
@@ -192,7 +193,7 @@ int PP_ACCtrl_mainfunction(void *task)
 					}
 					else if(PP_rmtACCtrl.state.style == RMTCTRL_TBOX)//tbox
 					{
-						log_o(LOG_HOZON,"tbox platform\n");
+						//log_o(LOG_HOZON,"tbox platform\n");
 						
 					}
 					else//蓝牙
@@ -234,7 +235,7 @@ int PP_ACCtrl_mainfunction(void *task)
 			}
 			else if(PP_get_powerst() == 3) //上高压电操作失败
 			{
-				ClearPP_ACCtrl_Request();
+				PP_ACCtrl_ClearStatus();
 				PP_rmtACCtrl.fail     = 1;
 				PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 			}
@@ -270,6 +271,7 @@ int PP_ACCtrl_mainfunction(void *task)
 			{
 				log_e(LOG_HOZON,"Instruction execution timeout\n");
 				PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);  
+				acc_requestpower_flag = 2; //空调开启失败请求下电
 				PP_rmtACCtrl.fail     = 1;
 				PP_rmtACCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 				PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
@@ -423,7 +425,6 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 					{
 						acc_requestpower_flag = 1;  //请求上电
 					}
-					
 				}
 				else
 				{
@@ -728,13 +729,9 @@ void PP_AcCtrl_acStMonitor(void *task)
 		{}
 	}
 
-
-
 }
 int PP_get_ac_requestpower_flag()
 {
-	
-	
 	return acc_requestpower_flag ;
 }
 void PP_set_ac_requestpower_flag()
@@ -742,7 +739,7 @@ void PP_set_ac_requestpower_flag()
 	acc_requestpower_flag = 0;
 }
 
-void ClearPP_ACCtrl_Request(void)
+void PP_ACCtrl_ClearStatus(void)
 {
 	PP_rmtACCtrl.state.req = 0;
 }

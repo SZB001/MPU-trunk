@@ -151,6 +151,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				{
 					if(PP_rmtCtrl_cfg_reardoorSt() == 2) //尾门状态2，尾门开启成功
 					{
+						log_o(LOG_HOZON,"autodoor open successed!");
 						PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
 						autodoor_success_flag = 1;
 						auto_door_stage = PP_AUTODOORCTR_END;
@@ -169,6 +170,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				{
 					if(PP_rmtCtrl_cfg_reardoorSt() == 0) //尾门状态1，尾门关闭成功
 					{
+						log_o(LOG_HOZON,"autodoor close successed!");
 						PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
 						autodoor_success_flag = 1;
 						auto_door_stage = PP_AUTODOORCTR_END;
@@ -294,6 +296,7 @@ void PP_autodoorCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 		autodoor_type = PP_CLOSEDOOR;
 	}
 	PP_rmtautodoorCtrl.state.req = 1;
+	PP_rmtautodoorCtrl.state.style = RMTCTRL_TSP;
 }
 
 /************************shell命令测试使用**************************/
