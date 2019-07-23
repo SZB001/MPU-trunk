@@ -634,6 +634,7 @@ static long    gb_totalOdoMr = 0;//�ܼ����
 static long    gb_vehicleSOC = 0;//����
 static long    gb_vehicleSpeed = 0;//�ٶ�
 static uint8_t gb_chargeSt = 0;//
+static int canact = 0;
 
 #if GB_EXT
 /* event report */
@@ -1557,14 +1558,14 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    /* ���� state */
+    /* 驾驶侧窗state */
     buf[len++] = 0xff;//��ʻ�ര״̬
     buf[len++] = 0xff;//����ʻ�ര״̬
     buf[len++] = 0xff;//���״̬
     buf[len++] = 0xff;//�Һ�״̬
     buf[len++] = 0xff;//�촰״̬
 
-    /* ���� state */
+    /* 驾驶侧门state */
     for(i = 0; i < 4; i++)
     {
         if(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN+i])
@@ -1591,7 +1592,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         }
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_BACKDOORST])//������״̬
+    if(gbinf->gb_VSExt.info[GB_VS_BACKDOORST])//后备箱门状态״̬
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_BACKDOORST])->value)
         {
@@ -1607,12 +1608,12 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    /* �յ���Ϣ */
+    /* 空调信息 */
     if(gbinf->gb_VSExt.info[GB_VS_ACST])//
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACST])->value)
         {
-            buf[len++] = 1;//����
+            buf[len++] = 1;//开启
         }
         else
         {
@@ -1772,7 +1773,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
         if(gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])//
     	{
-        	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])->value / 0.0177;
+        	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])->value/100/0.0177;
         	if(tmp > 253) tmp = 253;
     		buf[len++] = tmp;
     	}
@@ -2221,7 +2222,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_ConpSt.info[GB_CMPT_PWRUPST])//��ѹ�ϵ�״̬
+	if(gbinf->gb_ConpSt.info[GB_CMPT_PWRUPST])//״̬
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PWRUPST])->value;
 		if((tmp>=0)&&(tmp<=5))
@@ -2238,7 +2239,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_ConpSt.info[GB_CMPT_PWRDWNST])//��ѹ�µ�״̬
+	if(gbinf->gb_ConpSt.info[GB_CMPT_PWRDWNST])//״̬
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PWRDWNST])->value;
 		if((tmp>=0)&&(tmp<=6))
@@ -2709,7 +2710,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	/* �յ�������CLM */
+	/* 空调控制器CLM */
 	if(gbinf->gb_VSExt.info[GB_VS_ACST])//
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACST])->value;
@@ -2744,7 +2745,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	for(i=0;i<3;i++)//���棬���ţ�����ģʽ
+	for(i=0;i<3;i++)//吹面、吹脚、吹窗模式
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_VENTMODE+i])//
 		{
@@ -2764,7 +2765,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		}
 	}
 
-	for(i=0;i<2;i++)//�����������¶�
+	for(i=0;i<2;i++)//主驾、副驾设定温度
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_LHTEMP+i])//
 		{
@@ -4016,7 +4017,7 @@ static void gb_data_periodic(gb_info_t *gbinf, int intv, uint32_t uptime)
 
 static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 {
-    static int canact = 0;
+    //static int canact = 0;
 
     switch (event)
     {
@@ -4308,7 +4309,7 @@ void gb_data_set_pendflag(int flag)
 }
 
 /*
- 	 ��ȡ����״̬
+ 	车辆状态״̬
 */
 uint8_t gb_data_vehicleState(void)
 {
@@ -4322,7 +4323,7 @@ uint8_t gb_data_vehicleState(void)
 }
 
 /*
- 	 ��ȡ����ʣ�����
+ 	电量
 */
 long gb_data_vehicleSOC(void)
 {
@@ -4336,7 +4337,7 @@ long gb_data_vehicleSOC(void)
 }
 
 /*
- 	 ��ȡ���������
+ 	 车辆里程
 */
 long gb_data_vehicleOdograph(void)
 {
@@ -4351,7 +4352,7 @@ long gb_data_vehicleOdograph(void)
 }
 
 /*
- 	 ��ȡ�����ٶ�
+ 	 车速
 */
 long gb_data_vehicleSpeed(void)
 {
@@ -4366,7 +4367,7 @@ long gb_data_vehicleSpeed(void)
 }
 
 /*
- 	 ��ȡ����״̬
+ 	 门锁状态״̬
 */
 uint8_t gb_data_doorlockSt(void)
 {
@@ -4379,7 +4380,7 @@ uint8_t gb_data_doorlockSt(void)
 }
 
 /*
- 	 ��ȡβ��״̬
+ 	 后备箱状态״̬
 */
 uint8_t gb_data_reardoorSt(void)
 {
@@ -4393,7 +4394,7 @@ uint8_t gb_data_reardoorSt(void)
 
 
 /*
- 	 ��ȡ�յ�״̬
+ 	 空调开启/关闭状态״̬
 */
 uint8_t gb_data_ACOnOffSt(void)
 {
@@ -4406,7 +4407,7 @@ uint8_t gb_data_ACOnOffSt(void)
 }
 
 /*
- 	 ��ȡ�յ��趨�¶�
+ 	 主驾设定温度
 */
 int gb_data_LHTemp(void)
 {
@@ -4419,7 +4420,7 @@ int gb_data_LHTemp(void)
 }
 
 /*
- 	 ���״̬
+ 	充电状态״̬
 */
 uint8_t gb_data_chargeSt(void)
 {
@@ -4433,7 +4434,7 @@ uint8_t gb_data_chargeSt(void)
 }
 
 /*
- 	 β����״̬
+ 	后备箱门锁状态״̬
 */
 uint8_t gb_data_reardoorlockSt(void)
 {
@@ -4454,7 +4455,7 @@ uint8_t gb_data_reardoorlockSt(void)
 }
 
 /*
- 	 �յ�ģʽ
+ 	空调模式
 */
 uint8_t gb_data_ACMode(void)
 {
@@ -4487,7 +4488,7 @@ uint8_t gb_data_ACMode(void)
 }
 
 /*
- 	 ��翪/��״̬
+ 	充电开启/关闭状态״̬
 */
 uint8_t gb_data_chargeOnOffSt(void)
 {
@@ -4502,7 +4503,7 @@ uint8_t gb_data_chargeOnOffSt(void)
 }
 
 /*
- 	 ���ǹ����״̬
+ 	充电枪连接状态״̬
 */
 uint8_t gb_data_chargeGunCnctSt(void)
 {
@@ -4515,3 +4516,80 @@ uint8_t gb_data_chargeGunCnctSt(void)
 	return chargeGunCnctSt;
 }
 
+/*
+ 	鼓风机档位״̬
+*/
+uint8_t gb_data_BlowerGears(void)
+{
+	uint8_t tmp;
+	uint8_t fangears = 0;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_AIRVOLUME])//
+	{
+		tmp = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_AIRVOLUME])->value;
+		if(((tmp>=0)&&(tmp<=7)) || (tmp == 0xe))
+		{
+			fangears = tmp;
+		}
+		else
+		{
+			fangears = 0;
+		}
+	}
+
+	return fangears;
+}
+
+/*
+ 	室外温度״̬
+*/
+uint8_t gb_data_outTemp(void)
+{
+	uint8_t temp = 150;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_OUTTEMP])//
+	{
+		temp = (dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_OUTTEMP])->value + 55) * 2;
+	}
+
+	return temp;
+}
+
+/*
+ 	室内温度״̬
+*/
+uint8_t gb_data_InnerTemp(void)
+{
+	uint8_t temp = 150;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_INTEMP])//
+	{
+		temp = (dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_INTEMP])->value + 55) * 2;
+	}
+
+	return temp;
+}
+
+/*
+ 	can bus active状态״̬
+*/
+uint8_t gb_data_CanbusActiveSt(void)
+{
+	return (uint8_t)canact;
+}
+
+/*
+ 	安全气囊状态״̬
+*/
+uint8_t gb_data_CrashOutputSt(void)
+{
+	uint8_t tmp;
+	uint8_t crashSt = 0;
+	if(gb_inf && gb_inf->gb_ConpSt.info[GB_CMPT_CRASHOUTPUTST])//
+	{
+		tmp = dbc_get_signal_from_id(gb_inf->gb_ConpSt.info[GB_CMPT_CRASHOUTPUTST])->value;
+		if((tmp>=0)&&(tmp<=3))
+		{
+			crashSt = tmp;
+		}
+	}
+
+	return crashSt;
+}

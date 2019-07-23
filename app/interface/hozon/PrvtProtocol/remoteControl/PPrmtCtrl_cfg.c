@@ -18,6 +18,7 @@ description�� include the header file
 
 
 #include "gb32960_api.h"
+#include "hozon_PP_api.h"
 #include "PPrmtCtrl_cfg.h"
 
 
@@ -242,3 +243,16 @@ unsigned char PP_rmtCtrl_cfg_LHTemp(void)
 	return gb_data_LHTemp();
 }
 
+/*
+ 	安全气囊状态״̬
+*/
+unsigned char PP_rmtCtrl_cfg_CrashOutputSt(void)
+{
+	uint8_t crashSt = 0;
+	if(gb_data_CrashOutputSt() != 0)
+	{
+		crashSt = 1;
+	}
+
+	return crashSt;
+}

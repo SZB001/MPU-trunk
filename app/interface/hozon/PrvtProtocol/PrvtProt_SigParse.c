@@ -101,7 +101,7 @@ unsigned char PrvtProt_SignParse_OtaFailSts(void)
 }
 
 /*
- 	 �˶�����״̬
+ 	车辆运动模式״̬
   */
 unsigned char PrvtProt_SignParse_readyLightSt(void)
 {
@@ -112,7 +112,7 @@ unsigned char PrvtProt_SignParse_readyLightSt(void)
 }
 
 /*
- 	 ԤԼ���ʹ��״̬
+ 	充电预约使能状态״̬
   */
 unsigned char PrvtProt_SignParse_chrgAptEnSt(void)
 {
@@ -123,7 +123,7 @@ unsigned char PrvtProt_SignParse_chrgAptEnSt(void)
 }
 
 /*
- 	 Ѱ��״̬
+ 	寻车状态״̬
   */
 unsigned char PrvtProt_SignParse_findcarSt(void)
 {
@@ -134,7 +134,7 @@ unsigned char PrvtProt_SignParse_findcarSt(void)
 }
 
 /*
- 	 �촰״̬
+ 	天窗状态״̬
   */
 unsigned char PrvtProt_SignParse_sunroofSt(void)
 {
@@ -145,7 +145,7 @@ unsigned char PrvtProt_SignParse_sunroofSt(void)
 }
 
 /*
- 	 Զ������״̬
+ 	 远程启动状态״̬
   */
 unsigned char PrvtProt_SignParse_RmtStartSt(void)
 {
@@ -156,7 +156,7 @@ unsigned char PrvtProt_SignParse_RmtStartSt(void)
 }
 
 /*
- 	 �����μ���״̬
+ 	 主驾加热状态״̬
   */
 unsigned char PrvtProt_SignParse_DrivHeatingSt(void)
 {
@@ -167,7 +167,7 @@ unsigned char PrvtProt_SignParse_DrivHeatingSt(void)
 }
 
 /*
- 	 �����μ���״̬
+ 	 副驾驶加热状态״̬
   */
 unsigned char PrvtProt_SignParse_PassHeatingSt(void)
 {
@@ -178,7 +178,7 @@ unsigned char PrvtProt_SignParse_PassHeatingSt(void)
 }
 
 /*
- 	 ��ֹ����״̬
+ 	 取消启动状态״̬
   */
 unsigned char PrvtProt_SignParse_cancelEngiSt(void)
 {
@@ -189,7 +189,7 @@ unsigned char PrvtProt_SignParse_cancelEngiSt(void)
 }
 
 /*
- 	 ��֤״̬
+ 	 认证状态״̬
   */
 unsigned char PrvtProt_SignParse_autheSt(void)
 {
@@ -200,7 +200,7 @@ unsigned char PrvtProt_SignParse_autheSt(void)
 }
 
 /*
- 	 ��֤ʧ��ԭ��
+ 	 认证失败原因
   */
 unsigned char PrvtProt_SignParse_authefailresion(void)
 {

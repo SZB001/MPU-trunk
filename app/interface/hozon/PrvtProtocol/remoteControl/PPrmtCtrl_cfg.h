@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼þÃû£º	PPrmtCtrl_cfg.h
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PPrmtCtrl_cfg.h
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 
 Data			  Vasion			author
 2019/04/16		   V1.0			    liujian
@@ -9,42 +9,42 @@ Data			  Vasion			author
 #ifndef		_PPRMTCTRL_CFG_H
 #define		_PPRMTCTRL_CFG_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
-#define PP_RMTCTRL_CFG_CANSIGWAITTIME		200//canÐÅºÅ×´Ì¬ÑÓÊ±ÅÐ¾öµÈ´ýÊ±¼ä
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
+#define PP_RMTCTRL_CFG_CANSIGWAITTIME		200//canï¿½Åºï¿½×´Ì¬ï¿½ï¿½Ê±ï¿½Ð¾ï¿½ï¿½È´ï¿½Ê±ï¿½ï¿½
 
 
-#define PP_RMTCTRL_CFG_NOTCHARGE			0//Î´³äµç
-#define PP_RMTCTRL_CFG_CHARGEING			1//³äµçÖÐ
-#define PP_RMTCTRL_CFG_CHARGEFINISH			2//³äµçÍê³É
-#define PP_RMTCTRL_CFG_CHARGEFAIL			3//³äµçÊ§°Ü
-/***********ºêº¯Êý***********/
+#define PP_RMTCTRL_CFG_NOTCHARGE			0//Î´ï¿½ï¿½ï¿½
+#define PP_RMTCTRL_CFG_CHARGEING			1//ï¿½ï¿½ï¿½ï¿½ï¿½
+#define PP_RMTCTRL_CFG_CHARGEFINISH			2//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+#define PP_RMTCTRL_CFG_CHARGEFAIL			3//ï¿½ï¿½ï¿½Ê§ï¿½ï¿½
+/***********ï¿½êº¯ï¿½ï¿½***********/
 
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern unsigned char PP_rmtCtrl_cfg_AuthStatus(void);
 extern unsigned char PP_rmtCtrl_cfg_vehicleState(void);
@@ -63,4 +63,5 @@ extern unsigned char PP_rmtCtrl_cfg_chargeGunCnctSt(void);
 extern unsigned char PP_rmtCtrl_cfg_readyLightSt(void);
 extern unsigned char PP_rmtCtrl_cfg_cancelEngiSt(void);
 extern unsigned char PP_rmtCtrl_cfg_LHTemp(void);
+extern unsigned char PP_rmtCtrl_cfg_CrashOutputSt(void);
 #endif 

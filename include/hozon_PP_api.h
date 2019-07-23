@@ -25,6 +25,12 @@ typedef struct
 	uint8_t MCUMiss;
 }PP_rmtDiag_NodeFault_t;
 
+typedef enum
+{
+    PP_MSG_SOCKET = 1,//MPU_MID_GB32960,
+    PP_MSG_BLE,
+} pp_MSG_TYPE;
+
 extern void PP_rmtDiag_queryInform_cb(void);
 
 extern int PrvtProt_init(INIT_PHASE phase);

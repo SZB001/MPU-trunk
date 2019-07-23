@@ -38,6 +38,7 @@ description： include the header file
 #include "../sockproxy/sockproxy_txdata.h"
 #include "gb32960_api.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
 #include "../PrvtProt_queue.h"
@@ -769,22 +770,22 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 				App_rmtCtrl.CtrlResp.gpsPos.hdop = 1000;
 			}
 
-			App_rmtCtrl.CtrlResp.basicSt.driverDoor = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.driverLock = PP_rmtCtrl_cfg_doorlockSt();
-			App_rmtCtrl.CtrlResp.basicSt.passengerDoor = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.passengerLock = PP_rmtCtrl_cfg_doorlockSt();
-			App_rmtCtrl.CtrlResp.basicSt.rearLeftDoor = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearLeftLock = PP_rmtCtrl_cfg_doorlockSt();
-			App_rmtCtrl.CtrlResp.basicSt.rearRightDoor = 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearRightLock = PP_rmtCtrl_cfg_doorlockSt();
-			App_rmtCtrl.CtrlResp.basicSt.bootStatus = gb_data_reardoorSt()	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.driverDoor 	= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.driverLock 	= PP_rmtCtrl_cfg_doorlockSt();
+			App_rmtCtrl.CtrlResp.basicSt.passengerDoor 	= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.passengerLock 	= PP_rmtCtrl_cfg_doorlockSt();
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftDoor 	= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftLock 	= PP_rmtCtrl_cfg_doorlockSt();
+			App_rmtCtrl.CtrlResp.basicSt.rearRightDoor 	= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightLock 	= PP_rmtCtrl_cfg_doorlockSt();
+			App_rmtCtrl.CtrlResp.basicSt.bootStatus 	= gb_data_reardoorSt()	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.bootStatusLock = gb_data_reardoorlockSt();
-			App_rmtCtrl.CtrlResp.basicSt.driverWindow = 0	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.driverWindow 	= 0	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.passengerWindow = 0	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftWindow = 0	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.rearRightWinow = 0 /* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.sunroofStatus = PP_rmtCtrl_cfg_sunroofSt()	/* OPTIONAL */;
-			if(PP_rmtCtrl_cfg_RmtStartSt() ==0)
+			App_rmtCtrl.CtrlResp.basicSt.sunroofStatus 	= PP_rmtCtrl_cfg_sunroofSt()	/* OPTIONAL */;
+			if(PP_rmtCtrl_cfg_RmtStartSt() == 0)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.engineStatus = 0;
 			}
@@ -792,55 +793,56 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.engineStatus = 1;
 			}
-			App_rmtCtrl.CtrlResp.basicSt.accStatus = PP_rmtCtrl_cfg_ACOnOffSt();
-			App_rmtCtrl.CtrlResp.basicSt.accTemp = 18	/* OPTIONAL */;//18-36
-			App_rmtCtrl.CtrlResp.basicSt.accMode = gb_data_ACMode()	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.accBlowVolume	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.innerTemp = 1;
-			App_rmtCtrl.CtrlResp.basicSt.outTemp = 1;
-			App_rmtCtrl.CtrlResp.basicSt.sideLightStatus= 1;
-			App_rmtCtrl.CtrlResp.basicSt.dippedBeamStatus= 1;
-			App_rmtCtrl.CtrlResp.basicSt.mainBeamStatus= 1;
-			App_rmtCtrl.CtrlResp.basicSt.hazardLightStus= 1;
+			App_rmtCtrl.CtrlResp.basicSt.accStatus 			= PP_rmtCtrl_cfg_ACOnOffSt();
+			App_rmtCtrl.CtrlResp.basicSt.accTemp 			= 18	/* OPTIONAL */;//18-36
+			App_rmtCtrl.CtrlResp.basicSt.accMode 			= gb_data_ACMode()	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.accBlowVolume		= gb_data_BlowerGears()/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.innerTemp 			= gb_data_InnerTemp();
+			App_rmtCtrl.CtrlResp.basicSt.outTemp 			= gb_data_outTemp();
+			App_rmtCtrl.CtrlResp.basicSt.sideLightStatus 	= 1;
+			App_rmtCtrl.CtrlResp.basicSt.dippedBeamStatus 	= 1;
+			App_rmtCtrl.CtrlResp.basicSt.mainBeamStatus 	= 1;
+			App_rmtCtrl.CtrlResp.basicSt.hazardLightStus 	= 1;
 			App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre	= 1/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp	= 1/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp= 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp	= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp	= 1	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre	= 1/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.batterySOCExact= 1;
+			App_rmtCtrl.CtrlResp.basicSt.batterySOCExact 	= gb_data_vehicleSOC() * 100;
 			App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.availableOdomtr= 1;
+			App_rmtCtrl.CtrlResp.basicSt.availableOdomtr	= 1;
 			App_rmtCtrl.CtrlResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.bookingChargeSt= 1;
-			App_rmtCtrl.CtrlResp.basicSt.bookingChargeHour= 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.bookingChargeMin	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.chargeMode	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.chargeStatus	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.powerMode	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.speed= 1;
-			App_rmtCtrl.CtrlResp.basicSt.totalOdometer= 1;
-			App_rmtCtrl.CtrlResp.basicSt.batteryVoltage= 1;
-			App_rmtCtrl.CtrlResp.basicSt.batteryCurrent= 1;
-			App_rmtCtrl.CtrlResp.basicSt.batterySOCPrc= 1;
-			App_rmtCtrl.CtrlResp.basicSt.dcStatus= 1;
-			App_rmtCtrl.CtrlResp.basicSt.gearPosition= 1;
-			App_rmtCtrl.CtrlResp.basicSt.insulationRstance= 1;
-			App_rmtCtrl.CtrlResp.basicSt.acceleratePedalprc= 1;
-			App_rmtCtrl.CtrlResp.basicSt.deceleratePedalprc= 1;
-			App_rmtCtrl.CtrlResp.basicSt.canBusActive= 1;
-			App_rmtCtrl.CtrlResp.basicSt.bonnetStatus= 1;
-			App_rmtCtrl.CtrlResp.basicSt.lockStatus= 1;
-			App_rmtCtrl.CtrlResp.basicSt.gsmStatus= 1;
-			App_rmtCtrl.CtrlResp.basicSt.wheelTyreMotrSt= 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.vehicleAlarmSt= 1;
-			App_rmtCtrl.CtrlResp.basicSt.currentJourneyID= 1;
-			App_rmtCtrl.CtrlResp.basicSt.journeyOdom= 1;
-			App_rmtCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel= 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.frtRightSeatHeatLel	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.airCleanerSt	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.bookingChargeSt	= GetPP_ChargeCtrl_appointSt();
+			App_rmtCtrl.CtrlResp.basicSt.bookingChargeHour	= GetPP_ChargeCtrl_appointHour()	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.bookingChargeMin	= GetPP_ChargeCtrl_appointMin()/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.chargeMode			= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.chargeStatus		= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.powerMode			= 1/* OPTIONAL */;//0x1--纯电;0x2--混动;0x3--燃油
+			App_rmtCtrl.CtrlResp.basicSt.speed				= gb_data_vehicleSpeed();
+			App_rmtCtrl.CtrlResp.basicSt.totalOdometer		= gb_data_vehicleOdograph();
+			App_rmtCtrl.CtrlResp.basicSt.batteryVoltage		= 1;
+			App_rmtCtrl.CtrlResp.basicSt.batteryCurrent		= 1;
+			App_rmtCtrl.CtrlResp.basicSt.batterySOCPrc 		= gb_data_vehicleSOC();
+			App_rmtCtrl.CtrlResp.basicSt.dcStatus			= 1;
+			App_rmtCtrl.CtrlResp.basicSt.gearPosition		= 1;
+			App_rmtCtrl.CtrlResp.basicSt.insulationRstance	= 1;
+			App_rmtCtrl.CtrlResp.basicSt.acceleratePedalprc	= 1;
+			App_rmtCtrl.CtrlResp.basicSt.deceleratePedalprc	= 1;
+			App_rmtCtrl.CtrlResp.basicSt.canBusActive		= gb_data_CanbusActiveSt();
+			App_rmtCtrl.CtrlResp.basicSt.bonnetStatus		= 1;
+			App_rmtCtrl.CtrlResp.basicSt.lockStatus			= 1;
+			App_rmtCtrl.CtrlResp.basicSt.gsmStatus			= 1;
+			App_rmtCtrl.CtrlResp.basicSt.wheelTyreMotrSt	= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.vehicleAlarmSt		= 1;
+			App_rmtCtrl.CtrlResp.basicSt.currentJourneyID	= 1;
+			App_rmtCtrl.CtrlResp.basicSt.journeyOdom		= 1;
+			App_rmtCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel	= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.frtRightSeatHeatLel= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.airCleanerSt		= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.srsStatus			= 1;//安全气囊状态
 
 			if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_RESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
 											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//数据编码打包是否完成
