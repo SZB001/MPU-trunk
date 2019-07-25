@@ -141,13 +141,46 @@ unsigned char PP_rmtCtrl_cfg_ACOnOffSt(void)
 */
 unsigned char PP_rmtCtrl_cfg_HeatingSt(uint8_t dt)
 {
+	unsigned char level;
 	if(dt ==0)
 	{
-		return PrvtProt_SignParse_DrivHeatingSt();
+		level = PrvtProt_SignParse_DrivHeatingSt();
+		if(level == 1)
+		{
+			return 3;
+		}
+		else if(level == 2)
+		{
+			return 2;
+		}
+		else if (level == 3 )
+		{
+			return 1;
+		}
+		else
+		{
+		}
+		return level;
 	}
 	else
 	{
-		return PrvtProt_SignParse_PassHeatingSt();
+		level = PrvtProt_SignParse_PassHeatingSt();
+		if(level == 1)
+		{
+			return 3;
+		}
+		else if(level == 2)
+		{
+			return 2;
+		}
+		else if (level == 3 )
+		{
+			return 1;
+		}
+		else
+		{
+		}
+		return level;
 	}
 }
 

@@ -1,13 +1,13 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_Shell.c
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_Shell.c
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -29,16 +29,16 @@ description£º include the header file
 #include "PrvtProt_shell.h"
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 
 
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
@@ -61,18 +61,18 @@ static int PP_shell_showpara(int argc, const char **argv);
 static int PP_shell_SetdiagReq(int argc, const char **argv);
 static int PP_shell_SetTboxSN(int argc, const char **argv);
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 /******************************************************
-*º¯ÊýÃû£ºPrvtProt_shell_init
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtProt_shell_init
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º³õÊ¼»¯
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PrvtProt_shell_init(void)
 {
@@ -99,17 +99,17 @@ void PrvtProt_shell_init(void)
 
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_setHeartBeatPeriod
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_setHeartBeatPeriod
 
-*ÐÎ  ²Î£º
-argv[0] - ÐÄÌøÖÜÆÚ £¬µ¥Î»:Ãë
+*ï¿½ï¿½  ï¿½Î£ï¿½
+argv[0] - ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Î»:ï¿½ï¿½
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_setHeartBeatPeriod(int argc, const char **argv)
 {
@@ -135,16 +135,16 @@ static int PP_shell_setHeartBeatPeriod(int argc, const char **argv)
 
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_setSuspend
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_setSuspend
 
-*ÐÎ  ²Î£ºÉèÖÃÔÝÍ£
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í£
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_setSuspend(int argc, const char **argv)
 {
@@ -164,16 +164,16 @@ static int PP_shell_setSuspend(int argc, const char **argv)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_setXcallReq
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_setXcallReq
 
-*ÐÎ  ²Î£ºÉèÖÃxcall request
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½xcall request
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_setXcallReq(int argc, const char **argv)
 {
@@ -194,16 +194,16 @@ static int PP_shell_setXcallReq(int argc, const char **argv)
 
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_setEcallResp
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_setEcallResp
 
-*ÐÎ  ²Î£ºÉèÖÃecall response
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½ecall response
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_setEcallResp(int argc, const char **argv)
 {
@@ -224,16 +224,16 @@ static int PP_shell_setEcallResp(int argc, const char **argv)
 
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_SetRmtCfgReq
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_SetRmtCfgReq
 
-*ÐÎ  ²Î£ºÉèÖÃ
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_SetRmtCfgReq(int argc, const char **argv)
 {
@@ -251,16 +251,16 @@ static int PP_shell_SetRmtCfgReq(int argc, const char **argv)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_SetRmtCtrlReq
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_SetRmtCtrlReq
 
-*ÐÎ  ²Î£ºÉèÖÃ
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_SetRmtCtrlReq(int argc, const char **argv)
 {
@@ -281,16 +281,16 @@ static int PP_shell_SetRmtCtrlReq(int argc, const char **argv)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_SetRmtVSReq
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_SetRmtVSReq
 
-*ÐÎ  ²Î£ºÉèÖÃ
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_SetRmtVSReq(int argc, const char **argv)
 {
@@ -309,20 +309,20 @@ static int PP_shell_SetRmtVSReq(int argc, const char **argv)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_SetTboxid
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_SetTboxid
 
-*ÐÎ  ²Î£ºÉèÖÃ
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_SetTboxid(int argc, const char **argv)
 {
-	uint32_t tboxid;
+	unsigned int tboxid;
     if (argc != 1)
     {
         shellprintf(" usage: HOZON_PP_SetTboxid <set tboxid>\r\n");
@@ -337,16 +337,16 @@ static int PP_shell_SetTboxid(int argc, const char **argv)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_SetTmcuSw
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_SetTmcuSw
 
-*ÐÎ  ²Î£ºÉèÖÃ
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_SetTmcuSw(int argc, const char **argv)
 {
@@ -362,16 +362,16 @@ static int PP_shell_SetTmcuSw(int argc, const char **argv)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_SetTmpuSw
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_SetTmpuSw
 
-*ÐÎ  ²Î£ºÉèÖÃ
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_SetTmpuSw(int argc, const char **argv)
 {
@@ -387,16 +387,16 @@ static int PP_shell_SetTmpuSw(int argc, const char **argv)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_Seticcid
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_Seticcid
 
-*ÐÎ  ²Î£ºÉèÖÃ
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_Seticcid(int argc, const char **argv)
 {
@@ -412,16 +412,16 @@ static int PP_shell_Seticcid(int argc, const char **argv)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_showremoteCfg
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_showremoteCfg
 
-*ÐÎ  ²Î£ºÉèÖÃ
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_showpara(int argc, const char **argv)
 {
@@ -431,16 +431,16 @@ static int PP_shell_showpara(int argc, const char **argv)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_SetdiagReq
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_SetdiagReq
 
-*ÐÎ  ²Î£ºÉèÖÃ
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_SetdiagReq(int argc, const char **argv)
 {
@@ -460,16 +460,16 @@ static int PP_shell_SetdiagReq(int argc, const char **argv)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºPP_shell_SetTboxSN
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PP_shell_SetTboxSN
 
-*ÐÎ  ²Î£ºÉèÖÃ
+*ï¿½ï¿½  ï¿½Î£ï¿½ï¿½ï¿½ï¿½ï¿½
 
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int PP_shell_SetTboxSN(int argc, const char **argv)
 {

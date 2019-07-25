@@ -40,6 +40,7 @@ description�� include the header file
 #include "../../support/protocol.h"
 #include "cfg_api.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 #include "PrvtProt_queue.h"
 #include "PrvtProt_shell.h"
@@ -173,7 +174,7 @@ int PrvtProt_init(INIT_PHASE phase)
 				}
 			}
 			InitPrvtProt_SignParse_Parameter();
-			//PP_CertDownload_init();
+			PP_CertDownload_init();
 			//InitPPsignFltr_Parameter();
 		}
         break;
@@ -248,7 +249,7 @@ static void *PrvtProt_main(void)
 		log_set_level(LOG_HOZON, LOG_DEBUG);
 
 		//TskPPsignFltr_MainFunction();
-		//PP_CertDownload_mainfunction(&pp_task);
+		PP_CertDownload_mainfunction(&pp_task);
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
@@ -678,12 +679,13 @@ void PrvtPro_Setsuspend(unsigned char suspend)
 
 *��  ע��
 ******************************************************/
-void PrvtPro_SettboxId(uint32_t tboxid)
+void PrvtPro_SettboxId(unsigned int tboxid)
 {
+	log_i(LOG_HOZON, "set tboxid = %d\n",tboxid);
 	pp_task.tboxid = tboxid;
 	if(cfg_set_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, 4))
 	{
-		log_e(LOG_GB32960, "save server address failed");
+		log_e(LOG_HOZON, "save server address failed");
 	}
 }
 

@@ -37,6 +37,7 @@ description�� include the header file
 #include "../sockproxy/sockproxy_txdata.h"
 #include "../../support/protocol.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 #include "gb32960_api.h"
 #include "PrvtProt_shell.h"
@@ -256,15 +257,18 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 
 	if(rxPack->msgdata[0] == PP_CERTDL_MID_RESP)//mid == 2,cert download response
 	{
+		PrvtPro_SettboxId((unsigned int)rxPack->Header.tboxid);
+
 		PP_CertDownloadPara.eventid = 0;
 		PP_CertDownloadPara.eventid |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_EVTID] << 24;
 		PP_CertDownloadPara.eventid |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_EVTID+1] << 16;
 		PP_CertDownloadPara.eventid |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_EVTID+2] << 8;
 		PP_CertDownloadPara.eventid |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_EVTID+3];
 
+		log_i(LOG_HOZON, "PP_CertDownloadPara.eventid = %d\n",PP_CertDownloadPara.eventid);
 
 		if((rxPack->msgdata[PP_CERTDL_RESP_RESULT] == 1) && \
-				(rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE] == 1))//成功
+				(rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE] == 1))//成功  && tbox证书
 		{
 			PP_CertDL.state.dlsuccess = PP_CERTDL_SUCCESS;
 			PP_CertDL.para.CertDLResp.certLength = 0;
@@ -286,6 +290,8 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 		}
 		else
 		{
+			log_i(LOG_HOZON, "rxPack->msgdata[PP_CERTDL_RESP_RESULT] = %d\n",rxPack->msgdata[PP_CERTDL_RESP_RESULT]);
+			log_i(LOG_HOZON, "rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE] = %d\n",rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE]);
 			PP_CertDL.state.dlsuccess = PP_CERTDL_FAIL;
 		}
 	}
@@ -371,7 +377,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 			iRet = HzTboxApplicationData("/usrdata/pki/two_certreqmain.csr" , "/usrdata/pki/sn_sim_encinfo.txt", gcsroutdata, &gcoutlen);
 			if(iRet != 3630)
 			{
-				printf("HzTboxApplicationData error+++++++++++++++iRet[%d] \n", iRet);
+				log_i(LOG_HOZON,"HzTboxApplicationData error+++++++++++++++iRet[%d] \n", iRet);
 				PP_CertDL.state.dlSt = PP_CERTDL_END;
 				return -1;
 			}
@@ -393,11 +399,13 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 			{
 				if(PP_CERTDL_INITVAL != PP_CertDL.state.dlsuccess)
 				{
+					log_i(LOG_HOZON, "auth download \n");
 					PP_CertDL.state.dlSt = PP_CERTDL_END;
 				}
 			}
 			else//timeout
 			{
+				log_i(LOG_HOZON, "auth download timeout\n");
 				PP_CertDL.state.dlSt = PP_CERTDL_END;
 			}
 		}

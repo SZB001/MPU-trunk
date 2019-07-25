@@ -52,7 +52,7 @@
 #define PP_APPOINTACC    4
 #define PP_CANCELAPPOINT 5
 
-#define ACC_APPOINT_NUM 10
+
 
 typedef struct
 {
@@ -72,7 +72,7 @@ typedef struct
 
 static PrvtProt_rmtACCtrl_t PP_rmtACCtrl;
 static uint8_t acc_requestpower_flag = 0;
-static PP_rmtAC_AppointBook_t  PP_rmtac_AppointBook[ACC_APPOINT_NUM] ;
+PP_rmtAC_AppointBook_t  PP_rmtac_AppointBook[ACC_APPOINT_NUM] ;
 static PP_rmtAc_Appointperiod_t PP_rmtAc_Appointperiod[7] =
 {
 	{0,0x01},//星期7
@@ -478,6 +478,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACCANCELAPPOINT)
 			{
 				int i;
+				int cancel_flag = 0;
 				appointId = 0;
 				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] << 24;
 				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[1] << 16;
@@ -485,23 +486,27 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[3];
 				for(i=0;i<ACC_APPOINT_NUM;i++)
 				{
-					if(PP_rmtac_AppointBook[i].id == appointId)  //
+					if(PP_rmtac_AppointBook[i].validFlg  == 1)
 					{
-						PP_rmtac_AppointBook[i].validFlg  = 0;
-						log_i(LOG_HOZON, "cancel appointment success , ID = %d\n",PP_rmtac_AppointBook[i].id);
-						PP_rmtACCtrl.state.dataUpdata = 1;
-						rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
-						rmtCtrl_Stpara.rvcFailureType = 0;
-						rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-						rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
-						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+						if(PP_rmtac_AppointBook[i].id == appointId)  //
+						{
+							PP_rmtac_AppointBook[i].validFlg  = 0;
+							log_i(LOG_HOZON, "cancel appointment success , ID = %d\n",PP_rmtac_AppointBook[i].id);
+							PP_rmtACCtrl.state.dataUpdata = 1;
+							rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
+							rmtCtrl_Stpara.rvcFailureType = 0;
+							rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+							rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
+							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+							cancel_flag = 1;
+							PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+						}
 					}
-					else
-					{
-						log_o(LOG_HOZON,"PP_rmtac_AppointBook[%d].id = %d,appointId :%d",i,PP_rmtac_AppointBook[i].id,appointId);
-						log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
-					}
+				}
+				if(cancel_flag == 0)
+				{
+					log_o(LOG_HOZON,"No such ID = %d",appointId);
+					log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
 				}
 			}
 			else
@@ -604,27 +609,33 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 			else if (shell_actrl->cmd == PP_RMTCTRL_ACCANCELAPPOINT)
 			{
 				int i;
+				int cancel_flag = 0;
 				for(i=0;i<ACC_APPOINT_NUM;i++)
 				{
-					if(PP_rmtac_AppointBook[i].id == shell_actrl->id )
+					if(PP_rmtac_AppointBook[i].validFlg == 1)
 					{
-						PP_rmtac_AppointBook[i].validFlg = 0 ;
-						PP_rmtACCtrl.state.dataUpdata = 1;
-						rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
-						rmtCtrl_Stpara.rvcFailureType = 0;
-						rmtCtrl_Stpara.rvcReqType = shell_actrl->cmd;
-						rmtCtrl_Stpara.eventid = 00;
-						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-						log_o(LOG_HOZON,"Cancel the air conditioning appointment successfully");
-						break;
-					}
-					else 
-					{
-						log_o(LOG_HOZON,"PP_rmtac_AppointBook[%d].id = %d,appointId :%d",i,PP_rmtac_AppointBook[i].id,appointId);
-						log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
-					}
+						if(PP_rmtac_AppointBook[i].id == shell_actrl->id )
+						{
+							PP_rmtac_AppointBook[i].validFlg = 0 ;
+							PP_rmtACCtrl.state.dataUpdata = 1;
+							rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
+							rmtCtrl_Stpara.rvcFailureType = 0;
+							rmtCtrl_Stpara.rvcReqType = shell_actrl->cmd;
+							rmtCtrl_Stpara.eventid = 00;
+							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+							cancel_flag = 1;
+							PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+							log_o(LOG_HOZON,"Cancel the air conditioning appointment successfully");
+							break;
+						}
+					}	
+				}	
+				if(cancel_flag == 0)
+				{
+					log_o(LOG_HOZON,"No such ID :%d",shell_actrl->id);
+					log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
 				}
+				
 
 			}
 

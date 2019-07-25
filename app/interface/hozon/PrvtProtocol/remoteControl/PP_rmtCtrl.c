@@ -45,6 +45,7 @@ description： include the header file
 #include "../PrvtProt_EcDc.h"
 #include "../PrvtProt_cfg.h"
 #include "PP_doorLockCtrl.h"
+#include "PP_SendWakeUptime.h"
 #include "PP_ACCtrl.h"
 #include "PP_ChargeCtrl.h"
 #include "PP_identificat.h"
@@ -178,6 +179,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 		case RMTCTRL_IDLE://空闲
 		{
 			int ret ;
+			PP_Send_WakeUpTime_to_Mcu();//运行状态到listen模式，发一个最近的定时唤醒
 			PP_rmtCtrl_checkenginetime();//15分钟之后下高压电
 			//检测空调或座椅加热上电或下电
 

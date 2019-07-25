@@ -186,29 +186,29 @@ int PP_startengine_mainfunction(void *task)
 		break;
 		case PP_STARTENGINE_END:
 		{
-			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-			if(enginecation == PP_POWERON )
-			{
-				rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWERON ;
-			}
-			else
-			{
-				rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWEROFF ;
-			}
-			rmtCtrl_Stpara.eventid = 0;
-			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-			if((1 == startengine_success_flag)||(2 == startengine_success_flag))
-			{
-				rmtCtrl_Stpara.rvcReqStatus = 2; 
-				rmtCtrl_Stpara.rvcFailureType = 0;
-				//log_o(LOG_HOZON,"success");
-			}
-			else
-			{
-				rmtCtrl_Stpara.rvcReqStatus = 3;  
-				rmtCtrl_Stpara.rvcFailureType = 0xff;
-			}
-			res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+//			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+//			if(enginecation == PP_POWERON )
+//			{
+//				rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWERON ;
+//			}
+//			else
+//			{
+//				rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWEROFF ;
+//			}
+//			rmtCtrl_Stpara.eventid = 0;
+//			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+//			if((1 == startengine_success_flag)||(2 == startengine_success_flag))
+//			{
+//				rmtCtrl_Stpara.rvcReqStatus = 2; 
+//				rmtCtrl_Stpara.rvcFailureType = 0;
+//				//log_o(LOG_HOZON,"success");
+//			}
+//			else
+//			{
+//				rmtCtrl_Stpara.rvcReqStatus = 3;  
+//				rmtCtrl_Stpara.rvcFailureType = 0xff;
+//			}
+//			res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 			start_engine_stage = PP_STARTENGINE_IDLE;
 		}
 		break;

@@ -74,7 +74,7 @@ typedef struct
 static PrvtProt_rmtChargeCtrl_t PP_rmtChargeCtrl;
 //static PrvtProt_pack_t 			PP_rmtChargeCtrl_Pack;
 //static PrvtProt_App_rmtCtrl_t 	App_rmtChargeCtrl;
-static PP_rmtCharge_AppointBook_t		PP_rmtCharge_AppointBook;
+PP_rmtCharge_AppointBook_t		PP_rmtCharge_AppointBook;
 
 static PP_rmtCharge_Appointperiod_t PP_rmtCharge_Appointperiod[7] =
 {
