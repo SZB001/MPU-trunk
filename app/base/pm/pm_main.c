@@ -126,7 +126,7 @@ void pm_vote_agree(void)
     //gpio_set_level(GPIO_EN5_CTRL, PINLEVEL_LOW);
 
     /* add BT to control temporary */
-    gpio_set_level(GPIO_BT_RST, PINLEVEL_LOW);
+    //gpio_set_level(GPIO_BT_RST, PINLEVEL_LOW);
 
     QL_NW_ForbidInd(0x1);
 
@@ -282,7 +282,7 @@ int pm_init(INIT_PHASE phase)
 
             gpio_init(GPIO_EN5_CTRL);
             /* add BT to control temporary */
-            gpio_init(GPIO_BT_RST);
+            //gpio_init(GPIO_BT_RST);
             gpio_init(GPIO_WAKEUP_MCU);
             break;
 

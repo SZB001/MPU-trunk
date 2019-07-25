@@ -62,9 +62,30 @@ typedef struct
 
 static PrvtProt_rmtseatheating_t PP_rmtseatheatCtrl[PP_seatheating_max];
 static uint8_t seat_requestpower_flag;   //0默认，1请求上电，2请求下电
+
+int Seat_Shell_setctrl(int argc, const char **argv)
+{
+	uint32_t cmd;
+	uint32_t level;
+	if (argc != 2)
+    {
+		shellprintf(" usage:  shell_cli.bin hozon_actr cmd id hour min\n");
+        return -1;
+    }
+	sscanf(argv[0], "%u", &cmd);
+	sscanf(argv[1], "%u", &level);
+	PP_seatheating_SetCtrlReq(cmd,level);
+	return 0;
+}
+void remote_seat_shell_init(void)
+{
+	shell_cmd_register("hozon_seat_ctrl", Seat_Shell_setctrl, "TSP SEAT CTRL");
+}
+
 void PP_seatheating_init(void)
 {
 	int i;
+	remote_seat_shell_init();
 	for(i=0 ;i<PP_seatheating_max ;i++)
 	{
 		memset(&PP_rmtseatheatCtrl[i],0,sizeof(PrvtProt_rmtseatheating_t));
@@ -171,6 +192,7 @@ int PP_seatheating_mainfunction(void *task)
 			        {
 			           	PP_can_send_data(PP_CAN_SEATHEAT,CAN_CLOSESEATHEAT,CAN_SEATHEATMAIN);
 						seat_requestpower_flag = 2;  //座椅加热开启失败请求下电
+						log_o(LOG_HOZON,"timeout\n");
 			            PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
 			            PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
 			        }
@@ -190,6 +212,7 @@ int PP_seatheating_mainfunction(void *task)
 			        }
 			        else
 			        {
+			        	log_o(LOG_HOZON,"timeout\n");
 			             PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
 			             PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
 			         }
@@ -321,17 +344,18 @@ void PP_set_seat_requestpower_flag()
 }
 
 /************************shell命令测试使用**************************/
-void PP_seatheating_SetCtrlReq(unsigned char req,uint16_t reqType)
+void PP_seatheating_SetCtrlReq(uint32_t reqType,unsigned char level)
 {
 	
-	PP_rmtseatheatCtrl[1].state.reqType = (long)reqType;
-	PP_rmtseatheatCtrl[1].state.req = 1;
-	PP_rmtseatheatCtrl[1].state.style = RMTCTRL_TSP;
+	PP_rmtseatheatCtrl[0].state.reqType = (long)reqType;
+	PP_rmtseatheatCtrl[0].state.req = 1;
+	PP_rmtseatheatCtrl[0].state.style = RMTCTRL_TSP;
 	log_o(LOG_HOZON,"request seatheat \n");
-	if(PP_rmtseatheatCtrl[1].state.reqType == PP_RMTCTRL_MAINHEATOPEN)
+	if(PP_rmtseatheatCtrl[0].state.reqType == PP_RMTCTRL_MAINHEATOPEN)
 	{
 		seat_requestpower_flag = 1;  //请求上电
 	}
+	PP_rmtseatheatCtrl[0].level = level;
 }
 /************************shell命令测试使用**************************/
 

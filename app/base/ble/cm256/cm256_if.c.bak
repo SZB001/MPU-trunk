@@ -1,0 +1,313 @@
+/****************************************************************
+ file:          cm256_if.c
+ description:   
+ date:          2018/5/15
+ author:        liuquanfu
+ ****************************************************************/
+#include <string.h>
+#include "cm256_if.h"
+
+
+
+#ifndef NULL
+#define NULL (void *)0
+#endif
+
+typedef struct
+{
+    u8 aucDevName[16];
+    u8 aucDevMac[6];
+    u8 ucNameLen;
+}BT_DEVINFO_TYPE;
+
+BT_DEVINFO_TYPE Tc35661BtInfo;
+
+#define BT_NAME_DEF     "BTTest-"
+
+/******************************************************************************
+* Function Name  : Cm256_SetName
+* Description    :  set ble NAME
+* Input          :  
+* Return         : NONE
+******************************************************************************/
+void Cm256_SetName(void)
+{
+#if 0
+    u8 ucLen = 0;
+    u8 aucBuf[16];
+
+    FUN_IN;
+
+    if (BtLoadName(Tc35661BtInfo.aucDevName, &ucLen))
+    {
+        FUN_IN;
+        // spp name
+        Tc35661BtInfo.ucNameLen = ucLen;
+        TC35661_ROM501_TCU_MNG_INIT_REQ[2] = ucLen;
+        memcpy(&TC35661_ROM501_TCU_MNG_INIT_REQ[3], Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);
+        IBT16_TRACESTRBUF("spp name:", Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);
+        
+        memcpy(TC35661_ROM501_TCU_MNG_LE_INIT_REQ, Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);     //拷贝SPP名称为ble名称
+        if (ucLen < sizeof(TC35661_ROM501_TCU_MNG_LE_INIT_REQ))
+        {
+            memset(TC35661_ROM501_TCU_MNG_LE_INIT_REQ + ucLen, 0x00, sizeof(TC35661_ROM501_TCU_MNG_LE_INIT_REQ) - ucLen);
+        }
+#if 0
+        TC35661_ROM501_GATT_START_ADV_REQ[48] = Tc35661BtInfo.ucNameLen + 1;
+        memcpy(&TC35661_ROM501_GATT_START_ADV_REQ[50], Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen); 
+#else
+        TC35661_ROM501_GATT_START_ADV_REQ[48] = Tc35661BtInfo.ucNameLen + 1;
+        memset(&TC35661_ROM501_GATT_START_ADV_REQ[50], 0, 29);
+        memcpy(&TC35661_ROM501_GATT_START_ADV_REQ[50], Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen); 
+#endif
+        IBT16_TRACESTRBUF("ble name:", TC35661_ROM501_TCU_MNG_LE_INIT_REQ, Tc35661BtInfo.ucNameLen);
+        
+        // bt4.0 adv name
+        memcpy(tc35661_rom501_ble_uart_char_ele_dev_name_val_d, Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen); 
+        BleUpdateNameLen(Tc35661BtInfo.ucNameLen);
+
+        //更新EIR Name
+        CalculateEIRData(Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);
+
+        IBT16_TRACESTRBUF("bt4.0 adv name:", tc35661_rom501_ble_uart_char_ele_dev_name_val_d, Tc35661BtInfo.ucNameLen);
+    }
+    else    // 没有设置名称，则设置默认名称和MAC
+    {
+        SysGetChipUID(aucBuf);
+        memcpy(Tc35661BtInfo.aucDevMac, aucBuf, 2); // uid为mac
+        memcpy(Tc35661BtInfo.aucDevMac+2, "\x7D\xDB\xF8\x74", 4); // 固定东芝蓝牙base address
+        
+        memcpy(Tc35661BtInfo.aucDevName, BT_NAME_DEF, 7);
+        sprintf((char*)Tc35661BtInfo.aucDevName+7, "%02X%02X%02X", Tc35661BtInfo.aucDevMac[2], Tc35661BtInfo.aucDevMac[1], Tc35661BtInfo.aucDevMac[0]);
+        ucLen = 13;
+        Tc35661BtInfo.ucNameLen = ucLen;
+        TC35661_ROM501_TCU_MNG_INIT_REQ[2] = ucLen;
+        memcpy(&TC35661_ROM501_TCU_MNG_INIT_REQ[3], Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);
+        IBT16_TRACESTRBUF("default name:", Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);
+        IBT16_TRACE("default bt name:%s\n", Tc35661BtInfo.aucDevName);
+
+        memcpy(TC35661_ROM501_TCU_MNG_LE_INIT_REQ, Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);     //拷贝SPP名称为ble名称
+        if (ucLen < sizeof(TC35661_ROM501_TCU_MNG_LE_INIT_REQ))
+        {
+            memset(TC35661_ROM501_TCU_MNG_LE_INIT_REQ + ucLen, 0x00, sizeof(TC35661_ROM501_TCU_MNG_LE_INIT_REQ) - ucLen);
+        }
+        TC35661_ROM501_GATT_START_ADV_REQ[48] = Tc35661BtInfo.ucNameLen + 1;
+        memcpy(&TC35661_ROM501_GATT_START_ADV_REQ[50], Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen); 
+
+        memcpy(tc35661_rom501_ble_uart_char_ele_dev_name_val_d, Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen); 
+        BleUpdateNameLen(Tc35661BtInfo.ucNameLen);
+
+        //更新EIR Name
+        CalculateEIRData(Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);
+
+        memcpy(&TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], Tc35661BtInfo.aucDevMac, 6);
+        memcpy(&TC35661_ROM501_GATT_START_ADV_REQ[7], Tc35661BtInfo.aucDevMac, 6); 
+
+        IBT16_TRACESTRBUF("default MAC:", &TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], 6);
+        return;
+    }
+    
+    if (BtLoadMac(Tc35661BtInfo.aucDevMac, &ucLen))
+    {
+        FUN_IN;
+        memcpy(&TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], Tc35661BtInfo.aucDevMac, 6);
+        memcpy(&TC35661_ROM501_GATT_START_ADV_REQ[7], Tc35661BtInfo.aucDevMac, 6); 
+
+        IBT16_TRACESTRBUF("MAC address:", &TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], 6);
+    }
+    else    // 有名称但没有mac的情况，uid做mac
+    {
+        SysGetChipUID(aucBuf);
+        memcpy(Tc35661BtInfo.aucDevMac, aucBuf, 2); // uid为mac
+        memcpy(Tc35661BtInfo.aucDevMac+2, "\x7D\xDB\xF8\x74", 4); // 固定东芝蓝牙base address
+        
+        memcpy(&TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], Tc35661BtInfo.aucDevMac, 6);
+        memcpy(&TC35661_ROM501_GATT_START_ADV_REQ[7], Tc35661BtInfo.aucDevMac, 6); 
+
+        IBT16_TRACESTRBUF("default MAC:", &TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], 6);
+    }
+#endif
+}
+/******************************************************************************
+* Function Name  : Cm256_Init
+* Description    :  init
+* Input          :  
+* Return         : NONE
+******************************************************************************/
+void Cm256_Init(void)
+{
+#if 0
+    FUN_IN;
+    tc35661_GPIO_Config();
+
+    // set name
+    IBT16_SetName();
+#endif
+}
+/******************************************************************************
+* Function Name  : Cm256_Open
+* Description    :  open cm256
+* Input          :  
+* Return         : NONE
+******************************************************************************/
+void Cm256_Open(void)
+{
+#if 0
+//    FUN_IN;
+
+    // register
+    bt_main_init();
+    //TC35661_PWR_ON();
+    
+    // reset, CTS, RTS
+    bt_pwr_on();
+
+    // init BT uart driver
+    bt_uart_init();
+    bt_uart_en();
+#endif
+}
+
+extern void BtSleepTimeReload(u32 ulTime);
+
+/******************************************************************************
+* Function Name  : Cm256_Close
+* Description    :  close cm256
+* Input          :  
+* Return         : NONE
+******************************************************************************/
+void Cm256_Close(void)
+{
+#if 0
+//    FUN_IN;
+    bt_pwr_off();
+    ResetTc35661();        //复位协议栈缓存区
+    BtSleepTimeReload(10000);
+#endif
+}
+/******************************************************************************
+* Function Name  : Cm256_Close
+* Description    :  close cm256
+* Input          :  
+* Return         : NONE
+******************************************************************************/
+void Cm256_Process(u8 ucCycle)
+{
+#if 0
+    //FUN_IN;
+    ucCycle += 4;
+    while (ucCycle--)
+    {
+        tc35661_rom501_loop();
+    }
+#endif
+}
+/******************************************************************************
+* Function Name  : Cm256_Disconnect
+* Description    :   
+* Input          :  
+* Return         : NONE
+******************************************************************************/
+void Cm256_Disconnect(void)
+{
+#if 0
+    u32 ulTimeCnt;
+    
+    FUN_IN;
+    bt_disconnect();
+    ulTimeCnt = SysGetTimer() + 1000;
+    while (0 != bt_is_connected())
+    {
+        tc35661_rom501_loop();
+        if (SysGetTimer() > ulTimeCnt)
+        {
+            break;
+        }
+    }
+#endif
+}
+
+extern u8 ucIsInWorking;
+/******************************************************************************
+* Function Name  : Cm256_GetState
+* Description    :   
+* Input          :  
+* Return         : NONE
+******************************************************************************/
+BT_STATE Cm256_GetState(void)
+{
+#if 0
+    if (0 == ucIsInWorking)
+    {
+        return BT_INITING;
+    }
+    else if (bt_is_connected())
+    {
+        return BT_CONNECTED;
+    }
+    return BT_READY;
+#endif
+}
+
+
+/******************************************************************************
+* Function Name  : Cm256_GetName
+* Description    :   
+* Input          :  
+* Return         : NONE
+******************************************************************************/
+void Cm256_GetName(u8* paucBtName, u8* pucLen)
+{
+#if 0
+    if (TC35661_ROM501_TCU_MNG_INIT_REQ[2] > 14)
+    {
+        *pucLen = 14;
+    }
+    else
+    {
+        *pucLen = TC35661_ROM501_TCU_MNG_INIT_REQ[2];
+    }
+    memcpy(paucBtName, &TC35661_ROM501_TCU_MNG_INIT_REQ[3], *pucLen);
+    *(paucBtName+*pucLen) = 0;
+#endif
+}
+
+
+/******************************************************************************
+* Function Name  : Cm256_GetMac
+* Description    :   
+* Input          :  
+* Return         : NONE
+******************************************************************************/
+void Cm256_GetMac(u8* paucBtName, u8* pucLen)
+{
+#if 0
+    *pucLen = TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[0];
+    paucBtName[0] = TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[6];
+    paucBtName[1] = TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[5];
+    paucBtName[2] = TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[4];
+    paucBtName[3] = TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[3];
+    paucBtName[4] = TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[2];
+    paucBtName[5] = TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1];
+    //memcpy(paucBtName, &TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], *pucLen);
+#endif
+
+}
+
+/******************************************************************************
+* Function Name  : Cm256_GetPkgSize
+* Description    :   
+* Input          :  
+* Return         : NONE
+******************************************************************************/
+u8 Cm256_GetPkgSize(u16* pusLen)
+{
+#if 0
+    if (GetCurLinkSinglePacketSize(pusLen))
+    {
+        return 1;
+    }
+    return 0;
+#endif
+
+}

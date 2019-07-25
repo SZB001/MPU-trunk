@@ -181,7 +181,7 @@ int Get_Ac_Wake_next_Recent_time(void)
 	{
 		for(j=0;j<ACC_APPOINT_NUM;j++)
 		{
-			if(i>7)
+			if(i>=7)
 			{
 				k = i-7;
 			}
@@ -252,7 +252,7 @@ int Get_Charge_Wake_Recent_time(void)
 	for( i =localdatetime->tm_wday ; i <localdatetime->tm_wday+7 ;i++)
 	{
 			
-		if(i>7)
+		if(i>=7)
 		{
 			k = i-7;
 		}

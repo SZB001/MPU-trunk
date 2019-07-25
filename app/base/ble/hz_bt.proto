@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+message ApplicationHeader
+{
+    int32 protocol_version = 1;
+    int32 msg_type  = 2;
+}
+
+message AuthenticationInfo
+{
+    int32 authentication_type = 1;
+    bytes authentication_data = 2;
+}
+
+message UserInfo
+{
+    string bt_addr = 1;
+    string bt_name = 2;
+    string imsi = 3;
+    
+}
+
+message AuthenticationResponse
+{
+    bool auth_result = 1;
+    int32 failure_reasons = 2;
+    bytes ver_data = 3;
+}
+
+message ACK
+{
+    int32 msg_type = 1;
+    int32 state = 2;
+}
+
+message TimeStamp
+{
+    int32 Year = 1;
+    int32 Month = 2;
+    int32 Day = 3;
+    int32 Hour = 4;
+    int32 Minute = 5;
+    int32 Second = 6;
+}
+
+message Channel_Request
+{
+    ApplicationHeader appli_header = 1;
+    AuthenticationInfo auth_info = 2;
+    UserInfo user_Info = 3;
+    TimeStamp time_stamp = 4;
+}
+
+message Channel_Response
+{
+    ApplicationHeader appli_header = 1;
+    AuthenticationResponse auth_response = 2;
+    TimeStamp time_stamp = 3;
+}
+
+
+message CommandInfo
+{
+    int32 state = 1;
+}
+
+message Vehicle_Door
+{
+    ApplicationHeader appli_header = 1;
+    CommandInfo vehicle_door = 2;
+    TimeStamp time_stamp = 3;
+}
+
+message Panoramic_Sunroof
+{
+    ApplicationHeader appli_header = 1;
+    CommandInfo panoramic_sunroof = 2;
+    TimeStamp time_stamp = 3;
+}
+
+message Electric_Door
+{
+    ApplicationHeader appli_header = 1;
+    CommandInfo electric_door = 2;
+    TimeStamp time_stamp = 3;
+}
+
+message Remote_Fine_Car
+{
+    ApplicationHeader appli_header = 1;
+    CommandInfo remote_fine_car = 2;
+    TimeStamp time_stamp = 3;
+}
+
+message Charge
+{
+    ApplicationHeader appli_header = 1;
+    CommandInfo charge = 2;
+    TimeStamp time_stamp = 3;
+}
+
+message Power_Control
+{
+    ApplicationHeader appli_header = 1;
+    CommandInfo power_control = 2;
+    TimeStamp time_stamp = 3;
+}

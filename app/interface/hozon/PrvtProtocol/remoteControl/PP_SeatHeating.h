@@ -59,7 +59,7 @@ extern uint8_t PP_seatheating_end(void);
 extern void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 
 
-extern void PP_seatheating_SetCtrlReq(unsigned char req,uint16_t reqType);
+extern void  PP_seatheating_SetCtrlReq(uint32_t reqType,unsigned char level);
 
 extern void PP_seatheating_ClearStatus(void);
 

@@ -1,0 +1,18 @@
+/****************************************************************
+ file:          bt_interface.c
+ description:   
+ date:          2018/5/15
+ author:        liuquanfu
+ ****************************************************************/
+
+#ifndef __BT_INTERFACE_H
+#define __BT_INTERFACE_H
+
+#include "ble.h"
+#define IS_TIME_OUT(start, delta)        				((u32)(tm_get_time() - (u32)(start)) >= (u32)(delta))  
+void BT_Interface_Init(void);
+int ApiCheckLen(void);
+
+
+#endif /* __BT_INTERFACE_H */
+

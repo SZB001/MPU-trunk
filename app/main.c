@@ -30,6 +30,7 @@
 #include "tbox_ivi_api.h"
 #include "uds_node_miss.h"
 #include "remote_diag_api.h"
+#include "ble.h"
 
 int main(int argc , char **argv)
 {
@@ -67,6 +68,7 @@ int main(int argc , char **argv)
 		ivi_init,
 		uds_node_miss_init,/* add by caoml*/
 		remote_diag_init,/* add by caoml*/
+		ble_init,
     };
 
     static module_run_fn run_tbl[] =
@@ -95,6 +97,7 @@ int main(int argc , char **argv)
 		ivi_run,
 		uds_node_miss_run,/* add by caoml*/
 		remote_diag_run,/* add by caoml*/
+		ble_run,
     };
 
     log_init();

@@ -652,7 +652,7 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 				case PP_RMTCTRL_PASSENGERHEATOPEN:
 				case PP_RMTCTRL_PASSENGERHEATCLOSE:
 				{
-					PP_seatheating_SetCtrlReq(req,reqType);
+//					PP_seatheating_SetCtrlReq(req,reqType);
 				}
 				break;
 				default:

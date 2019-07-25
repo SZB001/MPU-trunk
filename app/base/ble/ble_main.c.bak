@@ -1,0 +1,519 @@
+/****************************************************************
+ file:         at_main.c
+ description:  the header file of at main function implemention
+ date:         2019/6/4
+ author:       liuquanfu
+ ****************************************************************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include "init.h"
+#include "tcom_api.h"
+#include "init.h"
+#include "gpio.h"
+#include "timer.h"
+#include "pm_api.h"
+#include "at_api.h"
+#include "cfg_api.h"
+#include "dev_api.h"
+#include "shell_api.h"
+#include "scom_api.h"
+#include "signal.h"
+#include "ble.h"
+#include "pwdg.h" 
+#include "com_app_def.h"
+#include "init.h"
+#include "bt_interface.h"
+#include "btsock.h"
+
+
+
+
+static pthread_t ble_tid; /* thread id */
+BLE_MEMBER				g_BleMember;
+static unsigned char	g_pucbuf[TCOM_MAX_MSG_LEN];
+static int				g_iBleSleep = 0; 
+
+
+
+extern void ApiTraceBuf(unsigned char *buf, unsigned int len);
+
+#ifdef DEBUG_LQF
+void ApiTraceBuf(u8 *buf, u32 len)
+{
+	PrintBuf(buf,len);
+}
+
+#else
+void ApiTraceBuf(u8 *buf, u32 len)
+{
+
+}
+#endif
+
+void ApiBLETraceBuf(unsigned char *buf, unsigned int len)
+{
+	ApiTraceBuf(buf, len);
+}
+
+/****************************************************************
+ function:     ble_msg_recv
+ description:  Send a message as soon as you receive the data
+ input:        blemsg:0 recv message    1 send message  2�Ͽ�����
+ output:       none
+ return:       0 indicates success,others indicates failed
+ *****************************************************************/
+int BleSendMsg(unsigned short usMid, int iDate)
+{
+	TCOM_MSG_HEADER stMsg;
+	int iMsgData = 1;
+
+	if (0 != iDate)
+	{
+		iMsgData = iDate;
+	}
+
+	stMsg.msgid	 = usMid;
+	stMsg.sender	 = MPU_MID_BLE;
+	stMsg.receiver = MPU_MID_BLE;
+	stMsg.msglen	 = sizeof(iMsgData);
+
+	return tcom_send_msg(&stMsg, &iMsgData);
+}
+/****************************************************************
+ function:     ble_msg_recv
+ description:  Send a message as soon as you receive the data
+ input:        blemsg:0 recv message    1 send message  2�Ͽ�����
+ output:       none
+ return:       0 indicates success,others indicates failed
+ *****************************************************************/
+int BleSendMsgToApp(unsigned short usMid)
+{
+
+	TCOM_MSG_HEADER stMsg;
+	int iMsgData = 1;
+
+	stMsg.msgid	 = usMid;
+	stMsg.sender	 = MPU_MID_BLE;
+	//stMsg.receiver = MPU_MID_AICHI;
+	stMsg.receiver = MPU_MID_BLE;
+	stMsg.msglen	 = sizeof(iMsgData);
+
+	return tcom_send_msg(&stMsg, &iMsgData);
+}
+
+
+/****************************************************************
+ function:     BleSleepHandler
+ description:   
+ input:        none
+ output:       none
+ return:       0 indicates success,others indicates failed
+ *****************************************************************/
+static int BleSleepHandler(PM_EVT_ID id)
+{
+    return g_iBleSleep;// 
+}
+
+#if 1
+void hz_so_test(void)
+{
+	char	plaintext[128]="zxy30555@163.com1";
+	char    chiperPath[128]="\0";
+	char    afterdecrypt[128]="\0";
+	char    key[] ="1832521868741387492628667237737729841724568366976937763254826565";
+	int ret=0;
+	int clen=0;
+	int mlen=0;
+				   
+	printf("\n\nplaintext is this\n\n");
+
+	ApiBLETraceBuf(plaintext, strlen(plaintext));
+	
+	ret=HzBtSymEncrypt(plaintext, strlen(plaintext), chiperPath, &clen, key, 1);
+	
+   if(ret==1){
+	  if(chiperPath==NULL){
+		  printf("\n\nchiper is null\n\n");
+		  return 1;
+	   }
+	  printf("frist \n\n%d\n\n",clen);
+	  ApiBLETraceBuf(chiperPath, clen);
+	  printf("\n\n%d\n\n",clen);
+	  
+	}
+	else return 1;
+		   
+   ret=0;
+   ret=HzBtSymEncrypt(chiperPath, clen, afterdecrypt, &mlen, key, 0);
+   if(ret==1){
+	  printf("\ndecrypt success\n");
+	  printf("[%s]\n", afterdecrypt);
+
+	  ApiBLETraceBuf(afterdecrypt, mlen);
+	  printf("\n\n%d\n\n",mlen);
+
+	}
+   else return 1;
+	
+		   
+	
+  return 0;
+
+}
+#endif
+/****************************************************************
+ function:     BleShellSetTest
+ description:  test
+ input:         
+ output:       none
+ return:       0 indicates success,others indicates failed
+ *****************************************************************/
+static int BleShellSetTest(int argc, const char **argv)
+{
+    unsigned char aucBuff[500] = {0};
+	unsigned int ulLen = 0;
+	unsigned char ucLen = 0;
+	//unsigned short usIndex;
+	int ulState = 0;
+	char l = '"';
+
+	 if (argc != 1 || sscanf(argv[0], "%d", &ulLen) != 1)
+	 {
+	
+	 	shellprintf("argc = %d\r\n",argc);
+	 
+	 }
+
+	 switch(ulLen)
+	 {
+		case 1:
+			
+			ulState = stBtApi.GetMac(aucBuff, &ucLen);
+			shellprintf("ulState = %d\r\n",ulState);
+		    ApiTraceBuf(aucBuff, 6);
+		 	break;	
+		case 2:
+			shellprintf("ulState = %d\r\n",ulState);
+		    stBtApi.Send(aucBuff, &ulLen);
+		 	break;	
+		case 3:
+			hz_so_test();
+		 	break;	
+		case 4:
+			stBtApi.LinkDrop();
+		 	break;	
+		case 5:
+			test_bt_hz();
+			shellprintf("test_bt_hzr\n");
+			break;	
+		case 6:
+			ulLen = strlen("LQF1234567890123456789");
+			memcpy(aucBuff,"LQF1234567890123456789",ulLen);
+			stBtApi.Send(aucBuff, &ulLen);
+		    shellprintf("stBtApi.Send\n");
+			break;
+        default:
+			break;
+	 }
+	 
+	//stBtApi.Send("\x31\x32\x33", 3);
+	shellprintf("ucLen = %d\r\n",ucLen);
+    return 0;
+}
+
+/****************************************************************
+ function:     BleShellInit
+ description:  initiaze ble shell
+ input:        none
+ output:       none
+ return:       0 indicates success,others indicates failed
+ *****************************************************************/
+int BleShellInit(void)
+{
+    int ret = 0;
+	shell_cmd_register_ex("bletest", 			"bletest",			BleShellSetTest, "bletest");
+    return ret;
+}
+
+
+/****************************************************************
+ function:     ble_init
+ description:  initiaze ble module
+ input:        none
+ output:       none
+ return:       0 indicates success,others indicates failed
+ *****************************************************************/
+int ble_init(INIT_PHASE phase)
+{
+	int iRet = 0;
+	//unsigned char ucLen = 0;
+
+	//log_o(LOG_BLE, "init ble thread");
+	switch (phase)
+	{
+		case INIT_PHASE_INSIDE:
+
+			memset((char *)&g_BleMember, 0, sizeof(BLE_MEMBER));
+
+		    BT_Interface_Init();
+
+			break;
+
+		case INIT_PHASE_RESTORE:
+
+			break;
+
+		case INIT_PHASE_OUTSIDE:
+            pm_reg_handler(MPU_MID_BLE, BleSleepHandler);   
+			BleShellInit();
+			break;
+
+		default:
+			break;
+	}
+	
+	return iRet;
+}
+
+/****************************************************************
+ function:     at_main
+ description:  at module main function
+ input:        none
+ output:       none
+ return:       NULL
+ ****************************************************************/
+static void *ble_main(void)
+{
+    int iRet, iTcom_fd, iMax_fd;
+	unsigned char ucCnt = 0, ucLen;
+	unsigned char aucTest[1024] = {0};
+	unsigned int TestLen = 0;
+    fd_set fds;
+    TCOM_MSG_HEADER msgheader;
+	unsigned int ulStartTime = 0;
+	
+	stBtApi.Init();
+	stBtApi.Open();
+	printf("BLE******************2\r\n");
+
+	iTcom_fd = tcom_get_read_fd(MPU_MID_BLE);
+
+    if (iTcom_fd < 0)
+    {
+        log_e(LOG_BLE, "get ble recv fd failed");
+        return NULL;
+    }
+
+
+	
+	log_o(LOG_BLE, "ble_main******************************\r\n");
+
+    iMax_fd = iTcom_fd;
+
+	 while (1)
+    {
+ #if 1
+        if (BLE_RECV_STATUS == g_BleMember.ucTransStatus)
+        {
+        	if (IS_TIME_OUT(ulStartTime, 400))
+        	{
+        	    log_i(LOG_BLE, "send self***********\r\n");
+        	    if (YT_OK == ApiCheckLen())
+        	    {
+					g_BleMember.ucTransStatus = BLE_RECV_FINISH_STATUS;
+					BleSendMsgToApp(BLE_MSG_RECV_TO_APP);
+        	    }  
+				else
+				{
+				    log_i(LOG_BLE, "send self\r\n");
+					memset(aucTest, 0, sizeof(aucTest));
+					TestLen = sizeof(aucTest);
+					iRet = stBtApi.Recv(aucTest, &TestLen);
+					//PRINTFBUF(aucTest, TestLen);
+					if (YT_ERR == iRet)
+					{
+					    log_i(LOG_BLE, "send self1\r\n");
+						memset((unsigned char *)&aucTest, 0 , sizeof(aucTest));
+					}
+
+                    log_i(LOG_BLE, "send self4=%d\r\n",TestLen);
+					log_i(LOG_BLE, "send self2\r\n");
+					g_BleMember.ucTransStatus = BLE_RECV_FINISH_STATUS;
+					iRet = stBtApi.Send(aucTest, &TestLen);
+					BleSendMsg(BLE_MSG_SEND_TYPE, 1);
+					log_i(LOG_BLE, "send self3\r\n");
+					
+					if (YT_OK != iRet)
+					{
+						//log_e(LOG_AICHI, "self1ret = %d\r\n", iRet);
+					}
+				}
+        	}
+        }
+#endif
+		
+        FD_ZERO(&fds);
+        FD_SET(iTcom_fd, &fds);
+
+        iRet = select(iMax_fd + 1, &fds, NULL, NULL, NULL);
+
+        if (iRet)
+        {
+            if (FD_ISSET(iTcom_fd, &fds))
+            {
+                iRet = tcom_recv_msg(MPU_MID_BLE, &msgheader, g_pucbuf);
+
+                if (0 != iRet)
+                {
+                    log_e(LOG_BLE, "tcom_recv_msg failed,ret:0x%08x", iRet);
+                    continue;
+                }
+
+                if (MPU_MID_TIMER == msgheader.sender)
+                {
+                    if (BLE_MSG_ID_TIMER_HEARTER == msgheader.msgid)
+                    {
+                        ucCnt++;
+						if(ucCnt >= 3)
+						{
+							g_iBleSleep = 1;
+						}
+                    }
+                }
+				else if (MPU_MID_FCT == msgheader.sender)
+				{
+					
+				}
+				else if (MPU_MID_BLE == msgheader.sender)
+				{
+					ucCnt = 0;
+					g_iBleSleep = 0;
+					
+					if (BLE_MSG_SEND_TYPE == msgheader.msgid)
+					{
+						log_i(LOG_BLE, "msgheader.sender = MPU_MID_BLE");
+						log_i(LOG_BLE, "BLE_MSG_SEND_TYPE");
+						g_BleMember.ucTransStatus = BLE_INIT_STATUS;
+					}
+					else if (BLE_MSG_RECV_TYPE == msgheader.msgid)
+					{
+					    //stBtApi.Recv();
+						log_i(LOG_BLE, "msgheader.sender = MPU_MID_BLE");
+						log_i(LOG_BLE, "BLE_MSG_RECV_TYPE");
+						ulStartTime = tm_get_time();
+						
+						//if(BLE_INIT_STATUS == g_BleMember.ucTransStatus)
+						//{
+						    
+							g_BleMember.ucTransStatus = BLE_RECV_STATUS;
+						//}
+					}
+					else if (BLE_MSG_RECV_TO_APP == msgheader.msgid)
+					{
+						log_i(LOG_BLE, "LOG_BLE2\r\n");
+					}
+					else if (BLE_MSG_DISCONNECT == msgheader.msgid)
+					{
+						memset((char *)&g_BleMember, 0, sizeof(BLE_MEMBER));
+		    			g_BleMember.ucTransStatus = BLE_INIT_STATUS;
+						//BleSendMsgToApp(AICHI_MSG_DISCONFIG_TYPE);
+						log_i(LOG_BLE, "1BLE_MSG_DISCONNECT");
+					}
+				}
+                else if (MPU_MID_PM == msgheader.sender)
+                {
+                
+                    if (PM_MSG_SLEEP == msgheader.msgid)
+                    { 
+                       
+                       g_iBleSleep = 1;
+                       // if (1 == g_BleContr.ucSleepCloseBle)
+                       {
+                          //stBtApi.Close();
+                       }
+                    }
+                    else if (PM_MSG_RUNNING == msgheader.msgid)
+                    {
+                        //at_wakeup_proc();
+                      // if (1 == g_BleContr.ucSleepCloseBle)
+                       {
+                          //������
+                          //if(0 != stBtApi.Open())
+                          //{
+                          		//������ʧ��
+                          //}
+                       }
+                    }
+                    else if(PM_MSG_OFF == msgheader.msgid)
+                    {
+                        //at_wakeup_proc();
+                       // disconnectcall();
+                    }
+                }
+                else if (MPU_MID_MID_PWDG == msgheader.msgid)
+                {
+					  pwdg_feed(MPU_MID_BLE);
+                }
+				else if(BLE_MSG_ID_CHECK_TIMEOUT == msgheader.msgid)
+				{
+					//tm_ble_timeout();
+				}
+				else if (BLE_MSG_ID_TIMER_HEARTER == msgheader.msgid)
+                {
+                   // pwdg_feed(MPU_MID_BLE);
+                }
+
+                continue;
+            }
+
+        }
+        else if (0 == iRet)  /* timeout */
+        {
+#if 1
+
+#endif
+            continue; /* continue to monitor the incomging data */
+        }
+        else
+        {
+            if (EINTR == errno)  /* interrupted by signal */
+            {
+                continue;
+            }
+
+            break; /* thread exit abnormally */
+        }
+    }
+    
+    return NULL;
+}
+
+/****************************************************************
+ function:     gps_run
+ description:  startup GPS module
+ input:        none
+ output:       none
+ return:       positive value indicates success;
+ -1 indicates failed
+ *****************************************************************/
+int ble_run(void)
+{
+    int ret;
+    pthread_attr_t ta;
+
+    pthread_attr_init(&ta);
+    pthread_attr_setdetachstate(&ta, PTHREAD_CREATE_DETACHED);
+
+    /* create thread and monitor the incoming data */
+    ret = pthread_create(&ble_tid, &ta, (void *) ble_main, NULL);
+
+    if (ret != 0)
+    {
+        return -1;
+    }
+
+    return 0;
+}
+

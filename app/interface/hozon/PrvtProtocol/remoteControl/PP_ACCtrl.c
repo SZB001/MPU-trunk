@@ -127,7 +127,7 @@ int AC_Shell_showctrl(int argc, const char **argv)
 	return 0;
 }
 
-void remote_shell_init(void)
+void remote_acc_shell_init(void)
 {
 	shell_cmd_register("hozon_actrl_setappoint", AC_Shell_setctrl, "TSP AC CTRL");
 	shell_cmd_register("hozon_actrl_showappoint", AC_Shell_showctrl, "TSP AC CTRL");
@@ -138,7 +138,7 @@ void PP_ACCtrl_init(void)
 	int res;
 	int i;
 	uint32_t len;
-	remote_shell_init();
+	remote_acc_shell_init();
 	memset(&PP_rmtACCtrl,0,sizeof(PrvtProt_rmtACCtrl_t));
 	memset(&PP_rmtac_AppointBook,0,10*sizeof(PP_rmtAC_AppointBook_t));
 	memcpy(PP_rmtACCtrl.pack.Header.sign,"**",2);

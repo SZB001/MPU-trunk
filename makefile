@@ -29,6 +29,7 @@ SUBDIRS := \
 	./mid/audio \
 	./mid/tz \
 	./mid/pwdg \
+  ./mid/protobuf \
 	./mid/netlink \
     ./mid/aes \
 	./mid/aes_e \
@@ -41,6 +42,8 @@ SUBDIRS := \
 	./app/base/can \
 	./app/base/nm \
 	./app/base/at \
+  ./app/base/ble \
+  ./app/base/ble/cm256 \
 	./app/base/dev/upg \
 	./app/base/dev/fault \
 	./app/base/dev/status \

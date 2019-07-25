@@ -52,9 +52,11 @@ author        liuzhongwen
 #define MPU_MID_IVI           0x1500   /* FCT */
 #define MPU_MID_CAN_NODE_MISS 0x1600   /* CAN NODE MISS module add by caoml*/
 #define MPU_MID_REMOTE_DIAG   0x1700   /* REMOTE DIAG module add by caoml*/
+#define MPU_MID_BLE           0x1800   /* sqota*/
+#define MPU_MID_HOZON_PP   	  0x1900   /* hozon pp module add by liujian*/
 
 #define MPU_MIN_MID           MPU_MID_TIMER
-#define MPU_MAX_MID           MPU_MID_REMOTE_DIAG
+#define MPU_MAX_MID           MPU_MID_HOZON_PP
 
 #define MPU_APP_MID_COUNT     (((MPU_MAX_MID - MPU_MIN_MID) >> 8) + 1)
 

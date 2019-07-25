@@ -53,7 +53,7 @@ log_info_t log_cfg_table[LOG_MAX] =
 	{ LOG_ERROR, "CAN_NODE_MISS"      },
 	{ LOG_ERROR, "UPER_ECDC" 	},
 	{ LOG_ERROR, "REMOTE_DIAG"     },
-
+    { LOG_ERROR, "BLE"     },
 };
 
 /*********************************************
