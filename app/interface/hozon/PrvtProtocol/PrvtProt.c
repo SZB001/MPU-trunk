@@ -173,7 +173,7 @@ int PrvtProt_init(INIT_PHASE phase)
 				}
 			}
 			InitPrvtProt_SignParse_Parameter();
-			PP_CertDownload_init();
+			//PP_CertDownload_init();
 			//InitPPsignFltr_Parameter();
 		}
         break;
@@ -248,7 +248,7 @@ static void *PrvtProt_main(void)
 		log_set_level(LOG_HOZON, LOG_DEBUG);
 
 		//TskPPsignFltr_MainFunction();
-		PP_CertDownload_mainfunction(&pp_task);
+		//PP_CertDownload_mainfunction(&pp_task);
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||

@@ -38,10 +38,13 @@ description�� include the header file
 #include "../../support/protocol.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
+#include "gb32960_api.h"
 #include "PrvtProt_shell.h"
 #include "PrvtProt_queue.h"
 #include "PrvtProt_cfg.h"
 #include "PrvtProt.h"
+#include "tboxsock.h"
+#include "PrvtProt_remoteConfig.h"
 #include "PrvtProt_CertDownload.h"
 
 /*******************************************************
@@ -65,8 +68,42 @@ typedef struct
 
 static PP_CertDL_t 				PP_CertDL;
 static PP_CertDownloadPara_t	PP_CertDownloadPara;//需要掉电保存的参数
+static char	PP_CertDL_SN[19];
+static char	PP_CertDL_ICCID[21];
 
 static PrvtProt_TxInform_t CertDL_TxInform;
+
+#define ERR_BASE64_BUFFER_TOO_SMALL               0x0010
+#define ERR_BASE64_INVALID_CHARACTER              0x0012
+
+static const unsigned char base64_enc_map[64] =
+{
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+    'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
+    'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+    'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+    'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7',
+    '8', '9', '+', '/'
+};
+
+static const unsigned char base64_dec_map[128] =
+{
+    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
+    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
+    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
+    127, 127, 127, 127, 127, 127, 127, 127, 127, 127,
+    127, 127, 127,  62, 127, 127, 127,  63,  52,  53,
+    54,  55,  56,  57,  58,  59,  60,  61, 127, 127,
+    127,  64, 127, 127, 127,   0,   1,   2,   3,   4,
+    5,   6,   7,   8,   9,  10,  11,  12,  13,  14,
+    15,  16,  17,  18,  19,  20,  21,  22,  23,  24,
+    25, 127, 127, 127, 127, 127, 127,  26,  27,  28,
+    29,  30,  31,  32,  33,  34,  35,  36,  37,  38,
+    39,  40,  41,  42,  43,  44,  45,  46,  47,  48,
+    49,  50,  51, 127, 127, 127, 127, 127
+};
+
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -81,6 +118,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task);
 
 static void PP_CertDL_send_cb(void * para);
 static int PP_CertDL_CertDLReq(PrvtProt_task_t *task,PP_CertificateDownload_t *CertificateDownload);
+static int  PP_CertDL_checkCipherCsr(void);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -104,9 +142,10 @@ void PP_CertDownload_init(void)
 	PP_CertDL.pack.Header.opera = 0x05;
 	PP_CertDL.state.dlSt = PP_CERTDL_IDLE;
 
-	PP_CertDownloadPara.eventid = 1;
+	PP_CertDownloadPara.eventid = 0;
 
-	if(1)//检查证书有效性
+	FILE *fp;
+	if((fp=fopen("/usrdata/pki/auth.cer", "r")) != NULL)//检查证书文件是否存在
 	{
 		PP_CertDL.state.CertValid = 1;
 	}
@@ -240,7 +279,7 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 
 			//保存证书内容
 
-			if(1)//检查证书有效性
+			//if(1)//检查证书有效性
 			{
 				PP_CertDL.state.CertValid = 1;
 			}
@@ -286,9 +325,36 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 	{
 		case PP_CERTDL_IDLE:
 		{
-			if(1 != PP_CertDL.state.CertValid)//
+			if(1 != PP_CertDL.state.CertValid)//证书文件不存在
 			{
-				PP_CertDL.state.dlSt = PP_CERTDL_DLREQ;
+				PP_CertDL.state.dlSt = PP_CERTDL_CHECK_CIPHER_CSR;
+				PP_CertDL.state.waittime = tm_get_time();
+			}
+		}
+		break;
+		case PP_CERTDL_CHECK_CIPHER_CSR:
+		{
+			if((tm_get_time() - PP_CertDL.state.waittime) <= 30000)
+			{
+				if((PP_rmtCfg_getIccid((uint8_t*)PP_CertDL_ICCID)) && \
+						((tm_get_time() - PP_CertDL.state.waittime) >= 5000))
+				{
+					PrvtProt_gettboxsn(PP_CertDL_SN);
+					if(PP_CertDL_checkCipherCsr() == 0)
+					{
+						PP_CertDL.state.dlSt = PP_CERTDL_DLREQ;
+					}
+					else
+					{
+						log_i(LOG_HOZON, "iccid read timeout\n");
+						PP_CertDL.state.dlSt = PP_CERTDL_END;
+					}
+				}
+			}
+			else
+			{
+				log_i(LOG_HOZON, "iccid read timeout\n");
+				PP_CertDL.state.dlSt = PP_CERTDL_END;
 			}
 		}
 		break;
@@ -298,7 +364,23 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 			PP_CertDL.para.CertDLReq.eventid = PP_CertDownloadPara.eventid;
 			PP_CertDL.para.CertDLReq.cerType = 1;//tbox
 			//生成消息列表,VIN &&密文信息 &&密钥编号&& 证书申请文件内容 CSR，其中密文信息中包含 TBOXSN、IMISI、随机数信息
-
+			unsigned char gcsroutdata[4096] = {0};
+			int 	 gcoutlen = 0;
+			int 	 iRet = 0;
+			/*读取CSR文件内容*/
+			iRet = HzTboxApplicationData("/usrdata/pki/two_certreqmain.csr" , "/usrdata/pki/sn_sim_encinfo.txt", gcsroutdata, &gcoutlen);
+			if(iRet != 3630)
+			{
+				printf("HzTboxApplicationData error+++++++++++++++iRet[%d] \n", iRet);
+				PP_CertDL.state.dlSt = PP_CERTDL_END;
+				return -1;
+			}
+		    char vin[18] = {0};
+		    gb32960_getvin(vin);
+			PP_CertDL.para.CertDLReq.infoListLength = 19 + gcoutlen;//19 == vin + "&&"
+			memcpy(PP_CertDL.para.CertDLReq.infoList,vin,17);
+			memcpy(PP_CertDL.para.CertDLReq.infoList+17,"&&",2);
+			memcpy(PP_CertDL.para.CertDLReq.infoList+19,gcsroutdata,gcoutlen);
 			PP_CertDL_CertDLReq(task,&PP_CertDL.para);
 			PP_CertDL.state.dlsuccess = PP_CERTDL_INITVAL;
 			PP_CertDL.state.waittime = tm_get_time();
@@ -355,7 +437,7 @@ static int PP_CertDL_CertDLReq(PrvtProt_task_t *task,PP_CertificateDownload_t *C
 	PP_CertDL.pack.Header.opera = 0x05;
 	PP_CertDL.pack.Header.ver.Byte = task->version;
 	PP_CertDL.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
-	PP_CertDL.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	PP_CertDL.pack.Header.tboxid = PrvtPro_BSEndianReverse(0);//请求下载证书时，tboxid == 0;返回消息里面会带tboxid
 	memcpy(&PP_CertDL_pack, &PP_CertDL.pack.Header, sizeof(PrvtProt_pack_Header_t));
 
 	/* message data */
@@ -367,6 +449,9 @@ static int PP_CertDL_CertDLReq(PrvtProt_task_t *task,PP_CertificateDownload_t *C
 	PP_CertDL_pack.msgdata[5] = CertificateDownload->CertDLReq.cerType;//证书类型：1- tbox
 	PP_CertDL_pack.msgdata[6] = (uint8_t)(CertificateDownload->CertDLReq.infoListLength >> 8);
 	PP_CertDL_pack.msgdata[7] = (uint8_t)CertificateDownload->CertDLReq.infoListLength;
+	log_i(LOG_HOZON, "CertificateDownload->CertDLReq.mid = %d\n",CertificateDownload->CertDLReq.mid);
+	log_i(LOG_HOZON, "CertificateDownload->CertDLReq.eventid = %d\n",CertificateDownload->CertDLReq.eventid);
+	log_i(LOG_HOZON, "CertificateDownload->CertDLReq.cerType = %d\n",CertificateDownload->CertDLReq.cerType);
 	for(i = 0;i < CertificateDownload->CertDLReq.infoListLength;i++)
 	{
 		PP_CertDL_pack.msgdata[8+i] = CertificateDownload->CertDLReq.infoList[i];
@@ -380,6 +465,7 @@ static int PP_CertDL_CertDLReq(PrvtProt_task_t *task,PP_CertificateDownload_t *C
 
 	memset(&CertDL_TxInform,0,sizeof(PrvtProt_TxInform_t));
 	CertDL_TxInform.mid = CertificateDownload->CertDLReq.mid;
+	CertDL_TxInform.eventtime = tm_get_time();
 	CertDL_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
 
 	SP_data_write(PP_CertDL_pack.Header.sign,PP_CertDL_pack.totallen,PP_CertDL_send_cb,&CertDL_TxInform);
@@ -444,3 +530,111 @@ unsigned char GetPP_CertDL_CertValid(void)
 	return PP_CertDL.state.CertValid;
 }
 
+/*
+ * 转码
+ */
+int PP_CertDL_base64_decode( unsigned char *dst, int *dlen, \
+                     const unsigned char *src, int  slen )
+{
+    int i, j, n;
+    unsigned long x;
+    unsigned char *p;
+
+    for( i = j = n = 0; i < slen; i++ )
+    {
+        if( ( slen - i ) >= 2 &&
+           src[i] == '\r' && src[i + 1] == '\n' )
+            continue;
+
+        if( src[i] == '\n' )
+            continue;
+
+        if( src[i] == '=' && ++j > 2 )
+            return( ERR_BASE64_INVALID_CHARACTER );
+
+        if( src[i] > 127 || base64_dec_map[src[i]] == 127 )
+            return( ERR_BASE64_INVALID_CHARACTER );
+
+        if( base64_dec_map[src[i]] < 64 && j != 0 )
+            return( ERR_BASE64_INVALID_CHARACTER );
+
+        n++;
+    }
+
+    if( n == 0 )
+        return( 0 );
+
+    n = ((n * 6) + 7) >> 3;
+
+    if( *dlen < n )
+    {
+        *dlen = n;
+        return( ERR_BASE64_BUFFER_TOO_SMALL );
+    }
+
+    for( j = 3, n = x = 0, p = dst; i > 0; i--, src++ )
+    {
+        if( *src == '\r' || *src == '\n' )
+            continue;
+
+        j -= ( base64_dec_map[*src] == 64 );
+        x  = (x << 6) | ( base64_dec_map[*src] & 0x3F );
+
+        if( ++n == 4 )
+        {
+            n = 0;
+            if( j > 0 ) *p++ = (unsigned char)( x >> 16 );
+            if( j > 1 ) *p++ = (unsigned char)( x >>  8 );
+            if( j > 2 ) *p++ = (unsigned char)( x       );
+        }
+    }
+
+    *dlen = (int)(p - dst);
+
+    return( 0 );
+}
+
+static int  PP_CertDL_checkCipherCsr(void)
+{
+	int iRet = 0;
+	/*sn_sim_encinfo.txt*/
+	int datalen = 0;
+	//system("rm /usrdata/pki/sn_sim_encinfo.txt");
+
+	FILE *fp;
+	if((fp = fopen("/usrdata/pki/sn_sim_encinfo.txt", "r")) == NULL)//检查密文文件不存在
+	{
+		iRet = HzTboxSnSimEncInfo(PP_CertDL_SN,PP_CertDL_ICCID,"/usrdata/pki/aeskey.txt", \
+				"/usrdata/pki/sn_sim_encinfo.txt", &datalen);
+		if(iRet != 3520)
+		{
+			printf("HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
+			return -1;
+		}
+		printf("------------------tbox_ciphers_info--------------------%d\n", datalen);
+	}
+
+	/******HzTboxGenCertCsr *******/
+    //C = cn, ST = shanghai, L = shanghai, O = hezhong, OU = hezhong,
+	//CN = hu_client, emailAddress = sm2_hu_client@160.com
+    //文件名：
+    //格式: PEM / DER or 两个格式同时生成
+    CAR_INFO car_information;
+    char vin[18] = {0};
+    gb32960_getvin(vin);
+    car_information.tty_type="TBOX";
+    car_information.unique_id= vin;
+    car_information.carowner_acct="18221802221";
+    car_information.impower_acct="12900100101";
+    int iret = HzTboxGenCertCsr("SM2", NULL, &car_information, \
+    		"CN|shanghai|shanghai|hezhong|hezhong|two_certreqmain|sm2_ecc_two_certreqmain@160.com", \
+			"/usrdata/pki/two_certreqmain", "PEM");
+    if(iret != 3180)
+    {
+		printf("HzTboxGenCertCsr error ---------------++++++++++++++.[%d]\n", iret);
+		return -1;
+    }
+    //printf("HzTboxGenCertCsr ---------------++++++++++++++.[%d]\n", iret);
+
+	return 0;
+}

@@ -15,48 +15,16 @@
 #ifndef _INC_H_
 #define _INC_H_
 
-SSL_CTX   *pctx;
+#define HOZON_TBOX_VERSION         0
+#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.3 - 2019-07-05"
 
-SSL       *pssl;
-
-int       isockfd;
 
 extern char *hurootcertstr;
 extern char *humidcertstr;
 extern char *huusercertstr;
 extern char *huuserkeystr;
-extern unsigned int pubPort;
-extern char *pubIpAddr;
-
-/********************************* define return value *********************************************/
-#define CERTSETCFGOK                0
-#define CERTSETCFGFAIL             -1
-/*-------------------------------------------------------------------------------------------------*/
-#define COMINITCTXNEW              -1
-#define COMINITRTCERT              -2
-#define COMINITSCDCERT             -3
-#define COMINITUSERCERT            -4
-#define COMINITUSERPRIKEY          -5
-#define PRIKEYCERTMATCH            -6
-#define COMINITNORMAL               0
-/*-------------------------------------------------------------------------------------------------*/
-#define CONNSOCKFAIL               -1
-#define CONNINETATON               -2
-#define CONNCONNECTSRV             -3
-#define CONNPCTXNULL               -4
-#define CONNSTLCONNECTFAIL         -5
-#define CONNCONNECTNORMAL           0
-/*-------------------------------------------------------------------------------------------------*/
-#define SSLISNULL                  -1
-#define SSLWRITEFAIL               -2
-#define SENDDATAOK                  0
-/*-------------------------------------------------------------------------------------------------*/
-#define PSSLISNULL                 -1
-#define SSLREADFAIL                -2
-#define RECVDATAOK                  0
-/*-------------------------------------------------------------------------------------------------*/
-#define CLOSEOK                     0
-#define CLOSEFAIL                  -1
+extern unsigned int  pubPort;
+extern char         *pubIpAddr;
 
 
 
@@ -72,49 +40,91 @@ typedef struct hz_vehicle_info_st CAR_INFO;
 #define CIPHERS_LIST "ALL:!eNULL:!ADH:!PSK:!IDEA:!AES256:!AES128:!SRP:!SSLv3:!GMTLSv1.1:+DHE:+ECDSA:+SHA256:+CHACHA20:+CAMELLIA256"
 
 /************************************** public Functions *************************************************/
-int HzPortAddrCft(unsigned int iPort, char *sIpaddr);
-
-
-
-/************************************** Functions *************************************************/
-int HzTboxCertchainCfg(char *RtcertPath, char *ScdCertPath, char *UsrCertPath, char *UsrKeyPath);
-
-int HzTboxInit( );
-
-int HzTboxConnect( );
-
-int HzTboxDataSend(char *reqbuf , int sendlen);
-
-int HzTboxDataRecv(char *rspbuf, int recvl);
-
-int HzTboxClose( );
-
-int HzTboxCloseSession( );
-
-int HzTboxGenCertCsr(char *sn_curvesname, char *ln_curvesname, CAR_INFO *carinfo, char *subject_info, char *filename, char *format);
-
-char *HzTboxGetVinAndCheck(char *g_vin_out);
-
-char *HzTboxSnSimEncInfo(int iCount , const char *sSnstr, const char *sSimstr, char *sfile, int *cipherlen);
-
-unsigned char*HzTboxApplicationData (char *filename , char *siminfo, unsigned char *phexout);
+int HzPortAddrCft(unsigned int iPort, int mode, char *sIpaddr, char *sHostnameaddr);
 
 
 /************************************** single Functions *************************************************/
 int SgHzTboxCertchainCfg(char *RtcertPath, char *ScdCertPath);
 
-int SgHzTboxInit( );
+int SgHzTboxInit(char *uc_crl);
 
 int SgHzTboxConnect( );
 
-int SgHzTboxDataSend( char *reqbuf , int sendlen);
+int SgHzTboxDataSend( char *reqbuf , int sendlen );
 
-int SgHzTboxDataRecv( char *rspbuf, int recvl);
+int SgHzTboxDataRecv( char *rspbuf, int recvl, int *recvlen );
 
 int SgHzTboxCloseSession( );
 
 int SgHzTboxClose( );
 
+
+/************************************** Functions *************************************************/
+int HzTboxCertchainCfg(char *RtcertPath, char *ScdCertPath, char *UsrCertPath, char *UsrKeyPath);
+
+int HzTboxInit(char *uc_crl);
+
+int HzTboxConnect( );
+
+int HzTboxDataSend(char *reqbuf , int sendlen);
+
+int HzTboxDataRecv(char *rspbuf, int recvl, int *recvlen);
+
+int HzTboxClose( );
+
+int HzTboxCloseSession( );
+
+
+/************************************** cert Functions *************************************************/
+int HzTboxGenCertCsr(char *sn_curvesname, char *ln_curvesname, CAR_INFO *carinfo, char *subject_info, char *filename, char *format);
+
+int HzTboxSnSimEncInfo(const char *sSnstr, const char *sSimstr, char *sfile, char *ofile, int *cipherlen);
+
+int HzTboxApplicationData (char *filename , char *simfile, unsigned char *phexout, int *len);
+
+
+/************************************** tbox server Functions *************************************/
+int HzTboxSrvInit(char *uc_crl);
+
+int HzTboxSvrAccept ( );
+
+int HzTboxSvrDataSend ( char *reqbuf , int sendlen );
+
+int HzTboxSvrDataRecv( char *rspbuf, int recvl, int *recvlen );
+
+int HzTboxSvrClose ( );
+
+int HzTboxSvrCloseSession ( );
+
+
+/************************************** tbox ks *************************************************/
+int HzTboxKsGenCertCsr(char *contPath, char *cfgPath, char *vin, char *sLable, char *p10file);
+
+int HzTboxMatchCertVerify (char *ucertfile);
+
+
+/********************************* tbox cert update *********************************************/
+/*2nd develop --author: chenL  --dayte: 20190611 */
+int HzTboxCertUpdCheck(char *ucfile, char *optformat, long int sysdate, int *curstatus);
+
+int HzTboxGetserialNumber(char *ucfile, char *informat, char *serialNum);
+
+int HzTboxUcRevokeStatus(char *crlfile, char *seri, int *crlstatus);
+
+int HzTboxdoSignVeri(char *certfile, const unsigned char *indata,  char *signinfo, int *signinfolen);
+
+int HzTboxdoSign(const unsigned char *indata, const char *keyfile, char *retsignval, int *retsignlen);
+
+int HzversionMain(char *vs);
+
+
+
+/********************************* tbox cert transcode *********************************************/
+/* --author: chenL  --dayte: 20190715 */
+/*base64 encode*/
+int hz_base64_encode( unsigned char *dst, int *dlen, const unsigned char *src, int  slen );
+/*base64 decode*/
+int hz_base64_decode( unsigned char *dst, int *dlen, const unsigned char *src, int  slen );
 
 
 #endif  // _INC_H__

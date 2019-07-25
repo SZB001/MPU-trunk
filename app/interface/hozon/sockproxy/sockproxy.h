@@ -1,36 +1,36 @@
 /******************************************************
-ÎÄ¼þÃû£º	sockproxy.h
-ÃèÊö£º	ºÏÖÚtsp¶Ô½ÓsocketÁ´Â·µÄ½¨Á¢¡¢¶Ï¿ª¡¢ÊÕ/·¢Êý¾Ý´¦Àí
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	sockproxy.h
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½ï¿½tspï¿½Ô½ï¿½socketï¿½ï¿½Â·ï¿½Ä½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½
 Data			  Vasion			author
 2019/04/17		   V1.0			    liujian
 *******************************************************/
 #ifndef		__SOCK_PROXY_H
 #define		__SOCK_PROXY_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
-#define SOCKPROXY_SHELL_PROTOCOL  0//¸ÃºêËµÃ÷ÊÇ·ñÌí¼ÓÍâ¿ÇÐ­Òé:1-ÊÇ ; 0-·ñ
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
+#define SOCKPROXY_SHELL_PROTOCOL  0//ï¿½Ãºï¿½Ëµï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð­ï¿½ï¿½:1-ï¿½ï¿½ ; 0-ï¿½ï¿½
 
-/**********ºê³£Á¿¶¨Òå*********/
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
 #define SOCK_SERVR_TIMEOUT    	(1000 * 5)
-#define SOCK_TXPAKG_OUTOFTIME    (1000 * 1)
+#define SOCK_TXPAKG_OUTOFTIME    (1000 * 2)
 
-/***********ºêº¯Êý***********/
+/***********ï¿½êº¯ï¿½ï¿½***********/
 #define sockproxy_getURL(x)			gb32960_getURL(x)
 #define sockproxy_SkipSockCheck() 	(!gb32960_getNetworkSt() )//|| gb32960_getAllowSleepSt())
 #define sockproxy_getsuspendSt() 	0//gb32960_getsuspendSt()
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 typedef enum
@@ -43,28 +43,28 @@ typedef enum
 
 typedef enum
 {
-	PP_RCV_UNRCV = 0,//½ÓÊÕ¿ÕÏÐ
-	PP_RCV_GB,//½ÓÊÕ¹ú±êÊý¾Ý
-	PP_RCV_PRIV//½ÓÊÕË½ÓÐÐ­ÒéÊý¾Ý
+	PP_RCV_UNRCV = 0,//ï¿½ï¿½ï¿½Õ¿ï¿½ï¿½ï¿½
+	PP_RCV_GB,//ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	PP_RCV_PRIV//ï¿½ï¿½ï¿½ï¿½Ë½ï¿½ï¿½Ð­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 } PP_SOCK_RCV_TYPE;
 
 #define PP_RCV_IDLE 0
 typedef enum
 {
-	PP_GB_RCV_IDLE = 0,//½ÓÊÕ¿ÕÏÐ
-	PP_GB_RCV_SIGN,//½ÓÊÕÆðÊ¼·û
-	PP_GB_RCV_CTRL,//½ÓÊÕÃüÁî¿ØÖÆ×Ö¶Î£ºÃüÁî±êÖ¾..Êý¾Ýµ¥Ôª¼ÓÃÜ·½Ê½µÈ
-	PP_GB_RCV_DATALEN,//½ÓÊÕÊý¾Ýµ¥Ôª³¤¶È
-	PP_GB_RCV_DATA,//½ÓÊÕÊý¾Ý
-	PP_GB_RCV_CHECKCODE//½ÓÊÕÐ£ÑéÂë
+	PP_GB_RCV_IDLE = 0,//ï¿½ï¿½ï¿½Õ¿ï¿½ï¿½ï¿½
+	PP_GB_RCV_SIGN,//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
+	PP_GB_RCV_CTRL,//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¶Î£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾..ï¿½ï¿½ï¿½Ýµï¿½Ôªï¿½ï¿½ï¿½Ü·ï¿½Ê½ï¿½ï¿½
+	PP_GB_RCV_DATALEN,//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½Ôªï¿½ï¿½ï¿½ï¿½
+	PP_GB_RCV_DATA,//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	PP_GB_RCV_CHECKCODE//ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½ï¿½
 } PP_SOCK_GB_RCV_STEP;
 
 typedef enum
 {
-	PP_PRIV_RCV_IDLE = 0,//½ÓÊÕ¿ÕÏÐ
-	PP_PRIV_RCV_SIGN,//½ÓÊÕÆðÊ¼·û
-	PP_PRIV_RCV_CTRL,//½ÓÊÕÃüÁî¿ØÖÆ×Ö¶Î£ºÃüÁî±êÖ¾..Êý¾Ýµ¥Ôª¼ÓÃÜ·½Ê½µÈ
-	PP_PRIV_RCV_DATA,//½ÓÊÕÊý¾Ý
+	PP_PRIV_RCV_IDLE = 0,//ï¿½ï¿½ï¿½Õ¿ï¿½ï¿½ï¿½
+	PP_PRIV_RCV_SIGN,//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
+	PP_PRIV_RCV_CTRL,//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¶Î£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾..ï¿½ï¿½ï¿½Ýµï¿½Ôªï¿½ï¿½ï¿½Ü·ï¿½Ê½ï¿½ï¿½
+	PP_PRIV_RCV_DATA,//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 } PP_SOCK_PRIV_RCV_STEP;
 /*****struct definitions*****/
 #define SOCK_PROXY_RCVLEN	1456
@@ -73,14 +73,14 @@ typedef struct
     /* protocol status */
     int socket;
     char state;//
-	//char sendbusy;//·¢ËÍÃ¦×´Ì¬
-	char asynCloseFlg;//Òì²½¹Ø±Õsocket±êÖ¾
+	//char sendbusy;//ï¿½ï¿½ï¿½ï¿½Ã¦×´Ì¬
+	char asynCloseFlg;//ï¿½ì²½ï¿½Ø±ï¿½socketï¿½ï¿½Ö¾
 	svr_addr_t sock_addr;
 	/* rcv */
-	char rcvType;//½ÓÊÕÀàÐÍ
-	uint8_t rcvstep;//½ÓÊÕ¿ÕÏÐ
-	int rcvlen;//½ÓÊÕÊý¾ÝÖ¡×Ü³¤¶È
-	uint8_t rcvbuf[SOCK_PROXY_RCVLEN];//½ÓÊÕÊý¾ÝÖ¡buf
+	char rcvType;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	uint8_t rcvstep;//ï¿½ï¿½ï¿½Õ¿ï¿½ï¿½ï¿½
+	int rcvlen;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½Ü³ï¿½ï¿½ï¿½
+	uint8_t rcvbuf[SOCK_PROXY_RCVLEN];//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡buf
 	long datalen;
 }__attribute__ ((packed)) sockproxy_stat_t;
 
@@ -89,11 +89,11 @@ typedef struct
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 
 

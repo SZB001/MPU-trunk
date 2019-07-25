@@ -273,5 +273,5 @@ extern void PP_rmtCfg_init(void);
 extern int PP_rmtCfg_mainfunction(void *task);
 extern void PP_rmtCfg_SetCfgReq(unsigned char req);
 extern void PP_rmtCfg_ShowCfgPara(void);
-
+extern uint8_t PP_rmtCfg_getIccid(uint8_t* iccid);
 #endif 

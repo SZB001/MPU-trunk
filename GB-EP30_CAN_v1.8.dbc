@@ -578,7 +578,7 @@ BO_ 1013 IHU_Fr02_3F5: 8 IHU
  SG_ IHU节点丢失_@2N016 : 47|8@0+(10,0)[0|1440] "min" Vector__XXX
 BO_ 1032 PLG_Fr01_408: 8 PLG
  SG_ PLGRearDoorStatus_@2WGF00E : 2|3@0+(1,0)[0|3] "" Vector__XXX
- SG_ PLG节点丢失_@2N011 : 7|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ PLG节点丢失_@2N011 : 2|3@0+(1,0)[0|3] "" Vector__XXX
 BO_ 853 PTC_Fr01_355: 8 PTC
  SG_ PTCPowerConsumption_@2WGE040 : 31|8@0+(0.1,0)[0|25.3] "kw" Vector__XXX
  SG_ PTCClntTempInlt_@2WGE041 : 47|8@0+(1,-40)[-40|100] "℃" Vector__XXX

@@ -1127,3 +1127,12 @@ static void PP_rmtCfg_send_cb(void * para)
 		break;
 	}
 }
+
+uint8_t PP_rmtCfg_getIccid(uint8_t* iccid)
+{
+	if(PP_rmtCfg.state.iccidValid)
+	{
+		memcpy(iccid,AppData_rmtCfg.checkReq.iccID,20);
+	}
+	return PP_rmtCfg.state.iccidValid;
+}

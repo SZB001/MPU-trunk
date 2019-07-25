@@ -1861,3 +1861,8 @@ unsigned char gb32960_PowerOffSt(void)
 {
 	return powerOffFlag;
 }
+
+void gb32960_getvin(char* vin)
+{
+	strcpy(vin, gb_vin);
+}

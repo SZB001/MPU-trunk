@@ -18,8 +18,8 @@ description�� macro definitions
 /**********宏开关*********/
 
 /**********宏常量*********/
-#define PP_CERTDL_IDLE			0
-//#define PP_CERTDL_CERTCHECK		1
+#define PP_CERTDL_IDLE					0
+#define PP_CERTDL_CHECK_CIPHER_CSR		1
 #define PP_CERTDL_DLREQ			2
 #define PP_CERTDL_DLREQWAIT		3
 #define PP_CERTDL_END			4
@@ -78,7 +78,7 @@ typedef struct
 	uint32_t	eventid;//事件id
 	uint8_t		cerType;
 	uint16_t	infoListLength;
-	uint8_t		infoList[65535];
+	uint8_t		infoList[4096];
 }PP_CertificateDownloadReq_t;
 
 typedef struct
