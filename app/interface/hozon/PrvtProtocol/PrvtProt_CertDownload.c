@@ -616,10 +616,10 @@ static int  PP_CertDL_checkCipherCsr(void)
 				"/usrdata/pki/sn_sim_encinfo.txt", &datalen);
 		if(iRet != 3520)
 		{
-			printf("HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
+			log_i(LOG_HOZON,"HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
 			return -1;
 		}
-		printf("------------------tbox_ciphers_info--------------------%d\n", datalen);
+		log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
 	}
 
 	/******HzTboxGenCertCsr *******/
@@ -639,7 +639,7 @@ static int  PP_CertDL_checkCipherCsr(void)
 			"/usrdata/pki/two_certreqmain", "PEM");
     if(iret != 3180)
     {
-		printf("HzTboxGenCertCsr error ---------------++++++++++++++.[%d]\n", iret);
+    	log_i(LOG_HOZON,"HzTboxGenCertCsr error ---------------++++++++++++++.[%d]\n", iret);
 		return -1;
     }
     //printf("HzTboxGenCertCsr ---------------++++++++++++++.[%d]\n", iret);
