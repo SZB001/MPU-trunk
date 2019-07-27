@@ -61,6 +61,7 @@ typedef struct
 	uint8_t		dlSt;//
 	uint8_t		dlsuccess;//1 - success
 	uint8_t		CertValid;//证书有效性
+	uint8_t		certDLTestflag;//证书下载测试标志
 }__attribute__((packed))  PP_CertDownloadSt_t;
 
 typedef struct
@@ -110,4 +111,5 @@ description�� function External declaration
 extern void PP_CertDownload_init(void);
 extern int PP_CertDownload_mainfunction(void *task);
 extern unsigned char GetPP_CertDL_CertValid(void);
+extern void PP_CertDL_SetCertDLReq(unsigned char req);
 #endif 

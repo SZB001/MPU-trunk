@@ -1362,7 +1362,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 			}
 		}
 
-    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
+    	if(0x2 == gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
 		{
 			if(0x02 == dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])->value)
 			{
@@ -1375,7 +1375,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 			}
 		}
 
-    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
+    	if(0x3 == gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
 		{
 			if(0x03 == dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])->value)
 			{
@@ -1521,17 +1521,17 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     {
         if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])->value)
         {
-            buf[len++] = 0;//��ʻ����������
-            buf[len++] = 0;//����ʻ����������
-            buf[len++] = 0;//�����������
-            buf[len++] = 0;//�Һ���������
+            buf[len++] = 0;//上锁
+            buf[len++] = 0;//上锁
+            buf[len++] = 0;//上锁
+            buf[len++] = 0;//上锁
         }
         else
         {
-        	 buf[len++] = 1;//����
-        	 buf[len++] = 1;//����
-        	 buf[len++] = 1;//����
-        	 buf[len++] = 1;//����
+        	 buf[len++] = 1;//解锁
+        	 buf[len++] = 1;//解锁
+        	 buf[len++] = 1;//解锁
+        	 buf[len++] = 1;//解锁
         }
     }
     else
@@ -2039,7 +2039,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		}
     }
 
-    /* ��չ״̬��Ϣ */
+    /* 扩展状态信息 */
 	if(gbinf->gb_VSExt.info[GB_VS_ESCACTIVEST])//
 	{
 		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ESCACTIVEST])->value;
@@ -2121,17 +2121,17 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 	{
 		 buf[len++] = 0xff;
 	}
-	buf[len++] = 0xff;//Ԥ��1
-	buf[len++] = 0xff;//Ԥ��2
-	buf[len++] = 0xff;//Ԥ��3
+	buf[len++] = 0xff;//预留1
+	buf[len++] = 0xff;//预留2
+	buf[len++] = 0xff;//预留3
 	buf[len++] = 0xff;
-	buf[len++] = 0xff;//Ԥ��4
+	buf[len++] = 0xff;//预留4
 	buf[len++] = 0xff;
 
     return len;
 }
 
-/*����λ����չ����*/
+/* 车辆位置扩展 */
 static uint32_t gb_data_save_VehiPosExt(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0;
@@ -3003,7 +3003,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
     return len;
 }
 
-/* ��չ�������� */
+/* 告警扩展数据 */
 static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0, i, j;

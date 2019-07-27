@@ -26,6 +26,7 @@ description�� include the header file
 #include "PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
 #include "remoteDiag/PrvtProt_rmtDiag.h"
+#include "PrvtProt_CertDownload.h"
 #include "PrvtProt_shell.h"
 
 /*******************************************************
@@ -60,6 +61,7 @@ static int PP_shell_showpara(int argc, const char **argv);
 
 static int PP_shell_SetdiagReq(int argc, const char **argv);
 static int PP_shell_SetTboxSN(int argc, const char **argv);
+static int PP_shell_SetCertDLReq(int argc, const char **argv);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -95,6 +97,9 @@ void PrvtProt_shell_init(void)
 
 	/* diag */
 	shell_cmd_register("hozon_setDiagReq", PP_shell_SetdiagReq, "set diag request");
+
+	/* cert download */
+	shell_cmd_register("hozon_setcertdlReq", PP_shell_SetCertDLReq, "set cert download req");
 }
 
 
@@ -480,6 +485,34 @@ static int PP_shell_SetTboxSN(int argc, const char **argv)
     }
 
     PrvtProt_Settboxsn(argv[0]);
+    sleep(1);
+    return 0;
+}
+
+/******************************************************
+*��������PP_shell_SetCertDLReq
+
+*��  �Σ�����
+
+
+*����ֵ��void
+
+*��  ����
+
+*��  ע��
+******************************************************/
+static int PP_shell_SetCertDLReq(int argc, const char **argv)
+{
+	unsigned int CDLReq;
+    if (argc != 1)
+    {
+        shellprintf(" usage: hozon_setcertdlReq <set cert download req>\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &CDLReq);
+
+	PP_CertDL_SetCertDLReq((uint8_t)CDLReq);
     sleep(1);
     return 0;
 }

@@ -145,6 +145,8 @@ void PP_CertDownload_init(void)
 
 	PP_CertDownloadPara.eventid = 0;
 
+	PP_CertDL.state.certDLTestflag = 1;
+
 	FILE *fp;
 	if((fp=fopen("/usrdata/pki/auth.cer", "r")) != NULL)//检查证书文件是否存在
 	{
@@ -257,8 +259,6 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 
 	if(rxPack->msgdata[0] == PP_CERTDL_MID_RESP)//mid == 2,cert download response
 	{
-		PrvtPro_SettboxId((unsigned int)rxPack->Header.tboxid);
-
 		PP_CertDownloadPara.eventid = 0;
 		PP_CertDownloadPara.eventid |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_EVTID] << 24;
 		PP_CertDownloadPara.eventid |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_EVTID+1] << 16;
@@ -267,31 +267,39 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 
 		log_i(LOG_HOZON, "PP_CertDownloadPara.eventid = %d\n",PP_CertDownloadPara.eventid);
 
-		if((rxPack->msgdata[PP_CERTDL_RESP_RESULT] == 1) && \
-				(rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE] == 1))//成功  && tbox证书
+		if(rxPack->msgdata[PP_CERTDL_RESP_RESULT] == 1)//成功  && tbox证书
 		{
-			PP_CertDL.state.dlsuccess = PP_CERTDL_SUCCESS;
-			PP_CertDL.para.CertDLResp.certLength = 0;
-			PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN] << 24;
-			PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN] << 16;
-			PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN] << 8;
-			PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN];
-
-			log_i(LOG_HOZON, "PP_CertDL.para.CertDLResp.certLength = %d\n",PP_CertDL.para.CertDLResp.certLength);
-			log_i(LOG_HOZON, "certContent = %s\n",rxPack->msgdata[PP_CERTDL_RESP_CERTCONTENT]);
-
-
-			//保存证书内容
-
-			//if(1)//检查证书有效性
+			if(rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE] == 1)//成功  && tbox证书
 			{
-				PP_CertDL.state.CertValid = 1;
+				PP_CertDL.state.dlsuccess = PP_CERTDL_SUCCESS;
+				PP_CertDL.para.CertDLResp.certLength = 0;
+				PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN] << 24;
+				PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN] << 16;
+				PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN] << 8;
+				PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN];
+
+				log_i(LOG_HOZON, "PP_CertDL.para.CertDLResp.certLength = %d\n",PP_CertDL.para.CertDLResp.certLength);
+				log_i(LOG_HOZON, "certContent = %s\n",rxPack->msgdata[PP_CERTDL_RESP_CERTCONTENT]);
+
+
+				//保存证书内容
+
+				//if(1)//检查证书有效性
+				{
+					PP_CertDL.state.CertValid = 1;
+				}
+
+				PrvtPro_SettboxId((unsigned int)rxPack->Header.tboxid);
+			}
+			else
+			{
+				log_i(LOG_HOZON, "rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE] = %d\n",rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE]);
+				PP_CertDL.state.dlsuccess = PP_CERTDL_FAIL;
 			}
 		}
 		else
 		{
 			log_i(LOG_HOZON, "rxPack->msgdata[PP_CERTDL_RESP_RESULT] = %d\n",rxPack->msgdata[PP_CERTDL_RESP_RESULT]);
-			log_i(LOG_HOZON, "rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE] = %d\n",rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE]);
 			PP_CertDL.state.dlsuccess = PP_CERTDL_FAIL;
 		}
 	}
@@ -331,10 +339,12 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 	{
 		case PP_CERTDL_IDLE:
 		{
-			if(1 != PP_CertDL.state.CertValid)//证书文件不存在
+			if((1 != PP_CertDL.state.CertValid) && \
+					(PP_CertDL.state.certDLTestflag))//证书文件不存在
 			{
-				PP_CertDL.state.dlSt = PP_CERTDL_CHECK_CIPHER_CSR;
+				//PP_CertDL.state.certDLTestflag = 1;
 				PP_CertDL.state.waittime = tm_get_time();
+				PP_CertDL.state.dlSt = PP_CERTDL_CHECK_CIPHER_CSR;
 			}
 		}
 		break;
@@ -343,7 +353,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 			if((tm_get_time() - PP_CertDL.state.waittime) <= 30000)
 			{
 				if((PP_rmtCfg_getIccid((uint8_t*)PP_CertDL_ICCID)) && \
-						((tm_get_time() - PP_CertDL.state.waittime) >= 5000))
+						((tm_get_time() - PP_CertDL.state.waittime) >= 10000))
 				{
 					PrvtProt_gettboxsn(PP_CertDL_SN);
 					if(PP_CertDL_checkCipherCsr() == 0)
@@ -519,7 +529,8 @@ static void PP_CertDL_send_cb(void * para)
 ******************************************************/
 void PP_CertDL_SetCertDLReq(unsigned char req)
 {
-
+	PP_CertDL.state.CertValid 	   = 0;
+	PP_CertDL.state.certDLTestflag = req;
 }
 
 /******************************************************
@@ -620,6 +631,10 @@ static int  PP_CertDL_checkCipherCsr(void)
 			return -1;
 		}
 		log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
+	}
+	else
+	{
+		fclose(fp);
 	}
 
 	/******HzTboxGenCertCsr *******/
