@@ -804,6 +804,15 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			VSResp.vsgpsPos.list.size =0;
 			VSResp.vsgpsPos.list.count =1;
 
+			log_i(LOG_UPER_ECDC, "VSgpspos.gpsSt = %d\n",VSgpspos.gpsSt);
+			log_i(LOG_UPER_ECDC, "VSgpspos.gpsTimestamp = %d\n",VSgpspos.gpsTimestamp);
+			log_i(LOG_UPER_ECDC, "VSgpspos.latitude = %d\n",VSgpspos.latitude);
+			log_i(LOG_UPER_ECDC, "VSgpspos.longitude = %d\n",VSgpspos.longitude);
+			log_i(LOG_UPER_ECDC, "VSgpspos.altitude = %d\n",VSgpspos.altitude);
+			log_i(LOG_UPER_ECDC, "VSgpspos.heading = %d\n",VSgpspos.heading);
+			log_i(LOG_UPER_ECDC, "VSgpspos.gpsSpeed = %d\n",VSgpspos.gpsSpeed);
+			log_i(LOG_UPER_ECDC, "VSgpspos.hdop = %d\n",VSgpspos.hdop);
+
 			VSBasicSt.driverDoor 		= &rmtVSResp_ptr->VSResp.basicSt.driverDoor	/* OPTIONAL */;
 			VSBasicSt.driverLock 		= rmtVSResp_ptr->VSResp.basicSt.driverLock;
 			VSBasicSt.passengerDoor 	= &rmtVSResp_ptr->VSResp.basicSt.passengerDoor	/* OPTIONAL */;
@@ -814,6 +823,17 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			VSBasicSt.rearRightLock 	= rmtVSResp_ptr->VSResp.basicSt.rearRightLock;
 			VSBasicSt.bootStatus 		= &rmtVSResp_ptr->VSResp.basicSt.bootStatus	/* OPTIONAL */;
 			VSBasicSt.bootStatusLock 	= rmtVSResp_ptr->VSResp.basicSt.bootStatusLock;
+			log_i(LOG_UPER_ECDC, "VSBasicSt.driverDoor = %d\n",*VSBasicSt.driverDoor);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.driverLock = %d\n",VSBasicSt.driverLock);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.passengerDoor = %d\n",*VSBasicSt.passengerDoor);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.passengerLock = %d\n",VSBasicSt.passengerLock);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.rearLeftDoor = %d\n",*VSBasicSt.rearLeftDoor);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.rearLeftLock = %d\n",VSBasicSt.rearLeftLock);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.rearRightDoor = %d\n",*VSBasicSt.rearRightDoor);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.rearRightLock = %d\n",VSBasicSt.rearRightLock);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.bootStatus = %d\n",*VSBasicSt.bootStatus);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.bootStatusLock = %d\n",VSBasicSt.bootStatusLock);
+
 			VSBasicSt.driverWindow 		= &rmtVSResp_ptr->VSResp.basicSt.driverWindow	/* OPTIONAL */;
 			VSBasicSt.passengerWindow 	= &rmtVSResp_ptr->VSResp.basicSt.passengerWindow	/* OPTIONAL */;
 			VSBasicSt.rearLeftWindow 	= &rmtVSResp_ptr->VSResp.basicSt.rearLeftWindow	/* OPTIONAL */;
@@ -824,12 +844,30 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			VSBasicSt.accTemp 			= &rmtVSResp_ptr->VSResp.basicSt.accTemp	/* OPTIONAL */;
 			VSBasicSt.accMode 			= &rmtVSResp_ptr->VSResp.basicSt.accMode	/* OPTIONAL */;
 			VSBasicSt.accBlowVolume		= &rmtVSResp_ptr->VSResp.basicSt.accBlowVolume/* OPTIONAL */;
+			log_i(LOG_UPER_ECDC, "VSBasicSt.driverWindow = %d\n",*VSBasicSt.driverWindow);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.passengerWindow = %d\n",*VSBasicSt.passengerWindow);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.rearLeftWindow = %d\n",*VSBasicSt.rearLeftWindow);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.rearRightWinow = %d\n",*VSBasicSt.rearRightWinow);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.sunroofStatus = %d\n",*VSBasicSt.sunroofStatus);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.engineStatus = %d\n",VSBasicSt.engineStatus);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.accStatus = %d\n",VSBasicSt.accStatus);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.accTemp = %d\n",*VSBasicSt.accTemp);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.accMode = %d\n",*VSBasicSt.accMode);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.accBlowVolume = %d\n",*VSBasicSt.accBlowVolume);
+
 			VSBasicSt.innerTemp			= rmtVSResp_ptr->VSResp.basicSt.innerTemp;
 			VSBasicSt.outTemp 			= rmtVSResp_ptr->VSResp.basicSt.outTemp;
 			VSBasicSt.sideLightStatus	= rmtVSResp_ptr->VSResp.basicSt.sideLightStatus;
 			VSBasicSt.dippedBeamStatus	= rmtVSResp_ptr->VSResp.basicSt.dippedBeamStatus;
 			VSBasicSt.mainBeamStatus	= rmtVSResp_ptr->VSResp.basicSt.mainBeamStatus;
 			VSBasicSt.hazardLightStus	= rmtVSResp_ptr->VSResp.basicSt.hazardLightStus;
+			log_i(LOG_UPER_ECDC, "VSBasicSt.innerTemp = %d\n",VSBasicSt.innerTemp);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.outTemp = %d\n",VSBasicSt.outTemp);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.sideLightStatus = %d\n",VSBasicSt.sideLightStatus);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.dippedBeamStatus = %d\n",VSBasicSt.dippedBeamStatus);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.mainBeamStatus = %d\n",VSBasicSt.mainBeamStatus);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.hazardLightStus = %d\n",VSBasicSt.hazardLightStus);
+
 			VSBasicSt.frtRightTyrePre	= &rmtVSResp_ptr->VSResp.basicSt.frtRightTyrePre/* OPTIONAL */;
 			VSBasicSt.frtRightTyreTemp	= &rmtVSResp_ptr->VSResp.basicSt.frtRightTyreTemp/* OPTIONAL */;
 			VSBasicSt.frontLeftTyrePre	= &rmtVSResp_ptr->VSResp.basicSt.frontLeftTyrePre/* OPTIONAL */;
@@ -838,6 +876,15 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			VSBasicSt.rearRightTyreTemp	= &rmtVSResp_ptr->VSResp.basicSt.rearRightTyreTemp	/* OPTIONAL */;
 			VSBasicSt.rearLeftTyrePre	= &rmtVSResp_ptr->VSResp.basicSt.rearLeftTyrePre/* OPTIONAL */;
 			VSBasicSt.rearLeftTyreTemp	= &rmtVSResp_ptr->VSResp.basicSt.rearLeftTyreTemp/* OPTIONAL */;
+			log_i(LOG_UPER_ECDC, "VSBasicSt.frtRightTyrePre = %d\n",*VSBasicSt.frtRightTyrePre);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.frtRightTyreTemp = %d\n",*VSBasicSt.frtRightTyreTemp);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.frontLeftTyrePre = %d\n",*VSBasicSt.frontLeftTyrePre);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.frontLeftTyreTemp = %d\n",*VSBasicSt.frontLeftTyreTemp);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.rearRightTyrePre = %d\n",*VSBasicSt.rearRightTyrePre);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.rearRightTyreTemp = %d\n",*VSBasicSt.rearRightTyreTemp);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.rearLeftTyrePre = %d\n",*VSBasicSt.rearLeftTyrePre);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.rearLeftTyreTemp = %d\n",*VSBasicSt.rearLeftTyreTemp);
+
 			VSBasicSt.batterySOCExact	= rmtVSResp_ptr->VSResp.basicSt.batterySOCExact;
 			VSBasicSt.chargeRemainTim	= &rmtVSResp_ptr->VSResp.basicSt.chargeRemainTim/* OPTIONAL */;
 			VSBasicSt.availableOdomtr	= rmtVSResp_ptr->VSResp.basicSt.availableOdomtr;
@@ -848,6 +895,17 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			VSBasicSt.chargeMode		= &rmtVSResp_ptr->VSResp.basicSt.chargeMode/* OPTIONAL */;
 			VSBasicSt.chargeStatus		= &rmtVSResp_ptr->VSResp.basicSt.chargeStatus/* OPTIONAL */;
 			VSBasicSt.powerMode			= &rmtVSResp_ptr->VSResp.basicSt.powerMode/* OPTIONAL */;
+			log_i(LOG_UPER_ECDC, "VSBasicSt.batterySOCExact = %d\n",VSBasicSt.batterySOCExact);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.chargeRemainTim = %d\n",*VSBasicSt.chargeRemainTim);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.availableOdomtr = %d\n",VSBasicSt.availableOdomtr);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.engineRunningTime = %d\n",*VSBasicSt.engineRunningTime);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.bookingChargeSt = %d\n",VSBasicSt.bookingChargeSt);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.bookingChargeHour = %d\n",*VSBasicSt.bookingChargeHour);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.bookingChargeMin = %d\n",*VSBasicSt.bookingChargeMin);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.chargeMode = %d\n",*VSBasicSt.chargeMode);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.chargeStatus = %d\n",*VSBasicSt.chargeStatus);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.powerMode = %d\n",*VSBasicSt.powerMode);
+
 			VSBasicSt.speed				= rmtVSResp_ptr->VSResp.basicSt.speed;
 			VSBasicSt.totalOdometer		= rmtVSResp_ptr->VSResp.basicSt.totalOdometer;
 			VSBasicSt.batteryVoltage	= rmtVSResp_ptr->VSResp.basicSt.batteryVoltage;
@@ -860,6 +918,19 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			VSBasicSt.deceleratePedalprc= rmtVSResp_ptr->VSResp.basicSt.deceleratePedalprc;
 			VSBasicSt.canBusActive		= rmtVSResp_ptr->VSResp.basicSt.canBusActive;
 			VSBasicSt.bonnetStatus		= rmtVSResp_ptr->VSResp.basicSt.bonnetStatus;
+			log_i(LOG_UPER_ECDC, "VSBasicSt.speed = %d\n",VSBasicSt.speed);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.totalOdometer = %d\n",VSBasicSt.totalOdometer);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.batteryVoltage = %d\n",VSBasicSt.batteryVoltage);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.batteryCurrent = %d\n",VSBasicSt.batteryCurrent);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.batterySOCPrc = %d\n",VSBasicSt.batterySOCPrc);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.dcStatus = %d\n",VSBasicSt.dcStatus);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.gearPosition = %d\n",VSBasicSt.gearPosition);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.insulationRstance = %d\n",VSBasicSt.insulationRstance);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.acceleratePedalprc = %d\n",VSBasicSt.acceleratePedalprc);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.deceleratePedalprc = %d\n",VSBasicSt.deceleratePedalprc);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.canBusActive = %d\n",VSBasicSt.canBusActive);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.bonnetStatus = %d\n",VSBasicSt.bonnetStatus);
+
 			VSBasicSt.lockStatus		= rmtVSResp_ptr->VSResp.basicSt.lockStatus;
 			VSBasicSt.gsmStatus			= rmtVSResp_ptr->VSResp.basicSt.gsmStatus;
 			VSBasicSt.wheelTyreMotrSt	= &rmtVSResp_ptr->VSResp.basicSt.wheelTyreMotrSt	/* OPTIONAL */;
@@ -870,6 +941,17 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			VSBasicSt.frtRightSeatHeatLel	= &rmtVSResp_ptr->VSResp.basicSt.frtRightSeatHeatLel/* OPTIONAL */;
 			VSBasicSt.airCleanerSt		= &rmtVSResp_ptr->VSResp.basicSt.airCleanerSt/* OPTIONAL */;
 			VSBasicSt.srsStatus 		= rmtVSResp_ptr->VSResp.basicSt.srsStatus;
+			log_i(LOG_UPER_ECDC, "VSBasicSt.lockStatus = %d\n",VSBasicSt.lockStatus);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.gsmStatus = %d\n",VSBasicSt.gsmStatus);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.wheelTyreMotrSt = %d\n",*VSBasicSt.wheelTyreMotrSt);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.vehicleAlarmSt = %d\n",VSBasicSt.vehicleAlarmSt);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.currentJourneyID = %d\n",VSBasicSt.currentJourneyID);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.journeyOdom = %d\n",VSBasicSt.journeyOdom);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.frtLeftSeatHeatLel = %d\n",*VSBasicSt.frtLeftSeatHeatLel);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.frtRightSeatHeatLel = %d\n",*VSBasicSt.frtRightSeatHeatLel);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.airCleanerSt = %d\n",*VSBasicSt.airCleanerSt);
+			log_i(LOG_UPER_ECDC, "VSBasicSt.srsStatus = %d\n",VSBasicSt.srsStatus);
+
 			VSResp.vehiclebasicSt.list.array = &VSBasicSt_ptr;
 			VSResp.vehiclebasicSt.list.size =1;
 			VSResp.vehiclebasicSt.list.count =1;

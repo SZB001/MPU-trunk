@@ -266,7 +266,7 @@ RvsBasicStatus ::= SEQUENCE
 	sunroofStatus		BOOLEAN	OPTIONAL, --
 	engineStatus		BOOLEAN, --
 	accStatus			BOOLEAN, --
-	accTemp				INTEGER(18..36)	OPTIONAL, -- 
+	accTemp				INTEGER(16..36)	OPTIONAL, -- 
 	accMode				INTEGER(0..3)	OPTIONAL, -- 
 	accBlowVolume		INTEGER(0..7)	OPTIONAL, -- 
 	innerTemp			INTEGER(0..125), -- 

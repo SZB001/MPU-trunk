@@ -811,9 +811,9 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.accBlowVolume		= gb_data_BlowerGears()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.innerTemp 			= gb_data_InnerTemp();
 			App_rmtCtrl.CtrlResp.basicSt.outTemp 			= gb_data_outTemp();
-			App_rmtCtrl.CtrlResp.basicSt.sideLightStatus 	= 1;//示位灯
-			App_rmtCtrl.CtrlResp.basicSt.dippedBeamStatus 	= 1;//近光灯
-			App_rmtCtrl.CtrlResp.basicSt.mainBeamStatus 	= 1;//远光灯
+			App_rmtCtrl.CtrlResp.basicSt.sideLightStatus 	= gb_data_PostionLampSt();//示位灯
+			App_rmtCtrl.CtrlResp.basicSt.dippedBeamStatus 	= gb_data_NearLampSt();//近光灯
+			App_rmtCtrl.CtrlResp.basicSt.mainBeamStatus 	= gb_data_HighbeamLampSt();//远光灯
 			App_rmtCtrl.CtrlResp.basicSt.hazardLightStus 	= gb_data_TwinFlashLampSt();//双闪灯
 			App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre	= 1/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp	= 1/* OPTIONAL */;
@@ -854,7 +854,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel	= 1	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.frtRightSeatHeatLel= 1/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.airCleanerSt		= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.srsStatus			= 1;//安全气囊状态
+			App_rmtCtrl.CtrlResp.basicSt.srsStatus			= PrvtProtCfg_CrashOutputSt();//安全气囊状态
 
 			if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_RESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
 											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//数据编码打包是否完成

@@ -1701,7 +1701,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		buf[len++] = 0xff;
 	}
 
-    if(gbinf->event.info[GB_EVT_POSLAMP_ON])//С��
+    if(gbinf->event.info[GB_EVT_POSLAMP_ON])//示位灯
 	{
 		buf[len++] = dbc_get_signal_from_id(gbinf->event.info[GB_EVT_POSLAMP_ON])->value;
 	}
@@ -4620,4 +4620,44 @@ uint8_t gb_data_TwinFlashLampSt(void)
 	}
 
 	return hlampSt;
+}
+
+/*
+ * 示位灯状态
+ */
+uint8_t gb_data_PostionLampSt(void)
+{
+	uint8_t posLampSt = 0;
+	if(gb_inf && gb_inf->event.info[GB_EVT_POSLAMP_ON])
+	{
+		posLampSt = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_POSLAMP_ON])->value;
+	}
+
+	return posLampSt;
+}
+
+/*
+ * 近光灯状态
+ */
+uint8_t gb_data_NearLampSt(void)
+{
+	uint8_t lampSt = 0;
+	if(gb_inf && gb_inf->event.info[GB_EVT_NEARLAMP_ON])//
+	{
+		lampSt = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_NEARLAMP_ON])->value;
+	}
+	return lampSt;
+}
+
+/*
+ * 远光灯状态
+ */
+uint8_t gb_data_HighbeamLampSt(void)
+{
+	uint8_t lampSt = 0;
+	if(gb_inf && gb_inf->event.info[GB_EVT_HIGHBEAMLAMP_ON])//
+	{
+		lampSt = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_HIGHBEAMLAMP_ON])->value;
+	}
+	return lampSt;
 }

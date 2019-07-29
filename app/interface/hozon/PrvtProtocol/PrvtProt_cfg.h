@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_cfg.h
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_cfg.h
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 
 Data			  Vasion			author
 2019/04/16		   V1.0			    liujian
@@ -9,30 +9,30 @@ Data			  Vasion			author
 #ifndef		_PRVTPROT_CFG_H
 #define		_PRVTPROT_CFG_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
-#define PP_THREAD   1//¶¨ÒåÊÇ·ñµ¥¶À´´½¨Ïß³Ì 1-ÊÇ 0-²»ÊÇ
-#define PP_SOCKPROXY   1//¶¨ÒåÊÇ·ñÊ¹ÓÃsocket´úÀí(ÊÇ·ñÓÉÆäËûÄ£¿é´´½¨socketÁ´Â·) 1-ÊÇ 0-²»ÊÇ
-/**********ºê³£Á¿¶¨Òå*********/
-#define PP_HEART_BEAT_TIME (10)//ÐÄÌøÖÜÆÚ
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
+#define PP_THREAD   1//ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ñµ¥¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½ 1-ï¿½ï¿½ 0-ï¿½ï¿½ï¿½ï¿½
+#define PP_SOCKPROXY   1//ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½Ê¹ï¿½ï¿½socketï¿½ï¿½ï¿½ï¿½(ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½é´´ï¿½ï¿½socketï¿½ï¿½Â·) 1-ï¿½ï¿½ 0-ï¿½ï¿½ï¿½ï¿½
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
+#define PP_HEART_BEAT_TIME (10)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-#define PP_HB_WAIT_TIMEOUT 	(5*1000)//ÐÄÌøµÈ´ý³¬Ê±Ê±¼ä
-#define PP_XCALL_WAIT_TIMEOUT 	(5*1000)//µÈ´ý³¬Ê±Ê±¼ä
-#define PP_RMTCFG_WAIT_TIMEOUT 	(5*1000)//µÈ´ý³¬Ê±Ê±¼ä
+#define PP_HB_WAIT_TIMEOUT 	(5*1000)//ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½Ê±Ê±ï¿½ï¿½
+#define PP_XCALL_WAIT_TIMEOUT 	(5*1000)//ï¿½È´ï¿½ï¿½ï¿½Ê±Ê±ï¿½ï¿½
+#define PP_RMTCFG_WAIT_TIMEOUT 	(5*1000)//ï¿½È´ï¿½ï¿½ï¿½Ê±Ê±ï¿½ï¿½
 #define	PP_INIT_EVENTID			0x0
 
 #define	PP_RETRANSMIT_TIMES		1
 
-/***********ºêº¯Êý***********/
+/***********ï¿½êº¯ï¿½ï¿½***********/
 
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 typedef struct
 {
@@ -50,18 +50,18 @@ typedef struct
     double vdop;
 }PrvtProtcfg_gpsData_t;
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern int PrvtProtCfg_rcvMsg(unsigned char* buf,int buflen);
 extern int PrvtProtCfg_ecallTriggerEvent(void);
@@ -71,4 +71,5 @@ extern long PrvtProtCfg_totalOdoMr(void);
 extern long PrvtProtCfg_vehicleSOC(void);
 extern void PrvtProtCfg_gpsData(PrvtProtcfg_gpsData_t *gpsDt);
 extern int PrvtProtCfg_get_iccid(char *iccid);
+extern uint8_t PrvtProtCfg_CrashOutputSt(void);
 #endif 

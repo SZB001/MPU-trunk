@@ -37,4 +37,7 @@ extern uint8_t gb_data_CrashOutputSt(void);
 extern void gb32960_getvin(char* vin);
 extern uint8_t gb_data_ACTemperature(void);
 extern uint8_t gb_data_TwinFlashLampSt(void);
+extern uint8_t gb_data_PostionLampSt(void);
+extern uint8_t gb_data_NearLampSt(void);
+extern uint8_t gb_data_HighbeamLampSt(void);
 #endif
