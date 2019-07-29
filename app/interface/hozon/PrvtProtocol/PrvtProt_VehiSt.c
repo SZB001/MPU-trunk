@@ -37,13 +37,16 @@ description�� include the header file
 #include "list.h"
 #include "../../support/protocol.h"
 #include "../sockproxy/sockproxy_txdata.h"
+#include "gb32960_api.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 #include "PrvtProt_shell.h"
 #include "PrvtProt_queue.h"
 #include "PrvtProt_EcDc.h"
 #include "PrvtProt_cfg.h"
 #include "PrvtProt.h"
+#include "remoteControl/PPrmtCtrl_cfg.h"
 #include "PrvtProt_VehiSt.h"
 
 /*******************************************************
@@ -397,27 +400,44 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	}
 
 	PP_VS_appdata.VSResp.basicSt.driverDoor = 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.driverLock = 1;
+	PP_VS_appdata.VSResp.basicSt.driverLock = PP_rmtCtrl_cfg_doorlockSt();
 	PP_VS_appdata.VSResp.basicSt.passengerDoor = 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.passengerLock = 1;
+	PP_VS_appdata.VSResp.basicSt.passengerLock = PP_rmtCtrl_cfg_doorlockSt();
 	PP_VS_appdata.VSResp.basicSt.rearLeftDoor = 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.rearLeftLock = 1;
+	PP_VS_appdata.VSResp.basicSt.rearLeftLock = PP_rmtCtrl_cfg_doorlockSt();
 	PP_VS_appdata.VSResp.basicSt.rearRightDoor = 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.rearRightLock = 1;
-	PP_VS_appdata.VSResp.basicSt.bootStatus = 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.bootStatusLock = 1;
+	PP_VS_appdata.VSResp.basicSt.rearRightLock = PP_rmtCtrl_cfg_doorlockSt();
+	PP_VS_appdata.VSResp.basicSt.bootStatus = gb_data_reardoorSt()	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.bootStatusLock = gb_data_reardoorlockSt();
 	PP_VS_appdata.VSResp.basicSt.driverWindow = 1	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.passengerWindow = 1	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.rearLeftWindow = 1	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.rearRightWinow = 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.sunroofStatus = 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.engineStatus = 1;
-	PP_VS_appdata.VSResp.basicSt.accStatus = 1;
-	PP_VS_appdata.VSResp.basicSt.accTemp = 18	/* OPTIONAL */;//18-36
-	PP_VS_appdata.VSResp.basicSt.accMode = 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.accBlowVolume	= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.innerTemp = 1;
-	PP_VS_appdata.VSResp.basicSt.outTemp = 1;
+	PP_VS_appdata.VSResp.basicSt.sunroofStatus = PP_rmtCtrl_cfg_sunroofSt()	/* OPTIONAL */;
+	if(PP_rmtCtrl_cfg_RmtStartSt() == 0)
+	{
+		PP_VS_appdata.VSResp.basicSt.engineStatus = 0;
+	}
+	else
+	{
+		PP_VS_appdata.VSResp.basicSt.engineStatus = 1;
+	}
+	PP_VS_appdata.VSResp.basicSt.accStatus = PP_rmtCtrl_cfg_ACOnOffSt();
+	PP_VS_appdata.VSResp.basicSt.accTemp = gb_data_ACTemperature()	/* OPTIONAL */;//16-32
+	if(PP_VS_appdata.VSResp.basicSt.accTemp < PP_VS_LOW_TEMP)
+	{
+		PP_VS_appdata.VSResp.basicSt.accTemp = PP_VS_LOW_TEMP;
+	}
+	else if(PP_VS_appdata.VSResp.basicSt.accTemp > PP_VS_HIGH_TEMP)
+	{
+		PP_VS_appdata.VSResp.basicSt.accTemp = PP_VS_HIGH_TEMP;
+	}
+	else
+	{}
+	PP_VS_appdata.VSResp.basicSt.accMode = gb_data_ACMode()	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.accBlowVolume	= gb_data_BlowerGears()/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.innerTemp = gb_data_InnerTemp();
+	PP_VS_appdata.VSResp.basicSt.outTemp = gb_data_outTemp();
 	PP_VS_appdata.VSResp.basicSt.sideLightStatus= 1;
 	PP_VS_appdata.VSResp.basicSt.dippedBeamStatus= 1;
 	PP_VS_appdata.VSResp.basicSt.mainBeamStatus= 1;
@@ -430,27 +450,27 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp= 1	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre	= 1/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp	= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.batterySOCExact= 1;
+	PP_VS_appdata.VSResp.basicSt.batterySOCExact= gb_data_vehicleSOC() * 100;
 	PP_VS_appdata.VSResp.basicSt.chargeRemainTim	= 1/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.availableOdomtr= 1;
 	PP_VS_appdata.VSResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.bookingChargeSt= 1;
-	PP_VS_appdata.VSResp.basicSt.bookingChargeHour= 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.bookingChargeMin	= 1/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.bookingChargeSt= GetPP_ChargeCtrl_appointSt();
+	PP_VS_appdata.VSResp.basicSt.bookingChargeHour= GetPP_ChargeCtrl_appointHour()	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.bookingChargeMin	= GetPP_ChargeCtrl_appointMin()/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.chargeMode	= 1/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.chargeStatus	= 1/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.powerMode	= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.speed= 1;
-	PP_VS_appdata.VSResp.basicSt.totalOdometer= 1;
+	PP_VS_appdata.VSResp.basicSt.speed= gb_data_vehicleSpeed();
+	PP_VS_appdata.VSResp.basicSt.totalOdometer= gb_data_vehicleOdograph();
 	PP_VS_appdata.VSResp.basicSt.batteryVoltage= 1;
 	PP_VS_appdata.VSResp.basicSt.batteryCurrent= 1;
-	PP_VS_appdata.VSResp.basicSt.batterySOCPrc= 1;
+	PP_VS_appdata.VSResp.basicSt.batterySOCPrc= gb_data_vehicleSOC();
 	PP_VS_appdata.VSResp.basicSt.dcStatus= 1;
 	PP_VS_appdata.VSResp.basicSt.gearPosition= 1;
 	PP_VS_appdata.VSResp.basicSt.insulationRstance= 1;
 	PP_VS_appdata.VSResp.basicSt.acceleratePedalprc= 1;
 	PP_VS_appdata.VSResp.basicSt.deceleratePedalprc= 1;
-	PP_VS_appdata.VSResp.basicSt.canBusActive= 1;
+	PP_VS_appdata.VSResp.basicSt.canBusActive= gb_data_CanbusActiveSt();
 	PP_VS_appdata.VSResp.basicSt.bonnetStatus= 1;
 	PP_VS_appdata.VSResp.basicSt.lockStatus= 1;
 	PP_VS_appdata.VSResp.basicSt.gsmStatus= 1;

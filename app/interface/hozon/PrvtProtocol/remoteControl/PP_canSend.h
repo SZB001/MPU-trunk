@@ -24,21 +24,23 @@
 #define CAN_CLOSEAUTODOOR 2
 #define CAN_OPENAUTODOOR  1
 /************seatheat************/
-#define CAN_CLOSESEATHEAT  0 
-#define CAN_SEATHEATFIRST  1
-#define CAN_SEATHEATSECOND 2
-#define CAN_SEATHEATTHIRD  3
+#define CAN_NOREQSEAT      0
+#define CAN_CLOSESEATHEAT  1 
+#define CAN_SEATHEATFIRST  2
+#define CAN_SEATHEATSECOND 3
+#define CAN_SEATHEATTHIRD  4
 #define CAN_SEATHEATMAIN   28
-#define CAN_SEATHEATPASS   30
+#define CAN_SEATHEATPASS   31
 /**********engine****************/
 #define CAN_ENGINECLEAN 0
 #define CAN_STARTENGINE 1
 #define CAN_CLOSEENGINE 2
 /************chager**************/
-#define CAN_STOPCHAGER 0
-#define CAN_STARTCHAGER 1
-#define CAN_SETAPPOINT 2
-#define CAN_CANCELAPPOINT 3
+#define CAN_CLEANCHARGE 0
+#define CAN_STOPCHAGER  1
+#define CAN_STARTCHAGER 2
+#define CAN_SETAPPOINT 3
+#define CAN_CANCELAPPOINT 4
 /************forbid**************/
 #define CAN_FORBIDCLEAN  0
 #define CAN_STARTFORBID  1

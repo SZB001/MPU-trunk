@@ -18,6 +18,8 @@ description： macro definitions
 /**********宏开关定义*********/
 
 /**********宏常量定义*********/
+#define PP_RMTCTRL_LOW_TEMP			16
+#define PP_RMTCTRL_HIGH_TEMP		32
 //控制对象
 #define PP_RMTCTRL_UNKNOW				0xFF
 //vehicle control
@@ -144,6 +146,18 @@ typedef enum
 	CTRLDOORLOCK_CLOSE_WAIT,//关门锁等待状态
 }PP_RMTCTRL_DOORLOCK_STATE;
 
+typedef enum
+{
+	BT_SUCCESS = 0,
+	BT_FAIL ,
+}PP_REMTCTRL_BT;
+typedef struct
+{
+	uint8_t type;
+	uint8_t cmd;
+	uint8_t result; // 0表示成功  1表示失败
+	uint8_t failtype;
+}__attribute__((packed))  PrvtProt_respbt_t; /*resp bt结构体*/
 
 typedef struct
 {

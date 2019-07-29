@@ -317,16 +317,19 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 			{
 				case CAN_STARTCHAGER:
 					PP_canSend_setbit(CAN_ID_440,4,1,0,NULL);
-					PP_canSend_setbit(CAN_ID_440,3,1,1,NULL);
+					PP_canSend_setbit(CAN_ID_440,3,2,2,NULL);
 				break;
 				case CAN_STOPCHAGER:
-					PP_canSend_setbit(CAN_ID_440,3,1,0,NULL);
+					PP_canSend_setbit(CAN_ID_440,3,2,1,NULL);
 					break;
 				case CAN_SETAPPOINT:
 					PP_canSend_setbit(CAN_ID_440,4,1,1,NULL);
 					break;
 				case CAN_CANCELAPPOINT:
 					PP_canSend_setbit(CAN_ID_440,4,1,0,NULL);
+					break;
+				case CAN_CLEANCHARGE:
+					PP_canSend_setbit(CAN_ID_440,3,2,0,NULL);
 					break;
 				default:
 					break;	
@@ -336,7 +339,7 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 			PP_canSend_setbit(CAN_ID_440,31,2,data,NULL);
 			break;
 		case PP_CAN_SEATHEAT:
-			PP_canSend_setbit(CAN_ID_445,para,2,data,NULL);
+			PP_canSend_setbit(CAN_ID_445,para,3,data,NULL);
 			break;
 		case PP_CAN_OTAREQ:
 			PP_canSend_setbit(CAN_ID_440,39,2,data,NULL);

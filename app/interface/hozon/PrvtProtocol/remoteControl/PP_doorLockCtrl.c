@@ -30,6 +30,8 @@ description： include the header file
 #include "Bodyinfo.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
+#include "tcom_api.h"
+#include "ble.h"
 
 #include "init.h"
 #include "log.h"
@@ -233,9 +235,28 @@ int PP_doorLockCtrl_mainfunction(void *task)
 				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
 			}
-			else//
+			else//蓝牙
 			{
-
+				TCOM_MSG_HEADER msghdr;
+				PrvtProt_respbt_t respbt;
+				respbt.type = PP_RMTCTRL_DOORLOCK;
+				respbt.cmd = doorctrl_type;
+				if(1 == doorLock_success_flag)
+				{
+					respbt.result = BT_SUCCESS;  //ִ执行成功
+					respbt.failtype = 0;
+					
+				}
+				else
+				{
+					respbt.result = BT_FAIL;  //ִ执行失败
+					respbt.failtype = 0;
+				}
+				msghdr.sender    = MPU_MID_HOZON_PP;
+				msghdr.receiver  = MPU_MID_BLE;
+				msghdr.msgid     = BLE_MSG_CONTROL;
+				msghdr.msglen    = sizeof(PrvtProt_respbt_t);
+				tcom_send_msg(&msghdr, &respbt);
 			}
 			door_lock_stage = PP_DOORLOCKCTRL_IDLE;
 		}
@@ -284,7 +305,21 @@ void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 		break;
 		case RMTCTRL_BLUETOOTH:
 		{
-
+			 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
+			 if(cmd == 1 )//蓝牙锁门
+			 {
+			 	doorctrl_type = PP_CLOSEDOOR;
+			 }
+			 else if (cmd == 2) //蓝牙开门
+			 {
+			 	doorctrl_type = PP_OPENDOOR;
+			 }
+			 else
+			 {
+			 }
+			 PP_rmtdoorCtrl.state.req = 1;
+			 PP_rmtdoorCtrl.state.style = RMTCTRL_BLUETOOTH;
+			 
 		}
 		break;
 		default:

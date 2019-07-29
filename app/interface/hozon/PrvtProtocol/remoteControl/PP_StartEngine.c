@@ -20,6 +20,7 @@
 #include "Bodyinfo.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
+#include "ble.h"
 
 #include "init.h"
 #include "log.h"
@@ -162,6 +163,7 @@ int PP_startengine_mainfunction(void *task)
 					{
 						PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0); //将下高压电报文清零
 						PP_can_send_data(PP_CAN_SEATHEAT,0,CAN_SEATHEATMAIN);//下电将座椅加热报文清掉
+						PP_can_send_data(PP_CAN_SEATHEAT,0,CAN_SEATHEATPASS);//下电将座椅加热报文清掉
 						PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);//下电将空调开启报文关闭
 						PP_set_seat_requestpower_flag(); //清除下电标志
 						PP_set_ac_requestpower_flag();   //清除下电标志
@@ -209,6 +211,29 @@ int PP_startengine_mainfunction(void *task)
 //				rmtCtrl_Stpara.rvcFailureType = 0xff;
 //			}
 //			res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+			if( PP_rmtengineCtrl.state.style == RMTCTRL_BLUETOOTH)
+			{
+				TCOM_MSG_HEADER msghdr;
+				PrvtProt_respbt_t respbt;
+				respbt.type = PP_RMTCTRL_HIGHTENSIONCTRL;
+				respbt.cmd = enginecation;
+				if(1 == startengine_success_flag)
+				{
+					respbt.result = BT_SUCCESS;  //ִ执行成功
+					respbt.failtype = 0;
+					
+				}
+				else
+				{
+					respbt.result = BT_FAIL;  //ִ执行失败
+					respbt.failtype = 0;
+				}
+				msghdr.sender    = MPU_MID_HOZON_PP;
+				msghdr.receiver  = MPU_MID_BLE;
+				msghdr.msgid     = BLE_MSG_CONTROL;
+				msghdr.msglen    = sizeof(PrvtProt_respbt_t);
+				tcom_send_msg(&msghdr, &respbt);
+			}
 			start_engine_stage = PP_STARTENGINE_IDLE;
 		}
 		break;
@@ -272,6 +297,17 @@ void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			PP_rmtengineCtrl.state.style = RMTCTRL_TSP;
 		}
 		break;
+		case RMTCTRL_BLUETOOTH:	
+		{
+			 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
+			 if(cmd == 1 )//上高压电
+			 {
+			 	enginecation = PP_POWERON;
+			 }
+			 PP_rmtengineCtrl.state.req = 1;
+			 PP_rmtengineCtrl.state.style = RMTCTRL_BLUETOOTH;
+		}
+		break;
 #if 0
 		case RMTCTRL_TBOX:
 		{
@@ -293,11 +329,6 @@ void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 		}		
 		break;
 #endif
-		case RMTCTRL_BLUETOOTH:	
-		{
-			
-		}
-		break;
 		default:
 		break;
 	}
@@ -345,7 +376,7 @@ void PP_rmtCtrl_checkenginetime(void)
 		{
 			PP_set_ac_requestpower_flag(); //当已经上电了，又有请求上电的，清除标志
 		}
-		if(tm_get_time() - PP_Engine_time > 3 * 60 * 1000) //15分钟到请求下电
+		if(tm_get_time() - PP_Engine_time > 15 * 60 * 1000) //15分钟到请求下电
 		{
 			enginecation = PP_POWEROFF;
 			PP_rmtengineCtrl.state.req = 1;

@@ -508,24 +508,24 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 	{
 		case PP_RMTCTRL_DOORLOCK://控制车门锁
 		{
-			SetPP_doorLockCtrl_Request(RMTCTRL_BLUETOOTH,&cmd,NULL);
+			SetPP_doorLockCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
 		}
 		break;
 		case PP_RMTCTRL_PNRSUNROOF://控制全景天窗
 		{
-			//PP_sunroofctrl_SetCtrlReq(req,reqType);
+			SetPP_sunroofctrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
 			log_i(LOG_HOZON, "remote PANORSUNROOF control req");
 		}
 		break;
 		case PP_RMTCTRL_AUTODOOR://控制自动门
 		{
-			//PP_autodoorCtrl_SetCtrlReq(req,reqType);
+			SetPP_autodoorCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
 			log_i(LOG_HOZON, "remote AUTODOOR control req");
 		}
 		break;
 		case PP_RMTCTRL_RMTSRCHVEHICLE://远程搜索车辆
 		{
-			//PP_searchvehicle_SetCtrlReq(req,reqType);
+			SetPP_searchvehicle_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
 			log_i(LOG_HOZON, "remote RMTSRCHVEHICLE control req");
 		}
 		break;
@@ -537,13 +537,13 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 		break;
 		case PP_RMTCTRL_CHARGE://充电
 		{
-			//PP_rmtCtrl_StatusResp(2,reqType);
+			SetPP_ChargeCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
 			log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
 		}
 		break;
 		case PP_RMTCTRL_HIGHTENSIONCTRL://高电压控制
 		{
-			//PP_startengine_SetCtrlReq(req,reqType);
+			SetPP_startengine_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
 			log_i(LOG_HOZON, "remote RMTCTRL_HIGHTENSIONCTRL control req");
 		}
 		break;
@@ -796,15 +796,25 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 				App_rmtCtrl.CtrlResp.basicSt.engineStatus = 1;
 			}
 			App_rmtCtrl.CtrlResp.basicSt.accStatus 			= PP_rmtCtrl_cfg_ACOnOffSt();
-			App_rmtCtrl.CtrlResp.basicSt.accTemp 			= 18	/* OPTIONAL */;//18-36
+			App_rmtCtrl.CtrlResp.basicSt.accTemp 			= gb_data_ACTemperature()	/* OPTIONAL */;//16-32
+			if(App_rmtCtrl.CtrlResp.basicSt.accTemp < PP_RMTCTRL_LOW_TEMP)
+			{
+				App_rmtCtrl.CtrlResp.basicSt.accTemp = PP_RMTCTRL_LOW_TEMP;
+			}
+			else if(App_rmtCtrl.CtrlResp.basicSt.accTemp > PP_RMTCTRL_HIGH_TEMP)
+			{
+				App_rmtCtrl.CtrlResp.basicSt.accTemp = PP_RMTCTRL_HIGH_TEMP;
+			}
+			else
+			{}
 			App_rmtCtrl.CtrlResp.basicSt.accMode 			= gb_data_ACMode()	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.accBlowVolume		= gb_data_BlowerGears()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.innerTemp 			= gb_data_InnerTemp();
 			App_rmtCtrl.CtrlResp.basicSt.outTemp 			= gb_data_outTemp();
-			App_rmtCtrl.CtrlResp.basicSt.sideLightStatus 	= 1;
-			App_rmtCtrl.CtrlResp.basicSt.dippedBeamStatus 	= 1;
-			App_rmtCtrl.CtrlResp.basicSt.mainBeamStatus 	= 1;
-			App_rmtCtrl.CtrlResp.basicSt.hazardLightStus 	= 1;
+			App_rmtCtrl.CtrlResp.basicSt.sideLightStatus 	= 1;//示位灯
+			App_rmtCtrl.CtrlResp.basicSt.dippedBeamStatus 	= 1;//近光灯
+			App_rmtCtrl.CtrlResp.basicSt.mainBeamStatus 	= 1;//远光灯
+			App_rmtCtrl.CtrlResp.basicSt.hazardLightStus 	= gb_data_TwinFlashLampSt();//双闪灯
 			App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre	= 1/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp	= 1/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre	= 1/* OPTIONAL */;

@@ -11,7 +11,6 @@
 #include <sys/types.h>  
 #include <sys/socket.h> 
 #include <pthread.h>
-#include "shell_api.h"
 
 #include "timer.h"
 #include "msg_parse.h"
@@ -22,6 +21,7 @@
 #include "cfg_api.h"
 #include "fault_sync.h"
 #include "tbox_ivi_pb.h"
+#include "tbox_ivi_shell.h"
 #include "../hozon/PrvtProtocol/remoteControl/PP_rmtCtrl.h"
 
 static pthread_t ivi_tid;    /* thread id */
@@ -61,6 +61,7 @@ extern int wifi_enable(void);
 extern int nm_get_signal(void);
 extern int assist_get_call_status(void);
 extern void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara);
+
 
 int Get_call_tpye(void);
 
@@ -307,7 +308,7 @@ void ivi_msg_error_response_send( int fd ,Tbox__Net__Messagetype id,char *error_
 
 }
 
-void ivi_logfile_response_send( int fd)
+void ivi_logfile_request_send( int fd)
 {
 
     int i = 0;
@@ -321,7 +322,7 @@ void ivi_logfile_response_send( int fd)
         log_e(LOG_IVI,"ivi_logfile_response_send fd = %d.",fd);
         return ;
     }
-    
+   
     Tbox__Net__TopMessage TopMsg;
 	Tbox__Net__IhuLogfile logfile;
 	
@@ -332,6 +333,7 @@ void ivi_logfile_response_send( int fd)
     TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE;
 
 	logfile.vin = "111111111111111";
+#if 0	
 	
 	logfile.eventid = tsplogfile.eventid;
 
@@ -346,7 +348,14 @@ void ivi_logfile_response_send( int fd)
 	logfile.level = tsplogfile.level;
 
 	logfile.durationtime = tsplogfile.durationtime;
-
+#endif
+	logfile.eventid = 112;
+	logfile.aid = 110;
+	logfile.mid = 118;
+	logfile.channel = 2;
+	logfile.starttime = 1100000;
+	logfile.level = 1;
+	logfile.durationtime = 100;	
 //	logfile.timestamp = 
 
 	TopMsg.ihu_logfile = &logfile;
@@ -368,8 +377,8 @@ void ivi_logfile_response_send( int fd)
     memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
 
     ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
-
-
+	log_o(LOG_HOZON,"log log log.......\n");
+	
     if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
     {
         log_e(LOG_IVI, "ivi remotediagnos send response failed!!!");
@@ -383,7 +392,7 @@ void ivi_logfile_response_send( int fd)
 
 }
 
-void ivi_chagerappointment_response_send( int fd)
+void ivi_chagerappointment_request_send( int fd)
 {
 
     int i = 0;
@@ -407,7 +416,7 @@ void ivi_chagerappointment_response_send( int fd)
 	tbox__net__ihu_charge_appoointment_sts__init(&chager);
 	
     TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS;
-
+	#if 0
 	chager.id = tspchager.id;
 
 	chager.hour = tspchager.hour;
@@ -419,6 +428,12 @@ void ivi_chagerappointment_response_send( int fd)
 	chager.effectivestate = tspchager.effectivestate;
 
 	chager.effectivestate = tspchager.effectivestate;
+	#endif 
+	chager.id = 100;
+	chager.hour = 18;
+	chager.min = 50;
+	chager.targetpower = 90;
+	chager.effectivestate = 1;
 	
 	TopMsg.ihu_charge_appoointmentsts = &chager;
 	
@@ -454,7 +469,7 @@ void ivi_chagerappointment_response_send( int fd)
 
 }
 
-void ivi_remotediagnos_response_send( int fd, int type)
+void ivi_remotediagnos_request_send( int fd, int type)
 {
 
     int i = 0;
@@ -834,7 +849,7 @@ void ivi_gps_response_send( int fd )
 
     if( fd < 0 )
     {
-        log_e(LOG_IVI,"ivi_gps_response_send fd = %d.",fd);
+        //log_e(LOG_IVI,"ivi_gps_response_send fd = %d.",fd);
         return ;
     }
 
@@ -1199,7 +1214,7 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
                      	callrequest.action = 2;
                     }
                     ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION);
-					ivi_remotediagnos_response_send( fd,0); //ECALL触发，下发远程诊断
+					ivi_remotediagnos_request_send( fd,0); //ECALL触发，下发远程诊断
                     break;
                 }
 
@@ -1435,37 +1450,6 @@ int tbox_ivi_create_tcp_socket(void)
     log_o(LOG_IVI, "IVI module create server socket success");
 
     return 0;
-}
-
-int tbox_ivi_hu_charge_ctrl(int argc, const char **argv)
-{
-	unsigned int rmtCtrlReqtype;
-	unsigned int hour;
-	unsigned int min;
-	ivi_chargeAppointSt chargectrl;
-    if (argc != 3)
-    {
-        shellprintf(" usage: HOZON_PP_SetRemoteCtrlReq <remote ctrl req>\r\n");
-        return -1;
-    }
-	sscanf(argv[0], "%u", &rmtCtrlReqtype);
-	sscanf(argv[1], "%u", &hour);
-	sscanf(argv[2], "%u", &min);
-	log_o(LOG_IVI,"--------------HU chargeCtrl ------------------");
-	chargectrl.cmd = rmtCtrlReqtype;
-	chargectrl.effectivestate = 1;
-	chargectrl.hour = hour;
-	chargectrl.min = min;
-	chargectrl.id = 1111;
-	chargectrl.targetpower = 90;
-	PP_rmtCtrl_HuCtrlReq(PP_RMTCTRL_CHARGE,(void *)&chargectrl);
-	return 0;
-}
-
-void tbox_shell_init(void)
-{
-	shell_cmd_register("HuChargeCtrl", tbox_ivi_hu_charge_ctrl, "HU charge CTRL");
-	
 }
 
 int ivi_init(INIT_PHASE phase)
@@ -1722,7 +1706,7 @@ void *ivi_check(void)
 			if(ivi_clients[0].fd > 0)
 			{
 				//按键触发ECALL，下发远程诊断命令
-				ivi_remotediagnos_response_send( ivi_clients[0].fd ,0);
+				ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
 			}
 			log_o(LOG_IVI, "SOS trigger!!!!!");
 		}
@@ -1743,22 +1727,20 @@ void *ivi_check(void)
 			if(tspdiagnos_flag == 1) //TSP是否下发远程命令
 			{
 				tspdiagnos_flag = 0;
-				ivi_remotediagnos_response_send( ivi_clients[0].fd ,1);
+				ivi_remotediagnos_request_send( ivi_clients[0].fd ,1);
 			}
 			if(tsplogfile_flag == 1)
 			{
-				ivi_logfile_response_send( ivi_clients[0].fd);
+				ivi_logfile_request_send( ivi_clients[0].fd);
 				tsplogfile_flag = 0;
 			}
 			if(tspchager_flag == 1)
 			{
-				ivi_chagerappointment_response_send( ivi_clients[0].fd);
+				ivi_chagerappointment_request_send( ivi_clients[0].fd);
 				tspchager_flag = 0;
 			}
 		}
 	}
-
-
 }
 
 /****************************************************************

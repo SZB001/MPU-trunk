@@ -32,6 +32,8 @@ description�� include the header file
 #include "per_decoder.h"
 
 #include "init.h"
+#include "ble.h"
+
 #include "log.h"
 #include "list.h"
 #include "cfg_api.h"
@@ -258,8 +260,8 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				{
 					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1) //充电开启
 					{
-						log_o(LOG_HOZON,"open  success\n");
-						//PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //������ű�־λ
+						log_o(LOG_HOZON,"start charge success\n");
+						PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); //������ű�־λ
 						PP_rmtChargeCtrl.state.chargeSt = 1;//�����
 						PP_rmtChargeCtrl.fail     = 0;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
@@ -269,9 +271,9 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				{
 					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 2) //充电关闭
 					{
-						log_o(LOG_HOZON,"close  success\n");
+						log_o(LOG_HOZON,"close charge success\n");
 						PP_rmtChargeCtrl.state.chargeSt = 2;//δ���
-						//PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //������ű�־λ
+						PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); //������ű�־λ
 						PP_rmtChargeCtrl.fail     = 0;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
 					}
@@ -280,7 +282,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 			else//��ʱ
 			{
 				log_e(LOG_HOZON,"Instruction execution timeout\n");
-				PP_can_send_data(PP_CAN_CHAGER,CAN_STOPCHAGER,0);
+				PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0);
 				PP_rmtChargeCtrl.fail     = 1;
 				PP_rmtChargeCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 				PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
@@ -354,6 +356,29 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				rmtCtrl_chargeStpara.eventid  = PP_rmtChargeCtrl.pack.DisBody.eventId;
 				rmtCtrl_chargeStpara.Resptype = PP_RMTCTRL_RVCBOOKINGRESP;//预约
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_chargeStpara);
+			}
+			else
+			{
+				TCOM_MSG_HEADER msghdr;
+				PrvtProt_respbt_t respbt;
+				respbt.type = PP_RMTCTRL_CHARGE;
+				respbt.cmd = PP_rmtChargeCtrl.state.chargecmd;
+				if(1 == PP_rmtChargeCtrl.fail)
+				{
+					respbt.result = BT_SUCCESS;  //ִ执行成功
+					respbt.failtype = 0;
+					
+				}
+				else
+				{
+					respbt.result = BT_FAIL;  //ִ执行失败
+					respbt.failtype = 0;
+				}
+				msghdr.sender    = MPU_MID_HOZON_PP;
+				msghdr.receiver  = MPU_MID_BLE;
+				msghdr.msgid     = BLE_MSG_CONTROL;
+				msghdr.msglen    = sizeof(PrvtProt_respbt_t);
+				tcom_send_msg(&msghdr, &respbt);
 			}
 			PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_IDLE;
 		}
@@ -679,7 +704,20 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 		break;
 		case RMTCTRL_BLUETOOTH:
 		{
-
+			 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
+			 if(cmd == 1 )//停止充电
+			 {
+			 	PP_rmtChargeCtrl.state.chargecmd = PP_CHARGECTRL_CLOSE;
+			 }
+			 else if (cmd == 2) //开始充电
+			 {
+			 	PP_rmtChargeCtrl.state.chargecmd = PP_CHARGECTRL_OPEN;
+			 }
+			 else
+			 {
+			 }
+			 PP_rmtChargeCtrl.state.req = 1;
+			 PP_rmtChargeCtrl.state.style = RMTCTRL_BLUETOOTH;
 		}
 		break;
 		case RMTCTRL_HU:
@@ -721,7 +759,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				PP_rmtCharge_AppointBook.hour = ivi_chargeAppointSt_ptr->hour;
 				PP_rmtCharge_AppointBook.min = ivi_chargeAppointSt_ptr->min;
 				PP_rmtCharge_AppointBook.targetSOC = ivi_chargeAppointSt_ptr->targetpower;
-				PP_rmtCharge_AppointBook.period = 0xff;
+				PP_rmtCharge_AppointBook.period = 0x84;
 				PP_rmtCharge_AppointBook.huBookingTime = ivi_chargeAppointSt_ptr->timestamp;
 
 				PP_rmtCharge_AppointBook.eventId = 0;

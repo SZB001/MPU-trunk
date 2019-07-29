@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_VehiSt.h
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_VehiSt.h
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 
 Data			  Vasion			author
 2019/04/16		   V1.0			    liujian
@@ -9,23 +9,24 @@ Data			  Vasion			author
 #ifndef		_PRVTPROT_VEHI_ST_H
 #define		_PRVTPROT_VEHI_ST_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
-
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
+#define PP_VS_LOW_TEMP		16
+#define PP_VS_HIGH_TEMP		32
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 typedef enum
@@ -33,18 +34,18 @@ typedef enum
 	PP_VS_NOREQ = 0,//
 	PP_VS_BASICSTATUS,//
 	PP_VS_EXTSTATUS//
-} PP_VS_REQTYPE;//²éÑ¯³µÁ¾×´Ì¬µÄÇëÇóÀàÐÍ
+} PP_VS_REQTYPE;//ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 /*****struct definitions*****/
 
 typedef struct
 {
-	uint8_t req;/* ÇëÇó:box to tsp */
-	uint8_t resp;/* ÏìÓ¦:box to tsp */
+	uint8_t req;/* ï¿½ï¿½ï¿½ï¿½:box to tsp */
+	uint8_t resp;/* ï¿½ï¿½Ó¦:box to tsp */
 	uint8_t retrans;/* retransmission */
 	uint8_t waitSt;
 	uint64_t waittime;
-}__attribute__((packed))  PrvtProt_VSSt_t; /*½á¹¹Ìå*/
+}__attribute__((packed))  PrvtProt_VSSt_t; /*ï¿½á¹¹ï¿½ï¿½*/
 
 /* application data struct */
 typedef struct
@@ -54,14 +55,14 @@ typedef struct
 
 typedef struct
 {
-	int  gpsSt;//gps×´Ì¬ 0-ÎÞÐ§£»1-ÓÐÐ§
-	long gpsTimestamp;//gpsÊ±¼ä´Á
-	long latitude;//Î³¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
-	long longitude;//¾­¶È x 1000000,µ±GPSÐÅºÅÎÞÐ§Ê±£¬ÖµÎª0
-	long altitude;//¸ß¶È£¨m£©
-	long heading;//³µÍ··½Ïò½Ç¶È£¬0ÎªÕý±±·½Ïò
-	long gpsSpeed;//ËÙ¶È x 10£¬µ¥Î»km/h
-	long hdop;//Ë®Æ½¾«¶ÈÒò×Ó x 10
+	int  gpsSt;//gps×´Ì¬ 0-ï¿½ï¿½Ð§ï¿½ï¿½1-ï¿½ï¿½Ð§
+	long gpsTimestamp;//gpsÊ±ï¿½ï¿½ï¿½
+	long latitude;//Î³ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
+	long longitude;//ï¿½ï¿½ï¿½ï¿½ x 1000000,ï¿½ï¿½GPSï¿½Åºï¿½ï¿½ï¿½Ð§Ê±ï¿½ï¿½ÖµÎª0
+	long altitude;//ï¿½ß¶È£ï¿½mï¿½ï¿½
+	long heading;//ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½Ç¶È£ï¿½0Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	long gpsSpeed;//ï¿½Ù¶ï¿½ x 10ï¿½ï¿½ï¿½ï¿½Î»km/h
+	long hdop;//Ë®Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ x 10
 }__attribute__((packed)) PP_APP_VSgpspos_t;
 
 typedef struct
@@ -83,53 +84,53 @@ typedef struct
 	int	sunroofStatus	/* OPTIONAL */;
 	int	 engineStatus;
 	int	 accStatus;
-	long	accTemp	/* OPTIONAL */;//È¡Öµ·¶Î§£º18-36
-	long	accMode	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-3
-	long	accBlowVolume	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-7
-	long	 innerTemp;//È¡Öµ·¶Î§£º0-125
-	long	 outTemp;//È¡Öµ·¶Î§£º0-125
+	long	accTemp	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½18-36
+	long	accMode	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-3
+	long	accBlowVolume	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-7
+	long	 innerTemp;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-125
+	long	 outTemp;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-125
 	int	 sideLightStatus;
 	int	 dippedBeamStatus;
 	int	 mainBeamStatus;
 	int	 hazardLightStus;
-	long	frtRightTyrePre	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-45
-	long	frtRightTyreTemp	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-168
-	long	frontLeftTyrePre	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-45
-	long	frontLeftTyreTemp	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-168
-	long	rearRightTyrePre	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-45
-	long	rearRightTyreTemp	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-165
-	long	rearLeftTyrePre	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-45
-	long	rearLeftTyreTemp	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-165
-	long	 batterySOCExact;//È¡Öµ·¶Î§£º0-10000
-	long	chargeRemainTim	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-65535
-	long	 availableOdomtr;//È¡Öµ·¶Î§£º0-65535
-	long	engineRunningTime	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-65535
+	long	frtRightTyrePre	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-45
+	long	frtRightTyreTemp	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-168
+	long	frontLeftTyrePre	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-45
+	long	frontLeftTyreTemp	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-168
+	long	rearRightTyrePre	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-45
+	long	rearRightTyreTemp	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-165
+	long	rearLeftTyrePre	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-45
+	long	rearLeftTyreTemp	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-165
+	long	 batterySOCExact;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-10000
+	long	chargeRemainTim	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-65535
+	long	 availableOdomtr;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-65535
+	long	engineRunningTime	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-65535
 	int	 	bookingChargeSt;
-	long	bookingChargeHour	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-23
-	long	bookingChargeMin	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-59
-	long	chargeMode	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-255
-	long	chargeStatus	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-255
-	long	powerMode	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-255
-	long	 speed;//È¡Öµ·¶Î§£º0-2500
-	long	 totalOdometer;//È¡Öµ·¶Î§£º0-1000000
-	long	 batteryVoltage;//È¡Öµ·¶Î§£º0-10000
-	long	 batteryCurrent;//È¡Öµ·¶Î§£º0-10000
-	long	 batterySOCPrc;//È¡Öµ·¶Î§£º0-100
+	long	bookingChargeHour	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-23
+	long	bookingChargeMin	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-59
+	long	chargeMode	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-255
+	long	chargeStatus	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-255
+	long	powerMode	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-255
+	long	 speed;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-2500
+	long	 totalOdometer;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-1000000
+	long	 batteryVoltage;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-10000
+	long	 batteryCurrent;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-10000
+	long	 batterySOCPrc;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-100
 	int	 dcStatus;
-	long	 gearPosition;//È¡Öµ·¶Î§£º0-255
-	long	 insulationRstance;//È¡Öµ·¶Î§£º0-60000
-	long	 acceleratePedalprc;//È¡Öµ·¶Î§£º0-100
-	long	 deceleratePedalprc;//È¡Öµ·¶Î§£º0-100
+	long	 gearPosition;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-255
+	long	 insulationRstance;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-60000
+	long	 acceleratePedalprc;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-100
+	long	 deceleratePedalprc;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-100
 	int	 canBusActive;
 	int	 bonnetStatus;
 	int	 lockStatus;
 	int	 gsmStatus;
-	long	wheelTyreMotrSt	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-255
-	long	 vehicleAlarmSt;//È¡Öµ·¶Î§£º0-255
-	long	 currentJourneyID;//È¡Öµ·¶Î§£º0-2147483647
-	long	 journeyOdom;//È¡Öµ·¶Î§£º0-65535
-	long	frtLeftSeatHeatLel	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-255
-	long	frtRightSeatHeatLel	/* OPTIONAL */;//È¡Öµ·¶Î§£º0-255
+	long	wheelTyreMotrSt	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-255
+	long	 vehicleAlarmSt;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-255
+	long	 currentJourneyID;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-2147483647
+	long	 journeyOdom;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-65535
+	long	frtLeftSeatHeatLel	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-255
+	long	frtRightSeatHeatLel	/* OPTIONAL */;//È¡Öµï¿½ï¿½Î§ï¿½ï¿½0-255
 	int		airCleanerSt	/* OPTIONAL */;
 	int		srsStatus;
 }__attribute__((packed))  PP_App_VS_basicSt_t;
@@ -159,11 +160,11 @@ typedef struct
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern void PP_VS_init(void);
 extern int PP_VS_mainfunction(void *task);

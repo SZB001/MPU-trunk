@@ -177,7 +177,7 @@ int Get_Ac_Wake_next_Recent_time(void)
 	struct tm *localdatetime;
 	time(&timep);  //获取从1970.1.1 00:00:00到现在的秒数
 	localdatetime = localtime(&timep);//获取本地时间
-	for( i =localdatetime->tm_wday ; i <localdatetime->tm_wday+7 ;i++)
+	for( i =localdatetime->tm_wday ; i <= localdatetime->tm_wday+7 ;i++)
 	{
 		for(j=0;j<ACC_APPOINT_NUM;j++)
 		{
@@ -249,7 +249,7 @@ int Get_Charge_Wake_Recent_time(void)
 	struct tm *localdatetime;
 	time(&timep);  //获取从1970.1.1 00:00:00到现在的秒数
 	localdatetime = localtime(&timep);//获取本地时间
-	for( i =localdatetime->tm_wday ; i <localdatetime->tm_wday+7 ;i++)
+	for( i =localdatetime->tm_wday ; i <=localdatetime->tm_wday+7 ;i++)
 	{
 			
 		if(i>=7)

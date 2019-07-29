@@ -34,6 +34,8 @@ description： include the header file
 #include "init.h"
 #include "log.h"
 #include "list.h"
+#include "ble.h"
+
 #include "../../support/protocol.h"
 #include "gb32960_api.h"
 #include "hozon_SP_api.h"
@@ -243,7 +245,26 @@ int PP_sunroofctrl_mainfunction(void *task)
 			}
 			else//蓝牙
 			{
-
+				TCOM_MSG_HEADER msghdr;
+				PrvtProt_respbt_t respbt;
+				respbt.type = PP_RMTCTRL_PNRSUNROOF;
+				respbt.cmd = sunroof_type;
+				if(1 == sunroof_success_flag)
+				{
+					respbt.result = BT_SUCCESS;  //ִ执行成功
+					respbt.failtype = 0;
+					
+				}
+				else
+				{
+					respbt.result = BT_FAIL;  //ִ执行失败
+					respbt.failtype = 0;
+				}
+				msghdr.sender    = MPU_MID_HOZON_PP;
+				msghdr.receiver  = MPU_MID_BLE;
+				msghdr.msgid     = BLE_MSG_CONTROL;
+				msghdr.msglen    = sizeof(PrvtProt_respbt_t);
+				tcom_send_msg(&msghdr, &respbt);
 			}
 			sunroof_ctrl_stage = PP_SUNROOFCTRL_IDLE;
 		}
@@ -316,6 +337,30 @@ void SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			PP_rmtsunroofCtrl.state.req = 1;
 			PP_rmtsunroofCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
 			PP_rmtsunroofCtrl.state.style = RMTCTRL_TSP;
+		}
+		break;
+		case RMTCTRL_BLUETOOTH:
+		{
+			 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
+			 if(cmd == 1 )//蓝牙开天窗
+			 {
+			 	sunroof_type = PP_SUNROOFOPEN;
+			 }
+			 else if (cmd == 2) //蓝牙开门
+			 {
+			 	sunroof_type = PP_SUNROOFCLOSE;
+			 }
+			 else if(cmd == 3)
+			 {
+			 	sunroof_type = SUNROOFUPWARP;
+			 }
+			 else 
+			 {
+			 	sunroof_type = SUNROOFSTOP;
+			 }
+			 PP_rmtsunroofCtrl.state.req = 1;
+			 PP_rmtsunroofCtrl.state.style = RMTCTRL_BLUETOOTH;
+			 
 		}
 		break;
 		default:

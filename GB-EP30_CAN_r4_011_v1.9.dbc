@@ -461,7 +461,7 @@ BO_ 1088 TBOX_Fr03_440: 8 TBOX
  SG_ TBOXRemoteStartReq : 0|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ TBOXRemoteShutdownReq : 1|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ TBOXStartForbidReq : 31|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ TBOXChargeCmd : 3|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ TBOXChargeCmd : 3|2@0+(1,0)[0|2] "" Vector__XXX
  SG_ TBOXChargeAppointmentSet : 4|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ TBOXChargeAppointmentTimeSet : 15|8@0+(10,0)[0|1440] "min" Vector__XXX
  SG_ TBOXRemoteLockCtrl : 17|2@0+(1,0)[0|3] "" Vector__XXX
@@ -492,8 +492,8 @@ BO_ 1093 TBOX_Fr04_445: 8 TBOX
  SG_ TBOXCLMFootCmd : 23|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ TBOXCLMWindowCmd : 24|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ TBOXCLMAnionCmd : 25|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ TBOXLHSeatHeaterCmd : 28|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ TBOXRHSeatHeaterCmd : 30|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ TBOXLHSeatHeaterCmd : 28|3@0+(1,0)[0|4] "" Vector__XXX
+ SG_ TBOXRHSeatHeaterCmd : 31|3@0+(1,0)[0|4] "" Vector__XXX
 BO_ 454 EHB_Fr01_1C6: 8 EHB
  SG_ BrakePedalApplied_@2WG100C : 23|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BrakePedalAppliedV : 5|1@0+(1,0)[0|1] "" Vector__XXX

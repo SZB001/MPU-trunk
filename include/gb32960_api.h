@@ -35,4 +35,6 @@ extern uint8_t gb_data_InnerTemp(void);
 extern uint8_t gb_data_CanbusActiveSt(void);
 extern uint8_t gb_data_CrashOutputSt(void);
 extern void gb32960_getvin(char* vin);
+extern uint8_t gb_data_ACTemperature(void);
+extern uint8_t gb_data_TwinFlashLampSt(void);
 #endif

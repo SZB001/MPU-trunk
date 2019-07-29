@@ -4593,3 +4593,31 @@ uint8_t gb_data_CrashOutputSt(void)
 
 	return crashSt;
 }
+
+/*
+ 	空调的温度״̬
+*/
+uint8_t gb_data_ACTemperature(void)
+{
+	uint8_t actemp = 20;//默认20度
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_ACTEMP])//空调温度
+	{
+		actemp = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ACTEMP])->value;
+	}
+
+	return actemp;
+}
+
+/*
+ 	双闪状态״̬
+*/
+uint8_t gb_data_TwinFlashLampSt(void)
+{
+	uint8_t hlampSt = 0;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_HLAMPST])//״̬
+	{
+		hlampSt = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_HLAMPST])->value;
+	}
+
+	return hlampSt;
+}
