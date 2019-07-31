@@ -63,6 +63,9 @@ extern void  PP_seatheating_SetCtrlReq(uint32_t reqType,unsigned char level);
 
 extern void PP_seatheating_ClearStatus(void);
 
+extern unsigned char GetPP_SeatCtrl_Sleep(void);
+
+extern void PP_SeatCtrl_SeatStMonitor(void *task);
 
 #endif
 

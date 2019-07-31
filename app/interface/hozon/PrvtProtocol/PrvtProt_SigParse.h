@@ -46,7 +46,8 @@ description�� macro definitions
 #define PP_CANSIGN_CHARGEAPPOINTEN    	0x15//
 #define PP_CANSIGN_READYLIGHTST    		0x16//
 #define PP_CANSIGN_OTAMODEFAILSTS    	0x17//
-#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_OTAMODEFAILSTS + 1)
+#define PP_CANSIGN_PM25VALID    		0x18//空气净化器状态/pm2.5有效性
+#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_PM25VALID + 1)
 /***********�꺯��***********/
 
 
@@ -91,4 +92,5 @@ extern unsigned char PrvtProt_SignParse_authefailresion(void);
 extern unsigned char PrvtProt_SignParse_chrgAptEnSt(void);
 extern unsigned char PrvtProt_SignParse_readyLightSt(void);
 extern unsigned char PrvtProt_SignParse_OtaFailSts(void);
+extern unsigned char PrvtProt_SignParse_pm25valid(void);
 #endif 

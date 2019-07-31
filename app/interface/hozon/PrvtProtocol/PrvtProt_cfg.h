@@ -72,4 +72,5 @@ extern long PrvtProtCfg_vehicleSOC(void);
 extern void PrvtProtCfg_gpsData(PrvtProtcfg_gpsData_t *gpsDt);
 extern int PrvtProtCfg_get_iccid(char *iccid);
 extern uint8_t PrvtProtCfg_CrashOutputSt(void);
+extern uint8_t PrvtProtCfg_chargeSt(void);
 #endif 

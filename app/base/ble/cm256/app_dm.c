@@ -876,7 +876,7 @@ int app_dm_set_local_bt_name(void)
 {
     int status;
     tBSA_DM_SET_CONFIG bt_config;
-    BD_NAME name = "HZ01234567891234567"; /* Local Name */
+    BD_NAME name = "HZ01234567899999999"; /* Local Name */
 
     /* Init config parameter */
     status = BSA_DmSetConfigInit(&bt_config);

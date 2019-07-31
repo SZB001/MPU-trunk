@@ -90,6 +90,18 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 }
 
 /*
+ *	 空气净化器状态/
+	pm2.5有效性״̬
+  */
+unsigned char PrvtProt_SignParse_pm25valid(void)
+{
+	unsigned char st;
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_PM25VALID] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_PM25VALID])->value: 0x0;
+	return st;
+}
+
+/*
  *	 OTA模式失败原因״̬
   */
 unsigned char PrvtProt_SignParse_OtaFailSts(void)

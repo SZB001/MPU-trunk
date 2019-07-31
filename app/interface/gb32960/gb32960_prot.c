@@ -1866,3 +1866,11 @@ void gb32960_getvin(char* vin)
 {
 	strcpy(vin, gb_vin);
 }
+
+/*
+ * 获取gsm网络状态
+ */
+int gb32960_networkSt(void)
+{
+	return state.network;
+}

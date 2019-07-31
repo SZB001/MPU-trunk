@@ -83,6 +83,7 @@ static PP_rmtAc_Appointperiod_t PP_rmtAc_Appointperiod[7] =
 	{5,0x04},//星期5
 	{6,0x02},//星期6
 };
+static uint8_t PP_ACtrl_Sleepflag = 0;
 /**************增加空调部分shell命令******************/	
 typedef struct {
 	uint32_t hour;
@@ -586,7 +587,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 						PP_rmtac_AppointBook[index].id = shell_actrl->id;
 						PP_rmtac_AppointBook[index].hour = shell_actrl->hour;
 						PP_rmtac_AppointBook[index].min = shell_actrl->min;
-						PP_rmtac_AppointBook[index].period = 0xff;
+						PP_rmtac_AppointBook[index].period = 0xD5;
 						PP_rmtac_AppointBook[index].eventId = 0;
 						PP_rmtac_AppointBook[index].validFlg  = 1;	
 						
@@ -716,12 +717,25 @@ void PP_AcCtrl_acStMonitor(void *task)
 				}
 			}
 		}
+
 		
+		/*
+		 * 检查睡眠条件
+		 * */
+		if((PP_rmtCtrl_cfg_ACOnOffSt() != 1)&&(PP_rmtACCtrl.state.req != 1) && (PP_rmtACCtrl.state.CtrlSt == PP_ACCTRL_IDLE) && \
+					   (PP_rmtac_AppointBook[i].bookupdataflag != 2))
+		{
+			PP_ACtrl_Sleepflag = 1;
+		}
+		else
+		{
+			PP_ACtrl_Sleepflag = 0;
+		}
 		/* * 检查掉电  * */
 
 	 	uint8_t powerOffSt;
 		powerOffSt = gb32960_PowerOffSt();
-		if(powerOffSt == 1)   //掉电
+		if((powerOffSt == 1)|| PP_ACtrl_Sleepflag)  //掉电
 		{
 			if(PP_rmtACCtrl.state.dataUpdata == 1)
 			{
@@ -761,6 +775,10 @@ void PP_ACCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 	PP_rmtACCtrl.state.req = 1;
 }
 
+unsigned char GetPP_ACtrl_Sleep(void)
+{
+	return PP_ACtrl_Sleepflag;
+}
 
 
 

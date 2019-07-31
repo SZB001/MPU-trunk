@@ -58,6 +58,7 @@ description： include the header file
 #include "PP_StartEngine.h"
 #include "PP_StartForbid.h"
 #include "PP_SeatHeating.h"
+#include "../PrvtProt_SigParse.h"
 #include "PP_rmtCtrl.h"
 
 /*******************************************************
@@ -185,7 +186,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 
 			PP_ChargeCtrl_chargeStMonitor(task_ptr);//监测充电状态
 			PP_AcCtrl_acStMonitor(task_ptr);        //查询空调预约时间
-
+			PP_SeatCtrl_SeatStMonitor(task_ptr);    //查询座椅加热是否满足睡眠条件
 			ret  = PP_doorLockCtrl_start() ||
 				   PP_autodoorCtrl_start() ||
 				   PP_searchvehicle_start()||
@@ -284,7 +285,9 @@ int PP_rmtCtrl_mainfunction(void *task)
 	
 	PP_can_send_cycle();//广播440 445报文
 	
-	PP_rmtCtrl_sleepflag = GetPP_ChargeCtrl_Sleep();
+	PP_rmtCtrl_sleepflag = GetPP_ChargeCtrl_Sleep()&& \
+						   GetPP_ACtrl_Sleep()     && \
+						   GetPP_SeatCtrl_Sleep();
 
 	return res;
 }
@@ -815,45 +818,45 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.dippedBeamStatus 	= gb_data_NearLampSt();//近光灯
 			App_rmtCtrl.CtrlResp.basicSt.mainBeamStatus 	= gb_data_HighbeamLampSt();//远光灯
 			App_rmtCtrl.CtrlResp.basicSt.hazardLightStus 	= gb_data_TwinFlashLampSt();//双闪灯
-			App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp	= 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp	= 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp	= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre	= gb_data_frontRightTyrePre()/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp	= gb_data_frontRightTyreTemp()/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre	= gb_data_frontLeftTyrePre()/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp	= gb_data_frontLeftTyreTemp()	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre	= gb_data_rearRightTyrePre()/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp	= gb_data_rearRightTyreTemp()	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre	= gb_data_rearLeftTyrePre()/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp	= gb_data_rearLeftTyreTemp()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.batterySOCExact 	= gb_data_vehicleSOC() * 100;
-			App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim	= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.availableOdomtr	= 1;
+			App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim	= gb_data_ACChargeRemainTime()/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.availableOdomtr	= gb_data_ResidualOdometer();//续航里程;
 			App_rmtCtrl.CtrlResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.bookingChargeSt	= GetPP_ChargeCtrl_appointSt();
 			App_rmtCtrl.CtrlResp.basicSt.bookingChargeHour	= GetPP_ChargeCtrl_appointHour()	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.bookingChargeMin	= GetPP_ChargeCtrl_appointMin()/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.chargeMode			= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.chargeStatus		= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.powerMode			= 1/* OPTIONAL */;//0x1--纯电;0x2--混动;0x3--燃油
+			App_rmtCtrl.CtrlResp.basicSt.chargeMode			= PrvtProtCfg_chargeSt()/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.chargeStatus		= gb_data_chargestauus()/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.powerMode			= gb_data_powermode()/* OPTIONAL */;//0x1--纯电;0x2--混动;0x3--燃油
 			App_rmtCtrl.CtrlResp.basicSt.speed				= gb_data_vehicleSpeed();
 			App_rmtCtrl.CtrlResp.basicSt.totalOdometer		= gb_data_vehicleOdograph();
-			App_rmtCtrl.CtrlResp.basicSt.batteryVoltage		= 1;
-			App_rmtCtrl.CtrlResp.basicSt.batteryCurrent		= 1;
+			App_rmtCtrl.CtrlResp.basicSt.batteryVoltage		= gb_data_batteryVoltage();
+			App_rmtCtrl.CtrlResp.basicSt.batteryCurrent		= gb_data_batteryCurrent();
 			App_rmtCtrl.CtrlResp.basicSt.batterySOCPrc 		= gb_data_vehicleSOC();
 			App_rmtCtrl.CtrlResp.basicSt.dcStatus			= 1;
-			App_rmtCtrl.CtrlResp.basicSt.gearPosition		= 1;
-			App_rmtCtrl.CtrlResp.basicSt.insulationRstance	= 1;
-			App_rmtCtrl.CtrlResp.basicSt.acceleratePedalprc	= 1;
-			App_rmtCtrl.CtrlResp.basicSt.deceleratePedalprc	= 1;
+			App_rmtCtrl.CtrlResp.basicSt.gearPosition		= gb_data_gearPosition();
+			App_rmtCtrl.CtrlResp.basicSt.insulationRstance	= gb_data_insulationResistance();
+			App_rmtCtrl.CtrlResp.basicSt.acceleratePedalprc	= gb_data_acceleratePedalPrc();
+			App_rmtCtrl.CtrlResp.basicSt.deceleratePedalprc	= gb_data_deceleratePedalPrc();
 			App_rmtCtrl.CtrlResp.basicSt.canBusActive		= gb_data_CanbusActiveSt();
 			App_rmtCtrl.CtrlResp.basicSt.bonnetStatus		= 1;
-			App_rmtCtrl.CtrlResp.basicSt.lockStatus			= 1;
-			App_rmtCtrl.CtrlResp.basicSt.gsmStatus			= 1;
+			App_rmtCtrl.CtrlResp.basicSt.lockStatus			= PP_rmtCtrl_cfg_doorlockSt();
+			App_rmtCtrl.CtrlResp.basicSt.gsmStatus			= gb32960_networkSt();
 			App_rmtCtrl.CtrlResp.basicSt.wheelTyreMotrSt	= 1	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.vehicleAlarmSt		= 1;
 			App_rmtCtrl.CtrlResp.basicSt.currentJourneyID	= 1;
-			App_rmtCtrl.CtrlResp.basicSt.journeyOdom		= 1;
-			App_rmtCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel	= 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.frtRightSeatHeatLel= 1/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.airCleanerSt		= 1/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.journeyOdom		= PP_rmtCtrl_cfg_vehicleOdograph();
+			App_rmtCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel	= PP_rmtCtrl_cfg_DrivHeatingSt()	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.frtRightSeatHeatLel= PP_rmtCtrl_cfg_PassHeatingSt()/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.airCleanerSt		= PrvtProt_SignParse_pm25valid()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.srsStatus			= PrvtProtCfg_CrashOutputSt();//安全气囊状态
 
 			if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_RESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\

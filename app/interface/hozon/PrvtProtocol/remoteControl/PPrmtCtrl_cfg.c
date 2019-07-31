@@ -141,7 +141,7 @@ unsigned char PP_rmtCtrl_cfg_ACOnOffSt(void)
 */
 unsigned char PP_rmtCtrl_cfg_HeatingSt(uint8_t dt)
 {
-	unsigned char level;
+	unsigned char level = 0;
 	if(dt ==0)
 	{
 		level = PrvtProt_SignParse_DrivHeatingSt();
@@ -289,3 +289,29 @@ unsigned char PP_rmtCtrl_cfg_CrashOutputSt(void)
 
 	return crashSt;
 }
+
+/*
+ 	获取总显示总的里程̬
+*/
+long PP_rmtCtrl_cfg_vehicleOdograph(void)
+{
+	return gb_data_vehicleOdograph();
+
+}
+
+/*
+ 	主座椅加热档位
+*/
+unsigned char PP_rmtCtrl_cfg_DrivHeatingSt(void)
+{
+	return PrvtProt_SignParse_DrivHeatingSt();
+}
+/*
+ 	副座椅加热档位
+*/
+
+unsigned char PP_rmtCtrl_cfg_PassHeatingSt(void)
+{
+	return PrvtProt_SignParse_PassHeatingSt();
+}
+

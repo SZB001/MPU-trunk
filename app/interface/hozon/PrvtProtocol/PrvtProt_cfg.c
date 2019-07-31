@@ -179,3 +179,26 @@ uint8_t PrvtProtCfg_CrashOutputSt(void)
 	}
 	return 0;
 }
+
+/*
+ 	快慢充电状态״̬
+*/
+uint8_t PrvtProtCfg_chargeSt(void)
+{
+	uint8_t tmp;
+	uint8_t chargeSt = 0;
+	tmp = gb_data_chargeSt();
+	if((tmp == 0x1) || (tmp == 0x6))
+	{
+		chargeSt = 1;//慢充
+	}
+	else if(tmp == 0x2)
+	{
+		chargeSt = 2;//快充
+	}
+	else
+	{}
+
+	return chargeSt;
+}
+

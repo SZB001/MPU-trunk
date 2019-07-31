@@ -16,8 +16,9 @@
 #include "../support/protocol.h"
 #include "../hozon/PrvtProtocol/PrvtProt_SigParse.h"
 #include "hozon_PP_api.h"
-extern int PP_identificat_rcvdata(uint8_t *dt);
 
+extern int PP_identificat_rcvdata(uint8_t *dt);
+gb32960_api_fault_t gb_fault;
 
 #define GB_EXT	1//���������չ��Ϣ
 
@@ -872,13 +873,10 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
     /* break pad value */
 	if(gbinf->vehi.info[GB_VINF_BRKPAD])
 	{
-		if(dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value == 0)
+		tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value;
+		if(tmp >= 100)
 		{
-			tmp = 101;
-		}
-		else
-		{
-			tmp = 0;
+			tmp = 100;
 		}
 	}
 	else
@@ -1260,6 +1258,7 @@ static uint32_t gb_data_save_extr(gb_info_t *gbinf, uint8_t *buf)
 static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0, i, j, warnbit = 0, warnlvl = 0;
+    uint8_t gb_warn[32] = {0};
 
     for (i = 0; i < 3; i++)
     {
@@ -1284,6 +1283,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
             dbc_get_signal_from_id(gbinf->warn[3][j])->value)))
             // index 3,as a relevance channel,if the is two canid used for on warning
             {
+            	gb_warn[j] = 1;
                 warnbit |= 1 << j;
                 warnlvl  = i + 1;
             }
@@ -1309,6 +1309,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     battFaultNum_ptr =  &buf[len++];
     *battFaultNum_ptr = 0;
 
+    uint8_t battheatsfastwarn = 0;
     //电池温升过快故障
     for (i = 0; i < 3; i++)
     {
@@ -1318,6 +1319,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 		dbc_get_signal_from_id(gbinf->warn[3][0x36])->value)))
 		// index 3,as a relevance channel,if the is two canid used for on warning
 		{
+			battheatsfastwarn = 1;
 			faultCode = gb_alarmFaultCode[GB_AF_BATTRISEFAST].code;
 			buf[len++] = faultCode >> 24;
 			buf[len++] = faultCode >> 16;
@@ -1414,6 +1416,16 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 			}
 		}
     }
+
+    //故障诊断,用于外部获取故障报警状态
+    for(j = 0;j < 32;j++)
+    {
+    	gb_fault.warn[j] = gb_warn[j];
+    }
+
+	gb_fault.warn[battheatsfastWARN] = battheatsfastwarn;
+
+
 
     return len;
 }
@@ -1784,7 +1796,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     }
 
     /* 充电信息 */
-    if(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])//
+    if(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])//剩余充电时间
 	{
     	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])->value;
 		buf[len++] = tmp >> 8;
@@ -1853,11 +1865,11 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-    /* ����״̬ */
-    buf[len++] = 0xff;//��������״̬
-    buf[len++] = 0xff;//���������ź�ǿ��
-    buf[len++] = 0xff;//canͨѶ״̬
-    buf[len++] = 0xff;//12V ���ص�ѹ
+    /* 基本状态信息值数据 */
+    buf[len++] = 0xff;//蜂窝网络状态״̬
+    buf[len++] = 0xff;//蜂窝网络信号 强度
+    buf[len++] = (uint8_t)canact;//CAN通讯状态״̬
+    buf[len++] = 0xff;//12V 蓄电池电压
     if(gbinf->vehi.info[GB_VINF_SOC])
     {
     	tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value;
@@ -1870,7 +1882,8 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     	 buf[len++] = 0xff;
     	 buf[len++] = 0xff;
     }
-    if(gbinf->gb_VSExt.info[GB_VS_ENDURANCEMILE])//�������
+
+    if(gbinf->gb_VSExt.info[GB_VS_ENDURANCEMILE])//续航里程
     {
     	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ENDURANCEMILE])->value * 10;
     	buf[len++] = tmp >> 8;
@@ -2985,17 +2998,17 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	}
 
 
-	{//Ԥ��1
+	{//预留1
 		 buf[len++] = 0xff;
 	}
-	{//Ԥ��2
+	{//预留2
 		 buf[len++] = 0xff;
 	}
-	{//Ԥ��3
+	{//预留3
 		 buf[len++] = 0xff;
 		 buf[len++] = 0xff;
 	}
-	{//Ԥ��4
+	{//预留4
 		 buf[len++] = 0xff;
 		 buf[len++] = 0xff;
 	}
@@ -4660,4 +4673,292 @@ uint8_t gb_data_HighbeamLampSt(void)
 		lampSt = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_HIGHBEAMLAMP_ON])->value;
 	}
 	return lampSt;
+}
+
+/*
+ * 右前车胎压强
+ */
+uint8_t gb_data_frontRightTyrePre(void)
+{
+	uint8_t tyrePre = 0x0;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_RFTYREPRESSURE])//
+	{
+		tyrePre = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_RFTYREPRESSURE])->value/10;
+	}
+
+	return tyrePre;
+}
+
+/*
+ * 左前车胎压强
+ */
+uint8_t gb_data_frontLeftTyrePre(void)
+{
+	uint8_t tyrePre = 0x0;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_LFTYREPRESSURE])//
+	{
+		tyrePre = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_LFTYREPRESSURE])->value/10;
+	}
+
+	return tyrePre;
+}
+
+/*
+ * 右后车胎压强
+ */
+uint8_t gb_data_rearRightTyrePre(void)
+{
+	uint8_t tyrePre = 0x0;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_RRTYREPRESSURE])//
+	{
+		tyrePre = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_RRTYREPRESSURE])->value/10;
+	}
+
+	return tyrePre;
+}
+
+/*
+ * 左后车胎压强
+ */
+uint8_t gb_data_rearLeftTyrePre(void)
+{
+	uint8_t tyrePre = 0x0;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_LRTYREPRESSURE])//
+	{
+		tyrePre = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_LRTYREPRESSURE])->value/10;
+	}
+
+	return tyrePre;
+}
+
+/*
+ * 右前车胎温度
+ */
+uint8_t gb_data_frontRightTyreTemp(void)
+{
+	uint8_t temperature = 0;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_RFTYRETEMP])//
+	{
+		temperature = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_RFTYRETEMP])->value + 50;
+	}
+	return temperature;
+}
+
+/*
+ * 左前车胎温度
+ */
+uint8_t gb_data_frontLeftTyreTemp(void)
+{
+	uint8_t temperature = 0;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_LFTYRETEMP])//
+	{
+		temperature = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_LFTYRETEMP])->value + 50;
+	}
+	return temperature;
+}
+
+/*
+ * 右后车胎温度
+ */
+uint8_t gb_data_rearRightTyreTemp(void)
+{
+	uint8_t temperature = 0;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_RRTYRETEMP])//
+	{
+		temperature = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_RRTYRETEMP])->value + 50;
+	}
+	return temperature;
+}
+
+/*
+ * 左后车胎温度
+ */
+uint8_t gb_data_rearLeftTyreTemp(void)
+{
+	uint8_t temperature = 0;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_LRTYRETEMP])//
+	{
+		temperature = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_LRTYRETEMP])->value + 50;
+	}
+	return temperature;
+}
+
+uint8_t gb_data_gearPosition(void)
+{
+	uint8_t gearpos = 0;
+	if (gb_inf  && gb_inf->vehi.info[GB_VINF_SHIFT])
+	{
+		uint8_t temp;
+		gearpos = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_SHIFT])->value;
+		temp = gb_inf->vehi.shift_tbl[gearpos];
+
+		switch (temp)
+		{
+			case '1'...'6':
+			{
+				gearpos = temp - '0';
+			}
+			break;
+			case 'R':
+			{
+				gearpos = 13;
+			}
+			break;
+			case 'S':
+			case 'D':
+			{
+				gearpos = 14;
+			}
+			break;
+			case 'P':
+			{
+				gearpos = 15;
+			}
+			break;
+			case 'N':
+			{
+			 gearpos = 0;
+			}
+			break;
+			default:
+			{
+				gearpos = 0;
+			}
+			break;
+		}
+	}
+	return gearpos;
+}
+
+/*
+ 绝缘电阻
+*/
+uint16_t  gb_data_insulationResistance(void)
+{
+	uint16_t temp = 0;
+	if (gb_inf  && gb_inf->vehi.info[GB_VINF_INSULAT])
+	{
+		temp = MIN(dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_INSULAT])->value, 60000);
+	}
+	return temp;
+}
+
+/*
+ 加速踏板行程值有效范围
+*/
+uint8_t gb_data_acceleratePedalPrc(void)
+{
+	uint8_t temp  = 0;
+	if (gb_inf  && gb_inf->vehi.info[GB_VINF_ACCPAD])
+	{
+		temp = gb_inf->vehi.info[GB_VINF_ACCPAD] ?
+		dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_ACCPAD])->value : 0xff;
+	}
+	return temp;
+}
+
+/*
+ 制动踏板行程值有效范围
+*/
+uint8_t gb_data_deceleratePedalPrc(void)
+{
+	uint8_t temp = 0;
+	if(gb_inf && gb_inf->vehi.info[GB_VINF_BRKPAD])
+	{
+		temp = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_BRKPAD])->value;
+		if(temp >= 100)
+		{
+			temp = 100;
+		}
+	}
+
+	return temp;
+}
+
+/*
+ 总电压
+*/
+uint16_t gb_data_batteryVoltage(void)
+{
+	/* total voltage, scale 0.1V */
+	 uint16_t temp = 0;
+	 if (gb_inf && gb_inf->vehi.info[GB_VINF_VOLTAGE])
+	 {
+		 temp = gb_inf->vehi.info[GB_VINF_VOLTAGE] ?
+		dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_VOLTAGE])->value * 10 : 0xffff;
+	 }
+    return temp;
+}
+
+/*
+ 总电流
+*/
+uint16_t gb_data_batteryCurrent(void)
+{
+	uint16_t temp = 0;
+	/* total curr, scale 0.1V, offset -1000A */
+	if (gb_inf && gb_inf->vehi.info[GB_VINF_CURRENT])
+	{
+		temp = gb_inf->vehi.info[GB_VINF_CURRENT] ?
+				(dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_CURRENT])->value + 1000) * 10: 0xffff;
+	}
+	return temp;
+}
+
+/*
+ 动力模式
+*/
+uint8_t gb_data_powermode(void)
+{
+	uint8_t temp;
+	uint8_t mode = 0;
+	if (gb_inf && gb_inf->vehi.info[GB_VINF_VEHIMODE])
+	{
+		temp = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_VEHIMODE])->value;
+		 mode = gb_inf->vehi.mode_tbl[temp] ? gb_inf->vehi.mode_tbl[temp] : 0xff;
+	}
+	return mode;
+}
+
+/*
+ 充电状态
+*/
+uint8_t gb_data_chargestauus(void)
+{
+	uint8_t temp;
+	uint8_t status = 0;
+	if (gb_inf  && gb_inf->vehi.info[GB_VINF_CHARGE])
+	{
+		temp = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_CHARGE])->value;
+		status = gb_inf->vehi.charge_tbl[temp] ? gb_inf->vehi.charge_tbl[temp] : 0xff;
+	}
+	return status;
+}
+
+/*
+ *续航里程
+ */
+long gb_data_ResidualOdometer(void)
+{
+	long odometer = 0;
+	if(gb_inf  && gb_inf->gb_VSExt.info[GB_VS_ENDURANCEMILE])//续航里程
+	{
+		odometer = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ENDURANCEMILE])->value * 10;
+	}
+
+	return odometer;
+}
+
+/*
+ *剩余充电时间
+ */
+long gb_data_ACChargeRemainTime(void)
+{
+	long acremaintime = 0;
+	if(gb_inf  && gb_inf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])//
+	{
+		acremaintime = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])->value;
+	}
+
+	return acremaintime;
 }

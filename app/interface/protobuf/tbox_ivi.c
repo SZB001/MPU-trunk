@@ -17,6 +17,7 @@
 #include "tbox_ivi_api.h"
 #include "log.h"
 #include "tcom_api.h"
+#include "gb32960_api.h"
 #include "pwdg.h"
 #include "cfg_api.h"
 #include "fault_sync.h"
@@ -61,8 +62,8 @@ extern int wifi_enable(void);
 extern int nm_get_signal(void);
 extern int assist_get_call_status(void);
 extern void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara);
-
-
+extern uint8_t PP_rmtCfg_getIccid(uint8_t* iccid);
+extern unsigned char PP_rmtCtrl_cfg_CrashOutputSt(void);
 int Get_call_tpye(void);
 
 
@@ -778,22 +779,22 @@ void ivi_callstate_response_send(int fd  )
 		
 	}
 	
-	if(temp == 1)
+	if(temp == 1)        //来电
 	{
 		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_IN;
 		log_o(LOG_IVI,"incoming call");
 	}
-	else if(temp == 3)
+	else if(temp == 3)   //去电
 	{
 		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_OUT;
 		log_o(LOG_IVI,"outgoing call");
 	}
-	else if(temp == 4)
+	else if(temp == 4)   //已接通
 	{
 		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_CONNECTED;
 		log_o(LOG_IVI,"connected call");
 	}
-	else 
+	else         //挂断电话
 	{
 		callstate.call_status =  TBOX__NET__CALL_STATUS_ENUM__CALL_DISCONNECTED;
 		ecall_flag = 0;
@@ -1028,9 +1029,12 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 			{
 				call_request.type = TBOX__NET__CALL_TYPE__BCALL;
 			}
-			else
+			else if(1 == callrequest.bcall)
 			{
 				call_request.type = TBOX__NET__CALL_TYPE__ICALL;
+			}
+			else
+			{
 			}
 
 			if( 1 == callrequest.action)
@@ -1049,21 +1053,27 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 		
 		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO:
 		{
-
 			TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_INFO;
-
+			char vin[18] = {0};
+			uint8_t iccid[20] = {0};
 			Tbox__Net__TboxInfo tboxinfo;
 			tbox__net__tbox_info__init(&tboxinfo);
 			
 			tboxinfo.software_version = "1234567890";
 			tboxinfo.hardware_version = "1234567890";
-			tboxinfo.iccid  = "1234567890";
+			if(PP_rmtCfg_getIccid(iccid) == 1)
+			{
+				tboxinfo.iccid = (char *)iccid;	
+			}
+			//tboxinfo.iccid  = "1234567890";
+			
 			tboxinfo.pdid = "1234567890";
 			tboxinfo.imei = "1234567890";
-			tboxinfo.vin = "1234567890";
-
+			gb32960_getvin(vin);
+			tboxinfo.vin = vin ;
+			//tboxinfo.vin = "1234567890";
+			
 			TopMsg.tbox_info = &tboxinfo;
-
 			log_o(LOG_IVI, "tbox info");
 			result.result = true;
 			break;
@@ -1697,8 +1707,8 @@ void *ivi_main(void)
 void *ivi_check(void)
 {
 	while(1)
-	{
-		if( 2 == flt_get_by_id(SOSBTN))
+	{	//按键触发或者安全气囊弹出
+		if( (2 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
 		{
 			memset(&callrequest,0 ,sizeof(ivi_callrequest));
 			callrequest.ecall = 1;
@@ -1717,7 +1727,6 @@ void *ivi_check(void)
 			{
 				ivi_signalpower_response_send( ivi_clients[0].fd ); //如果信号强度变化，传给车机
 			}
-			
 			ivi_callstate_response_send(ivi_clients[0].fd );  //电话状态变化，传给车机
 
 //			if()  //判断TSP是否下发激活信息

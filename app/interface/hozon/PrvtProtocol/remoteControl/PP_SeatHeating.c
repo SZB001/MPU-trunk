@@ -62,6 +62,7 @@ typedef struct
 
 static PrvtProt_rmtseatheating_t PP_rmtseatheatCtrl[PP_seatheating_max];
 static uint8_t seat_requestpower_flag;   //0默认，1请求上电，2请求下电
+static uint8_t PP_Seat_Sleepflag = 0;
 
 int Seat_Shell_setctrl(int argc, const char **argv)
 {
@@ -265,6 +266,25 @@ int PP_seatheating_mainfunction(void *task)
 	return res;
 }
 
+void PP_SeatCtrl_SeatStMonitor(void *task)
+{
+	/*
+		 * 检查睡眠条件
+		 * */
+	if((PP_rmtseatheatCtrl[0].start_seatheat_stage == PP_SEATHEATING_IDLE) && \
+			(PP_rmtseatheatCtrl[0].state.req == 0) &&  \
+			(PP_rmtCtrl_cfg_HeatingSt(0) != 0)&&\
+			(PP_rmtseatheatCtrl[1].start_seatheat_stage == PP_SEATHEATING_IDLE) && \
+			(PP_rmtseatheatCtrl[1].state.req == 0) &&\
+			(PP_rmtCtrl_cfg_HeatingSt(0) != 0))
+	{
+		PP_Seat_Sleepflag = 1;
+	}
+	else
+	{
+		PP_Seat_Sleepflag = 0;
+	}
+}
 
 uint8_t PP_seatheating_start(void) 
 {
@@ -352,6 +372,12 @@ void PP_set_seat_requestpower_flag()
 {
 	seat_requestpower_flag = 0;
 }
+
+unsigned char GetPP_SeatCtrl_Sleep(void)
+{
+	return PP_Seat_Sleepflag;
+}
+
 
 /************************shell命令测试使用**************************/
 void PP_seatheating_SetCtrlReq(uint32_t reqType,unsigned char level)

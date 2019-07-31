@@ -61,6 +61,7 @@ extern void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *dispt
 extern void ClearPP_ACCtrl_Request(void);
 extern void PP_ACCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 extern void PP_AcCtrl_acStMonitor(void *task);
+extern unsigned char GetPP_ACtrl_Sleep(void);
 
 
 

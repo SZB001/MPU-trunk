@@ -111,10 +111,30 @@ description�� function code
 
 *��  ע��
 ******************************************************/
+int Charge_Shell_showctrl(int argc, const char **argv)
+{
+
+	if(PP_rmtCharge_AppointBook.validFlg == 1)
+	{
+			
+		log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.id = %d",PP_rmtCharge_AppointBook.id);
+		log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.hour = %d",PP_rmtCharge_AppointBook.hour);
+		log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.min = %d",PP_rmtCharge_AppointBook.min);
+		log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.period = %d\n",PP_rmtCharge_AppointBook.period);
+	} 
+	return 0;
+}
+	
+void remote_charge_shell_init(void)
+{
+	shell_cmd_register("hozon_show_chargeappoint", Charge_Shell_showctrl, "show charge appointment");
+}
+
 void PP_ChargeCtrl_init(void)
 {
 	unsigned int len;
 	int res;
+	remote_charge_shell_init();
 	memset(&PP_rmtChargeCtrl,0,sizeof(PrvtProt_rmtChargeCtrl_t));
 	memcpy(PP_rmtChargeCtrl.pack.Header.sign,"**",2);
 	PP_rmtChargeCtrl.pack.Header.ver.Byte = 0x30;

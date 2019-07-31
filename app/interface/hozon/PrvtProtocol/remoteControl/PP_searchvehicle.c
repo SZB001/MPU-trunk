@@ -132,7 +132,6 @@ int PP_searchvehicle_mainfunction(void *task)
 			if(search_type == PP_SEARCH) //寻车
 			{
 				PP_can_send_data(PP_CAN_SEARCH,CAN_SEARCHVEHICLE,0);
-				log_o(LOG_HOZON,"ppppp %d",CAN_SEARCHVEHICLE);
 			}
 			search_vehicle_stage = PP_SEARCHVEHICLE_RESPWAIT;
 			PP_Respwaittime = tm_get_time();
@@ -147,7 +146,7 @@ int PP_searchvehicle_mainfunction(void *task)
 					if(PP_rmtCtrl_cfg_findcarSt() == 1) //
 					{
 						log_i(LOG_HOZON,"search vehicle success!!!!!\n");
-						//PP_can_send_data(PP_CAN_SEARCH,CAN_CLEANSEARCH,0);
+						PP_can_send_data(PP_CAN_SEARCH,CAN_CLEANSEARCH,0);
 						serachvehicle_success_flag = 1;
 						search_vehicle_stage = PP_SEARCHVEHICLE_END;
 					}

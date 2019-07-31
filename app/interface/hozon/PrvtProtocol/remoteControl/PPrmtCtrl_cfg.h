@@ -64,4 +64,7 @@ extern unsigned char PP_rmtCtrl_cfg_readyLightSt(void);
 extern unsigned char PP_rmtCtrl_cfg_cancelEngiSt(void);
 extern unsigned char PP_rmtCtrl_cfg_LHTemp(void);
 extern unsigned char PP_rmtCtrl_cfg_CrashOutputSt(void);
+extern long PP_rmtCtrl_cfg_vehicleOdograph(void);
+extern unsigned char PP_rmtCtrl_cfg_DrivHeatingSt(void);
+extern unsigned char PP_rmtCtrl_cfg_PassHeatingSt(void);
 #endif 

@@ -47,6 +47,7 @@ description�� include the header file
 #include "PrvtProt_cfg.h"
 #include "PrvtProt.h"
 #include "remoteControl/PPrmtCtrl_cfg.h"
+#include "PrvtProt_SigParse.h"
 #include "PrvtProt_VehiSt.h"
 
 /*******************************************************
@@ -284,7 +285,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 		break;
 		case PP_VS_BASICSTATUS:
 		{
-			PP_VS_appdata.VSResp.ExtSt.validFlg = 0;//���ϱ�ext status����
+			PP_VS_appdata.VSResp.ExtSt.validFlg = 0;//
 			if(0 == PP_VS_VehiStatusResp(task,&PP_rmtVS))
 			{
 				memset(&VS_TxInform,0,sizeof(PrvtProt_TxInform_t));
@@ -301,7 +302,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 		break;
 		case PP_VS_EXTSTATUS:
 		{
-			PP_VS_appdata.VSResp.ExtSt.validFlg = 1;//�ϱ�ext status����
+			PP_VS_appdata.VSResp.ExtSt.validFlg = 1;//report extended Vehicle Status
 			if(0 == PP_VS_VehiStatusResp(task,&PP_rmtVS))
 			{
 				memset(&VS_TxInform,0,sizeof(PrvtProt_TxInform_t));
@@ -442,51 +443,61 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	PP_VS_appdata.VSResp.basicSt.dippedBeamStatus	= gb_data_NearLampSt();
 	PP_VS_appdata.VSResp.basicSt.mainBeamStatus		= gb_data_HighbeamLampSt();
 	PP_VS_appdata.VSResp.basicSt.hazardLightStus	= gb_data_TwinFlashLampSt();//双闪灯
-	PP_VS_appdata.VSResp.basicSt.frtRightTyrePre	= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp	= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre	= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp	= 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.rearRightTyrePre	= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp	= 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre	= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp	= 1/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.frtRightTyrePre	= gb_data_frontRightTyrePre()/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp	= gb_data_frontRightTyreTemp()/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre	= gb_data_frontLeftTyrePre()/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp	= gb_data_frontLeftTyreTemp()	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.rearRightTyrePre	= gb_data_rearRightTyrePre()/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp	= gb_data_rearRightTyreTemp()	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre	= gb_data_rearLeftTyrePre()/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp	= gb_data_rearLeftTyreTemp()/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.batterySOCExact	= gb_data_vehicleSOC() * 100;
-	PP_VS_appdata.VSResp.basicSt.chargeRemainTim	= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.availableOdomtr	= 1;
+	PP_VS_appdata.VSResp.basicSt.chargeRemainTim	= gb_data_ACChargeRemainTime()/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.availableOdomtr	= gb_data_ResidualOdometer();//续航里程
 	PP_VS_appdata.VSResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.bookingChargeSt	= GetPP_ChargeCtrl_appointSt();
 	PP_VS_appdata.VSResp.basicSt.bookingChargeHour	= GetPP_ChargeCtrl_appointHour()	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.bookingChargeMin	= GetPP_ChargeCtrl_appointMin()/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.chargeMode			= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.chargeStatus		= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.powerMode			= 1/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.chargeMode			= PrvtProtCfg_chargeSt()/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.chargeStatus 		= gb_data_chargestauus();
+	PP_VS_appdata.VSResp.basicSt.powerMode			= gb_data_powermode();
 	PP_VS_appdata.VSResp.basicSt.speed				= gb_data_vehicleSpeed();
 	PP_VS_appdata.VSResp.basicSt.totalOdometer		= gb_data_vehicleOdograph();
-	PP_VS_appdata.VSResp.basicSt.batteryVoltage		= 1;
-	PP_VS_appdata.VSResp.basicSt.batteryCurrent		= 1;
+	PP_VS_appdata.VSResp.basicSt.batteryVoltage		= gb_data_batteryVoltage();
+	PP_VS_appdata.VSResp.basicSt.batteryCurrent		= gb_data_batteryCurrent();
 	PP_VS_appdata.VSResp.basicSt.batterySOCPrc		= gb_data_vehicleSOC();
 	PP_VS_appdata.VSResp.basicSt.dcStatus			= 1;
-	PP_VS_appdata.VSResp.basicSt.gearPosition		= 1;
-	PP_VS_appdata.VSResp.basicSt.insulationRstance	= 1;
-	PP_VS_appdata.VSResp.basicSt.acceleratePedalprc	= 1;
-	PP_VS_appdata.VSResp.basicSt.deceleratePedalprc	= 1;
+	PP_VS_appdata.VSResp.basicSt.gearPosition		= gb_data_gearPosition();
+	PP_VS_appdata.VSResp.basicSt.insulationRstance	= gb_data_insulationResistance();
+	PP_VS_appdata.VSResp.basicSt.acceleratePedalprc	= gb_data_acceleratePedalPrc();
+	PP_VS_appdata.VSResp.basicSt.deceleratePedalprc	= gb_data_deceleratePedalPrc();
 	PP_VS_appdata.VSResp.basicSt.canBusActive		= gb_data_CanbusActiveSt();
 	PP_VS_appdata.VSResp.basicSt.bonnetStatus		= 1;
-	PP_VS_appdata.VSResp.basicSt.lockStatus			= 1;
-	PP_VS_appdata.VSResp.basicSt.gsmStatus			= 1;
+	PP_VS_appdata.VSResp.basicSt.lockStatus			= PP_rmtCtrl_cfg_doorlockSt();
+	PP_VS_appdata.VSResp.basicSt.gsmStatus			= gb32960_networkSt();
 	PP_VS_appdata.VSResp.basicSt.wheelTyreMotrSt	= 1	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.vehicleAlarmSt		= 1;
 	PP_VS_appdata.VSResp.basicSt.currentJourneyID	= 1;
-	PP_VS_appdata.VSResp.basicSt.journeyOdom		= 1;
-	PP_VS_appdata.VSResp.basicSt.frtLeftSeatHeatLel	= 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.frtRightSeatHeatLel= 1/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.airCleanerSt		= 1/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.journeyOdom		= PP_rmtCtrl_cfg_vehicleOdograph(); /*里程*/
+	PP_VS_appdata.VSResp.basicSt.frtLeftSeatHeatLel	= PP_rmtCtrl_cfg_DrivHeatingSt()	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.frtRightSeatHeatLel = PP_rmtCtrl_cfg_PassHeatingSt()/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.airCleanerSt		= PrvtProt_SignParse_pm25valid()/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.srsStatus 			= PrvtProtCfg_CrashOutputSt();
 
-	if(PP_VS_appdata.VSResp.ExtSt.validFlg == 1)//�ϱ�ext status����
+	uint8_t i;
+	if(PP_VS_appdata.VSResp.ExtSt.validFlg == 1)//上报故障报警
 	{
-		PP_VS_appdata.VSResp.ExtSt.alertSize = 1;//
-		PP_VS_appdata.VSResp.ExtSt.alertIds[0] = 1;
+		log_i(LOG_HOZON, "read warn status\n");
+		PP_VS_appdata.VSResp.ExtSt.alertSize = 0;//
+		for(i = 0;i < GB32960_API_FAULTNUM;i++)
+		{
+			if(gb_fault.warn[i])
+			{
+				PP_VS_appdata.VSResp.ExtSt.alertIds[PP_VS_appdata.VSResp.ExtSt.alertSize] = i;
+				log_i(LOG_HOZON, "PP_VS_appdata.VSResp.ExtSt.alertIds[%d] = %d\n",PP_VS_appdata.VSResp.ExtSt.alertSize,i);
+				PP_VS_appdata.VSResp.ExtSt.alertSize++;
+			}
+		}
 	}
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTVS_RESP,PP_VS_Pack.msgdata,&msgdatalen,\
