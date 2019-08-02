@@ -118,9 +118,11 @@ static int PP_CertDL_do_wait(PrvtProt_task_t *task);
 static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task);
 
 static void PP_CertDL_send_cb(void * para);
-static int PP_CertDL_CertDLReq(PrvtProt_task_t *task,PP_CertificateDownload_t *CertificateDownload);
+static int 	PP_CertDL_CertDLReq(PrvtProt_task_t *task,PP_CertificateDownload_t *CertificateDownload);
 static int  PP_CertDL_checkCipherCsr(void);
 static int  MatchCertVerify(void);
+static int 	PP_CertDL_base64_decode( unsigned char *dst, unsigned int *dlen, \
+                     const unsigned char *src, int  slen );
 /******************************************************
 description�� function code
 ******************************************************/
@@ -149,7 +151,7 @@ void PP_CertDownload_init(void)
 	PP_CertDL.state.certDLTestflag = 1;
 
 	FILE *fp;
-	if((fp=fopen("/usrdata/pki/auth.cer", "r")) != NULL)//检查证书文件是否存在
+	if((fp=fopen("/usrdata/pki/userAuth.cer", "r")) != NULL)//检查证书文件是否存在
 	{
 		PP_CertDL.state.CertValid = 1;
 		fclose(fp);
@@ -271,53 +273,57 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 
 		if(rxPack->msgdata[PP_CERTDL_RESP_RESULT] == 1)//成功  && tbox证书
 		{
-			if(rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE] == 1)//成功  && tbox证书
+			if(rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE] == 1)//成功  && tbox证书 result=1时，不传错误类型
 			{
 				PP_CertDL.state.dlsuccess = PP_CERTDL_SUCCESS;
 				PP_CertDL.para.CertDLResp.certLength = 0;
-				PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN] << 24;
-				PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN] << 16;
-				PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN] << 8;
-				PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN];
+				PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN+0] << 24;
+				PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN+1] << 16;
+				PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN+2] << 8;
+				PP_CertDL.para.CertDLResp.certLength |= (uint32_t)rxPack->msgdata[PP_CERTDL_RESP_CERTLEN+3];
 
 				log_i(LOG_HOZON, "PP_CertDL.para.CertDLResp.certLength = %d\n",PP_CertDL.para.CertDLResp.certLength);
-				log_i(LOG_HOZON, "certContent = %s\n",rxPack->msgdata[PP_CERTDL_RESP_CERTCONTENT]);
+				log_i(LOG_HOZON, "certContent = %s\n",&rxPack->msgdata[PP_CERTDL_RESP_CERTCONTENT]);
 
 
 				//保存证书内容
-#if 0
 				FILE *pf = fopen("/usrdata/pki/userAuth.cer","w");
-				if(pf == NULL)
+				if(pf != NULL)
 				{
-					printf("open a.txt error\n");
+					log_i(LOG_HOZON,"save and verify authbook\n");
+					unsigned char ucCertData[2048] = {0};     // CA机构颁发的证书
+			        unsigned int uiCertDataLen = sizeof(ucCertData);
+			        PP_CertDL_base64_decode(ucCertData, &uiCertDataLen,\
+			        		&rxPack->msgdata[PP_CERTDL_RESP_CERTCONTENT],PP_CertDL.para.CertDLResp.certLength);
+
+					fwrite(ucCertData,uiCertDataLen,1,pf);
 					fclose(pf);
-					exit(0);
+					if(0 == MatchCertVerify())//验证证书
+					{
+						log_i(LOG_HOZON,"verify userAuth.cer success\n");
+						PrvtPro_SettboxId((unsigned int)rxPack->Header.tboxid);
+						PP_CertDL.state.CertValid = 1;
+					}
+					else
+					{
+						log_e(LOG_HOZON,"verify userAuth.cer fail\n");
+					}
 				}
-
-				unsigned char ucCertData[2048] = {0};     // CA机构颁发的证书
-		        unsigned int uiCertDataLen = sizeof(ucCertData);
-				ks_base64_decode(ucCertData, &uiCertDataLen,recvBuffer+sizeof(MSG)+sizeof(CertificateDownloadRes),myres.crelen);
-
-				fwrite(ucCertData,uiCertDataLen,1,pf);
-				fclose(pf);
-#endif
-				if(0 == MatchCertVerify())//验证证书
+				else
 				{
-					PrvtPro_SettboxId((unsigned int)rxPack->Header.tboxid);
-					PP_CertDL.state.CertValid = 1;
+					log_e(LOG_HOZON,"open userAuth.cer error\n");
 				}
-
-				//PrvtPro_SettboxId((unsigned int)rxPack->Header.tboxid);
+				//fclose(pf);
 			}
 			else
 			{
-				log_i(LOG_HOZON, "rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE] = %d\n",rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE]);
+				log_e(LOG_HOZON, "rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE] = %d\n",rxPack->msgdata[PP_CERTDL_RESP_CERTTYPE]);
 				PP_CertDL.state.dlsuccess = PP_CERTDL_FAIL;
 			}
 		}
 		else
 		{
-			log_i(LOG_HOZON, "rxPack->msgdata[PP_CERTDL_RESP_RESULT] = %d\n",rxPack->msgdata[PP_CERTDL_RESP_RESULT]);
+			log_e(LOG_HOZON, "rxPack->msgdata[PP_CERTDL_RESP_RESULT] = %d\n",rxPack->msgdata[PP_CERTDL_RESP_RESULT]);
 			PP_CertDL.state.dlsuccess = PP_CERTDL_FAIL;
 		}
 	}
@@ -380,14 +386,14 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 					}
 					else
 					{
-						log_i(LOG_HOZON, "check cipher fail\n");
+						log_e(LOG_HOZON, "check cipher fail\n");
 						PP_CertDL.state.dlSt = PP_CERTDL_END;
 					}
 				}
 			}
 			else
 			{
-				log_i(LOG_HOZON, "iccid read timeout\n");
+				log_e(LOG_HOZON, "iccid read timeout\n");
 				PP_CertDL.state.dlSt = PP_CERTDL_END;
 			}
 		}
@@ -405,7 +411,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 			iRet = HzTboxApplicationData("/usrdata/pki/two_certreqmain.csr" , "/usrdata/pki/sn_sim_encinfo.txt", gcsroutdata, &gcoutlen);
 			if(iRet != 3630)
 			{
-				log_i(LOG_HOZON,"HzTboxApplicationData error+++++++++++++++iRet[%d] \n", iRet);
+				log_e(LOG_HOZON,"HzTboxApplicationData error+++++++++++++++iRet[%d] \n", iRet);
 				PP_CertDL.state.dlSt = PP_CERTDL_END;
 				return -1;
 			}
@@ -433,7 +439,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 			}
 			else//timeout
 			{
-				log_i(LOG_HOZON, "auth download timeout\n");
+				log_e(LOG_HOZON, "auth download timeout\n");
 				PP_CertDL.state.dlSt = PP_CERTDL_END;
 			}
 		}
@@ -570,7 +576,7 @@ unsigned char GetPP_CertDL_CertValid(void)
 /*
  * 转码
  */
-int PP_CertDL_base64_decode( unsigned char *dst, int *dlen, \
+static int PP_CertDL_base64_decode( unsigned char *dst, unsigned int *dlen, \
                      const unsigned char *src, int  slen )
 {
     int i, j, n;
@@ -647,23 +653,25 @@ static int  PP_CertDL_checkCipherCsr(void)
 	}
 	log_i(LOG_HOZON, "/usrdata/pki/ exist or create seccess\n");
 
-	FILE *fp;
-	if((fp = fopen("/usrdata/pki/sn_sim_encinfo.txt", "r")) == NULL)//检查密文文件不存在
+	if(!PP_CertDL.state.cipherexist)
 	{
-		iRet = HzTboxSnSimEncInfo(PP_CertDL_SN,PP_CertDL_ICCID,"/usrdata/pem/aeskey.txt", \
-				"/usrdata/pki/sn_sim_encinfo.txt", &datalen);
-		if(iRet != 3520)
+		FILE *fp;
+		if((fp = fopen("/usrdata/pki/sn_sim_encinfo.txt", "r")) == NULL)//检查密文文件不存在
 		{
-			log_i(LOG_HOZON,"HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
-			return -1;
+			iRet = HzTboxSnSimEncInfo(PP_CertDL_SN,PP_CertDL_ICCID,"/usrdata/pem/aeskey.txt", \
+					"/usrdata/pki/sn_sim_encinfo.txt", &datalen);
+			if(iRet != 3520)
+			{
+				log_e(LOG_HOZON,"HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
+				//fclose(fp);
+				return -1;
+			}
+			log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
 		}
-		log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
-	}
-	else
-	{
-		fclose(fp);
-	}
 
+		fclose(fp);
+		PP_CertDL.state.cipherexist = 1;
+	}
 	/******HzTboxGenCertCsr *******/
     //C = cn, ST = shanghai, L = shanghai, O = hezhong, OU = hezhong,
 	//CN = hu_client, emailAddress = sm2_hu_client@160.com
@@ -681,7 +689,7 @@ static int  PP_CertDL_checkCipherCsr(void)
 			"/usrdata/pki","two_certreqmain", "PEM");
     if(iret != 3180)
     {
-    	log_i(LOG_HOZON,"HzTboxGenCertCsr error ---------------++++++++++++++.[%d]\n", iret);
+    	log_e(LOG_HOZON,"HzTboxGenCertCsr error ---------------++++++++++++++.[%d]\n", iret);
 		return -1;
     }
     //printf("HzTboxGenCertCsr ---------------++++++++++++++.[%d]\n", iret);
@@ -695,7 +703,7 @@ static int  MatchCertVerify(void)
 {
 	char	 OnePath[128]="\0";
 	char	 ScdPath[128]="\0";
-	int iRet;
+	int 	 iRet;
 
 	sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
 	sprintf(ScdPath, "%s","/usrdata/pem/TerminalCA.cer");
@@ -703,14 +711,14 @@ static int  MatchCertVerify(void)
 	iRet = SgHzTboxCertchainCfg(OnePath, ScdPath);
 	if(iRet != 1030)
 	{
-		log_i(LOG_HOZON,"SgHzTboxCertchainCfg error+++++++++++++++iRet[%d] \n", iRet);
+		log_e(LOG_HOZON,"SgHzTboxCertchainCfg error+++++++++++++++iRet[%d] \n", iRet);
 		return -1;
 	}
 
-	iRet=HzTboxMatchCertVerify("/usrdata/pki/userAuth.cer");
+	iRet = HzTboxMatchCertVerify("/usrdata/pki/userAuth.cer");
 	if(iRet != 5110)
 	{
-		log_i(LOG_HOZON,"HzTboxMatchCertVerify error+++++++++++++++iRet[%d] \n", iRet);
+		log_e(LOG_HOZON,"HzTboxMatchCertVerify error+++++++++++++++iRet[%d] \n", iRet);
 		return -1;
 	}
 

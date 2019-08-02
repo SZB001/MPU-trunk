@@ -33,13 +33,6 @@ description�� include the header file
 #include "tboxsock.h"
 #include "sockproxy.h"
 
-
-//#include <openssl/pem.h>
-//#include <openssl/bio.h>
-//#include <openssl/evp.h>
-//#include <ctype.h>
-//#include "tboxsock.h"
-
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
@@ -182,7 +175,18 @@ static void *sockproxy_rcvmain(void)
              sockproxy_do_receive(&sockSt);		//socket���ݽ���
     }
 	(void)res;
+#if !SOCKPROXY_SAFETY_EN
 	sock_delete(sockSt.socket);
+#else
+	if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
+	{
+		(void)SgHzTboxClose();
+	}
+	else
+	{
+		(void)HzTboxClose();
+	}
+#endif
     return NULL;
 }
 
@@ -217,7 +221,7 @@ static void *sockproxy_sendmain(void)
 						if((tm_get_time() - TxInform_ptr->eventtime) < SOCK_TXPAKG_OUTOFTIME)//����δ����
 						{
 							res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
-							protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
+							//protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
 							if (res < 0)
 							{
 								log_e(LOG_HOZON, "socket send error, reset protocol");
@@ -260,7 +264,7 @@ static void *sockproxy_sendmain(void)
 					case PP_TXPAKG_SIGTRIG:
 					{
 						res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
-						protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
+						//protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
 						if (res < 0)
 						{
 							log_e(LOG_HOZON, "socket send error, reset protocol");
@@ -293,7 +297,7 @@ static void *sockproxy_sendmain(void)
 					case PP_TXPAKG_CONTINUE:
 					{
 						res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
-						protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
+						//protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
 						if (res < 0)
 						{
 							log_e(LOG_HOZON, "socket send error, reset protocol");
@@ -330,7 +334,7 @@ static void *sockproxy_sendmain(void)
             else
             {
                 res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
-                protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
+                //protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
                 if (res < 0)
                 {
                     log_e(LOG_HOZON, "socket send error, reset protocol");
@@ -486,13 +490,13 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		{
 			if(GetPP_CertDL_CertValid() != 1)//证书无效
 			{//建立单向连接
-				log_i(LOG_SOCK_PROXY, "Cert inValid,set up sglink\n");
+				log_i(LOG_HOZON, "Cert inValid,set up sglink\n");
 				sockSt.sglinkSt =  SOCKPROXY_SGLINK_INIT;
 				sockSt.linkSt = SOCKPROXY_SETUP_SGLINK;
 			}
 			else
 			{//建立双向连接
-				log_i(LOG_SOCK_PROXY, "Cert Valid,set up BDLlink\n");
+				log_i(LOG_HOZON, "Cert Valid,set up BDLlink\n");
 				sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 				sockSt.linkSt = SOCKPROXY_SETUP_BDLLINK;
 			}
@@ -574,6 +578,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 							return -1;
 						}
 
+						log_i(LOG_HOZON, "set up sglink success\n");
 						sockSt.state = PP_OPENED;
 					}
 					else
@@ -671,7 +676,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 						}
 
 						/*init SSL*/
-						iRet = HzTboxInit("/home/root/tbox.crl");
+						iRet = HzTboxInit("/usrdata/pem/tbox.crl");
 						if(iRet != 1151)
 						{
 							log_e(LOG_SOCK_PROXY,"HzTboxInit error+++++++++++++++iRet[%d] \n", iRet);
@@ -689,7 +694,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 							sockSt.waittime = tm_get_time();
 							return -1;
 						}
-
+						log_i(LOG_HOZON, "set up BDLlink success\n");
 						sockSt.state = PP_OPENED;
 					}
 					else
@@ -879,6 +884,7 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 			}
 
 			SP_data_ack_pack();
+			protocol_dump(LOG_HOZON, "send data to tsp", msg, len, 1);
 #endif
 		}
 		else

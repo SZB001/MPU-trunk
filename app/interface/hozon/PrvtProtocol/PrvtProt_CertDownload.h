@@ -34,9 +34,9 @@ description�� macro definitions
 #define PP_CERTDL_RESP_EVTID	1
 #define PP_CERTDL_RESP_RESULT	5
 #define PP_CERTDL_RESP_FAILTYPE	6
-#define PP_CERTDL_RESP_CERTTYPE	7
-#define PP_CERTDL_RESP_CERTLEN	8
-#define PP_CERTDL_RESP_CERTCONTENT	12
+#define PP_CERTDL_RESP_CERTTYPE	6
+#define PP_CERTDL_RESP_CERTLEN	7
+#define PP_CERTDL_RESP_CERTCONTENT	11
 
 #define PP_CERTDL_INITVAL		0
 #define PP_CERTDL_SUCCESS		1
@@ -62,6 +62,7 @@ typedef struct
 	uint8_t		dlsuccess;//1 - success
 	uint8_t		CertValid;//证书有效性
 	uint8_t		certDLTestflag;//证书下载测试标志
+	uint8_t		cipherexist;
 }__attribute__((packed))  PP_CertDownloadSt_t;
 
 typedef struct
