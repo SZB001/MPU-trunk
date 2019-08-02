@@ -110,6 +110,5 @@ description�� function External declaration
 *******************************************************/
 extern void PP_CertDownload_init(void);
 extern int PP_CertDownload_mainfunction(void *task);
-extern unsigned char GetPP_CertDL_CertValid(void);
 extern void PP_CertDL_SetCertDLReq(unsigned char req);
 #endif 

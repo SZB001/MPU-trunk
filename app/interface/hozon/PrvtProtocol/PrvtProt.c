@@ -249,7 +249,7 @@ static void *PrvtProt_main(void)
 		log_set_level(LOG_HOZON, LOG_DEBUG);
 
 		//TskPPsignFltr_MainFunction();
-		//PP_CertDownload_mainfunction(&pp_task);
+		PP_CertDownload_mainfunction(&pp_task);
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
@@ -284,7 +284,8 @@ static void *PrvtProt_main(void)
 ******************************************************/
 static int PrvtPro_do_checksock(PrvtProt_task_t *task)
 {
-	if(1 == sockproxy_socketState())//socket open
+	if((1 == sockproxy_socketState()) || \
+			(sockproxy_sgsocketState()))//socket open
 	{
 
 		return 0;

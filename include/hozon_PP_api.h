@@ -55,4 +55,6 @@ extern void getPPrmtDiagCfg_NodeFault(PP_rmtDiag_NodeFault_t *rmtDiag_NodeFault)
 extern unsigned char GetPP_ChargeCtrl_appointSt(void);
 extern unsigned char GetPP_ChargeCtrl_appointHour(void);
 extern unsigned char GetPP_ChargeCtrl_appointMin(void);
+
+extern unsigned char GetPP_CertDL_CertValid(void);
 #endif

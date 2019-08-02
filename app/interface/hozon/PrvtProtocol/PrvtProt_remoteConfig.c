@@ -1130,9 +1130,19 @@ static void PP_rmtCfg_send_cb(void * para)
 
 uint8_t PP_rmtCfg_getIccid(uint8_t* iccid)
 {
+	if(!AppData_rmtCfg.checkReq.iccID[0])
+	{//get iccid
+		(void)PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));
+	}
+	else
+	{
+		PP_rmtCfg.state.iccidValid = 1;
+	}
+
 	if(PP_rmtCfg.state.iccidValid)
 	{
 		memcpy(iccid,AppData_rmtCfg.checkReq.iccID,20);
 	}
+
 	return PP_rmtCfg.state.iccidValid;
 }

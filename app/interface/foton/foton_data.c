@@ -2308,7 +2308,7 @@ static int ft_shell_dumpgb(int argc, const char **argv)
     }
     else
     {
-        shellprintf(" [³µÁ¾ÐÅÏ¢]\r\n");
+        shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢]\r\n");
         ft_disp_vinf(&ft_inf->vehi);
 
         if (ft_inf->vehi.vehi_type == FT_VEHITYPE_ELECT ||
@@ -2318,31 +2318,31 @@ static int ft_shell_dumpgb(int argc, const char **argv)
 
             for (i = 0; i < ft_inf->motor_cnt; i++)
             {
-                shellprintf(" [µç»úÐÅÏ¢-%d]\r\n", i + 1);
+                shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢-%d]\r\n", i + 1);
                 ft_disp_minf(&ft_inf->motor[i]);
             }
 
-            shellprintf(" [È¼ÁÏµç³ØÐÅÏ¢]\r\n");
+            shellprintf(" [È¼ï¿½Ïµï¿½ï¿½ï¿½ï¿½Ï¢]\r\n");
             ft_disp_finf(&ft_inf->fuelcell);
 
-            shellprintf(" [µç³ØÐÅÏ¢]\r\n");
+            shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢]\r\n");
             ft_disp_binf(&ft_inf->batt);
-            shellprintf(" [¼«ÖµÐÅÏ¢]  (Èç¹ûÈ«²¿Î´¶¨Òå£¬ÔòÓÉÖÕ¶Ë¼ÆËã)\r\n");
+            shellprintf(" [ï¿½ï¿½Öµï¿½ï¿½Ï¢]  (ï¿½ï¿½ï¿½È«ï¿½ï¿½Î´ï¿½ï¿½ï¿½å£¬ï¿½ï¿½ï¿½ï¿½ï¿½Õ¶Ë¼ï¿½ï¿½ï¿½)\r\n");
             ft_disp_xinf(ft_inf->extr);
         }
 
         if (ft_inf->vehi.vehi_type == FT_VEHITYPE_GASFUEL ||
             ft_inf->vehi.vehi_type == FT_VEHITYPE_HYBIRD)
         {
-            shellprintf(" [·¢¶¯»úÐÅÏ¢]\r\n");
+            shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢]\r\n");
             ft_disp_einf(&ft_inf->engin);
         }
 
-        shellprintf(" [±¨¾¯ÐÅÏ¢-1¼¶]\r\n");
+        shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢-1ï¿½ï¿½]\r\n");
         ft_disp_winf(ft_inf->warn[0]);
-        shellprintf(" [±¨¾¯ÐÅÏ¢-2¼¶]\r\n");
+        shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢-2ï¿½ï¿½]\r\n");
         ft_disp_winf(ft_inf->warn[1]);
-        shellprintf(" [±¨¾¯ÐÅÏ¢-3¼¶]\r\n");
+        shellprintf(" [ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢-3ï¿½ï¿½]\r\n");
         ft_disp_winf(ft_inf->warn[2]);
     }
 

@@ -606,7 +606,58 @@ typedef struct _gb_info_t
     struct _gb_info_t *next;
 }gb_info_t;
 
-
+gb32960_api_extwarn_indextable_t	gb32960_api_extwarn_indextable[41] =
+{
+	{32,32},//12v蓄电池电压过低
+	{33,33},
+	{34,34},
+	{35,35},
+	{36,36},
+	{37,37},
+	{38,38},
+	{39,39},
+	{40,40},
+	{41,41},
+	{42,42},
+	{43,43},
+	//{0x0,44},//msd主保险断路故障
+	{44,45},//tbox故障报警
+	{45,46},
+	{46,47},
+	{47,48},
+	{48,49},//大屏信息版本信息不一致报警
+	{49,60},
+	{50,50},
+	{51,51},
+	{52,52},
+	{53,53},
+	//{0x0,54},//电池温度差报警
+	{54,55},
+	{55,57},
+	{56,58},
+	{57,59},//电机异常报警
+	{58,61},
+	{59,62},//动力电池单体电压欠压保护故障
+	{60,64},
+	{61,65},
+	{62,66},
+	{63,70},
+	{64,73},
+	{65,74},//加速踏板信号故障
+	{66,77},
+	{67,80},
+	{68,91},
+	{69,92},
+	{71,96},//整车加热工程异常
+	//{71,},
+	{73,101},//左右刹车灯故障
+	//{73,},
+	//{74,},
+	//{75,},
+	//{76,},
+	//{77,},
+	{79,76},//空调不工作报警
+};
 
 static gb_info_t  gb_infmem[2];
 static gb_info_t *gb_inf;
@@ -1309,7 +1360,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     battFaultNum_ptr =  &buf[len++];
     *battFaultNum_ptr = 0;
 
-    uint8_t battheatsfastwarn = 0;
+    //uint8_t battheatsfastwarn = 0;
     //电池温升过快故障
     for (i = 0; i < 3; i++)
     {
@@ -1319,7 +1370,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 		dbc_get_signal_from_id(gbinf->warn[3][0x36])->value)))
 		// index 3,as a relevance channel,if the is two canid used for on warning
 		{
-			battheatsfastwarn = 1;
+			//battheatsfastwarn = 1;
 			faultCode = gb_alarmFaultCode[GB_AF_BATTRISEFAST].code;
 			buf[len++] = faultCode >> 24;
 			buf[len++] = faultCode >> 16;
@@ -1423,9 +1474,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     	gb_fault.warn[j] = gb_warn[j];
     }
 
-	gb_fault.warn[battheatsfastWARN] = battheatsfastwarn;
-
-
+	//gb_fault.warn[battheatsfastWARN] = battheatsfastwarn;
 
     return len;
 }

@@ -84,6 +84,7 @@ static PP_rmtAc_Appointperiod_t PP_rmtAc_Appointperiod[7] =
 	{6,0x02},//星期6
 };
 static uint8_t PP_ACtrl_Sleepflag = 0;
+static uint8_t temp = 16;
 /**************增加空调部分shell命令******************/	
 typedef struct {
 	uint32_t hour;
@@ -229,7 +230,7 @@ int PP_ACCtrl_mainfunction(void *task)
 				}
 				else                                               //设置空调温度
 				{   log_o(LOG_HOZON,"Set the air conditioning temperature\n"); 
-					PP_can_send_data(PP_CAN_ACCTRL,CAN_SETACCTEP,0); 
+					PP_can_send_data(PP_CAN_ACCTRL,CAN_SETACCTEP,temp); 
 				}
 				PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_RESPWAIT;
 				PP_rmtACCtrl.state.waittime = tm_get_time();
@@ -257,7 +258,7 @@ int PP_ACCtrl_mainfunction(void *task)
 						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 					}
 				}
-				else
+				else if(PP_rmtACCtrl.state.accmd == PP_CLOSE_ACC)
 				{
 					if(PP_rmtCtrl_cfg_ACOnOffSt() == 0)   // 关闭成功
 					{
@@ -266,6 +267,11 @@ int PP_ACCtrl_mainfunction(void *task)
 						acc_requestpower_flag = 2; //空调关闭请求下电
 						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 					}
+				}
+				else // 设定温度
+				{
+					log_o(LOG_HOZON,"Set the air conditioner temperature = %d successfully \n",temp);
+					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 				}
 			}
 			else//超时
@@ -411,7 +417,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 					PP_rmtACCtrl.CtrlPara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 					if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACOPEN)
 					{
-						PP_rmtACCtrl.state.accmd = PP_rmtACCtrl.CtrlPara.reqType;
+						PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
 					}
 					else if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACCLOSE)
 					{
@@ -420,6 +426,8 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 					else   //设置温度
 					{
 						PP_rmtACCtrl.state.accmd = PP_SETH_ACC;
+						temp = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] ;
+						
 					}
 					PP_rmtACCtrl.state.style   = RMTCTRL_TSP;
 					if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACOPEN)
@@ -558,6 +566,8 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 					else   //设置温度
 					{
 						PP_rmtACCtrl.state.accmd = PP_SETH_ACC;
+						temp = shell_actrl->id;
+						
 					}
 					PP_rmtACCtrl.state.style   = RMTCTRL_TBOX;
 				}
@@ -642,6 +652,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 
 
 		}
+		break;
 		default:
 		break;
 	}

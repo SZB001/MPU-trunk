@@ -221,6 +221,13 @@ typedef union
 
 extern gb32960_api_fault_t gb_fault;
 
+typedef struct
+{
+	uint8_t  gbindex;//
+	uint8_t  vsindex;//
+}gb32960_api_extwarn_indextable_t;
+
+
 extern int gb_set_addr(const char *url, uint16_t port);
 extern int gb_set_vin(const char *vin);
 extern int gb_set_datintv(uint16_t period);

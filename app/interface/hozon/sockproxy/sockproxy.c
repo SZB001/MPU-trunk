@@ -1,12 +1,12 @@
 /******************************************************
-ÎÄ¼şÃû£º	sockproxy.c
-ÃèÊö£º	ºÏÖÚtsp¶Ô½ÓsocketÁ´Â·µÄ½¨Á¢¡¢¶Ï¿ª¡¢ÊÕ/·¢Êı¾İ´¦Àí	
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	sockproxy.c
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½ï¿½tspï¿½Ô½ï¿½socketï¿½ï¿½Â·ï¿½Ä½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½İ´ï¿½ï¿½ï¿½	
 Data			Vasion			author
 2019/4/17		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -16,6 +16,7 @@ description£º include the header file
 #include  <errno.h>
 #include <sys/times.h>
 #include <sys/prctl.h>
+#include <netdb.h>
 #include "timer.h"
 #include "init.h"
 #include "log.h"
@@ -29,6 +30,7 @@ description£º include the header file
 #include "sockproxy_rxdata.h"
 #include "sockproxy_txdata.h"
 #include "../PrvtProtocol/PrvtProt.h"
+#include "tboxsock.h"
 #include "sockproxy.h"
 
 
@@ -39,18 +41,18 @@ description£º include the header file
 //#include "tboxsock.h"
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 static sockproxy_stat_t sockSt;
-static pthread_mutex_t sendmtx = PTHREAD_MUTEX_INITIALIZER;//³õÊ¼»¯¾²Ì¬Ëø
-static pthread_mutex_t closemtx = PTHREAD_MUTEX_INITIALIZER;//³õÊ¼»¯¾²Ì¬Ëø
+static pthread_mutex_t sendmtx = PTHREAD_MUTEX_INITIALIZER;//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ì¬ï¿½ï¿½
+static pthread_mutex_t closemtx = PTHREAD_MUTEX_INITIALIZER;//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ì¬ï¿½ï¿½
 
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
@@ -63,14 +65,14 @@ static void sockproxy_gbMakeupMsg(uint8_t *data,int len);
 static void sockproxy_privMakeupMsg(uint8_t *data,int len);
 
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 /******************************************************
-*º¯ÊıÃû£ºsockproxy_init
-*ĞÎ  ²Î£ºvoid
-*·µ»ØÖµ£ºvoid
-*Ãè  Êö£º³õÊ¼»¯
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sockproxy_init
+*ï¿½ï¿½  ï¿½Î£ï¿½void
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int sockproxy_init(INIT_PHASE phase)
 {
@@ -87,8 +89,8 @@ int sockproxy_init(INIT_PHASE phase)
 			sockSt.sock_addr.port = 0;
 			sockSt.sock_addr.url[0] = 0;
 			sockSt.rcvType = PP_RCV_UNRCV;
-			sockSt.rcvstep = PP_RCV_IDLE;//½ÓÊÕ¿ÕÏĞ
-			sockSt.rcvlen = 0;//½ÓÊÕÊı¾İÖ¡×Ü³¤¶È
+			sockSt.rcvstep = PP_RCV_IDLE;//ï¿½ï¿½ï¿½Õ¿ï¿½ï¿½ï¿½
+			sockSt.rcvlen = 0;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½Ü³ï¿½ï¿½ï¿½
 			SockproxyData_Init();
 		}
         break;
@@ -102,6 +104,7 @@ int sockproxy_init(INIT_PHASE phase)
 			/*init SSL*/
 			//HzTboxInit();
 			SP_data_init();
+			sockSt.linkSt = 0;
 		}
         break;
     }
@@ -111,11 +114,11 @@ int sockproxy_init(INIT_PHASE phase)
 
 
 /******************************************************
-*º¯ÊıÃû£ºsockproxy_run
-*ĞÎ  ²Î£ºvoid
-*·µ»ØÖµ£ºvoid
-*Ãè  Êö£º´´½¨ÈÎÎñÏß³Ì
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sockproxy_run
+*ï¿½ï¿½  ï¿½Î£ï¿½void
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int sockproxy_run(void)
 {
@@ -151,11 +154,11 @@ int sockproxy_run(void)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºsockproxy_rcvmain
-*ĞÎ  ²Î£ºvoid
-*·µ»ØÖµ£ºvoid
-*Ãè  Êö£º½ÓÊÕÖ÷ÈÎÎñÏß³Ì
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sockproxy_rcvmain
+*ï¿½ï¿½  ï¿½Î£ï¿½void
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void *sockproxy_rcvmain(void)
 {
@@ -163,16 +166,20 @@ static void *sockproxy_rcvmain(void)
 	log_o(LOG_SOCK_PROXY, "socket proxy  of rcvmain thread running");
     prctl(PR_SET_NAME, "SOCK_PROXY_RCV");
 
+#if !SOCKPROXY_SAFETY_EN
 	if ((sockSt.socket = sock_create("sockproxy", SOCK_TYPE_SYNCTCP)) < 0)
     {
         log_e(LOG_SOCK_PROXY, "create socket failed, thread exit");
         return NULL;
     }
-	
+#else
+
+#endif
+
     while (1)
     {
-        res = sockproxy_do_checksock(&sockSt) ||	//¼ì²ésocketÁ¬½Ó,Õı³£·µ»Ø0
-             sockproxy_do_receive(&sockSt);		//socketÊı¾İ½ÓÊÕ
+        res = sockproxy_do_checksock(&sockSt) ||	//ï¿½ï¿½ï¿½socketï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0
+             sockproxy_do_receive(&sockSt);		//socketï¿½ï¿½ï¿½İ½ï¿½ï¿½ï¿½
     }
 	(void)res;
 	sock_delete(sockSt.socket);
@@ -180,11 +187,11 @@ static void *sockproxy_rcvmain(void)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºsockproxy_sendmain
-*ĞÎ  ²Î£ºvoid
-*·µ»ØÖµ£ºvoid
-*Ãè  Êö£º·¢ËÍÖ÷ÈÎÎñÏß³Ì
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sockproxy_sendmain
+*ï¿½ï¿½  ï¿½Î£ï¿½void
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void *sockproxy_sendmain(void)
 {
@@ -205,9 +212,9 @@ static void *sockproxy_sendmain(void)
 				pakgtype = TxInform_ptr->pakgtype;
 				switch(pakgtype)
 				{
-					case PP_TXPAKG_SIGTIME://µ¥´ÎÊ±Ğ§ĞÍ
+					case PP_TXPAKG_SIGTIME://ï¿½ï¿½ï¿½ï¿½Ê±Ğ§ï¿½ï¿½
 					{
-						if((tm_get_time() - TxInform_ptr->eventtime) < SOCK_TXPAKG_OUTOFTIME)//±¨ÎÄÎ´¹ıÆÚ
+						if((tm_get_time() - TxInform_ptr->eventtime) < SOCK_TXPAKG_OUTOFTIME)//ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½
 						{
 							res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
 							protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
@@ -226,11 +233,11 @@ static void *sockproxy_sendmain(void)
 							}
 							else if(res == 0)
 							{
-								log_e(LOG_HOZON, "unack list is full, send is canceled");
+								log_e(LOG_HOZON, "send wait, send is canceled");
 								SP_data_put_back(rpt);
 							}
 							else
-							{//·¢ËÍ³É¹¦
+							{//ï¿½ï¿½ï¿½Í³É¹ï¿½
 								SP_data_put_send(rpt);
 								if(rpt->SendInform_cb != NULL)
 								{
@@ -239,7 +246,7 @@ static void *sockproxy_sendmain(void)
 								}
 							}
 						}
-						else//±¨ÎÄ¹ıÆÚ
+						else//ï¿½ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½
 						{
 							log_e(LOG_HOZON, "package past due\n");
 							SP_data_put_send(rpt);
@@ -269,11 +276,11 @@ static void *sockproxy_sendmain(void)
 						}
 						else if(res == 0)
 						{
-							log_e(LOG_HOZON, "unack list is full, send is canceled");
+							log_e(LOG_HOZON, "send wait, send is canceled");
 							SP_data_put_back(rpt);
 						}
 						else
-						{//·¢ËÍ³É¹¦
+						{//ï¿½ï¿½ï¿½Í³É¹ï¿½
 							SP_data_put_send(rpt);
 							if(rpt->SendInform_cb != NULL)
 							{
@@ -302,11 +309,11 @@ static void *sockproxy_sendmain(void)
 						}
 						else if(res == 0)
 						{
-							log_e(LOG_HOZON, "unack list is full, send is canceled");
+							log_e(LOG_HOZON, "send wait, send is canceled");
 							SP_data_put_back(rpt);
 						}
 						else
-						{//·¢ËÍ³É¹¦
+						{//ï¿½ï¿½ï¿½Í³É¹ï¿½
 							SP_data_put_send(rpt);
 							if(rpt->SendInform_cb != NULL)
 							{
@@ -336,7 +343,7 @@ static void *sockproxy_sendmain(void)
                 }
                 else if(res == 0)
                 {
-                    log_e(LOG_HOZON, "unack list is full, send is canceled");
+                    log_e(LOG_HOZON, "send wait, send is canceled");
                     SP_data_put_back(rpt);
                 }
                 else
@@ -355,19 +362,19 @@ static void *sockproxy_sendmain(void)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºsockproxy_socketState
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£ºsocket open/colse state
-*±¸  ×¢£ºÍ¬²½²Ù×÷
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sockproxy_socketState
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½socket open/colse state
+*ï¿½ï¿½  ×¢ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ******************************************************/
 void sockproxy_socketclose(void)
 {
-	if(pthread_mutex_trylock(&closemtx) == 0)//(·Ç×èÈû»¥³âËø)»ñÈ¡»¥³âËø³É¹¦
-	{//(·Ç×èÈû»¥³âËø)Èô»ñÈ¡»¥³âËøÊ§°Ü£¬ËµÃ÷´ËÊ±ÓĞÆäËûÏß³ÌÔÚÖ´ĞĞ¹Ø±Õ
+	if(pthread_mutex_trylock(&closemtx) == 0)//(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½
+	{//(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü£ï¿½Ëµï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½ï¿½ï¿½Ö´ï¿½Ğ¹Ø±ï¿½
 		if(sockSt.state == PP_OPENED)
 		{
-			sockSt.state = PP_CLOSE_WAIT;//µÈ´ı¹Ø±Õ×´Ì¬
+			sockSt.state = PP_CLOSE_WAIT;//ï¿½È´ï¿½ï¿½Ø±ï¿½×´Ì¬
 			sockSt.asynCloseFlg = 1;
 		}
 		pthread_mutex_unlock(&closemtx);
@@ -375,18 +382,19 @@ void sockproxy_socketclose(void)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºsockproxy_do_checksock
-*ĞÎ  ²Î£ºvoid
-*·µ»ØÖµ£ºvoid
-*Ãè  Êö£º¼ì²ésocketÁ¬½Ó
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sockproxy_do_checksock
+*ï¿½ï¿½  ï¿½Î£ï¿½void
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½socketï¿½ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int sockproxy_do_checksock(sockproxy_stat_t *state)
 {
+#if !SOCKPROXY_SAFETY_EN
 	static uint64_t time = 0;
 	if(1 == sockSt.asynCloseFlg) 
 	{
-		if(pthread_mutex_trylock(&sendmtx) == 0)//(·Ç×èÈû»¥³âËø)»ñÈ¡»¥³âËø³É¹¦£¬ËµÃ÷µ±Ç°·¢ËÍ¿ÕÏĞ£¬Í¬Ê±Ëø×¡·¢ËÍ
+		if(pthread_mutex_trylock(&sendmtx) == 0)//(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Í¿ï¿½ï¿½Ğ£ï¿½Í¬Ê±ï¿½ï¿½×¡ï¿½ï¿½ï¿½ï¿½
 		{
 			if(sockSt.state != PP_CLOSED)
 			{
@@ -456,22 +464,289 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		}
 		break;
 	}
-	
+
     return -1;
+#else
+
+	int iRet = 0;
+	char	OnePath[128]="\0";
+	char	ScdPath[128]="\0";
+	char 	destIP[128];
+	struct 	hostent * he;
+	char 	**phe = NULL;
+
+	if(sockproxy_SkipSockCheck())
+	{
+		return -1;
+	}
+
+	switch(sockSt.linkSt)
+	{
+		case SOCKPROXY_CHECK_CSR:
+		{
+			if(GetPP_CertDL_CertValid() != 1)//è¯ä¹¦æ— æ•ˆ
+			{//å»ºç«‹å•å‘è¿æ¥
+				log_i(LOG_SOCK_PROXY, "Cert inValid,set up sglink\n");
+				sockSt.sglinkSt =  SOCKPROXY_SGLINK_INIT;
+				sockSt.linkSt = SOCKPROXY_SETUP_SGLINK;
+			}
+			else
+			{//å»ºç«‹åŒå‘è¿æ¥
+				log_i(LOG_SOCK_PROXY, "Cert Valid,set up BDLlink\n");
+				sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+				sockSt.linkSt = SOCKPROXY_SETUP_BDLLINK;
+			}
+			sockSt.waittime = 0;
+		}
+		break;
+		case SOCKPROXY_SETUP_SGLINK:
+		{
+			switch(sockSt.sglinkSt)
+			{
+				case SOCKPROXY_SGLINK_INIT:
+				{
+					if((tm_get_time() - sockSt.waittime) >= 1000)
+					{
+						sockSt.sglinkSt = SOCKPROXY_SGLINK_CREAT;
+						sockSt.waittime = tm_get_time();
+					}
+				}
+				break;
+				case SOCKPROXY_SGLINK_CREAT:
+				{
+					if(sockSt.state == PP_CLOSED)
+					{
+						he=gethostbyname("tboxgw-qa.chehezhi.cn");
+						if(he == NULL)
+						{
+							log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
+							sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+							sockSt.waittime = tm_get_time();
+							return -1;
+						}
+
+						for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
+						{
+							 inet_ntop(he->h_addrtype,*phe,destIP,sizeof(destIP));
+							 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
+							 break;
+						}
+						/*port ipaddr*/
+						iRet = HzPortAddrCft(22000, 1,destIP,NULL);//TBOXç«¯å£åœ°å€é…ç½®åˆå§‹åŒ–
+						if(iRet != SOCKPROXY_SG_ADDR_INIT_SUCCESS)
+						{
+							log_e(LOG_SOCK_PROXY,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", iRet);
+							sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+							sockSt.waittime = tm_get_time();
+							return -1;
+						}
+
+						/*create random string*/
+						sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
+						sprintf(ScdPath, "%s","/usrdata/pem/TspCA.cer");
+
+						iRet = SgHzTboxCertchainCfg(OnePath, ScdPath);
+						if(iRet != SOCKPROXY_SG_CCIC_SUCCESS)
+						{
+							log_e(LOG_SOCK_PROXY,"SgHzTboxCertchainCfg +++++++++++++++iRet[%d] \n", iRet);
+							sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+							sockSt.waittime = tm_get_time();
+							return -1;
+						}
+
+						/*init SSL*/
+						iRet = SgHzTboxInit("/usrdata/pem/userAuth.crl");
+						if(iRet != SOCKPROXY_SG_INIT_SUCCESS)
+						{
+							log_e(LOG_SOCK_PROXY,"HzTboxInit error+++++++++++++++iRet[%d] \n", iRet);
+							sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+							sockSt.waittime = tm_get_time();
+							return -1;
+						}
+
+						/*Initiate a connection server request*/
+						iRet = SgHzTboxConnect();
+						if(iRet != SOCKPROXY_SG_CONN_SUCCESS)
+						{
+							log_e(LOG_SOCK_PROXY,"SgHzTboxConnect error+++++++++++++++iRet[%d] \n", iRet);
+							sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+							sockSt.waittime = tm_get_time();
+							return -1;
+						}
+
+						sockSt.state = PP_OPENED;
+					}
+					else
+					{
+						if(sockSt.state == PP_OPENED)
+						{
+							if(GetPP_CertDL_CertValid() == 1)//è¯ä¹¦æœ‰æ•ˆ
+							{
+								sockSt.sglinkSt = SOCKPROXY_SGLINK_CLOSE;
+							}
+							else
+							{
+								return 0;
+							}
+						}
+
+						if(sockSt.asynCloseFlg == 1)//
+						{
+							sockSt.sglinkSt = SOCKPROXY_SGLINK_CLOSE;
+						}
+					}
+				}
+				break;
+				case SOCKPROXY_SGLINK_CLOSE:
+				{
+					/*release all resources and close all connections*/
+					(void)SgHzTboxClose();
+					sockSt.state = PP_CLOSED;
+					sockSt.waittime = tm_get_time();
+					sockSt.linkSt = SOCKPROXY_CHECK_CSR;
+				}
+				break;
+				default:
+				break;
+			}
+		}
+		break;
+		case SOCKPROXY_SETUP_BDLLINK:
+		{
+			switch(sockSt.BDLlinkSt)
+			{
+				case SOCKPROXY_BDLLINK_INIT:
+				{
+					if((tm_get_time() - sockSt.waittime) >= 1000)
+					{
+						sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_CREAT;
+						sockSt.waittime = tm_get_time();
+					}
+				}
+				break;
+				case SOCKPROXY_BDLLINK_CREAT:
+				{
+					char	UsCertPath[128]="\0";
+					char	UsKeyPath[128]="\0";
+
+					if(sockSt.state == PP_CLOSED)
+					{
+						he=gethostbyname("tboxgw-qa.chehezhi.cn");
+						if(he == NULL)
+						{
+							log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
+							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+							sockSt.waittime = tm_get_time();
+							return -1;
+						}
+
+						for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
+						{
+							 inet_ntop(he->h_addrtype,*phe,destIP,sizeof(destIP));
+							 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
+							 break;
+						}
+						/*port ipaddr*/
+						iRet = HzPortAddrCft(21000, 1,destIP,NULL);
+						if(iRet != 1010)
+						{
+							log_e(LOG_SOCK_PROXY,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", iRet);
+							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+							sockSt.waittime = tm_get_time();
+							return -1;
+						}
+
+						/*create random string*/
+						sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
+						sprintf(ScdPath, "%s","/usrdata/pem/TspCA.cer");
+						sprintf(UsCertPath, "%s","/usrdata/pki/userAuth.cer");//å•å‘è¿æ¥ç”³è¯·çš„è¯ä¹¦ï¼Œè¦è·Ÿtwo_certreqmain.keyåŒ¹é…ä½¿ç”¨
+						sprintf(UsKeyPath, "%s","/usrdata/pki/two_certreqmain.key");
+						iRet = HzTboxCertchainCfg(OnePath, ScdPath, UsCertPath, UsKeyPath);
+						if(iRet != 2030)
+						{
+							log_e(LOG_SOCK_PROXY,"HzTboxCertchainCfg error+++++++++++++++iRet[%d] \n", iRet);
+							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+							sockSt.waittime = tm_get_time();
+							return -1;
+						}
+
+						/*init SSL*/
+						iRet = HzTboxInit("/home/root/tbox.crl");
+						if(iRet != 1151)
+						{
+							log_e(LOG_SOCK_PROXY,"HzTboxInit error+++++++++++++++iRet[%d] \n", iRet);
+							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+							sockSt.waittime = tm_get_time();
+							return -1;
+						}
+
+						/*Initiate a connection server request*/
+						iRet = HzTboxConnect();
+						if(iRet != 1230)
+						{
+							log_e(LOG_SOCK_PROXY,"HzTboxConnect error+++++++++++++++iRet[%d] \n", iRet);
+							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+							sockSt.waittime = tm_get_time();
+							return -1;
+						}
+
+						sockSt.state = PP_OPENED;
+					}
+					else
+					{
+						if(sockSt.state == PP_OPENED)
+						{
+							return 0;
+						}
+
+						if(1 == sockSt.asynCloseFlg)
+						{
+							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_CLOSE;
+						}
+					}
+				}
+				break;
+				case SOCKPROXY_BDLLINK_CLOSE:
+				{
+					if(pthread_mutex_trylock(&sendmtx) == 0)//(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½ï¿½Í¿ï¿½ï¿½Ğ£ï¿½Í¬Ê±ï¿½ï¿½×¡ï¿½ï¿½ï¿½ï¿½
+					{
+						if(sockSt.state != PP_CLOSED)
+						{
+							log_i(LOG_SOCK_PROXY, "socket closed\n");
+							(void)HzTboxClose();
+							sockSt.state = PP_CLOSED;
+						}
+						sockSt.asynCloseFlg = 0;
+						sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+						pthread_mutex_unlock(&sendmtx);
+					}
+					//return -1;
+				}
+				break;
+				default:
+				break;
+			}
+		}
+		break;
+		default:
+		break;
+	}
+	return -1;
+#endif
 }
 
 /******************************************************
-*º¯ÊıÃû£ºsockproxy_do_receive
-*ĞÎ  ²Î£ºvoid
-*·µ»ØÖµ£ºvoid
-*Ãè  Êö£º½ÓÊÕÊı¾İ
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sockproxy_do_receive
+*ï¿½ï¿½  ï¿½Î£ï¿½void
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static int sockproxy_do_receive(sockproxy_stat_t *state)
 {
     int ret = 0, rlen;
-    uint8_t rbuf[1456] = {0};
-
+    char rbuf[1456] = {0};
+#if !SOCKPROXY_SAFETY_EN
     if ((rlen = sock_recv(state->socket, rbuf, sizeof(rbuf))) < 0)
     {
         log_e(LOG_SOCK_PROXY, "socket recv error: %s", strerror(errno));
@@ -479,8 +754,29 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
         sockproxy_socketclose();
         return -1;
     }
+#else
+    if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
+    {
+		ret = SgHzTboxDataRecv(rbuf, 1456, &rlen);
+		if(ret != 1275)
+		{
+			log_e(LOG_SOCK_PROXY,"SgHzTboxDataRecv error+++++++++++++++iRet[%d] [%d]\n", ret, rlen);
+			return -1;
+		}
+    }
+    else
+    {
+    	ret = HzTboxDataRecv(rbuf, 1456, &rlen);
+    	if(ret != 1275)
+    	{
+    		log_e(LOG_SOCK_PROXY,"HzTboxDataRecv error+++++++++++++++iRet[%d] [%d]\n", ret, rlen);
+    		return -1;
+    	}
+    }
+
+#endif
 	
-	protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_RCV", rbuf, rlen, 0);//´òÓ¡½ÓÊÕµÄÊı¾İ
+	protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_RCV", (uint8_t*)rbuf, rlen, 0);//ï¿½ï¿½Ó¡ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½
 #if SOCKPROXY_SHELL_PROTOCOL
     while (ret == 0 && rlen > 0)
     {
@@ -500,18 +796,18 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
     {
     	case PP_RCV_UNRCV:
     	{
-    		sockSt.rcvstep = PP_RCV_IDLE;//½ÓÊÕ¿ÕÏĞ
-    		sockSt.rcvlen = 0;//½ÓÊÕÊı¾İÖ¡×Ü³¤¶È
-    		if((0x23 == rbuf[0]) && (0x23 == rbuf[1]))//¹ú±êÊı¾İ
+    		sockSt.rcvstep = PP_RCV_IDLE;//ï¿½ï¿½ï¿½Õ¿ï¿½ï¿½ï¿½
+    		sockSt.rcvlen = 0;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¡ï¿½Ü³ï¿½ï¿½ï¿½
+    		if((0x23 == rbuf[0]) && (0x23 == rbuf[1]))//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			{
     			sockSt.rcvType = PP_RCV_GB;
-				sockproxy_gbMakeupMsg(rbuf,rlen);
+				sockproxy_gbMakeupMsg((uint8_t*)rbuf,rlen);
 
 			}
-			else if((0x2A == rbuf[0]) && (0x2A == rbuf[1]))//HOZON ÆóÒµË½ÓĞĞ­ÒéÊı¾İ
+			else if((0x2A == rbuf[0]) && (0x2A == rbuf[1]))//HOZON ï¿½ï¿½ÒµË½ï¿½ï¿½Ğ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 			{
 				sockSt.rcvType = PP_RCV_PRIV;
-				sockproxy_privMakeupMsg(rbuf,rlen);
+				sockproxy_privMakeupMsg((uint8_t*)rbuf,rlen);
 			}
 			else
 			{
@@ -524,12 +820,12 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
     	break;
     	case PP_RCV_GB:
 		{
-			sockproxy_gbMakeupMsg(rbuf,rlen);
+			sockproxy_gbMakeupMsg((uint8_t*)rbuf,rlen);
 		}
 		break;
     	case PP_RCV_PRIV:
 		{
-			sockproxy_privMakeupMsg(rbuf,rlen);
+			sockproxy_privMakeupMsg((uint8_t*)rbuf,rlen);
 		}
 		break;
     	default:
@@ -542,32 +838,55 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºsockproxy_MsgSend
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£ºÊı¾İ·¢ËÍ
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sockproxy_MsgSend
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ·ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 {
 	int res = 0;
 	log_i(LOG_SOCK_PROXY, "<<<<<sockproxy_MsgSend <<<<<");
-	if(pthread_mutex_trylock(&sendmtx) == 0)//(·Ç×èÈû»¥³âËø)»ñÈ¡»¥³âËø
+	if(pthread_mutex_trylock(&sendmtx) == 0)//(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	{
 		if(sockSt.state == PP_OPENED)
 		{
+#if !SOCKPROXY_SAFETY_EN
 			res = sock_send(sockSt.socket, msg, len, sync);
-			if((res > 0) && (res != len))//Êµ¼Ê·¢ËÍ³öÈ¥µÄÊı¾İ¸úĞèÒª·¢ËÍµÄÊı¾İ²»Ò»ÖÂ
+			if((res > 0) && (res != len))//Êµï¿½Ê·ï¿½ï¿½Í³ï¿½È¥ï¿½ï¿½ï¿½ï¿½ï¿½İ¸ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½ï¿½İ²ï¿½Ò»ï¿½ï¿½
 			{
 				res = 0;
 			}
+#else
+			if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
+			{
+				res = SgHzTboxDataSend((char*)msg,len);
+				if(res != 1260)
+				{
+					log_e(LOG_SOCK_PROXY,"SgHzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
+					return -1;
+				}
+			}
+			else
+			{
+				res = HzTboxDataSend((char*)msg,len);
+				if(res != 1260)
+				{
+					log_e(LOG_SOCK_PROXY,"HzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
+					return -1;
+				}
+			}
+
+			SP_data_ack_pack();
+#endif
 		}
 		else
 		{
 			log_e(LOG_SOCK_PROXY, "socket is not open");
 		}
 		
-		pthread_mutex_unlock(&sendmtx);//½âËø»¥³âËø
+		pthread_mutex_unlock(&sendmtx);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	}
 	else
 	{
@@ -578,28 +897,55 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 }
 
 /******************************************************
-*º¯ÊıÃû£ºsockproxy_socketState
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£ºsocket open/colse state
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sockproxy_socketState
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½åŒå‘é“¾è·¯socket open/colse state
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int sockproxy_socketState(void)
 {
+#if !SOCKPROXY_SAFETY_EN
 	if((sockSt.state == PP_OPENED) && \
 			(sock_status(sockSt.socket) == SOCK_STAT_OPENED))
 	{
 		return 1;
 	}
+
+#else
+	if((sockSt.state == PP_OPENED) && \
+			(sockSt.linkSt == SOCKPROXY_SETUP_BDLLINK))
+	{
+		return 1;
+	}
+#endif
 	return 0;
 }
 
 /******************************************************
-*º¯ÊıÃû£ºsockproxy_gbMakeupMsg
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£ºgbĞ­ÒéÊı¾İ×é°ü
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sockproxy_sgsocketState
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½å•å‘é“¾è·¯socket open/colse state
+*ï¿½ï¿½  ×¢ï¿½ï¿½
+******************************************************/
+int sockproxy_sgsocketState(void)
+{
+	if((sockSt.state == PP_OPENED) && \
+			(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK))
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
+/******************************************************
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sockproxy_gbMakeupMsg
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½gbĞ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void sockproxy_gbMakeupMsg(uint8_t *data,int len)
 {
@@ -640,7 +986,7 @@ static void sockproxy_gbMakeupMsg(uint8_t *data,int len)
 					{
 						sockSt.rcvstep = PP_GB_RCV_DATA;
 					}
-					else//Êı¾İ³¤¶ÈÒç³ö
+					else//ï¿½ï¿½ï¿½İ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					{
 						sockSt.rcvstep = PP_RCV_IDLE;
 						//sockSt.rcvlen = 0;
@@ -668,7 +1014,7 @@ static void sockproxy_gbMakeupMsg(uint8_t *data,int len)
 				}
 				sockSt.rcvstep = PP_RCV_IDLE;
 				sockSt.rcvType = PP_RCV_UNRCV;
-				protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_GB_RCV", sockSt.rcvbuf, sockSt.rcvlen, 0);//´òÓ¡gb½ÓÊÕµÄÊı¾İ
+				protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_GB_RCV", sockSt.rcvbuf, sockSt.rcvlen, 0);//ï¿½ï¿½Ó¡gbï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½
 			}
 			break;
 			default:
@@ -683,11 +1029,11 @@ static void sockproxy_gbMakeupMsg(uint8_t *data,int len)
 }
 
 /******************************************************
-*º¯ÊıÃû£ºsockproxy_privMakeupMsg
-*ĞÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£ºÆóÒµË½ÓĞĞ­ÒéÊı¾İ×é°ü
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½sockproxy_privMakeupMsg
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÒµË½ï¿½ï¿½Ğ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 {
@@ -716,7 +1062,7 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 				{
 					sockSt.datalen = (((long)sockSt.rcvbuf[10]) << 24) + (((long)sockSt.rcvbuf[11]) << 16) + \
 									 (((long)sockSt.rcvbuf[12]) << 8) + ((long)sockSt.rcvbuf[13]);
-					if(sockSt.datalen == 18)//ËµÃ÷Ã»ÓĞmessage data
+					if(sockSt.datalen == 18)//Ëµï¿½ï¿½Ã»ï¿½ï¿½message data
 					{
 						if(WrSockproxyData_Queue(SP_PRIV,sockSt.rcvbuf,sockSt.rcvlen) < 0)
 						{
@@ -724,10 +1070,10 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 						}
 						sockSt.rcvstep = PP_RCV_IDLE;
 						sockSt.rcvType = PP_RCV_UNRCV;
-						protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);//´òÓ¡Ë½ÓĞĞ­Òé½ÓÊÕµÄÊı¾İ
+						protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);//ï¿½ï¿½Ó¡Ë½ï¿½ï¿½Ğ­ï¿½ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½
 
 					}
-					else if(sockSt.datalen > SOCK_PROXY_RCVLEN)//Êı¾İ³¤¶ÈÒç³ö
+					else if(sockSt.datalen > SOCK_PROXY_RCVLEN)//ï¿½ï¿½ï¿½İ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 					{
 						sockSt.rcvstep = PP_RCV_IDLE;
 						//sockSt.rcvlen = 0;
@@ -752,7 +1098,7 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 					}
 					sockSt.rcvstep = PP_RCV_IDLE;
 					sockSt.rcvType = PP_RCV_UNRCV;
-					protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);//´òÓ¡Ë½ÓĞĞ­Òé½ÓÊÕµÄÊı¾İ
+					protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);//ï¿½ï¿½Ó¡Ë½ï¿½ï¿½Ğ­ï¿½ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½
 				}
 			}
 			break;

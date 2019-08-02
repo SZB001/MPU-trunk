@@ -16,7 +16,7 @@
 #define _INC_H_
 
 #define HOZON_TBOX_VERSION         0
-#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.3 - 2019-07-05"
+#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.6 - 2019-07-30"
 
 
 extern char *hurootcertstr;
@@ -76,7 +76,7 @@ int HzTboxCloseSession( );
 
 
 /************************************** cert Functions *************************************************/
-int HzTboxGenCertCsr(char *sn_curvesname, char *ln_curvesname, CAR_INFO *carinfo, char *subject_info, char *filename, char *format);
+int HzTboxGenCertCsr(char *sn_curvesname, char *ln_curvesname, CAR_INFO *carinfo, char *subject_info, char *pathname, char *filename, char *format);
 
 int HzTboxSnSimEncInfo(const char *sSnstr, const char *sSimstr, char *sfile, char *ofile, int *cipherlen);
 
