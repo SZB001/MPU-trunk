@@ -95,6 +95,23 @@ description： macro definitions
 #define PP_RMTCTRL_READYLIGHTON			0x09//运动模式
 #define PP_RMTCTRL_UPPOWERFAIL          0x04//上电失败
 
+//蓝牙请求消息类型
+#define BT_VEhICLE_DOOR_REQ       0x03 //车门锁
+#define BT_PANORAMIC_SUNROOF_REQ  0x04 //天窗
+#define BT_ELECTRIC_DOOR_REQ      0x05 //尾门
+#define BT_REMOTE_FIND_CAR_REQ    0x06 //寻车
+#define BT_CHARGE_REQ             0x07 //充电
+#define BT_POWER_CONTROL_REQ      0x08 //高压电
+
+
+//回复蓝牙消息类型
+#define BT_VEhICLE_DOOR_RESP       0x01 //车门锁
+#define BT_PANORAMIC_SUNROOF_RESP  0x02 //天窗
+#define BT_ELECTRIC_DOOR_RESP     0x03 //尾门
+#define BT_REMOTE_FIND_CAR_RESP   0x04 //寻车
+#define BT_CHARGE_RESP            0x05 //充电
+#define BT_POWER_CONTROL_RESP     0x06 //高压电
+
 /***********宏函数***********/
 typedef void (*PP_rmtCtrlInitObj)(void);//初始化
 typedef int (*PP_rmtCtrlmainFuncObj)(void* x);//
@@ -153,7 +170,7 @@ typedef enum
 }PP_REMTCTRL_BT;
 typedef struct
 {
-	uint8_t type;
+	uint8_t msg_type;
 	uint8_t cmd;
 	uint8_t result; // 0表示成功  1表示失败
 	uint8_t failtype;

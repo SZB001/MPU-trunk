@@ -23,6 +23,7 @@
 #include "cm256_if.h"
 #include <unistd.h>
 
+#include "log.h"
 
 
 #define QL_BLE_SERVER_NUM 1
@@ -60,7 +61,7 @@ int ql_prepare_send_data(tBSA_BLE_SE_SENDRSP *p_send_server_resp)
             {
                 if(p_send_server_resp->handle == ql_app_ble_cb.ble_server[server_index].attr[service_index].characteristic[char_index].char_handle)
                 {
-                    printf("[ql_prepare_send_data] srv=%d, service=%d, char=%d, char handle:%d\n", server_index, service_index, char_index, ql_app_ble_cb.ble_server[server_index].attr[service_index].characteristic[char_index].char_handle);
+                    APP_DEBUG1(LOG_BLE,"[ql_prepare_send_data] srv=%d, service=%d, char=%d, char handle:%d\n", server_index, service_index, char_index, ql_app_ble_cb.ble_server[server_index].attr[service_index].characteristic[char_index].char_handle);
                     index = 100*server_index+10*service_index+char_index;
                     goto get_index;
                 }
@@ -70,7 +71,7 @@ int ql_prepare_send_data(tBSA_BLE_SE_SENDRSP *p_send_server_resp)
 
     return -1;
     
-    printf("Failed [%s] server_index:%d, service_index:%d, char_index:%d\n", __func__, server_index, service_index, char_index);
+    APP_ERROR1("Failed [%s] server_index:%d, service_index:%d, char_index:%d\n", __func__, server_index, service_index, char_index);
 get_index:
     switch (index)
     {
@@ -107,14 +108,15 @@ get_index:
             /*Please add your own specific features here, Pay attention to data overflow and data  max length*/
             break;
         default:
-            printf("Unknown Characteristic Handle:%d\n", index);
+            APP_ERROR1("Unknown Characteristic Handle:%d\n", index);
+			break;
     }
 
-    printf("[%s] server_index:%d, service_index:%d, char_index:%d\n", __func__, server_index, service_index, char_index);
+    APP_DEBUG1("[%s] server_index:%d, service_index:%d, char_index:%d\n", __func__, server_index, service_index, char_index);
      if (string_flag) {
          p_send_server_resp->len = strlen((char *)p_send_server_resp->value);
     }
-    printf("\t resp len = %d\n", p_send_server_resp->len);
+    APP_DEBUG1("\t resp len = %d\n", p_send_server_resp->len);
 
     return 0;
 }
@@ -123,8 +125,8 @@ int process_char_0002(tBSA_BLE_MSG *p_data)
 {
 	if (82 == ql_app_ble_cb.ble_server[1].attr[2].characteristic[1].char_handle )
 	{
-	    printf("process_char_0002\r\n");
-		printf("process_char_0002 = %d\r\n", p_data->ser_write.len);
+	    APP_DEBUG0("process_char_0002\r\n");
+		APP_DEBUG1("process_char_0002 = %d\r\n", p_data->ser_write.len);
 		unsigned int len = p_data->ser_write.len;
 		cm256_apiget_recv(p_data->ser_write.value, &len);
 	}
@@ -139,15 +141,15 @@ int ble_send_notification(unsigned char *pucBuf, unsigned int *pulLen)
 	
     if (BLE_CONNECT != g_NfBleMsg.ulBleStatus)
     {
-        printf("err1-ble_send_notification\r\n");
+        APP_DEBUG0("err1-ble_send_notification\r\n");
     	return -1;
     }
 	
     num = 1;
     if (ql_app_ble_cb.ble_server[num].enabled != TRUE)
     {
-        APP_ERROR1("Server was not registered! = %d", num);
-		printf("err2-ble_send_notification\r\n");
+        APP_DEBUG1("Server was not registered! = %d", num);
+		APP_DEBUG0("err2-ble_send_notification\r\n");
         return -1;
     }
 
@@ -161,8 +163,8 @@ int ble_send_notification(unsigned char *pucBuf, unsigned int *pulLen)
 	ble_sendind_param.conn_id = g_NfBleMsg.ulHandle;
    //ble_sendind_param.attr_id = app_ble_ts_cb.attr_id;
    ble_sendind_param.attr_id = 84;
-   printf("app_ble_ts_cb.conn_id=%d\r\n", ble_sendind_param.conn_id);
-   printf("app_ble_ts_cb.attr_id=%d\r\n", ble_sendind_param.attr_id);
+   APP_DEBUG1("app_ble_ts_cb.conn_id=%d\r\n", ble_sendind_param.conn_id);
+   APP_DEBUG1("app_ble_ts_cb.attr_id=%d\r\n", ble_sendind_param.attr_id);
 
 
 	iTmpLen = *pulLen;
@@ -177,7 +179,7 @@ int ble_send_notification(unsigned char *pucBuf, unsigned int *pulLen)
 			ble_sendind_param.need_confirm = FALSE;
     		if(BSA_SUCCESS == BSA_BleSeSendInd(&ble_sendind_param))
 	        {
-	        	printf("Nf3303Send37\r\n");
+	        	APP_DEBUG0("Nf3303Send37\r\n");
 	        } 
 	        else
 	        {
@@ -196,7 +198,7 @@ int ble_send_notification(unsigned char *pucBuf, unsigned int *pulLen)
 			ble_sendind_param.need_confirm = FALSE;
 			if(BSA_SUCCESS == BSA_BleSeSendInd(&ble_sendind_param))
 	        {
-	        	printf("Nf3303Send38\r\n");
+	        	APP_DEBUG0("Nf3303Send38\r\n");
 	        } 
 	        else
 	        {
@@ -233,8 +235,8 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
                 APP_ERROR1("BLE Server is deregistered failed status = %d", p_data->ser_deregister.status);
                 break;
             }
-            printf("BLE Server is deregistered\n");
-            printf("\tserver_if=%d\n\n", p_data->ser_deregister.server_if);
+            APP_DEBUG0("BLE Server is deregistered\n");
+            APP_DEBUG1("\tserver_if=%d\n\n", p_data->ser_deregister.server_if);
             break;
             
         case BSA_BLE_SE_CREATE_EVT:
@@ -248,9 +250,9 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
             ql_app_ble_cb.ble_server[current_server_index].current_service++;
             current_service_index = ql_app_ble_cb.ble_server[current_server_index].current_service;
             ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].service_id = p_data->ser_create.service_id;
-            printf("Service is created\n");
-            printf("\tserver_if=%d, service_id=%d\n\n", p_data->ser_create.server_if, p_data->ser_create.service_id);
-            printf("current_server_index:%d, current_service_index:%d\n", current_server_index, current_service_index);
+            APP_DEBUG0("Service is created\n");
+            APP_DEBUG1("\tserver_if=%d, service_id=%d\n\n", p_data->ser_create.server_if, p_data->ser_create.service_id);
+            APP_DEBUG1("current_server_index:%d, current_service_index:%d\n", current_server_index, current_service_index);
             break;
             
         case BSA_BLE_SE_ADDCHAR_EVT:
@@ -267,12 +269,12 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
             ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].characteristic[current_char_index].char_id = 100*current_server_index+10*current_service_index+current_char_index;
             ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].characteristic[current_char_index].char_handle = p_data->ser_addchar.attr_id;
             
-            printf("char data is added \n");
-            printf("\tserver_if:%d, service_id:%d, attr_id:%d, is_discr:%d, ", \
+            APP_DEBUG0("char data is added \n");
+            APP_DEBUG1("\tserver_if:%d, service_id:%d, attr_id:%d, is_discr:%d, ", \
             p_data->ser_addchar.server_if, p_data->ser_addchar.service_id, p_data->ser_addchar.attr_id, p_data->ser_addchar.is_discr);
-            printf("char_id=%d\n", ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].characteristic[current_char_index].char_id);
-            printf("\tcurrent_server_index:%d, current_service_index:%d, current_char_index:%d\n", current_server_index, current_service_index, current_char_index);
-            printf("\thandle:%d\n", ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].characteristic[current_char_index].char_handle);
+            APP_DEBUG1("char_id=%d\n", ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].characteristic[current_char_index].char_id);
+            APP_DEBUG1("\tcurrent_server_index:%d, current_service_index:%d, current_char_index:%d\n", current_server_index, current_service_index, current_char_index);
+            APP_DEBUG1("\thandle:%d\n", ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].characteristic[current_char_index].char_handle);
             break;
             
         case BSA_BLE_SE_START_EVT:
@@ -286,8 +288,8 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
             }
             
             ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].service_id = p_data->ser_create.service_id;
-            printf("Service is started\n");
-            printf("\tserver_if=%d, service_id=%d\n\n", p_data->ser_start.server_if, p_data->ser_start.service_id);
+            APP_DEBUG0("Service is started\n");
+            APP_DEBUG1("\tserver_if=%d, service_id=%d\n\n", p_data->ser_start.server_if, p_data->ser_start.service_id);
             break;
             
         case BSA_BLE_SE_STOP_EVT:
@@ -296,12 +298,12 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
                 APP_ERROR1("Service is stopped failed status = %d", p_data->ser_stop.status);
                 break;
             }
-            printf("Service is stopped\n");
-            printf("\tserver_if=%d, service_id=%d\n\n", p_data->ser_stop.server_if, p_data->ser_stop.service_id);
+            APP_DEBUG0("Service is stopped\n");
+            APP_DEBUG1("\tserver_if=%d, service_id=%d\n\n", p_data->ser_stop.server_if, p_data->ser_stop.service_id);
             break;
             
         case BSA_BLE_SE_WRITE_EVT:
-            printf("Write request from client\n");
+            APP_DEBUG0("Write request from client\n");
             APP_INFO1("BSA_BLE_SE_WRITE_EVT status:%d", p_data->ser_write.status);
             APP_INFO1("Write value", p_data->ser_write.value, p_data->ser_write.len);
             APP_INFO1("BSA_BLE_SE_WRITE_EVT trans_id:%d, conn_id:%d, handle:%d", p_data->ser_write.trans_id, p_data->ser_write.conn_id,
@@ -350,19 +352,18 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
                 BSA_BleSeSendRsp(&send_server_resp);
             }
 #endif
-			
             break;
             
         case BSA_BLE_SE_EXEC_WRITE_EVT:
-            printf("Execute Write request from client \n");
+            APP_DEBUG0("Execute Write request from client \n");
             break;
             
         case BSA_BLE_SE_CONGEST_EVT:
-            printf("Congestion event\n");
+            APP_DEBUG0("Congestion event\n");
             break;
             
         case BSA_BLE_SE_READ_EVT:
-            printf("Read request from client\n");
+            APP_DEBUG0("Read request from client\n");
             BSA_BleSeSendRspInit(&send_server_resp);
             send_server_resp.conn_id = p_data->ser_read.conn_id;
             send_server_resp.trans_id = p_data->ser_read.trans_id;
@@ -376,12 +377,13 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
             break;
             
         case BSA_BLE_SE_OPEN_EVT:
+			APP_DEBUG0("Connect request from client\n");
             if (p_data->ser_open.reason != BSA_SUCCESS)
             {
                 APP_ERROR1("Connect request from client failed status = %d", p_data->ser_open.reason);
                 break;
             }
-            printf("Connect request from client\n");
+            APP_DEBUG0("Connect request from client\n");
 
 			
 			memcpy((void *)g_NfBleMsg.aucLocalAddress,(const void *)p_data->ser_open.remote_bda,6);
@@ -393,7 +395,7 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
             break;
             
         case BSA_BLE_SE_CLOSE_EVT:
-           printf("Disconnect request from client reason number = %d\n", p_data->ser_open.reason);
+            APP_DEBUG1("Disconnect request from client reason number = %d\n", p_data->ser_open.reason);
             current_server_index = ql_app_ble_cb.current_server;
             ql_app_ble_cb.ble_server[current_server_index].conn_id = p_data->ser_close.conn_id;
             ql_app_ble_cb.ble_server[current_server_index].server_if = p_data->ser_close.server_if;
@@ -403,19 +405,19 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
             break;
             
         case BSA_BLE_SE_CONFIRM_EVT:
-            printf("Confirm event\n");
+            APP_DEBUG0("Confirm event\n");
             break;
             
         case BSA_BLE_APCF_ENABLE_EVT:
-            printf("APCF Enable/Disable\n");
+            APP_DEBUG0("APCF Enable/Disable\n");
             break;
             
         case BSA_BLE_APCF_CFG_EVT:
-            printf("APCF Config\n");
+            APP_DEBUG0("APCF Config\n");
             break;
             
         default:
-            printf("Unsupport Event:%d\n", event);
+            APP_DEBUG1("Unsupport Event:%d\n", event);
             break;
     }
 }
@@ -474,7 +476,7 @@ int ql_ble_server_register(UINT16 uuid, tBSA_BLE_CBACK *p_cback)
     ql_app_ble_cb.ble_server[server_num].enabled = TRUE;
     ql_app_ble_cb.ble_server[server_num].server_if = ble_register_param.server_if;
     ql_app_ble_cb.current_server = server_num;
-    printf("enabled:%d, server_if:%d\n", ql_app_ble_cb.ble_server[server_num].enabled,
+    APP_ERROR1("enabled:%d, server_if:%d\n", ql_app_ble_cb.ble_server[server_num].enabled,
                     ql_app_ble_cb.ble_server[server_num].server_if);
 
     return 0;
@@ -519,13 +521,13 @@ int ql_ble_server_create_service(tBSA_BLE_SE_CREATE *p_ble_create_param)
     {
         if(NULL == memcpy(&ble_create_param.service_uuid.uu.uuid128, &p_ble_create_param->service_uuid.uu.uuid128, 16))
         {
-            printf("memcpy Failed\n");
+            APP_DEBUG0("memcpy Failed\n");
             return -1;
         }
 
         if(NULL == memcpy(&ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].attr_UUID.uu.uuid128, &ble_create_param.service_uuid.uu.uuid128, 16))
         {
-            printf("memcpy Failed\n");
+            APP_DEBUG0("memcpy Failed\n");
             return -1;
         }
     }
@@ -616,7 +618,7 @@ int ql_ble_server_add_char(tBSA_BLE_SE_ADDCHAR *p_ble_addchar_param)
     {
         if(NULL == memcpy(&ble_addchar_param.char_uuid.uu.uuid128, &p_ble_addchar_param->char_uuid.uu.uuid128, 16))
         {
-            printf("memcpy Failed\n");
+            APP_DEBUG0("memcpy Failed\n");
             return -1;
         }
     }
@@ -694,7 +696,7 @@ int ql_ble_server_add_char_desc(tBSA_BLE_SE_ADDCHAR *p_ble_addchar_param)
     {
         if(NULL == memcpy(&ble_addchar_param.char_uuid.uu.uuid128, &p_ble_addchar_param->char_uuid.uu.uuid128, 16))
         {
-            printf("memcpy Failed\n");
+            APP_DEBUG0("memcpy Failed\n");
             return -1;
         }
     }

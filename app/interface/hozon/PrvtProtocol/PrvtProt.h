@@ -247,5 +247,6 @@ description�� function External declaration
 *******************************************************/
 extern long PrvtPro_BSEndianReverse(long value);
 extern long PrvtPro_getTimestamp(void);
+extern uint8_t PrvtProt_tboxsnValidity(void);
 extern void PrvtProt_gettboxsn(char *tboxsn);
 #endif 

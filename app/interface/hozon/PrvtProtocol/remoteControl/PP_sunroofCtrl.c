@@ -247,7 +247,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 			{
 				TCOM_MSG_HEADER msghdr;
 				PrvtProt_respbt_t respbt;
-				respbt.type = PP_RMTCTRL_PNRSUNROOF;
+				respbt.msg_type = BT_PANORAMIC_SUNROOF_RESP;
 				respbt.cmd = sunroof_type;
 				if(1 == sunroof_success_flag)
 				{

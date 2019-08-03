@@ -21,11 +21,29 @@
 /* for scru_dump_hex */
 #include "bsa_trace.h"
 
+#define APP_TRACE_NODEBUG
+
+
 /* Macro to retrieve the number of elements in a statically allocated array */
 #define APP_NUM_ELEMENTS(__a) ((int)(sizeof(__a)/sizeof(__a[0])))
 
 /* Macro to test if bits in __b are all set in __v */
 #define APP_BITS_SET(__v, __b) (((__v) & (__b)) == (__b))
+
+
+
+//#undef APP_TRACE_NODEBUG /*Quinn Add*/
+
+#ifdef APP_TRACE_NODEBUG
+
+#define APP_DEBUG0(format) do {} while(0)
+#define APP_DEBUG1(format, ...) do {} while(0)
+#define APP_DUMP(prefix,pointer,length) do {} while(0)
+/* Macro to print an error message */
+#define APP_ERROR0(format) do {} while (0)
+#define APP_ERROR1(format, ...) do {} while (0)
+
+#else /* APP_TRACE_NODEBUG */
 
 /* Macro to print an error message */
 #define APP_ERROR0(format)                                                      \
@@ -37,16 +55,6 @@ do {                                                                            
 do {                                                                            \
     app_print_error("%s: " format "\n", __func__, __VA_ARGS__);                 \
 } while (0)
-
-#undef APP_TRACE_NODEBUG /*Quinn Add*/
-
-#ifdef APP_TRACE_NODEBUG
-
-#define APP_DEBUG0(format) do {} while(0)
-#define APP_DEBUG1(format, ...) do {} while(0)
-#define APP_DUMP(prefix,pointer,length) do {} while(0)
-
-#else /* APP_TRACE_NODEBUG */
 
 /* Macro to print a debug message */
 #define APP_DEBUG0(format)                                                      \

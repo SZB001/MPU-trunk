@@ -381,7 +381,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 			{
 				TCOM_MSG_HEADER msghdr;
 				PrvtProt_respbt_t respbt;
-				respbt.type = PP_RMTCTRL_CHARGE;
+				respbt.msg_type = BT_CHARGE_RESP;
 				respbt.cmd = PP_rmtChargeCtrl.state.chargecmd;
 				if(1 == PP_rmtChargeCtrl.fail)
 				{

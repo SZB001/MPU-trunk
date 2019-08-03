@@ -394,6 +394,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			case PP_RMTCTRL_DOORLOCK://控制车门锁
 			{
 				SetPP_doorLockCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+				log_i(LOG_HOZON, "remote DOOR control req");
 			}
 			break;
 			case PP_RMTCTRL_PNRSUNROOF://控制全景天窗
@@ -509,50 +510,39 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 {
 	switch(obj)
 	{
-		case PP_RMTCTRL_DOORLOCK://控制车门锁
+		case BT_VEhICLE_DOOR_REQ://控制车门锁
 		{
 			SetPP_doorLockCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
 		}
 		break;
-		case PP_RMTCTRL_PNRSUNROOF://控制全景天窗
+		case BT_PANORAMIC_SUNROOF_REQ://控制全景天窗
 		{
 			SetPP_sunroofctrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
-			log_i(LOG_HOZON, "remote PANORSUNROOF control req");
+			log_i(LOG_HOZON, "BT PANORSUNROOF control req");
 		}
 		break;
-		case PP_RMTCTRL_AUTODOOR://控制自动门
+		case BT_ELECTRIC_DOOR_REQ://控制自动门
 		{
 			SetPP_autodoorCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
-			log_i(LOG_HOZON, "remote AUTODOOR control req");
+			log_i(LOG_HOZON, "BT AUTODOOR control req");
 		}
 		break;
-		case PP_RMTCTRL_RMTSRCHVEHICLE://远程搜索车辆
+		case BT_REMOTE_FIND_CAR_REQ://远程搜索车辆
 		{
 			SetPP_searchvehicle_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
-			log_i(LOG_HOZON, "remote RMTSRCHVEHICLE control req");
+			log_i(LOG_HOZON, "BT RMTSRCHVEHICLE control req");
 		}
 		break;
-		case PP_RMTCTRL_AC://¿Õµ÷
-		{
-			//PP_rmtCtrl_StatusResp(1,reqType);
-			log_i(LOG_HOZON, "remote RMTCTRL_AC control req");
-		}
-		break;
-		case PP_RMTCTRL_CHARGE://充电
+		case BT_CHARGE_REQ://充电
 		{
 			SetPP_ChargeCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
-			log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
+			log_i(LOG_HOZON, "BT RMTCTRL_CHARGE control req");
 		}
 		break;
-		case PP_RMTCTRL_HIGHTENSIONCTRL://高电压控制
+		case BT_POWER_CONTROL_REQ://高电压控制
 		{
 			SetPP_startengine_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
-			log_i(LOG_HOZON, "remote RMTCTRL_HIGHTENSIONCTRL control req");
-		}
-		break;
-		case PP_RMTCTRL_ENGINECTRL://发动机控制
-		{
-			log_i(LOG_HOZON, "remote RMTCTRL_ENGINECTRL control req");
+			log_i(LOG_HOZON, "BT RMTCTRL_HIGHTENSIONCTRL control req");
 		}
 		break;
 		default:

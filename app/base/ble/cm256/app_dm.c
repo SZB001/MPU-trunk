@@ -871,12 +871,12 @@ int app_dm_monitor_rssi(BOOLEAN enable, UINT16 period)
     return 0;
 }
 
-#if 1
+#if 0
 int app_dm_set_local_bt_name(void)
 {
     int status;
     tBSA_DM_SET_CONFIG bt_config;
-    BD_NAME name = "HZ01234567899999999"; /* Local Name */
+    BD_NAME name = "HZ01234567891234567"; /* Local Name */
 
     /* Init config parameter */
     status = BSA_DmSetConfigInit(&bt_config);
@@ -902,7 +902,7 @@ int app_dm_set_local_bt_name(void)
 }
 
 #endif
-#if 0
+#if 1
 int app_dm_set_local_bt_name(unsigned char* pucName)
 {
     int status;
@@ -918,7 +918,7 @@ int app_dm_set_local_bt_name(unsigned char* pucName)
 
     bt_config.enable = TRUE;
     bt_config.config_mask = BSA_DM_CONFIG_NAME_MASK | BSA_DM_CONFIG_BLE_ADV_CONFIG_MASK;
-    strncpy((char *)bt_config.name, (char *)name, sizeof(bt_config.name));
+    strncpy((char *)bt_config.name, (char *)pucName, sizeof(bt_config.name));
     bt_config.name[sizeof(bt_config.name)-1] = '\0';
     bt_config.adv_config.adv_data_mask = BSA_DM_BLE_AD_BIT_DEV_NAME;
 

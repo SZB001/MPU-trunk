@@ -239,13 +239,12 @@ int PP_doorLockCtrl_mainfunction(void *task)
 			{
 				TCOM_MSG_HEADER msghdr;
 				PrvtProt_respbt_t respbt;
-				respbt.type = PP_RMTCTRL_DOORLOCK;
+				respbt.msg_type = BT_VEhICLE_DOOR_RESP;
 				respbt.cmd = doorctrl_type;
 				if(1 == doorLock_success_flag)
 				{
 					respbt.result = BT_SUCCESS;  //ִ执行成功
 					respbt.failtype = 0;
-					
 				}
 				else
 				{

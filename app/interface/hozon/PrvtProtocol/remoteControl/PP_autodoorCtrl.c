@@ -214,7 +214,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 			{
 				TCOM_MSG_HEADER msghdr;
 				PrvtProt_respbt_t respbt;
-				respbt.type = PP_RMTCTRL_AUTODOOR;
+				respbt.msg_type = BT_ELECTRIC_DOOR_RESP;
 				respbt.cmd = autodoor_type;
 				if(1 == autodoor_success_flag)
 				{

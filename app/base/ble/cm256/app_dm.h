@@ -291,5 +291,7 @@ int app_dm_set_ble_adv_param(tBSA_DM_BLE_ADV_PARAM *p_req);
 int app_dm_monitor_rssi(BOOLEAN enable, UINT16 period);
 
 
-int app_dm_set_local_bt_name(void);
+//int app_dm_set_local_bt_name(void);
+int app_dm_set_local_bt_name(unsigned char* pucName);
+
 #endif

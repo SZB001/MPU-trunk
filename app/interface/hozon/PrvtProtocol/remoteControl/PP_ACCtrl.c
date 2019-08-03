@@ -465,7 +465,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 						PP_rmtac_AppointBook[index].id = appointId;
 						PP_rmtac_AppointBook[index].hour = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[4];
 						PP_rmtac_AppointBook[index].min = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[5];
-						PP_rmtac_AppointBook[index].period = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[7];
+						PP_rmtac_AppointBook[index].period = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[6];
 						PP_rmtac_AppointBook[index].eventId = disptrBody_ptr->eventId;
 						PP_rmtac_AppointBook[index].validFlg  = 1;	
 						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].id = %d\n",index,PP_rmtac_AppointBook[index].id);
@@ -652,7 +652,6 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 
 
 		}
-		break;
 		default:
 		break;
 	}

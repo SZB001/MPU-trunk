@@ -576,7 +576,14 @@ int cfg_set_default_para(CFG_SET_TYPE type)
 
 	unsigned char status = 0;
 	cfg_set_by_id(CFG_ITEM_FT_REGISTER, &status, sizeof(status), type);
-	
+
+	unsigned char ble_enable = 1;
+    cfg_set_by_id(CFG_ITEM_EN_BLE, &ecall_enable, sizeof(ecall_enable), type);
+
+	char ble_name[256];
+    memset(ble_name, 0, sizeof(ble_name));
+    strcpy((char *)ble_name, "HZ00000000000000000");
+	cfg_set_by_id(CFG_ITEM_BLE_NAME, ble_name, sizeof(ble_name), type);
   
   //  printf("wang wang wang\r\n");
     return 0;

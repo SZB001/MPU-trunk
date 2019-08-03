@@ -73,7 +73,7 @@ void PP_startengine_init(void)
 	PP_rmtengineCtrl.pack.Header.opera = 0x02;
 	PP_rmtengineCtrl.pack.Header.tboxid = 27;
 	memcpy(PP_rmtengineCtrl.pack.DisBody.aID,"110",3);
-	PP_rmtengineCtrl.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
+	PP_rmtengineCtrl.pack.DisBody.eventId = 0;
 	PP_rmtengineCtrl.pack.DisBody.appDataProVer = 256;
 	PP_rmtengineCtrl.pack.DisBody.testFlag = 1;
 }
@@ -101,7 +101,16 @@ int PP_startengine_mainfunction(void *task)
 						start_engine_stage = PP_STARTENGINE_END;
 						startengine_success_flag = 3;  //不满足条件，失败标志位置起来
 					}
-					
+					if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp
+					{
+						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+						rmtCtrl_Stpara.rvcReqStatus = 1;  
+						rmtCtrl_Stpara.rvcFailureType = 0;
+						rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
+						rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
+						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+					}
 				}
 			}
 		
@@ -117,6 +126,16 @@ int PP_startengine_mainfunction(void *task)
 				{
 					start_engine_stage = PP_STARTENGINE_END;
 					startengine_success_flag = 3;  //不满足条件，失败标志位置起来
+				}
+				if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp
+				{
+					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+					rmtCtrl_Stpara.rvcReqStatus = 1;  
+					rmtCtrl_Stpara.rvcFailureType = 0;
+					rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
+					rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
+					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+					res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				}
 			}
 			PP_rmtengineCtrl.state.req = 0;
@@ -188,34 +207,38 @@ int PP_startengine_mainfunction(void *task)
 		break;
 		case PP_STARTENGINE_END:
 		{
-//			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-//			if(enginecation == PP_POWERON )
-//			{
-//				rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWERON ;
-//			}
-//			else
-//			{
-//				rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWEROFF ;
-//			}
-//			rmtCtrl_Stpara.eventid = 0;
-//			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-//			if((1 == startengine_success_flag)||(2 == startengine_success_flag))
-//			{
-//				rmtCtrl_Stpara.rvcReqStatus = 2; 
-//				rmtCtrl_Stpara.rvcFailureType = 0;
-//				//log_o(LOG_HOZON,"success");
-//			}
-//			else
-//			{
-//				rmtCtrl_Stpara.rvcReqStatus = 3;  
-//				rmtCtrl_Stpara.rvcFailureType = 0xff;
-//			}
-//			res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+			if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp
+			{
+				PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+				if(enginecation == PP_POWERON )
+				{
+				rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWERON ;
+				}
+				else
+				{
+					rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWEROFF ;
+				}
+				
+				rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
+				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+				if((1 == startengine_success_flag)||(2 == startengine_success_flag))
+				{
+					rmtCtrl_Stpara.rvcReqStatus = 2; 
+					rmtCtrl_Stpara.rvcFailureType = 0;
+					//log_o(LOG_HOZON,"success");
+				}
+				else
+				{
+					rmtCtrl_Stpara.rvcReqStatus = 3;  
+					rmtCtrl_Stpara.rvcFailureType = 0xff;
+				}
+				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+			}
 			if( PP_rmtengineCtrl.state.style == RMTCTRL_BLUETOOTH)
 			{
 				TCOM_MSG_HEADER msghdr;
 				PrvtProt_respbt_t respbt;
-				respbt.type = PP_RMTCTRL_HIGHTENSIONCTRL;
+				respbt.msg_type = BT_POWER_CONTROL_RESP;
 				respbt.cmd = enginecation;
 				if(1 == startengine_success_flag)
 				{
@@ -470,6 +493,7 @@ void PP_startengine_SetCtrlReq(unsigned char req,uint16_t reqType)
 	{
 		enginecation = 0; //下高压电
 	}
+	PP_rmtengineCtrl.state.style = RMTCTRL_TSP;
 }
 /************************shell命令测试使用**************************/
 

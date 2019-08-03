@@ -80,6 +80,8 @@ int HZBase64Encode( unsigned char *dst, int *dlen, const unsigned char *src, int
 
 int HZBase64Decode( unsigned char *dst, int *dlen, const unsigned char *src, int  slen );
 
+int showversion(char *version);
+
 
 #endif  // _BTSOCK_H__
 

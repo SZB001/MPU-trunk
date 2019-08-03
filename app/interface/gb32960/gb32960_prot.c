@@ -1862,6 +1862,23 @@ unsigned char gb32960_PowerOffSt(void)
 	return powerOffFlag;
 }
 
+/*
+ * vin有效性
+ */
+unsigned char gb32960_vinValidity(void)
+{
+	if((strcmp(gb_vin,"00000000000000000") == 0) || \
+			(strcmp(gb_vin,"") == 0))
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
+/*
+ * 读取vin
+ */
 void gb32960_getvin(char* vin)
 {
 	strcpy(vin, gb_vin);

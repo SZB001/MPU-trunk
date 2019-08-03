@@ -728,6 +728,29 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 	}
 }
 
+
+/******************************************************
+*������:PrvtProt_tboxsnValidity
+
+*��  �Σ�
+
+*����ֵ��
+
+*��  ����
+
+*��  ע��
+******************************************************/
+uint8_t PrvtProt_tboxsnValidity(void)
+{
+	if((strcmp(pp_tboxsn,"") == 0) || \
+			(strcmp(pp_tboxsn,"000000000000000000") == 0))
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
 /******************************************************
 *������:PrvtProt_gettboxsn
 

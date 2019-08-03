@@ -44,7 +44,7 @@ author        wangqinglong
 #define YTERR_DISCONCET					(-5)  
 //void ApiTraceBuf(unsigned char *Buf, unsigned long Len);
 
-#define DEBUG_LQF   
+//#define DEBUG_LQF   
 //#define PRINTFBUF 					ApiTraceBuf
 //#define PRINTF 					    printf
 
@@ -89,6 +89,14 @@ typedef struct {
 }BT_DATA;
 
 
+typedef struct 
+{
+    unsigned char		 			aucBleName[BLE_NAME_SIZE];
+	unsigned char       			ucBleEn;   
+	unsigned char       			ucBleWakeMcu;
+	unsigned char       			ucSleepCloseBle;
+} BLE_CONTR;
+
 typedef struct ST_BT_API_
 {
 	int (*Init)(void);
@@ -109,15 +117,6 @@ typedef struct ST_BT_API_
 
 	unsigned char ucModuleType; 	
 }ST_BT_API, *PST_BT_API;
-
-
-typedef struct 
-{
-    unsigned char		 aucBleName[BLE_NAME_SIZE];
-	unsigned char       ucBleEn;    
-	unsigned char       ucBleWakeMcu;
-	unsigned char       ucSleepCloseBle;
-} BLE_CONTR;
 
 typedef struct BLE_MEMBER
 {

@@ -43,9 +43,10 @@
 
 typedef struct
 {
-    unsigned char aucDevName[16];
+    unsigned char aucDevName[256];
     unsigned char aucDevMac[6];
     unsigned char ucNameLen;
+	unsigned char ucMacLen;
 }BT_DEVINFO_TYPE;
 
 BT_DEVINFO_TYPE Tc35661BtInfo;
@@ -60,7 +61,8 @@ static unsigned char       		aucTxbuff[TX_BUFFER_SIZE];
 static struct ring_buffer  		stTxRb;
 static unsigned char       		aucRxbuff[RX_BUFFER_SIZE];
 static struct ring_buffer  		stRxRb;
-unsigned char					g_aucBleName[250] = {0};
+BT_DEVINFO_TYPE                 ble_info;
+
 BLE_CTL						    stBleCtl;
 
 
@@ -230,9 +232,7 @@ int cm256_init(void)
 	log_i(LOG_BLE, "stRxRb.out  = %d\r\n", stRxRb.out);
 
 	memset(&stBleCtl, 0, sizeof(BLE_CTL));	
-
-   
-   	printf("BLE*****************3*\r\n");
+		
 
     /* Initialize BLE application */
     status = app_ble_init();
@@ -242,7 +242,6 @@ int cm256_init(void)
         return -1;
     }
 
-	printf("BLE******************4\r\n");
     /* Open connection to BSA Server */
     app_mgt_init();
 	
@@ -257,11 +256,17 @@ int cm256_init(void)
         APP_ERROR0("Unable to connect to server");
         return -1;
     }
-	printf("BLE******************5\r\n");
-
     app_mgr_sec_set_sp_cap(BTA_IO_CAP_OUT);
 
-	status = app_dm_set_local_bt_name();
+    if(0 != strlen((const char *)ble_info.aucDevName))
+    {
+    	status = app_dm_set_local_bt_name(ble_info.aucDevName);
+    }
+	else
+	{
+		status = app_dm_set_local_bt_name((unsigned char*)"HZ00000000000000000");
+	}
+	
 	if ( 0 != status)
 	{
 		return status;
@@ -343,8 +348,19 @@ int cm256_open(void)
     ql_ble_sleep_init();
     //GKI_delay(3000);
     //Ql_Autosleep_Enable(1);
-	api_get_bt_config(&bt_config);
+	iRet = api_get_bt_config(&bt_config);
 
+	if(0 == iRet)
+	{
+		memset(ble_info.aucDevMac, 0, sizeof(ble_info.aucDevMac));
+		memcpy(ble_info.aucDevMac, (const void *)bt_config.bd_addr, 6);
+		ble_info.ucMacLen = 6;
+	}
+	else
+	{
+		memset(ble_info.aucDevMac, 0, sizeof(ble_info.aucDevMac));
+		ble_info.ucMacLen = 0;
+	}
 
 
 #if 0
@@ -510,28 +526,18 @@ int cm256_get_state(void)
 ******************************************************************************/
 int cm256_get_name(unsigned char *paucInBtName, unsigned char *pucInLen)
 {
-	//int iRet = YT_ERR;
-	//DEBUG("Nf3303SetName\r\n");
-	//DEBUG("Nf3303SetName = %d\r\n",(strlen((const char *)paucInBtName)));
-	//DEBUG("*pucInLen = %d\r\n",*pucInLen);
-
-	if ((strlen((const char *)paucInBtName)) > BLE_NAME_SIZE)
-	{
-		return YT_ERR;
-	}
-
-	if (*pucInLen == (strlen((const char *)paucInBtName)))
+     if (strlen((char *)ble_info.aucDevName))
     {
-    	memset(g_aucBleName, 0 ,sizeof(g_aucBleName));
-    	memcpy(g_aucBleName, paucInBtName, *pucInLen);
-		//Nf3303Open();
+    	memcpy(paucInBtName,(const void *)ble_info.aucDevName, strlen((char *)ble_info.aucDevName));
+		*pucInLen = 6;
     }
 	else
 	{
-	    //DEBUG("Nf3303SetName1\r\n");
+		//memset(paucInBtName, 0 ,sizeof(paucInBtName));
+		*pucInLen = 0;
 		return YT_ERR;
 	}
-
+	
 	return YT_OK;
 }
 
@@ -555,8 +561,9 @@ int cm256_set_name(unsigned char *paucInBtName, unsigned char *pucInLen)
 
 	if (*pucInLen == (strlen((const char *)paucInBtName)))
     {
-    	memset(g_aucBleName, 0 ,sizeof(g_aucBleName));
-    	memcpy(g_aucBleName, paucInBtName, *pucInLen);
+    	memset(ble_info.aucDevName, 0 ,sizeof(ble_info.aucDevName));
+    	memcpy(ble_info.aucDevName, paucInBtName, *pucInLen);
+		log_e(LOG_BLE, "cm256_set_name = %s",ble_info.aucDevName);
 		//Nf3303Open();
     }
 	else
@@ -577,14 +584,21 @@ int cm256_set_name(unsigned char *paucInBtName, unsigned char *pucInLen)
 ******************************************************************************/
 int cm256_get_mac(unsigned char *paucBtMac, unsigned char *pucLen)
 {
-   tBSA_DM_GET_CONFIG bt_config;
-   api_get_bt_config(&bt_config);
-	//NFBT_GetAddr((BT_ADDR *)&g_NfBleMsg.aucLocalAddress);
-	//DEBUG("aucLocalAddress :  [%02X:%02X:%02X:%02X:%02X:%02X]\r\n",
-     //       g_NfBleMsg.aucLocalAddress[0], g_NfBleMsg.aucLocalAddress[1], g_NfBleMsg.aucLocalAddress[2],
-     //       g_NfBleMsg.aucLocalAddress[3], g_NfBleMsg.aucLocalAddress[4], g_NfBleMsg.aucLocalAddress[5]);
-	memcpy(paucBtMac,(const void *)bt_config.bd_addr, 6);
+   //tBSA_DM_GET_CONFIG bt_config;
+   //api_get_bt_config(&bt_config);
+   if (6 != ble_info.ucMacLen)
+   {
+		*pucLen = 0;
+		return YT_ERR;
+   }
+  	log_i(LOG_BLE,"cm256_get_mac %02x:%02x:%02x:%02x:%02x:%02x",
+             ble_info.aucDevMac[0], ble_info.aucDevMac[1],
+             ble_info.aucDevMac[2], ble_info.aucDevMac[3],
+             ble_info.aucDevMac[4], ble_info.aucDevMac[5]);
+
+	memcpy(paucBtMac,(const void *)ble_info.aucDevMac, 6);
 	*pucLen = 6;
+
 	return YT_OK;
 }
 
@@ -597,8 +611,8 @@ int cm256_get_mac(unsigned char *paucBtMac, unsigned char *pucLen)
 ******************************************************************************/
 int cm256_send(unsigned char *pucBuf, unsigned int *pulLen)
 {
-    log_e(LOG_BLE, "cm256_send");
-	log_e(LOG_BLE, "*pulLen = %d",*pulLen);
+    log_i(LOG_BLE, "cm256_send");
+	log_i(LOG_BLE, "*pulLen = %d",*pulLen);
 	if (*pulLen <= 0)
 	{
 		return YT_ERR;

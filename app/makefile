@@ -19,9 +19,9 @@ OFLAGS += -lrds -ldev_rw -lhash -ltimer -llog -ldir -lfile -lshm -lmd5 -lrb -lip
 
 # 3rd party module
 ifeq ($(PLATFORM), EC20)
-OFLAGS += -ldsi_netctrl -ldsutils -lqcmap_client  -lqmi_cci -lqmiservices -lqmi_common_so -lqmi -lmcm -lssl -lcrypto 
+OFLAGS += -ldsi_netctrl -ldsutils -lqcmap_client  -lqmi_cci -lqmiservices -lqmi_common_so -lqmi -lmcm #-lssl -lcrypto 
 OFLAGS += -L $(LIB_PATH_R) -lql_common_api	#-ltboxsock -lssl -lcrypto
-OFLAGS += -L $(LIB_PATH_R) -lbsa -lbtsock
+OFLAGS += -L $(LIB_PATH_R) -lbsa -lbtsock -ltboxsock
 OFLAGS += -L $(LIB_PATH_R) -lql_peripheral
 endif
 

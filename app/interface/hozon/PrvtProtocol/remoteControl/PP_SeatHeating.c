@@ -63,6 +63,7 @@ typedef struct
 static PrvtProt_rmtseatheating_t PP_rmtseatheatCtrl[PP_seatheating_max];
 static uint8_t seat_requestpower_flag;   //0默认，1请求上电，2请求下电
 static uint8_t PP_Seat_Sleepflag = 0;
+uint16_t cmd[2] = {0x0605,0x0607};
 
 int Seat_Shell_setctrl(int argc, const char **argv)
 {
@@ -179,7 +180,7 @@ int PP_seatheating_mainfunction(void *task)
 		    {
 		    	if((tm_get_time() - PP_rmtseatheatCtrl[i].PP_Respwaittime) < 2000)
 		    	{
-			    	if(PP_rmtseatheatCtrl[i].state.reqType == PP_RMTCTRL_MAINHEATOPEN)  //开启应答
+			    	if(PP_rmtseatheatCtrl[i].state.reqType == cmd[i])  //开启应答
 			        {
 			           if(PP_rmtCtrl_cfg_HeatingSt(i) == PP_rmtseatheatCtrl[i].level)
 			           {

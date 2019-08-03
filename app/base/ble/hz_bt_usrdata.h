@@ -6,8 +6,8 @@
 
 #define NGCP_MAX_WIRELESS    1000
 #define NGCP_RTDATA_MAXSZ    (1)
-#define COM_APP_PEM_ROOT_DIR            "/usrdata/pem/Troot.der"
-#define COM_APP_PEM_TPONE_DIR            "/usrdata/pem/Tphone.der"
+#define COM_APP_PEM_ROOT_DIR            "/usrdata/pem/HozonCA.cer"
+#define COM_APP_PEM_TPONE_DIR            "/usrdata/pem/PhoneCA.cer"
 
 #define BT_BYTE_SZ_8       8
 #define BT_BYTE_SZ_16      16
@@ -18,6 +18,50 @@
 #define BT_BYTE_SZ_1024    1024
 #define BT_BYTE_SZ_VIN     17
 #define BT_BYTE_SZ_ICCID   20
+
+#define BT_UNAUTH               0
+#define BT_AUTH_SUCCESS         1
+#define BT_AUTH_FAIL            2
+
+#define HZ_P_NO_ENCY			0
+#define HZ_P_ENCY 				1
+
+
+#define HZ_P_HEAD 				"#START*"
+#define HZ_P_END 				"#END*"
+
+/*************ApplicationHeader*********/
+
+#define PROTOCOL_VER			0x01      
+//msg_type
+enum
+{
+   
+    BT_AH_MSG_TYPE_VEH_SE_FUN  		= 1,
+    BT_AH_MSG_TYPE_SE_FUN_RESP  	= 2, //tbox auth respond
+    BT_MSG_TYPE_VEH_DOOR  			= 3,
+    BT_MSG_TYPE_PAN_SUNROOf  		= 4,
+    BT_MSG_TYPE_ELEC_DOOR  			= 5,
+    BT_MSG_TYPE_REMOTE_FIND_CAR 	= 6,
+    BT_MSG_TYPE_CHARGE 				= 7,
+    BT_VAH_MSG_TYPE_POWER_CONTRO 	= 8,
+    BT_AH_MSG_TYPE_ACK 				= 9,  //tbox cmd respond
+    BT_AH_MSG_TYPE_MAX
+};
+
+/*****************ACK******************/
+//msg_type
+enum
+{
+    BT_ACK_MSG_TYPE_VEH_DOOR 			= 1,
+	BT_ACK_MSG_TYPE_PAN_SUNROOf 		= 2,
+	BT_ACK_MSG_TYPE_ELEC_DOOR 			= 3,
+	BT_ACK_MSG_TYPE_REMOTE_FIND_CAR 	= 4,
+	BT_ACK_MSG_TYPE_CHARGE 				= 5,
+    BT_ACK_MSG_TYPE_POWER_CONTRO 		= 6,
+    BT_ACK_MSG_TYPE_MAX
+};
+
 
 //TODO ngcp fn
 typedef enum
@@ -150,8 +194,7 @@ typedef struct
 } hz_protocol_t;
 
 
-
-
+extern hz_protocol_t g_hz_protocol;
 
 /* public interface */
 extern int hz_pb_bytes_set(ProtobufCBinaryData *des, uint8_t *buf, int len);
@@ -169,6 +212,9 @@ int hz_protocol_process(unsigned char *pucInData,unsigned int *pulInLen,unsigned
 int pb_appliheader_set(ApplicationHeader **des, bt_send_t *src);
 int pb_TimeStamp_set(TimeStamp **des, bt_send_t *src);
 int pb_ack_set(ACK **des, bt_send_t *src);
+
+void reset_hz_data(void);
+int bt_send_cmd_pack(unsigned char result, uint8_t *out, size_t *out_len);
 
 
 #endif /* NGCP_PB_USR_H_ */

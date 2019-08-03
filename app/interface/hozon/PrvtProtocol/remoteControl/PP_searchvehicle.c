@@ -139,7 +139,7 @@ int PP_searchvehicle_mainfunction(void *task)
 		break;
 		case PP_SEARCHVEHICLE_RESPWAIT://执行等待车控响应
 		{
-			if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN) //寻车
+			if(search_type == PP_SEARCH) //寻车
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
@@ -186,7 +186,7 @@ int PP_searchvehicle_mainfunction(void *task)
 			{
 				TCOM_MSG_HEADER msghdr;
 				PrvtProt_respbt_t respbt;
-				respbt.type = PP_RMTCTRL_RMTSRCHVEHICLE;
+				respbt.msg_type = BT_REMOTE_FIND_CAR_RESP;
 				respbt.cmd = search_type;
 				if(1 == serachvehicle_success_flag)
 				{
@@ -203,6 +203,7 @@ int PP_searchvehicle_mainfunction(void *task)
 				msghdr.receiver  = MPU_MID_BLE;
 				msghdr.msgid     = BLE_MSG_CONTROL;
 				msghdr.msglen    = sizeof(PrvtProt_respbt_t);
+				log_o(LOG_HOZON,"send BT success");
 				tcom_send_msg(&msghdr, &respbt);
 			}
 			search_vehicle_stage = PP_SEARCHVEHICLE_IDLE;
@@ -262,6 +263,7 @@ void SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *dispt
 		break;
 		case RMTCTRL_BLUETOOTH:
 		{
+			log_o(LOG_HOZON,"BT REQuest");
 			 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
 			 if(cmd == 1)
 			 {
