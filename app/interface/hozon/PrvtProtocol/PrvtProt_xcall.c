@@ -77,7 +77,7 @@ static PrvtProt_App_Xcall_t	Appdata_Xcall =
 		0,		0xff,	 0,		       {0,    0,       0,       0,        0,       0,       0  },	1,		0,			 0
 };
 
-static PrvtProt_TxInform_t Xcall_TxInform[PP_XCALL_MAX];
+//static PrvtProt_TxInform_t Xcall_TxInform[PP_XCALL_MAX];
 
 /*******************************************************
 description�� function declaration
@@ -128,7 +128,7 @@ void PP_xcall_init(void)
 		PP_xcall[i].Type = i + 1;
 		PP_xcall[i].state.req = 0;
 
-		memset(&Xcall_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
+		//memset(&Xcall_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	}
 }
 
@@ -316,7 +316,7 @@ static int PP_xcall_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 {
-
+	int idlenode;
 	/* ecall */
 	if(PrvtProtCfg_ecallTriggerEvent())//ecall����
 	{
@@ -329,12 +329,13 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		PP_xcall[PP_ECALL].state.req = 0;
 		if(0 == PP_xcall_xcallResponse(task,PP_ECALL))
 		{
-			//memset(&Xcall_TxInform[PP_ECALL],0,sizeof(PrvtProt_TxInform_t));
-			Xcall_TxInform[PP_ECALL].aid = PP_AID_XCALL;
-			Xcall_TxInform[PP_ECALL].mid = PP_MID_XCALL_RESP;
-			Xcall_TxInform[PP_ECALL].pakgtype = PP_TXPAKG_CONTINUE;
+			idlenode = PP_getIdleNode();
+			memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+			PP_TxInform[idlenode].aid = PP_AID_XCALL;
+			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
+			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 
-			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&Xcall_TxInform[PP_ECALL]);
+			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
 			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
 		}
 	}
@@ -345,12 +346,13 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		PP_xcall[PP_BCALL].state.req = 0;
 		if(0 == PP_xcall_xcallResponse(task,PP_BCALL))
 		{
-			//memset(&Xcall_TxInform[PP_BCALL],0,sizeof(PrvtProt_TxInform_t));
-			Xcall_TxInform[PP_BCALL].aid = PP_AID_XCALL;
-			Xcall_TxInform[PP_BCALL].mid = PP_MID_XCALL_RESP;
-			Xcall_TxInform[PP_BCALL].pakgtype = PP_TXPAKG_CONTINUE;
+			idlenode = PP_getIdleNode();
+			memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+			PP_TxInform[idlenode].aid = PP_AID_XCALL;
+			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
+			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 
-			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&Xcall_TxInform[PP_BCALL]);
+			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
 			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
 		}
 	}
@@ -361,19 +363,19 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		PP_xcall[PP_ICALL].state.req = 0;
 		if(0 == PP_xcall_xcallResponse(task,PP_ICALL))
 		{
-			//memset(&Xcall_TxInform[PP_ICALL],0,sizeof(PrvtProt_TxInform_t));
-			Xcall_TxInform[PP_ICALL].aid = PP_AID_XCALL;
-			Xcall_TxInform[PP_ICALL].mid = PP_MID_XCALL_RESP;
-			Xcall_TxInform[PP_ICALL].pakgtype = PP_TXPAKG_CONTINUE;
+			idlenode = PP_getIdleNode();
+			memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+			PP_TxInform[idlenode].aid = PP_AID_XCALL;
+			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
+			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 
-			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&Xcall_TxInform[PP_ICALL]);
+			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
 			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
 		}
 	}
 	else
-	{
+	{}
 
-	}
 	return 0;
 }
 
@@ -512,6 +514,8 @@ static void PP_xcall_send_cb(void * para)
 	log_i(LOG_HOZON, "successflg = %d",TxInform_ptr->successflg);
 	log_i(LOG_HOZON, "failresion = %d",TxInform_ptr->failresion);
 	log_i(LOG_HOZON, "txfailtime = %d",TxInform_ptr->txfailtime);
+
+	TxInform_ptr->idleflag = 0;
 }
 
 /******************************************************

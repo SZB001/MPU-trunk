@@ -91,7 +91,7 @@ typedef struct
 }__attribute__((packed))  PP_rmtDiag_allFault_t;
 static PP_rmtDiag_allFault_t	PP_rmtDiag_allFault;
 
-static PrvtProt_TxInform_t 		diag_TxInform[PP_RMTDIAG_MAX_RESP];
+//static PrvtProt_TxInform_t 		diag_TxInform[PP_RMTDIAG_MAX_RESP];
 static PP_rmtDiag_datetime_t 	rmtDiag_datetime;
 static PP_rmtDiag_weekmask_t rmtDiag_weekmask[7] =
 {
@@ -372,6 +372,7 @@ static int PP_rmtDiag_do_wait(PrvtProt_task_t *task)
 static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 {
 	int ret = 0;
+	int idlenode;
 	switch(PP_rmtDiag.state.diagrespSt)
 	{
 		case PP_DIAGRESP_IDLE:
@@ -420,13 +421,14 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 			ret = PP_rmtDiag_DiagResponse(task,&PP_rmtDiag,&PP_rmtDiag_Fault);
 			if(ret >= 0)
 			{
-				memset(&diag_TxInform[PP_RMTDIAG_RESP_REQ],0,sizeof(PrvtProt_TxInform_t));
-				diag_TxInform[PP_RMTDIAG_RESP_REQ].aid = PP_AID_DIAG;
-				diag_TxInform[PP_RMTDIAG_RESP_REQ].mid = PP_MID_DIAG_RESP;
-				diag_TxInform[PP_RMTDIAG_RESP_REQ].pakgtype = PP_TXPAKG_SIGTIME;
-				diag_TxInform[PP_RMTDIAG_RESP_REQ].eventtime = tm_get_time();
+				idlenode = PP_getIdleNode();
+				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+				PP_TxInform[idlenode].aid = PP_AID_DIAG;
+				PP_TxInform[idlenode].mid = PP_MID_DIAG_RESP;
+				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
+				PP_TxInform[idlenode].eventtime = tm_get_time();
 				SP_data_write(PP_rmtDiag_Pack.Header.sign, \
-						PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&diag_TxInform[PP_RMTDIAG_RESP_REQ]);
+						PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&PP_TxInform[idlenode]);
 				protocol_dump(LOG_HOZON, "diag_req_response", PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen,1);
 
 				if(1 == ret)//上报完成
@@ -574,6 +576,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 	static uint32_t tm_datetime;
 	int i;
 	int ret;
+	int idlenode;
 	switch(PP_rmtDiag.state.activeDiagSt)
 	{
 		case PP_ACTIVEDIAG_PWRON:
@@ -671,13 +674,14 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 			if(ret >= 0)
 			{
 				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
-				memset(&diag_TxInform[PP_RMTDIAG_STATUS],0,sizeof(PrvtProt_TxInform_t));
-				diag_TxInform[PP_RMTDIAG_STATUS].aid = PP_AID_DIAG;
-				diag_TxInform[PP_RMTDIAG_STATUS].mid = PP_MID_DIAG_STATUS;
-				diag_TxInform[PP_RMTDIAG_STATUS].pakgtype = PP_TXPAKG_SIGTIME;
-				diag_TxInform[PP_RMTDIAG_STATUS].eventtime = tm_get_time();
+				idlenode = PP_getIdleNode();
+				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+				PP_TxInform[idlenode].aid = PP_AID_DIAG;
+				PP_TxInform[idlenode].mid = PP_MID_DIAG_STATUS;
+				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
+				PP_TxInform[idlenode].eventtime = tm_get_time();
 				SP_data_write(PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen, \
-						PP_rmtDiag_send_cb,&diag_TxInform[PP_RMTDIAG_STATUS]);
+						PP_rmtDiag_send_cb,&PP_TxInform[idlenode]);
 				protocol_dump(LOG_HOZON, "diag_status_response", PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen,1);
 
 				if(ret ==1)//all数据打包发送完成
@@ -972,6 +976,7 @@ static void PP_rmtDiag_send_cb(void * para)
 		default:
 		break;
 	}
+	TxInform_ptr->idleflag = 0;
 }
 
 /******************************************************

@@ -95,6 +95,8 @@ static PrvtProt_RmtFunc_t PP_RmtFunc[PP_RMTFUNC_MAX] =
 };
 
 static uint8_t PP_sleepflag = 0;
+
+PrvtProt_TxInform_t 	PP_TxInform[PP_TXINFORM_NUM];
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -798,4 +800,23 @@ void SetPrvtProt_Awaken(void)
 unsigned char GetPrvtProt_Sleep(void)
 {
 	return PP_sleepflag;
+}
+
+/*
+ * 获取空闲节点
+ */
+int PP_getIdleNode(void)
+{
+	int i;
+	int res = 0;
+	for(i = 0;i < PP_TXINFORM_NUM;i++)
+	{
+		if(PP_TxInform[i].idleflag == 0)
+		{
+			res = i;
+			PP_TxInform[i].idleflag = 1;
+			break;
+		}
+	}
+	return res;
 }

@@ -955,7 +955,6 @@ static void PP_rmtCtrl_send_cb(void * para)
 	log_i(LOG_HOZON, "failresion = %d",TxInform_ptr->failresion);
 	log_i(LOG_HOZON, "txfailtime = %d",TxInform_ptr->txfailtime);
 
-	TxInform_ptr->idleflag = 0;
 	if(TxInform_ptr->mid == PP_MID_RMTCTRL_HUBOOKINGRESP)
 	{
 		if(TxInform_ptr->successflg == PP_TXPAKG_SUCCESS)
@@ -963,6 +962,8 @@ static void PP_rmtCtrl_send_cb(void * para)
 			PP_ChargeCtrl_send_cb();
 		}
 	}
+
+	TxInform_ptr->idleflag = 0;
 }
 
 
@@ -974,6 +975,7 @@ static int PP_rmtCtrl_getIdleNode(void)
 	{
 		if(rmtCtrl_TxInform[i].idleflag == 0)
 		{
+			rmtCtrl_TxInform[i].idleflag = 1;
 			res = i;
 			break;
 		}

@@ -70,7 +70,7 @@ static PrvtProt_pack_t 			PP_rmtCfg_Pack;
 static PrvtProt_rmtCfg_t		PP_rmtCfg;
 static PrvtProt_App_rmtCfg_t 	AppData_rmtCfg;
 
-static PrvtProt_TxInform_t rmtCfg_TxInform;
+//static PrvtProt_TxInform_t rmtCfg_TxInform;
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -110,7 +110,7 @@ void PP_rmtCfg_init(void)
 	unsigned int len;
 	memset(&PP_rmtCfg,0 , sizeof(PrvtProt_rmtCfg_t));
 	memset(&AppData_rmtCfg,0 , sizeof(PrvtProt_App_rmtCfg_t));
-	memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
+	//memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
 
 	len = 11;
 	res = cfg_get_para(CFG_ITEM_HOZON_TSP_MCUSW,AppData_rmtCfg.checkReq.mcuSw,&len);//
@@ -270,6 +270,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 {
 	int aid;
 	int i;
+	int idlenode;
 	if(PP_OPERATETYPE_NGTP != rxPack->Header.opera)
 	{
 		log_e(LOG_HOZON, "unknow package");
@@ -326,13 +327,15 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 			rmtCfg->state.cfgAccept = 1;//�������ø�������
 			if(0 == PP_rmtCfg_ConnResp(task,rmtCfg,&MsgDataBody))
 			{
-				memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
-				rmtCfg_TxInform.aid = PP_AID_RMTCFG;
-				rmtCfg_TxInform.mid = PP_MID_CONN_CFG_RESP;
-				rmtCfg_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
-				rmtCfg_TxInform.eventtime = tm_get_time();
+				idlenode = PP_getIdleNode();
+				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+				PP_TxInform[idlenode].aid = PP_AID_RMTCFG;
+				PP_TxInform[idlenode].mid = PP_MID_CONN_CFG_RESP;
+				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
+				PP_TxInform[idlenode].eventtime = tm_get_time();
 
-				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,PP_rmtCfg_send_cb,&rmtCfg_TxInform);
+				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
+						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
 				protocol_dump(LOG_HOZON, "cfg_req_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 		}
@@ -347,13 +350,15 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 
 			if(0 == PP_rmtCfg_ReadCfgResp(task,rmtCfg,&MsgDataBody))
 			{
-				memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
-				rmtCfg_TxInform.aid = PP_AID_RMTCFG;
-				rmtCfg_TxInform.mid = PP_MID_READ_CFG_RESP;
-				rmtCfg_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
-				rmtCfg_TxInform.eventtime = tm_get_time();
+				idlenode = PP_getIdleNode();
+				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+				PP_TxInform[idlenode].aid = PP_AID_RMTCFG;
+				PP_TxInform[idlenode].mid = PP_MID_READ_CFG_RESP;
+				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
+				PP_TxInform[idlenode].eventtime = tm_get_time();
 
-				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,PP_rmtCfg_send_cb,&rmtCfg_TxInform);
+				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
+						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
 				protocol_dump(LOG_HOZON, "cfg_read_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 
@@ -437,6 +442,7 @@ static int PP_rmtCfg_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
+	int idlenode;
 
 	if(1 != sockproxy_socketState())//socket open
 	{
@@ -490,13 +496,15 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		{
 			if(0 == PP_rmtCfg_checkRequest(task,rmtCfg))
 			{
-				memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
-				rmtCfg_TxInform.aid = PP_AID_RMTCFG;
-				rmtCfg_TxInform.mid = PP_MID_CHECK_CFG_REQ;
-				rmtCfg_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
-				rmtCfg_TxInform.eventtime = tm_get_time();
+				idlenode = PP_getIdleNode();
+				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+				PP_TxInform[idlenode].aid = PP_AID_RMTCFG;
+				PP_TxInform[idlenode].mid = PP_MID_CHECK_CFG_REQ;
+				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
+				PP_TxInform[idlenode].eventtime = tm_get_time();
 
-				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,PP_rmtCfg_send_cb,&rmtCfg_TxInform);
+				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
+						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
 				protocol_dump(LOG_HOZON, "cfg_read_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 
@@ -527,13 +535,15 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 			memset(&(AppData_rmtCfg.getResp),0,sizeof(App_rmtCfg_getResp_t));
 			if(0 == PP_rmtCfg_getRequest(task,rmtCfg))
 			{
-				memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
-				rmtCfg_TxInform.aid = PP_AID_RMTCFG;
-				rmtCfg_TxInform.mid = PP_MID_GET_CFG_REQ;
-				rmtCfg_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
-				rmtCfg_TxInform.eventtime = tm_get_time();
+				idlenode = PP_getIdleNode();
+				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+				PP_TxInform[idlenode].aid = PP_AID_RMTCFG;
+				PP_TxInform[idlenode].mid = PP_MID_GET_CFG_REQ;
+				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
+				PP_TxInform[idlenode].eventtime = tm_get_time();
 
-				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,PP_rmtCfg_send_cb,&rmtCfg_TxInform);
+				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
+						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
 				protocol_dump(LOG_HOZON, "cfg_read_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 
@@ -567,13 +577,15 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 
 			if(0 == PP_rmtCfg_CfgEndRequest(task,rmtCfg))
 			{
-				memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
-				rmtCfg_TxInform.aid = PP_AID_RMTCFG;
-				rmtCfg_TxInform.mid = PP_MID_CFG_END;
-				rmtCfg_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
-				rmtCfg_TxInform.eventtime = tm_get_time();
+				idlenode = PP_getIdleNode();
+				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+				PP_TxInform[idlenode].aid = PP_AID_RMTCFG;
+				PP_TxInform[idlenode].mid = PP_MID_CFG_END;
+				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
+				PP_TxInform[idlenode].eventtime = tm_get_time();
 
-				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,PP_rmtCfg_send_cb,&rmtCfg_TxInform);
+				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
+						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
 				protocol_dump(LOG_HOZON, "cfg_read_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 
@@ -1126,6 +1138,8 @@ static void PP_rmtCfg_send_cb(void * para)
 		default:
 		break;
 	}
+
+	TxInform_ptr->idleflag = 0;
 }
 
 uint8_t PP_rmtCfg_getIccid(uint8_t* iccid)

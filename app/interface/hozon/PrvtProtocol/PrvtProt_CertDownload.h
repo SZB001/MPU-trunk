@@ -21,36 +21,36 @@ description�� macro definitions
 //请求下载证书
 #define PP_CERTDL_IDLE					0
 #define PP_CERTDL_CHECK_CIPHER_CSR		1
-#define PP_CERTDL_DLREQ			2
-#define PP_CERTDL_DLREQWAIT		3
-#define PP_CERTDL_END			4
+#define PP_CERTDL_DLREQ					2
+#define PP_CERTDL_DLREQWAIT				3
+#define PP_CERTDL_END					4
 
 //启用证书
-#define PP_CERTEN_IDLE			0
-#define PP_CERTEN_REQ			1
-#define PP_CERTEN_WAIT			2
-#define PP_CERTEN_END			3
+#define PP_CERTEN_IDLE				0
+#define PP_CERTEN_REQ				1
+#define PP_CERTEN_WAIT				2
+#define PP_CERTEN_END				3
 
 #define PP_CERTDL_DLTIMEOUT			5000
 
-#define PP_CERT_DL_TXINFORMNODE 10
+#define PP_CERT_DL_TXINFORMNODE 	30
 
-#define PP_CERTDL_MID_REQ	1
-#define PP_CERTDL_MID_RESP	2
-#define PP_CERTDL_MID_CERT_EN	5
+#define PP_CERTDL_MID_REQ			1
+#define PP_CERTDL_MID_RESP			2
+#define PP_CERTDL_MID_CERT_EN		5
 
 //证书下载mid= 2起始字节
-#define PP_CERTDL_RESP_MID		0
-#define PP_CERTDL_RESP_EVTID	1
-#define PP_CERTDL_RESP_RESULT	5
-#define PP_CERTDL_RESP_FAILTYPE	6
-#define PP_CERTDL_RESP_CERTTYPE	6
-#define PP_CERTDL_RESP_CERTLEN	7
+#define PP_CERTDL_RESP_MID			0
+#define PP_CERTDL_RESP_EVTID		1
+#define PP_CERTDL_RESP_RESULT		5
+#define PP_CERTDL_RESP_FAILTYPE		6
+#define PP_CERTDL_RESP_CERTTYPE		6
+#define PP_CERTDL_RESP_CERTLEN		7
 #define PP_CERTDL_RESP_CERTCONTENT	11
 
-#define PP_CERTDL_INITVAL		0
-#define PP_CERTDL_SUCCESS		1
-#define PP_CERTDL_FAIL			2
+#define PP_CERTDL_INITVAL			0
+#define PP_CERTDL_SUCCESS			1
+#define PP_CERTDL_FAIL				2
 /***********宏函数********/
 
 /*******************************************************

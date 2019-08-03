@@ -24,6 +24,8 @@ description�� macro definitions
 #define PP_MSG_DATA_LEN 	1024//message data ����
 #define PP_TBOXSN_LEN 		19//tboxsn ����
 
+#define	PP_TXINFORM_NUM		1000
+
 //OperationType
 #define	PP_OPERATETYPE_NS			0//NationalStandard
 #define	PP_OPERATETYPE_HEARTBEAT	1//Heartbeat
@@ -241,7 +243,7 @@ typedef struct
 description�� variable External declaration
 *******************************************************/
 //extern PrvtProt_appData_t 		PP_appData;//���õĽṹ�壨app data���ݴ��ʱʹ�ã�
-
+extern PrvtProt_TxInform_t 	PP_TxInform[PP_TXINFORM_NUM];
 /*******************************************************
 description�� function External declaration
 *******************************************************/
@@ -249,4 +251,5 @@ extern long PrvtPro_BSEndianReverse(long value);
 extern long PrvtPro_getTimestamp(void);
 extern uint8_t PrvtProt_tboxsnValidity(void);
 extern void PrvtProt_gettboxsn(char *tboxsn);
+extern int PP_getIdleNode(void);
 #endif 

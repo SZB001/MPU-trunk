@@ -754,6 +754,8 @@ static void PP_CertDL_send_cb(void * para)
 			PP_CertEn.enSt = 2;
 		}
 	}
+
+	TxInform_ptr->idleflag = 0;
 }
 
 /******************************************************
@@ -956,6 +958,7 @@ static int PP_CertDL_getIdleNode(void)
 	{
 		if(CertDL_TxInform[i].idleflag == 0)
 		{
+			CertDL_TxInform[i].idleflag = 1;
 			res = i;
 			break;
 		}
