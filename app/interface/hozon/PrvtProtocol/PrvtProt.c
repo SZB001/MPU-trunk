@@ -446,7 +446,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 		break;
 		case PP_OPERATETYPE_HEARTBEAT://心跳
 		{
-			log_i(LOG_HOZON, "heart beat is ok");
+			log_i(LOG_HOZON, "the heartbeat is ok");
 			PP_heartbeat.state = 1;
 			PP_heartbeat.waitSt = 0;
 		}
