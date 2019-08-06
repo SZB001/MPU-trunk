@@ -605,10 +605,20 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				case SOCKPROXY_SGLINK_CLOSE:
 				{
 					/*release all resources and close all connections*/
-					(void)SgHzTboxClose();
-					sockSt.state = PP_CLOSED;
-					sockSt.waittime = tm_get_time();
-					sockSt.linkSt = SOCKPROXY_CHECK_CSR;
+					if(pthread_mutex_trylock(&sendmtx) == 0)//
+					{
+						if(sockSt.state != PP_CLOSED)
+						{
+							log_i(LOG_SOCK_PROXY, "sg socket closed\n");
+							(void)SgHzTboxClose();
+							sockSt.state = PP_CLOSED;
+						}
+						sockSt.asynCloseFlg = 0;
+						sockSt.waittime = tm_get_time();
+						sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+						sockSt.linkSt = SOCKPROXY_CHECK_CSR;
+						pthread_mutex_unlock(&sendmtx);
+					}
 				}
 				break;
 				default:
@@ -664,8 +674,8 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 						/*create random string*/
 						sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
 						sprintf(ScdPath, "%s","/usrdata/pem/TspCA.cer");
-						sprintf(UsCertPath, "%s","/usrdata/pki/userAuth.cer");//单向连接申请的证书，要跟two_certreqmain.key匹配使用
-						sprintf(UsKeyPath, "%s","/usrdata/pki/two_certreqmain.key");
+						sprintf(UsCertPath, "%s",PP_CERTDL_CERTPATH);//申请的证书，要跟two_certreqmain.key匹配使用
+						sprintf(UsKeyPath, "%s",PP_CERTDL_TWOCERTKEYPATH);
 						iRet = HzTboxCertchainCfg(OnePath, ScdPath, UsCertPath, UsKeyPath);
 						if(iRet != 2030)
 						{
@@ -691,7 +701,10 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 						{
 							log_e(LOG_SOCK_PROXY,"HzTboxConnect error+++++++++++++++iRet[%d] \n", iRet);
 							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+							sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 							sockSt.waittime = tm_get_time();
+							PP_CertDL_CertDLReset();
+							sockSt.linkSt = SOCKPROXY_CHECK_CSR;
 							return -1;
 						}
 						log_i(LOG_HOZON, "set up BDLlink success\n");
@@ -713,7 +726,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				break;
 				case SOCKPROXY_BDLLINK_CLOSE:
 				{
-					if(pthread_mutex_trylock(&sendmtx) == 0)//(������������)��ȡ�������ɹ���˵����ǰ���Ϳ��У�ͬʱ��ס����
+					if(pthread_mutex_trylock(&sendmtx) == 0)//
 					{
 						if(sockSt.state != PP_CLOSED)
 						{
@@ -752,7 +765,7 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
     int ret = 0, rlen;
     char rbuf[1456] = {0};
 #if !SOCKPROXY_SAFETY_EN
-    if ((rlen = sock_recv(state->socket, rbuf, sizeof(rbuf))) < 0)
+    if ((rlen = sock_recv(state->socket, (uint8_t*)rbuf, sizeof(rbuf))) < 0)
     {
         log_e(LOG_SOCK_PROXY, "socket recv error: %s", strerror(errno));
         log_e(LOG_SOCK_PROXY, "socket recv error, reset protocol");

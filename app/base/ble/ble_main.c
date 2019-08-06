@@ -187,7 +187,7 @@ int hz_so_test(void)
 		   int ret=0;
 		   int clen=0;
 		   int mlen=strlen(plaintext);
-			 int size=sizeof(char); 		
+		  int size=  256; 		
 		  printf("\n\nplaintext is this[%d]\n\n",mlen);
 	       char ver[20]="\0";
 		   ret=showversion(ver);
@@ -453,43 +453,6 @@ int check_server_socket(void)
 }
 
 /****************************************************************
- function:     BleShellSetName
- description:  set name
- input:         
- output:       none
- return:       0 indicates success,others indicates failed
- *****************************************************************/
-static int BleShellSetName(int argc, const char **argv)
-{
-#if 0
-    u8 aucName[256] = {0};
-	int iRet;
-
-    if (argc != 1 || sscanf(argv[0], "%s", aucName) != 1)
-    {
-        shellprintf(" usage: input ble name\r\n");
-        return -1;
-    }
-
-	if(BleSetName(aucName, strlen((const char *)aucName)))
-	{
-        shellprintf(" error: set Ble name fail\r\n");
-        return -2;
-    }
-
-	iRet = BleUpdateCfg();
-	if (0 != iRet)
-    {
-        log_e(LOG_BLE, "reg scom proc failed, ulRet:0x%08x", iRet);
-        return iRet;
-    }
-
-	ucBleState = stBtApi.Open();
-#endif	
-    return 0;
-}
-
-/****************************************************************
  function:     BleShellGetName
  description:  get name
  input:        none
@@ -653,7 +616,7 @@ int ble_init(INIT_PHASE phase)
 
 int start_ble(void)
 {
-	int len = 18;
+	unsigned int len = 18;
 	unsigned char vin[20] = {0};
 	unsigned char tmp[250] = {0};
 	unsigned char tmp_len = 0;
@@ -801,24 +764,24 @@ static void *ble_main(void)
 				{
 						
 				}
-				 else if (MPU_MID_HOZON_PP == msgheader.sender)
-    			{
-       				if (BLE_MSG_CONTROL == msgheader.msgid)
-        			{
-         				PrvtProt_respbt_t respbt;
-      					memcpy((char *)&respbt, g_pucbuf, msgheader.msglen);
-      					log_e(LOG_BLE, "respbt.cmd = %d", respbt.cmd);
-      					log_e(LOG_BLE, "msgheader.msglen = %d", msgheader.msglen);
-      					log_e(LOG_BLE, "respbt.result = %d", respbt.result);
-      					log_e(LOG_BLE, "respbt.msg_type = %d", respbt.msg_type);
-       					if ((g_hz_protocol.hz_send.ack.msg_type ==  respbt.msg_type) && (g_hz_protocol.hz_send.ack.state == respbt.cmd))
-       					{
-        					bt_send_cmd_pack(respbt.result, g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
-      						 stBtApi.Send(g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
-       					}
-        			}
-    
-   				 }
+				else if (MPU_MID_HOZON_PP == msgheader.sender)
+				{
+				    if (BLE_MSG_CONTROL == msgheader.msgid)
+				    {
+				    	PrvtProt_respbt_t respbt;
+						memcpy((char *)&respbt, g_pucbuf, msgheader.msglen);
+						log_e(LOG_BLE, "respbt.cmd = %d", respbt.cmd);
+						log_e(LOG_BLE, "msgheader.msglen = %d", msgheader.msglen);
+						log_e(LOG_BLE, "respbt.result = %d", respbt.result);
+						log_e(LOG_BLE, "respbt.msg_type = %d", respbt.msg_type);
+	 					if ((g_hz_protocol.hz_send.ack.msg_type ==  (respbt.msg_type)) && (g_hz_protocol.hz_send.ack.state == respbt.cmd))
+	 					{
+	 						bt_send_cmd_pack(respbt.result, g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
+							stBtApi.Send(g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
+	 					}
+				    }
+				
+				}
 				else if (MPU_MID_BLE == msgheader.sender)
 				{
 					ucCnt = 0;
@@ -859,8 +822,6 @@ static void *ble_main(void)
 						    }
 							else if (BT_AH_MSG_TYPE_ACK == g_hz_protocol.hz_send.msg_type) 
 							{
-								log_e(LOG_BLE, "g_hz_protocol.type = %d", g_hz_protocol.type);
-      							log_e(LOG_BLE, "g_hz_protocol.hz_send.ack.state = %d", g_hz_protocol.hz_send.ack.state);
 								PP_rmtCtrl_BluetoothCtrlReq(g_hz_protocol.type, g_hz_protocol.hz_send.ack.state);
 							}
 						}

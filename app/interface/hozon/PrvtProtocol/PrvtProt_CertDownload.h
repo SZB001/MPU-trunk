@@ -25,11 +25,26 @@ description�� macro definitions
 #define PP_CERTDL_DLREQWAIT				3
 #define PP_CERTDL_END					4
 
+#define PP_CHECK_REVO_IDLE				0
+#define PP_CHECK_REVO_REQ				1
+#define PP_CHECK_REVO_WAIT				2
+#define PP_CHECK_REVO_END				3
+
 //启用证书
 #define PP_CERTEN_IDLE				0
 #define PP_CERTEN_REQ				1
 #define PP_CERTEN_WAIT				2
-#define PP_CERTEN_END				3
+#define PP_CERTEN_CHECKREVOLIST		3
+#define PP_CERTEN_CHECKREVOWAIT		4
+#define PP_CERTEN_END				5
+
+//检查更新证书状态
+#define PP_CERTUPDATA_IDLE			0
+#define PP_CERTUPDATA_CKREQ			1
+#define PP_CERTUPDATA_CKREQWAIT		2
+#define PP_CERTUPDATA_UDREQ			3
+#define PP_CERTUPDATA_UDWAIT		4
+#define PP_CERTUPDATA_END			5
 
 #define PP_CERTDL_DLTIMEOUT			5000
 
@@ -37,7 +52,11 @@ description�� macro definitions
 
 #define PP_CERTDL_MID_REQ			1
 #define PP_CERTDL_MID_RESP			2
+#define PP_CERTDL_MID_UDREQ			3
+#define PP_CERTDL_MID_UDREQRESP		4
 #define PP_CERTDL_MID_CERT_EN		5
+#define PP_CERTDL_MID_REVOLISTREQ	6
+#define PP_CERTDL_MID_REVOLISTRESP	7
 
 //证书下载mid= 2起始字节
 #define PP_CERTDL_RESP_MID			0
@@ -117,6 +136,26 @@ typedef struct
 
 typedef struct
 {
+	uint8_t 	mid;//消息ID
+	uint32_t	eventid;//事件id
+	uint8_t		certType;
+	uint8_t		failureType;
+	uint16_t	crlLength;
+}PP_CertRevoListReq_t;
+
+typedef struct
+{
+	uint8_t 	mid;//消息ID
+	uint32_t	eventid;//事件id
+	uint8_t		certType;
+	uint8_t		certSnLength;
+	uint8_t		certSn[255];
+	uint8_t		certSnSignLength;
+	uint8_t 	certSnSign[255];
+}PP_CertUpdataReq_t;
+
+typedef struct
+{
 	PP_CertificateDownloadReq_t		CertDLReq;
 	PP_CertificateDownloadResp_t	CertDLResp;
 }PP_CertificateDownload_t;
@@ -133,4 +172,6 @@ description�� function External declaration
 extern void PP_CertDownload_init(void);
 extern int PP_CertDownload_mainfunction(void *task);
 extern void PP_CertDL_SetCertDLReq(unsigned char req);
+extern void PP_CertDL_SetCertDLUpdata(unsigned char req);
+extern void PP_CertDL_CertDLReset(void);
 #endif 

@@ -578,7 +578,7 @@ int cfg_set_default_para(CFG_SET_TYPE type)
 	cfg_set_by_id(CFG_ITEM_FT_REGISTER, &status, sizeof(status), type);
 
 	unsigned char ble_enable = 1;
-    cfg_set_by_id(CFG_ITEM_EN_BLE, &ecall_enable, sizeof(ecall_enable), type);
+    cfg_set_by_id(CFG_ITEM_EN_BLE, &ble_enable, sizeof(ble_enable), type);
 
 	char ble_name[256];
     memset(ble_name, 0, sizeof(ble_name));

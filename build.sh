@@ -44,4 +44,4 @@ fi
 
 make cleanall
 make $OPTIONS
-#make striped
+make striped

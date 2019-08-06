@@ -907,7 +907,7 @@ int app_dm_set_local_bt_name(unsigned char* pucName)
 {
     int status;
     tBSA_DM_SET_CONFIG bt_config;
-    BD_NAME name = "Quectel CM256SM"; /* Local Name */
+    //BD_NAME name = "Quectel CM256SM"; /* Local Name */
 	if (strlen((const char*)pucName) > BD_NAME_LEN)
 	{
 		return -1;

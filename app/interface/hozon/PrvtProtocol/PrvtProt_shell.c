@@ -62,6 +62,7 @@ static int PP_shell_showpara(int argc, const char **argv);
 static int PP_shell_SetdiagReq(int argc, const char **argv);
 static int PP_shell_SetTboxSN(int argc, const char **argv);
 static int PP_shell_SetCertDLReq(int argc, const char **argv);
+static int PP_shell_SetCertDLUpdata(int argc, const char **argv);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -100,6 +101,7 @@ void PrvtProt_shell_init(void)
 
 	/* cert download */
 	shell_cmd_register("hozon_setcertdlReq", PP_shell_SetCertDLReq, "set cert download req");
+	shell_cmd_register("hozon_setcertupdataReq", PP_shell_SetCertDLUpdata, "set cert updata req");
 }
 
 
@@ -516,3 +518,32 @@ static int PP_shell_SetCertDLReq(int argc, const char **argv)
     sleep(1);
     return 0;
 }
+
+/******************************************************
+*��������PP_shell_SetCertDLUpdata
+
+*��  �Σ�����
+
+
+*����ֵ��void
+
+*��  ����
+
+*��  ע��
+******************************************************/
+static int PP_shell_SetCertDLUpdata(int argc, const char **argv)
+{
+	unsigned int CupdataReq;
+    if (argc != 1)
+    {
+        shellprintf(" usage: hozon_setcertdlReq <set cert download updata req>\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &CupdataReq);
+
+	PP_CertDL_SetCertDLUpdata((uint8_t)CupdataReq);
+    sleep(1);
+    return 0;
+}
+

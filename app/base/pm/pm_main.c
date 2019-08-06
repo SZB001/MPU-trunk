@@ -17,6 +17,7 @@
 #include "signal.h"
 #include "netlink.h"
 #include "ql_nw.h"
+#include "ble.h"
 
 static pthread_t     pm_tid;  /* thread id */
 static unsigned char pm_msgbuf[TCOM_MAX_MSG_LEN];
@@ -434,6 +435,10 @@ static void *pm_main(void)
                     {
                         pm_send_evt(MPU_MID_AT, PM_EVT_RING);
                     }
+					else if(BLE_MSG_ID_RING == msgheader.msgid)
+					{
+						pm_send_evt(MPU_MID_BLE, PM_EVT_RING);
+					}
                     else if (PM_MSG_ID_EVT == msgheader.msgid)
                     {
                         PM_EVENT evt;

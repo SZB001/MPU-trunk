@@ -228,9 +228,12 @@ int PP_ACCtrl_mainfunction(void *task)
 					log_o(LOG_HOZON,"request stop ac\n");     
 					PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);
 				}
-				else                                               //设置空调温度
+				else if(PP_rmtACCtrl.state.accmd == PP_SETH_ACC)  //关闭空调                                              //设置空调温度
 				{   log_o(LOG_HOZON,"Set the air conditioning temperature\n"); 
 					PP_can_send_data(PP_CAN_ACCTRL,CAN_SETACCTEP,temp); 
+				}
+				else
+				{
 				}
 				PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_RESPWAIT;
 				PP_rmtACCtrl.state.waittime = tm_get_time();
@@ -268,10 +271,16 @@ int PP_ACCtrl_mainfunction(void *task)
 						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 					}
 				}
-				else // 设定温度
+				else if(PP_rmtACCtrl.state.accmd == PP_SETH_ACC)// 设定温度
+				{	
+					if(PP_rmtCtrl_cfg_LHTemp() == temp)
+					{
+						log_o(LOG_HOZON,"Set the air conditioner temperature = %d successfully \n",temp);
+						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
+					}
+				}
+				else
 				{
-					log_o(LOG_HOZON,"Set the air conditioner temperature = %d successfully \n",temp);
-					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 				}
 			}
 			else//超时
