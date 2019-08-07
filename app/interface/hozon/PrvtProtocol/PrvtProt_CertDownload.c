@@ -73,6 +73,7 @@ typedef struct
 {
 	PP_CertificateEnReq_t		para;
 	uint8_t enSt;
+	uint8_t	CertEnCnt;
 }PP_CertificateEn_t;
 
 typedef struct
@@ -361,6 +362,7 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 						(void)cfg_set_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
 						PP_CertDL.state.CertEnflag = 0;
 						(void)cfg_set_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
+						PP_CertEn.CertEnCnt = 0;
 						//sockproxy_socketclose();
 					}
 					else
@@ -608,7 +610,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 {
 	static 	uint8_t	CertEnSt = PP_CERTEN_IDLE;
-	static 	uint8_t	CertEnCnt = 0;
+	//static 	uint8_t	PP_CertEn.CertEnCnt = 0;
 	#define PP_CERTEN_TIMES		1
 	static 	uint64_t 	Enwaittime;
 
@@ -623,10 +625,10 @@ static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 		case PP_CERTEN_IDLE:
 		{
 			if((PP_CertDL.state.CertEnflag == 0) && \
-				(PP_CertUpdata.updatedFlag ==0) &&	(CertEnCnt < PP_CERTEN_TIMES))//证书未启用,启用证书
+				(PP_CertUpdata.updatedFlag ==0) &&	(PP_CertEn.CertEnCnt < PP_CERTEN_TIMES))//证书未启用,启用证书
 			{
 				log_i(LOG_HOZON, "certificate unenable,start to enable certificate\n");
-				CertEnCnt++;
+				PP_CertEn.CertEnCnt++;
 				CertEnSt = PP_CERTEN_REQ;
 			}
 		}
@@ -847,16 +849,16 @@ static int PP_CertDL_do_checkCertStatus(PrvtProt_task_t *task)
 			{
 				if(statecert==1)
 				{
-					log_i(LOG_HOZON,"未到更新时间\n");
+					log_i(LOG_HOZON,"Update time not available\n");
 				}
 				else if(statecert==2)
 				{
-					log_i(LOG_HOZON,"已到更新时间，\n");
+					log_i(LOG_HOZON,"Update time is up，\n");
 					PP_checkCertSt.CertUpdataReq = 1;
 				}
 				else if(statecert==3)
 				{
-					log_i(LOG_HOZON,"证书已无效\n");
+					log_i(LOG_HOZON,"Certificate invalid\n");
 					PP_checkCertSt.CertUpdataReq = 1;
 				}
 				else
@@ -880,6 +882,7 @@ static int PP_CertDL_do_checkCertStatus(PrvtProt_task_t *task)
 				{
 					if(1 == crlstatus)//已吊销
 					{
+						log_i(LOG_HOZON,"Certificate revoked\n");
 						PP_checkCertSt.CertUpdataReq = 1;
 					}
 					else
@@ -1098,7 +1101,6 @@ static int PP_CertDL_do_updataCertificate(PrvtProt_task_t *task)
 		default:
 		break;
 	}
-
 
 	if((1 == PP_CertUpdata.updatedFlag) && \
 			(PP_checkCertSt.updataSt == PP_CERTUPDATA_IDLE))

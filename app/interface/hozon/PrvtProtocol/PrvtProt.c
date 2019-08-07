@@ -292,6 +292,9 @@ static int PrvtPro_do_checksock(PrvtProt_task_t *task)
 
 		return 0;
 	}
+
+	PP_heartbeat.waitSt = 0;
+	PP_heartbeat.state = 0;
 	return -1;
 }
 

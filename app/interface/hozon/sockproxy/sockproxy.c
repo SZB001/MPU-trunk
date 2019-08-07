@@ -380,7 +380,8 @@ void sockproxy_socketclose(void)
 	{//(������������)����ȡ������ʧ�ܣ�˵����ʱ�������߳���ִ�йر�
 		if(sockSt.state == PP_OPENED)
 		{
-			sockSt.state = PP_CLOSE_WAIT;//�ȴ��ر�״̬
+			log_i(LOG_SOCK_PROXY, "close socket");
+			sockSt.state = PP_CLOSE_WAIT;//ر�̬
 			sockSt.asynCloseFlg = 1;
 		}
 		pthread_mutex_unlock(&closemtx);
@@ -483,6 +484,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 
 	if(sockproxy_SkipSockCheck())
 	{
+		//log_i(LOG_HOZON, "network is not ok\n");
 		return -1;
 	}
 
@@ -589,7 +591,8 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 						{
 							if(GetPP_CertDL_CertValid() == 1)//证书有效
 							{
-								sockSt.sglinkSt = SOCKPROXY_SGLINK_CLOSE;
+								//sockSt.sglinkSt = SOCKPROXY_SGLINK_CLOSE;
+								sockproxy_socketclose();
 							}
 
 							return 0;
@@ -597,6 +600,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 
 						if(sockSt.asynCloseFlg == 1)//
 						{
+							log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg == 1 ,start to close sg socket\n");
 							sockSt.sglinkSt = SOCKPROXY_SGLINK_CLOSE;
 						}
 					}
@@ -605,7 +609,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				case SOCKPROXY_SGLINK_CLOSE:
 				{
 					/*release all resources and close all connections*/
-					if(pthread_mutex_trylock(&sendmtx) == 0)//
+					if(pthread_mutex_lock(&sendmtx) == 0)//
 					{
 						if(sockSt.state != PP_CLOSED)
 						{
@@ -618,6 +622,10 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 						sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 						sockSt.linkSt = SOCKPROXY_CHECK_CSR;
 						pthread_mutex_unlock(&sendmtx);
+					}
+					else
+					{
+						log_i(LOG_SOCK_PROXY, "wait close socket\n");
 					}
 				}
 				break;
@@ -725,6 +733,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 
 						if(1 == sockSt.asynCloseFlg)
 						{
+							log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg == 1 ,start to close socket\n");
 							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_CLOSE;
 						}
 					}
@@ -732,7 +741,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				break;
 				case SOCKPROXY_BDLLINK_CLOSE:
 				{
-					if(pthread_mutex_trylock(&sendmtx) == 0)//
+					if(pthread_mutex_lock(&sendmtx) == 0)//
 					{
 						if(sockSt.state != PP_CLOSED)
 						{
