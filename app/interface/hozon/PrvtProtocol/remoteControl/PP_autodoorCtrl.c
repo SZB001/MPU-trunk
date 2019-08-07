@@ -147,36 +147,31 @@ int PP_autodoorCtrl_mainfunction(void *task)
 		break;
 		case PP_AUTODOORCTR_RESPWAIT://执行等待车控响应
 		{
-			if(autodoor_type == PP_OPENDOOR) // 等待打开尾门结果
+			if((tm_get_time() - PP_Respwaittime) > 200)
 			{
 				if((tm_get_time() - PP_Respwaittime) < 10000)
 				{
-					if(PP_rmtCtrl_cfg_reardoorSt() == 2) //尾门状态2，尾门开启成功
+					if(autodoor_type == PP_OPENDOOR) // 等待打开尾门结果
 					{
-						log_o(LOG_HOZON,"autodoor open successed!");
-						PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
-						autodoor_success_flag = 1;
-						auto_door_stage = PP_AUTODOORCTR_END;
+						if(PP_rmtCtrl_cfg_reardoorSt() == 2) //尾门状态2，尾门开启成功
+						{
+							log_o(LOG_HOZON,"autodoor open successed!");
+							PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
+							autodoor_success_flag = 1;
+							auto_door_stage = PP_AUTODOORCTR_END;
+						}
 					}
-				}
-				else//响应超时
-				{
-					PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
-					autodoor_success_flag = 0;
-					auto_door_stage = PP_AUTODOORCTR_END;
-				}
-			}
-			else//等待尾门关闭结果
-			{
-				if((tm_get_time() - PP_Respwaittime) < 10000)
-				{
-					if(PP_rmtCtrl_cfg_reardoorSt() == 0) //尾门状态1，尾门关闭成功
+					else
 					{
-						log_o(LOG_HOZON,"autodoor close successed!");
-						PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
-						autodoor_success_flag = 1;
-						auto_door_stage = PP_AUTODOORCTR_END;
+						if(PP_rmtCtrl_cfg_reardoorSt() == 0) //尾门状态1，尾门关闭成功
+						{
+							log_o(LOG_HOZON,"autodoor close successed!");
+							PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
+							autodoor_success_flag = 1;
+							auto_door_stage = PP_AUTODOORCTR_END;
+						}
 					}
+
 				}
 				else//响应超时
 				{

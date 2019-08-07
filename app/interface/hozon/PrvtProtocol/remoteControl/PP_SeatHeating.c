@@ -178,58 +178,61 @@ int PP_seatheating_mainfunction(void *task)
 			break;
 			case PP_SEATHEATING_RESPWAIT:  //  等待BDM应答
 		    {
-		    	if((tm_get_time() - PP_rmtseatheatCtrl[i].PP_Respwaittime) < 2000)
+		    	if((tm_get_time() - PP_rmtseatheatCtrl[i].PP_Respwaittime) > 200)
 		    	{
-			    	if(PP_rmtseatheatCtrl[i].state.reqType == cmd[i])  //开启应答
-			        {
-			           if(PP_rmtCtrl_cfg_HeatingSt(i) == PP_rmtseatheatCtrl[i].level)
-			           {
-			              if(i == 0)
-			              {
-			      		  	 PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATMAIN);//
-			              }
-						  else
-						  {
-						 	 PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATPASS);//
-						  }
-			               PP_rmtseatheatCtrl[i].seatheat_success_flag = 1;
-			               PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
-						   log_o(LOG_HOZON,"Open seat heating successfully\n");
-			            }
-			        }
-					else  //关闭应答
+			    	if((tm_get_time() - PP_rmtseatheatCtrl[i].PP_Respwaittime) < 2000)
 			    	{
-					 	if(PP_rmtCtrl_cfg_HeatingSt(i) == 0) 
-			         	{
-			         		 if(i == 0)
-			                 {
-			      		  	    PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATMAIN);//
-			                 }
-						     else
-						     {
-						 	    PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATPASS);//
-						     }
-			             	PP_rmtseatheatCtrl[i].seatheat_success_flag = 1;
-						 	seat_requestpower_flag = 2;  //座椅加热关闭成功请求下电
-			             	PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
-					     	log_o(LOG_HOZON,"Close seat heating successfully\n");
-			        	}
-			    	 }	
-			    }
-			    else
-			    {
-			    	if(i == 0)
-			        {
-			      		PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATMAIN);//
-			        }
-					else
-					{
-						PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATPASS);//
-					}
-			       log_o(LOG_HOZON,"timeout\n");
-			       PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
-			       PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
-			    }
+				    	if(PP_rmtseatheatCtrl[i].state.reqType == cmd[i])  //开启应答
+				        {
+				           if(PP_rmtCtrl_cfg_HeatingSt(i) == PP_rmtseatheatCtrl[i].level)
+				           {
+				              if(i == 0)
+				              {
+				      		  	 PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATMAIN);//
+				              }
+							  else
+							  {
+							 	 PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATPASS);//
+							  }
+				               PP_rmtseatheatCtrl[i].seatheat_success_flag = 1;
+				               PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
+							   log_o(LOG_HOZON,"Open seat heating successfully\n");
+				            }
+				        }
+						else  //关闭应答
+				    	{
+						 	if(PP_rmtCtrl_cfg_HeatingSt(i) == 0) 
+				         	{
+				         		 if(i == 0)
+				                 {
+				      		  	    PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATMAIN);//
+				                 }
+							     else
+							     {
+							 	    PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATPASS);//
+							     }
+				             	PP_rmtseatheatCtrl[i].seatheat_success_flag = 1;
+							 	seat_requestpower_flag = 2;  //座椅加热关闭成功请求下电
+				             	PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
+						     	log_o(LOG_HOZON,"Close seat heating successfully\n");
+				        	}
+				    	 }	
+				    }
+				    else
+				    {
+				    	if(i == 0)
+				        {
+				      		PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATMAIN);//
+				        }
+						else
+						{
+							PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATPASS);//
+						}
+				       log_o(LOG_HOZON,"timeout\n");
+				       PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
+				       PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
+				    }
+		    	}
 			}
 			break;
 			case PP_SEATHEATING_END :

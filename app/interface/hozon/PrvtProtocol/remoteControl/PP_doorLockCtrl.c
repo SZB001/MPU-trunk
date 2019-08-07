@@ -178,36 +178,39 @@ int PP_doorLockCtrl_mainfunction(void *task)
 	
 		case PP_DOORLOCKCTRL_RESPWAIT://ִ等待BDM应答
 		{
-			if((tm_get_time() - PP_Respwaittime) < 2000)
-		    {
-		     	if(doorctrl_type == PP_OPENDOOR) // 打开车门结果
-		    	 {
-		      		if(PP_rmtCtrl_cfg_doorlockSt() == 0) //  打开车门成功
-		     		{
-		       			log_o(LOG_HOZON,"open door success");
-		       			PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //清除开门标志位
-		       			doorLock_success_flag = 1;
-		       			door_lock_stage = PP_DOORLOCKCTRL_END;
-		      		}
-		     	}
-		    	else
-		     	{
-		      		if(PP_rmtCtrl_cfg_doorlockSt() == 1) //锁门成功
-		      		{
-		      			 log_o(LOG_HOZON,"lock door success");
-		       			 PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); ////清除锁门标志位
-		       			 doorLock_success_flag = 1;
-		       			 door_lock_stage = PP_DOORLOCKCTRL_END;
-		      		}
-		     	}
-		    }
-		    else//BDM超时
-		    {
-			     log_o(LOG_HOZON,"BDM timeout");
-			     PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0);
-			     doorLock_success_flag = 0;
-			     door_lock_stage = PP_DOORLOCKCTRL_END;
-		    }
+			if((tm_get_time() - PP_Respwaittime) > 200) //延时200毫秒在去检测结果
+			{
+				if((tm_get_time() - PP_Respwaittime) < 2000)
+			    {
+			     	if(doorctrl_type == PP_OPENDOOR) // 打开车门结果
+			    	 {
+			      		if(PP_rmtCtrl_cfg_doorlockSt() == 0) //  打开车门成功
+			     		{
+			       			log_o(LOG_HOZON,"open door success");
+			       			PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //清除开门标志位
+			       			doorLock_success_flag = 1;
+			       			door_lock_stage = PP_DOORLOCKCTRL_END;
+			      		}
+			     	}
+			    	else
+			     	{
+			      		if(PP_rmtCtrl_cfg_doorlockSt() == 1) //锁门成功
+			      		{
+			      			 log_o(LOG_HOZON,"lock door success");
+			       			 PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); ////清除锁门标志位
+			       			 doorLock_success_flag = 1;
+			       			 door_lock_stage = PP_DOORLOCKCTRL_END;
+			      		}
+			     	}
+			    }
+			    else//BDM超时
+			    {
+				     log_o(LOG_HOZON,"BDM timeout");
+				     PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0);
+				     doorLock_success_flag = 0;
+				     door_lock_stage = PP_DOORLOCKCTRL_END;
+			    }
+			}
 		}
 		break;
 		

@@ -187,7 +187,7 @@ int hz_so_test(void)
 		   int ret=0;
 		   int clen=0;
 		   int mlen=strlen(plaintext);
-		  int size=  256; 		
+		  //int size=  256;
 		  printf("\n\nplaintext is this[%d]\n\n",mlen);
 	       char ver[20]="\0";
 		   ret=showversion(ver);

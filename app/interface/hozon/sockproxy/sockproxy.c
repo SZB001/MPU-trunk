@@ -169,6 +169,8 @@ static void *sockproxy_rcvmain(void)
 
 #endif
 
+	log_set_level(LOG_SOCK_PROXY, LOG_DEBUG);
+
     while (1)
     {
         res = sockproxy_do_checksock(&sockSt) ||	//���socket����,��������0
@@ -589,10 +591,8 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 							{
 								sockSt.sglinkSt = SOCKPROXY_SGLINK_CLOSE;
 							}
-							else
-							{
-								return 0;
-							}
+
+							return 0;
 						}
 
 						if(sockSt.asynCloseFlg == 1)//
@@ -714,6 +714,12 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					{
 						if(sockSt.state == PP_OPENED)
 						{
+							///if(GetPP_CertDL_CertUpdate())
+							//{
+							//	log_i(LOG_SOCK_PROXY, "certificate updated\n");
+							//	sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_CLOSE;
+							//}
+
 							return 0;
 						}
 
@@ -735,6 +741,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 							sockSt.state = PP_CLOSED;
 						}
 						sockSt.asynCloseFlg = 0;
+						sockSt.linkSt = SOCKPROXY_CHECK_CSR;
 						sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 						pthread_mutex_unlock(&sendmtx);
 					}
@@ -877,12 +884,14 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 				res = 0;
 			}
 #else
+			SP_data_ack_pack();
 			if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
 			{
 				res = SgHzTboxDataSend((char*)msg,len);
 				if(res != 1260)
 				{
 					log_e(LOG_SOCK_PROXY,"SgHzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
+					//SP_data_ack_pack();
 					return -1;
 				}
 			}
@@ -892,11 +901,12 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 				if(res != 1260)
 				{
 					log_e(LOG_SOCK_PROXY,"HzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
+					//SP_data_ack_pack();
 					return -1;
 				}
 			}
 
-			SP_data_ack_pack();
+			//SP_data_ack_pack();
 			protocol_dump(LOG_HOZON, "send data to tsp", msg, len, 1);
 #endif
 		}

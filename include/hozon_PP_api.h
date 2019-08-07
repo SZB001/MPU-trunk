@@ -4,15 +4,15 @@
 #define PP_RMTDIAG_FAILCODE_LEN 5
 
 #define PP_CERTDL_CERTPATH			"/usrdata/pki/userAuth.cer"
-#define PP_CERTDL_CERTPATH_UPDATA	"/usrdata/pki/updata/userAuth.cer"
+#define PP_CERTDL_CERTPATH_UPDATE	"/usrdata/pki/update/userAuth.cer"
 #define PP_CERTDL_CERTPATH_BKUP		"/usrdata/pki/bkup/userAuth.cer"
 
 #define PP_CERTDL_TWOCERTKEYPATH			"/usrdata/pki/two_certreqmain.key"
-#define PP_CERTDL_TWOCERTRKEYPATH_UPDATA	"/usrdata/pki/updata/two_certreqmain.key"
+#define PP_CERTDL_TWOCERTRKEYPATH_UPDATE	"/usrdata/pki/update/two_certreqmain.key"
 #define PP_CERTDL_TWOCERTRKEYPATH_BKUP		"/usrdata/pki/bkup/two_certreqmain.key"
 
 #define PP_CERTDL_TWOCERTCSRPATH			"/usrdata/pki/two_certreqmain.csr"
-#define PP_CERTDL_TWOCERTRCSRPATH_UPDATA	"/usrdata/pki/updata/two_certreqmain.csr"
+#define PP_CERTDL_TWOCERTRCSRPATH_UPDATE	"/usrdata/pki/update/two_certreqmain.csr"
 #define PP_CERTDL_TWOCERTRCSRPATH_BKUP		"/usrdata/pki/bkup/two_certreqmain.csr"
 
 /* diag struct */
@@ -70,4 +70,6 @@ extern unsigned char GetPP_ChargeCtrl_appointHour(void);
 extern unsigned char GetPP_ChargeCtrl_appointMin(void);
 
 extern unsigned char GetPP_CertDL_CertValid(void);
+extern void PP_CertDL_CertDLReset(void);
+extern unsigned char GetPP_CertDL_CertUpdate(void);
 #endif

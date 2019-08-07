@@ -141,21 +141,24 @@ int PP_searchvehicle_mainfunction(void *task)
 		{
 			if(search_type == PP_SEARCH) //寻车
 			{
-				if((tm_get_time() - PP_Respwaittime) < 2000)
+				if((tm_get_time() - PP_Respwaittime) > 200)
 				{
-					if(PP_rmtCtrl_cfg_findcarSt() == 1) //
+					if((tm_get_time() - PP_Respwaittime) < 2000)
 					{
-						log_i(LOG_HOZON,"search vehicle success!!!!!\n");
+						if(PP_rmtCtrl_cfg_findcarSt() == 1) //
+						{
+							log_i(LOG_HOZON,"search vehicle success!!!!!\n");
+							PP_can_send_data(PP_CAN_SEARCH,CAN_CLEANSEARCH,0);
+							serachvehicle_success_flag = 1;
+							search_vehicle_stage = PP_SEARCHVEHICLE_END;
+						}
+					}
+					else//响应超时
+					{
 						PP_can_send_data(PP_CAN_SEARCH,CAN_CLEANSEARCH,0);
-						serachvehicle_success_flag = 1;
+						serachvehicle_success_flag = 0;
 						search_vehicle_stage = PP_SEARCHVEHICLE_END;
 					}
-				}
-				else//响应超时
-				{
-					PP_can_send_data(PP_CAN_SEARCH,CAN_CLEANSEARCH,0);
-					serachvehicle_success_flag = 0;
-					search_vehicle_stage = PP_SEARCHVEHICLE_END;
 				}
 			}
 		}

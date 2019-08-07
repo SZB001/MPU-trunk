@@ -161,48 +161,50 @@ int PP_startengine_mainfunction(void *task)
 		break;
 		case PP_STARTENGINE_RESPWAIT://等待BDM应答
 		{
-			if((tm_get_time() - PP_Respwaittime) < 2000)
+			if((tm_get_time() - PP_Respwaittime) > 200)
 			{
-				if(enginecation == PP_POWERON) //上高压电应答
+				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(PP_rmtCtrl_cfg_RmtStartSt() == 2)  // 2s后在远程启动状态
+					if(enginecation == PP_POWERON) //上高压电应答
 					{
-						PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);
-						PP_Engine_time = tm_get_time();       //记录上高压电成功的时间
-						startengine_success_flag = 1;  //上电成功
-						PP_set_seat_requestpower_flag();
-						PP_set_ac_requestpower_flag();
-						log_o(LOG_HOZON,"Success on high voltage\n");
-						start_engine_stage = PP_STARTENGINE_END;
+						if(PP_rmtCtrl_cfg_RmtStartSt() == 2)  // 2s后在远程启动状态
+						{
+							PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);
+							PP_Engine_time = tm_get_time();       //记录上高压电成功的时间
+							startengine_success_flag = 1;  //上电成功
+							PP_set_seat_requestpower_flag();
+							PP_set_ac_requestpower_flag();
+							log_o(LOG_HOZON,"Success on high voltage\n");
+							start_engine_stage = PP_STARTENGINE_END;
+						}
+					}
+					else   //下高压电应答
+					{
+						if(PP_rmtCtrl_cfg_RmtStartSt() == 0) 
+						{
+							PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0); //将下高压电报文清零
+							PP_can_send_data(PP_CAN_SEATHEAT,0,CAN_SEATHEATMAIN);//下电将座椅加热报文清掉
+							PP_can_send_data(PP_CAN_SEATHEAT,0,CAN_SEATHEATPASS);//下电将座椅加热报文清掉
+							PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);//下电将空调开启报文关闭
+							PP_set_seat_requestpower_flag(); //清除下电标志
+							PP_set_ac_requestpower_flag();   //清除下电标志
+							startengine_success_flag = 2;   //下电成功
+							log_o(LOG_HOZON,"Successful under high voltage\n");
+							start_engine_stage = PP_STARTENGINE_END;
+						}
 					}
 				}
-				else   //下高压电应答
+				else   //BDM 应答超时
 				{
-					if(PP_rmtCtrl_cfg_RmtStartSt() == 0) 
-					{
-						PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0); //将下高压电报文清零
-						PP_can_send_data(PP_CAN_SEATHEAT,0,CAN_SEATHEATMAIN);//下电将座椅加热报文清掉
-						PP_can_send_data(PP_CAN_SEATHEAT,0,CAN_SEATHEATPASS);//下电将座椅加热报文清掉
-						PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);//下电将空调开启报文关闭
-						PP_set_seat_requestpower_flag(); //清除下电标志
-						PP_set_ac_requestpower_flag();   //清除下电标志
-						startengine_success_flag = 2;   //下电成功
-						log_o(LOG_HOZON,"Successful under high voltage\n");
-						start_engine_stage = PP_STARTENGINE_END;
-					}
+					PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);  
+					PP_set_seat_requestpower_flag();  
+					PP_seatheating_ClearStatus();
+					PP_set_ac_requestpower_flag();
+					PP_ACCtrl_ClearStatus();
+					startengine_success_flag = 3;   //操作失败
+					start_engine_stage = PP_STARTENGINE_END;
 				}
-			}
-			else   //BDM 应答超时
-			{
-				PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);  
-				PP_set_seat_requestpower_flag();  
-				PP_seatheating_ClearStatus();
-				PP_set_ac_requestpower_flag();
-				PP_ACCtrl_ClearStatus();
-				startengine_success_flag = 3;   //操作失败
-				start_engine_stage = PP_STARTENGINE_END;
-			}
-			
+			}	
 		}
 		break;
 		case PP_STARTENGINE_END:

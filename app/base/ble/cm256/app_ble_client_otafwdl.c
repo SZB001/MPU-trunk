@@ -76,7 +76,10 @@ typedef struct
     UINT16      mtu;
     tAPP_BLE_CLIENT_OTAFWDL_STATE state;
 } tAPP_BLE_CLIENT_OTAFWDL_CB;
+#define APP_BLE_20735_LE2_FWDL
 
+
+#ifdef APP_BLE_20735_LE2_FWDL
 /*
  * Local function
  */
@@ -86,7 +89,9 @@ static int     app_ble_client_otafwdl_register_notification(void);
 static int     app_ble_client_otafwdl_send_cmd(UINT32 client_num,UINT32 len, unsigned char *data);
 static int     app_ble_client_otafwdl_start();
 static int     app_ble_client_otafwdl_write_data(UINT32 client_num,UINT32 len, unsigned char *data);
+#ifndef APP_BLE_20735_LE2_FWDL
 static int     app_ble_client_otafwdl_hex_parse(char *p_ota_fw_file, UINT8 **pp_ota_binary);
+#endif
 static int     app_ble_client_otafwdl_bin_parse(char *p_ota_fw_file, UINT8 **pp_ota_binary);
 
 static void    app_ble_client_otafwdl_crc_calculate(void);
@@ -107,10 +112,6 @@ static char     *app_ble_client_otafwdl_state_get_desc(tAPP_BLE_CLIENT_OTAFWDL_S
  */
 static tAPP_BLE_CLIENT_OTAFWDL_CB app_ble_client_otafwdl_cb;
 
-#define APP_BLE_20735_LE2_FWDL
-
-
-#ifdef APP_BLE_20735_LE2_FWDL
 
 const char APP_BLE_CLIENT_FWDL_OTA_SERVICE_ID[]       =  "C7261110F425447AA1BD9D7246768BD8";
 const char APP_BLE_CLIENT_FWDL_OTA_CHAR_NOTIFY_ID[]   =  "A3DD50BFF7A74E99838E570A086C661B ";
@@ -265,6 +266,7 @@ static UINT32 app_ble_client_otafwdl_hex2int(char t)
     }
 }
 
+#ifndef APP_BLE_20735_LE2_FWDL
 /*******************************************************************************
 **
 ** Function        app_ble_client_otafwdl_hex_parse
@@ -362,7 +364,7 @@ static int app_ble_client_otafwdl_hex_parse(char *p_ota_fw_file, UINT8 **pp_ota_
 
     return binary_len;
 }
-
+#endif
 
 /*******************************************************************************
 **
