@@ -1082,9 +1082,7 @@ unsigned char hex_to_BCD(unsigned char sdata)
 }
 int uds_did_get_manufacture_date(unsigned char *did, unsigned int len)
 {
-    #if 0
-    unsigned int length = DID_LEN_MANUFACTURE_DATE;
-    char SN[DID_LEN_SN];
+    char SN[PP_TBOXSN_LEN];
     memset(SN,0x00,DID_LEN_SN);
     int ret = 0;
     int did_cur_len = 0;
@@ -1097,33 +1095,28 @@ int uds_did_get_manufacture_date(unsigned char *did, unsigned int len)
         return UDS_INVALID_PARA;
     }
 
-    ret =  cfg_get_para(CFG_ITEM_DID_MDATE, SN, &length);
     
-    if (ret != 0)
-    {
-        log_e(LOG_UDS, "get ECU manufacturing date error, storage error!", len);
-        return ret;
-    }
-
+    PrvtProt_gettboxsn((char *)SN);
+    
     /*Conversion year according to the SN rules of the HOZON*/
     did[did_cur_len] = hex_to_BCD(20);
     did_cur_len++;
 
-    if(SN[did_cur_len+9] < 0x41)
+    if(SN[did_cur_len+8] < 0x41)
     {
-        SN[did_cur_len+9] = 0x41;
+        SN[did_cur_len+8] = 0x41;
     }
-    else if(SN[did_cur_len+9] > 0x59)
+    else if(SN[did_cur_len+8] > 0x59)
     {
-        SN[did_cur_len+9] = 0x59;
+        SN[did_cur_len+8] = 0x59;
     }
     else;
     
-    did[did_cur_len] = hex_to_BCD(SN[did_cur_len+9] - 0x41 + 19);
+    did[did_cur_len] = hex_to_BCD(SN[did_cur_len+8] - 0x41 + 19);
     did_cur_len++;
 
     /*Conversion month according to the SN rules of the HOZON*/
-    if(sscanf(SN + did_cur_len + 9, "%1x", &mdate_month) == 1)
+    if(sscanf(SN + did_cur_len + 8, "%1x", &mdate_month) == 1)
     {
         did[did_cur_len] = mdate_month;
         did_cur_len++;
@@ -1134,11 +1127,9 @@ int uds_did_get_manufacture_date(unsigned char *did, unsigned int len)
         did_cur_len++;
     }
 
-    did[did_cur_len] = hex_to_BCD(SN[did_cur_len+9] - 0x30);
-    did_cur_len++;
     
     /*Conversion day according to the SN rules of the HOZON*/
-    if(sscanf(SN + did_cur_len + 9, "%2x", &mdate_day) == 1)
+    if(sscanf(SN + did_cur_len + 8, "%2x", &mdate_day) == 1)
     {
         did[did_cur_len] = mdate_day;
         did_cur_len++;
@@ -1149,17 +1140,8 @@ int uds_did_get_manufacture_date(unsigned char *did, unsigned int len)
         did_cur_len++;
 
     }
-    #endif
-    if (DID_LEN_MANUFACTURE_DATE > len)
-    {
-        log_e(LOG_UDS, "get manufacture date len error, len:%d", len);
-        return UDS_INVALID_PARA;
-    }
-    did[0] = 0x20;
-    did[1] = 0x19;
-    did[2] = 0x06;
-    did[3] = 0x30;
-    return 0;
+
+    return ret;
 }
 
 #if 0

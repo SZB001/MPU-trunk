@@ -18,6 +18,7 @@ description�� include the header file
 #include "PP_rmtDiag_cfg.h"
 #include "remote_diag_api.h"
 #include "mid_def.h"
+#include "uds.h"
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
@@ -96,5 +97,5 @@ void getPPrmtDiagCfg_Faultcode(uint8_t obj,void *rmtDiag_Fault)
 ******************************************************/
 void getPPrmtDiagCfg_NodeFault(PP_rmtDiag_NodeFault_t *rmtDiag_NodeFault)
 {
-
+	rmtDiag_NodeFault = get_PP_rmtDiag_NodeFault_t();
 }

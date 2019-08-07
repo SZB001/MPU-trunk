@@ -31,7 +31,8 @@ void UDS_SRV_EcuReset(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DLC)
                 uds_positive_response(tUDS, tUDS->can_id_res, 2, Ar_u8RePDU_DATA);
                 pm_send_evt(MPU_MID_UDS, PM_EVT_RESTART_4G_REQ);
                 break;
-
+                
+            #if 0/*合众项目不需要支持软重启*/
             case SOFTWARERESET:
                 Ar_u8RePDU_DATA[0] =  p_u8PDU_Data[0] + POS_RESPOND_SID_MASK ;
                 Ar_u8RePDU_DATA[1] =  p_u8PDU_Data[1] ;
@@ -44,7 +45,7 @@ void UDS_SRV_EcuReset(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DLC)
                 uds_positive_response(tUDS, tUDS->can_id_res, 2, Ar_u8RePDU_DATA);
                 pm_send_evt(MPU_MID_UDS, PM_EVT_RESTART_APP_REQ);
                 break;
-
+            #endif
             default:
                 uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_SubFuncationNotSupported);
                 break;

@@ -47,6 +47,7 @@ const unsigned int REMOTE_DIAG_CAN_ID[REMOTE_DIAG_ECU_NUM][2] =
 	{0x764,0x774},//REMOTE_DIAG_PLG,
 };
 
+const unsigned char dtc_to_str_arr[4] = {'P', 'C', 'B', 'U'};
 
 
 /* 将接收到的远程诊断消息，解析为远程诊断模块可处理的标准请求格式 */
@@ -226,8 +227,6 @@ void parsing_remote_diag_msg(char * remote_diag_msg, TCOM_MSG_HEADER msg, remote
             log_o(LOG_REMOTE_DIAG, "remote diag recv invalid msg!");
         }
     }
-    
-
 }
 
 
@@ -447,8 +446,8 @@ int remote_diag_send_request(unsigned char *msg, unsigned int len)
 
 static void dtc_to_str(unsigned char * dtc_str, unsigned char * DTC_temp)
 {
-    unsigned char dtc_to_str[4] = {'P', 'C', 'B', 'U'};
-    dtc_str[0] = dtc_to_str[(DTC_temp[0] & 0xC0)>>6];
+    
+    dtc_str[0] = dtc_to_str_arr[(DTC_temp[0] & 0xC0)>>6];
     /*
     switch(DTC_temp[0] & 0xC0)
     {
@@ -490,37 +489,36 @@ int PP_get_remote_result(uint8_t obj, PP_rmtDiag_Fault_t * pp_rmtdiag_fault)
         /* 已匹配结果 */
         if(response_arr->remote_diag_response[response_size].request_id == REMOTE_DIAG_CAN_ID[obj][DIAG_REQUEST_ID_ROW])
         {
-            response = response_arr->remote_diag_response[response_size].diag_response;
-            while(byte_size<(response_arr->remote_diag_response[response_size].diag_response_len))
-            {
-                memcpy(DTC_temp,response+byte_size,4);
-                byte_size = byte_size + 4;
-                
-                if(DTC_temp[3] == 0x08)/* 历史故障 */
-                {
-                    dtc_to_str(pp_rmtdiag_fault->faultcode[dtc_num].diagcode,DTC_temp);
-                    pp_rmtdiag_fault->faultcode[dtc_num].diagTime = 0;
-                    pp_rmtdiag_fault->faultcode[dtc_num].faultCodeType = 1;/* 历史故障 */
-                    pp_rmtdiag_fault->faultcode[dtc_num].lowByte = DTC_temp[2];
-                    dtc_num++;
-                }
-                else if(DTC_temp[3] == 0x09)/* 当前故障*/
-                {
-                    dtc_to_str(pp_rmtdiag_fault->faultcode[dtc_num].diagcode,DTC_temp);
-                    
-                    pp_rmtdiag_fault->faultcode[dtc_num].diagTime = 0;
-                    pp_rmtdiag_fault->faultcode[dtc_num].faultCodeType = 0;/* 当前故障 */
-                    pp_rmtdiag_fault->faultcode[dtc_num].lowByte = DTC_temp[2];
-                    dtc_num++;
-                }
-                else
-                {
-                }
-            }
-
-            /* 执行结果中有该ECU的结果，且该结果正常，则执行成功，其它情况都认为执行失败 */
             if(REMOTE_DIAG_CMD_RESULT_OK == response_arr->remote_diag_response[response_size].result_type)
             {
+                response = response_arr->remote_diag_response[response_size].diag_response;
+                while(byte_size<(response_arr->remote_diag_response[response_size].diag_response_len))
+                {
+                    memcpy(DTC_temp,response+byte_size,4);
+                    byte_size = byte_size + 4;
+                    
+                    if(DTC_temp[3] == 0x08)/* 历史故障 */
+                    {
+                        dtc_to_str(pp_rmtdiag_fault->faultcode[dtc_num].diagcode,DTC_temp);
+                        pp_rmtdiag_fault->faultcode[dtc_num].diagTime = 0;
+                        pp_rmtdiag_fault->faultcode[dtc_num].faultCodeType = 1;/* 历史故障 */
+                        pp_rmtdiag_fault->faultcode[dtc_num].lowByte = DTC_temp[2];
+                        dtc_num++;
+                    }
+                    else if(DTC_temp[3] == 0x09)/* 当前故障*/
+                    {
+                        dtc_to_str(pp_rmtdiag_fault->faultcode[dtc_num].diagcode,DTC_temp);
+                        
+                        pp_rmtdiag_fault->faultcode[dtc_num].diagTime = 0;
+                        pp_rmtdiag_fault->faultcode[dtc_num].faultCodeType = 0;/* 当前故障 */
+                        pp_rmtdiag_fault->faultcode[dtc_num].lowByte = DTC_temp[2];
+                        dtc_num++;
+                    }
+                    else
+                    {
+                    }
+                }
+                /* 执行结果中有该ECU的结果，且该结果正常，则执行成功，其它情况都认为执行失败 */
                 pp_rmtdiag_fault->sueecss = 1;
             }
         }

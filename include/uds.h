@@ -3,6 +3,7 @@
 #include "mid_def.h"
 #include "init.h"
 #include "uds_define.h"
+#include "hozon_PP_api.h"
 
 #define  UDS_DIAG_TIMER        TIMER_MAX
 #define  UDS_DIAG_INTERVAL     1000
@@ -35,6 +36,7 @@ void uds_clr_client(void);
 int uds_client_request(int msg_id, int can_id, char *data, int len);
 uint32_t uds_data_request(UDS_T *uds, UDS_TL_ID msg_id, uint32_t can_id, uint8_t *pdu_data,
                           uint16_t pdu_dlc);
+PP_rmtDiag_NodeFault_t * get_PP_rmtDiag_NodeFault_t(void);
 
 
 #endif

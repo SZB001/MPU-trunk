@@ -39,6 +39,11 @@ typedef struct DIAG_ITEM_DID
     diag_set_did_value  set;
 } DIAG_ITEM_DID;
 
+typedef struct
+{
+    unsigned char uds_diag_item_buf[DIAG_ITEM_BUF_LEN];
+    pthread_mutex_t uds_diag_item_buf_mtx;
+} UDS_DIAG_ITEM_BUF_T;
 
 typedef struct DIAG_ITEM_INFO
 {

@@ -20,7 +20,6 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
     static uint8_t flag, counter = 0;
     static uint32_t SecrityAccessFailCounter = 0;
     static uint32_t time = 0;
-    static uint32_t attempt = 0;
     static uint16_t seed, key1, key2;
     static uint32_t  current_time = 0;
 
@@ -62,7 +61,12 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
                 uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_IncorrectMessageLengthOrInvailFormat);
                 return;
             }
-
+            /*合众项目要求2703不支持编程会话*/
+            if (Get_Session_Current() == SESSION_TYPE_PROGRAM)
+            {
+                uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_SubFunctionNotSupportedInActiveSession);
+                return;
+            }
             if (flag == 1)
             {
                 SecrityAccessFailCounter++;
@@ -78,8 +82,8 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
 
                 if (Get_SecurityAccess() == SecurityAccess_LEVEL0)
                 {
-                    seed = rand();//0x1234;
-                    flag = 1;
+                    seed = 0x1234;//rand();
+                    flag = 1;/*已发送种子标志*/
                 }
                 else
                 {
@@ -119,12 +123,6 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
                 return;
             }
 
-            if (attempt >= 3)
-            {
-                flag = 0;
-                uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_ExceedNumberOfAttempts);
-                return;
-            }
 
             key1 = (p_u8PDU_Data[2] << 8) + p_u8PDU_Data[3];
             key2 = calcKey(seed);
@@ -145,15 +143,19 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
             }
             else
             {
-                uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_InvalidKey);
                 SecrityAccessFailCounter++;
 
                 if (SecrityAccessFailCounter == 3)
                 {
                     time = current_time;
+                    uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_ExceedNumberOfAttempts);
+                }
+                else
+                {
+                    uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_InvalidKey);
                 }
 
-                attempt++;
+                flag = 0;/*延时以满足，清除已发送种子标志*/
                 return;
             }
 

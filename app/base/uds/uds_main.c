@@ -25,6 +25,7 @@ static timer_t       uds_diag_timer;
 static pthread_t     uds_tid;  /* thread id */
 static unsigned char uds_msgbuf[TCOM_MAX_MSG_LEN];
 static unsigned char uds_is_ready_sleep = 1;
+extern UDS_DIAG_ITEM_BUF_T uds_diag_item_buf_t;
 
 /****************************************************************
 function:     uds_sleep_available
@@ -118,6 +119,7 @@ int uds_init(INIT_PHASE phase)
     switch (phase)
     {
         case INIT_PHASE_INSIDE:
+            pthread_mutex_init(&uds_diag_item_buf_t.uds_diag_item_buf_mtx, NULL);
             break;
 
         case INIT_PHASE_RESTORE:

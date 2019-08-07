@@ -7,17 +7,36 @@
 #include "rds.h"
 #include "uds.h"
 #include <pthread.h>
-
+#include "hozon_PP_api.h"
+#include "uds_diag.h"
 
 unsigned int UDS_GetDTCSetting(void);
+PP_rmtDiag_NodeFault_t g_PP_rmtDiag_NodeFault;
 
 
-typedef struct
-{
-    unsigned char uds_diag_item_buf[DIAG_ITEM_BUF_LEN];
-    pthread_mutex_t uds_diag_item_buf_mtx;
-} UDS_DIAG_ITEM_BUF_T;
+
+
 UDS_DIAG_ITEM_BUF_T uds_diag_item_buf_t;
+
+
+/* 处理 UDS 给 GB模块诊断信息处理 */
+static void uds_to_gb_process(int dtc_sn)
+{
+    if(DTC_NUM_MISSING_BMS == dtc_sn)
+    {
+        g_PP_rmtDiag_NodeFault.BMSMiss = 1;
+    }
+    else if(DTC_NUM_MISSING_MCU == dtc_sn)
+    {
+        g_PP_rmtDiag_NodeFault.MCUMiss = 1;
+    }
+    g_PP_rmtDiag_NodeFault.tboxFault = 1;
+}
+
+PP_rmtDiag_NodeFault_t * get_PP_rmtDiag_NodeFault_t(void)
+{
+    return (&g_PP_rmtDiag_NodeFault);
+}
 
 
 //static unsigned char uds_diag_item_buf[DIAG_ITEM_BUF_LEN];
@@ -277,6 +296,7 @@ void uds_diag_all_devices(void)
         if ((0 == pre_confirmed) && (1 == *(diag_table[i].confirmed)))
         {
             is_gen_freeze = 1;
+            uds_to_gb_process(i);
         }
     }
 
@@ -308,7 +328,7 @@ void uds_diag_devices(int startno, int endno)
     {
         return;
     }
-
+    
     for (i = startno; i < endno; i++)
     {
         pre_confirmed = *(diag_table[i].confirmed);

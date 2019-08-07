@@ -34,27 +34,23 @@ void UDS_SRV_DiagSessionCtrl(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU
             //UDS_RecoverCANTxRxDefaultStatus();
             break;
 
+        /*合众项目需要编程会话支持所有会话*/
         case SESSION_TYPE_PROGRAM :
-            if (Get_Session_Current() != SESSION_TYPE_DEFAULT)
-            {
                 Set_Seesion_Program();
-            }
-            else
-            {
-                uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_ConditionsNotCorrect);
-                return;
-            }
-
+                Clear_SecurityAccess();
+                UDS_SetDTCOn();
             break;
 
         case SESSION_TYPE_EXTENDED :
             if (Get_Session_Current() != SESSION_TYPE_PROGRAM)
             {
                 Set_Seesion_Extend();
+                Clear_SecurityAccess();
+                UDS_SetDTCOn();
             }
             else
             {
-                uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_ConditionsNotCorrect);
+                uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_SubFunctionNotSupportedInActiveSession);
                 return;
             }
 
@@ -74,8 +70,10 @@ void UDS_SRV_DiagSessionCtrl(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU
     Ar_u8RePDU_DATA[1] =  p_u8PDU_Data[1] ;
     Ar_u8RePDU_DATA[2] = (uint8_t)(tUDS->timer_t[P2SERVER].timer_value >> 8);
     Ar_u8RePDU_DATA[3] = (uint8_t)tUDS->timer_t[P2SERVER].timer_value;
-    Ar_u8RePDU_DATA[4] = (uint8_t)(tUDS->timer_t[P2EXT_SERVER].timer_value >> 8);
-    Ar_u8RePDU_DATA[5] = (uint8_t)tUDS->timer_t[P2EXT_SERVER].timer_value;
+
+    /*P2E 精度为10ms*/
+    Ar_u8RePDU_DATA[4] = (uint8_t)(((tUDS->timer_t[P2EXT_SERVER].timer_value)/10) >> 8);
+    Ar_u8RePDU_DATA[5] = (uint8_t)((tUDS->timer_t[P2EXT_SERVER].timer_value)/10);
 
     uds_positive_response(tUDS, tUDS->can_id_res, 6, Ar_u8RePDU_DATA);
 }
