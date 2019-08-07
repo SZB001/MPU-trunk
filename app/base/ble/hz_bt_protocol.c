@@ -716,6 +716,15 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
     }
 	else
 	{
+	    unsigned int tem_len = 18;
+		unsigned char vin[20] = {0};
+		cfg_get_para(CFG_ITEM_GB32960_VIN, vin, &tem_len);
+		
+		if (strlen((char *)vin) < 17)
+		{
+			memcpy(vin, "000000000000000", strlen("000000000000000"));
+		}
+		
 		ProtocolHeader *request =  protocol_header__unpack(NULL, len, buf);
 		if (NULL == request)
 		{
@@ -740,7 +749,6 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
 		
 	    if (APPLICATION_HEADER__MESSAGE_TYPE__VEHICLE_SECURITY_FUNC == request->head->msg_type)
 	    {
-			//AuthenticationInfo
 			AuthenticationInfo *auth_info =  authentication_info__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 			if (auth_info->authentication_data.len < 50)
 			{
@@ -752,7 +760,8 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
 			memcpy(Temp, (char *)auth_info->authentication_data.data,  auth_info->authentication_data.len);
 			//log_i(LOG_BLE, "Temp = %s",Temp);
 			ApiBLETraceBuf((unsigned char *)Temp, auth_info->authentication_data.len);
-			iRet = HzRequestInfo ((char *)Temp, "HZ01234567891234567", NULL, NULL, NULL,  (char *)BackInfo, &info_len, sekey, &se_len);
+			iRet = HzRequestInfo ((char *)Temp, (char *)&vin, NULL, NULL, NULL,  (char *)BackInfo, &info_len, sekey, &se_len);
+			//iRet = HzRequestInfo ((char *)Temp, "HZ01234567891234567", NULL, NULL, NULL,  (char *)BackInfo, &info_len, sekey, &se_len);
 	    	//iRet = HzRequestInfo ((char *)cert, "HZ01234567891234567", NULL, NULL, NULL,  (char *)BackInfo, &info_len, sekey, &se_len);
 			//iRet = HzRequestInfo (cert, "HZ01234567891234567", NULL, NULL, NULL,	BackInfo, &info_len, sekey, &se_len);
 
@@ -777,7 +786,7 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
 			g_hz_protocol.hz_send.auth_result = 1; //True: auth_success  False: auth_Fail
 			g_hz_protocol.hz_send.failure_reasons = 0;
 			g_hz_protocol.hz_send.ver_data1_len = info_len;
-			g_hz_protocol.type = 0xBB;
+			g_hz_protocol.type = request->head->msg_type;
 			memcpy(g_hz_protocol.hz_send.ver_data1, BackInfo, info_len);
 			memset(g_hz_protocol.sekey, 0, sizeof(g_hz_protocol.sekey));
 			g_hz_protocol.se_len = request->head->msg_type;

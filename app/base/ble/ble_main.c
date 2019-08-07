@@ -187,7 +187,7 @@ int hz_so_test(void)
 		   int ret=0;
 		   int clen=0;
 		   int mlen=strlen(plaintext);
-		  //int size=  256;
+		  int size=  256; 		
 		  printf("\n\nplaintext is this[%d]\n\n",mlen);
 	       char ver[20]="\0";
 		   ret=showversion(ver);
@@ -625,7 +625,6 @@ int start_ble(void)
 	
 	if (strlen((char *)vin) < 17)
 	{
-		//memcpy(tmp, "HZ01234567891234567", strlen("HZ01234567891234567"));
 		memcpy(tmp, "HZ000000000000000", strlen("HZ000000000000000"));
 	}
 	else
@@ -634,9 +633,6 @@ int start_ble(void)
 		memcpy(tmp+2, vin, len);
 	}
 
-    //memset(tmp, 0 , sizeof(tmp));
-	//memcpy(tmp, "HZ01234567891234567", strlen("HZ01234567891234567"));
-     
 	tmp_len = strlen((char *)tmp);
 	stBtApi.SetName(tmp, &tmp_len);
 
@@ -770,10 +766,10 @@ static void *ble_main(void)
 				    {
 				    	PrvtProt_respbt_t respbt;
 						memcpy((char *)&respbt, g_pucbuf, msgheader.msglen);
-						log_e(LOG_BLE, "respbt.cmd = %d", respbt.cmd);
-						log_e(LOG_BLE, "msgheader.msglen = %d", msgheader.msglen);
-						log_e(LOG_BLE, "respbt.result = %d", respbt.result);
-						log_e(LOG_BLE, "respbt.msg_type = %d", respbt.msg_type);
+						log_i(LOG_BLE, "respbt.cmd = %d", respbt.cmd);
+						log_i(LOG_BLE, "msgheader.msglen = %d", msgheader.msglen);
+						log_i(LOG_BLE, "respbt.result = %d", respbt.result);
+						log_i(LOG_BLE, "respbt.msg_type = %d", respbt.msg_type);
 	 					if ((g_hz_protocol.hz_send.ack.msg_type ==  (respbt.msg_type)) && (g_hz_protocol.hz_send.ack.state == respbt.cmd))
 	 					{
 	 						bt_send_cmd_pack(respbt.result, g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);

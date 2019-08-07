@@ -345,7 +345,7 @@ int cm256_open(void)
 		return iRet;
 	}
 
-    ql_ble_sleep_init();
+  
     //GKI_delay(3000);
     //Ql_Autosleep_Enable(1);
 	iRet = api_get_bt_config(&bt_config);
@@ -362,6 +362,7 @@ int cm256_open(void)
 		ble_info.ucMacLen = 0;
 	}
 
+    ql_ble_sleep_init();
 
 #if 0
 //    FUN_IN;

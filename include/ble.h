@@ -44,9 +44,7 @@ author        wangqinglong
 #define YTERR_DISCONCET					(-5)  
 //void ApiTraceBuf(unsigned char *Buf, unsigned long Len);
 
-//#define DEBUG_LQF   
-//#define PRINTFBUF 					ApiTraceBuf
-//#define PRINTF 					    printf
+
 
 /* msg id definition */
 typedef enum

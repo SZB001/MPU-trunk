@@ -99,11 +99,11 @@ void ql_bt_lock_wakelock() //system awake
         if(Ql_SLP_WakeLock_Lock(wakelock_fd) != 0)
 		{
 		    Ql_SLP_WakeLock_Destroy(wakelock_fd);
-		    log_e(LOG_BLE,"Lock wakelock failed!\n");
+		    log_i(LOG_BLE,"Lock wakelock failed!\n");
 		    wakelock_flag = 0;
 		    return;
 		}
-		log_e(LOG_BLE,"Lock wakelock Success!\n");
+		log_i(LOG_BLE,"Lock wakelock Success!\n");
     }
 	
 }
@@ -116,12 +116,12 @@ void ql_bt_unlock_wakelock() //system sleep
         wakelock_flag = 0;
         if(Ql_SLP_WakeLock_Unlock(wakelock_fd) != 0)
         {
-	    	log_e(LOG_BLE,"Unlock wakelock failed!\n");
+	    	log_i(LOG_BLE,"Unlock wakelock failed!\n");
 	    	Ql_SLP_WakeLock_Destroy(wakelock_fd);
             wakelock_flag = 1;
 	   	 	return;
         }
-		log_e(LOG_BLE,"Unlock wakelock Success!\n");
+		log_i(LOG_BLE,"Unlock wakelock Success!\n");
     }
 }
 
