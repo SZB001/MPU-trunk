@@ -18,6 +18,13 @@ description�� macro definitions
 /**********宏开关*********/
 
 /**********宏常量*********/
+#define PP_CHECK_CERT_IDLE			0
+#define PP_CHECK_CERT_AVAILABILITY	1
+#define PP_CHECK_CERT_DL			2
+#define PP_CHECK_CERT_RENEWCERT		3
+#define PP_CHECK_CERT_VERIFYCERT	4
+#define PP_CHECK_CERT_END			5
+
 //请求下载证书
 #define PP_CERTDL_IDLE					0
 #define PP_CERTDL_CHECK_CIPHER_CSR		1
@@ -46,7 +53,7 @@ description�� macro definitions
 #define PP_CERTUPDATA_UDWAIT		4
 #define PP_CERTUPDATA_END			5
 
-#define PP_CERTDL_DLTIMEOUT			5000
+#define PP_CERTDL_DLTIMEOUT			60000
 
 #define PP_CERT_DL_TXINFORMNODE 	30
 
@@ -93,11 +100,16 @@ typedef struct
 	uint8_t		CertEnflag;//证书启用状态
 	uint8_t		certDLTestflag;//证书下载测试标志
 	uint8_t		cipherexist;
+
+	uint8_t		checkSt;
+	uint8_t		verifyFlag;
+	uint8_t		certAvailableFlag;
 }__attribute__((packed))  PP_CertDownloadSt_t;
 
 typedef struct
 {
 	uint32_t eventid;
+	unsigned int tboxid;
 }__attribute__((packed))  PP_CertDownloadPara_t;
 
 /* application data struct */

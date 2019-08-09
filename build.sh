@@ -15,7 +15,8 @@ if [[ $1 == "EC20" ]];
 	export OECORE_ACLOCAL_OPTS="-I /opt/ql-oe/sysroots/x86_64-oesdk-linux/usr/share/aclocal"
 	export PYTHONHOME=/opt/ql-oe/sysroots/x86_64-oesdk-linux/usr
 	unset command_not_found_handle
-	export CC="arm-oe-linux-gnueabi-gcc  -march=armv7-a -mfloat-abi=soft -mfpu=vfp -mtune=cortex-a9 --sysroot=$SDKTARGETSYSROOT"
+	export CC="arm-oe-linux-gnueabi-gcc  -march=armv7-a -mfloat-abi=soft -mfpu=vfp -mtune=cortex-a9 --sysroot=$SDKTARGETSYSROOT -g"
+	#export CC="arm-oe-linux-gnueabi-gcc  -march=armv7-a -mfloat-abi=soft -mfpu=vfp -mtune=cortex-a9 --sysroot=$SDKTARGETSYSROOT"
 	export CXX="arm-oe-linux-gnueabi-g++  -march=armv7-a -mfloat-abi=soft -mfpu=vfp -mtune=cortex-a9 --sysroot=$SDKTARGETSYSROOT"
 	export CPP="arm-oe-linux-gnueabi-gcc -E  -march=armv7-a -mfloat-abi=soft -mfpu=vfp -mtune=cortex-a9 --sysroot=$SDKTARGETSYSROOT"
 	export AS="arm-oe-linux-gnueabi-as "
@@ -44,4 +45,4 @@ fi
 
 make cleanall
 make $OPTIONS
-make striped
+#make striped

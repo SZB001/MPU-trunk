@@ -277,10 +277,10 @@ void PP_SeatCtrl_SeatStMonitor(void *task)
 		 * */
 	if((PP_rmtseatheatCtrl[0].start_seatheat_stage == PP_SEATHEATING_IDLE) && \
 			(PP_rmtseatheatCtrl[0].state.req == 0) &&  \
-			(PP_rmtCtrl_cfg_HeatingSt(0) != 0)&&\
+			(PP_rmtCtrl_cfg_HeatingSt(0) == 0)&&\
 			(PP_rmtseatheatCtrl[1].start_seatheat_stage == PP_SEATHEATING_IDLE) && \
 			(PP_rmtseatheatCtrl[1].state.req == 0) &&\
-			(PP_rmtCtrl_cfg_HeatingSt(0) != 0))
+			(PP_rmtCtrl_cfg_HeatingSt(0) == 0))
 	{
 		PP_Seat_Sleepflag = 1;
 	}

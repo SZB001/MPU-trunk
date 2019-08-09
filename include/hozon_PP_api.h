@@ -72,4 +72,5 @@ extern unsigned char GetPP_ChargeCtrl_appointMin(void);
 extern unsigned char GetPP_CertDL_CertValid(void);
 extern void PP_CertDL_CertDLReset(void);
 extern unsigned char GetPP_CertDL_CertUpdate(void);
+extern unsigned char GetPP_CertDL_allowBDLink(void);
 #endif
