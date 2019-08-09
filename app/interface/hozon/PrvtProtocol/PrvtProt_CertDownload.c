@@ -340,6 +340,13 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 				log_i(LOG_HOZON, "PP_CertDL.para.CertDLResp.certLength = %d\n",PP_CertDL.para.CertDLResp.certLength);
 				log_i(LOG_HOZON, "certContent = %s\n",&rxPack->msgdata[PP_CERTDL_RESP_CERTCONTENT]);
 
+				if (dir_exists("/usrdata/pki/update/") == 0 &&
+				        dir_make_path("/usrdata/pki/update/", S_IRUSR | S_IWUSR, false) != 0)
+				{
+			        log_e(LOG_HOZON, "open cache path fail, reset all index");
+			        return;
+				}
+				log_i(LOG_HOZON, "/usrdata/pki/update/ exist or create seccess\n");
 
 				//保存证书内容
 				FILE *updataF = fopen(PP_CERTDL_CERTPATH_UPDATE,"w");
@@ -459,6 +466,14 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 {
 	#define	PP_CERTDL_TIMES		1
 	#define	PP_CERTUPDATE_TIMES		1
+
+	if((1 != PP_rmtCfg_getIccid((uint8_t*)PP_CertDL_ICCID)) || \
+			(1 != PrvtProt_tboxsnValidity()) || \
+			(1 != gb32960_vinValidity()))
+	{
+		return -1;
+	}
+
 
 	if(1 == sockproxy_sgsocketState())
 	{
@@ -622,35 +637,17 @@ static int PP_CertDL_do_CertDownload(PrvtProt_task_t *task)
 		break;
 		case PP_CERTDL_CHECK_CIPHER_CSR:
 		{
-			if((tm_get_time() - PP_CertDL.state.waittime) <= 15000)
-			{
-				if(PP_rmtCfg_getIccid((uint8_t*)PP_CertDL_ICCID))
+				PP_rmtCfg_getIccid((uint8_t*)PP_CertDL_ICCID);
+				PrvtProt_gettboxsn(PP_CertDL_SN);
+				if(PP_CertDL_checkCipherCsr() == 0)
 				{
-					if(PrvtProt_tboxsnValidity())
-					{
-						PrvtProt_gettboxsn(PP_CertDL_SN);
-						if(PP_CertDL_checkCipherCsr() == 0)
-						{
-							PP_CertDL.state.dlSt = PP_CERTDL_DLREQ;
-						}
-						else
-						{
-							log_e(LOG_HOZON, "check cipher fail\n");
-							PP_CertDL.state.dlSt = PP_CERTDL_END;
-						}
-					}
-					else
-					{
-						log_e(LOG_HOZON, "tbox sn invalid\n");
-						PP_CertDL.state.dlSt = PP_CERTDL_END;
-					}
+					PP_CertDL.state.dlSt = PP_CERTDL_DLREQ;
 				}
-			}
-			else
-			{
-				log_e(LOG_HOZON, "iccid read timeout\n");
-				PP_CertDL.state.dlSt = PP_CERTDL_END;
-			}
+				else
+				{
+					log_e(LOG_HOZON, "check cipher fail\n");
+					PP_CertDL.state.dlSt = PP_CERTDL_END;
+				}
 		}
 		break;
 		case PP_CERTDL_DLREQ:
@@ -667,23 +664,15 @@ static int PP_CertDL_do_CertDownload(PrvtProt_task_t *task)
 					"/usrdata/pki/sn_sim_encinfo.txt", gcsroutdata, &gcoutlen);
 			if(iRet == 3630)
 			{
-				if(gb32960_vinValidity())
-				{
-					char vin[18] = {0};
-					gb32960_getvin(vin);
-					PP_CertDL.para.CertDLReq.infoListLength = 19 + gcoutlen;//19 == vin + "&&"
-					memcpy(PP_CertDL.para.CertDLReq.infoList,vin,17);
-					memcpy(PP_CertDL.para.CertDLReq.infoList+17,"&&",2);
-					memcpy(PP_CertDL.para.CertDLReq.infoList+19,gcsroutdata,gcoutlen);
-					PP_CertDL_CertDLReq(task,&PP_CertDL.para);
-					PP_CertDL.state.waittime = tm_get_time();
-					PP_CertDL.state.dlSt = PP_CERTDL_DLREQWAIT;
-				}
-				else
-				{
-					log_e(LOG_HOZON,"vin invalid\n");
-					PP_CertDL.state.dlSt = PP_CERTDL_END;
-				}
+				char vin[18] = {0};
+				gb32960_getvin(vin);
+				PP_CertDL.para.CertDLReq.infoListLength = 19 + gcoutlen;//19 == vin + "&&"
+				memcpy(PP_CertDL.para.CertDLReq.infoList,vin,17);
+				memcpy(PP_CertDL.para.CertDLReq.infoList+17,"&&",2);
+				memcpy(PP_CertDL.para.CertDLReq.infoList+19,gcsroutdata,gcoutlen);
+				PP_CertDL_CertDLReq(task,&PP_CertDL.para);
+				PP_CertDL.state.waittime = tm_get_time();
+				PP_CertDL.state.dlSt = PP_CERTDL_DLREQWAIT;
 			}
 			else
 			{
@@ -1749,7 +1738,6 @@ static int  PP_CertDL_checkCipherCsr(void)
 	int iRet = 0;
 	/*sn_sim_encinfo.txt*/
 	int datalen = 0;
-	//system("rm /usrdata/pki/sn_sim_encinfo.txt");
 
 	if (dir_exists("/usrdata/pki/") == 0 &&
 	        dir_make_path("/usrdata/pki/", S_IRUSR | S_IWUSR, false) != 0)
@@ -1769,13 +1757,15 @@ static int  PP_CertDL_checkCipherCsr(void)
 			if(iRet != 3520)
 			{
 				log_e(LOG_HOZON,"HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
-				//fclose(fp);
 				return -1;
 			}
 			log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
 		}
+		else
+		{
+			fclose(fp);
+		}
 
-		fclose(fp);
 		PP_CertDL.state.cipherexist = 1;
 	}
 	/******HzTboxGenCertCsr *******/
@@ -1783,27 +1773,19 @@ static int  PP_CertDL_checkCipherCsr(void)
 	//CN = hu_client, emailAddress = sm2_hu_client@160.com
     //文件名：
     //格式: PEM / DER or 两个格式同时生成
-	if(gb32960_vinValidity())
+	CAR_INFO car_information;
+	char vin[18] = {0};
+	gb32960_getvin(vin);
+	car_information.tty_type="TBOX";
+	car_information.unique_id= vin;
+	car_information.carowner_acct="18221802221";
+	car_information.impower_acct="12900100101";
+	int iret = HzTboxGenCertCsr("SM2", NULL, &car_information, \
+			"CN|shanghai|shanghai|hezhong|hezhong|two_certreqmain|sm2_ecc_two_certreqmain@160.com", \
+			"/usrdata/pki","two_certreqmain", "PEM");
+	if(iret != 3180)
 	{
-		CAR_INFO car_information;
-		char vin[18] = {0};
-		gb32960_getvin(vin);
-		car_information.tty_type="TBOX";
-		car_information.unique_id= vin;
-		car_information.carowner_acct="18221802221";
-		car_information.impower_acct="12900100101";
-		int iret = HzTboxGenCertCsr("SM2", NULL, &car_information, \
-				"CN|shanghai|shanghai|hezhong|hezhong|two_certreqmain|sm2_ecc_two_certreqmain@160.com", \
-				"/usrdata/pki","two_certreqmain", "PEM");
-		if(iret != 3180)
-		{
-			log_e(LOG_HOZON,"HzTboxGenCertCsr error ---------------++++++++++++++.[%d]\n", iret);
-			return -1;
-		}
-	}
-	else
-	{
-		log_e(LOG_HOZON,"vin invalid\n");
+		log_e(LOG_HOZON,"HzTboxGenCertCsr error ---------------++++++++++++++.[%d]\n", iret);
 		return -1;
 	}
 
