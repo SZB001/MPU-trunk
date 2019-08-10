@@ -116,6 +116,13 @@ int sockproxy_init(INIT_PHASE phase)
     return ret;
 }
 
+static	pthread_t 		rcvtid;
+static  pthread_attr_t 	rcvta;
+
+//void cleanup(void *arg)
+//{
+//    pthread_mutex_unlock(&rcvmtx);
+//}
 
 /******************************************************
 *��������sockproxy_run
@@ -141,11 +148,10 @@ int sockproxy_run(void)
         return ret;
     }
 
-    pthread_t rcvtid;
-    pthread_attr_t rcvta;
+    //pthread_t rcvtid;
+    //pthread_attr_t rcvta;
     pthread_attr_init(&rcvta);
-    pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_DETACHED);
-
+    pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_JOINABLE);
     ret = pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
 
     if (ret != 0)
@@ -215,6 +221,7 @@ static void *sockproxy_socketmain(void)
     return NULL;
 }
 
+pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 /******************************************************
 *��������sockproxy_rcvmain
 *��  �Σ�void
@@ -228,6 +235,8 @@ static void *sockproxy_rcvmain(void)
 	log_o(LOG_SOCK_PROXY, "socket proxy  of rcvmain thread running");
     prctl(PR_SET_NAME, "SOCK_PROXY_RCV");
 
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);           //允许退出线程
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,   NULL);   //设置立即取消
     while (1)
     {
         res = sockproxy_do_receive(&sockSt);
@@ -380,6 +389,19 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		{
 			if(dev_get_KL15_signal())
 			{
+
+				if(ESRCH == pthread_kill(rcvtid,0))//线程不存在
+				{
+					log_i(LOG_HOZON, "thread sockproxy_rcvmain not exist\n");
+				    pthread_attr_init(&rcvta);
+				    pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_JOINABLE);
+				    pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
+				}
+				else
+				{
+					log_i(LOG_HOZON, "thread sockproxy_rcvmain exist\n");
+				}
+
 				if(GetPP_CertDL_allowBDLink() == 0)//
 				{//建立单向连接
 					log_i(LOG_HOZON, "Cert inValid,set up sglink\n");
@@ -444,19 +466,39 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		{
 			log_i(LOG_HOZON, "start to sleep\n");
 			sockproxy_socketclose();
-			closewaittime = tm_get_time();;
+			closewaittime = tm_get_time();
 		}
 		else
 		{
-			if((sockSt.state == PP_CLOSED) || ((tm_get_time() - closewaittime) >= 30000))
+			if(sockSt.state == PP_CLOSED)
 			{
 				sockSt.sleepFlag = 1;
+			}
+			else
+			{
+				if((tm_get_time() - closewaittime) >= 15000)
+				{
+#if SOCKPROXY_SAFETY_EN
+					pthread_cancel(rcvtid);
+				    pthread_join(rcvtid, NULL);
+				    log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel success\n");
+					sockSt.asynCloseFlg = 0;
+					sockSt.rcvflag = 0;
+					sockSt.sleepFlag = 1;
+					log_i(LOG_SOCK_PROXY, "socket closed\n");
+					(void)HzTboxClose();
+					sockSt.state = PP_CLOSED;
+					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+					sockSt.linkSt = SOCKPROXY_CHECK_CERT;
+#endif
+				}
 			}
 		}
 	}
 	else
 	{
 		sockSt.sleepFlag = 0;
+		closewaittime = tm_get_time();
 	}
 
     return 0;
