@@ -1405,6 +1405,7 @@ static void *gb_main(void)
             case PM_MSG_RUNNING:
             	 powerOffFlag = 0;
             	 SetPrvtProt_Awaken();
+            	 Setsocketproxy_Awaken();
             	break;
             case PM_MSG_OFF:
                 gb_data_emergence(0);
@@ -1462,13 +1463,13 @@ static void *gb_main(void)
 
 		if(gbnosend != 0) continue;
 		
-        res = gb_do_checksock(&state) ||	//���socket����
-              gb_do_receive(&state) ||		//socket���ݽ���
-              gb_do_wait(&state) ||			//��ʱ�ȴ��������ǳ���
-              gb_do_login(&state) ||		//����
-              gb_do_suspend(&state) ||		//ͨ����ͣ
-              gb_do_report(&state) ||		//����ʵʱ��Ϣ
-              gb_do_logout(&state);			//�ǳ�
+        res = gb_do_checksock(&state) ||	//检查连接
+              gb_do_receive(&state) ||		//socket 接收
+              gb_do_wait(&state) ||			//等待
+              gb_do_login(&state) ||		//登入
+              gb_do_suspend(&state) ||		//暂停
+              gb_do_report(&state) ||		//发实时数据
+              gb_do_logout(&state);			//登出
 
     }
 
@@ -1604,7 +1605,7 @@ int gb_run(void)
 
 static int gb_allow_sleep_handler(PM_EVT_ID id)
 {
-    return (gb_allow_sleep && GetPrvtProt_Sleep());
+    return (gb_allow_sleep && GetPrvtProt_Sleep() && (sockproxy_Sleep()));
 }
 
 int gb_init(INIT_PHASE phase)
@@ -1890,4 +1891,17 @@ void gb32960_getvin(char* vin)
 int gb32960_networkSt(void)
 {
 	return state.network;
+}
+
+/*
+ * 获取gb等出状态
+ */
+int gb32960_gbLogoutSt(void)
+{
+	if((state.wait == PROT_LOGOUT) || (1 == gb_allow_sleep))
+	{
+		return 1;
+	}
+
+	return 0;
 }

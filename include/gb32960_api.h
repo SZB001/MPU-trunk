@@ -287,4 +287,5 @@ extern uint8_t gb_data_chargestauus(void);
 extern int gb32960_networkSt(void);
 extern long gb_data_ResidualOdometer(void);
 extern long gb_data_ACChargeRemainTime(void);
+extern int gb32960_gbLogoutSt(void);
 #endif

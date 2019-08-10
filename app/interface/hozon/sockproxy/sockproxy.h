@@ -23,7 +23,7 @@ description�� macro definitions
 #define SOCK_TXPAKG_OUTOFTIME    (1000 * 2)
 
 
-#define SOCKPROXY_CHECK_CSR				0//检查证书
+#define SOCKPROXY_CHECK_CERT				0//检查证书
 #define SOCKPROXY_SETUP_SGLINK			1//建立单向链路
 #define SOCKPROXY_SETUP_BDLLINK			2//建立双向链路
 
@@ -133,6 +133,7 @@ typedef struct
 	uint64_t waittime;
 	char BDLlinkSt;
 	char rcvflag;
+	char sleepFlag;
 }__attribute__ ((packed)) sockproxy_stat_t;
 
 

@@ -64,6 +64,8 @@ extern void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara);
 
 extern void SetPrvtProt_Awaken(void);
 extern unsigned char GetPrvtProt_Sleep(void);
+extern void Setsocketproxy_Awaken(void);
+extern char sockproxy_Sleep(void);
 extern void getPPrmtDiagCfg_NodeFault(PP_rmtDiag_NodeFault_t *rmtDiag_NodeFault);
 extern unsigned char GetPP_ChargeCtrl_appointSt(void);
 extern unsigned char GetPP_ChargeCtrl_appointHour(void);

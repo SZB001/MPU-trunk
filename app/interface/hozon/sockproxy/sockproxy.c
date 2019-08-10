@@ -21,6 +21,7 @@ description�� include the header file
 #include "init.h"
 #include "log.h"
 #include "list.h"
+#include "dev_api.h"
 #include "sock_api.h"
 #include "gb32960_api.h"
 #include "nm_api.h"
@@ -46,6 +47,7 @@ static pthread_mutex_t closemtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ���
 #if !SOCKPROXY_SAFETY_EN
 static pthread_mutex_t rcvmtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ����̬��
 #endif
+
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -60,6 +62,11 @@ static void sockproxy_gbMakeupMsg(uint8_t *data,int len);
 static void sockproxy_privMakeupMsg(uint8_t *data,int len);
 static int sockproxy_do_send(sockproxy_stat_t *state);
 static void *sockproxy_socketmain(void);
+
+#if SOCKPROXY_SAFETY_EN
+static int sockproxy_sgLink(sockproxy_stat_t *state);
+static int sockproxy_BDLink(sockproxy_stat_t *state);
+#endif
 /******************************************************
 description�� function code
 ******************************************************/
@@ -87,6 +94,7 @@ int sockproxy_init(INIT_PHASE phase)
 			sockSt.rcvType = PP_RCV_UNRCV;
 			sockSt.rcvstep = PP_RCV_IDLE;//���տ���
 			sockSt.rcvlen = 0;//��������֡�ܳ���
+			sockSt.sleepFlag = 0;
 			SockproxyData_Init();
 		}
         break;
@@ -299,7 +307,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		}
 
 		pthread_mutex_unlock(&rcvmtx);
-		return -1;	
+		return -1;
 	}
 	
 	sockproxy_getURL(&state->sock_addr);
@@ -313,7 +321,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	{
 		case PP_CLOSED:
 		{
-			if(sock_status(state->socket) == SOCK_STAT_CLOSED)
+			if((sock_status(state->socket) == SOCK_STAT_CLOSED) && (dev_get_KL15_signal()))
 			{
 				if((time == 0) || (tm_get_time() - time > SOCK_SERVR_TIMEOUT))
 				{
@@ -349,24 +357,16 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
 					sockproxy_socketclose();
 				}
-				else
-				{
-					return 0;
-				}
+				//else
+				//{
+				//	return 0;
+				//}
 			}
 		}
 		break;
 	}
 
-    return -1;
 #else
-
-	int iRet = 0;
-	char	OnePath[128]="\0";
-	char	ScdPath[128]="\0";
-	char 	destIP[128];
-	struct 	hostent * he;
-	char 	**phe = NULL;
 
 	if(sockproxy_SkipSockCheck())
 	{
@@ -376,274 +376,371 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 
 	switch(sockSt.linkSt)
 	{
-		case SOCKPROXY_CHECK_CSR:
+		case SOCKPROXY_CHECK_CERT:
 		{
-			if(GetPP_CertDL_allowBDLink() == 0)//
-			{//建立单向连接
-				log_i(LOG_HOZON, "Cert inValid,set up sglink\n");
-				sockSt.waittime = tm_get_time();
-				sockSt.sglinkSt =  SOCKPROXY_SGLINK_INIT;
-				sockSt.linkSt = SOCKPROXY_SETUP_SGLINK;
-			}
-			else
-			{//建立双向连接
-				log_i(LOG_HOZON, "Cert Valid,set up BDLlink\n");
-				sockSt.waittime = tm_get_time();
-				sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-				sockSt.linkSt = SOCKPROXY_SETUP_BDLLINK;
+			if(dev_get_KL15_signal())
+			{
+				if(GetPP_CertDL_allowBDLink() == 0)//
+				{//建立单向连接
+					log_i(LOG_HOZON, "Cert inValid,set up sglink\n");
+					sockSt.waittime = tm_get_time();
+					sockSt.sglinkSt =  SOCKPROXY_SGLINK_INIT;
+					sockSt.linkSt = SOCKPROXY_SETUP_SGLINK;
+				}
+				else
+				{//建立双向连接
+					log_i(LOG_HOZON, "Cert Valid,set up BDLlink\n");
+					sockSt.waittime = tm_get_time();
+					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+					sockSt.linkSt = SOCKPROXY_SETUP_BDLLINK;
+				}
 			}
 		}
 		break;
 		case SOCKPROXY_SETUP_SGLINK:
 		{
-			switch(sockSt.sglinkSt)
-			{
-				case SOCKPROXY_SGLINK_INIT:
-				{
-					if((tm_get_time() - sockSt.waittime) >= 1000)
-					{
-						sockSt.sglinkSt = SOCKPROXY_SGLINK_CREAT;
-						sockSt.waittime = tm_get_time();
-					}
-				}
-				break;
-				case SOCKPROXY_SGLINK_CREAT:
-				{
-					if(sockSt.state == PP_CLOSED)
-					{
-						he=gethostbyname("tboxgw-qa.chehezhi.cn");
-						if(he == NULL)
-						{
-							log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
-							sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
-							sockSt.waittime = tm_get_time();
-							return -1;
-						}
-
-						for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
-						{
-							 inet_ntop(he->h_addrtype,*phe,destIP,sizeof(destIP));
-							 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
-							 break;
-						}
-						/*port ipaddr*/
-						iRet = HzPortAddrCft(22000, 1,destIP,NULL);//TBOX端口地址配置初始化
-						if(iRet != SOCKPROXY_SG_ADDR_INIT_SUCCESS)
-						{
-							log_e(LOG_SOCK_PROXY,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", iRet);
-							sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
-							sockSt.waittime = tm_get_time();
-							return -1;
-						}
-
-						/*create random string*/
-						sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
-						sprintf(ScdPath, "%s","/usrdata/pem/TspCA.cer");
-
-						iRet = SgHzTboxCertchainCfg(OnePath, ScdPath);
-						if(iRet != SOCKPROXY_SG_CCIC_SUCCESS)
-						{
-							log_e(LOG_SOCK_PROXY,"SgHzTboxCertchainCfg +++++++++++++++iRet[%d] \n", iRet);
-							sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
-							sockSt.waittime = tm_get_time();
-							return -1;
-						}
-
-						/*init SSL*/
-						iRet = SgHzTboxInit("/usrdata/pem/userAuth.crl");
-						if(iRet != SOCKPROXY_SG_INIT_SUCCESS)
-						{
-							log_e(LOG_SOCK_PROXY,"HzTboxInit error+++++++++++++++iRet[%d] \n", iRet);
-							sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
-							sockSt.waittime = tm_get_time();
-							return -1;
-						}
-
-						/*Initiate a connection server request*/
-						iRet = SgHzTboxConnect();
-						if(iRet != SOCKPROXY_SG_CONN_SUCCESS)
-						{
-							log_e(LOG_SOCK_PROXY,"SgHzTboxConnect error+++++++++++++++iRet[%d] \n", iRet);
-							sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
-							sockSt.waittime = tm_get_time();
-							return -1;
-						}
-
-						log_i(LOG_HOZON, "set up sglink success\n");
-						sockSt.state = PP_OPENED;
-					}
-					else
-					{
-						if(sockSt.state == PP_OPENED)
-						{
-							return 0;
-						}
-
-						if((sockSt.asynCloseFlg == 1) && (0 == sockSt.rcvflag))
-						{
-							log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg == 1 ,start to close sg socket\n");
-							sockSt.sglinkSt = SOCKPROXY_SGLINK_CLOSE;
-						}
-					}
-				}
-				break;
-				case SOCKPROXY_SGLINK_CLOSE:
-				{
-					/*release all resources and close all connections*/
-					if(pthread_mutex_trylock(&sendmtx) == 0)//
-					{
-						sockSt.asynCloseFlg = 0;
-						sockSt.waittime = tm_get_time();
-						sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
-						sockSt.linkSt = SOCKPROXY_CHECK_CSR;
-						if(sockSt.state != PP_CLOSED)
-						{
-							log_i(LOG_SOCK_PROXY, "close sg socket\n");
-							sockSt.state = PP_CLOSED;
-							SgHzTboxClose();
-						}
-						pthread_mutex_unlock(&sendmtx);
-					}
-					else
-					{
-						log_i(LOG_SOCK_PROXY, "wait close socket\n");
-					}
-				}
-				break;
-				default:
-				break;
+			if(sockproxy_sgLink(state) < 0)
+			{//sg 退出
+				sockSt.linkSt = SOCKPROXY_CHECK_CERT;
 			}
+			else
+			{}
 		}
 		break;
 		case SOCKPROXY_SETUP_BDLLINK:
 		{
-			switch(sockSt.BDLlinkSt)
+			if(sockproxy_BDLink(state) < 0)
+			{//BDL 退出
+				sockSt.linkSt = SOCKPROXY_CHECK_CERT;
+			}
+			else
+			{}
+		}
+		break;
+		default:
+		break;
+	}
+#endif
+
+	static uint64_t logtime = 0;
+	static uint64_t closewaittime = 0;
+
+	if((tm_get_time() - logtime) > 5000)
+	{
+		logtime = tm_get_time();
+
+		log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg = %d\n",sockSt.asynCloseFlg);
+		log_i(LOG_SOCK_PROXY, "sockSt.rcvflag = %d\n",sockSt.rcvflag);
+		log_i(LOG_SOCK_PROXY, "sockSt.sleepFlag = %d\n",sockSt.sleepFlag);
+		log_i(LOG_SOCK_PROXY, "sockSt.state = %d\n",sockSt.state);
+		log_i(LOG_SOCK_PROXY, "sockSt.BDLlinkSt = %d\n",sockSt.BDLlinkSt);
+		log_i(LOG_SOCK_PROXY, "sockSt.sglinkSt = %d\n",sockSt.sglinkSt);
+	}
+
+	if((1 == gb32960_gbLogoutSt()) && \
+			(dev_get_KL15_signal() == 0) && (GetPrvtProt_Sleep()))
+	{
+		if(sockSt.state == PP_OPENED)
+		{
+			log_i(LOG_HOZON, "start to sleep\n");
+			sockproxy_socketclose();
+			closewaittime = tm_get_time();;
+		}
+		else
+		{
+			if((sockSt.state == PP_CLOSED) || ((tm_get_time() - closewaittime) >= 30000))
 			{
-				case SOCKPROXY_BDLLINK_INIT:
+				sockSt.sleepFlag = 1;
+			}
+		}
+	}
+	else
+	{
+		sockSt.sleepFlag = 0;
+	}
+
+    return 0;
+}
+
+#if SOCKPROXY_SAFETY_EN
+/******************************************************
+*��������sockproxy_sgLink
+*��  �Σ�void
+*����ֵ��void
+*��  �������socket����
+*��  ע��
+******************************************************/
+static int sockproxy_sgLink(sockproxy_stat_t *state)
+{
+	int iRet = 0;
+	char	OnePath[128]="\0";
+	char	ScdPath[128]="\0";
+	char 	destIP[128];
+	struct 	hostent * he;
+	char 	**phe = NULL;
+
+	switch(sockSt.sglinkSt)
+	{
+		case SOCKPROXY_SGLINK_INIT:
+		{
+			if((tm_get_time() - sockSt.waittime) >= 1000)
+			{
+				sockSt.sglinkSt = SOCKPROXY_SGLINK_CREAT;
+				sockSt.waittime = tm_get_time();
+			}
+		}
+		break;
+		case SOCKPROXY_SGLINK_CREAT:
+		{
+			if(sockSt.state == PP_CLOSED)
+			{
+				he=gethostbyname("tboxgw-qa.chehezhi.cn");
+				if(he == NULL)
 				{
-					if((tm_get_time() - sockSt.waittime) >= 1000)
-					{
-						sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_CREAT;
-						sockSt.waittime = tm_get_time();
-					}
+					log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
+					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+					sockSt.waittime = tm_get_time();
+					return -1;
 				}
-				break;
-				case SOCKPROXY_BDLLINK_CREAT:
+
+				for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
 				{
-					char	UsCertPath[128]="\0";
-					char	UsKeyPath[128]="\0";
-
-					if(sockSt.state == PP_CLOSED)
-					{
-						he=gethostbyname("tboxgw-qa.chehezhi.cn");
-						if(he == NULL)
-						{
-							log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
-							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-							sockSt.waittime = tm_get_time();
-							return -1;
-						}
-
-						for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
-						{
-							 inet_ntop(he->h_addrtype,*phe,destIP,sizeof(destIP));
-							 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
-							 break;
-						}
-						/*port ipaddr*/
-						iRet = HzPortAddrCft(21000, 1,destIP,NULL);
-						if(iRet != 1010)
-						{
-							log_e(LOG_SOCK_PROXY,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", iRet);
-							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-							sockSt.waittime = tm_get_time();
-							return -1;
-						}
-
-						/*create random string*/
-						sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
-						sprintf(ScdPath, "%s","/usrdata/pem/TspCA.cer");
-						sprintf(UsCertPath, "%s",PP_CERTDL_CERTPATH);//申请的证书，要跟two_certreqmain.key匹配使用
-						sprintf(UsKeyPath, "%s",PP_CERTDL_TWOCERTKEYPATH);
-						iRet = HzTboxCertchainCfg(OnePath, ScdPath, UsCertPath, UsKeyPath);
-						if(iRet != 2030)
-						{
-							log_e(LOG_SOCK_PROXY,"HzTboxCertchainCfg error+++++++++++++++iRet[%d] \n", iRet);
-							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-							sockSt.waittime = tm_get_time();
-							return -1;
-						}
-
-						/*init SSL*/
-						iRet = HzTboxInit("/usrdata/pem/tbox.crl");
-						if(iRet != 1151)
-						{
-							log_e(LOG_SOCK_PROXY,"HzTboxInit error+++++++++++++++iRet[%d] \n", iRet);
-							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-							sockSt.waittime = tm_get_time();
-							return -1;
-						}
-
-						log_e(LOG_SOCK_PROXY,"\n", iRet);
-						/*Initiate a connection server request*/
-						iRet = HzTboxConnect();
-						if(iRet != 1230)
-						{
-							log_e(LOG_SOCK_PROXY,"HzTboxConnect error+++++++++++++++iRet[%d] \n", iRet);
-							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-							sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
-							sockSt.waittime = tm_get_time();
-							PP_CertDL_CertDLReset();
-							sockSt.linkSt = SOCKPROXY_CHECK_CSR;
-							return -1;
-						}
-						log_i(LOG_HOZON, "set up BDLlink success\n");
-						sockSt.state = PP_OPENED;
-					}
-					else
-					{
-						if(sockSt.state == PP_OPENED)
-						{
-							return 0;
-						}
-
-						if((1 == sockSt.asynCloseFlg) && (0 == sockSt.rcvflag))
-						{
-							log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg == 1 ,start to close socket\n");
-							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_CLOSE;
-						}
-					}
+					 inet_ntop(he->h_addrtype,*phe,destIP,sizeof(destIP));
+					 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
+					 break;
 				}
-				break;
-				case SOCKPROXY_BDLLINK_CLOSE:
+				/*port ipaddr*/
+				iRet = HzPortAddrCft(22000, 1,destIP,NULL);//TBOX端口地址配置初始化
+				if(iRet != SOCKPROXY_SG_ADDR_INIT_SUCCESS)
 				{
-					if(pthread_mutex_trylock(&sendmtx) == 0)//
-					{
-						if(sockSt.state != PP_CLOSED)
-						{
-							log_i(LOG_SOCK_PROXY, "socket closed\n");
-							(void)HzTboxClose();
-							sockSt.state = PP_CLOSED;
-						}
-
-						sockSt.asynCloseFlg = 0;
-						sockSt.linkSt = SOCKPROXY_CHECK_CSR;
-						sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-						pthread_mutex_unlock(&sendmtx);
-					}
+					log_e(LOG_SOCK_PROXY,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", iRet);
+					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+					sockSt.waittime = tm_get_time();
+					return -1;
 				}
-				break;
-				default:
-				break;
+
+				/*create random string*/
+				sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
+				sprintf(ScdPath, "%s","/usrdata/pem/TspCA.cer");
+
+				iRet = SgHzTboxCertchainCfg(OnePath, ScdPath);
+				if(iRet != SOCKPROXY_SG_CCIC_SUCCESS)
+				{
+					log_e(LOG_SOCK_PROXY,"SgHzTboxCertchainCfg +++++++++++++++iRet[%d] \n", iRet);
+					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+					sockSt.waittime = tm_get_time();
+					return -1;
+				}
+
+				/*init SSL*/
+				iRet = SgHzTboxInit("/usrdata/pem/userAuth.crl");
+				if(iRet != SOCKPROXY_SG_INIT_SUCCESS)
+				{
+					log_e(LOG_SOCK_PROXY,"HzTboxInit error+++++++++++++++iRet[%d] \n", iRet);
+					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+					sockSt.waittime = tm_get_time();
+					return -1;
+				}
+
+				/*Initiate a connection server request*/
+				iRet = SgHzTboxConnect();
+				if(iRet != SOCKPROXY_SG_CONN_SUCCESS)
+				{
+					log_e(LOG_SOCK_PROXY,"SgHzTboxConnect error+++++++++++++++iRet[%d] \n", iRet);
+					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+					sockSt.waittime = tm_get_time();
+					return -1;
+				}
+
+				log_i(LOG_HOZON, "set up sglink success\n");
+				sockSt.state = PP_OPENED;
+			}
+			else
+			{
+				if(sockSt.state == PP_OPENED)
+				{
+					return 0;
+				}
+
+				if((sockSt.asynCloseFlg == 1) && (0 == sockSt.rcvflag))
+				{
+					log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg == 1 ,start to close sg socket\n");
+					sockSt.sglinkSt = SOCKPROXY_SGLINK_CLOSE;
+				}
+			}
+		}
+		break;
+		case SOCKPROXY_SGLINK_CLOSE:
+		{
+			/*release all resources and close all connections*/
+			if(pthread_mutex_trylock(&sendmtx) == 0)//
+			{
+				sockSt.asynCloseFlg = 0;
+				sockSt.waittime = tm_get_time();
+				sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+				//sockSt.linkSt = SOCKPROXY_CHECK_CERT;
+				if(sockSt.state != PP_CLOSED)
+				{
+					log_i(LOG_SOCK_PROXY, "close sg socket\n");
+					SgHzTboxClose();
+					sockSt.state = PP_CLOSED;
+				}
+				pthread_mutex_unlock(&sendmtx);
+
+				return -2;
+			}
+			else
+			{
+				log_i(LOG_SOCK_PROXY, "wait close socket\n");
 			}
 		}
 		break;
 		default:
 		break;
 	}
-	return -1;
-#endif
+
+    return 0;
 }
+
+
+
+/******************************************************
+*��������sockproxy_BDLink
+*��  �Σ�void
+*����ֵ��void
+*��  �������socket����
+*��  ע��
+******************************************************/
+static int sockproxy_BDLink(sockproxy_stat_t *state)
+{
+	int 	iRet = 0;
+	char	OnePath[128]="\0";
+	char	ScdPath[128]="\0";
+	char 	destIP[128];
+	struct 	hostent * he;
+	char 	**phe = NULL;
+
+	switch(sockSt.BDLlinkSt)
+	{
+		case SOCKPROXY_BDLLINK_INIT:
+		{
+			sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_CREAT;
+			sockSt.waittime = tm_get_time();
+		}
+		break;
+		case SOCKPROXY_BDLLINK_CREAT:
+		{
+			char	UsCertPath[128]="\0";
+			char	UsKeyPath[128]="\0";
+
+			if(sockSt.state == PP_CLOSED)
+			{
+				he=gethostbyname("tboxgw-qa.chehezhi.cn");
+				if(he == NULL)
+				{
+					log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
+					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+					sockSt.waittime = tm_get_time();
+					return -1;
+				}
+
+				for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
+				{
+					 inet_ntop(he->h_addrtype,*phe,destIP,sizeof(destIP));
+					 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
+					 break;
+				}
+				/*port ipaddr*/
+				iRet = HzPortAddrCft(21000, 1,destIP,NULL);
+				if(iRet != 1010)
+				{
+					log_e(LOG_SOCK_PROXY,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", iRet);
+					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+					sockSt.waittime = tm_get_time();
+					return -1;
+				}
+
+				/*create random string*/
+				sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
+				sprintf(ScdPath, "%s","/usrdata/pem/TspCA.cer");
+				sprintf(UsCertPath, "%s",PP_CERTDL_CERTPATH);//申请的证书，要跟two_certreqmain.key匹配使用
+				sprintf(UsKeyPath, "%s",PP_CERTDL_TWOCERTKEYPATH);
+				iRet = HzTboxCertchainCfg(OnePath, ScdPath, UsCertPath, UsKeyPath);
+				if(iRet != 2030)
+				{
+					log_e(LOG_SOCK_PROXY,"HzTboxCertchainCfg error+++++++++++++++iRet[%d] \n", iRet);
+					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+					sockSt.waittime = tm_get_time();
+					return -1;
+				}
+
+				/*init SSL*/
+				iRet = HzTboxInit("/usrdata/pem/tbox.crl");
+				if(iRet != 1151)
+				{
+					log_e(LOG_SOCK_PROXY,"HzTboxInit error+++++++++++++++iRet[%d] \n", iRet);
+					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+					sockSt.waittime = tm_get_time();
+					return -1;
+				}
+
+				log_e(LOG_SOCK_PROXY,"\n", iRet);
+				/*Initiate a connection server request*/
+				iRet = HzTboxConnect();
+				if(iRet != 1230)
+				{
+					log_e(LOG_SOCK_PROXY,"HzTboxConnect error+++++++++++++++iRet[%d] \n", iRet);
+					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+					sockSt.waittime = tm_get_time();
+					//PP_CertDL_CertDLReset();
+					return -1;
+				}
+
+				log_i(LOG_HOZON, "set up BDLlink success\n");
+				sockSt.state = PP_OPENED;
+				//sockSt.waittime = tm_get_time();
+			}
+			else
+			{
+				if(sockSt.state == PP_OPENED)
+				{
+					return 0;
+				}
+
+				if((1 == sockSt.asynCloseFlg) && (0 == sockSt.rcvflag))
+				{
+					log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg == 1 ,start to close socket\n");
+					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_CLOSE;
+				}
+			}
+		}
+		break;
+		case SOCKPROXY_BDLLINK_CLOSE:
+		{
+			if(pthread_mutex_trylock(&sendmtx) == 0)//
+			{
+				if(sockSt.state != PP_CLOSED)
+				{
+					log_i(LOG_SOCK_PROXY, "socket closed\n");
+					(void)HzTboxClose();
+					sockSt.state = PP_CLOSED;
+				}
+
+				sockSt.asynCloseFlg = 0;
+				sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+				pthread_mutex_unlock(&sendmtx);
+
+				return -2;
+			}
+		}
+		break;
+		default:
+		break;
+	}
+
+	return 0;
+}
+#endif
 
 /******************************************************
 *��������sockproxy_do_receive
@@ -953,14 +1050,12 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 				res = 0;
 			}
 #else
-			log_i(LOG_SOCK_PROXY, "<<<<<SP_data_ack_pack <<<<<");
 			SP_data_ack_pack();
-			log_i(LOG_SOCK_PROXY, ">>>>>SP_data_ack_pack >>>>>");
 			if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
 			{
-				log_i(LOG_SOCK_PROXY, "<<<<<SgHzTboxDataSend <<<<<");
+				log_i(LOG_SOCK_PROXY, "<<<<< SgHzTboxDataSend <<<<<");
 				res = SgHzTboxDataSend((char*)msg,len);
-				log_i(LOG_SOCK_PROXY, ">>>>>SgHzTboxDataSend >>>>>");
+				log_i(LOG_SOCK_PROXY, ">>>>> SgHzTboxDataSend >>>>>");
 				if(res != 1260)
 				{
 					log_e(LOG_SOCK_PROXY,"SgHzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
@@ -970,9 +1065,9 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 			}
 			else
 			{
-				log_i(LOG_SOCK_PROXY, "<<<<<HzTboxDataSend <<<<<");
+				log_i(LOG_SOCK_PROXY, "<<<<< HzTboxDataSend <<<<<");
 				res = HzTboxDataSend((char*)msg,len);
-				log_i(LOG_SOCK_PROXY, ">>>>>HzTboxDataSend >>>>>");
+				log_i(LOG_SOCK_PROXY, ">>>>> HzTboxDataSend >>>>>");
 				if(res != 1260)
 				{
 					log_e(LOG_SOCK_PROXY,"HzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
@@ -981,8 +1076,6 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 				}
 			}
 
-			//SP_data_ack_pack();
-			//protocol_dump(LOG_HOZON, "send data to tsp", msg, len, 1);
 #endif
 		}
 		else
@@ -1017,7 +1110,7 @@ int sockproxy_socketState(void)
 	}
 
 #else
-	if((sockSt.state == PP_OPENED) && \
+	if(((sockSt.state == PP_OPENED) || (sockSt.state == PP_CLOSE_WAIT))&& \
 			(sockSt.linkSt == SOCKPROXY_SETUP_BDLLINK))
 	{
 		return 1;
@@ -1042,6 +1135,35 @@ int sockproxy_sgsocketState(void)
 	}
 
 	return 0;
+}
+
+/******************************************************
+*������:Setsocketproxy_Awaken
+
+*��  �Σ�
+
+*����ֵ��
+
+*��  ����
+
+*��  ע��
+******************************************************/
+void Setsocketproxy_Awaken(void)
+{
+	sockSt.sleepFlag = 0;
+}
+
+/******************************************************
+*��������sockproxy_Sleep
+*��  �Σ�
+*����ֵ��
+*��  ����
+*��  ע��
+******************************************************/
+char sockproxy_Sleep(void)
+{
+
+	return sockSt.sleepFlag;
 }
 
 /******************************************************
