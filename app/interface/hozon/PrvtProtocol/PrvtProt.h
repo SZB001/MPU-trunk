@@ -188,6 +188,7 @@ typedef struct
 	uint8_t period;/* ��������uints����*/
 	PP_WAIT_STATE waitSt;/* �ȴ���Ӧ��״̬ */
 	uint64_t waittime;/* �ȴ���Ӧ��ʱ�� */
+	char timeoutCnt;
 }__attribute__((packed))  PrvtProt_heartbeat_t; /*�����ṹ��*/
 
 typedef struct 

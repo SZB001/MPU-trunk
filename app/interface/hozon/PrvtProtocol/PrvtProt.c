@@ -450,6 +450,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 		case PP_OPERATETYPE_HEARTBEAT://心跳
 		{
 			log_i(LOG_HOZON, "the heartbeat is ok");
+			PP_heartbeat.timeoutCnt = 0;
 			PP_heartbeat.state = 1;
 			PP_heartbeat.waitSt = 0;
 		}
@@ -521,7 +522,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 ******************************************************/
 static int PrvtPro_do_wait(PrvtProt_task_t *task)
 {
-    if (!PP_heartbeat.waitSt)//û���¼��ȴ�Ӧ��
+    if (!PP_heartbeat.waitSt)//
     {
         return 0;
     }
@@ -531,7 +532,8 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
         if (PP_heartbeat.waitSt == 1)
         {
         	PP_heartbeat.waitSt = 0;
-        	PP_heartbeat.state = 0;//����������
+        	PP_heartbeat.state = 0;//
+        	PP_heartbeat.timeoutCnt++;
             log_e(LOG_HOZON, "heartbeat time out");
         }
         else
@@ -569,6 +571,13 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 
 		PP_heartbeat.timer = tm_get_time();
 		return -1;
+	}
+
+	if(PP_heartbeat.timeoutCnt >= 3)
+	{
+		PP_heartbeat.timeoutCnt = 0;
+		log_i(LOG_HOZON, "heartbeat timeout too much!close socket\n");
+		sockproxy_socketclose();
 	}
 	return 0;
 }

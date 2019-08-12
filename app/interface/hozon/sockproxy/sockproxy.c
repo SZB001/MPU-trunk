@@ -283,7 +283,7 @@ void sockproxy_socketclose(void)
 			log_i(LOG_SOCK_PROXY, "close socket");
 			sockSt.state = PP_CLOSE_WAIT;//ر�̬
 			sockSt.asynCloseFlg = 1;
-			sockSt.closewaittime = tm_get_time();;
+			sockSt.closewaittime = tm_get_time();
 		}
 		pthread_mutex_unlock(&closemtx);
 	}
@@ -302,7 +302,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	static uint64_t time = 0;
 	if((1 == sockSt.asynCloseFlg) && (pthread_mutex_lock(&rcvmtx) == 0))
 	{
-		if(pthread_mutex_trylock(&sendmtx) == 0)//(������������)��ȡ�������ɹ���˵����ǰ���Ϳ��У�ͬʱ��ס����
+		if(pthread_mutex_trylock(&sendmtx) == 0)//
 		{
 			if(sockSt.state != PP_CLOSED)
 			{
@@ -476,7 +476,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 			}
 			else
 			{
-				if((tm_get_time() - closewaittime) >= 15000)
+				if((tm_get_time() - closewaittime) >= SOCK_CHECKCLOSEDTIMEOUT)
 				{
 #if SOCKPROXY_SAFETY_EN
 					pthread_cancel(rcvtid);
@@ -486,9 +486,17 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					sockSt.rcvflag = 0;
 					sockSt.sleepFlag = 1;
 					log_i(LOG_SOCK_PROXY, "socket closed\n");
-					(void)HzTboxClose();
+					if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
+					{
+						(void)SgHzTboxClose();
+					}
+					else
+					{
+						(void)HzTboxClose();
+					}
 					sockSt.state = PP_CLOSED;
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 					sockSt.linkSt = SOCKPROXY_CHECK_CERT;
 #endif
 				}
@@ -500,6 +508,41 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		sockSt.sleepFlag = 0;
 		closewaittime = tm_get_time();
 	}
+
+
+#if SOCKPROXY_SAFETY_EN
+	static uint64_t	checkclosedelaytime;
+	if(sockSt.asynCloseFlg == 1)
+	{
+		if((tm_get_time() - checkclosedelaytime) >= SOCK_CHECKCLOSEDTIMEOUT)
+		{
+			pthread_cancel(rcvtid);
+		    pthread_join(rcvtid, NULL);
+		    log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel success\n");
+			sockSt.asynCloseFlg = 0;
+			sockSt.rcvflag = 0;
+			log_i(LOG_SOCK_PROXY, "socket closed\n");
+			if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
+			{
+				(void)SgHzTboxClose();
+			}
+			else
+			{
+				(void)HzTboxClose();
+			}
+			sockSt.state = PP_CLOSED;
+			sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+			sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+			sockSt.linkSt = SOCKPROXY_CHECK_CERT;
+		}
+		else
+		{}
+	}
+	else
+	{
+		checkclosedelaytime = tm_get_time();
+	}
+#endif
 
     return 0;
 }

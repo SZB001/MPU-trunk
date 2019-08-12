@@ -22,6 +22,8 @@ description�� macro definitions
 #define SOCK_SERVR_TIMEOUT    	(1000 * 5)
 #define SOCK_TXPAKG_OUTOFTIME    (1000 * 2)
 
+#define SOCK_CHECKCLOSEDTIMEOUT    	(1000 * 15)
+
 
 #define SOCKPROXY_CHECK_CERT				0//检查证书
 #define SOCKPROXY_SETUP_SGLINK			1//建立单向链路
