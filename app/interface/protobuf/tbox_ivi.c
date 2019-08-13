@@ -21,6 +21,7 @@
 #include "pwdg.h"
 #include "cfg_api.h"
 #include "fault_sync.h"
+#include "tboxsock.h"
 #include "tbox_ivi_pb.h"
 #include "tbox_ivi_shell.h"
 #include "../hozon/PrvtProtocol/remoteControl/PP_rmtCtrl.h"
@@ -31,6 +32,7 @@ static int signalpower;
 static int call_flag = 5; //电话默认是空闲状态
 int tcp_fd = -1;
 ivi_client ivi_clients[MAX_IVI_NUM];
+pki_client ihu_client;
 
 ivi_callrequest callrequest;
 int gps_onoff = 0;
@@ -756,29 +758,28 @@ void ivi_callstate_response_send(int fd  )
 	tbox__net__call_status__init( &callstate );
     
 	TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_CALL_STATUS;
-	if( 0 == Get_call_tpye())
-	{
-		callstate.type = TBOX__NET__CALL_TYPE__ECALL;
-		
-		log_o(LOG_IVI,"Ecall dail");
-	}
-	else if ( 1 == Get_call_tpye() )
+	if( 1 == Get_call_tpye())
 	{
 		callstate.type = TBOX__NET__CALL_TYPE__BCALL;
 		
-		log_o(LOG_IVI,"Bcall dail");
+		log_o(LOG_IVI,"Bcall dail");	
 	}
-	else if( 2 == Get_call_tpye())
+	else if ( 2 == Get_call_tpye() )
 	{
 		callstate.type = TBOX__NET__CALL_TYPE__ICALL;
 		
 		log_o(LOG_IVI,"Icall dail");
 	}
+	else if( 0 == Get_call_tpye())
+	{
+		callstate.type = TBOX__NET__CALL_TYPE__ECALL;
+		
+		log_o(LOG_IVI,"Ecall dail");
+	}
 	else
 	{
 		
 	}
-	
 	if(temp == 1)        //来电
 	{
 		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_IN;
@@ -797,13 +798,23 @@ void ivi_callstate_response_send(int fd  )
 	else         //挂断电话
 	{
 		callstate.call_status =  TBOX__NET__CALL_STATUS_ENUM__CALL_DISCONNECTED;
-		ecall_flag = 0;
-		bcall_flag = 0;
-		icall_flag = 0;
+		if(Get_call_tpye() == 0)
+		{
+			ecall_flag = 0;    //清除电话状态
+			bcall_flag = 0;
+			icall_flag = 0;
+		}
+		if(Get_call_tpye() == 1)
+		{
+			bcall_flag = 0;
+		}
+		if(Get_call_tpye() == 2)
+		{
+			bcall_flag = 0;
+		}
 		log_o(LOG_IVI,"disconnected call");
 	}
 	
-	callstate.call_status = temp;
 	TopMsg.call_status = &callstate;
     
     szlen = tbox__net__top_message__get_packed_size( &TopMsg );
@@ -823,8 +834,7 @@ void ivi_callstate_response_send(int fd  )
     memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
 
     ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
-
-
+	
     if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
     {
         log_e(LOG_IVI, "ivi signalpower send response failed!!!");
@@ -923,11 +933,11 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
     unsigned char send_buf[4096] = {0};
     unsigned char pro_buf[2048] = {0};
 
-    if( fd < 0 )
-    {
-        log_e(LOG_IVI,"ivi_msg_response_send fd = %d.",fd);
-        return ;
-    }
+//    if( fd < 0 )
+//    {
+//        log_e(LOG_IVI,"ivi_msg_response_send fd = %d.",fd);
+//        return ;
+//    }
     
     Tbox__Net__TopMessage TopMsg;
     Tbox__Net__MsgResult result;
@@ -1054,24 +1064,24 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO:
 		{
 			TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_INFO;
-			char vin[18] = {0};
-			uint8_t iccid[20] = {0};
+			//char vin[18] = {0};
+			//uint8_t iccid[20] = {0};
 			Tbox__Net__TboxInfo tboxinfo;
 			tbox__net__tbox_info__init(&tboxinfo);
 			
 			tboxinfo.software_version = "1234567890";
 			tboxinfo.hardware_version = "1234567890";
-			if(PP_rmtCfg_getIccid(iccid) == 1)
-			{
-				tboxinfo.iccid = (char *)iccid;	
-			}
-			//tboxinfo.iccid  = "1234567890";
+			//if(PP_rmtCfg_getIccid(iccid) == 1)
+			//{
+				//tboxinfo.iccid = (char *)iccid;	
+			//}
+			tboxinfo.iccid  = "1234567890";
 			
 			tboxinfo.pdid = "1234567890";
 			tboxinfo.imei = "1234567890";
-			gb32960_getvin(vin);
-			tboxinfo.vin = vin ;
-			//tboxinfo.vin = "1234567890";
+			//gb32960_getvin(vin);
+			//tboxinfo.vin = vin ;
+			tboxinfo.vin = "1234567890";
 			
 			TopMsg.tbox_info = &tboxinfo;
 			log_o(LOG_IVI, "tbox info");
@@ -1132,18 +1142,20 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
     }
 	
     memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
-    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
-	
-    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
-    {
-        log_e(LOG_IVI, "ivi msg send response failed!!!");
-    }
-    else
-    {
-        log_i(LOG_IVI, "ivi msg send response success.");
-    }
 	
 
+    	ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
+	
+		
+		
+
+		//ret = HzTboxSvrDataSend((char *)send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen));
+   		if(ret == 1260)
+    	{
+    		log_i(LOG_IVI,"send data to ihu successs\n");
+   		}
+
+ 
 }
 
 
@@ -1398,7 +1410,7 @@ void ivi_tcp_protobuf_process(unsigned char *data, unsigned int datalen, void *p
 {
     int fd = *(int *)para;
 
-    log_o(LOG_IVI,"ivi_tcp_protobuf_process fd = %d.",fd);
+    //log_o(LOG_IVI,"ivi_tcp_protobuf_process fd = %d.",fd);
 
     ivi_msg_request_process( data, datalen ,fd);
 
@@ -1462,6 +1474,44 @@ int tbox_ivi_create_tcp_socket(void)
     return 0;
 }
 
+int tbox_ivi_create_pki_socket(void)
+{
+	int ret;
+	char OnePath[128]="\0";
+	char ScdPath[128]="\0";
+	char UsCertPath[128]="\0";
+	char UsKeyPath[128]="\0";
+	ret = HzPortAddrCft(IVI_SERVER_PORT,2,NULL,NULL);  //PKI 指定端口号
+	if(ret != 1010)
+	{
+		log_e(LOG_IVI,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", ret);
+		return -1;
+	}
+	log_o(LOG_IVI,"HzPortAddrCft +++++++++++++++iRet[%d] \n", ret);
+	
+	sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
+	sprintf(ScdPath, "%s","/usrdata/pem/TerminalCA.cer");
+	sprintf(UsCertPath, "%s","/usrdata/pki/userAuth.cer");
+	sprintf(UsKeyPath, "%s","/usrdata/pki/two_certreqmain.key");
+	ret = HzTboxCertchainCfg(OnePath, ScdPath, UsCertPath, UsKeyPath);
+	if(ret != 2030)
+	{
+		log_e(LOG_IVI,"HzTboxCertchainCfg error+++++++++++++++iRet[%d] \n", ret);
+		return -1;
+	}
+	log_o(LOG_IVI,"HzTboxCertchainCfg +++++++++++++++iRet[%d] \n", ret);
+
+	
+	ret  = HzTboxSrvInit("/usrdata/pem/userAuth.crl");//PKI 服务器初始化
+	if(ret != 1230)
+	{
+		log_e(LOG_IVI,"HzTboxSrvInit error+++++++++++++++Ret[%d] \n", ret);
+		return -1;
+	}
+	log_o(LOG_IVI,"HzTboxSrvInit +++++++++++++++Ret[%d] \n", ret);
+	return 0;
+	
+}
 int ivi_init(INIT_PHASE phase)
 {
     int ret = 0;
@@ -1470,6 +1520,8 @@ int ivi_init(INIT_PHASE phase)
     {
         case INIT_PHASE_INSIDE:
             {
+            	memset(&ihu_client,0,sizeof(pki_client));
+				ihu_client.stage = PKI_IDLE;
                 for (i = 0; i < MAX_IVI_NUM; i++)
                 {
                     ivi_clients[i].fd = -1;
@@ -1499,227 +1551,312 @@ int ivi_init(INIT_PHASE phase)
 }
 
 void *ivi_main(void)
-{
-    int max_fd, tcom_fd, ret;
-    TCOM_MSG_HEADER msghdr;
-    fd_set read_set;
+{ 
+    int ret;
+	short i = 0;
+	//#if !TBOX_PKI_IHU
+	//{
+		int max_fd, tcom_fd;
+    	TCOM_MSG_HEADER msghdr;
+    	fd_set read_set;
+    	struct sockaddr_in cli_addr;
+    	int new_conn_fd = -1;
+	//}
+	//#else
+	//{
+		uint64_t wait = 0;
+	//}
+	//#endif
     static MSG_RX rx_msg[MAX_IVI_NUM];
-    short i = 0;
-    struct sockaddr_in cli_addr;
-    int new_conn_fd = -1;
-    prctl(PR_SET_NAME, "IVI");
-	
-    FD_ZERO(&read_set);
-
-    memset(&cli_addr, 0, sizeof(cli_addr));
-
+    prctl(PR_SET_NAME, "IVI"); 
     for (i = 0; i < MAX_IVI_NUM; i++)
     {
         msg_init_rx(&rx_msg[i], recv_buf[i], sizeof(recv_buf[i]));
-    }
+    } 
+	#if !TBOX_PKI_IHU
+	{
+		FD_ZERO(&read_set);
+		memset(&cli_addr, 0, sizeof(cli_addr));
+		tcom_fd = tcom_get_read_fd(MPU_MID_IVI);
 
-    tcom_fd = tcom_get_read_fd(MPU_MID_IVI);
+   		 if (tcom_fd  < 0)
+   		 {
+        	log_e(LOG_IVI, "tcom_get_read_fd failed");
+        	return NULL;
+    	}
+	    ret = tbox_ivi_create_tcp_socket();
+	    if( ret != 0 )
+	    {
+	        if (tcp_fd < 0)
+	        {
+	            close(tcp_fd);
+	            tcp_fd = -1;
 
-    if (tcom_fd  < 0)
-    {
-        log_e(LOG_IVI, "tcom_get_read_fd failed");
-        return NULL;
-    }
+	            log_e(LOG_IVI,"tbox_ivi_create_tcp_socket failed!!!");
 
-    ret = tbox_ivi_create_tcp_socket();
-
-    if( ret != 0 )
-    {
-        if (tcp_fd < 0)
-        {
-            close(tcp_fd);
-            tcp_fd = -1;
-
-            log_e(LOG_IVI,"tbox_ivi_create_tcp_socket failed!!!");
-
-            return NULL;
-        }
-    }
-
+	            return NULL;
+	        }
+	    }
+	}
+	#endif
     while (1)
     {
-        FD_ZERO(&read_set);
-        FD_SET(tcom_fd, &read_set);
+		#if !TBOX_PKI_IHU
+    	{
+    		FD_ZERO(&read_set);
+        	FD_SET(tcom_fd, &read_set);
+        	if( tcp_fd > 0 )
+        	{
+            	FD_SET(tcp_fd, &read_set);
+        	}
+        	max_fd = tcom_fd > tcp_fd ? tcom_fd : tcp_fd;
+        	for (i = 0; i < MAX_IVI_NUM; i++)
+        	{
+            	if (ivi_clients[i].fd <= 0)
+            	{
+                	continue;
+            	}
+            	FD_SET(ivi_clients[i].fd, &read_set);
+            	if (max_fd < ivi_clients[i].fd)
+            	{
+               		max_fd = ivi_clients[i].fd;
+            	}	
+            	log_i(LOG_IVI, "client_fd[%d]=%d", i, ivi_clients[i].fd);
+        	}
+        	/* monitor the incoming data */
+        	ret = select(max_fd + 1, &read_set, NULL, NULL, NULL);
+        	/* the file deccriptor is readable */
+        	if (ret > 0)
+        	{
+            	if(FD_ISSET(tcom_fd, &read_set))
+            	{
+                	ret = tcom_recv_msg(MPU_MID_IVI, &msghdr, ivi_msgbuf);
+                	if (ret != 0)
+                	{
+                    	log_e(LOG_IVI, "tcom_recv_msg failed,ret:0x%08x", ret);
+                    	continue;
+                	}
+                	if (MPU_MID_TIMER == msghdr.sender)
+                	{
+                    	if( IVI_MSG_GPS_EVENT == msghdr.msgid )
+                    	{	
+                    	}
+                	}
+                	else if (MPU_MID_MID_PWDG == msghdr.msgid)
+                	{
+                    	pwdg_feed(MPU_MID_IVI);
+                	}
+            	}
 
-        if( tcp_fd > 0 )
-        {
-            FD_SET(tcp_fd, &read_set);
-        }
-
-        max_fd = tcom_fd > tcp_fd ? tcom_fd : tcp_fd;
-
-        for (i = 0; i < MAX_IVI_NUM; i++)
-        {
-            if (ivi_clients[i].fd <= 0)
-            {
-                continue;
-            }
-
-            FD_SET(ivi_clients[i].fd, &read_set);
-
-            if (max_fd < ivi_clients[i].fd)
-            {
-                max_fd = ivi_clients[i].fd;
-            }
-
-            log_i(LOG_IVI, "client_fd[%d]=%d", i, ivi_clients[i].fd);
-        }
-		
-        /* monitor the incoming data */
-        ret = select(max_fd + 1, &read_set, NULL, NULL, NULL);
-		
-        /* the file deccriptor is readable */
-        if (ret > 0)
-        {
-            if(FD_ISSET(tcom_fd, &read_set))
-            {
-                ret = tcom_recv_msg(MPU_MID_IVI, &msghdr, ivi_msgbuf);
-
-                if (ret != 0)
-                {
-                    log_e(LOG_IVI, "tcom_recv_msg failed,ret:0x%08x", ret);
-                    continue;
-                }
-
-                if (MPU_MID_TIMER == msghdr.sender)
-                {
-                    if( IVI_MSG_GPS_EVENT == msghdr.msgid )
-                    {
-						
-                    }
-                }
-                else if (MPU_MID_MID_PWDG == msghdr.msgid)
-                {
-                    pwdg_feed(MPU_MID_IVI);
-                }
-            }
-
-            if (FD_ISSET(tcp_fd, &read_set))
-            {
-                socklen_t len = sizeof(cli_addr);
-
-                new_conn_fd = accept(tcp_fd, (struct sockaddr *)&cli_addr, &len);
-
-                log_o(LOG_IVI, "new client comes ,fd = %d ,error = %s", new_conn_fd,strerror(errno));
-
-                if (new_conn_fd < 0)
-                {
-                    log_e(LOG_IVI, "socket accept failed!!!");
-                    continue;
-                }
-                else
-                {
-                    for (i = 0; i < MAX_IVI_NUM; i++)
-                    {
-                        if (ivi_clients[i].fd == -1)
-                        {
-                            ivi_clients[i].fd = new_conn_fd;
-                            ivi_clients[i].addr = cli_addr;
-                            ivi_clients[i].lasthearttime = tm_get_time();
-                            log_o(LOG_IVI, "add client_fd[%d] = %d", i, ivi_clients[i].fd);
-                            break;
-                        }
-                    }
-
-                    if (i >= MAX_IVI_NUM)
-                    {
-                        close(new_conn_fd);
-                    }
-                }
-            }
-
-            {
-                for (i = 0; i < MAX_IVI_NUM; i++)
-                {
-                    int num = 0;
-
-                    if (-1 == ivi_clients[i].fd)
-                    {
-                        continue;
-                    }
-
-                    if (tm_get_time() - ivi_clients[i].lasthearttime > 30000)
-                    {
-                        close(ivi_clients[i].fd);
-                        ivi_clients[i].fd = -1;
-                    }
+            	if (FD_ISSET(tcp_fd, &read_set))
+            	{
+                	socklen_t len = sizeof(cli_addr);
+                	new_conn_fd = accept(tcp_fd, (struct sockaddr *)&cli_addr, &len);
+                	log_o(LOG_IVI, "new client comes ,fd = %d ,error = %s", new_conn_fd,strerror(errno));
+                	if (new_conn_fd < 0)
+                	{
+                    	log_e(LOG_IVI, "socket accept failed!!!");
+                    	continue;
+               		}
+                	else
+                	{
+                    	for (i = 0; i < MAX_IVI_NUM; i++)
+                    	{
+                        	if (ivi_clients[i].fd == -1)
+                        	{
+                            	ivi_clients[i].fd = new_conn_fd;
+                            	ivi_clients[i].addr = cli_addr;
+                            	ivi_clients[i].lasthearttime = tm_get_time();
+                            	log_o(LOG_IVI, "add client_fd[%d] = %d", i, ivi_clients[i].fd);
+                            	break;
+                        	}
+                    	}
+                    	if (i >= MAX_IVI_NUM)
+                    	{
+                        	close(new_conn_fd);
+                    	}
+                	}
+            	}
+            	{
+               		for (i = 0; i < MAX_IVI_NUM; i++)
+                	{
+                    	int num = 0;
+                    	if (-1 == ivi_clients[i].fd)
+                    	{
+                        	continue;
+                    	}
+                    	if (tm_get_time() - ivi_clients[i].lasthearttime > 30000)
+                    	{
+                        	close(ivi_clients[i].fd);
+                        	ivi_clients[i].fd = -1;
+                    	}
+                    	if (FD_ISSET(ivi_clients[i].fd, &read_set))
+                    	{
+                        	log_i(LOG_IVI, "start read Client(%d) :%d\n", i, ivi_clients[i].fd);
+                        	if (rx_msg[i].used >= rx_msg[i].size)
+                        	{
+                            	rx_msg[i].used =  0;
+                        	}
+                        	num = recv(ivi_clients[i].fd, (rx_msg[i].data + rx_msg[i].used), rx_msg[i].size - rx_msg[i].used, 0);
+                        	if (num > 0)
+                        	{
+                            	ivi_clients[i].lasthearttime = tm_get_time();
+                            	rx_msg[i].used += num;
+                            	log_buf_dump(LOG_IVI, "tcp recv", rx_msg[i].data, rx_msg[i].used);
+                            	ivi_msg_decodex(&rx_msg[i], ivi_tcp_protobuf_process, &ivi_clients[i].fd);
+                        	}
+                        	else
+                        	{
+                            	if (num == 0 && (EINTR != errno))
+                            	{
+                                	log_e(LOG_IVI, "TCP client disconnect!!!!");
+                            	}
+                            	log_e(LOG_IVI, "Client(%d) exit\n", ivi_clients[i].fd);
+                            	close(ivi_clients[i].fd);
+                            	ivi_clients[i].fd = -1;
+                        	}
+                    	}
+                	}
+            	}
+        	}	
+        	else if (0 == ret)   /* timeout */
+        	{
+            	continue;   /* continue to monitor the incomging data */
+        	}
+        	else
+        	{
+            	if (EINTR == errno)  /* interrupted by signal */
+            	{
+                	continue;
+            	}
+            	log_e(LOG_IVI, "ivi_main exit, error:%s", strerror(errno));
+            	break;  /* thread exit abnormally */
+        	}
+    	}
+		#else
+		{	
+	    	switch(ihu_client.stage)
+	    	{
+				case PKI_IDLE:
+				{
+					ihu_client.stage = PKI_INIT;
+				}
+				break;
+				case PKI_INIT:
+				{
+					if(tm_get_time() - wait > 20000)
+					{
+						ret = tbox_ivi_create_pki_socket();
+						if( ret != 0 )
+	    				{
+	    					log_o(LOG_HOZON,"1111111111111111");
+	       				 	//HzTboxSvrClose(); 
+						 	ihu_client.stage = PKI_INIT;
+							wait = tm_get_time();
+	    				}
+						else
+						{
+							ihu_client.stage = PKI_ACCEPT;
+						}
+					}
+				}
+				break;	
+				case PKI_ACCEPT:
+				{
+					log_i(LOG_IVI,"Waiting for ihu client connection\n");
+					ret = HzTboxSvrAccept();   //阻塞等待连接
+					if(ret != 1230)
+					{
+						log_e(LOG_IVI,"HzTboxConnect error+++++++++++++++iRet[%d] \n", ret);
+						ihu_client.stage = PKI_ACCEPT;
+					}
+					else
+					{
+						log_i(LOG_IVI,"HzTboxConnect +++++++++++++++iRet[%d] \n", ret);
+						ihu_client.lasthearttime = tm_get_time();
+						ihu_client.states = 1;    //车机客户端已经连接上来
+						ihu_client.stage = PKI_RECV;
+					}
+				}
+				break;
+				case PKI_RECV:
+				{
+					int num = 0;
+					ret = HzTboxSvrDataRecv((char *)(rx_msg[0].data + rx_msg[0].used), rx_msg[0].size - rx_msg[0].used,&num);
+					if (num > 0)
+	                {
+	                    ihu_client.lasthearttime = tm_get_time();
+	                    rx_msg[0].used += num;
+	                    log_buf_dump(LOG_IVI, "tcp recv", rx_msg[0].data, rx_msg[0].used);
+	                    ivi_msg_decodex(&rx_msg[0], ivi_tcp_protobuf_process, 0);
+	                }
+					else if(num == 0)
+					{
+						log_e(LOG_IVI, "ihu Client exit\n");
+						HzTboxSvrClose(); 
+						ihu_client.states = 0;
+						ihu_client.stage = PKI_END;
+					}
+					else
+					{
+					}
 					
-					
-                    if (FD_ISSET(ivi_clients[i].fd, &read_set))
-                    {
-                        log_i(LOG_IVI, "start read Client(%d) :%d\n", i, ivi_clients[i].fd);
-
-                        if (rx_msg[i].used >= rx_msg[i].size)
-                        {
-                            rx_msg[i].used =  0;
-                        }
-						
-                        num = recv(ivi_clients[i].fd, (rx_msg[i].data + rx_msg[i].used), rx_msg[i].size - rx_msg[i].used, 0);
-					
-                        if (num > 0)
-                        {
-                            ivi_clients[i].lasthearttime = tm_get_time();
-                            rx_msg[i].used += num;
-                            log_buf_dump(LOG_IVI, "tcp recv", rx_msg[i].data, rx_msg[i].used);
-                            ivi_msg_decodex(&rx_msg[i], ivi_tcp_protobuf_process, &ivi_clients[i].fd);
-                        }
-                        else
-                        {
-                            if (num == 0 && (EINTR != errno))
-                            {
-                                log_e(LOG_IVI, "TCP client disconnect!!!!");
-                            }
-
-                            log_e(LOG_IVI, "Client(%d) exit\n", ivi_clients[i].fd);
-                            close(ivi_clients[i].fd);
-                            ivi_clients[i].fd = -1;
-                        }
-						
-                    }
-                }
-            }
-
-        }
-        else if (0 == ret)   /* timeout */
-        {
-            continue;   /* continue to monitor the incomging data */
-        }
-        else
-        {
-            if (EINTR == errno)  /* interrupted by signal */
-            {
-                continue;
-            }
-
-            log_e(LOG_IVI, "ivi_main exit, error:%s", strerror(errno));
-            break;  /* thread exit abnormally */
-        }
+				}
+				break;
+				case PKI_END:
+				{
+					ihu_client.stage = PKI_IDLE;
+				}
+				break;
+				default:
+	        	break;
+	    	}
+		}
+	#endif
     }
-
     return NULL;
 }
 
 void *ivi_check(void)
 {
+	uint8_t sos_flag = 0;
 	while(1)
-	{	//按键触发或者安全气囊弹出
-		if( (2 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
+	{	
+		#if TBOX_PKI_IHU
 		{
-			memset(&callrequest,0 ,sizeof(ivi_callrequest));
-			callrequest.ecall = 1;
-			callrequest.action =1;
-			if(ivi_clients[0].fd > 0)
+			if(ihu_client.states == 1)   //车机连上来，判断是否超时
 			{
-				//按键触发ECALL，下发远程诊断命令
-				ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
+				if((tm_get_time() - ihu_client.lasthearttime) > 30000 )
+				{
+					HzTboxSvrClose(); 
+					ihu_client.states = 0;
+					ihu_client.stage = PKI_IDLE;
+				}
 			}
-			log_o(LOG_IVI, "SOS trigger!!!!!");
 		}
+		#endif
+		if(PP_rmtCtrl_cfg_CrashOutputSt() == 0)
+		{
+			sos_flag = 0;
+		}
+		//按键触发或者安全气囊弹出
+		if((2 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
+		{
+			if(sos_flag == 0)
+			{
+				memset(&callrequest,0 ,sizeof(ivi_callrequest));
+				callrequest.ecall = 1;
+				callrequest.action =1;
+				if(ivi_clients[0].fd > 0)
+				{
+					//按键触发ECALL，下发远程诊断命令
+					ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
+				}
+				sos_flag = 1;
+				log_o(LOG_IVI, "SOS trigger!!!!!");
+			}
+		}
+		
 		if(ivi_clients[0].fd > 0)  //轮询任务：信号强度、电话状态、绑车激活、远程诊断、
 		{
 			

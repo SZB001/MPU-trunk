@@ -17,6 +17,9 @@ description�� include the header file
 #include "../sockproxy/sockproxy_rxdata.h"
 #include "gb32960_api.h"
 #include "PrvtProt_cfg.h"
+static uint8_t ecall_trigger = 0;
+static uint8_t bcall_trigger = 0;
+
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
@@ -57,6 +60,22 @@ int PrvtProtCfg_rcvMsg(unsigned char* buf,int buflen)
 ******************************************************/
 int PrvtProtCfg_ecallTriggerEvent(void)
 {
+	
+	if(ecall_trigger == 1)
+	{
+		ecall_trigger = 0;
+		return 1;
+	}
+	return 0;
+}
+int PrvtProtCfg_bcallTriggerEvent(void)
+{
+	
+	if(bcall_trigger == 1)
+	{
+		bcall_trigger = 0;
+		return 1;
+	}
 	return 0;
 }
 
@@ -201,4 +220,19 @@ uint8_t PrvtProtCfg_chargeSt(void)
 
 	return chargeSt;
 }
+void PrvtProtCfg_ecallSt(uint8_t st)
+{
+	if(st == 1)
+	{
+		ecall_trigger = 1;
+	}
+}
+void PrvtProtCfg_bcallSt(uint8_t st)
+{
+	if(st == 1)
+	{
+		bcall_trigger = 1;
+	}
+}
+
 

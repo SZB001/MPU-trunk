@@ -65,6 +65,7 @@ description�� function External declaration
 *******************************************************/
 extern int PrvtProtCfg_rcvMsg(unsigned char* buf,int buflen);
 extern int PrvtProtCfg_ecallTriggerEvent(void);
+extern int PrvtProtCfg_bcallTriggerEvent(void);
 extern int PrvtProtCfg_gpsStatus(void);
 extern long PrvtProtCfg_engineSt(void);
 extern long PrvtProtCfg_totalOdoMr(void);
@@ -73,4 +74,7 @@ extern void PrvtProtCfg_gpsData(PrvtProtcfg_gpsData_t *gpsDt);
 extern int PrvtProtCfg_get_iccid(char *iccid);
 extern uint8_t PrvtProtCfg_CrashOutputSt(void);
 extern uint8_t PrvtProtCfg_chargeSt(void);
+extern void PrvtProtCfg_ecallSt(uint8_t st);
+extern void PrvtProtCfg_bcallSt(uint8_t st);
+
 #endif 

@@ -1307,8 +1307,9 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0, i, j, warnbit = 0, warnlvl = 0;
     uint8_t gb_warn[32] = {0};
+    uint8_t gb_warning[3][32];
 
-    for (i = 0; i < 3; i++)
+    for(i = 0; i < 3; i++)
     {
 		if(gbinf->warn[i][5])
 		{
@@ -1321,14 +1322,24 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 		}
     }
 
+    /* DCDC state */
+    if (gbinf->vehi.info[GB_VINF_DCDC])//dcdc为3级报警，客户提供
+    {
+        if(2 == dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_DCDC])->value)
+        {
+        	gb_warning[2][14] = 1;
+        }
+    }
+
     for (i = 0; i < 3; i++)
     {
         for (j = 0; j < 32; j++)
         {
-            if (gbinf->warn[i][j] && 
+            if((gbinf->warn[i][j] &&
             (dbc_get_signal_from_id(gbinf->warn[i][j])->value || 
             (gbinf->warn[3][j] && 
-            dbc_get_signal_from_id(gbinf->warn[3][j])->value)))
+            dbc_get_signal_from_id(gbinf->warn[3][j])->value))) ||
+            		(gb_warning[i][j]))
             // index 3,as a relevance channel,if the is two canid used for on warning
             {
             	gb_warn[j] = 1;

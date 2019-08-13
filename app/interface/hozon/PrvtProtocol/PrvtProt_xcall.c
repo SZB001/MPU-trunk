@@ -322,7 +322,10 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 	{
 		PP_xcall[PP_ECALL].state.req = 1;
 	}
-
+	if(PrvtProtCfg_bcallTriggerEvent())//ecall����
+	{
+		PP_xcall[PP_BCALL].state.req = 1;
+	}
 	if(1 == PP_xcall[PP_ECALL].state.req)//ecall����
 	{
 		log_i(LOG_HOZON, "ecall trig\n");

@@ -21,6 +21,7 @@ description： include the header file
 #include "at_api.h"
 #include "PrvtProt_callCenter.h"
 #include "tbox_ivi_api.h"
+#include "PrvtProt_cfg.h"
 #include "cfg_api.h"
 
 
@@ -29,6 +30,9 @@ int bcall_flag = 0;
 int icall_flag = 0;
 
 extern int assist_get_call_status(void);
+extern void ivi_callstate_response_send(int fd  );
+extern ivi_client ivi_clients[MAX_IVI_NUM];
+
 
 /*******************************************************
 description： global variable definitions
@@ -141,7 +145,6 @@ int PrvtProt_CC_mainfunction(void *task)
 		{
 			case 0:   //拨打ecall
 			{
-				log_o(LOG_HOZON,"status = %d",assist_get_call_status());
 
 				if(assist_get_call_status() != 5) //是否空闲
 				{
@@ -153,15 +156,34 @@ int PrvtProt_CC_mainfunction(void *task)
 					}
 					else if( 1 == Get_call_tpye() ) //bcall 在通话
 					{
-						log_o(LOG_HOZON,"Ecall dailing");
-						disconnectcall();
 						log_o(LOG_HOZON,"Bcall hang");
+						disconnectcall();
+						if(assist_get_call_status() == 5)
+						{
+							ivi_callstate_response_send(ivi_clients[0].fd);
+						}
+						else
+						{
+							return 0;
+						}
+						tbox_ivi_clear_bcall_flag();
+						log_o(LOG_HOZON,"Ecall dailing");
+						
 					}
 					else if (2 == Get_call_tpye() ) //icall 在通话
 					{
-						log_o(LOG_HOZON,"Icall dailing");
-						disconnectcall();
 						log_o(LOG_HOZON,"Icall hang");
+						disconnectcall();
+						if(assist_get_call_status() == 5)
+						{
+							ivi_callstate_response_send(ivi_clients[0].fd);
+						}
+						else
+						{
+							return 0;
+						}
+						tbox_ivi_clear_icall_flag();
+						log_o(LOG_HOZON,"ecall dailing");
 					}
 					
 				}
@@ -179,6 +201,7 @@ int PrvtProt_CC_mainfunction(void *task)
 		        {
 		             makecall((char *)xcall);
 					 tbox_ivi_clear_call_flag();
+					 PrvtProtCfg_ecallSt(1);  //通知TSP
 					 log_o(LOG_HOZON,"Ecall dail");
 					 ecall_flag = 1;
 		        }
@@ -186,7 +209,7 @@ int PrvtProt_CC_mainfunction(void *task)
 			}
 			case 1:  //拨打bcall
 			{
-				if(assist_get_call_status() == 4) //是否空闲
+				if(assist_get_call_status() != 5) //是否空闲
 				{
 					return 0;
 				}
@@ -201,13 +224,15 @@ int PrvtProt_CC_mainfunction(void *task)
 				if (strlen((char *)xcall) > 0)
 		        {
 		             makecall((char *)xcall);
+					 PrvtProtCfg_bcallSt(1);
+					 tbox_ivi_clear_call_flag();
 					 bcall_flag = 1;
 		        }
 				break;
 			}
 			case 2:  //拨打icall
 			{
-				if(assist_get_call_status() == 4) //是否空闲
+				if(assist_get_call_status() != 5) //是否空闲
 				{
 					return 0;
 				}
@@ -221,6 +246,7 @@ int PrvtProt_CC_mainfunction(void *task)
 				if (strlen((char *)xcall) > 0)
 		        {
 		             makecall((char *)xcall);
+					 tbox_ivi_clear_call_flag();
 					 icall_flag = 1;
 		        }	
 				break;	
@@ -231,10 +257,14 @@ int PrvtProt_CC_mainfunction(void *task)
 	else if(action == 2)
 	{
 		disconnectcall();
-		tbox_ivi_clear_call_flag();
-		ecall_flag = 0;
-		bcall_flag = 0;
-		icall_flag = 0;
+		if(assist_get_call_status() == 5)
+		{
+			ivi_callstate_response_send(ivi_clients[0].fd);
+			tbox_ivi_clear_call_flag();
+			ecall_flag = 0;
+			bcall_flag = 0;
+			icall_flag = 0;
+		}
 	}
 	else
 	{

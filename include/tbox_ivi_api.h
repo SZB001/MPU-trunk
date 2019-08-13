@@ -5,6 +5,12 @@
 #include "mid_def.h"
 #include "init.h"
 
+#define TBOX_PKI_IHU_EN                 0
+#define SCDPATH                         "/ursdata/pem/HozonCA.cer"
+#define ONEPATH                         "/ursdata/pem/TerminalCA.cer"
+//#define USCERTPath    
+//#define USKEYPath
+
 #define MAX_IVI_NUM                      1
 #define IVI_SERVER_PORT                  5757
 #define IVI_GPS_TIME                     1000
@@ -20,6 +26,14 @@
 #define IVI_PKG_MSG_CNT                (4)
 
 #define GPS_NMEA_SIZE                  (1024)
+#define TBOX_PKI_IHU  0
+#define PKI_IDLE      0
+#define PKI_INIT      1
+#define PKI_ACCEPT    2
+#define PKI_RECV      3
+#define PKI_END       4
+
+
 
 typedef struct
 {
@@ -27,6 +41,14 @@ typedef struct
     unsigned int lasthearttime;
     struct sockaddr_in addr;
 } ivi_client;
+
+typedef struct
+{
+    uint64_t lasthearttime;  //记录心跳时间
+	uint8_t stage;           //车机通信阶段
+	uint8_t states;          //车机是否连接
+} pki_client;
+
 
 typedef struct{
 	int ecall;
@@ -93,6 +115,10 @@ int tbox_ivi_get_call_action(void);
 int tbox_ivi_get_call_type(void);
 
 void tbox_ivi_clear_call_flag(void);
+void tbox_ivi_clear_bcall_flag(void);
+
+void tbox_ivi_clear_icall_flag(void);
+
 
 extern void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp);
 

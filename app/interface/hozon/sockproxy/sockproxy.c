@@ -16,6 +16,9 @@ description�� include the header file
 #include  <errno.h>
 #include <sys/times.h>
 #include <sys/prctl.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include "timer.h"
 #include "init.h"
@@ -817,7 +820,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 ******************************************************/
 static int sockproxy_do_receive(sockproxy_stat_t *state)
 {
-    int ret = 0, rlen;
+    int ret = 0, rlen = 0;
     char rbuf[1456] = {0};
 
     if(state->state == PP_OPENED)
