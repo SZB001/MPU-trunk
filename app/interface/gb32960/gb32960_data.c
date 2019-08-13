@@ -1617,11 +1617,27 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     }
 
     /* 驾驶侧窗state */
-    buf[len++] = 0xff;//��ʻ�ര״̬
-    buf[len++] = 0xff;//����ʻ�ര״̬
-    buf[len++] = 0xff;//���״̬
-    buf[len++] = 0xff;//�Һ�״̬
-    buf[len++] = 0xff;//�촰״̬
+    buf[len++] = 0xff;//驾驶侧״̬
+    buf[len++] = 0xff;//副驾驶侧״̬
+    buf[len++] = 0xff;//左后窗״̬
+    buf[len++] = 0xff;//右后窗״̬
+    tmp = PrvtProt_SignParse_sunroofSt();
+    if(tmp == 0x2)
+    {
+    	buf[len++] = 0x0;//天窗关闭״̬
+    }
+    else if((tmp == 0x0) || (tmp == 0x1) || (tmp == 0x3) || (tmp == 0x4))
+    {
+    	buf[len++] = 0x01;//天窗开启
+    }
+    else if(tmp == 0x5)
+    {
+    	buf[len++] = 0xfe;//异常
+    }
+    else
+    {
+    	buf[len++] = 0xff;//无效
+    }
 
     /* 驾驶侧门state */
     for(i = 0; i < 4; i++)
@@ -2334,7 +2350,15 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 
 	if(gbinf->gb_ConpSt.info[GB_CMPT_PTCWORKSTS])//
 	{
-		buf[len++] = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PTCWORKSTS])->value;
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PTCWORKSTS])->value;
+		if(tmp == 0x65)
+		{
+			buf[len++] = 0xff;
+		}
+		else
+		{
+			buf[len++] = tmp;
+		}
 	}
 	else
 	{
@@ -2694,7 +2718,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	if(gbinf->vehi.info[GB_VINF_CHARGE])//
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_VINF_CHARGE])->value;
-		if((tmp>=0)&&(tmp<=3))
+		if((tmp>=0)&&(tmp<=2))
 		{
 			buf[len++] = tmp;
 		}
@@ -2955,10 +2979,18 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	}
 
 	if(gbinf->gb_ConpSt.info[GB_CMPT_EACHIGHVOLT])
-	{//EAC��ѹ�����ѹ
+	{//EAC高压供电电压
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_EACHIGHVOLT])->value;
-		 buf[len++] = tmp >> 8;
-		 buf[len++] = tmp;
+		if(tmp == 0x1ff)
+		{
+			buf[len++] = 0xff;
+			buf[len++] = 0xff;
+		}
+		else
+		{
+			buf[len++] = tmp >> 8;
+			buf[len++] = tmp;
+		}
 	}
 	else
 	{
@@ -2970,8 +3002,21 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	if(gbinf->gb_ConpSt.info[GB_CMPT_PTCPWRCONS])
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_PTCPWRCONS])->value * 10;
-		buf[len++] = tmp >> 8;
-		buf[len++] = tmp;
+		if(tmp == 0xfe)
+		{
+			buf[len++] = 0xff;
+			buf[len++] = 0xff;
+		}
+		else if(tmp == 0xff)
+		{
+			buf[len++] = 0xff;
+			buf[len++] = 0xfe;
+		}
+		else
+		{
+			buf[len++] = tmp >> 8;
+			buf[len++] = tmp;
+		}
 	}
 	else
 	{
@@ -2979,12 +3024,23 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	for(i=0;i<2;i++)//��ȴҺ���������¶�
+	for(i=0;i<2;i++)//冷却液进、出口温度
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_CLNTTEMPIN+i])
 		{
 			tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CLNTTEMPIN+i])->value + 40;
-			buf[len++] = tmp;
+			if(tmp == 0xfe)
+			{
+				buf[len++] = 0xff;
+			}
+			else if(tmp == 0xff)
+			{
+				buf[len++] = 0xfe;
+			}
+			else
+			{
+				buf[len++] = tmp;
+			}
 		}
 		else
 		{

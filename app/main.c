@@ -40,6 +40,7 @@ int main(int argc , char **argv)
     typedef int (*module_run_fn)(void);
 
     prctl(PR_SET_NAME, "MAIN");
+    signal(SIGPIPE, SIG_IGN);
     static module_init_fn init_tbl[] =
     {
         tcom_init,

@@ -445,7 +445,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 #endif
 
 	static uint64_t logtime = 0;
-	static uint64_t closewaittime = 0;
+	//static uint64_t closewaittime = 0;
 
 	if((tm_get_time() - logtime) > 5000)
 	{
@@ -466,7 +466,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		{
 			log_i(LOG_HOZON, "start to sleep\n");
 			sockproxy_socketclose();
-			closewaittime = tm_get_time();
+			//closewaittime = tm_get_time();
 		}
 		else
 		{
@@ -475,38 +475,12 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				sockSt.sleepFlag = 1;
 			}
 			else
-			{
-				if((tm_get_time() - closewaittime) >= SOCK_CHECKCLOSEDTIMEOUT)
-				{
-#if SOCKPROXY_SAFETY_EN
-					pthread_cancel(rcvtid);
-				    pthread_join(rcvtid, NULL);
-				    log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel success\n");
-					sockSt.asynCloseFlg = 0;
-					sockSt.rcvflag = 0;
-					sockSt.sleepFlag = 1;
-					log_i(LOG_SOCK_PROXY, "socket closed\n");
-					if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
-					{
-						(void)SgHzTboxClose();
-					}
-					else
-					{
-						(void)HzTboxClose();
-					}
-					sockSt.state = PP_CLOSED;
-					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
-					sockSt.linkSt = SOCKPROXY_CHECK_CERT;
-#endif
-				}
-			}
+			{}
 		}
 	}
 	else
 	{
 		sockSt.sleepFlag = 0;
-		closewaittime = tm_get_time();
 	}
 
 
@@ -649,6 +623,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 
 				if((sockSt.asynCloseFlg == 1) && (0 == sockSt.rcvflag))
 				{
+					sockSt.asynCloseFlg = 0;
 					log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg == 1 ,start to close sg socket\n");
 					sockSt.sglinkSt = SOCKPROXY_SGLINK_CLOSE;
 				}
@@ -660,7 +635,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 			/*release all resources and close all connections*/
 			if(pthread_mutex_trylock(&sendmtx) == 0)//
 			{
-				sockSt.asynCloseFlg = 0;
+				//sockSt.asynCloseFlg = 0;
 				sockSt.waittime = tm_get_time();
 				sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 				//sockSt.linkSt = SOCKPROXY_CHECK_CERT;
@@ -794,6 +769,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 				if((1 == sockSt.asynCloseFlg) && (0 == sockSt.rcvflag))
 				{
+					sockSt.asynCloseFlg = 0;
 					log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg == 1 ,start to close socket\n");
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_CLOSE;
 				}
@@ -811,7 +787,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					sockSt.state = PP_CLOSED;
 				}
 
-				sockSt.asynCloseFlg = 0;
+				//sockSt.asynCloseFlg = 0;
 				sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 				pthread_mutex_unlock(&sendmtx);
 

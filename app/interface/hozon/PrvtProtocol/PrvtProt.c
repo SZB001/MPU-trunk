@@ -577,7 +577,7 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 	{
 		PP_heartbeat.timeoutCnt = 0;
 		log_i(LOG_HOZON, "heartbeat timeout too much!close socket\n");
-		sockproxy_socketclose();
+		//sockproxy_socketclose();
 	}
 	return 0;
 }
