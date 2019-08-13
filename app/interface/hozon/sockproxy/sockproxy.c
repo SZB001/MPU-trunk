@@ -490,24 +490,29 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	{
 		if((tm_get_time() - checkclosedelaytime) >= SOCK_CHECKCLOSEDTIMEOUT)
 		{
-			pthread_cancel(rcvtid);
-		    pthread_join(rcvtid, NULL);
-		    log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel success\n");
-			sockSt.asynCloseFlg = 0;
-			sockSt.rcvflag = 0;
-			log_i(LOG_SOCK_PROXY, "socket closed\n");
-			if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
+			if(pthread_mutex_trylock(&sendmtx) == 0)
 			{
-				(void)SgHzTboxClose();
+				pthread_cancel(rcvtid);
+				pthread_join(rcvtid, NULL);
+				log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel success\n");
+				sockSt.asynCloseFlg = 0;
+				sockSt.rcvflag = 0;
+				log_i(LOG_SOCK_PROXY, "socket closed\n");
+				if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
+				{
+					(void)SgHzTboxClose();
+				}
+				else
+				{
+					(void)HzTboxClose();
+				}
+				sockSt.state = PP_CLOSED;
+				sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+				sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+				sockSt.linkSt = SOCKPROXY_CHECK_CERT;
+
+				pthread_mutex_unlock(&sendmtx);//解锁
 			}
-			else
-			{
-				(void)HzTboxClose();
-			}
-			sockSt.state = PP_CLOSED;
-			sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-			sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
-			sockSt.linkSt = SOCKPROXY_CHECK_CERT;
 		}
 		else
 		{}
@@ -1121,6 +1126,7 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 				{
 					log_e(LOG_SOCK_PROXY,"SgHzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
 					//SP_data_ack_pack();
+					pthread_mutex_unlock(&sendmtx);//解锁
 					return -1;
 				}
 			}
@@ -1133,6 +1139,7 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 				{
 					log_e(LOG_SOCK_PROXY,"HzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
 					//SP_data_ack_pack();
+					pthread_mutex_unlock(&sendmtx);//解锁
 					return -1;
 				}
 			}
@@ -1144,7 +1151,7 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 			log_e(LOG_SOCK_PROXY, "socket is not open");
 		}
 		
-		pthread_mutex_unlock(&sendmtx);//����������
+		pthread_mutex_unlock(&sendmtx);//解锁
 	}
 	else
 	{
