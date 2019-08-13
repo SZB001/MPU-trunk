@@ -1320,6 +1320,11 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 		{
 			gbinf->warn[i][3] = gbinf->warn[i][6];
 		}
+
+		if(gbinf->warn[i][15])
+		{
+			gbinf->warn[i][17] = gbinf->warn[i][15];
+		}
     }
 
     /* DCDC state */
@@ -1395,7 +1400,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     uint8_t *otherFaultNum_ptr;
     otherFaultNum_ptr =  &buf[len++];
     *otherFaultNum_ptr = 0;
-    for(i = 0; i < 4; i++)//��Ӧ4����̥
+    for(i = 0; i < 4; i++)//
     {
     	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRESENSORLOST + 6*i])
 		{
