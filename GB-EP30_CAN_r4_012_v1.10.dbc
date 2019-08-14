@@ -242,7 +242,7 @@ BO_ 187 MCU_Fr02_0BB: 8 MCU
  SG_ MCU2MotorPosSensorFault_@2WG7028 : 42|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ MCU22DischargeOverTime : 43|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ MCU22SumPhaseCurrentOverThd : 44|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ MCU2MotorOvertemperatureFault : 46|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ MCU2MotorOvertempFault_@2WG7211 : 46|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ MCU22AphaseOvercurrentWarning : 47|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ MCU22BphaseOvercurrentWarning : 48|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ MCU2CphaseOvercurrentWarning : 49|1@0+(1,0)[0|1] "" Vector__XXX
@@ -261,6 +261,7 @@ BO_ 972 MCU_Fr03_3CC: 8 MCU
  SG_ MCU3Mode_@2WGE00A : 39|3@0+(1,0)[0|7] "" Vector__XXX
  SG_ MCU3InverterTemperature_@2WG2001 : 55|8@0+(1,-48)[-48|206] "¡æ" Vector__XXX
  SG_ MCU3MotorTemperature_@2WG2004 : 63|8@0+(1,-48)[-48|206] "¡æ" Vector__XXX
+ SG_ MCU3HVILDCBus_@2WG3001 : 36|1@0+(1,0)[0|1] "" Vector__XXX
 BO_ 1072 MCU_Fr04_430: 8 MCU
  SG_ MCU4AlOfsNoPlaus : 0|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ MCU4CanBusOff : 1|1@0+(1,0)[0|1] "" Vector__XXX
@@ -345,7 +346,7 @@ BO_ 850 VCU_Fr02_352: 8 VCU1
  SG_ VCU2DCDCPowerLimit : 31|8@0+(0.01,0)[0|2.54] "Kw" Vector__XXX
  SG_ VCU2DCDCOutputVolCom : 39|10@0+(0.05,0)[0|51.15] "V" Vector__XXX
  SG_ VCU2AliveCounter : 43|4@0+(1,0)[0|15] "" Vector__XXX
- SG_ VCU2HVILMajorLoop : 44|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ VCU2HVILMajorLoop_@2WG3000 : 44|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU2DCDCEnabled : 45|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU2Checksum : 63|8@0+(1,0)[0|255] "" Vector__XXX
 BO_ 1251 VCU_Fr03_4E3: 8 VCU1

@@ -7,6 +7,7 @@
 #include "log.h"
 #include "list.h"
 #include "can_api.h"
+#include "dev_api.h"
 #include "gps_api.h"
 #include "gb32960.h"
 #include "gb32960_api.h"
@@ -32,6 +33,11 @@ gb32960_api_fault_t gb_fault;
 #define GB_MAX_ENGIN_INFO   4
 #define GB_MAX_EXTR_INFO    16
 #define GB_MAX_MOTOR        4
+
+
+#define GB_SUPPLEMENTARY_DATA_MAJORLOOP		0x00//主回路高压互锁信号状态
+#define GB_SUPPLEMENTARY_DATA_DCBUS			0x01//直流母线互锁状态
+#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_DCBUS + 1)
 
 #if GB_EXT
 /* event information index */
@@ -326,6 +332,7 @@ gb32960_api_fault_t gb_fault;
 #define GB_DATA_BATTTEMP    0x09
 #define GB_DATA_FUELCELL    0x0A
 #define GB_DATA_VIRTUAL     0x0B
+#define GB_DATA_SUPP     	0x03//����״̬��չ����
 #if GB_EXT
 #define GB_DATA_EVENT     	0x0C//�¼�����
 #define GB_DATA_CONPST     	0x0E//�㲿��״̬����
@@ -406,6 +413,11 @@ static gb_eventCode_t	gb_eventCode[GB_MAX_EVENT_INFO] =
 	{GB_EVT_TAILDOOR_OPEN,0x000E}
 };
 
+/* vehi state information structure */
+typedef struct
+{
+    int info[GB_MAX_SUPPLEMENTARY_DATA];
+}gb_Supplementarydata_t;
 
 /* vehi state information structure */
 typedef struct
@@ -603,6 +615,7 @@ typedef struct _gb_info_t
 	gb_ConpState_t gb_ConpSt;
 #endif
 	gb_alarmFault_t gb_alarmFault;
+	gb_Supplementarydata_t gb_SupData;
     struct _gb_info_t *next;
 }gb_info_t;
 
@@ -1305,9 +1318,20 @@ static uint32_t gb_data_save_extr(gb_info_t *gbinf, uint8_t *buf)
 
 static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 {
-    uint32_t len = 0, i, j, warnbit = 0, warnlvl = 0;
+    uint32_t len = 0, i, j, warnbit = 0, warnlvl = 0,warnlvltemp = 0;
+    uint8_t* warnlvl_ptr;
     uint8_t gb_warn[32] = {0};
-    uint8_t gb_warning[3][32];
+    uint8_t gb_warning[3][32] = {0};
+    const char gb_use_dbc_warnlvl[32] =
+    {
+    	0,0,0,0,0,
+		0,0,0,0,0,
+		0,1,1,1,1,
+		0,1,0,0,0,
+		0,0,0,0,0,
+		0,0,0,0,0,
+		0,0
+    };
 
     for(i = 0; i < 3; i++)
     {
@@ -1336,32 +1360,75 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
         }
     }
 
-    for (i = 0; i < 3; i++)
+   if(dev_get_KL15_signal())
+   {
+		if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_MAJORLOOP])
+		{
+			if(0 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_MAJORLOOP])->value)
+			{
+				gb_warning[2][16] = 1;
+			}
+		}
+
+		if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_DCBUS])
+		{
+			if(0 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_DCBUS])->value)
+			{
+				gb_warning[2][16] = 1;
+			}
+		}
+
+	    for(i = 0; i < 3; i++)
+	    {
+			if(gbinf->warn[i][0x3F] && dbc_get_signal_from_id(gbinf->warn[i][0x3F])->value)
+			{
+				gb_warning[2][16] = 1;
+			}
+	    }
+   }
+
+    for(i = 0; i < 3; i++)
     {
-        for (j = 0; j < 32; j++)
+        for(j = 0; j < 32; j++)
         {
-            if((gbinf->warn[i][j] &&
-            (dbc_get_signal_from_id(gbinf->warn[i][j])->value || 
-            (gbinf->warn[3][j] && 
-            dbc_get_signal_from_id(gbinf->warn[3][j])->value))) ||
-            		(gb_warning[i][j]))
+            if((gbinf->warn[i][j] && dbc_get_signal_from_id(gbinf->warn[i][j])->value) || \
+            		gb_warning[i][j])
             // index 3,as a relevance channel,if the is two canid used for on warning
             {
             	gb_warn[j] = 1;
                 warnbit |= 1 << j;
-                warnlvl  = i + 1;
+                if(gb_use_dbc_warnlvl[j])
+                {
+                	warnlvl  = i + 1;
+                }
+                else
+                {
+                	if(gbinf->warn[i][j] &&	\
+                	            (dbc_get_signal_from_id(gbinf->warn[i][j])->value > warnlvltemp))
+                	{
+                		warnlvltemp = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
+                	}
+                }
             }
         }
     }
 
-    if (gbinf->warntest)
+    if(warnlvltemp > warnlvl)
+    {
+    	warnlvl = warnlvltemp;
+    }
+
+#if 0
+    if(gbinf->warntest)
     {
         warnbit |= 1;
         warnlvl  = 3;
     }
+#endif
 
     buf[len++] = GB_DATA_WARNNING;
-    buf[len++] = warnlvl;
+    //buf[len++] = warnlvl;
+    warnlvl_ptr = &buf[len++];
     buf[len++] = warnbit >> 24;
     buf[len++] = warnbit >> 16;
     buf[len++] = warnbit >> 8;
@@ -1375,13 +1442,9 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 
     //uint8_t battheatsfastwarn = 0;
     //电池温升过快故障
-    for (i = 0; i < 3; i++)
+    for(i = 0; i < 3; i++)
     {
-		if (gbinf->warn[i][0x36] &&
-		(dbc_get_signal_from_id(gbinf->warn[i][0x36])->value ||
-		(gbinf->warn[3][0x36] &&
-		dbc_get_signal_from_id(gbinf->warn[3][0x36])->value)))
-		// index 3,as a relevance channel,if the is two canid used for on warning
+		if(gbinf->warn[i][0x36] && dbc_get_signal_from_id(gbinf->warn[i][0x36])->value)
 		{
 			//battheatsfastwarn = 1;
 			faultCode = gb_alarmFaultCode[GB_AF_BATTRISEFAST].code;
@@ -1481,13 +1544,13 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 		}
     }
 
+    *warnlvl_ptr = warnlvl;
+
     //故障诊断,用于外部获取故障报警状态
     for(j = 0;j < 32;j++)
     {
     	gb_fault.warn[j] = gb_warn[j];
     }
-
-	//gb_fault.warn[battheatsfastWARN] = battheatsfastwarn;
 
     return len;
 }
@@ -2234,7 +2297,7 @@ static uint32_t gb_data_save_VehiPosExt(gb_info_t *gbinf, uint8_t *buf)
     /* data type : location data */
     buf[len++] = 0x92;//��Ϣ���ͱ�־
 
-    tmp = gps_snap.kms * 10;//�����ն˵��ٶ�
+    tmp = gps_snap.knots * 10;//�����ն˵��ٶ�
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
@@ -2615,14 +2678,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEST])//
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEST])->value;
-		if((tmp>=0)&&(tmp<=1))
-		{
-			buf[len++] = tmp;
-		}
-		else
-		{
-			buf[len++] = 0xfe;
-		}
+		buf[len++] = tmp;
 	}
 	else
 	{
@@ -3150,7 +3206,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 
     warnlvl_ptr = &buf[len++];//��߱����ȼ�
     warnnum_ptr = &buf[len++];//������
-    *warnlvl_ptr = 0;
+    *warnlvl_ptr = 0xff;
     *warnnum_ptr = 0;
     for (i = 0; i < 3; i++)
     {
@@ -3211,7 +3267,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	        	buf[len++] = warn_code >> 8;
     	        	buf[len++] = warn_code;
     	        	(*warnnum_ptr)++;
-    	        	(*warnlvl_ptr)  = i + 1;
+    	        	//(*warnlvl_ptr)  = i + 1;
     	        	ac_warnflag=1;
             	}
             	else if(j == 0x47)//制热不响应原因
@@ -3248,7 +3304,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	        	buf[len++] = warn_code >> 8;
     	        	buf[len++] = warn_code;
     	        	(*warnnum_ptr)++;
-    	        	(*warnlvl_ptr)  = i + 1;
+    	        	//(*warnlvl_ptr)  = i + 1;
     	        	ac_warnflag=1;
             	}
             	else
@@ -3256,7 +3312,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
                 	buf[len++] = gb_alarmCode[j].code >> 8;
                 	buf[len++] = gb_alarmCode[j].code;
                 	(*warnnum_ptr)++;
-                	(*warnlvl_ptr)  = i + 1;
+                	//(*warnlvl_ptr)  = i + 1;
             	}
             }
 			if (gbinf->warn[i][j] &&
@@ -3279,7 +3335,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	buf[len++] = warn_code >> 8;
         	buf[len++] = warn_code;
         	(*warnnum_ptr)++;
-        	(*warnlvl_ptr)  = i + 1;
+        	//(*warnlvl_ptr)  = i + 1;
 		}
 
         //单体蓄电池过压报警
@@ -3293,7 +3349,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	buf[len++] = warn_code >> 8;
         	buf[len++] = warn_code;
         	(*warnnum_ptr)++;
-        	(*warnlvl_ptr)  = i + 1;
+        	//(*warnlvl_ptr)  = i + 1;
 		}
 
         //档位信号故障
@@ -3307,7 +3363,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	buf[len++] = warn_code >> 8;
         	buf[len++] = warn_code;
         	(*warnnum_ptr)++;
-        	(*warnlvl_ptr)  = i + 1;
+        	//(*warnlvl_ptr)  = i + 1;
 		}
 
         //电机异常报警
@@ -3321,7 +3377,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	buf[len++] = warn_code >> 8;
         	buf[len++] = warn_code;
         	(*warnnum_ptr)++;
-        	(*warnlvl_ptr)  = i + 1;
+        	//(*warnlvl_ptr)  = i + 1;
 		}
 
         //电机异常报警
@@ -3335,7 +3391,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	buf[len++] = warn_code >> 8;
         	buf[len++] = warn_code;
         	(*warnnum_ptr)++;
-        	(*warnlvl_ptr)  = i + 1;
+        	//(*warnlvl_ptr)  = i + 1;
 		}
 
         //动力电池单体电压过压保护
@@ -3349,7 +3405,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	buf[len++] = warn_code >> 8;
         	buf[len++] = warn_code;
         	(*warnnum_ptr)++;
-        	(*warnlvl_ptr)  = i + 1;
+        	//(*warnlvl_ptr)  = i + 1;
 		}
 
         //动力电池单体电压欠压保护故障
@@ -3363,7 +3419,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	buf[len++] = warn_code >> 8;
         	buf[len++] = warn_code;
         	(*warnnum_ptr)++;
-        	(*warnlvl_ptr)  = i + 1;
+        	//(*warnlvl_ptr)  = i + 1;
 		}
 
         //动力电池温度过高保护故障
@@ -3377,7 +3433,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         	buf[len++] = warn_code >> 8;
         	buf[len++] = warn_code;
         	(*warnnum_ptr)++;
-        	(*warnlvl_ptr)  = i + 1;
+        	//(*warnlvl_ptr)  = i + 1;
 		}
 
     }
@@ -3409,7 +3465,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	buf[len++] = warn_code >> 8;
     	buf[len++] = warn_code;
     	(*warnnum_ptr)++;
-    	(*warnlvl_ptr)  = 0 + 1;
+    	//(*warnlvl_ptr)  = 0 + 1;
     }
 
     //与BMS通讯丢失
@@ -3419,7 +3475,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	buf[len++] = warn_code >> 8;
     	buf[len++] = warn_code;
     	(*warnnum_ptr)++;
-    	(*warnlvl_ptr)  = 2 + 1;
+    	//(*warnlvl_ptr)  = 2 + 1;
     }
 
     //与MCU通讯丢失
@@ -3980,6 +4036,17 @@ static int gb_data_parse_surfix(gb_info_t *gbinf, int sigid, const char *sfx)
             }
 
             gbinf->gb_alarmFault.info[gbindex] = sigid;
+		}
+		break;
+		case GB_DATA_SUPP:
+		{
+			if (gbindex >= GB_MAX_SUPPLEMENTARY_DATA)
+            {
+                log_e(LOG_GB32960, "supp data info over %d! ", gbindex);
+                break;
+            }
+
+            gbinf->gb_SupData.info[gbindex] = sigid;
 		}
 		break;
         default:
