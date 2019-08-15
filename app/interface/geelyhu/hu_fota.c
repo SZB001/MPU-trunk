@@ -60,7 +60,7 @@ void hu_fota_upd_rollupd_reslut_state(int error)
 
 static int hu_fota_dld_request_send(hu_pack_t *pack)
 {
-    if(hu_fota_state == HU_FOTA_STAT_IDLE && fota_state() == FOTA_STAT_NEWREQ)
+    if(hu_fota_state == HU_FOTA_STAT_IDLE)
     {
         hu_fota_state = HU_FOTA_STAT_DLD_REQUEST;
         pack->len = 1;
@@ -73,7 +73,7 @@ static int hu_fota_dld_request_send(hu_pack_t *pack)
     hu_fota_time > 65000)
     {
         hu_fota_state = HU_FOTA_STAT_IDLE;
-        fota_dld_cancel();
+        //fota_dld_cancel();
     }
 
     return -1;
@@ -90,7 +90,7 @@ static void hu_fota_dld_request_done(int error)
     else
     {
         hu_fota_state = HU_FOTA_STAT_IDLE;
-        fota_dld_cancel();
+        //fota_dld_cancel();
     }
 }
 
@@ -106,13 +106,13 @@ static int hu_fota_dld_confirm_recv(hu_pack_t *pack)
     {
         if (pack->dat[0] == 0)
         {
-            hu_fota_state = fota_dld_start() == 0 ?
-                HU_FOTA_STAT_DLD_PROCESS : HU_FOTA_STAT_DLD_FINISH;
+            //hu_fota_state = fota_dld_start() == 0 ?
+            //    HU_FOTA_STAT_DLD_PROCESS : HU_FOTA_STAT_DLD_FINISH;
         }
         else
         {
             hu_fota_state = HU_FOTA_STAT_IDLE;
-            fota_dld_cancel();
+            //fota_dld_cancel();
         }
     }
 
@@ -123,7 +123,7 @@ static int hu_fota_dld_process_send(hu_pack_t *pack)
 {    
     if (hu_fota_state == HU_FOTA_STAT_DLD_PROCESS)
     {
-        int percent = fota_dld_percent();
+        int percent = 100;
         
         if((percent > 100) || (percent < 0))
         {
@@ -145,7 +145,7 @@ static int hu_fota_dld_finish_send(hu_pack_t *pack)
     if(hu_fota_state == HU_FOTA_STAT_DLD_FINISH)
     {
         pack->len = 1;
-        pack->dat[0] = fota_state() == FOTA_STAT_NEWFILE ? 0 : 1;
+        //pack->dat[0] = fota_state() == FOTA_STAT_NEWFILE ? 0 : 1;
         return 0;
     }
 
@@ -166,12 +166,12 @@ static int hu_fota_dld_restart_ack(hu_pack_t *pack)
 
 static int hu_fota_dld_restart_recv(hu_pack_t *pack)
 {
-    if(hu_fota_state == HU_FOTA_STAT_IDLE && fota_state() == FOTA_STAT_PENDING)
+    if(hu_fota_state == HU_FOTA_STAT_IDLE)
     {
         if (pack->dat[0] == 0)
         {
-            hu_fota_state = fota_dld_start() == 0 ?
-                HU_FOTA_STAT_DLD_PROCESS : HU_FOTA_STAT_DLD_FINISH;
+            //hu_fota_state = fota_dld_start() == 0 ?
+            //    HU_FOTA_STAT_DLD_PROCESS : HU_FOTA_STAT_DLD_FINISH;
         }
     }
 
@@ -243,8 +243,8 @@ static int hu_cmd_fota_upd_request_recv(hu_pack_t *pack)
 {
     if (hu_fota_state == HU_FOTA_STAT_IDLE && (pack->dat[0] == 0 || pack->dat[0] == 1))
     {
-        hu_fota_state = fota_upd_start() == 0 ?
-            HU_FOTA_STAT_UPD_PROCESS : HU_FOTA_STAT_UPD_FINISH;
+        //hu_fota_state = fota_upd_start() == 0 ?
+        //    HU_FOTA_STAT_UPD_PROCESS : HU_FOTA_STAT_UPD_FINISH;
     }
 
     return 0;
@@ -254,7 +254,7 @@ static int hu_cmd_fota_upd_process_send(hu_pack_t *pack)
 {
     if (hu_fota_state == HU_FOTA_STAT_UPD_PROCESS)
     {
-        int percent = fota_upd_percent();
+        int percent = 100;
         
         if((percent > 100) || (percent < 0))
         {
@@ -270,11 +270,11 @@ static int hu_cmd_fota_upd_process_send(hu_pack_t *pack)
 
     return -1;
 }
-extern void fota_selfupgrade_finish_status(void);
+//extern void fota_selfupgrade_finish_status(void);
 void hu_cmd_fota_selupgrade_finish(void)
 {
   hu_fota_state = HU_FOTA_STAT_UPD_FINISH;
-  fota_selfupgrade_finish_status();
+//  fota_selfupgrade_finish_status();
 }
 
 static int hu_cmd_fota_upd_finish_send(hu_pack_t *pack)
@@ -282,7 +282,7 @@ static int hu_cmd_fota_upd_finish_send(hu_pack_t *pack)
     if(hu_fota_state == HU_FOTA_STAT_UPD_FINISH)
     {
         pack->len = 1;
-        pack->dat[0] = fota_state() == FOTA_STAT_FINISH ? 0 : 1;
+        //pack->dat[0] = fota_state() == FOTA_STAT_FINISH ? 0 : 1;
         return 0;
     }
 
@@ -392,7 +392,7 @@ static int hu_fota_test(int argc, const char **argv)
         rollback_state = mode % 2;
         hu_fota_upd_rollupd_reslut_state(rollback_state);
     } else {
-        fota_new_request(argv[1], NULL, mode);
+        //fota_new_request(argv[1], NULL, mode);
     }
 
     return 0;

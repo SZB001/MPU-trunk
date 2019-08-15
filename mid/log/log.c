@@ -31,6 +31,7 @@ log_info_t log_cfg_table[LOG_MAX] =
     { LOG_ERROR, "TCOM"     },
     { LOG_ERROR, "MID"      },
     { LOG_ERROR, "APPL"     },
+    { LOG_ERROR, "GOML"     },
     { LOG_ERROR, "SCOM"     },
     { LOG_ERROR, "PM"       },
     { LOG_ERROR, "GPS"      },
@@ -54,6 +55,7 @@ log_info_t log_cfg_table[LOG_MAX] =
 	{ LOG_ERROR, "UPER_ECDC" 	},
 	{ LOG_ERROR, "REMOTE_DIAG"     },
     { LOG_ERROR, "BLE"     },
+	{ LOG_ERROR, "WSRV"     },
 };
 
 /*********************************************

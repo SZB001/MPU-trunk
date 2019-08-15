@@ -54,9 +54,10 @@ author        liuzhongwen
 #define MPU_MID_REMOTE_DIAG   0x1700   /* REMOTE DIAG module add by caoml*/
 #define MPU_MID_BLE           0x1800   /* sqota*/
 #define MPU_MID_HOZON_PP   	  0x1900   /* hozon pp module add by liujian*/
+#define MPU_MID_WSRV          0x1A00   /* gmobi web server module */
 
 #define MPU_MIN_MID           MPU_MID_TIMER
-#define MPU_MAX_MID           MPU_MID_HOZON_PP
+#define MPU_MAX_MID           MPU_MID_WSRV
 
 #define MPU_APP_MID_COUNT     (((MPU_MAX_MID - MPU_MIN_MID) >> 8) + 1)
 

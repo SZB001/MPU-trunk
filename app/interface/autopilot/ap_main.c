@@ -17,12 +17,12 @@
 #include "ap_data.h"
 #include "timer.h"
 #include "../support/protocol.h"
-#include "../fota/fota_foton.h"
+//#include "../fota/fota_foton.h"
 
 
 static pthread_t ap_tid; /* thread id */
 static uint8_t   ap_msgbuf[TCOM_MAX_MSG_LEN];
-extern unsigned char ecu_selfupgrade_readversion;
+//extern unsigned char ecu_selfupgrade_readversion;
 void selfupgrade_mpu_only_report(void);
 void mpu_self_file_exists(void);
 
@@ -89,7 +89,7 @@ int ap_init(INIT_PHASE phase)
             {
                 unsigned int len;
                 
-                //mpu_self_file_exists();
+                mpu_self_file_exists();
                 
                 len = sizeof(apinfo.url);
                 ret |= cfg_get_para(CFG_ITEM_FTTSP_URL, apinfo.url, &len);
@@ -308,13 +308,13 @@ static void *ap_main(void)
                         
                     case AP_MSG_TIMER_EVENT:
                     {
-                        if(ecu_selfupgrade_readversion == 1)
-                        {
-                           ecu_selfupgrade_readversion = 0;
-                           foton_update_ecu_info();   
-                           printf("wangxw\r\n");
-                           apinfo.waitcnt = 0;
-                        }
+                        //if(ecu_selfupgrade_readversion == 1)
+                        //{
+                        //   ecu_selfupgrade_readversion = 0;
+                        //   foton_update_ecu_info();   
+                        //   printf("wangxw\r\n");
+                        //   apinfo.waitcnt = 0;
+                        //}
                         if(ecu_upgrade_finish_report_ecu_info_flag == 1)
                         {
                           ecu_upgrade_finish_report_ecu_info_flag = 0;

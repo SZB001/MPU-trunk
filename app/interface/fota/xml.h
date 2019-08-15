@@ -22,15 +22,15 @@ typedef struct
     int stat;
     xml_node_t *curr;
     xml_node_t *root;
+    list_t tree;
 } xml_t;
 
 extern int xml_init(int phase);
-extern xml_t* xml_load(const char *fpath);
-extern void xml_free(xml_t *xml);
-extern xml_node_t* xml_get_sub_node(xml_node_t *node, const char *name);
-extern xml_node_t* xml_get_node(xml_t *xml, const char *name);
-extern char* xml_get_sub_value(xml_node_t *node, const char *name);
-extern char* xml_get_value(xml_t *xml, const char *name);
-extern int xml_get_sub_node_cnt(xml_node_t *node, const char *name);
+extern int xml_load_file(const char *fpath, xml_t *xml);
+extern void xml_destroy(xml_t *xml);
+extern xml_node_t *xml_get_sub_node(xml_node_t *node, const char *name);
+extern xml_node_t *xml_get_node(xml_t *xml, const char *name);
+extern char *xml_get_sub_value(xml_node_t *node, const char *name);
+extern char *xml_get_value(xml_t *xml, const char *name);
 extern int xml_get_sub_node_lst(xml_node_t *node, const char *name, xml_node_t **lst, int max);
 #endif

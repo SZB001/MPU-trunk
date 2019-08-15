@@ -160,64 +160,8 @@ int ap_pack_dispatcher(uint8_t *buff, unsigned char sid, unsigned char fid,
 
 int ap_pack_ecu_info_body(uint8_t *buff)
 {
-    int pos = 0;
-    int length;
-    foton_ecu_info_t ecu_i[AP_MAX_ECU];
-    int i, cnt = foton_get_ecu_info(ecu_i, AP_MAX_ECU);
 
-    if (!cnt)
-    {
-        shellprintf(" can't get ECU information\r\n");
-    }
-
-    for (i = 0; i < cnt; i++)
-    {
-        //log_i(LOG_AUTO, "name: %s", ecu_i[i].name);
-        //log_i(LOG_AUTO, "partno: %s", ecu_i[i].partno);
-        //log_i(LOG_AUTO, "supplier: %s", ecu_i[i].supplier);
-        //log_i(LOG_AUTO, "hwver: %s", ecu_i[i].hwver);
-        //log_i(LOG_AUTO, "swver: %s", ecu_i[i].swver);
-
-        memcpy(buff + pos,  ecu_i[i].name, strlen(ecu_i[i].name));
-        pos += 14;
-
-        memcpy(buff + pos,  ecu_i[i].partno, strlen(ecu_i[i].partno));
-        pos += 13;
-
-        memcpy(buff + pos,  ecu_i[i].supplier, strlen(ecu_i[i].supplier));
-        pos += 5;
-
-        memcpy(buff + pos,  ecu_i[i].hwver, strlen(ecu_i[i].hwver));
-        pos += 14;
-
-        memcpy(buff + pos,  ecu_i[i].swver, strlen(ecu_i[i].swver));
-        pos += 14;
-    }
-
-    memcpy(buff + pos,  TBOX_SYSTEM_NAME, strlen(TBOX_SYSTEM_NAME));
-    pos += 14;
-
-    memcpy(buff + pos,  TBOX_MODEL_CODE, strlen(TBOX_MODEL_CODE));
-    pos += 13;
-
-    memcpy(buff + pos,  TBOX_SUPPLIER_CODE, strlen(TBOX_SUPPLIER_CODE));
-    pos += 5;
-
-    length = 14;
-    if(0 != cfg_get_para(CFG_ITEM_FT_UDS_HW, buff + pos,(unsigned int *)&length))
-    {
-        log_e(LOG_UDS, "get ft tsp hw error");
-    }
-    //memcpy(buff + pos,  TBOX_HW_VERSION, strlen(TBOX_HW_VERSION));
-    pos += 14;
-
-    get_uds_sw_ver((UDS_DID_VER*)(buff + pos));
-    //memcpy(buff + pos,  TBOX_SW_VERSION, strlen(TBOX_SW_VERSION));
-    pos += 14;
-
-    log_i(LOG_AUTO, "pos = %d", pos);
-
-    return pos;
+    return 1;
 
     #if 0
     int pos = 0;
@@ -708,8 +652,8 @@ void ap_msg_proc(AP_SOCK_INFO* info, unsigned char *msg, unsigned int len)
             protocol_dump(LOG_AUTO, "md5:", hex_md5, 16, 0);
             log_i(LOG_AUTO, "update mode: %d", mode);
             log_i(LOG_AUTO, "update url: %s", buf);
-            fota_silent(mode);//不使用静默模式
-            fota_new_request(buf, hex_md5, 0);
+            //fota_silent(mode);//不使用静默模式
+            //fota_new_request(buf, hex_md5, 0);
         }
 
         memset(data, 0, sizeof(data));

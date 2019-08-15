@@ -477,14 +477,12 @@ void uds_proxy(uint8_t *msg, uint16_t len)
                     else
                     {
                         uds_set_timer(&uds_client, P2EXT_CLIENT, 0);
-                            
+                        if (uds_client_cb)
+                        {
+                            uds_client_cb(&uds_client, msg_id, can_id,(char *)msg, len);
+                        }
                     }
-                    
-                    if (uds_client_cb)
-                    {
-                        uds_client_cb(&uds_client, msg_id, can_id,(char *)msg, len);
-                    }
-                    
+
                 }
             }
             
@@ -595,7 +593,7 @@ int uds_set_client_ex(int port, int pid, int fid, int rid, void *cb)
     UDS_TL_CFG_T client_cfg;
 
     client_cfg.canport = port;
-    client_cfg.fill_value = 0x00;
+    client_cfg.fill_value = 0xCC;
     client_cfg.fc_stmin = 50;
     client_cfg.fc_bs = 8;
     client_cfg.n_bs = 150;

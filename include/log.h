@@ -32,6 +32,7 @@ typedef enum LOG_ID
     LOG_TCOM,
     LOG_MID,
     LOG_APPL,
+    LOG_GOML,
     LOG_SCOM,
     LOG_PM,
     LOG_GPS,
@@ -55,6 +56,7 @@ typedef enum LOG_ID
 	LOG_UPER_ECDC,
 	LOG_REMOTE_DIAG,
 	LOG_BLE,
+	LOG_WSRV,
     LOG_MAX,
 } LOG_ID;
 

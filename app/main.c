@@ -22,7 +22,7 @@
 #include "timer.h"
 #include "file.h"
 #include "ftp_api.h"
-//#include "fota_api.h"
+#include "fota_api.h"
 //#include "geelyhu_api.h"
 //#include "ap_api.h"
 #include "hozon_SP_api.h"
@@ -31,6 +31,7 @@
 #include "uds_node_miss.h"
 #include "remote_diag_api.h"
 #include "ble.h"
+#include "wsrv_api.h"
 
 int main(int argc , char **argv)
 {
@@ -61,7 +62,7 @@ int main(int argc , char **argv)
         dsu_init,
         uds_init,
         fct_init,
-        //fota_init,
+        fota_init,
         //hu_init,
         //ap_init,
 		PrvtProt_init,
@@ -70,6 +71,7 @@ int main(int argc , char **argv)
 		uds_node_miss_init,/* add by caoml*/
 		remote_diag_init,/* add by caoml*/
 		ble_init,
+		wsrv_init,
     };
 
     static module_run_fn run_tbl[] =
@@ -90,7 +92,7 @@ int main(int argc , char **argv)
         dsu_run,
         uds_run,
         fct_run,
-        //fota_run,
+        fota_run,
         //hu_run,
         //ap_run,
 		PrvtProt_run,
@@ -99,6 +101,7 @@ int main(int argc , char **argv)
 		uds_node_miss_run,/* add by caoml*/
 		remote_diag_run,/* add by caoml*/
 		ble_run,
+		wsrv_run,
     };
 
     log_init();

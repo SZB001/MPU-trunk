@@ -1,4 +1,3 @@
-
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -6,681 +5,450 @@
 #include <unistd.h>
 #include <sys/times.h>
 #include <ctype.h>
+#include "com_app_def.h"
+#include "mid_def.h"
 #include "init.h"
 #include "log.h"
 #include "shell_api.h"
+#include "tcom_api.h"
 #include "fota.h"
 #include "xml.h"
-#include "fota_foton.h"
-#include "fota_api.h"
-#include "com_app_def.h"
-#include "file.h"
 
-#define FOR_EACH_FOTAECU(ecu, fota) \
-    for (ecu = (fota)->ecu; ecu->fota && ecu < (fota)->ecu + FOTA_MAX_ECU; ecu++)
-#define FOR_EACH_VEROFLST(ver, lst, max) \
-    for (ver = (lst); ver->ecu && ver < (lst) + (max); ver++)
-#define FOR_EACH_FOTABUS(bus, fota) \
-    for (bus = (fota)->bus; bus->port && bus < (fota)->bus + FOTA_MAX_BUS; bus++)
-#define FOR_EACH_BUSECU(ecu, bus) \
-    for (ecu = (bus)->ecu; ecu->name[0] && ecu < (bus)->ecu + FOTA_MAX_ECU; ecu++)
+extern int fota_uds_open(int port, int fid, int rid, int pid);
+extern int fota_uds_get_version_gw(uint8_t *s_ver, int *s_siz, uint8_t *h_ver, int *h_siz, uint8_t *sn, int *sn_siz);
+extern int fota_uds_get_version(uint8_t *s_ver, int *s_siz, uint8_t *h_ver, int *h_siz, uint8_t *sn, int *sn_siz);
+extern void fota_uds_close(void);
+extern int fota_uds_req_download(uint32_t addr, int size);
+extern int fota_uds_trans_data(uint8_t *data, int size);
+extern int fota_uds_trans_exit(void);
+extern int fota_uds_prog_prepare(void);
+extern int fota_uds_enter_diag(void);
+extern int fota_uds_req_seed(int lvl, uint8_t *buf, int size);
+extern int fota_uds_send_key(int lvl, uint8_t *key, int len);
+extern int fota_uds_prog_post(void);
+extern int fota_uds_reset(void);
+extern int fota_uds_enter_diag_GW(void);
+extern int fota_uds_write_data_by_identifier(uint8_t *identifier, uint8_t *data, int len);
+extern int fota_uds_write_data_by_identifier_ex(uint8_t *identifier, uint8_t *data, int len);
 
-
-    
-#define ECU_VALID(ecu)  ((ecu)->fota)
-#define VER_VALID(ver)  ((ver)->ecu)
-
-extern void hu_fota_upd_rollupd_reslut_state(int state);
-
-unsigned char tbox_selfupgrade_flag = 0 ;
-
-static int fota_ecu_match(fota_ecu_t *ecu)
+int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz, 
+                                               char *h_ver, int *h_siz,
+                                               char *sn,    int *sn_siz)
 {
-    char ver[128];
-    int  len;
-    const char *verstr;
-    
-    if ((len = ecu->fota->hwver((uint8_t*)ver, sizeof(ver))) <= 0)
+    if (memcmp(name, "gw", 2) == 0)
     {
-        log_e(LOG_FOTA, "get HW version of ECU(%s) fail", ecu->name);
-        return -1;
+        if (fota_uds_open(0, 0x7DF, 0x772, 0x762) != 0)
+        {
+            log_e(LOG_FOTA, "open UDS for ECU(%s) fail", name);
+            return -1;
+        }
+
+        fota_uds_get_version_gw((uint8_t *)s_ver, s_siz, (uint8_t *)h_ver, h_siz, (uint8_t *)sn, sn_siz);
+    }
+    else if (memcmp(name, "vcu", 3) == 0)
+    {
+        if (fota_uds_open(1, 0x7DF, 0x7EA, 0x7E2) != 0)
+        {
+            log_e(LOG_FOTA, "open UDS for ECU(%s) fail", name);
+            return -1;
+        }
+
+        fota_uds_get_version((uint8_t *)s_ver, s_siz, (uint8_t *)h_ver, h_siz, (uint8_t *)sn, sn_siz);
+    }
+    else if (memcmp(name, "mfcp", 4) == 0)
+    {
+        if (fota_uds_open(1, 0x7DF, 0x792, 0x782) != 0)
+        {
+            log_e(LOG_FOTA, "open UDS for ECU(%s) fail", name);
+            return -1;
+        }
+
+        fota_uds_get_version((uint8_t *)s_ver, s_siz, (uint8_t *)h_ver, h_siz, (uint8_t *)sn, sn_siz);
+    }
+    else if (memcmp(name, "dvr", 3) == 0)
+    {
+        if (fota_uds_open(1, 0x7DF, 0x797, 0x787) != 0)
+        {
+            log_e(LOG_FOTA, "open UDS for ECU(%s) fail", name);
+            return -1;
+        }
+
+        fota_uds_get_version((uint8_t *)s_ver, s_siz, (uint8_t *)h_ver, h_siz, (uint8_t *)sn, sn_siz);
     }
 
-    verstr = ecu->fota->verstr((uint8_t*)ver, len);
-    
-    if (strcmp(ecu->hw_ver, verstr) != 0)
-    {
-        log_e(LOG_FOTA, "can't match HW version of ECU(%s), need: %s, read: %s", 
-            ecu->name, ecu->hw_ver, verstr);
-        return -1;
-    }
 
-    if ((len = ecu->fota->swver((uint8_t*)ver, sizeof(ver))) <= 0)
-    {
-        log_e(LOG_FOTA, "get SW version of ECU(%s) fail", ecu->name);
-        return -1;
-    }
+    fota_uds_close();
 
-    verstr = ecu->fota->verstr((uint8_t*)ver, len);
-    
-    if (strcmp(ecu->src.ver, verstr) != 0)
-    {
-        log_e(LOG_FOTA, "can't match SW version of ECU(%s), need: %s, read: %s", 
-            ecu->name, ecu->src.ver, verstr);
-        return -1;
-    }
     return 0;
 }
 
-static int fota_ecu_program(fota_ecu_t *ecu, fota_ver_t *ver, int erase)
+static int fota_ecu_check(fota_ecu_t *ecu)
 {
-    static fota_img_t img;
-    static char fpath[256];
+    //char ecu_v[16];
+
+    //if (fota_ecu_get_ver(ecu, ecu_v, sizeof(ecu_v)) != 0)
+    //{
+    //    log_e(LOG_FOTA, "get ECU(%s) version fail", ecu->name);
+    //    return -1;
+    //}
+
+    //if (fota_ecu_cmp_ver(ecu, ecu_v) != 0)
+    //{
+    //    log_e(LOG_FOTA, "ECU(%s) version is not matched", ecu->name);
+    //    return -1;
+    //}
+
+    return 0;
+}
+
+static int fota_ecu_download(fota_ver_t *ver, int erase)
+{
+    static image_t img;
+    static char fpath[512];
     int i;
-    img_sect_t *sect;
 
-    if (strlen(ecu->fota->root) + strlen(ver->fpath) >= sizeof(fpath))
-    {
-        log_e(LOG_FOTA, "file path \"%s\" + \"%s\" is too long(max %d)",
-            ecu->fota->root, ver->fpath, sizeof(fpath) - 1);
-        return -1;
-    }
-    
-    strcpy(fpath, ecu->fota->root);
+    strcpy(fpath, ver->ecu->fota->root);
     strcat(fpath, ver->fpath);
-    
-    if (ver->img_load(fpath, &img, ver->img_attr) != 0)
+
+    if (ver->load(fpath, &img) != 0)
     {
-        log_e(LOG_FOTA, "load image file \"%s\" fail", fpath);
+        log_e(LOG_FOTA, "load image \"%s\" fail", fpath);
         return -1;
     }
 
-    fota_show_img(&img);
+    #if 1
 
-    i = 0;
-    FOR_EACH_IMGSECT(sect, &img, erase && ecu->fota->erase)
+    for (i = 0; erase && ver->ecu->erase && i < IMAGE_MAX_SECT && img.sect[i].size; i++)
     {
-        log_i(LOG_FOTA, "erasing section %d, base=%X, size=%d...", ++i, 
-            sect->base, sect->size);
-        
-        ecu->rback = 1;
-        if (ecu->fota->erase(sect->base, sect->size) != 0)
+        log_o(LOG_FOTA, "erase section %d, addr=%X, size=%d", i + 1, img.sect[i].addr, img.sect[i].size);
+
+        if (ver->ecu->erase(img.sect[i].addr, img.sect[i].size) != 0)
         {
             log_e(LOG_FOTA, "erase fail");
             return -1;
         }
-        
     }
 
-    i = 0;
-    FOR_EACH_IMGSECT(sect, &img, 1)
-    {
-        uint8_t *data = sect->data;
-        int dlen = sect->size;
-        int plen;
+    #else
 
-        log_i(LOG_FOTA, "programing section %d, base=%X, size=%d...", ++i, 
-            sect->base, sect->size);
-        
-        if ((plen = fota_uds_req_download(sect->base, sect->size)) <= 0)
+    if (fota_uds_request(0, 0x31, 0x01, "\xff\x0", 2, 10) != 0)
+    {
+        log_e(LOG_FOTA, "erase fail");
+        return -1;
+    }
+
+    #endif
+
+    for (i = 0; i < IMAGE_MAX_SECT && img.sect[i].size; i++)
+    {
+        uint8_t *data = img.sect[i].data;
+        int dlen = img.sect[i].size, plen;
+
+        log_o(LOG_FOTA, "program section %d, addr=%X, size=%d", i + 1, img.sect[i].addr, img.sect[i].size);
+
+        if ((plen = fota_uds_req_download(img.sect[i].addr, dlen)) <= 0)
         {
-            log_e(LOG_FOTA, "request download for section %d fail", i);
+            log_e(LOG_FOTA, "request download for section %d fail", i + 1);
             return -1;
         }
 
         while (dlen > 0)
         {
-            int tlen = dlen > plen ? plen : dlen, percent;
-            log_i(LOG_FOTA, "transfering data, length = %d...", tlen);
-            
+            int tlen = dlen > plen ? plen : dlen;
+            log_o(LOG_FOTA, "trans data, tlen = %d", tlen);
+
             if (fota_uds_trans_data(data, tlen) != 0)
             {
-                log_e(LOG_FOTA, "transfer data for section %d fail", i);
+                log_e(LOG_FOTA, "transfer data for section %d fail", i + 1);
                 return -1;
             }
 
             dlen -= tlen;
             data += tlen;
-            ecu->fota->curr += tlen;
-        
-            percent = ecu->fota->curr * 100 / ecu->fota->total;
-           if(tbox_selfupgrade_flag == 1)
-           {
-               if(percent >= 90)
-               {
-                   percent = 90;
-               }
-           }
- 
-            if (ecu->fota->callback && ecu->fota->callback(FOTA_EVENT_PROCESS, percent))
-            {
-                log_e(LOG_FOTA, "transfer is canceled by call back");
-                return -1;
-            }
         }
 
         if (fota_uds_trans_exit() != 0)
         {
-            log_e(LOG_FOTA, "transfer exit for section %d fail", i);
+            log_e(LOG_FOTA, "transfer exit for section %d fail", i + 1);
             return -1;
         }
     }
 
-    if (ecu->fota->check[1] && ecu->fota->check[1]() != 0)
+    if (ver->ecu->check2 && ver->ecu->check2() != 0)
     {
-        log_e(LOG_FOTA, "1st check fail");
-        return -1;
-    }
-
-    if (ecu->fota->check[2] && ecu->fota->check[2]() != 0)
-    {
-        log_e(LOG_FOTA, "2nd check fail");
-        return -1;
-    }
-        
-    return 0;
-}
-
-static int fota_upgrade_prepare(fota_ecu_t *ecu)
-{
-    return (fota_uds_request(1, 0x10, 0x83, NULL, 0, 2) != 0 ||
-        (ecu->fota->check[0] && ecu->fota->check[0]() != 0) ||
-        fota_uds_request(1, 0x85, 0x82, NULL, 0, 2) != 0 ||
-        fota_uds_request(1, 0x28, 0x83, (uint8_t*)"\x01", 1, 2) != 0);
-}
-
-static int fota_upgrade_excute(fota_ecu_t *ecu, fota_ver_t *ver)
-{
-    uint8_t seed[128], key[128];
-    int key_size = 0, seed_size;
-    
-    if (fota_uds_request(0, 0x10, 0x02, NULL, 0, 3) != 0)
-    {
-        log_e(LOG_FOTA, "enter program session for ECU(%s) fail", ecu->name);
-        return -1;
-    }
-        
-    if (fota_uds_request(0, 0x27, ecu->key_lvl, NULL, 0, 3) != 0 ||
-        (seed_size = fota_uds_result(seed, sizeof(seed))) <= 0)
-    {
-        log_e(LOG_FOTA, "request seed in level %d failed", ecu->key_lvl);
-        return -1;
-    }
-    
-    if (ecu->fota->security && 
-        (key_size = ecu->fota->security(seed, ecu->key_par, key, sizeof(key))) <= 0)
-    {
-        log_e(LOG_FOTA, "calculate key for ECU(%s) fail", ecu->name);
-        return -1;
-    }
-    
-    if (fota_uds_request(0, 0x27, ecu->key_lvl + 1, key, key_size, 3) != 0)
-    {
-        log_e(LOG_FOTA, "send key to ECU(%s) fail", ecu->name);
-        return -1;
-    }
-    
-    if (VER_VALID(&ecu->drv) && fota_ecu_program(ecu, &ecu->drv, 0) != 0)
-    {
-        log_e(LOG_FOTA, "download flash driver to ECU(%s) fail", ecu->name);
-        return -1;
-    }
-
-    if (fota_ecu_program(ecu, ver, 1) != 0)
-    {
-        log_e(LOG_FOTA, "download file \"%s\" to ECU(%s) fail", ver->fpath, ecu->name);
+        log_e(LOG_FOTA, "check download fail");
         return -1;
     }
 
     return 0;
-}
-
-static int fota_upgrade_finish(fota_ecu_t *ecu)
-{
-    return (fota_uds_request(0, 0x11, 0x01, NULL, 0, 10) != 0 ||
-        fota_uds_request(1, 0x10, 0x83, NULL, 0, 2) != 0 ||
-        fota_uds_request(1, 0x28, 0x80, (uint8_t*)"\x03", 1, 2) != 0 ||
-        fota_uds_request(1, 0x85, 0x81, NULL, 0, 2) != 0 ||
-        fota_uds_request(1, 0x10, 0x81, NULL, 0, 2) != 0 ||
-        fota_uds_request(0, 0x14, 0, (uint8_t *)"\xff\xff\xff", 3, 3) != 0);
 }
 
 static int fota_ecu_upgrade(fota_ecu_t *ecu, fota_ver_t *ver)
 {
-    if (fota_upgrade_prepare(ecu) != 0)
+    uint8_t seed[128], key[128];
+    int keysz = 4;
+
+    if (fota_uds_prog_prepare() != 0)
     {
-        log_e(LOG_FOTA, "upgrade step 1 for ECU(%s) fail", ecu->name);
+        log_e(LOG_FOTA, "prepare program enveronment for ECU(%s) fail", ecu->name);
         return -1;
     }
 
-    if (fota_upgrade_excute(ecu, ver) != 0)
+    if (fota_uds_enter_diag() != 0)
     {
-        log_e(LOG_FOTA, "upgrade step 2 for ECU(%s) fail", ecu->name);
+        log_e(LOG_FOTA, "enter program session for ECU(%s) fail", ecu->name);
         return -1;
     }
 
-    if (fota_upgrade_finish(ecu) != 0)
+    if (fota_uds_req_seed(ecu->key_lvl, seed, sizeof(seed)) != 0)
     {
-        log_e(LOG_FOTA, "upgrade step 3  for ECU(%s) fail", ecu->name);
+        log_e(LOG_FOTA, "can't get seed from ECU(%s)", ecu->name);
         return -1;
     }
-    
+
+    if (ecu->security && (keysz = ecu->security(seed, ecu->key_par, key, sizeof(key))) < 0)
+    {
+        log_e(LOG_FOTA, "calculate key for ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
+    if (fota_uds_send_key(ecu->key_lvl, key, keysz) != 0)
+    {
+        log_e(LOG_FOTA, "send key to ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
+    if (ecu->drv.valid && fota_ecu_download(&ecu->drv, 0) != 0)
+    {
+        log_e(LOG_FOTA, "download flash driver for ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
+    if (fota_ecu_download(ver, 1) != 0)
+    {
+        log_e(LOG_FOTA, "download image(%s) to ECU(%s) fail", ver->fpath, ecu->name);
+        return -1;
+    }
+
+    if (ver->ecu->check2 && ver->ecu->check2() != 0)
+    {
+        log_e(LOG_FOTA, "check download for ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
+    if (fota_uds_reset() != 0)
+    {
+        log_e(LOG_FOTA, "reset for ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
+    sleep(10);
+
+    if (fota_uds_prog_post() != 0)
+    {
+        log_e(LOG_FOTA, "post program enveronment for ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
     return 0;
-    
+
 }
+
+static int fota_ecu_upgrade_GW(fota_ecu_t *ecu, fota_ver_t *ver)
+{
+    uint8_t seed[128], key[128];
+    uint8_t buf[2];
+    int keysz = 4;
+
+    if (fota_uds_enter_diag_GW() != 0)
+    {
+        log_e(LOG_FOTA, "enter program session for ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
+    if (fota_uds_req_seed(ecu->key_lvl, seed, sizeof(seed)) != 0)
+    {
+        log_e(LOG_FOTA, "can't get seed from ECU(%s)", ecu->name);
+        return -1;
+    }
+
+    if (ecu->security && (keysz = ecu->security(seed, ecu->key_par, key, sizeof(key))) < 0)
+    {
+        log_e(LOG_FOTA, "calculate key for ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
+    if (fota_uds_send_key(ecu->key_lvl, key, keysz) != 0)
+    {
+        log_e(LOG_FOTA, "send key to ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
+    buf[0] = ecu->gw_sa;
+    buf[1] = '\x00';
+
+    if (fota_uds_write_data_by_identifier((uint8_t *)"\x74\x00", buf, 2) != 0)
+    {
+        log_e(LOG_FOTA, "write data by identifier 74 00 27 00 to ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
+    if (ecu->drv.valid && fota_ecu_download(&ecu->drv, 0) != 0)
+    {
+        log_e(LOG_FOTA, "download flash driver for ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
+    buf[1] = '\x01';
+
+    if (fota_uds_write_data_by_identifier((uint8_t *)"\x74\x00", buf, 2) != 0)
+    {
+        log_e(LOG_FOTA, "write data by identifier 74 00 27 01 to ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
+    if (fota_ecu_download(ver, 0) != 0)
+    {
+        log_e(LOG_FOTA, "download image(%s) to ECU(%s) fail", ver->fpath, ecu->name);
+        return -1;
+    }
+
+    if (fota_uds_write_data_by_identifier_ex((uint8_t *)"\x74\x01", (uint8_t *)&ecu->gw_sa, 1) != 0)
+    {
+        log_e(LOG_FOTA, "write data by identifier 74 01 to ECU(%s) fail", ecu->name);
+        return -1;
+    }
+
+    //fota_uds_write_data_by_identifier((uint8_t *)"\x74\x02", (uint8_t *)&ecu->gw_sa, 1);
+
+    //if (fota_uds_write_data_by_identifier((uint8_t *)"\x74\x03", (uint8_t *)&ecu->gw_sa, 1) != 0)
+    //{
+    //    log_e(LOG_FOTA, "write data by identifier 74 03 to ECU(%s) fail", ecu->name);
+    //    return -1;
+    //}
+
+    return 0;
+
+}
+
 
 static int fota_ecu_resolve(fota_ecu_t *ecu)
 {
-    char ver[128];
-    int  len;
-    fota_ver_t *relv;
-    const char *verstr;
+    //int i;
 
-    if ((len = ecu->fota->swver((uint8_t*)ver, sizeof(ver))) <= 0)
-    {
-        log_e(LOG_FOTA, "get SW version of ECU(%s) fail", ecu->name);
-        return -1;
-    }
+    //char ecu_v[16];
 
-    verstr = ecu->fota->verstr((uint8_t*)ver, len);
+    //if (fota_ecu_get_ver(ecu, ecu_v, sizeof(ecu_v)) != 0)
+    //{
+    //    log_e(LOG_FOTA, "get ECU(%s) version fail", ecu->name);
+    //    return -1;
+    //}
 
-    FOR_EACH_VEROFLST(relv, ecu->rel, FOTA_MAX_REL_VER)
-    {
-        if (strcmp(verstr, relv->ver) >= 0)
-        {
-            continue;
-        }
-        
-        log_o(LOG_FOTA, "upgrade ECU(%s) from \"%s\" to \"\%s\"", verstr, relv->ver);
+    //for (i = 0; i < FOTA_MAX_REL_VER && ecu->rel[4].valid; i++)
+    //{
+    //    if (fota_ecu_cmp_ver(ecu, ecu_v) < 0)
+    //    {
+    //        if (fota_ecu_upgrade(ecu, ecu->rel + i) != 0)
+    //        {
+    //            log_e(LOG_FOTA, "update related version %d for ECU(%s) fail", i + 1, ecu->name);
+    //            return -1;
+    //        }
+    //    }
+    //}
 
-        if (fota_ecu_upgrade(ecu, relv) != 0)
-        {
-            log_e(LOG_FOTA, "upgrade ECU(%s) to \"%s\" fail", relv->ver, ecu->name);
-            return -1;
-        }
-    }
-    
     return 0;
-}
-
-
-void fota_show_bus(fota_t *fota)
-{
-    bus_inf_t *bus;
-    int i = 0;
-
-    FOR_EACH_FOTABUS(bus, fota)
-    {
-        ecu_inf_t *ecu;
-        int j = 0;
-        
-        shellprintf(" BUS %d\r\n", ++i);
-        shellprintf("   port        : %d\r\n", bus->port);
-        shellprintf("   baud rate   : %d\r\n", bus->baud);
-        shellprintf("   function id : %X\r\n", bus->fid);
-        
-        FOR_EACH_BUSECU(ecu, bus)
-        {
-            shellprintf("   ECU %d\r\n", ++j);
-            shellprintf("     name        : %s\r\n", ecu->name);
-            shellprintf("     physical id : %X\r\n", ecu->pid);
-            shellprintf("     response id : %X\r\n", ecu->rid);
-        }
-    }
 }
 
 void fota_show(fota_t *fota)
 {
-    int i = 0;
-    fota_ecu_t *ecu;
-    
+    int i;
+
     shellprintf(" FOTA\r\n");
     shellprintf("   name        : %s\r\n", fota->name);
     shellprintf("   vehicle     : %s\r\n", fota->vehi);
-    shellprintf("   descrip     : %s\r\n", fota->desc);
+    shellprintf("   descrip     : %s\r\n", fota->desp);
     shellprintf("   version     : %s\r\n", fota->ver);
-    
-    FOR_EACH_FOTAECU(ecu, fota)
+    shellprintf("   function ID : 0x%X\r\n", fota->fid);
+
+    for (i = 0; i < FOTA_MAX_ECU && fota->ecu[i].valid; i++)
     {
-        fota_ver_t *ver;
-        
-        shellprintf("   ECU %d\r\n", ++i);
+        int j;
+        fota_ecu_t *ecu = fota->ecu + i;
+
+        shellprintf("   ECU %d\r\n", i + 1);
         shellprintf("     name            : %s\r\n", ecu->name);
+
+        if (memcmp(ecu->name, "gw", 2) == 0)
+        {
+            shellprintf("     sa              : %d\r\n", ecu->gw_sa);
+        }
+
+        shellprintf("     physical ID     : 0x%X\r\n", ecu->pid);
+        shellprintf("     response ID     : 0x%X\r\n", ecu->rid);
         shellprintf("     source version  : %s\r\n", ecu->src.ver);
         shellprintf("     flash version   : %s\r\n", ecu->tar.ver);
         shellprintf("     flash driver    : %s\r\n", ecu->drv.ver);
 
-        FOR_EACH_VEROFLST(ver, ecu->rel, FOTA_MAX_REL_VER)
+        for (j = 0; j < FOTA_MAX_REL_VER && ecu->rel[j].valid; j++)
         {
-            shellprintf("     related version : %s\r\n", ver->ver);
+            shellprintf("     related version : %s\r\n", ecu->rel[j].ver);
         }
+
         shellprintf("     security level  : %d\r\n", ecu->key_lvl);
     }
-        
+
 }
 
-static ecu_inf_t* fota_find_ecu_info(fota_t *fota, const char *name)
+extern unsigned char ecuName[10];
+
+int fota_excute(fota_t *fota)
 {
-    bus_inf_t *bus;
-    
-    FOR_EACH_FOTABUS(bus, fota)
+    int i;
+
+    for (i = 0; i < FOTA_MAX_ECU && fota->ecu[i].valid; i++)
     {
-        ecu_inf_t *ecu;
-        
-        FOR_EACH_BUSECU(ecu, bus)
-        {
-            if (strcmp(ecu->name, name) == 0)
-            {
-                return ecu;
-            }
-        }
-    }
+        fota_ecu_t *ecu = fota->ecu + i;
 
-    return NULL;
-}
-
-static bus_inf_t* fota_find_ecu_bus(fota_t *fota, const char *name)
-{
-    bus_inf_t *bus;
-    
-    FOR_EACH_FOTABUS(bus, fota)
-    {
-        ecu_inf_t *ecu;
-        
-        FOR_EACH_BUSECU(ecu, bus)
-        {
-            if (strcmp(ecu->name, name) == 0)
-            {
-                return bus;
-            }
-        }
-    }
-
-    return NULL;
-}
-
-static int fota_ver_size(fota_ver_t *ver)
-{
-    static char fpath[256];
-
-    if (strlen(ver->ecu->fota->root) + strlen(ver->fpath) >= sizeof(fpath))
-    {
-        log_e(LOG_FOTA, "file path \"%s\" + \"%s\" is too long(max %d)",
-            ver->ecu->fota->root, ver->fpath, sizeof(fpath) - 1);
-        return -1;
-    }
-    
-    strcpy(fpath, ver->ecu->fota->root);
-    strcat(fpath, ver->fpath);
-
-    return ver->img_calc(fpath);
-}
-
-
-static int fota_rel_size(fota_ecu_t *ecu)
-{
-    int size, total = 0;
-    fota_ver_t *relv;
-
-    FOR_EACH_VEROFLST(relv, ecu->rel, FOTA_MAX_REL_VER)
-    {
-        if (strcmp(ecu->src.ver, relv->ver) >= 0)
-        {
-            continue;
-        }
-
-        if ((size = fota_ver_size(relv)) <= 0)
-        {
-            log_e(LOG_FOTA, "can't calculate size of \"%s\"", relv->fpath);
-            return -1;
-        }
-
-        total += size;
-    }
-
-    return total;
-}
-
-static int fota_calc_workload(fota_t *fota)
-{
-    int size;
-    int tbox_selfupgrade = 0;
-    fota_ecu_t *ecu;
-
-    fota->total = 0;
-    FOR_EACH_FOTAECU(ecu, fota)
-    {
-        if (strcmp(ecu->name, "TBOX") == 0)
-        {
-            tbox_selfupgrade = 1;
-            tbox_selfupgrade_flag = 1;
-            continue;
-        }
-        
-        size = 0;
-        if (VER_VALID(&ecu->drv) && (size = fota_ver_size(&ecu->drv)) <= 0)
-        {
-            log_e(LOG_FOTA, "can't calculate size of \"%s\"", ecu->drv.fpath);
-            return -1;
-        }
-        fota->total += size;
-        
-        size = 0;
-        if (VER_VALID(&ecu->tar) && (size = fota_ver_size(&ecu->tar)) <= 0)
-        {
-            log_e(LOG_FOTA, "can't calculate size of \"%s\"", ecu->tar.fpath);
-            return -1;
-        }
-        fota->total += size;
-
-        if ((size = fota_rel_size(ecu)) < 0)
-        {
-            return -1;
-        }
-        fota->total += size;
-    }
-
-    if (fota->total == 0)
-    {
-        log_e(LOG_FOTA, "work load is zero");
-    }
-
-    return fota->total+tbox_selfupgrade;
-}
-
-void fota_rollback(fota_t *fota)
-{
-    int error = 0;
-    fota_ecu_t *ecu;
-
-    log_o(LOG_FOTA, "starting FOTA rollback");
-    fota->callback = NULL;
-    
-    FOR_EACH_FOTAECU(ecu, fota)
-    {
-        if (ecu->rback)
-        {
-            bus_inf_t *bus  = fota_find_ecu_bus(fota, ecu->name);
-            ecu_inf_t *info = fota_find_ecu_info(fota, ecu->name);
-            int baud;
-
-            if (strcmp(ecu->name, "TBOX") == 0)
-            {
-                continue;
-            }
-            
-            log_o(LOG_FOTA, "starting to rollback ECU(%s) to \"%s\"", ecu->name, ecu->src.ver);        
-            sleep(2);
-            baud = can_get_baud(bus->port - 1);
-            
-            if (baud != bus->baud && can_set_baud(bus->port - 1, bus->baud) != 0)
-            {
-                log_e(LOG_FOTA, "can't set baud rate of bus %d for ECU(%s)", bus->port, ecu->name);
-                error++;
-                continue;
-            }
-        
-            if (fota_uds_open(bus->port - 1, bus->fid, info->rid, info->pid) != 0)
-            {
-                log_e(LOG_FOTA, "open UDS for ECU(%s) fail", ecu->name);
-                can_set_baud(bus->port - 1, baud);
-                error++;
-                continue;;
-            }
-            
-            if (fota_ecu_upgrade(ecu, &ecu->src) != 0)
-            {
-                log_e(LOG_FOTA, "program ECU(%s) fail", ecu->name);
-                fota_uds_close();
-                can_set_baud(bus->port - 1, baud);
-                error++;
-                continue;
-            }
-
-            fota_uds_close();
-            can_set_baud(bus->port - 1, baud);
-            log_o(LOG_FOTA, "ECU(%s) rollback done!", ecu->name);
-        }
-    }
-
-    if (error)
-    {
-        log_e(LOG_FOTA, "warnning: rollback failed for some ECU!");
-    }
-
-    log_o(LOG_FOTA, "FOTA rollback done!");
-    //hu_fota_upd_rollupd_reslut_state(error);
-}
-
-static int fota_tbox_upgrade(fota_ver_t *ver)
-{
-    static char fpath[256];
-
-    if (strlen(ver->ecu->fota->root) + strlen(ver->fpath) >= sizeof(fpath))
-    {
-        log_e(LOG_FOTA, "file path \"%s\" + \"%s\" is too long(max %d)",
-            ver->ecu->fota->root, ver->fpath, sizeof(fpath) - 1);
-        return -1;
-    }
-    
-    strcpy(fpath, ver->ecu->fota->root);
-    strcat(fpath, ver->fpath);
-
-    if (file_copy(fpath, COM_APP_PKG_DIR"/"COM_PKG_FILE) != 0)
-    {
-        log_e(LOG_FOTA, "copy \"%s\" to \"%s\" fail", fpath, COM_APP_PKG_DIR);
-        return -1;
-    }
-
-    return shell_cmd_exec("pkgupgrade", NULL, 0);
-}
-
-int fota_excute(fota_t *fota, int (*cb)(int , int))
-{
-    int error = 0;
-    fota_ecu_t *ecu;
-    fota_ecu_t *tbox = NULL;
-    
-    log_o(LOG_FOTA, "starting FOTA work");
-    
-    if (fota_calc_workload(fota) <= 0)
-	 //if (fota_calc_workload(fota) < 0)  
-    {
-        log_e(LOG_FOTA, "calculate workload fail");
-        return -1;
-    }
-    
-    log_o(LOG_FOTA, "workload: %d Bytes", fota->total);
-
-    fota->callback = cb;
-    FOR_EACH_FOTAECU(ecu, fota)
-    {
-        bus_inf_t *bus  = fota_find_ecu_bus(fota, ecu->name);
-        ecu_inf_t *info = fota_find_ecu_info(fota, ecu->name);
-        int baud;
-
-        log_o(LOG_FOTA, "starting upgrade ECU(%s) to \"%s\"", ecu->name, ecu->tar.ver);
-
-        if (strcmp(ecu->name, "TBOX") == 0)
-        {
-            tbox = ecu;
-            continue;
-        }
-
-        if (!bus || !info)
-        {
-            log_e(LOG_FOTA, "can't find ECU(%s) in bus", ecu->name);
-            error++;
-            break;
-        }
-        
-        if (!VER_VALID(&ecu->tar))
+        if (!ecu->tar.valid)
         {
             log_e(LOG_FOTA, "target version of ECU(%s) is not found", ecu->name);
-            error++;
-            break;
+            return -1;
         }
 
-        baud = can_get_baud(bus->port - 1);
-        if (baud != bus->baud && can_set_baud(bus->port - 1, bus->baud) != 0)
-        {
-            log_e(LOG_FOTA, "can't set baud rate of bus %d for ECU(%s)", bus->port, ecu->name);
-            error++;
-            break;
-        }
-        
-        if (fota_uds_open(bus->port - 1, bus->fid, info->rid, info->pid) != 0)
+        if (fota_uds_open(ecu->can_port, fota->fid, ecu->rid, ecu->pid) != 0)
         {
             log_e(LOG_FOTA, "open UDS for ECU(%s) fail", ecu->name);
-            can_set_baud(bus->port - 1, baud);
-            error++;
-            break;
+            return -1;
         }
 
-        if (fota_ecu_match(ecu) != 0)
+        if (fota_ecu_check(ecu) != 0)
         {
+            log_e(LOG_FOTA, "check ECU(%s) fail", ecu->name);
             fota_uds_close();
-            error++;
-            break;
+            return -1;
         }
 
         if (fota_ecu_resolve(ecu) != 0)
         {
-            log_e(LOG_FOTA, "resolve version-relative of ECU(%s) fail", ecu->name);
+            log_e(LOG_FOTA, "resolve related version of ECU(%s) fail", ecu->name);
             fota_uds_close();
-            error++;
-            break;
+            return -1;
         }
-        
-        if (fota_ecu_upgrade(ecu, &ecu->tar) != 0)
+
+        if (memcmp(ecu->name, "gw", 2) == 0)
         {
-            log_e(LOG_FOTA, "program ECU(%s) fail", ecu->name);            
-            fota_uds_close();
-            can_set_baud(bus->port - 1, baud);
-            error++;
-            break;
+            memcpy(ecuName, "gw", 2);
+
+            if (fota_ecu_upgrade_GW(ecu, &ecu->tar) != 0)
+            {
+                log_e(LOG_FOTA, "upgrade ECU(%s) fail", ecu->name);
+                fota_uds_close();
+                return -1;
+            }
         }
 
         fota_uds_close();
-        can_set_baud(bus->port - 1, baud);
-        sleep(2);
-        log_o(LOG_FOTA, "ECU(%s) upgrading done!", ecu->name);
     }
 
-    if (!error && tbox && (error = fota_tbox_upgrade(&tbox->tar)))
-    {
-        log_e(LOG_FOTA, "upgrade ECU(tbox) fail");
-    }
-    
-    if (error)
-    {
-        fota_rollback(fota);
-    }
-    else    
-    {
-        log_o(LOG_FOTA, "FOTA work done!");
-    }
-    
-    return error;
+    return 0;
 }
-
