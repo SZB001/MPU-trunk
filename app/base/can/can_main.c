@@ -20,7 +20,7 @@
 #include "can_adp.h"
 
 #define CAN_MAX_CALLBACK    16
-#define CAN_BUS_TIMEOUT     120000 //10000   10S->120S for foton
+#define CAN_BUS_TIMEOUT     10000 //10000   10S->120S for foton
 #define CAN_MAX_RAWSIZE     10
 
 typedef enum

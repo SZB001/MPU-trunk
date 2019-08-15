@@ -390,7 +390,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	{
 		case SOCKPROXY_CHECK_CERT:
 		{
-			if(dev_get_KL15_signal())
+			if(!sockSt.sleepFlag)
 			{
 
 				if(ESRCH == pthread_kill(rcvtid,0))//线程不存在
@@ -447,46 +447,6 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	}
 #endif
 
-	static uint64_t logtime = 0;
-	//static uint64_t closewaittime = 0;
-
-	if((tm_get_time() - logtime) > 5000)
-	{
-		logtime = tm_get_time();
-
-		log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg = %d\n",sockSt.asynCloseFlg);
-		log_i(LOG_SOCK_PROXY, "sockSt.rcvflag = %d\n",sockSt.rcvflag);
-		log_i(LOG_SOCK_PROXY, "sockSt.sleepFlag = %d\n",sockSt.sleepFlag);
-		log_i(LOG_SOCK_PROXY, "sockSt.state = %d\n",sockSt.state);
-		log_i(LOG_SOCK_PROXY, "sockSt.BDLlinkSt = %d\n",sockSt.BDLlinkSt);
-		log_i(LOG_SOCK_PROXY, "sockSt.sglinkSt = %d\n",sockSt.sglinkSt);
-	}
-
-	if((1 == gb32960_gbLogoutSt()) && \
-			(dev_get_KL15_signal() == 0) && (GetPrvtProt_Sleep()))
-	{
-		if(sockSt.state == PP_OPENED)
-		{
-			log_i(LOG_HOZON, "start to sleep\n");
-			sockproxy_socketclose();
-			//closewaittime = tm_get_time();
-		}
-		else
-		{
-			if(sockSt.state == PP_CLOSED)
-			{
-				sockSt.sleepFlag = 1;
-			}
-			else
-			{}
-		}
-	}
-	else
-	{
-		sockSt.sleepFlag = 0;
-	}
-
-
 #if SOCKPROXY_SAFETY_EN
 	static uint64_t	checkclosedelaytime;
 	if(sockSt.asynCloseFlg == 1)
@@ -525,6 +485,48 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		checkclosedelaytime = tm_get_time();
 	}
 #endif
+
+	static uint64_t logtime = 0;
+	//static uint64_t closewaittime = 0;
+
+	if((tm_get_time() - logtime) > 5000)
+	{
+		logtime = tm_get_time();
+
+		log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg = %d\n",sockSt.asynCloseFlg);
+		log_i(LOG_SOCK_PROXY, "sockSt.rcvflag = %d\n",sockSt.rcvflag);
+		log_i(LOG_SOCK_PROXY, "sockSt.sleepFlag = %d\n",sockSt.sleepFlag);
+		log_i(LOG_SOCK_PROXY, "sockSt.state = %d\n",sockSt.state);
+		log_i(LOG_SOCK_PROXY, "sockSt.BDLlinkSt = %d\n",sockSt.BDLlinkSt);
+		log_i(LOG_SOCK_PROXY, "sockSt.sglinkSt = %d\n",sockSt.sglinkSt);
+
+		log_i(LOG_SOCK_PROXY, "gb32960 sleep = %d\n",gb32960_gbLogoutSt());
+		log_i(LOG_SOCK_PROXY, "PrvtProt sleep = %d\n",GetPrvtProt_Sleep());
+	}
+
+	if((1 == gb32960_gbLogoutSt()) && \
+			(dev_get_KL15_signal() == 0) && (GetPrvtProt_Sleep()))
+	{
+		if(sockSt.state == PP_OPENED)
+		{
+			log_i(LOG_HOZON, "start to sleep\n");
+			sockproxy_socketclose();
+			//closewaittime = tm_get_time();
+		}
+		else
+		{
+			if(sockSt.state == PP_CLOSED)
+			{
+				sockSt.sleepFlag = 1;
+			}
+			else
+			{}
+		}
+	}
+	else
+	{
+		sockSt.sleepFlag = 0;
+	}
 
     return 0;
 }

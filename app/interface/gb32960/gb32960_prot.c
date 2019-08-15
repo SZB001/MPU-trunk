@@ -728,7 +728,8 @@ static int gb_do_suspend(gb_stat_t *state)
 
 static int gb_do_logout(gb_stat_t *state)
 {
-    if (!state->can && gb_data_nosending())
+    //if (!state->can && gb_data_nosending())
+    if (!state->can)
     {
         uint8_t buf[256];
         int len, res;
@@ -1306,7 +1307,7 @@ static int gb_can_callback(uint32_t event, uint32_t arg1, uint32_t arg2)
         case CAN_EVENT_TIMEOUT:
             {
                 TCOM_MSG_HEADER msg;
-
+                log_o(LOG_GB32960, "GB_MSG_CANOFF!");
                 msg.sender   = MPU_MID_GB32960;
                 msg.receiver = MPU_MID_GB32960;
                 msg.msglen   = 0;
@@ -1796,6 +1797,7 @@ static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void))
 #if !GB32960_SOCKPROXY
 	res = sock_send(state.socket, Msg, len, sync);
 #else
+	gb_data_ack_pack();
 	res = sockproxy_MsgSend(Msg,len, sync);
 #endif
 	return res;
@@ -1894,7 +1896,7 @@ int gb32960_networkSt(void)
 }
 
 /*
- * 获取gb等出状态
+ * 获取gb登出状态
  */
 int gb32960_gbLogoutSt(void)
 {

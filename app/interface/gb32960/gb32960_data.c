@@ -1321,7 +1321,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     uint32_t len = 0, i, j, warnbit = 0, warnlvl = 0,warnlvltemp = 0;
     uint8_t* warnlvl_ptr;
     uint8_t gb_warn[32] = {0};
-    uint8_t gb_warning[3][32] = {0};
+    uint8_t gb_warning[3][32] = {{0,0,0}};
     const char gb_use_dbc_warnlvl[32] =
     {
     	0,0,0,0,0,
