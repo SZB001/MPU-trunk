@@ -1415,6 +1415,8 @@ static void *gb_main(void)
 
             case GB_MSG_CANON:
                 log_i(LOG_GB32960, "get CANON message");
+                Setsocketproxy_Awaken();
+                SetPrvtProt_Awaken();
                 state.can = 1;
                 gb_allow_sleep = 0;
                 break;
@@ -1900,7 +1902,7 @@ int gb32960_networkSt(void)
  */
 int gb32960_gbLogoutSt(void)
 {
-	if((state.wait == PROT_LOGOUT) || (1 == gb_allow_sleep))
+	if(1 == gb_allow_sleep)
 	{
 		return 1;
 	}

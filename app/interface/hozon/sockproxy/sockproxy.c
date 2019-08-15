@@ -390,7 +390,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	{
 		case SOCKPROXY_CHECK_CERT:
 		{
-			if(!sockSt.sleepFlag)
+			if(0 == sockSt.sleepFlag)
 			{
 
 				if(ESRCH == pthread_kill(rcvtid,0))//线程不存在
@@ -504,23 +504,25 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		log_i(LOG_SOCK_PROXY, "PrvtProt sleep = %d\n",GetPrvtProt_Sleep());
 	}
 
-	if((1 == gb32960_gbLogoutSt()) && \
-			(dev_get_KL15_signal() == 0) && (GetPrvtProt_Sleep()))
+	if(0 == dev_get_KL15_signal())
 	{
-		if(sockSt.state == PP_OPENED)
+		if((1 == gb32960_gbLogoutSt()) && (GetPrvtProt_Sleep()))
 		{
-			log_i(LOG_HOZON, "start to sleep\n");
-			sockproxy_socketclose();
-			//closewaittime = tm_get_time();
-		}
-		else
-		{
-			if(sockSt.state == PP_CLOSED)
+			if(sockSt.state == PP_OPENED)
 			{
-				sockSt.sleepFlag = 1;
+				log_i(LOG_HOZON, "start to sleep\n");
+				sockproxy_socketclose();
+				//closewaittime = tm_get_time();
 			}
 			else
-			{}
+			{
+				if(sockSt.state == PP_CLOSED)
+				{
+					sockSt.sleepFlag = 1;
+				}
+				else
+				{}
+			}
 		}
 	}
 	else
