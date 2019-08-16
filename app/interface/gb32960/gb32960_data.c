@@ -3423,13 +3423,24 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 		}
 
         //动力电池温度过高保护故障
-		if (gbinf->warn[i][0x01] &&
+		if(gbinf->warn[i][0x01] &&
 		(dbc_get_signal_from_id(gbinf->warn[i][0x01])->value ||
 		(gbinf->warn[3][0x01] &&
 		dbc_get_signal_from_id(gbinf->warn[3][0x01])->value)))
 		// index 3,as a relevance channel,if the is two canid used for on warning
 		{
 			warn_code = 32;
+        	buf[len++] = warn_code >> 8;
+        	buf[len++] = warn_code;
+        	(*warnnum_ptr)++;
+        	//(*warnlvl_ptr)  = i + 1;
+		}
+
+		//制动系统故障
+		if(gbinf->warn[i][0x0D] && \
+				dbc_get_signal_from_id(gbinf->warn[i][0x0D])->value)
+		{
+			warn_code = 40;
         	buf[len++] = warn_code >> 8;
         	buf[len++] = warn_code;
         	(*warnnum_ptr)++;

@@ -511,7 +511,7 @@ BO_ 229 ESC_Fr01_0E5: 8 ESC
  SG_ ESCActive_@2WGF040 : 3|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ ESCDisable_@2WGF041 : 2|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ ESCStatusLampReq : 14|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ ESCWarningLamp_@2WG7048 : 9|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ ESCWarningLamp : 9|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ TCSActive_@2WGF042 : 8|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ TCSFail : 22|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ ESC�ڵ㶪ʧ_@2N007 : 22|1@0+(1,0)[0|1] "" Vector__XXX
