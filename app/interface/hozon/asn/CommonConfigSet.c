@@ -125,6 +125,33 @@ static asn_TYPE_member_t asn_MBR_CommonConfigSet_1[] = {
 		0,
 		"btKeyEntryEnabled"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct CommonConfigSet, carEmpowerEnabled),
+		(ASN_TAG_CLASS_CONTEXT | (13 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_BOOLEAN,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		"carEmpowerEnabled"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct CommonConfigSet, eventReportEnabled),
+		(ASN_TAG_CLASS_CONTEXT | (14 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_BOOLEAN,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		"eventReportEnabled"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct CommonConfigSet, carAlarmEnabled),
+		(ASN_TAG_CLASS_CONTEXT | (15 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_BOOLEAN,
+		0,	/* Defer constraints checking to the member type */
+		0,	/* No PER visible constraints */
+		0,
+		"carAlarmEnabled"
+		},
 };
 static const ber_tlv_tag_t asn_DEF_CommonConfigSet_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
@@ -142,13 +169,16 @@ static const asn_TYPE_tag2member_t asn_MAP_CommonConfigSet_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (9 << 2)), 9, 0, 0 }, /* journeysEnabled */
     { (ASN_TAG_CLASS_CONTEXT | (10 << 2)), 10, 0, 0 }, /* onlineInfEnabled */
     { (ASN_TAG_CLASS_CONTEXT | (11 << 2)), 11, 0, 0 }, /* rChargeEnabled */
-    { (ASN_TAG_CLASS_CONTEXT | (12 << 2)), 12, 0, 0 } /* btKeyEntryEnabled */
+    { (ASN_TAG_CLASS_CONTEXT | (12 << 2)), 12, 0, 0 }, /* btKeyEntryEnabled */
+    { (ASN_TAG_CLASS_CONTEXT | (13 << 2)), 13, 0, 0 }, /* carEmpowerEnabled */
+    { (ASN_TAG_CLASS_CONTEXT | (14 << 2)), 14, 0, 0 }, /* eventReportEnabled */
+    { (ASN_TAG_CLASS_CONTEXT | (15 << 2)), 15, 0, 0 } /* carAlarmEnabled */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_CommonConfigSet_specs_1 = {
 	sizeof(struct CommonConfigSet),
 	offsetof(struct CommonConfigSet, _asn_ctx),
 	asn_MAP_CommonConfigSet_tag2el_1,
-	13,	/* Count of tags in the map */
+	16,	/* Count of tags in the map */
 	0, 0, 0,	/* Optional elements (not needed) */
 	-1,	/* Start extensions */
 	-1	/* Stop extensions */
@@ -174,7 +204,7 @@ asn_TYPE_descriptor_t asn_DEF_CommonConfigSet = {
 		/sizeof(asn_DEF_CommonConfigSet_tags_1[0]), /* 1 */
 	0,	/* No PER visible constraints */
 	asn_MBR_CommonConfigSet_1,
-	13,	/* Elements count */
+	16,	/* Elements count */
 	&asn_SPC_CommonConfigSet_specs_1	/* Additional specs */
 };
 

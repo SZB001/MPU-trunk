@@ -554,6 +554,12 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					log_i(LOG_UPER_ECDC, "CommonConfigSet.rChargeEnabled = %d\n",CommonConfigSet.rChargeEnabled);
 					CommonConfigSet.btKeyEntryEnabled = rmtCfgReadResp_ptr->ReadResp.COMMON.btKeyEntryEnabled;
 					log_i(LOG_UPER_ECDC, "CommonConfigSet.btKeyEntryEnabled = %d\n",CommonConfigSet.btKeyEntryEnabled);
+					CommonConfigSet.carEmpowerEnabled  = rmtCfgReadResp_ptr->ReadResp.COMMON.carEmpowerEnabled ;
+					log_i(LOG_UPER_ECDC, "CommonConfigSet.carEmpowerEnabled  = %d\n",CommonConfigSet.carEmpowerEnabled );
+					CommonConfigSet.eventReportEnabled  = rmtCfgReadResp_ptr->ReadResp.COMMON.eventReportEnabled ;
+					log_i(LOG_UPER_ECDC, "CommonConfigSet.eventReportEnabled  = %d\n",CommonConfigSet.eventReportEnabled );
+					CommonConfigSet.carAlarmEnabled  = rmtCfgReadResp_ptr->ReadResp.COMMON.carAlarmEnabled ;
+					log_i(LOG_UPER_ECDC, "CommonConfigSet.carAlarmEnabled  = %d\n",CommonConfigSet.carAlarmEnabled );
 
 					commonConfig.list.array = &CommonConfigSet_ptr;
 					commonConfig.list.count =1;
@@ -1477,6 +1483,9 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						app_rmtCfg_ptr->getResp.COMMON.rcEnabled = (**(cfggetResp.commonCfg->list.array)).rcEnabled;
 						app_rmtCfg_ptr->getResp.COMMON.svtEnabled = (**(cfggetResp.commonCfg->list.array)).svtEnabled;
 						app_rmtCfg_ptr->getResp.COMMON.vsEnabled = (**(cfggetResp.commonCfg->list.array)).vsEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.carEmpowerEnabled = (**(cfggetResp.commonCfg->list.array)).carEmpowerEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.eventReportEnabled = (**(cfggetResp.commonCfg->list.array)).eventReportEnabled;
+						app_rmtCfg_ptr->getResp.COMMON.carAlarmEnabled  = (**(cfggetResp.commonCfg->list.array)).carAlarmEnabled ;
 
 						log_i(LOG_UPER_ECDC, "getCfgResp.actived = %d\n",app_rmtCfg_ptr->getResp.COMMON.actived);
 						log_i(LOG_UPER_ECDC, "getCfgResp.bCallEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.bCallEnabled);
@@ -1491,6 +1500,9 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						log_i(LOG_UPER_ECDC, "getCfgResp.rcEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.rcEnabled);
 						log_i(LOG_UPER_ECDC, "getCfgResp.svtEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.svtEnabled);
 						log_i(LOG_UPER_ECDC, "getCfgResp.vsEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.vsEnabled);
+						log_i(LOG_UPER_ECDC, "getCfgResp.carEmpowerEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.carEmpowerEnabled);
+						log_i(LOG_UPER_ECDC, "getCfgResp.eventReportEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.eventReportEnabled);
+						log_i(LOG_UPER_ECDC, "getCfgResp.carAlarmEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.carAlarmEnabled);
 					}
 
 					if(cfggetResp.extendCfg != NULL)

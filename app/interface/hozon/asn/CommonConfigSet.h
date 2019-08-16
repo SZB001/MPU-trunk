@@ -34,6 +34,9 @@ typedef struct CommonConfigSet {
 	BOOLEAN_t	 onlineInfEnabled;
 	BOOLEAN_t	 rChargeEnabled;
 	BOOLEAN_t	 btKeyEntryEnabled;
+	BOOLEAN_t	 carEmpowerEnabled;
+	BOOLEAN_t	 eventReportEnabled;
+	BOOLEAN_t	 carAlarmEnabled;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

@@ -123,7 +123,10 @@ CommonConfigSettings ::= SEQUENCE
 	journeysEnabled		BOOLEAN, -- Default false
 	onlineInfEnabled	BOOLEAN, -- Default false
 	rChargeEnabled		BOOLEAN, -- Default false
-	btKeyEntryEnabled	BOOLEAN  -- Default false
+	btKeyEntryEnabled	BOOLEAN,  -- Default false
+	carEmpowerEnabled 	BOOLEAN, -- Default false
+	eventReportEnabled 	BOOLEAN, -- Default false
+	carAlarmEnabled 	BOOLEAN  -- Default false		
 }
 
 ExtendConfigSettings ::= SEQUENCE
@@ -205,7 +208,10 @@ CommonConfigSet ::= SEQUENCE
 	journeysEnabled		BOOLEAN, -- Default false
 	onlineInfEnabled	BOOLEAN, -- Default false
 	rChargeEnabled		BOOLEAN, -- Default false
-	btKeyEntryEnabled	BOOLEAN  -- Default false
+	btKeyEntryEnabled	BOOLEAN,  -- Default false
+	carEmpowerEnabled 	BOOLEAN, -- Default false
+	eventReportEnabled 	BOOLEAN, -- Default false
+	carAlarmEnabled 	BOOLEAN  -- Default false
 }
 
 ExtendConfigSet ::= SEQUENCE

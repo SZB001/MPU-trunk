@@ -151,7 +151,7 @@ typedef struct
 {
 	uint8_t apn2Address[33];
 	uint8_t apn2User[17];
-	uint8_t apn2Pass[7];
+	uint8_t apn2Pass[17];
 	uint8_t apn2Addresslen;
 	uint8_t apn2Userlen;
 	uint8_t apn2Passlen;
@@ -173,6 +173,9 @@ typedef struct
 	int onlineInfEnabled;
 	int rChargeEnabled;
 	int btKeyEntryEnabled;
+	int carEmpowerEnabled;
+	int	eventReportEnabled;
+	int carAlarmEnabled;
 	uint8_t commonConfigValid;
 }__attribute__((packed)) App_rmtCfg_COMMON_t;
 
