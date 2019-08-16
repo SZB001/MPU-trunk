@@ -50,7 +50,7 @@ void UDS_SRV_DiagSessionCtrl(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU
             }
             else
             {
-                uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_SubFunctionNotSupportedInActiveSession);
+                uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_ConditionsNotCorrect);
                 return;
             }
 

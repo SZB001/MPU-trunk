@@ -50,7 +50,7 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
         }
     }
 
-    switch (p_u8PDU_Data[1] & suppressPosRspMsgIndicationBitMask)
+    switch (p_u8PDU_Data[1])
     {
         case RequestSeed_Secrity_Level1:
         #if 0
@@ -82,7 +82,7 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
 
                 if (Get_SecurityAccess() == SecurityAccess_LEVEL0)
                 {
-                    seed = 0x1234;//rand();
+                    seed = rand();//0x1234;
                     flag = 1;/*已发送种子标志*/
                 }
                 else
@@ -220,10 +220,6 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
             return;
     }
 
-    if (p_u8PDU_Data[1] & suppressPosRspMsgIndicationBit)
-    {
-        g_u8suppressPosRspMsgIndicationFlag = 1;
-    }
 
     uds_positive_response(tUDS, tUDS->can_id_res, i, Ar_u8RePDU_DATA);
 

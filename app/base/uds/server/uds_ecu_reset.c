@@ -17,6 +17,14 @@ void UDS_SRV_EcuReset(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DLC)
     }
     else
     {
+        if(g_u32DiagID == tUDS->can_id_phy)
+        {
+            if(Get_SecurityAccess() != SecurityAccess_LEVEL1)
+            {
+                uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_SecurityAccessDenied);
+                return ;
+            }
+        }
         switch (p_u8PDU_Data[1] & suppressPosRspMsgIndicationBitMask)
         {
             case HARDRESET:

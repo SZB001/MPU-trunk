@@ -333,7 +333,7 @@ int ft_uds_diag_power_high(void)
         }
         else if (power_thred == UDS_12V_POWER)
         {
-            if (power > 15500)
+            if (power > 16000)
             {
                 return 1;
             }
@@ -384,7 +384,7 @@ int ft_uds_diag_power_low(void)
         }
         else if (power_thred == UDS_12V_POWER)
         {
-            if (power < 9500)
+            if (power < 9000)
             {
                 return 1;
             }
