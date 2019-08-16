@@ -49,8 +49,8 @@ gb32960_api_fault_t gb_fault;
 #define GB_EVT_PASSBELTLAMP_ON     	0x05
 #define GB_EVT_LEFTTURNLAMP_ON     	0x06
 #define GB_EVT_RIGHTTURNLAMP_ON    	0x07
-#define GB_EVT_NEARLAMP_ON       	0x08//�����
-#define GB_EVT_HIGHBEAMLAMP_ON      0x09
+#define GB_EVT_HIGHBEAMLAMP_ON      0x08
+#define GB_EVT_NEARLAMP_ON       	0x09//
 #define GB_EVT_LEFTDRVDOOR_OPEN     0x0a
 #define GB_EVT_RIGHTDRVDOOR_OPEN    0x0b
 #define GB_EVT_LEFTREARDRVDOOR_OPEN      	0x0c
@@ -1059,7 +1059,7 @@ static uint32_t gb_data_save_motor(gb_info_t *gbinf, uint8_t *buf)
 
         /* motor temperature */
         tmp = gbinf->motor[i].info[GB_MINF_MOTTMP] ?
-              dbc_get_signal_from_id(gbinf->motor[i].info[GB_MINF_MOTTMP])->value + 40 : 0xff;
+              dbc_get_signal_from_id(gbinf->motor[i].info[GB_MINF_MOTTMP])->value + 48 : 0xff;
         buf[len++] = tmp;
 
         /* motor voltage, scale 0.1V*/
@@ -1845,7 +1845,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     }
 
     /* 车灯状态 */
-    if(gbinf->gb_VSExt.info[GB_VS_HLAMPST])//˫��״̬
+    if(gbinf->gb_VSExt.info[GB_VS_HLAMPST])//双闪
 	{
 		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_HLAMPST])->value;
 	}
@@ -2104,7 +2104,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     {
         if(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])//加速度x、y
         {
-        	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])->value + 1023) * 100;
+        	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_X+i])->value + 10.23) * 100;
         	buf[len++] = tmp >> 8;
         	buf[len++] = tmp;
         }
