@@ -182,7 +182,6 @@ int PP_rmtDiag_mainfunction(void *task)
 		PP_rmtDiag.state.diagReq = 0;
 		PP_rmtDiag.state.ImageAcquisitionReq = 0;
 		PP_rmtDiag.state.LogAcquisitionReq = 0;
-		
 		return 0;
 	}
 

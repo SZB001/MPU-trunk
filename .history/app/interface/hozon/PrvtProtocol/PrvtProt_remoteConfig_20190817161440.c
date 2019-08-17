@@ -189,8 +189,7 @@ int PP_rmtCfg_mainfunction(void *task)
 
 	if(!dev_get_KL15_signal())
 	{
-		PP_rmtCfg.state.avtivecheckflag = 0;
-		PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
+
 		return 0;
 	}
 

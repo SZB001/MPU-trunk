@@ -187,11 +187,9 @@ int PP_rmtCfg_mainfunction(void *task)
 {
 	int res;
 
-	if(!dev_get_KL15_signal())
+	if(0 == dev_get_KL15_signal())
 	{
-		PP_rmtCfg.state.avtivecheckflag = 0;
-		PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
-		return 0;
+
 	}
 
 	res = 		PP_rmtCfg_do_checksock((PrvtProt_task_t*)task) || \

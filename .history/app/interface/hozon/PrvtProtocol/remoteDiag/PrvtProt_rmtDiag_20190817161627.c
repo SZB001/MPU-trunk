@@ -173,26 +173,13 @@ int PP_rmtDiag_mainfunction(void *task)
 {
 	int res;
 
-	if(!dev_get_KL15_signal())
-	{
-		PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
-		PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
-		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
-		PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
-		PP_rmtDiag.state.diagReq = 0;
-		PP_rmtDiag.state.ImageAcquisitionReq = 0;
-		PP_rmtDiag.state.LogAcquisitionReq = 0;
-		
-		return 0;
-	}
-
 	res = 		PP_rmtDiag_do_checksock((PrvtProt_task_t*)task) ||
 				PP_rmtDiag_do_rcvMsg((PrvtProt_task_t*)task) 	||
 				PP_rmtDiag_do_wait((PrvtProt_task_t*)task) 		||
 				PP_rmtDiag_do_checkrmtDiag((PrvtProt_task_t*)task) ||
 				PP_rmtDiag_do_checkrmtImageReq((PrvtProt_task_t*)task) ||
 				PP_rmtDiag_do_checkrmtLogReq((PrvtProt_task_t*)task);
-
+				
 	if(1 == sockproxy_socketState())//socket open
 	{
 		PP_rmtDiag_do_DiagActiveReport((PrvtProt_task_t*)task);//主动诊断上报
@@ -592,6 +579,14 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 	int i;
 	int ret;
 	int idlenode;
+
+	if(!dev_get_KL15_signal())
+	{
+		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
+		return 0;
+	}
+
+
 
 	switch(PP_rmtDiag.state.activeDiagSt)
 	{
