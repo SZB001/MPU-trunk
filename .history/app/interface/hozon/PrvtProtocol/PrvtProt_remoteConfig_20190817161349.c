@@ -31,7 +31,7 @@ description�� include the header file
 #include "Bodyinfo.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
-#include "dev_api.h"
+
 #include "init.h"
 #include "log.h"
 #include "list.h"
@@ -187,11 +187,9 @@ int PP_rmtCfg_mainfunction(void *task)
 {
 	int res;
 
-	if(!dev_get_KL15_signal())
+	if()
 	{
-		PP_rmtCfg.state.avtivecheckflag = 0;
-		PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
-		return 0;
+		
 	}
 
 	res = 		PP_rmtCfg_do_checksock((PrvtProt_task_t*)task) || \

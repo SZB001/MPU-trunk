@@ -31,7 +31,7 @@ description�� include the header file
 #include "Bodyinfo.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
-#include "dev_api.h"
+
 #include "init.h"
 #include "log.h"
 #include "list.h"

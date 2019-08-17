@@ -31,7 +31,7 @@ description�� include the header file
 #include "Bodyinfo.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
-#include "dev_api.h"
+
 #include "init.h"
 #include "log.h"
 #include "list.h"
@@ -186,13 +186,6 @@ void PP_rmtCfg_init(void)
 int PP_rmtCfg_mainfunction(void *task)
 {
 	int res;
-
-	if(!dev_get_KL15_signal())
-	{
-		PP_rmtCfg.state.avtivecheckflag = 0;
-		PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
-		return 0;
-	}
 
 	res = 		PP_rmtCfg_do_checksock((PrvtProt_task_t*)task) || \
 				PP_rmtCfg_do_rcvMsg((PrvtProt_task_t*)task,&PP_rmtCfg) || \
@@ -450,6 +443,11 @@ static int PP_rmtCfg_do_wait(PrvtProt_task_t *task)
 static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
 	int idlenode;
+
+	if(1 != sockproxy_socketState())//socket open
+	{
+		return 0;
+	}
 
 	if(0 == PP_rmtCfg.state.avtivecheckflag)
 	{//上电主动查询配置

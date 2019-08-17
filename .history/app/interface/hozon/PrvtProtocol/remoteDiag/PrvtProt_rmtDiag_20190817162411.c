@@ -179,10 +179,9 @@ int PP_rmtDiag_mainfunction(void *task)
 		PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
 		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
 		PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
-		PP_rmtDiag.state.diagReq = 0;
-		PP_rmtDiag.state.ImageAcquisitionReq = 0;
-		PP_rmtDiag.state.LogAcquisitionReq = 0;
+
 		
+
 		return 0;
 	}
 

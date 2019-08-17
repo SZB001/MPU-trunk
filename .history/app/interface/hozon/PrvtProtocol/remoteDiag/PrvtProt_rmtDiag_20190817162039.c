@@ -173,19 +173,6 @@ int PP_rmtDiag_mainfunction(void *task)
 {
 	int res;
 
-	if(!dev_get_KL15_signal())
-	{
-		PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
-		PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
-		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
-		PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
-		PP_rmtDiag.state.diagReq = 0;
-		PP_rmtDiag.state.ImageAcquisitionReq = 0;
-		PP_rmtDiag.state.LogAcquisitionReq = 0;
-		
-		return 0;
-	}
-
 	res = 		PP_rmtDiag_do_checksock((PrvtProt_task_t*)task) ||
 				PP_rmtDiag_do_rcvMsg((PrvtProt_task_t*)task) 	||
 				PP_rmtDiag_do_wait((PrvtProt_task_t*)task) 		||
