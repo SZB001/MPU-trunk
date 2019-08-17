@@ -2786,7 +2786,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	/* ���س��� */
+	/* 车载充电机 */
 	if(gbinf->vehi.info[GB_VINF_CHARGE])//
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_VINF_CHARGE])->value;
@@ -2804,7 +2804,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if (gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])//��������������
+	if (gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])//充电机最大输出功率
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])->value * 200;
 		buf[len++] = tmp >> 8;
@@ -2816,7 +2816,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	for(i=0;i<4;i++)//������롢�����ѹ����
+	for(i=0;i<4;i++)//充电机输入/输出电压电流
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEOUTVOLT])
 		{
@@ -2829,23 +2829,6 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 			 buf[len++] = 0xff;
 			 buf[len++] = 0xff;
 		}
-	}
-
-	if(gbinf->gb_ConpSt.info[GB_VINF_CHARGE])
-	{
-		tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_CHARGE])->value;
-		if((tmp>=0)&&(tmp<=7))
-		{
-			buf[len++] = tmp;
-		}
-		else
-		{
-			buf[len++] = 0xfe;
-		}
-	}
-	else
-	{
-		buf[len++] = 0xff;
 	}
 
 	if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEMTRWORKST])//
@@ -2863,6 +2846,15 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	else
 	{
 		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_S2ST])
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_S2ST])->value;
+	}
+	else
+	{
+		buf[len++] = 0xff;
 	}
 
 	/* 空调控制器CLM */

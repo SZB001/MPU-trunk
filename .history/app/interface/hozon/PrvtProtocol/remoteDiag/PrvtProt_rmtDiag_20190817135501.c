@@ -34,7 +34,7 @@ description锛� include the header file
 #include "Bodyinfo.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
-#include "dev_api.h"
+
 #include "init.h"
 #include "log.h"
 #include "list.h"
@@ -569,7 +569,7 @@ static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task)
 
 *鎻�  杩帮細
 
-*澶�  娉細:每天仅成功上报1次
+*澶�  娉細:每天仅上报1次
 ******************************************************/
 static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 {
@@ -579,10 +579,9 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 	int ret;
 	int idlenode;
 
-	if(!dev_get_KL15_signal())
+	if(0 == dev_get_KL15_signal())
 	{
 		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
-		return 0;
 	}
 
 
