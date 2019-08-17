@@ -92,6 +92,7 @@ typedef struct
 	uint8_t  diagReq;
 	uint8_t  diagType;
 	long	 diageventId;
+	long	 diagexpTime;
 	uint8_t  ImageAcquisitionReq;
 	long	 imagereqeventId;
 	uint8_t  dataType;

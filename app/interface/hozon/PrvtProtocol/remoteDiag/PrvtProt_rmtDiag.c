@@ -285,14 +285,15 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 
 	switch(MsgDataBody.mID)
 	{
-		case PP_MID_DIAG_REQ://鏀跺埌tsp璇锋眰
+		case PP_MID_DIAG_REQ://
 		{
 			if((0 == PP_rmtDiag.state.diagReq) && (PP_DIAGRESP_IDLE == PP_rmtDiag.state.diagrespSt))
 			{
 				log_i(LOG_HOZON, "receive remote diag request\n");
-				PP_rmtDiag.state.diagReq = 1;
-				PP_rmtDiag.state.diagType = Appdata.DiagnosticReq.diagType;
+				PP_rmtDiag.state.diagReq 	 = 1;
+				PP_rmtDiag.state.diagType 	 = Appdata.DiagnosticReq.diagType;
 				PP_rmtDiag.state.diageventId = MsgDataBody.eventId;
+				PP_rmtDiag.state.diagexpTime = MsgDataBody.expTime;
 			}
 			else
 			{
@@ -754,7 +755,7 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 	PP_rmtDiag.pack.DisBody.mID = PP_MID_DIAG_RESP;
 	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	PP_rmtDiag.pack.DisBody.eventId = rmtDiag->state.diageventId;
-	PP_rmtDiag.pack.DisBody.expTime = PrvtPro_getTimestamp();
+	PP_rmtDiag.pack.DisBody.expTime = rmtDiag->state.diagexpTime;
 	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
 	PP_rmtDiag.pack.DisBody.testFlag = 1;

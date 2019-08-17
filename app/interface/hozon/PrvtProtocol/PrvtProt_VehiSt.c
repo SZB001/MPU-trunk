@@ -236,6 +236,7 @@ static void PP_VS_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int 
 		{
 			PP_rmtVS.state.req = Appdata.VSReq.vehStatusReqType;
 			PP_rmtVS.pack.DisBody.eventId = MsgDataBody.eventId;
+			PP_rmtVS.pack.DisBody.expTime = MsgDataBody.expTime;
 		}
 		break;
 		default:
@@ -350,7 +351,7 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	rmtVS->pack.DisBody.mID = PP_MID_VS_RESP;
 	//rmtVS->pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
 	rmtVS->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtVS->pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	//rmtVS->pack.DisBody.expTime   = PrvtPro_getTimestamp();
 	rmtVS->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 
 	/*appdata*/
