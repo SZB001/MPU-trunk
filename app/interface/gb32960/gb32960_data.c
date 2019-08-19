@@ -37,7 +37,12 @@ gb32960_api_fault_t gb_fault;
 
 #define GB_SUPPLEMENTARY_DATA_MAJORLOOP		0x00//主回路高压互锁信号状态
 #define GB_SUPPLEMENTARY_DATA_DCBUS			0x01//直流母线互锁状态
-#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_DCBUS + 1)
+#define GB_SUPPLEMENTARY_DATA_OUTTEMP		0x02//室外温度值有效性
+#define GB_SUPPLEMENTARY_DATA_INTEMP		0x03//室内温度值有效性
+#define GB_SUPPLEMENTARY_DATA_OUTLETTEMP	0x04//出风口温度值有效性
+#define GB_SUPPLEMENTARY_DATA_BPAV			0x05//制动踏板踩下信号有效性
+#define GB_SUPPLEMENTARY_DATA_BPDQ			0x06//制动踏板位移量有效性
+#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_BPDQ + 1)
 
 #if GB_EXT
 /* event information index */
@@ -921,7 +926,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
             break;
             default:
             {
-                tmp = 0;
+                tmp = 0xff;
             }
             break;
         }
@@ -929,7 +934,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
     }
     else
     {
-    	buf[len++] = 0;
+    	buf[len++] = 0xff;
     }
 
 	/* insulation resistance, scale 1k */
@@ -944,12 +949,20 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 	buf[len++] = tmp;
 
     /* break pad value */
-	if(gbinf->vehi.info[GB_VINF_BRKPAD])
+	if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV]) && \
+		(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV])->value))
 	{
-		tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value;
-		if(tmp >= 100)
+		if(gbinf->vehi.info[GB_VINF_BRKPAD])
 		{
-			tmp = 100;
+			tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value;
+			if(tmp >= 100)
+			{
+				tmp = 100;
+			}
+		}
+		else
+		{
+			tmp = 0xff;
 		}
 	}
 	else
@@ -1790,14 +1803,23 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_ACTEMP])//空调温度
-    {
-    	 buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value + 16) * 2;
-    }
-    else
-    {
-        buf[len++] = 0xff;
-    }
+
+	if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_OUTLETTEMP]) && \
+		(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_OUTLETTEMP])->value))
+	{
+		if(gbinf->gb_VSExt.info[GB_VS_ACTEMP])//空调温度
+		{
+			buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value + 16) * 2;
+		}
+		else
+		{
+			buf[len++] = 0xff;
+		}
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
 
     if(gbinf->gb_VSExt.info[GB_VS_ACMODE])//空调模式
     {
@@ -1838,23 +1860,39 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0;
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_INTEMP])//
-    {
-    	buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_INTEMP])->value + 55) * 2;
-    }
-    else
-    {
-        buf[len++] = 0xff;
-    }
+	if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_INTEMP]) && \
+		(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_INTEMP])->value))
+	{
+		if(gbinf->gb_VSExt.info[GB_VS_INTEMP])//
+		{
+			buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_INTEMP])->value + 55) * 2;
+		}
+		else
+		{
+			buf[len++] = 0xff;
+		}
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
 
-    if(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])//
-    {
-    	buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])->value + 55) * 2;
-    }
-    else
-    {
-        buf[len++] = 0xff;
-    }
+	if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_OUTTEMP]) && \
+		(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_OUTTEMP])->value))
+	{
+		if(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])//
+		{
+			buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])->value + 55) * 2;
+		}
+		else
+		{
+			buf[len++] = 0xff;
+		}
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
 
     /* 车灯状态 */
     if(gbinf->gb_VSExt.info[GB_VS_HLAMPST])//双闪

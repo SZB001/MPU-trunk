@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "sockproxy.h": "c"
+        "sockproxy.h": "c",
+        "hozon_pp_api.h": "c",
+        "hozon_sp_api.h": "c"
     }
 }

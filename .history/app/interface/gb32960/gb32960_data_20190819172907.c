@@ -37,6 +37,12 @@ gb32960_api_fault_t gb_fault;
 
 #define GB_SUPPLEMENTARY_DATA_MAJORLOOP		0x00//主回路高压互锁信号状态
 #define GB_SUPPLEMENTARY_DATA_DCBUS			0x01//直流母线互锁状态
+#define GB_SUPPLEMENTARY_DATA_OUTTEMP		0x02//室外温度值有效性
+#define GB_SUPPLEMENTARY_DATA_INTEMP		0x03//室内温度值有效性
+#define GB_SUPPLEMENTARY_DATA_OUTLETTEMP	0x04//出风口温度值有效性
+#define GB_SUPPLEMENTARY_DATA_BPAV			0x05//制动踏板踩下信号有效性
+#define GB_SUPPLEMENTARY_DATA_BPDQ			0x06//制动踏板位移量有效性
+
 #define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_DCBUS + 1)
 
 #if GB_EXT
@@ -619,7 +625,7 @@ typedef struct _gb_info_t
     struct _gb_info_t *next;
 }gb_info_t;
 
-gb32960_api_extwarn_indextable_t	gb32960_api_extwarn_indextable[41] =
+gb32960_api_extwarn_indextable_t	gb32960_api_extwarn_indextable[58] =
 {
 	{32,32},//12v蓄电池电压过低
 	{33,33},//EPS 故障 
@@ -633,40 +639,52 @@ gb32960_api_extwarn_indextable_t	gb32960_api_extwarn_indextable[41] =
 	{41,41},//MCU 相电流硬件过流（U 相） 
 	{42,42},//MCU 直流母线过压 
 	{43,43},//MCU 直流母线欠压 
-	//{0x0,44},//msd主保险断路故障
-	{44,45},//tbox故障报警
-	{45,46},//安全气囊模块异常报警 
-	{46,47},//车载充电器过载报警
-	{47,48},//车载充电器欠压报警
-	{49,49},//大屏信息版本信息不一致报警
-	{50,60},//单体蓄电池过压报警 
+	{44,44},//tbox故障报警
+	{45,45},//安全气囊模块异常报警 
+	{46,46},//车载充电器过载报警
+	{47,47},//车载充电器欠压报警
+	{48,47},//车载充电器欠压报警
+	{49,48},//大屏信息版本信息不一致报警
+	{50,49},//单体蓄电池过压报警 
 	{51,50},//档位故障 
 	{52,51},//档位信号故障 
 	{53,52},//电池管理系统丢失故障 
 	{54,53},//电池升温过快 
-	{55,55},//电机控制器 IGBT 故障
-	{56,57},//电机控制器环路互锁
-	{57,58},//电机控制器欠压故障
-	{58,59},//电机异常报警
-	{59,61},//动力电池单体电压过压保护
-	{60,62},//动力电池单体电压欠压保护故障
-	{61,64},//动力电池电量过低报警
-	{62,65},//动力电池电压不均衡保护故障
-	{63,66},//动力电池环路互锁
-	{64,70},//动力电池温度过高保护故障
-	{65,73},//加速踏板信号超幅错误
-	{66,74},//加速踏板信号故障
-	{67,77},//空调风扇不工作
-	{68,80},//驱动电机 CAN 通讯故障
-	{69,91},//与 BMS 通讯丢失
-	{70,92},//与 MCU 通讯丢失
-	{71,96},//整车加热工程异常
-	{73,101},//左右刹车灯故障
-	//{74,},
-	//{75,},
-	//{76,},
-	//{77,},
-	{79,76},//空调不工作报警
+	{55,54},//电机控制器 IGBT 故障
+	{56,55},//电机控制器环路互锁
+	{57,56},//电机控制器欠压故障
+	{58,57},//电机异常报警
+	{59,58},//动力电池单体电压过压保护
+	{60,59},//动力电池单体电压欠压保护故障
+	{61,60},//动力电池电量过低报警
+	{62,61},//动力电池电压不均衡保护故障
+	{63,62},//动力电池环路互锁
+	{64,63},//动力电池温度过高保护故障
+	{65,64},//加速踏板信号超幅错误
+	{66,65},//加速踏板信号故障
+	{67,66},//空调风扇不工作
+	{68,67},//驱动电机 CAN 通讯故障
+	{69,68},//与 BMS 通讯丢失
+	{70,69},//与 MCU 通讯丢失
+	{71,70},//整车加热工程异常
+	{72,71},//制动系统故障
+	{73,72},//左右刹车灯故障
+	{74,73},//制动液异常
+	{75,74},//胎压系统故障
+	{76,75},//防盗入侵报警
+	{77,76},//拖车提醒
+	{78,77},//电子转向助力故障
+	{79,78},//空调不工作报警
+	{80,79},//制冷不响应原因-压缩机故障
+	{81,80},//制冷不响应原因-电子膨胀阀故障
+	{82,81},//制冷不响应原因-HV 故障
+	{83,82},//制冷不响应原因-压力传感器故障
+	{84,83},//制冷不响应原因-冷却风扇故障
+	{85,84},//制冷不响应原因-蒸发器温度传感器故障
+	{86,85},//制热不响应原因-PTC 故障
+	{87,86},//制热不响应原因-HV 故障
+	{88,87},//制热不响应原因-PTC 水泵故障
+	{89,88},//制热不响应原因-三通水阀故障
 };
 
 static gb_info_t  gb_infmem[2];
@@ -932,20 +950,12 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 	buf[len++] = tmp;
 
     /* break pad value */
-	if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV]) && \
-		(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV])->value))
+	if(gbinf->vehi.info[GB_VINF_BRKPAD])
 	{
-		if(gbinf->vehi.info[GB_VINF_BRKPAD])
+		tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value;
+		if(tmp >= 100)
 		{
-			tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value;
-			if(tmp >= 100)
-			{
-				tmp = 100;
-			}
-		}
-		else
-		{
-			tmp = 0xff;
+			tmp = 100;
 		}
 	}
 	else
@@ -1786,23 +1796,14 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0xff;
     }
 
-
-	if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_OUTLETTEMP]) && \
-		(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_OUTLETTEMP])->value))
-	{
-		if(gbinf->gb_VSExt.info[GB_VS_ACTEMP])//空调温度
-		{
-			buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value + 16) * 2;
-		}
-		else
-		{
-			buf[len++] = 0xff;
-		}
-	}
-	else
-	{
-		buf[len++] = 0xff;
-	}
+    if(gbinf->gb_VSExt.info[GB_VS_ACTEMP])//空调温度
+    {
+    	 buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value + 16) * 2;
+    }
+    else
+    {
+        buf[len++] = 0xff;
+    }
 
     if(gbinf->gb_VSExt.info[GB_VS_ACMODE])//空调模式
     {
@@ -1843,39 +1844,23 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = 0;
     }
 
-	if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_INTEMP]) && \
-		(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_INTEMP])->value))
-	{
-		if(gbinf->gb_VSExt.info[GB_VS_INTEMP])//
-		{
-			buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_INTEMP])->value + 55) * 2;
-		}
-		else
-		{
-			buf[len++] = 0xff;
-		}
-	}
-	else
-	{
-		buf[len++] = 0xff;
-	}
+    if(gbinf->gb_VSExt.info[GB_VS_INTEMP])//
+    {
+    	buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_INTEMP])->value + 55) * 2;
+    }
+    else
+    {
+        buf[len++] = 0xff;
+    }
 
-	if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_OUTTEMP]) && \
-		(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_OUTTEMP])->value))
-	{
-		if(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])//
-		{
-			buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])->value + 55) * 2;
-		}
-		else
-		{
-			buf[len++] = 0xff;
-		}
-	}
-	else
-	{
-		buf[len++] = 0xff;
-	}
+    if(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])//
+    {
+    	buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])->value + 55) * 2;
+    }
+    else
+    {
+        buf[len++] = 0xff;
+    }
 
     /* 车灯状态 */
     if(gbinf->gb_VSExt.info[GB_VS_HLAMPST])//双闪
@@ -2837,7 +2822,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if (gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])//��������������
+	if (gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])//充电机最大输出功率
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CURRENABLEPWROUTMAX])->value * 200;
 		buf[len++] = tmp >> 8;
@@ -2849,7 +2834,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	for(i=0;i<4;i++)//������롢�����ѹ����
+	for(i=0;i<4;i++)//充电机输入/输出电压电流
 	{
 		if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEOUTVOLT])
 		{
@@ -2862,23 +2847,6 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 			 buf[len++] = 0xff;
 			 buf[len++] = 0xff;
 		}
-	}
-
-	if(gbinf->gb_ConpSt.info[GB_VINF_CHARGE])
-	{
-		tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_CHARGE])->value;
-		if((tmp>=0)&&(tmp<=7))
-		{
-			buf[len++] = tmp;
-		}
-		else
-		{
-			buf[len++] = 0xfe;
-		}
-	}
-	else
-	{
-		buf[len++] = 0xff;
 	}
 
 	if(gbinf->gb_ConpSt.info[GB_CMPT_CHARGEMTRWORKST])//
@@ -2896,6 +2864,15 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	else
 	{
 		 buf[len++] = 0xff;
+	}
+
+	if(gbinf->gb_ConpSt.info[GB_CMPT_S2ST])
+	{
+		buf[len++] = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_S2ST])->value;
+	}
+	else
+	{
+		buf[len++] = 0xff;
 	}
 
 	/* 空调控制器CLM */
