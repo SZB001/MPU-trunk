@@ -65,10 +65,6 @@ BT_DEVINFO_TYPE                 ble_info;
 
 BLE_CTL						    stBleCtl;
 
-
-
-#define BT_NAME_DEF     "BTTest-"
-
 /******************************************************************************
 * Function Name  : Cm256_SetName
 * Description    :  set ble NAME
@@ -77,101 +73,6 @@ BLE_CTL						    stBleCtl;
 ******************************************************************************/
 void Cm256_SetName(void)
 {
-#if 0
-    unsigned char ucLen = 0;
-    unsigned char aucBuf[16];
-
-    FUN_IN;
-
-    if (BtLoadName(Tc35661BtInfo.aucDevName, &ucLen))
-    {
-        FUN_IN;
-        // spp name
-        Tc35661BtInfo.ucNameLen = ucLen;
-        TC35661_ROM501_TCU_MNG_INIT_REQ[2] = ucLen;
-        memcpy(&TC35661_ROM501_TCU_MNG_INIT_REQ[3], Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);
-        IBT16_TRACESTRBUF("spp name:", Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);
-        
-        memcpy(TC35661_ROM501_TCU_MNG_LE_INIT_REQ, Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);     //拷贝SPP名称为ble名称
-        if (ucLen < sizeof(TC35661_ROM501_TCU_MNG_LE_INIT_REQ))
-        {
-            memset(TC35661_ROM501_TCU_MNG_LE_INIT_REQ + ucLen, 0x00, sizeof(TC35661_ROM501_TCU_MNG_LE_INIT_REQ) - ucLen);
-        }
-#if 0
-        TC35661_ROM501_GATT_START_ADV_REQ[48] = Tc35661BtInfo.ucNameLen + 1;
-        memcpy(&TC35661_ROM501_GATT_START_ADV_REQ[50], Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen); 
-#else
-        TC35661_ROM501_GATT_START_ADV_REQ[48] = Tc35661BtInfo.ucNameLen + 1;
-        memset(&TC35661_ROM501_GATT_START_ADV_REQ[50], 0, 29);
-        memcpy(&TC35661_ROM501_GATT_START_ADV_REQ[50], Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen); 
-#endif
-        IBT16_TRACESTRBUF("ble name:", TC35661_ROM501_TCU_MNG_LE_INIT_REQ, Tc35661BtInfo.ucNameLen);
-        
-        // bt4.0 adv name
-        memcpy(tc35661_rom501_ble_uart_char_ele_dev_name_val_d, Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen); 
-        BleUpdateNameLen(Tc35661BtInfo.ucNameLen);
-
-        //更新EIR Name
-        CalculateEIRData(Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);
-
-        IBT16_TRACESTRBUF("bt4.0 adv name:", tc35661_rom501_ble_uart_char_ele_dev_name_val_d, Tc35661BtInfo.ucNameLen);
-    }
-    else    // 没有设置名称，则设置默认名称和MAC
-    {
-        SysGetChipUID(aucBuf);
-        memcpy(Tc35661BtInfo.aucDevMac, aucBuf, 2); // uid为mac
-        memcpy(Tc35661BtInfo.aucDevMac+2, "\x7D\xDB\xF8\x74", 4); // 固定东芝蓝牙base address
-        
-        memcpy(Tc35661BtInfo.aucDevName, BT_NAME_DEF, 7);
-        sprintf((char*)Tc35661BtInfo.aucDevName+7, "%02X%02X%02X", Tc35661BtInfo.aucDevMac[2], Tc35661BtInfo.aucDevMac[1], Tc35661BtInfo.aucDevMac[0]);
-        ucLen = 13;
-        Tc35661BtInfo.ucNameLen = ucLen;
-        TC35661_ROM501_TCU_MNG_INIT_REQ[2] = ucLen;
-        memcpy(&TC35661_ROM501_TCU_MNG_INIT_REQ[3], Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);
-        IBT16_TRACESTRBUF("default name:", Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);
-        IBT16_TRACE("default bt name:%s\n", Tc35661BtInfo.aucDevName);
-
-        memcpy(TC35661_ROM501_TCU_MNG_LE_INIT_REQ, Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);     //拷贝SPP名称为ble名称
-        if (ucLen < sizeof(TC35661_ROM501_TCU_MNG_LE_INIT_REQ))
-        {
-            memset(TC35661_ROM501_TCU_MNG_LE_INIT_REQ + ucLen, 0x00, sizeof(TC35661_ROM501_TCU_MNG_LE_INIT_REQ) - ucLen);
-        }
-        TC35661_ROM501_GATT_START_ADV_REQ[48] = Tc35661BtInfo.ucNameLen + 1;
-        memcpy(&TC35661_ROM501_GATT_START_ADV_REQ[50], Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen); 
-
-        memcpy(tc35661_rom501_ble_uart_char_ele_dev_name_val_d, Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen); 
-        BleUpdateNameLen(Tc35661BtInfo.ucNameLen);
-
-        //更新EIR Name
-        CalculateEIRData(Tc35661BtInfo.aucDevName, Tc35661BtInfo.ucNameLen);
-
-        memcpy(&TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], Tc35661BtInfo.aucDevMac, 6);
-        memcpy(&TC35661_ROM501_GATT_START_ADV_REQ[7], Tc35661BtInfo.aucDevMac, 6); 
-
-        IBT16_TRACESTRBUF("default MAC:", &TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], 6);
-        return;
-    }
-    
-    if (BtLoadMac(Tc35661BtInfo.aucDevMac, &ucLen))
-    {
-        FUN_IN;
-        memcpy(&TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], Tc35661BtInfo.aucDevMac, 6);
-        memcpy(&TC35661_ROM501_GATT_START_ADV_REQ[7], Tc35661BtInfo.aucDevMac, 6); 
-
-        IBT16_TRACESTRBUF("MAC address:", &TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], 6);
-    }
-    else    // 有名称但没有mac的情况，uid做mac
-    {
-        SysGetChipUID(aucBuf);
-        memcpy(Tc35661BtInfo.aucDevMac, aucBuf, 2); // uid为mac
-        memcpy(Tc35661BtInfo.aucDevMac+2, "\x7D\xDB\xF8\x74", 4); // 固定东芝蓝牙base address
-        
-        memcpy(&TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], Tc35661BtInfo.aucDevMac, 6);
-        memcpy(&TC35661_ROM501_GATT_START_ADV_REQ[7], Tc35661BtInfo.aucDevMac, 6); 
-
-        IBT16_TRACESTRBUF("default MAC:", &TC35661_ROM501_STATE_INIT_HCI_SET_BD_ADDR_CMD_PARA[1], 6);
-    }
-#endif
 }
 
 /******************************************************************************
@@ -233,7 +134,6 @@ int cm256_init(void)
 
 	memset(&stBleCtl, 0, sizeof(BLE_CTL));	
 		
-
     /* Initialize BLE application */
     status = app_ble_init();
     if (status < 0)
@@ -272,10 +172,6 @@ int cm256_init(void)
 		return status;
 	}
 
-	//app_mgr_get_bt_config();
-	
-
-	
 	/* Start BLE application */
     status = app_ble_start();
     if (status < 0)
@@ -290,12 +186,11 @@ int cm256_init(void)
 /******************************************************************************
 * Function Name  : cm256_enpower
 * Description    :  
-* Input          :  ucEn 0 锟截闭ｏ拷ucEn 锟斤拷
+* Input          :   
 * Return         : 0 indicates success,others indicates failed
 ******************************************************************************/
 int cm256_enpower(unsigned char ucEn)
 {
-
 	return YT_OK;
 }
 /******************************************************************************
@@ -310,8 +205,6 @@ int cm256_get_uuid(unsigned     short *usUuid, unsigned char ucUuidCnt)
 	{
 		return YT_ERR;
 	}
-    
-
 	return YT_OK;
 }
 
@@ -324,7 +217,6 @@ int cm256_get_uuid(unsigned     short *usUuid, unsigned char ucUuidCnt)
 ******************************************************************************/
 int cm256_get_rssi(unsigned short * usRssi, unsigned char ucLen)
 {
-	//*usUuid = UUID_SERVCLASS_INTEST;
 	return YT_OK;
 }
 
@@ -340,12 +232,11 @@ int cm256_open(void)
 	int iRet = -1;
 	
     iRet = app_ble_test_server_start();
-	if(-1 == iRet)
+	if (-1 == iRet)
 	{
 		return iRet;
 	}
 
-  
     //GKI_delay(3000);
     //Ql_Autosleep_Enable(1);
 	iRet = api_get_bt_config(&bt_config);
@@ -363,21 +254,6 @@ int cm256_open(void)
 	}
 
     ql_ble_sleep_init();
-
-#if 0
-//    FUN_IN;
-
-    // register
-    bt_main_init();
-    //TC35661_PWR_ON();
-    
-    // reset, CTS, RTS
-    bt_pwr_on();
-
-    // init BT uart driver
-    bt_uart_init();
-    bt_uart_en();
-#endif
 	return 0;
 }
 
@@ -389,19 +265,11 @@ int cm256_open(void)
 ******************************************************************************/
 void Cm256_Close(void)
 {
-	
 	/* Exit BLE mode */
 	app_ble_exit();
 
 	/* Close BSA Connection before exiting (to release resources) */
 	app_mgt_close();
-	
-#if 0
-//    FUN_IN;
-    bt_pwr_off();
-    ResetTc35661();        //复位协议栈缓存区
-    BtSleepTimeReload(10000);
-#endif
 }
 /******************************************************************************
 * Function Name  : Cm256_Process
@@ -411,14 +279,6 @@ void Cm256_Close(void)
 ******************************************************************************/
 void Cm256_Process(unsigned char ucCycle)
 {
-#if 0
-    //FUN_IN;
-    ucCycle += 4;
-    while (ucCycle--)
-    {
-        tc35661_rom501_loop();
-    }
-#endif
 }
 
 /******************************************************************************
@@ -430,7 +290,6 @@ void Cm256_Process(unsigned char ucCycle)
 int cm256_close(void)
 {
 	int iRet = YT_ERR;
-
 	return iRet;
 }
 
@@ -455,7 +314,7 @@ int api_ble_server_close(void)
     //app_ble_server_display();
     //server_num = app_get_choice("Select");
 
-    if((server_num < 0) ||
+    if ((server_num < 0) ||
        (server_num >= BSA_BLE_SERVER_MAX) ||
        (ql_app_ble_cb.ble_server[server_num].enabled == FALSE))
     {
@@ -493,9 +352,6 @@ int cm256_disconnect(void)
   api_ble_server_close();
   return iRet;
 }
-
-
-
 /******************************************************************************
 * Function Name  : cm256_get_state
 * Description    :   
@@ -518,7 +374,6 @@ int cm256_get_state(void)
 		return YT_ERR;
 	}	
 }
-
 /******************************************************************************
 * Function Name  : cm256_get_name
 * Description    :   
@@ -534,14 +389,12 @@ int cm256_get_name(unsigned char *paucInBtName, unsigned char *pucInLen)
     }
 	else
 	{
-		//memset(paucInBtName, 0 ,sizeof(paucInBtName));
 		*pucInLen = 0;
 		return YT_ERR;
 	}
 	
 	return YT_OK;
 }
-
 /******************************************************************************
 * Function Name  : cm256_set_name
 * Description    :   
@@ -550,10 +403,6 @@ int cm256_get_name(unsigned char *paucInBtName, unsigned char *pucInLen)
 ******************************************************************************/
 int cm256_set_name(unsigned char *paucInBtName, unsigned char *pucInLen)
 {
-	//int iRet = YT_ERR;
-	//DEBUG("Nf3303SetName\r\n");
-	//DEBUG("Nf3303SetName = %d\r\n",(strlen((const char *)paucInBtName)));
-	//DEBUG("*pucInLen = %d\r\n",*pucInLen);
 
 	if ((strlen((const char *)paucInBtName)) > BLE_NAME_SIZE)
 	{
@@ -565,18 +414,14 @@ int cm256_set_name(unsigned char *paucInBtName, unsigned char *pucInLen)
     	memset(ble_info.aucDevName, 0 ,sizeof(ble_info.aucDevName));
     	memcpy(ble_info.aucDevName, paucInBtName, *pucInLen);
 		log_e(LOG_BLE, "cm256_set_name = %s",ble_info.aucDevName);
-		//Nf3303Open();
     }
 	else
 	{
-	    //DEBUG("Nf3303SetName1\r\n");
 		return YT_ERR;
 	}
 
 	return YT_OK;
 }
-
-
 /******************************************************************************
 * Function Name  : cm256_get_mac
 * Description    :   
@@ -585,13 +430,12 @@ int cm256_set_name(unsigned char *paucInBtName, unsigned char *pucInLen)
 ******************************************************************************/
 int cm256_get_mac(unsigned char *paucBtMac, unsigned char *pucLen)
 {
-   //tBSA_DM_GET_CONFIG bt_config;
-   //api_get_bt_config(&bt_config);
    if (6 != ble_info.ucMacLen)
    {
 		*pucLen = 0;
 		return YT_ERR;
    }
+   
   	log_i(LOG_BLE,"cm256_get_mac %02x:%02x:%02x:%02x:%02x:%02x",
              ble_info.aucDevMac[0], ble_info.aucDevMac[1],
              ble_info.aucDevMac[2], ble_info.aucDevMac[3],
@@ -602,8 +446,6 @@ int cm256_get_mac(unsigned char *paucBtMac, unsigned char *pucLen)
 
 	return YT_OK;
 }
-
-
 /******************************************************************************
 * Function Name  : cm256_send
 * Description    :   
@@ -622,7 +464,6 @@ int cm256_send(unsigned char *pucBuf, unsigned int *pulLen)
 	ble_send_notification(pucBuf, pulLen);
     return YT_OK;
 }
-
 /******************************************************************************
 * Function Name  : cm256_recv
 * Description    :   
@@ -633,18 +474,8 @@ int cm256_recv(unsigned char *pucBuf, unsigned int *pulLen)
 {
 	int iRet = YT_ERR;
 	rb_clean(&stTxRb);
-	//log_i(LOG_BLE, "Nf3303Recv\r\n");
-	//log_i(LOG_BLE, "rb_unused_len(&stTxRb)  = %d\r\n",rb_unused_len(&stRxRb) );
-	//log_i(LOG_BLE, "stTxRb.size)  = %d\r\n", stRxRb.size);
-	//log_i(LOG_BLE, "stTxRb.in  = %d\r\n", stRxRb.in);
-	//log_i(LOG_BLE, "stTxRb.out  = %d\r\n", stRxRb.out);
-	//ucTmpLen = rb_get(&stRxRb, ucTmpBuff, 0, UUID_SIZE);
 	
 	iRet = rb_out(&stRxRb, pucBuf, *pulLen);
-	//PRINTFBUF(pucBuf, iRet);
-	//log_i(LOG_BLE, "Nf3303Recv\r\n");
-	//log_i(LOG_BLE, "Nf3303Recv  = %d\r\n", *pulLen);
-	//log_i(LOG_BLE, "Nf3303Recv2  = %d\r\n", iRet);
 	if (YT_ERR == iRet)
 	{
 		//log_i(LOG_BLE, "Nf3303Recv==iRet  = %d\r\n", iRet);
@@ -680,16 +511,12 @@ int cm256_apiget_recv(unsigned char *pucInBuf, unsigned int *ulInLen)
         return YT_ERR;
     }
 	
-   // g_NfBleMsg.ulHandle = *piHandle;
     rb_in(&stRxRb, pucInBuf, ulTmpLen);
-	//log_i(LOG_BLE, "Nf3303ApiGetRecv2\r\n");
-	//log_i(LOG_BLE, "g_NfBleMsg.ulHandle  = %d\r\n", g_NfBleMsg.ulHandle);
 	
 	BleSendMsg(BLE_MSG_RECV_TYPE, 1);	
 	log_i(LOG_BLE, "Nf3303ApiGetRecv\r\n");
 	return YT_OK;
 }
-
 /******************************************************************************
 * Function Name  : cm256_apiset_send
 * Description    :   privte
@@ -700,8 +527,6 @@ int cm256_apiset_send(unsigned char *pucOutBuf, unsigned int *ulOutLen)
 {
 	return YT_OK;
 }
-
-
 /******************************************************************************
 * Function Name  : cm256_apiget_state
 * Description    :   privte
@@ -722,63 +547,29 @@ int cm256_apiget_state(unsigned char *pucInRemot, int ulInState)
 	}
     pthread_mutex_unlock(&cm256Statemutex);
    
-   
 	if (BLE_CONNECT == ulBleStatus)
 	{
-		//DEBUG("Nf3303ApiGetState3\r\n");
 		BleSendMsg(BLE_MSG_CONNECT, 1);
 	}
 	else
 	{
-		//DEBUG("Nf3303ApiGetState4\r\n");
 		BleSendMsg(BLE_MSG_DISCONNECT, 1);
 	}
-	
-	
 	return YT_OK;
 }
-
-#if 0
-
 /******************************************************************************
-* Function Name  : cm256_apiset_notifyhandle
-* Description    :   privte
+* Function Name  : cm256_check_len
+* Description    :    
 * Input          :  
 * Return         : 0 indicates success,others indicates failed
 ******************************************************************************/
-int cm256_apiset_notifyhandle(int *piHandle)
-{
-	//g_NfBleMsg.ulNotifyHandle = *piHandle;
-	return YT_OK;
-}
-#endif
-
-
 int cm256_check_len(void)
 {
 	unsigned char  ucTmpBuff[UUID_SIZE] = {0};
-	//u16 usLen = 0;
-	//u8  ucTmpLen = 0;
-	//u8  ucTotalLen = 0;
+
 	rb_used_len(&stRxRb);
 	rb_get(&stRxRb, ucTmpBuff, 0, UUID_SIZE);
-	
-   // DEBUG("usLen:  %d\r\n", usLen);
-	//DEBUG("ucTmpLen:  %d\r\n", ucTmpLen);
-	//DEBUG("Total:  [%X:%X:%X:%X]\r\n",ucTmpBuff[0], ucTmpBuff[1],ucTmpBuff[2],ucTmpBuff[3]);
-#if 0
-
-	if (0xAA == ucTmpBuff[3])
-	{
-		return YT_ERR;
-	}
-	else
-	{
-	  return YT_OK;
-	}
-#endif	
-    return YT_OK;
-	
+    return YT_OK;	
 }
 
 

@@ -42,8 +42,8 @@
 
 #include "PP_StartEngine.h"
 
-#define PP_POWERON  1
-#define PP_POWEROFF 0
+#define PP_POWERON  2
+#define PP_POWEROFF 1
 
 
 typedef struct

@@ -205,6 +205,11 @@ int PrvtProt_CC_mainfunction(void *task)
 					 log_o(LOG_HOZON,"Ecall dail");
 					 ecall_flag = 1;
 		        }
+				else
+				{
+					tbox_ivi_clear_call_flag();
+					log_o(LOG_HOZON,"No phone number set");
+				}
 				break;	
 			}
 			case 1:  //²¦´òbcall
@@ -228,6 +233,11 @@ int PrvtProt_CC_mainfunction(void *task)
 					 tbox_ivi_clear_call_flag();
 					 bcall_flag = 1;
 		        }
+				else
+				{
+					log_o(LOG_HOZON,"No phone number set");
+					tbox_ivi_clear_bcall_flag();
+				}
 				break;
 			}
 			case 2:  //²¦´òicall
@@ -248,7 +258,12 @@ int PrvtProt_CC_mainfunction(void *task)
 		             makecall((char *)xcall);
 					 tbox_ivi_clear_call_flag();
 					 icall_flag = 1;
-		        }	
+		        }
+				else
+				{
+					tbox_ivi_clear_icall_flag();
+					log_o(LOG_HOZON,"No phone number set");
+				}
 				break;	
 			}
 			default: break;

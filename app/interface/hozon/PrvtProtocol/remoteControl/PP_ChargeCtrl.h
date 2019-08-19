@@ -30,8 +30,8 @@ description�� macro definitions
 #define PP_COMAND_APPOINTCHARGE   	0x702
 #define PP_COMAND_CANCELAPPOINTCHARGE    	0x703
 
-#define PP_CHARGECTRL_OPEN   		1
-#define PP_CHARGECTRL_CLOSE  		0
+#define PP_CHARGECTRL_OPEN   		2
+#define PP_CHARGECTRL_CLOSE  		1
 
 
 #define PP_APPOINTCHARGE_IDLE   	0

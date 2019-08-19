@@ -60,7 +60,7 @@ description�� global variable definitions
 /*******************************************************
 description�� static variable definitions
 *******************************************************/
-#define PP_OPENDOOR  0
+#define PP_OPENDOOR  2
 #define PP_CLOSEDOOR 1
 typedef struct
 {

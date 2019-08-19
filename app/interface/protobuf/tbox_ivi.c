@@ -24,9 +24,14 @@
 #include "tboxsock.h"
 #include "tbox_ivi_pb.h"
 #include "tbox_ivi_shell.h"
+#include "tbox_ivi_txdata.h"
 #include "../hozon/PrvtProtocol/remoteControl/PP_rmtCtrl.h"
 
-static pthread_t ivi_tid;    /* thread id */
+static pthread_t ivi_rxtid;    /* thread id */
+static pthread_t ivi_txtid;    /* thread id */
+static pthread_t ivi_chtid;    /* thread id */
+
+
 static timer_t ivi_timer;
 static int signalpower;
 static int call_flag = 5; //电话默认是空闲状态
@@ -614,9 +619,10 @@ void ivi_signalpower_response_send(int fd  )
 	int temp_grade = 0 ;
 	int temp;
 	static int level = 0;
+	static int system = 0;
 	if(level == nm_get_signal())
 	{
-		
+
 	}
 	else
 	{
@@ -646,13 +652,14 @@ void ivi_signalpower_response_send(int fd  )
 	{
 		temp_grade = 4;
 	}
-	if(signalpower == temp_grade)
+	if((signalpower == temp_grade)&&(system == nm_get_net_type()))
 	{
 		return ;
 	}
 	else
 	{
 		signalpower = temp_grade;
+		system = nm_get_net_type();
 	}
     if( fd < 0 )
     {
@@ -678,14 +685,17 @@ void ivi_signalpower_response_send(int fd  )
          if(nettype == 0)
          {
              TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__GSM;
+			 log_o(LOG_IVI,"TYPE 2G\n");
          }
          else if(nettype == 2)
          {
              TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__UMTS;
+			 log_o(LOG_IVI,"TYPE 3G\n");
           }
           else if(nettype == 7)
           {
               TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__LTE;
+			  log_o(LOG_IVI,"TYPE 4G\n");
           }
           else
           {
@@ -1281,7 +1291,7 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
         }
 		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO:
 		{
-			ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO);
+			//ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO);
 			break;
 		}
         
@@ -1536,6 +1546,7 @@ int ivi_init(INIT_PHASE phase)
         case INIT_PHASE_OUTSIDE:
             {
             	tbox_shell_init();
+				HU_data_init();
                 ret = tm_create(TIMER_REL, IVI_MSG_GPS_EVENT, MPU_MID_IVI, &ivi_timer);
 
                 if (ret != 0)
@@ -1564,7 +1575,7 @@ void *ivi_main(void)
 	//}
 	//#else
 	//{
-		uint64_t wait = 0;
+		//uint64_t wait = 0;
 	//}
 	//#endif
     static MSG_RX rx_msg[MAX_IVI_NUM];
@@ -1817,6 +1828,24 @@ void *ivi_main(void)
     return NULL;
 }
 
+void *ivi_txmain(void)
+{
+	HU_Send_t *rpt;
+	int res = 0;
+	while(1)
+	{
+		if ((rpt = HU_data_get_pack()) != NULL)
+		{
+			log_i(LOG_HOZON, "start to send to HU");
+			HU_data_ack_pack();
+			res = HzTboxSvrDataSend((char*)rpt->msgdata,rpt->msglen);
+			log_i(LOG_SOCK_PROXY, ">>>>> HzTboxDataSend >>>>>");
+		}
+		
+	}
+	return NULL;
+}
+
 void *ivi_check(void)
 {
 	uint8_t sos_flag = 0;
@@ -1906,15 +1935,26 @@ int ivi_run(void)
     pthread_attr_setdetachstate(&ta, PTHREAD_CREATE_DETACHED); //分离线程属性
 
     /* create thread and monitor the incoming data */
-    ret = pthread_create(&ivi_tid, &ta, (void *)ivi_main, NULL);
-
+    ret = pthread_create(&ivi_rxtid, &ta, (void *)ivi_main, NULL);
     if (ret != 0)
     {
         log_e(LOG_IVI, "pthread_create failed, error:%s", strerror(errno));
         return ret;
     }
-
-	ret = pthread_create(&ivi_tid, &ta, (void *)ivi_check, NULL);
+	
+	ret = pthread_create(&ivi_txtid, &ta, (void *)ivi_txmain, NULL);
+	if (ret != 0)
+    {
+        log_e(LOG_IVI, "pthread_create failed, error:%s", strerror(errno));
+        return ret;
+    }
+	ret = pthread_create(&ivi_chtid, &ta, (void *)ivi_check, NULL);
+	
+	if (ret != 0)
+    {
+        log_e(LOG_IVI, "pthread_create failed, error:%s", strerror(errno));
+        return ret;
+    }
     return 0;
 }
 void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp)

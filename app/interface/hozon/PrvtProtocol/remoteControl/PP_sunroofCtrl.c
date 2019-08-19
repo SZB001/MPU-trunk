@@ -52,10 +52,10 @@ description： include the header file
 
 #include "PP_sunroofCtrl.h"
 
-#define PP_SUNROOFOPEN  0
-#define PP_SUNROOFCLOSE 1
-#define SUNROOFUPWARP   2
-#define SUNROOFSTOP     3
+#define PP_SUNROOFOPEN  1
+#define PP_SUNROOFCLOSE 2
+#define SUNROOFUPWARP   3
+#define SUNROOFSTOP     4
 typedef struct
 {
 	PrvtProt_pack_Header_t	Header;
@@ -226,7 +226,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
 			}
-			else//蓝牙
+			else if(PP_rmtsunroofCtrl.state.style ==  RMTCTRL_BLUETOOTH) //蓝牙
 			{
 				TCOM_MSG_HEADER msghdr;
 				PrvtProt_respbt_t respbt;
@@ -248,6 +248,9 @@ int PP_sunroofctrl_mainfunction(void *task)
 				msghdr.msgid     = BLE_MSG_CONTROL;
 				msghdr.msglen    = sizeof(PrvtProt_respbt_t);
 				tcom_send_msg(&msghdr, &respbt);
+			}
+			else
+			{
 			}
 			sunroof_ctrl_stage = PP_SUNROOFCTRL_IDLE;
 		}

@@ -215,6 +215,7 @@ int pb_ack_set(ACK **des, bt_send_t *src);
 
 void reset_hz_data(void);
 int bt_send_cmd_pack(unsigned char result, uint8_t *out, size_t *out_len);
+unsigned char bt_get_auth_flag(void);
 
 
 #endif /* NGCP_PB_USR_H_ */

@@ -85,7 +85,7 @@ int audio_open(void)
         // default
         ret |= lm49352_route_mic_to_4G(false);
         ret |= lm49352_route_4G_to_spkout(false);
-        
+        ret |= lm49352_route_mic_bypass(false);
         if (ret < 0)
         {
             log_e(LOG_MID, "Fail to init audio");
@@ -97,6 +97,14 @@ int audio_open(void)
     else
     {
         audio_setup_aic3104();
+		//register_config(AUDIO_REG002,0xaa);
+		//register_config(AUDIO_REG016,0x50);
+		//register_config(AUDIO_REG019,0x40);
+		//register_config(AUDIO_REG025,0x86);
+		//register_config(AUDIO_REG036,0xd0);
+		register_config(AUDIO_REG046,0x80);
+		register_config(AUDIO_REG047,0x00);
+		
         return 0;
     }     
 }

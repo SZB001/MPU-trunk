@@ -42,7 +42,6 @@ author        wangqinglong
 #define YTERR_OUT_OF_MEMORY				(-3)  
 #define YTERR_TIMEOUT						(-4)  
 #define YTERR_DISCONCET					(-5)  
-//void ApiTraceBuf(unsigned char *Buf, unsigned long Len);
 
 
 
@@ -120,6 +119,7 @@ typedef struct BLE_MEMBER
 {
    
 	timer_t             Retimer;  
+	int        			ucConnStatus;
 	unsigned char       ucTransStatus;
 	unsigned char		ucFct;
 } BLE_MEMBER;

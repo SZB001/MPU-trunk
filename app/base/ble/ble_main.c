@@ -44,9 +44,9 @@ typedef struct
 {
 	uint8_t msg_type;
 	uint8_t cmd;
-	uint8_t result; // 0表示成功  1表示失败
+	uint8_t result;  
 	uint8_t failtype;
-}__attribute__((packed))  PrvtProt_respbt_t; /*resp bt结构体*/
+}__attribute__((packed))  PrvtProt_respbt_t;  
 
 
 extern void ApiTraceBuf(unsigned char *buf, unsigned int len);
@@ -109,7 +109,6 @@ void ApiBLETraceBuf(unsigned char *buf, unsigned int len)
 {
 	ApiTraceBuf(buf, len);
 }
-
 /****************************************************************
  function:     BleSendMsg
  description:  Send a message as soon as you receive the data
@@ -137,26 +136,22 @@ int BleSendMsg(unsigned short usMid, int iDate)
 /****************************************************************
  function:     BleSendMsgToApp
  description:  Send a message as soon as you receive the data
- input:        blemsg:0 recv message    1 send message  2�Ͽ�����
+ input:        
  output:       none
  return:       0 indicates success,others indicates failed
  *****************************************************************/
 int BleSendMsgToApp(unsigned short usMid)
 {
-
 	TCOM_MSG_HEADER stMsg;
 	int iMsgData = 1;
 
 	stMsg.msgid	 = usMid;
 	stMsg.sender	 = MPU_MID_BLE;
-	//stMsg.receiver = MPU_MID_AICHI;
 	stMsg.receiver = MPU_MID_BLE;
 	stMsg.msglen	 = sizeof(iMsgData);
 
 	return tcom_send_msg(&stMsg, &iMsgData);
 }
-
-
 /****************************************************************
  function:     BleSleepHandler
  description:   
@@ -177,185 +172,7 @@ static int BleSleepHandler(PM_EVT_ID id)
 ******************************************************************************/
 int hz_so_test(void)
 {
-		   //char	 plaintext[128]="zxy30555 0123456789 hozon";
-	char	plaintext[128]="zxy30555 0123456789 hozon h1232";
-		  
-		   char    chiperPath[128]="\0";
-		   char    afterdecrypt[128]="\0";
-		   char    key[] ="1832521868741387492628667237737729841724568366976937763254826565";
-			//char key[] ="8888598527857736162464368777871656575125719259765892327872456299";
-		   int ret=0;
-		   int clen=0;
-		   int mlen=strlen(plaintext);
-		  int size=  256; 		
-		  printf("\n\nplaintext is this[%d]\n\n",mlen);
-	       char ver[20]="\0";
-		   ret=showversion(ver);
-		   printf("\nthe version +++++++++++++++++++++++[%s]\n ", ver);
-		   //ApiBLETraceBuf(plaintext, strlen(plaintext));
-	
-		   ret=HzBtSymEncrypt(plaintext, strlen(plaintext), chiperPath, &clen, key, 1);
-			  //printf("----------[%d]\n",chiperPath[0]);		  
-	
-	
-		   if(ret==1){
-			  if(chiperPath==NULL){
-				  printf("\n\nchiper is null\n\n");
-				  return 1;
-			   }
-		   }   
-			 // printf("frist \n\n%d\n\n",clen);
-			  //ApiBLETraceBuf(chiperPath, clen);
-			  printf("++++[%d]\n\n",clen);
-	
-	
-		   ret=HzBtSymEncrypt(chiperPath, clen, afterdecrypt, &mlen, key, 0);
-		   //mlen=strlen(plaintext);
-	
-		   if(ret==1){
-			  printf("\ndecrypt success\n");
-			  printf("[%s]\n", afterdecrypt);
-	
-			  //ApiBLETraceBuf(afterdecrypt, mlen);
-			  printf("\n\n%d\n\n",mlen);
-	
-			}
-		   else return 1;
-		
-	
-		   return 0;
-
-#if 0
-	 //char  plaintext[128]="zxy30555@163.com1";
-	 char	 plaintext[128]="\x0A\x04\x08\x01\x10\x03\x12\x0C\x08\x13\x10\x07\x18\x0F\x20\x12\x28\x30\x30\x31\x18\x01\x22\x01\x00";
-	// char	 chiperPath[128]="\x56\x21\xD7\xF1\x02\xE6\xCA\x72\x43\x28\x85\x42\x0A\x3A\x8C\x60\x1C\x6C\x2A\x4E\xFC\x6D\xD8\xFF\x12\xFD\xDA\xD5\xC2\xDC\xA4\x9D";
-	
-	 char	 chiperPath[128]="\x60\x47\x0F\xD9\x4E\x84\xBC\xF4\xC9\xE3\x80\x46\xEC\xD2\xCC\x58\xBA\x0C\xEB\x71\xF4\xB7\x64\x58\x0F\x5F\xDD\x09\xBF\xAB\x81\xF6";
-	// char	 chiperPath[128]="\x03\xD6\x84\x07\x43\x3F\x07\x39\x27\x28\x0A\x09\x1C\xEF\x03\x2F\xA7\xC5\x25\x46\xBD\xB6\x37\x88\x0C\x5B\xCA\x24\x14\xC9\x13\x1F";
-	 //char    key[] ="1832521868741387492628667237737729841724568366976937763254826565";
-	 char	 key[] ="8888598527857736162464368777871656575125719259765892327872456299";
-	 int ret=0;
-	 int clen=0;
-	 
-	ret = HzBtCertcfg(COM_APP_PEM_ROOT_DIR, COM_APP_PEM_TPONE_DIR);
-
-	if(ret)
-	{
-		log_i(LOG_BLE, "HzBtCertcfg sucess \r\n");
-	}
-	else
-	{
-		log_e(LOG_BLE, "HzBtCertcfg Fail \r\n");
-		return -1;
-	}			
-	 printf("\n\nplaintext is this\n\n");
-	
-	 ApiBLETraceBuf((unsigned char *)plaintext, 25);
-	 
-	// ret=HzBtSymEncrypt(plaintext, 25, chiperPath, &clen, key, 0);
-	ret = HzBtSymEncrypt(chiperPath, 32, plaintext, &clen, key, 0); //ency:zxy30555 0123456789 zxy3055
-	 
-	if(ret==1){
-	   if(chiperPath==NULL){
-		   printf("\n\nchiper is null\n\n");
-		   return 1;
-		}
-	   printf("frist \n\n%d\n\n",clen);
-	   ApiBLETraceBuf((unsigned char *)plaintext, clen);
-	   printf("\n\n%d\n\n",clen);
-	   
-	 }
-
-	log_e(LOG_BLE, "protocol_header__unpack Fai22l \r\n");
-
-       ProtocolHeader *request =  protocol_header__unpack(NULL, clen, (const uint8_t *)plaintext);
-		if (NULL== request)
-		{
-			log_e(LOG_BLE, "protocol_header__unpack Fail \r\n");
-			return YT_ERR;
-		}
-
-		log_i(LOG_BLE, "request->head->protocol_version = %d\r\n",request->head->protocol_version);
-		log_i(LOG_BLE, "request->head->msg_type = %d\r\n",request->head->msg_type);
-		log_i(LOG_BLE, "request->head->msg_type = %d\r\n",request->timestamp->year);
-		log_i(LOG_BLE, "request->head->month = %d\r\n",request->timestamp->month);
-		log_i(LOG_BLE, "request->head->day = %d\r\n",request->timestamp->day);
-		log_i(LOG_BLE, "request->head->hour = %d\r\n",request->timestamp->hour);
-		log_i(LOG_BLE, "request->head->minute = %d\r\n",request->timestamp->minute);
-		log_i(LOG_BLE, "request->head->second = %d\r\n",request->timestamp->second);
-		log_i(LOG_BLE, "request->msgcarrierlen = %d\r\n",request->msgcarrierlen);
-		log_i(LOG_BLE, "request->msgcarrier.len = %d\r\n",request->msgcarrier.len);
-		log_i(LOG_BLE, "request->msgcarrier[0] = %x\r\n",request->msgcarrier.data[0]);
-		log_i(LOG_BLE, "request->msgcarrier[1] = %x\r\n",request->msgcarrier.data[1]);
-		log_i(LOG_BLE, "request->msgcarrier[2] = %x\r\n",request->msgcarrier.data[2]);
-		log_i(LOG_BLE, "request->msgcarrier.data[request->msgcarrierlen-1] = %x\r\n",request->msgcarrier.data[request->msgcarrierlen-1]);
-
-		unsigned char tmp[20] = {0};
-		memcpy(tmp, request->msgcarrier.data,request->msgcarrierlen);
-
-		ACK *request1 =  ack__unpack(NULL, request->msgcarrierlen, tmp);
-
-		log_i(LOG_BLE, "request1.ack_state = %d\r\n", request1->ack_state);
-		log_i(LOG_BLE, "request1.msg_type = %d\r\n", request1->msg_type);
-
-		if (request)
-	    {
-	        protocol_header__free_unpacked(request, NULL);
-	    }
-
-		if (request1)
-	    {
-	        ack__free_unpacked(request1, NULL);
-	    }
-#endif
-
-#if 0
-
-	char	plaintext[128]="zxy30555@163.com1";
-	//char	plaintext[128]="\x0A\x04\x08\x01\x10\x03\x12\x0C\x08\x13\x10\x07\x18\x0F\x20\x12\x28\x30\x30\x31\x18\x01\x22\x01\x00";
-	char    chiperPath[128]="\0";
-	char    afterdecrypt[128]="\0";
-	char    key[] ="1832521868741387492628667237737729841724568366976937763254826565";
-	//char    key[] ="8888598527857736162464368777871656575125719259765892327872456299";
-	int ret=0;
-	int clen=0;
-	int mlen=0;
-				   
-	printf("\n\nplaintext is this\n\n");
-	ret = HzBtCertcfg(COM_APP_PEM_ROOT_DIR, COM_APP_PEM_TPONE_DIR);
-
-	ApiBLETraceBuf(plaintext, strlen(plaintext));
-	
-	ret=HzBtSymEncrypt(plaintext, strlen(plaintext), chiperPath, &clen, key, 1);
-	
-   if(ret==1){
-	  if(chiperPath==NULL){
-		  printf("\n\nchiper is null\n\n");
-		  return 1;
-	   }
-	  printf("frist \n\n%d\n\n",clen);
-	  ApiBLETraceBuf(chiperPath, clen);
-	  printf("\n\n%d\n\n",clen);
-	  
-	}
-	else return 1;
-		   
-   ret=0;
-   ret=HzBtSymEncrypt(chiperPath, clen, afterdecrypt, &mlen, key, 0);
-   if(ret==1){
-	  printf("\ndecrypt success\n");
-	  printf("[%s]\n", afterdecrypt);
-
-	  ApiBLETraceBuf(afterdecrypt, mlen);
-	  printf("\n\n%d\n\n",mlen);
-
-	}
-   else return 1;
-	
-#endif		   
-	
   return 0;
-
 }
 
 void getPidByName(pid_t *pid, char *task_name)
@@ -399,26 +216,26 @@ void getPidByName(pid_t *pid, char *task_name)
      }
  }
 /******************************************************************************
-* Function Name  : Cm256_Init
-* Description    :  init
+* Function Name  : get_executable_path
+* Description    :   
 * Input          :  
 * Return         : NONE
 ******************************************************************************/
 size_t get_executable_path( char* processdir,char* processname, size_t len)
 {
-        char* path_end;
-        if(readlink("/proc/self/exe", processdir,len) <=0)
-                return -1;
-        path_end = strrchr(processdir,  '/');
-        if(path_end == NULL)
-                return -1;
-        ++path_end;
-        strcpy(processname, path_end);
-        *path_end = '\0';
-        return (size_t)(path_end - processdir);
+    char* path_end;
+    if(readlink("/proc/self/exe", processdir,len) <=0)
+            return -1;
+    path_end = strrchr(processdir,  '/');
+    if(path_end == NULL)
+            return -1;
+    ++path_end;
+    strcpy(processname, path_end);
+    *path_end = '\0';
+    return (size_t)(path_end - processdir);
 }
 /******************************************************************************
-* Function Name  : Cm256_Init
+* Function Name  : check_server_socket
 * Description    :  init
 * Input          :  
 * Return         : NONE
@@ -500,7 +317,6 @@ static int BleShellSetTest(int argc, const char **argv)
     unsigned char aucBuff[500] = {0};
 	unsigned int ulLen = 0;
 	unsigned char ucLen = 0;
-	//unsigned short usIndex;
 	int ulState = 0;
 	//char l = '"';
 
@@ -576,15 +392,13 @@ int BleShellInit(void)
 int ble_init(INIT_PHASE phase)
 {
 	int iRet = 0;
-	//unsigned char ucLen = 0;
 
-	//log_o(LOG_BLE, "init ble thread");
 	switch (phase)
 	{
 		case INIT_PHASE_INSIDE:
 
 			memset((char *)&g_BleMember, 0, sizeof(BLE_MEMBER));
-
+            g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
 		    BT_Interface_Init();
             reset_hz_data();
 			break;
@@ -613,7 +427,12 @@ int ble_init(INIT_PHASE phase)
 	
 	return iRet;
 }
-
+/******************************************************************************
+* Function Name  : start_ble
+* Description    :  init
+* Input          :  
+* Return         : NONE
+******************************************************************************/
 int start_ble(void)
 {
 	unsigned int len = 18;
@@ -625,6 +444,7 @@ int start_ble(void)
 	
 	if (strlen((char *)vin) < 17)
 	{
+		//memcpy(tmp, "HZ01234567891234567", strlen("HZ01234567891234567"));
 		memcpy(tmp, "HZ000000000000000", strlen("HZ000000000000000"));
 	}
 	else
@@ -632,7 +452,7 @@ int start_ble(void)
 		memcpy(tmp, "HZ", 2);
 		memcpy(tmp+2, vin, len);
 	}
-
+     
 	tmp_len = strlen((char *)tmp);
 	stBtApi.SetName(tmp, &tmp_len);
 
@@ -668,6 +488,7 @@ static void *ble_main(void)
     fd_set fds;
     TCOM_MSG_HEADER msgheader;
 	unsigned int ulStartTime = 0;
+	unsigned int ulConnStartTime = 0;
 	int iRet = -1;
 	
 	start_ble();
@@ -721,6 +542,19 @@ static void *ble_main(void)
 					}
 				}
         	}
+        }
+
+		if (BLE_MSG_CONNECT == g_BleMember.ucConnStatus)
+        {
+        	if (BT_AUTH_SUCCESS != bt_get_auth_flag())
+			{
+				if (IS_TIME_OUT(ulConnStartTime, 30000))
+				{
+					stBtApi.LinkDrop();
+					g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
+					log_e(LOG_BLE, "stBtApi.LinkDrop");
+				}
+			}
         }
 		
         FD_ZERO(&fds);
@@ -776,7 +610,6 @@ static void *ble_main(void)
 							stBtApi.Send(g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
 	 					}
 				    }
-				
 				}
 				else if (MPU_MID_BLE == msgheader.sender)
 				{
@@ -818,13 +651,21 @@ static void *ble_main(void)
 						    }
 							else if (BT_AH_MSG_TYPE_ACK == g_hz_protocol.hz_send.msg_type) 
 							{
+							    log_i(LOG_BLE, "g_hz_protocol.type=%d\r\n", g_hz_protocol.type);
+								log_i(LOG_BLE, "g_hz_protocol.hz_send.ack.state=%d\r\n", g_hz_protocol.hz_send.ack.state);
 								PP_rmtCtrl_BluetoothCtrlReq(g_hz_protocol.type, g_hz_protocol.hz_send.ack.state);
 							}
 						}
 					}
+					else if (BLE_MSG_CONNECT == msgheader.msgid)
+					{
+						g_BleMember.ucConnStatus = BLE_MSG_CONNECT;
+						log_i(LOG_BLE, "BLE_MSG_CONNECT");
+					}
 					else if (BLE_MSG_DISCONNECT == msgheader.msgid)
 					{
 						memset((char *)&g_BleMember, 0, sizeof(BLE_MEMBER));
+						g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
 		    			g_BleMember.ucTransStatus = BLE_INIT_STATUS;
 						reset_hz_data();
 						//BleSendMsgToApp(AICHI_MSG_DISCONFIG_TYPE);
@@ -833,7 +674,6 @@ static void *ble_main(void)
 				}
                 else if (MPU_MID_PM == msgheader.sender)
                 {
-                
                     if (PM_MSG_SLEEP == msgheader.msgid)
                     { 
                        
@@ -848,10 +688,10 @@ static void *ble_main(void)
                         //at_wakeup_proc();
                       // if (1 == g_BleContr.ucSleepCloseBle)
                        {
-                          //������
+                          //
                           //if(0 != stBtApi.Open())
                           //{
-                          		//������ʧ��
+                          		//
                           //}
                        }
                     }

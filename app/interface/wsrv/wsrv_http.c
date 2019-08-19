@@ -513,7 +513,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_MODEIN))
     {
-        PP_can_send_data(PP_CAN_OTAREQ, 0x02, NULL);
+        PP_can_send_data(PP_CAN_OTAREQ, 0x02, 0);
         
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }
@@ -529,7 +529,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_MODEOUT))
     {
-        PP_can_send_data(PP_CAN_OTAREQ, 0x01, NULL);
+        PP_can_send_data(PP_CAN_OTAREQ, 0x01, 0);
     
         sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 1);
     

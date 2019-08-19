@@ -1099,44 +1099,53 @@ int uds_did_get_manufacture_date(unsigned char *did, unsigned int len)
     PrvtProt_gettboxsn((char *)SN);
     
     /*Conversion year according to the SN rules of the HOZON*/
-    did[did_cur_len] = hex_to_BCD(20);
-    did_cur_len++;
 
-    if(SN[did_cur_len+8] < 0x41)
+    if(SN[9] < 'A')
     {
-        SN[did_cur_len+8] = 0x41;
+        did[did_cur_len] = 0x00;
+        did_cur_len++;
+        did[did_cur_len] = 0x00;
+        did_cur_len++;
     }
-    else if(SN[did_cur_len+8] > 0x59)
+    else if(SN[9] > 'Y')
     {
-        SN[did_cur_len+8] = 0x59;
+        did[did_cur_len] = 0x00;
+        did_cur_len++;
+        did[did_cur_len] = 0x00;
+        did_cur_len++;
     }
-    else;
+    else
+    {
+        did[did_cur_len] = hex_to_BCD(20);
+        did_cur_len++;
+        did[did_cur_len] = hex_to_BCD(SN[did_cur_len+8] - 0x41 + 19);
+        did_cur_len++;
+    }
     
-    did[did_cur_len] = hex_to_BCD(SN[did_cur_len+8] - 0x41 + 19);
-    did_cur_len++;
+
 
     /*Conversion month according to the SN rules of the HOZON*/
-    if(sscanf(SN + did_cur_len + 8, "%1x", &mdate_month) == 1)
+    if(sscanf(SN + 10, "%1x", &mdate_month) == 1)
     {
         did[did_cur_len] = mdate_month;
         did_cur_len++;
     }
     else
     {
-        did[did_cur_len] = 0x31;
+        did[did_cur_len] = 0x00;/*异常情况写0*/
         did_cur_len++;
     }
 
     
     /*Conversion day according to the SN rules of the HOZON*/
-    if(sscanf(SN + did_cur_len + 8, "%2x", &mdate_day) == 1)
+    if(sscanf(SN + 11, "%2x", &mdate_day) == 1)
     {
         did[did_cur_len] = mdate_day;
         did_cur_len++;
     }
     else
     {
-        did[did_cur_len] = 0x31;
+        did[did_cur_len] = 0x00;/*异常情况写0*/
         did_cur_len++;
 
     }
