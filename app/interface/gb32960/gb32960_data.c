@@ -37,7 +37,12 @@ gb32960_api_fault_t gb_fault;
 
 #define GB_SUPPLEMENTARY_DATA_MAJORLOOP		0x00//主回路高压互锁信号状态
 #define GB_SUPPLEMENTARY_DATA_DCBUS			0x01//直流母线互锁状态
-#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_DCBUS + 1)
+#define GB_SUPPLEMENTARY_DATA_OUTTEMP		0x02//室外温度值有效性
+#define GB_SUPPLEMENTARY_DATA_INTEMP		0x03//室内温度值有效性
+#define GB_SUPPLEMENTARY_DATA_OUTLETTEMP	0x04//出风口温度值有效性
+#define GB_SUPPLEMENTARY_DATA_BPAV			0x05//制动踏板踩下信号有效性
+#define GB_SUPPLEMENTARY_DATA_BPDQ			0x06//制动踏板位移量有效性
+#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_BPDQ + 1)
 
 #if GB_EXT
 /* event information index */
@@ -921,7 +926,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
             break;
             default:
             {
-                tmp = 0;
+                tmp = 0xff;
             }
             break;
         }
@@ -929,7 +934,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
     }
     else
     {
-    	buf[len++] = 0;
+    	buf[len++] = 0xff;
     }
 
 	/* insulation resistance, scale 1k */

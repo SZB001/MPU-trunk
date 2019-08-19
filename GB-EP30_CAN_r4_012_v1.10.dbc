@@ -498,11 +498,11 @@ BO_ 1093 TBOX_Fr04_445: 8 TBOX
  SG_ TBOXRHSeatHeaterCmd : 31|3@0+(1,0)[0|4] "" Vector__XXX
 BO_ 454 EHB_Fr01_1C6: 8 EHB
  SG_ BrakePedalApplied_@2WG100C : 23|1@0+(1,0)[0|1] "" Vector__XXX
- SG_ BrakePedalAppliedV : 5|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ BrakePedalAppliedV_@2WG3005 : 5|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ EHB节点丢失_@2N008 : 5|1@0+(1,0)[0|1] "" Vector__XXX
 BO_ 456 EHB_Fr02_1C8: 8 EHB
  SG_ BrakPedalDisp : 31|16@0+(0.0078125,0)[0|200] "mm" Vector__XXX
- SG_ BrakPedalDispQ : 1|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ BrakPedalDispQ_@2WG3006 : 1|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ EHBFr02MsgCounter : 55|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ EHBFr02Checksum : 63|8@0+(1,0)[0|255] "" Vector__XXX
 BO_ 229 ESC_Fr01_0E5: 8 ESC
@@ -610,7 +610,7 @@ BO_ 926 CLM_Fr02_39E: 8 CLM
  SG_ CLMAnionSts : 23|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ CLMPM25ValueValid_@2WR1018 : 32|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ CLMPM25Value : 31|8@0+(4,0)[0|1020] "" Vector__XXX
- SG_ CLMOutsideTempValid : 33|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ CLMOutsideTempValid_@2WG3002 : 33|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ CLMOutsideTemp_@2WGF014 : 47|8@0+(0.5,-40)[-40|87.5] "℃" Vector__XXX
 BO_ 920 CLM_Fr03_398: 8 CLM
  SG_ CLMUncoolReason_@2WG7050 : 12|3@0+(1,0)[0|7] "" Vector__XXX
@@ -618,6 +618,8 @@ BO_ 920 CLM_Fr03_398: 8 CLM
  SG_ CLMThermalSts_@2WGF011 : 31|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ CLMInsideTemp_@2WGF013 : 7|8@0+(0.5,-50)[-50|75] "" Vector__XXX
  SG_ CLMOutletTemp_@2WGF010 : 23|8@0+(0.5,-50)[-50|75] "" Vector__XXX
+ SG_ CLM_InsideTempValid_@2WG3003 : 8|1@0+ (1,0) [0|1] ""  Vector__XXX
+ SG_ CLM_OutletTempValid_@2WG3004 : 9|1@0+ (1,0) [0|1] ""  Vector__XXX
 BO_ 542 ICU_Fr01_21E: 8 ICU
  SG_ ICUBrakeFluidLow_@2WG704A : 10|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ ICU节点丢失_@2N015 : 10|1@0+(1,0)[0|1] "" Vector__XXX

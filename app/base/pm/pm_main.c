@@ -111,6 +111,9 @@ return:       none
 *****************************************************************/
 void pm_vote_oppose(void)
 {
+    gpio_set_level(GPIO_EN5_CTRL, PINLEVEL_HIGH);
+    system("echo 1 > /sys/devices/7864900.sdhci/mmc_host/mmc1/clk_scaling/enable_emmc");
+    
     QL_NW_ForbidInd(0x0);
     Ql_SLP_WakeLock_Lock(pm_sleep_fd);
 }
@@ -124,7 +127,8 @@ return:       none
 *****************************************************************/
 void pm_vote_agree(void)
 {
-    //gpio_set_level(GPIO_EN5_CTRL, PINLEVEL_LOW);
+    system("echo 0 > /sys/devices/7864900.sdhci/mmc_host/mmc1/clk_scaling/enable_emmc");
+    gpio_set_level(GPIO_EN5_CTRL, PINLEVEL_LOW);
 
     /* add BT to control temporary */
     //gpio_set_level(GPIO_BT_RST, PINLEVEL_LOW);

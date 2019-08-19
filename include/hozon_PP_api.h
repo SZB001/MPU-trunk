@@ -3,6 +3,9 @@
 
 #define PP_RMTDIAG_FAILCODE_LEN 5
 
+#define COM_SDCARD_DIR             "/media/sdcard"
+#define COM_SDCARD_DIR_PKI         COM_SDCARD_DIR"/pki"
+
 #define PP_CERTDL_CERTPATH			"/usrdata/pki/userAuth.cer"
 #define PP_CERTDL_CERTPATH_UPDATE	"/usrdata/pki/update/userAuth.cer"
 #define PP_CERTDL_CERTPATH_BKUP		"/usrdata/pki/bkup/userAuth.cer"
