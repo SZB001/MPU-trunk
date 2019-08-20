@@ -1517,7 +1517,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 			}
 		}
 
-    	if(0x2 == gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
+    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
 		{
 			if(0x02 == dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])->value)
 			{
@@ -1530,7 +1530,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 			}
 		}
 
-    	if(0x3 == gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
+    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
 		{
 			if(0x03 == dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])->value)
 			{
