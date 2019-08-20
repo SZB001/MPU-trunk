@@ -6,6 +6,7 @@
 #include "init.h"
 #include "log.h"
 #include "list.h"
+#include "uds.h"
 #include "can_api.h"
 #include "dev_api.h"
 #include "gps_api.h"
@@ -3535,6 +3536,16 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     if(NodeFault.MCUMiss)
     {
 		warn_code = 38;
+    	buf[len++] = warn_code >> 8;
+    	buf[len++] = warn_code;
+    	(*warnnum_ptr)++;
+    	//(*warnlvl_ptr)  = 0 + 1;
+    }
+
+    //tbox故障
+    if(get_is_uds_trigger_fault())
+    {
+		warn_code = 13;
     	buf[len++] = warn_code >> 8;
     	buf[len++] = warn_code;
     	(*warnnum_ptr)++;

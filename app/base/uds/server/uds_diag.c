@@ -17,7 +17,24 @@ PP_rmtDiag_NodeFault_t g_PP_rmtDiag_NodeFault;
 
 
 UDS_DIAG_ITEM_BUF_T uds_diag_item_buf_t;
+IS_UDS_TRIGGER_FAULT is_uds_trigger_fault;
 
+
+void set_is_uds_trigger_fault(IS_UDS_TRIGGER_FAULT_TYPE f_is_fault)
+{
+    pthread_mutex_lock(&is_uds_trigger_fault.is_fault_mtx);
+    is_uds_trigger_fault.is_fault = f_is_fault;
+    pthread_mutex_unlock(&is_uds_trigger_fault.is_fault_mtx);
+}
+
+IS_UDS_TRIGGER_FAULT_TYPE get_is_uds_trigger_fault(void)
+{
+    unsigned char ret_is_fault = 0;
+    pthread_mutex_lock(&is_uds_trigger_fault.is_fault_mtx);
+    ret_is_fault = is_uds_trigger_fault.is_fault;
+    pthread_mutex_unlock(&is_uds_trigger_fault.is_fault_mtx);
+    return ret_is_fault;
+}
 
 /* 处理 UDS 给 GB模块诊断信息处理 */
 static void uds_to_gb_process(int dtc_sn)
@@ -129,6 +146,8 @@ int uds_diag_init(void)
     pthread_mutex_lock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
     memset(uds_diag_item_buf_t.uds_diag_item_buf, 0, sizeof(uds_diag_item_buf_t.uds_diag_item_buf));  
     pthread_mutex_unlock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
+
+    set_is_uds_trigger_fault(NO_FAULT);
 
     //memset(uds_diag_item_buf, 0, sizeof(uds_diag_item_buf));
 
@@ -323,6 +342,7 @@ void uds_diag_devices(int startno, int endno)
     int i;
     unsigned int  pre_confirmed;
     unsigned char is_gen_freeze = 0;
+    IS_UDS_TRIGGER_FAULT_TYPE is_fault = NO_FAULT;
 
     if (0 == UDS_GetDTCSetting())
     {
@@ -349,6 +369,18 @@ void uds_diag_devices(int startno, int endno)
             sizeof(uds_diag_item_buf_t.uds_diag_item_buf));
         pthread_mutex_unlock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
     }
+
+    
+    for(i = 0; i < DIAG_ITEM_NUM; i++)
+    {
+        if(1 == *(diag_table[i].confirmed))
+        {
+            is_fault = FAULT;
+            break;
+        }
+    }
+    set_is_uds_trigger_fault(is_fault);
+    log_i(LOG_UDS, "get_is_uds_trigger_fault:%d", get_is_uds_trigger_fault());
 }
 
 

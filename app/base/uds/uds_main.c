@@ -26,7 +26,7 @@ static pthread_t     uds_tid;  /* thread id */
 static unsigned char uds_msgbuf[TCOM_MAX_MSG_LEN];
 static unsigned char uds_is_ready_sleep = 1;
 extern UDS_DIAG_ITEM_BUF_T uds_diag_item_buf_t;
-
+extern IS_UDS_TRIGGER_FAULT is_uds_trigger_fault;
 /****************************************************************
 function:     uds_sleep_available
 description:  whether uds module can sleep or other operation
@@ -120,6 +120,7 @@ int uds_init(INIT_PHASE phase)
     {
         case INIT_PHASE_INSIDE:
             pthread_mutex_init(&uds_diag_item_buf_t.uds_diag_item_buf_mtx, NULL);
+            pthread_mutex_init(&is_uds_trigger_fault.is_fault_mtx, NULL);
             break;
 
         case INIT_PHASE_RESTORE:

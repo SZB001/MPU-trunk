@@ -45,6 +45,18 @@ typedef struct
     pthread_mutex_t uds_diag_item_buf_mtx;
 } UDS_DIAG_ITEM_BUF_T;
 
+typedef enum
+{
+    NO_FAULT = 0,
+    FAULT,
+}IS_UDS_TRIGGER_FAULT_TYPE;
+
+typedef struct
+{
+    IS_UDS_TRIGGER_FAULT_TYPE is_fault;/*0: no fault; 1:fault*/
+    pthread_mutex_t is_fault_mtx;
+}IS_UDS_TRIGGER_FAULT;
+
 typedef struct DIAG_ITEM_INFO
 {
     unsigned short itemid;

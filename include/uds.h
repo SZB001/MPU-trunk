@@ -4,6 +4,7 @@
 #include "init.h"
 #include "uds_define.h"
 #include "hozon_PP_api.h"
+#include "uds_diag.h"
 
 #define  UDS_DIAG_TIMER        TIMER_MAX
 #define  UDS_DIAG_INTERVAL     1000
@@ -38,5 +39,6 @@ uint32_t uds_data_request(UDS_T *uds, UDS_TL_ID msg_id, uint32_t can_id, uint8_t
                           uint16_t pdu_dlc);
 PP_rmtDiag_NodeFault_t * get_PP_rmtDiag_NodeFault_t(void);
 
+IS_UDS_TRIGGER_FAULT_TYPE get_is_uds_trigger_fault(void);
 
 #endif
