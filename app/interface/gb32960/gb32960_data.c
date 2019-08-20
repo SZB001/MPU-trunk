@@ -898,11 +898,11 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 
         switch (sft)
         {
-            case '1'...'6':
-			{
-                tmp = sft - '0';
-			}
-            break;
+            //case '1'...'6':
+			//{
+            //    tmp = sft - '0';
+			//}
+            //break;
             case 'R':
             {
                 tmp = 13;
