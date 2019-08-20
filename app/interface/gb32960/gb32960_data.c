@@ -1810,7 +1810,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 	{
 		if(gbinf->gb_VSExt.info[GB_VS_ACTEMP])//空调温度
 		{
-			buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value + 16) * 2;
+			buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACTEMP])->value - 16) * 2;
 		}
 		else
 		{
@@ -3027,23 +3027,40 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-    if(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])//
-    {
-    	buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])->value + 55) * 2;
-    }
-    else
-    {
-        buf[len++] = 0xff;
-    }
+	if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_OUTTEMP]) && \
+		(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_OUTTEMP])->value))
+	{
+		if(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])//
+		{
+			buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_OUTTEMP])->value + 55) * 2;
+		}
+		else
+		{
+			buf[len++] = 0xff;
+		}
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
 
-    if(gbinf->gb_VSExt.info[GB_VS_INTEMP])//
-    {
-    	buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_INTEMP])->value + 55) * 2;
-    }
-    else
-    {
-        buf[len++] = 0xff;
-    }
+	if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_INTEMP]) && \
+		(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_INTEMP])->value))
+	{
+		if(gbinf->gb_VSExt.info[GB_VS_INTEMP])//
+		{
+			buf[len++] = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_INTEMP])->value + 55) * 2;
+		}
+		else
+		{
+			buf[len++] = 0xff;
+		}
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
+
 
 	if(gbinf->gb_ConpSt.info[GB_CMPT_RAINSENSOR])//
 	{
