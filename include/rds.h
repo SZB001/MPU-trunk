@@ -46,6 +46,7 @@ typedef enum RDS_ERROR_CODE
 #define RDS_OTA_FAULT_FILE        "ota_fault.dat"
 #define RDS_ADP_CFG_FILE          "adp_cfg.dat"
 #define RDS_FT_REGSEQ_FILE        "ft_regseq.dat"
+#define RDS_USER_REGSEQ_FILE        "user_regseq.dat"
 /*--------------dynamic data path definition end------------------*/
 
 typedef enum
@@ -57,6 +58,7 @@ typedef enum
     RDS_SYS_CFG,           /* t-box app configuration */
     RDS_ADAPTIVE_CFG,     /* the cfg change more frequently */
     RDS_FOTON_REGSEQ,     /* FOTON login sequence */
+    RDS_USER_CFG
 } RDS_DATA_TYPE;
 
 typedef enum

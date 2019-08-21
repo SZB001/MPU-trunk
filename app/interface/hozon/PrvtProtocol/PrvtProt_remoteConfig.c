@@ -113,7 +113,7 @@ void PP_rmtCfg_init(void)
 	//memset(&rmtCfg_TxInform,0 , sizeof(PrvtProt_TxInform_t));
 
 	len = 11;
-	res = cfg_get_para(CFG_ITEM_HOZON_TSP_MCUSW,AppData_rmtCfg.checkReq.mcuSw,&len);//
+	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_MCUSW,AppData_rmtCfg.checkReq.mcuSw,&len);//
 	if(AppData_rmtCfg.checkReq.mcuSw[0])
 	{
 		AppData_rmtCfg.checkReq.mcuSwlen = strlen((char*)AppData_rmtCfg.checkReq.mcuSw);
@@ -124,7 +124,7 @@ void PP_rmtCfg_init(void)
 	}
 
 	len = 11;
-	res = cfg_get_para(CFG_ITEM_HOZON_TSP_MPUSW,AppData_rmtCfg.checkReq.mpuSw,&len);//
+	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_MPUSW,AppData_rmtCfg.checkReq.mpuSw,&len);//
 	if(AppData_rmtCfg.checkReq.mpuSw[0])
 	{
 		AppData_rmtCfg.checkReq.mpuSwlen = strlen((char*)AppData_rmtCfg.checkReq.mpuSw);
@@ -135,7 +135,7 @@ void PP_rmtCfg_init(void)
 	}
 
 	len = 18;
-	res = cfg_get_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);//��ȡvin
+	res = cfg_get_user_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);//��ȡvin
 	AppData_rmtCfg.checkReq.vehicleVinlen = 17;
 
 	res = PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//��ȡiccid
@@ -150,7 +150,7 @@ void PP_rmtCfg_init(void)
 
 	//��ȡ����
 	len = 512;
-	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,&len);
+	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,&len);
 	if((res==0) && (AppData_rmtCfg.ReadResp.cfgsuccess == 1))
 	{
 		memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.ReadResp.cfgVersion,32);
@@ -889,7 +889,7 @@ void PP_rmtCfg_SetmcuSw(const char *mcuSw)
 	memset(AppData_rmtCfg.checkReq.mcuSw,0 , 11);
 	memcpy(AppData_rmtCfg.checkReq.mcuSw,mcuSw,strlen(mcuSw));
 	AppData_rmtCfg.checkReq.mcuSwlen = strlen(mcuSw);
-	if (cfg_set_para(CFG_ITEM_HOZON_TSP_MCUSW, AppData_rmtCfg.checkReq.mcuSw, sizeof(AppData_rmtCfg.checkReq.mcuSw)))
+	if (cfg_set_user_para(CFG_ITEM_HOZON_TSP_MCUSW, AppData_rmtCfg.checkReq.mcuSw, sizeof(AppData_rmtCfg.checkReq.mcuSw)))
 	{
 		log_e(LOG_HOZON, "save mcuSw failed");
 	}
@@ -911,7 +911,7 @@ void PP_rmtCfg_SetmpuSw(const char *mpuSw)
 	memset(AppData_rmtCfg.checkReq.mpuSw,0 , 11);
 	memcpy(AppData_rmtCfg.checkReq.mpuSw,mpuSw,strlen(mpuSw));
 	AppData_rmtCfg.checkReq.mpuSwlen = strlen(mpuSw);
-	if (cfg_set_para(CFG_ITEM_HOZON_TSP_MPUSW, AppData_rmtCfg.checkReq.mpuSw, sizeof(AppData_rmtCfg.checkReq.mpuSw)))
+	if (cfg_set_user_para(CFG_ITEM_HOZON_TSP_MPUSW, AppData_rmtCfg.checkReq.mpuSw, sizeof(AppData_rmtCfg.checkReq.mpuSw)))
 	{
 		log_e(LOG_HOZON, "save mpuSw failed");
 	}
@@ -1128,7 +1128,7 @@ static void PP_rmtCfg_send_cb(void * para)
 					PP_rmtCfg.state.cfgsuccess = 0;
 					AppData_rmtCfg.ReadResp.cfgsuccess = 1;
 					//�������ã�ʹ���µ�����
-					(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
 
 					memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersionlen);
 					AppData_rmtCfg.checkReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;

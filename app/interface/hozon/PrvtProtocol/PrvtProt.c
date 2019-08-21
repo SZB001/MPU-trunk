@@ -161,11 +161,11 @@ int PrvtProt_init(INIT_PHASE phase)
         case INIT_PHASE_OUTSIDE:
 		{
 			cfglen = 4;
-			ret |= cfg_get_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, &cfglen);///* ƽ̨ͨ��tboxID��tboxSNӳ�� */
+			ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, &cfglen);///* ƽ̨ͨ��tboxID��tboxSNӳ�� */
 			PP_PackHeader_HB.tboxid = pp_task.tboxid;
 
 			cfglen = 19;
-			ret |= cfg_get_para(CFG_ITEM_HOZON_TSP_TBOXSN,pp_tboxsn,&cfglen);//��ȡtboxsn
+			ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN,pp_tboxsn,&cfglen);//��ȡtboxsn
 
 			PrvtProt_shell_init();
 			for(obj = 0;obj < PP_RMTFUNC_MAX;obj++)
@@ -698,7 +698,7 @@ void PrvtPro_SettboxId(unsigned int tboxid)
 {
 	log_i(LOG_HOZON, "set tboxid = %d\n",tboxid);
 	pp_task.tboxid = tboxid;
-	if(cfg_set_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, 4))
+	if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, 4))
 	{
 		log_e(LOG_HOZON, "save server address failed");
 	}
@@ -736,7 +736,7 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 {
 	memset(pp_tboxsn, 0 , PP_TBOXSN_LEN);
 	memcpy(pp_tboxsn,tboxsn,strlen(tboxsn));
-	if (cfg_set_para(CFG_ITEM_HOZON_TSP_TBOXSN, pp_tboxsn , PP_TBOXSN_LEN))
+	if (cfg_set_user_para(CFG_ITEM_HOZON_TSP_TBOXSN, pp_tboxsn , PP_TBOXSN_LEN))
 	{
 		log_e(LOG_HOZON, "save tboxsn failed");
 	}

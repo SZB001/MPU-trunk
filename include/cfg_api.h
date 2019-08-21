@@ -12,6 +12,7 @@ author        liuzhongwen
 #include "mid_def.h"
 #include "init.h"
 #include <stdbool.h>
+#include "udef_cfg_api.h"
 
 #define CFG_ITEM_INVALID    0xffffffff
 
@@ -52,6 +53,7 @@ typedef enum CFG_PARA_ITEM_ID
     CFG_ITEM_RTC_WAKEUP_TIME,
     CFG_ITEM_BAT_TYPE,
 
+#if 0
     /* GB32960 Configuration */
     CFG_ITEM_GB32960_VIN,
     CFG_ITEM_GB32960_URL,
@@ -60,6 +62,7 @@ typedef enum CFG_PARA_ITEM_ID
     CFG_ITEM_GB32960_REGINTV,
     CFG_ITEM_GB32960_TIMEOUT,
     CFG_ITEM_GB32960_REGSEQ,
+#endif
 
     /* Data save Configuration */
     CFG_ITEM_DSU_AUTHKEY,
@@ -108,6 +111,7 @@ typedef enum CFG_PARA_ITEM_ID
     CFG_ITEM_FTTSP_INTERVAL,
     CFG_ITEM_FTTSP_TUKEY,
 
+#if 0
 	/* HOZON TSP */
 	CFG_ITEM_HOZON_TSP_RMTCFG,
 	CFG_ITEM_HOZON_TSP_TBOXID,
@@ -121,6 +125,8 @@ typedef enum CFG_PARA_ITEM_ID
 	CFG_ITEM_HOZON_TSP_CERT_VALID,//证书有效性
 	CFG_ITEM_HOZON_TSP_CERT_EN,//启用证书
 	CFG_ITEM_HOZON_TSP_CERT,//证书
+#endif
+
     /* UDS*/
     CFG_ITEM_DID_MDATE,
     CFG_ITEM_DID_SN,

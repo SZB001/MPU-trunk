@@ -200,8 +200,8 @@ void PP_CertDownload_init(void)
 	PP_CertDL.state.certDLTestflag = 0;
 
 	unsigned int len = 1;
-	cfg_get_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,&len);
-	cfg_get_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,&len);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,&len);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,&len);
 #if 0
 	FILE *fp;
 	if((fp=fopen(PP_CERTDL_CERTPATH, "r")) != NULL)//检查证书文件是否存在
@@ -568,9 +568,9 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 					PP_checkCertSt.CertUpdataSt = 0;
 					PrvtPro_SettboxId(PP_CertDownloadPara.tboxid);
 					PP_CertDL.state.CertValid = 1;
-					(void)cfg_set_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
 					PP_CertDL.state.CertEnflag = 0;
-					(void)cfg_set_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
 					PP_CertEn.CertEnCnt = 0;
 					PP_CertDL.state.verifyFlag = 1;
 				}
@@ -848,8 +848,8 @@ static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 				{
 					log_i(LOG_HOZON, "enable certificate success\n");
 					PP_CertDL.state.CertEnflag = 1;
-					(void)cfg_set_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
-					(void)cfg_set_para(CFG_ITEM_HOZON_TSP_CERT,PP_CertEn.para.certSn,32);
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT,PP_CertEn.para.certSn,32);
 					PP_CertRevoList.checkRevoFlag = 1;//检查吊销列表
 					CertEnSt = PP_CERTEN_END;
 				}
@@ -1600,7 +1600,7 @@ void PP_CertDL_CertDLReset(void)
 {
 	//PP_CertDL.state.CertValid = 0;
 	//PP_CertDL.Cnt = 0;
-	//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
+	//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
 }
 
 /******************************************************

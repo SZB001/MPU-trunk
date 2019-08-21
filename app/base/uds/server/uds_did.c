@@ -641,7 +641,7 @@ int uds_did_get_vin(unsigned char *did, unsigned int len)
     }
 
     length = 18;
-    ret = cfg_get_para(CFG_ITEM_GB32960_VIN, VIN, &length);
+    ret = cfg_get_user_para(CFG_ITEM_GB32960_VIN, VIN, &length);
 
     if(ret)
     {
@@ -667,7 +667,7 @@ int uds_did_set_vin(unsigned char *did, unsigned int len)
         return UDS_INVALID_PARA;
     }
     memcpy(VIN, did, 18);
-    ret = cfg_set_para(CFG_ITEM_GB32960_VIN, VIN, 18);
+    ret = cfg_set_user_para(CFG_ITEM_GB32960_VIN, VIN, 18);
     if(ret)
     {
         return ret;
@@ -957,7 +957,8 @@ int uds_did_get_ignition_status(unsigned char *did, unsigned int len)
         did[0] |= 0x04;
     }
     else
-    {
+    {
+
         did[0] &= 0xFB;
     }
      

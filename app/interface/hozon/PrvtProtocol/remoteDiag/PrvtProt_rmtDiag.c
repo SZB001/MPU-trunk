@@ -151,9 +151,9 @@ void PP_rmtDiag_init(void)
 	PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
 
 	cfglen = 4;
-	cfg_get_para(CFG_ITEM_HOZON_TSP_DIAGDATE,&rmtDiag_datetime.datetime,&cfglen);//读取诊断日期标志
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_DIAGDATE,&rmtDiag_datetime.datetime,&cfglen);//读取诊断日期标志
 	cfglen = 1;
-	cfg_get_para(CFG_ITEM_HOZON_TSP_DIAGFLAG,&rmtDiag_datetime.diagflag,&cfglen);//读取诊断日期标志
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_DIAGFLAG,&rmtDiag_datetime.diagflag,&cfglen);//读取诊断日期标志
 }
 
 
@@ -705,13 +705,13 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 					if(1 == PP_rmtDiag.state.result)//诊断成功
 					{
 						rmtDiag_datetime.diagflag = rmtDiag_weekmask[tm_wday].mask;
-						if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
+						if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
 						{
 							log_e(LOG_GB32960, "save rmtDiag_datetime.diagflag failed\n");
 						}
 
 						rmtDiag_datetime.datetime = tm_datetime;
-						if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGDATE, &rmtDiag_datetime.datetime, 4))
+						if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_DIAGDATE, &rmtDiag_datetime.datetime, 4))
 						{
 							log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
 						}
@@ -976,13 +976,13 @@ static void PP_rmtDiag_send_cb(void * para)
 			if(PP_TXPAKG_SUCCESS != TxInform_ptr->successflg)
 			{
 				rmtDiag_datetime.diagflag = 0;
-				if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
+				if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
 				{
 					log_e(LOG_GB32960, "save rmtDiag_datetime.diagflag failed\n");
 				}
 
 				rmtDiag_datetime.datetime = 0;
-				if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGDATE, &rmtDiag_datetime.datetime, 4))
+				if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_DIAGDATE, &rmtDiag_datetime.datetime, 4))
 				{
 					log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
 				}
@@ -1023,13 +1023,13 @@ void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 		log_i(LOG_HOZON, " diag fault code active report request\n");
 		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
 		rmtDiag_datetime.diagflag = 0;
-		if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
+		if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
 		{
 			log_e(LOG_GB32960, "save rmtDiag_datetime.diagflag failed\n");
 		}
 
 		rmtDiag_datetime.datetime = 0;
-		if(cfg_set_para(CFG_ITEM_HOZON_TSP_DIAGDATE, &rmtDiag_datetime.datetime, 4))
+		if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_DIAGDATE, &rmtDiag_datetime.datetime, 4))
 		{
 			log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
 		}

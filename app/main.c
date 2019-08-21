@@ -32,6 +32,7 @@
 #include "remote_diag_api.h"
 #include "ble.h"
 #include "wsrv_api.h"
+#include "udef_cfg_api.h"
 
 int main(int argc , char **argv)
 {
@@ -46,6 +47,7 @@ int main(int argc , char **argv)
     {
         tcom_init,
         scom_init,
+        udef_cfg_init,
         cfg_init,
         gps_init,
         can_init,

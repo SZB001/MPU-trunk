@@ -153,7 +153,7 @@ void PP_ACCtrl_init(void)
 	PP_rmtACCtrl.pack.DisBody.appDataProVer = 256;
 	PP_rmtACCtrl.pack.DisBody.testFlag = 1;
 	len = ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t);
-	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,&len);  //从ROM中读出空调预约记录
+	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,&len);  //从ROM中读出空调预约记录
 	if(res==0) 
 	{
 		for(i=0;i<ACC_APPOINT_NUM;i++)
@@ -360,7 +360,8 @@ uint8_t PP_ACCtrl_start(void)
 	}
 }
 uint8_t PP_ACCtrl_end(void)
-{
+{
+
 	if((PP_rmtACCtrl.state.CtrlSt == PP_ACCTRL_IDLE) && \
 			(PP_rmtACCtrl.state.req == 0))
 	{
@@ -484,7 +485,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].eventId = %d\n",index,PP_rmtac_AppointBook[index].eventId);
 					}
 					PP_rmtACCtrl.state.dataUpdata = 1;
-					//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t));
+					//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t));
 					rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
 					rmtCtrl_Stpara.rvcFailureType = 0;
 				}
@@ -548,7 +549,8 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 		case RMTCTRL_BLUETOOTH:
 		{
 			
-		}
+		
+}
 		break;
 		case RMTCTRL_SHELL:
 		{
@@ -617,7 +619,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].eventId = %d\n",index,PP_rmtac_AppointBook[index].eventId);
 					}
 					PP_rmtACCtrl.state.dataUpdata = 1;
-					//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t));
+					//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t));
 					rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
 					rmtCtrl_Stpara.rvcFailureType = 0;
 				}
@@ -732,7 +734,7 @@ void PP_AcCtrl_acStMonitor(void *task)
 					SetPP_ACCtrl_Request(RMTCTRL_TBOX,(void *)&i,NULL);
 					PP_rmtACCtrl.state.dataUpdata = 1;
 					PP_rmtac_AppointBook[i].validFlg = 0;
-					//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,10*sizeof(PP_rmtAC_AppointBook_t));
+					//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,10*sizeof(PP_rmtAC_AppointBook_t));
 				}
 			}
 		}
@@ -765,7 +767,7 @@ void PP_AcCtrl_acStMonitor(void *task)
 
 				//保存预约记录
 				log_o(LOG_HOZON,"save ac para when power off\n");
-				(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,10*sizeof(PP_rmtAC_AppointBook_t));
+				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,10*sizeof(PP_rmtAC_AppointBook_t));
 				PP_rmtACCtrl.state.dataUpdata = 0;
 			}
 		}

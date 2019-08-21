@@ -466,6 +466,7 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     unsigned char loopfile = 1;
     cfg_set_by_id(CFG_ITEM_DSU_LOOPFILE, (unsigned char *) &loopfile, sizeof(loopfile), type);
 
+#if 0
     char gbvin[18];
     memset(gbvin, 0, sizeof(gbvin));
     strcpy((char *) gbvin, "00000000000000000");
@@ -495,7 +496,7 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     strcpy((char *) mxuSw, "0");
     cfg_set_by_id(CFG_ITEM_HOZON_TSP_MCUSW, mxuSw, sizeof(mxuSw), type);
     cfg_set_by_id(CFG_ITEM_HOZON_TSP_MPUSW, mxuSw, sizeof(mxuSw), type);
-
+#endif
 #if 0
     cfg_set_by_id(CFG_ITEM_FOTON_VIN, "00000000000000000", 18, type);
     

@@ -622,7 +622,7 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
 	{
 	    unsigned int tem_len = 18;
 		unsigned char vin[20] = {0};
-		cfg_get_para(CFG_ITEM_GB32960_VIN, vin, &tem_len);
+		cfg_get_user_para(CFG_ITEM_GB32960_VIN, vin, &tem_len);
 		
 		if (strlen((char *)vin) < 17)
 		{

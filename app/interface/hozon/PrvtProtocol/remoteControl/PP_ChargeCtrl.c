@@ -148,7 +148,7 @@ void PP_ChargeCtrl_init(void)
 
 	//读取记录
 	len = 32;
-	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,&len);
+	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,&len);
 	if((res==0) && (PP_rmtCharge_AppointBook.validFlg == 1))
 	{
 		log_e(LOG_HOZON,"There are currently reservation records\n");
@@ -563,7 +563,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 
 			//保存记录
 			log_o(LOG_HOZON,"save charge para when power off\n");
-			(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
+			(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
 			PP_rmtChargeCtrl.state.dataUpdata = 0;
 		}
 	}
@@ -666,7 +666,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.eventId = %d\n",PP_rmtCharge_AppointBook.eventId);
 
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
-				//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
+				//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
 
 				//inform HU appointment status
 				ivi_chargeSt.id = PP_rmtCharge_AppointBook.id;
@@ -794,7 +794,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 
 				//保存记录
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
-				//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
+				//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
 
 				//inform TSP the Reservation instruction issued status
 				rmtCtrl_Stpara.rvcReqType 		= PP_rmtCharge_AppointBook.rvcReqType;
@@ -829,7 +829,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 
 				//保存记录
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
-				//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
+				//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
 
 				//inform TSP the Reservation instruction issued status
 				rmtCtrl_Stpara.rvcReqType 		= PP_COMAND_CANCELAPPOINTCHARGE;

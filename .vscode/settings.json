@@ -3,6 +3,7 @@
         "sockproxy.h": "c",
         "hozon_pp_api.h": "c",
         "hozon_sp_api.h": "c",
-        "uds.h": "c"
+        "uds.h": "c",
+        "cfg_api.h": "c"
     }
 }

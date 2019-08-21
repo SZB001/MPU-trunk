@@ -374,7 +374,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     {
         cfg_len = sizeof(gl_vin);
 
-        if (0 != cfg_get_para(CFG_ITEM_GB32960_VIN, gl_vin, &cfg_len))
+        if (0 != cfg_get_user_para(CFG_ITEM_GB32960_VIN, gl_vin, &cfg_len))
         {
             ret = -1;
         }

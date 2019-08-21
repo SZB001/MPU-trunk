@@ -4504,7 +4504,7 @@ int gb_data_init(INIT_PHASE phase)
                 ret |= pthread_mutex_init(&gb_datmtx, NULL);
 
                 cfglen = sizeof(gb_datintv);
-                ret |= cfg_get_para(CFG_ITEM_GB32960_INTERVAL, &gb_datintv, &cfglen);
+                ret |= cfg_get_user_para(CFG_ITEM_GB32960_INTERVAL, &gb_datintv, &cfglen);
                 break;
             }
     }

@@ -439,7 +439,7 @@ int start_ble(void)
 	unsigned char vin[20] = {0};
 	unsigned char tmp[250] = {0};
 	unsigned char tmp_len = 0;
-	cfg_get_para(CFG_ITEM_GB32960_VIN, vin, &len);
+	cfg_get_user_para(CFG_ITEM_GB32960_VIN, vin, &len);
 	int iRet = -1;
 	
 	if (strlen((char *)vin) < 17)

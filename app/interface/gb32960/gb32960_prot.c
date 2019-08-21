@@ -187,7 +187,7 @@ static int gb_pack_login(uint8_t *buf)
         gb_regdate  = time.mon * 100 + time.mday;
         gb_regseq   = 1;
         reginf      = (gb_regdate << 16) + gb_regseq;
-        cfg_set_para(CFG_ITEM_GB32960_REGSEQ, &reginf, sizeof(reginf));
+        cfg_set_user_para(CFG_ITEM_GB32960_REGSEQ, &reginf, sizeof(reginf));
     }
 
     /* header */
@@ -943,7 +943,7 @@ static int gb_do_receive(gb_stat_t *state)
 
                 {
                     uint32_t reginf = (gb_regdate << 16) + gb_regseq;
-                    cfg_set_para(CFG_ITEM_GB32960_REGSEQ, &reginf, sizeof(reginf));
+                    cfg_set_user_para(CFG_ITEM_GB32960_REGSEQ, &reginf, sizeof(reginf));
                 }
 
                 log_o(LOG_GB32960, "login is succeed");
@@ -1016,8 +1016,8 @@ static int gb_do_config(gb_stat_t *state, gb_cfg_t *cfg)
     switch (cfg->cfgid)
     {
         case GB_CFG_ADDR:
-            if (cfg_set_para(CFG_ITEM_GB32960_URL, cfg->addr.url, sizeof(cfg->addr.url)) ||
-                cfg_set_para(CFG_ITEM_GB32960_PORT, &cfg->addr.port, sizeof(cfg->addr.port)))
+            if (cfg_set_user_para(CFG_ITEM_GB32960_URL, cfg->addr.url, sizeof(cfg->addr.url)) ||
+                cfg_set_user_para(CFG_ITEM_GB32960_PORT, &cfg->addr.port, sizeof(cfg->addr.port)))
             {
                 log_e(LOG_GB32960, "save server address failed");
                 return -1;
@@ -1029,7 +1029,7 @@ static int gb_do_config(gb_stat_t *state, gb_cfg_t *cfg)
             break;
 
         case GB_CFG_VIN:
-            if (cfg_set_para(CFG_ITEM_GB32960_VIN, cfg->vin, sizeof(cfg->vin)))
+            if (cfg_set_user_para(CFG_ITEM_GB32960_VIN, cfg->vin, sizeof(cfg->vin)))
             {
                 log_e(LOG_GB32960, "save vin failed");
                 return -1;
@@ -1041,7 +1041,7 @@ static int gb_do_config(gb_stat_t *state, gb_cfg_t *cfg)
             break;
 
         case GB_CFG_REGINTV:
-            if (cfg_set_para(CFG_ITEM_GB32960_REGINTV, &cfg->regintv, sizeof(cfg->regintv)))
+            if (cfg_set_user_para(CFG_ITEM_GB32960_REGINTV, &cfg->regintv, sizeof(cfg->regintv)))
             {
                 log_e(LOG_GB32960, "save login period failed");
                 return -1;
@@ -1051,7 +1051,7 @@ static int gb_do_config(gb_stat_t *state, gb_cfg_t *cfg)
             break;
 
         case GB_CFG_TIMEOUT:
-            if (cfg_set_para(CFG_ITEM_GB32960_TIMEOUT, &cfg->timeout, sizeof(cfg->timeout)))
+            if (cfg_set_user_para(CFG_ITEM_GB32960_TIMEOUT, &cfg->timeout, sizeof(cfg->timeout)))
             {
                 log_e(LOG_GB32960, "save communication timeout failed");
                 return -1;
@@ -1061,7 +1061,7 @@ static int gb_do_config(gb_stat_t *state, gb_cfg_t *cfg)
             break;
 
         case GB_CFG_DATINTV:
-            if (cfg_set_para(CFG_ITEM_GB32960_INTERVAL, &cfg->datintv, sizeof(cfg->datintv)))
+            if (cfg_set_user_para(CFG_ITEM_GB32960_INTERVAL, &cfg->datintv, sizeof(cfg->datintv)))
             {
                 log_e(LOG_GB32960, "save report period failed");
                 return -1;
@@ -1648,17 +1648,17 @@ int gb_init(INIT_PHASE phase)
 			//}
 
             cfglen = sizeof(gb_addr.url);
-            ret |= cfg_get_para(CFG_ITEM_GB32960_URL, gb_addr.url, &cfglen);
+            ret |= cfg_get_user_para(CFG_ITEM_GB32960_URL, gb_addr.url, &cfglen);
             cfglen = sizeof(gb_addr.port);
-            ret |= cfg_get_para(CFG_ITEM_GB32960_PORT, &gb_addr.port, &cfglen);
+            ret |= cfg_get_user_para(CFG_ITEM_GB32960_PORT, &gb_addr.port, &cfglen);
             cfglen = sizeof(gb_vin);
-            ret |= cfg_get_para(CFG_ITEM_GB32960_VIN, gb_vin, &cfglen);
+            ret |= cfg_get_user_para(CFG_ITEM_GB32960_VIN, gb_vin, &cfglen);
             cfglen = sizeof(gb_regintv);
-            ret |= cfg_get_para(CFG_ITEM_GB32960_REGINTV, &gb_regintv, &cfglen);
+            ret |= cfg_get_user_para(CFG_ITEM_GB32960_REGINTV, &gb_regintv, &cfglen);
             cfglen = sizeof(reginf);
-            ret |= cfg_get_para(CFG_ITEM_GB32960_REGSEQ, &reginf, &cfglen);
+            ret |= cfg_get_user_para(CFG_ITEM_GB32960_REGSEQ, &reginf, &cfglen);
             cfglen = sizeof(gb_timeout);
-            ret |= cfg_get_para(CFG_ITEM_GB32960_TIMEOUT, &gb_timeout, &cfglen);
+            ret |= cfg_get_user_para(CFG_ITEM_GB32960_TIMEOUT, &gb_timeout, &cfglen);
 
             if (ret == 0)
             {

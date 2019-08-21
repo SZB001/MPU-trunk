@@ -19,6 +19,7 @@ RDS_ITEM rds_data_tbl[] =
     { RDS_SYS_CFG,       COM_APP_CUR_CFG_DIR,  COM_DATA_CUR_CFG_DIR,RDS_BACKUP,   RDS_SYS_CFG_FILE},
     { RDS_ADAPTIVE_CFG,  COM_APP_CUR_DATA_DIR, COM_NULL_DIR, RDS_BACKUP,   RDS_ADP_CFG_FILE      },
     { RDS_FOTON_REGSEQ,  COM_APP_CUR_DATA_DIR, COM_NULL_DIR, RDS_BACKUP,   RDS_FT_REGSEQ_FILE    },
+    { RDS_USER_CFG,      COM_APP_CUR_DATA_DIR, COM_NULL_DIR, RDS_BACKUP,   RDS_USER_REGSEQ_FILE  },
 };
 
 /*****************************************************************************
@@ -512,7 +513,11 @@ void rds_set_default(void)
             rds_get_full_path(i, RDS_PATH_MASTER, path); 
             file_delete(path);
         }
-        else
+        else if (RDS_USER_CFG == rds_data_tbl[i].type)
+        {
+            continue;
+        }
+        else 
         {
             rds_get_full_path(i, RDS_PATH_MASTER, path); 
             file_delete(path);

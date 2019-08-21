@@ -77,6 +77,7 @@ SUBDIRS := \
 	./app/interface/protobuf \
 	./app/interface/wsrv \
 	./app/interface/remote_diag \
+	./app/interface/udefcfg \
 	./app \
 	./appl \
 	./goml \
