@@ -4,6 +4,9 @@
         "hozon_pp_api.h": "c",
         "hozon_sp_api.h": "c",
         "uds.h": "c",
-        "cfg_api.h": "c"
+        "cfg_api.h": "c",
+        "shell_api.h": "c",
+        "cfg_para.h": "c",
+        "udef_para_def.h": "c"
     }
 }

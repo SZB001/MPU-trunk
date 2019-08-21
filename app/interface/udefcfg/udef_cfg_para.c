@@ -1,3 +1,7 @@
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
 #include "tbox_limit.h"
 #include "log.h"
 #include "udef_cfg_api.h"
@@ -7,6 +11,7 @@
 #include "rds.h"
 #include "../../base/dev/dev_mcu_cfg.h"
 #include "cfg_api.h"
+#include "hozon_PP_api.h"
 
 
 #define USER_CFG_PARA_BUF_LEN     2*1024
@@ -455,6 +460,15 @@ int udef_cfg_init(INIT_PHASE phase)
             break;
 
         case INIT_PHASE_RESTORE:
+
+            if((access(PP_USER_CFG_PATH,F_OK)) != 0)//文件不存在
+            {
+                if((access(PP_USER_CFG_BKUP_PATH,F_OK)) == 0)//文件存在
+                {
+                    file_copy(PP_USER_CFG_BKUP_PATH,PP_USER_CFG_PATH);//还原配置文件
+                }
+            }
+
             clbt_cfg_restore_para();
             break;
 

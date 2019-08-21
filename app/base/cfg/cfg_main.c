@@ -4,13 +4,17 @@ description:  the source file of cfg main function implementation
 date:         2016/9/25
 author        liuzhongwen
 ****************************************************************/
-
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
 #include "com_app_def.h"
 #include "cfg_api.h"
 #include "cfg.h"
 #include "cfg_para.h"
 #include "tcom_api.h"
 #include "shell_api.h"
+#include "hozon_PP_api.h"
 
 static pthread_t cfg_tid;  /* thread id */
 static unsigned char cfg_reqmsgbuf[TCOM_MAX_MSG_LEN];
@@ -32,6 +36,15 @@ int cfg_init(INIT_PHASE phase)
             break;
 
         case INIT_PHASE_RESTORE:
+
+            if((access(PP_SYS_CFG_PATH,F_OK)) != 0)//文件不存在
+            {
+                if((access(PP_SYS_CFG_BKUP_PATH,F_OK)) == 0)//文件存在
+                {
+                    file_copy(PP_SYS_CFG_BKUP_PATH,PP_SYS_CFG_PATH);//还原配置文件
+                }
+            }
+
             cfg_restore_para();
             break;
 

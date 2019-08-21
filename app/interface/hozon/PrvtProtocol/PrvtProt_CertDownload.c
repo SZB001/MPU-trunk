@@ -31,6 +31,7 @@ description�� include the header file
 #include "per_encoder.h"
 #include "per_decoder.h"
 #include "file.h"
+#include "dev_api.h"
 #include "init.h"
 #include "log.h"
 #include "list.h"
@@ -141,6 +142,7 @@ static const unsigned char base64_dec_map[128] =
     49,  50,  51, 127, 127, 127, 127, 127
 };
 
+static pthread_mutex_t checkcertmtx = 	PTHREAD_MUTEX_INITIALIZER;
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -170,6 +172,7 @@ static int PP_CertDL_CertRenewReq(PrvtProt_task_t *task,PP_CertUpdata_t *CertUpd
 static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task);
 static int PP_CertDL_do_CertDownload(PrvtProt_task_t *task);
 static int PP_CertDL_do_CertRenew(PrvtProt_task_t *task);
+static int PP_CertDL_checkCertExist(void);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -202,14 +205,7 @@ void PP_CertDownload_init(void)
 	unsigned int len = 1;
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,&len);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,&len);
-#if 0
-	FILE *fp;
-	if((fp=fopen(PP_CERTDL_CERTPATH, "r")) != NULL)//检查证书文件是否存在
-	{
-		PP_CertDL.state.CertValid = 1;
-		fclose(fp);
-	}
-#endif
+
 	//PP_checkCertSt.checkStFlag = 1;
 }
 
@@ -227,7 +223,21 @@ void PP_CertDownload_init(void)
 int PP_CertDownload_mainfunction(void *task)
 {
 	int res;
+	static uint8_t	checkcertflag = 0;
 	PrvtProt_task_t *task_ptr = (PrvtProt_task_t*)task;
+
+	if(dev_get_KL15_signal())
+	{
+		if(!checkcertflag)
+		{
+			PP_CertDL_checkCertExist();
+			checkcertflag = 1;
+		}
+	}
+	else
+	{
+		checkcertflag = 0;
+	}
 
 	res = 		PP_CertDL_do_checksock(task_ptr) 			||	\
 				PP_CertDL_do_rcvMsg(task_ptr) 				||	\
@@ -466,6 +476,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 {
 	#define	PP_CERTDL_TIMES			3
 	#define	PP_CERTUPDATE_TIMES		1
+	static  uint8_t	certvalidflag = 0;
 
 	if((1 != PP_rmtCfg_getIccid((uint8_t*)PP_CertDL_ICCID)) || \
 			(1 != PrvtProt_tboxsnValidity()) || \
@@ -475,16 +486,15 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 	}
 
 
-	if(1 == sockproxy_sgsocketState())
+	if((1 == sockproxy_sgsocketState()) && (!certvalidflag))
 	{
-
 		switch(PP_CertDL.state.checkSt)
 		{
 			case PP_CHECK_CERT_IDLE:
 			{
 				PP_CertDL.state.verifyFlag = 0;
 				PP_CertDL.state.certAvailableFlag = 0;
-				if(1 == PP_CertDL.state.CertValid)
+				if(1 == PP_CertDL_checkCertExist())
 				{//检查证书可用性
 					if(PP_CertUpdata.Cnt < PP_CERTUPDATE_TIMES)
 					{
@@ -596,11 +606,15 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 		{
 			PP_CertDL.state.verifyFlag = 0;
 			PP_CertDL.state.certAvailableFlag = 0;
+			certvalidflag = 1;
 			sockproxy_socketclose();
 		}
 	}
 	else if(1 == sockproxy_socketState())//双向链路
 	{
+		certvalidflag = 0;
+		PP_CertDL.Cnt = 0;
+		PP_CertDL.state.checkSt = PP_CHECK_CERT_IDLE;
 		PP_CertDL_do_EnableCertificate(task);
 		PP_CertDL_do_checkRevocationList(task);
 	}
@@ -804,16 +818,17 @@ static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 	#define PP_CERTEN_TIMES		1
 	static 	uint64_t 	Enwaittime;
 
-	if(1 != PP_CertDL.state.CertValid)
-	{
-		return 0;
-	}
+	//if(1 != PP_CertDL_checkCertExist())
+	//{
+	//	return 0;
+	//}
 
 	switch(CertEnSt)
 	{
 		case PP_CERTEN_IDLE:
 		{
-			if((PP_CertDL.state.CertEnflag == 0) &&	(PP_CertEn.CertEnCnt < PP_CERTEN_TIMES))//证书未启用,启用证书
+			if((PP_CertDL.state.CertEnflag == 0) &&	\
+					(PP_CertEn.CertEnCnt < PP_CERTEN_TIMES))//证书未启用,启用证书
 			{
 				log_i(LOG_HOZON, "certificate unenable,start to enable certificate\n");
 				PP_CertEn.CertEnCnt++;
@@ -1633,7 +1648,11 @@ unsigned char GetPP_CertDL_CertValid(void)
 unsigned char GetPP_CertDL_allowBDLink(void)
 {
 	uint8_t allowSt = 0;
-	if((1 == PP_CertDL.state.CertValid) && \
+	uint8_t cert_exist_flag = 0;
+	
+	cert_exist_flag = PP_CertDL_checkCertExist();
+
+	if((1 == cert_exist_flag) && \
 			(0 == PP_CertDL_do_checkCertStatus()))
 	{
 		allowSt = 1;
@@ -1664,6 +1683,36 @@ unsigned char GetPP_CertDL_CertUpdate(void)
 
 	return St;
 }
+
+static int PP_CertDL_checkCertExist(void)
+{
+	uint8_t cert_exist_flag = 0;
+
+	pthread_mutex_lock(&checkcertmtx);
+	
+	if((access(PP_CERTDL_CERTPATH,F_OK)) == 0)//证书存在
+	{
+		log_i(LOG_HOZON, "certificate exist!\n");
+		cert_exist_flag = 1;
+	}
+	else
+	{
+		if((access(COM_SDCARD_DIR_PKI_CERT,F_OK)) == 0)//检查备份路径下证书存在
+		{
+			log_i(LOG_HOZON, "certificate lost,copy from sdcard!\n");
+			file_copy(COM_SDCARD_DIR_PKI_KEY,PP_CERTDL_TWOCERTKEYPATH);//从备份文件还原
+			file_copy(COM_SDCARD_DIR_PKI_CSR,PP_CERTDL_TWOCERTCSRPATH);//从备份文件还原
+			file_copy(COM_SDCARD_DIR_PKI_CERT,PP_CERTDL_CERTPATH);//从备份文件还原
+			cert_exist_flag = 1;
+		}
+	}
+	
+	PP_CertDL.state.CertValid = cert_exist_flag;
+	pthread_mutex_unlock(&checkcertmtx);//解锁
+
+	return cert_exist_flag;
+}
+
 
 /*
  * 转码
@@ -1745,22 +1794,33 @@ static int  PP_CertDL_checkCipherCsr(void)
 
 	if(!PP_CertDL.state.cipherexist)
 	{
-		FILE *fp;
-		if((fp = fopen("/usrdata/pki/sn_sim_encinfo.txt", "r")) == NULL)//检查密文文件不存在
+		//FILE *fp;
+		//if((fp = fopen("/usrdata/pki/sn_sim_encinfo.txt", "r")) == NULL)//检查密文文件不存在
+		if((access(PP_CERTDL_CIPHER_PATH,F_OK)) != 0)//检查密文文件不存在
 		{
-			iRet = HzTboxSnSimEncInfo(PP_CertDL_SN,PP_CertDL_ICCID,"/usrdata/pem/aeskey.txt", \
-					"/usrdata/pki/sn_sim_encinfo.txt", &datalen);
-			if(iRet != 3520)
+			if((access(COM_SDCARD_DIR_PKI_CIPHER,F_OK)) != 0)//检查备份路径下密文文件不存在
 			{
-				log_e(LOG_HOZON,"HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
-				return -1;
+				iRet = HzTboxSnSimEncInfo(PP_CertDL_SN,PP_CertDL_ICCID,"/usrdata/pem/aeskey.txt", \
+						PP_CERTDL_CIPHER_PATH, &datalen);
+				if(iRet != 3520)
+				{
+					log_e(LOG_HOZON,"HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
+					return -1;
+				}
+
+				file_copy(PP_CERTDL_CIPHER_PATH,COM_SDCARD_DIR_PKI_CIPHER);//备份文件到emmc
+				log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
 			}
-			log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
+			else
+			{
+				file_copy(COM_SDCARD_DIR_PKI_CIPHER,PP_CERTDL_CIPHER_PATH);//备份路径还原密文
+			}
+			
 		}
-		else
-		{
-			fclose(fp);
-		}
+		//else
+		//{
+		//	fclose(fp);
+		//}
 
 		PP_CertDL.state.cipherexist = 1;
 	}
@@ -1829,6 +1889,10 @@ static int  MatchCertVerify(void)
 	{
 		file_copy(PP_CERTDL_CERTPATH_UPDATE,PP_CERTDL_CERTPATH);//拷贝证书到用户路径
 	}
+
+	file_copy(PP_CERTDL_TWOCERTKEYPATH,COM_SDCARD_DIR_PKI_KEY);//备份文件到emmc
+	file_copy(PP_CERTDL_TWOCERTCSRPATH,COM_SDCARD_DIR_PKI_CSR);//备份文件到emmc
+	file_copy(PP_CERTDL_CERTPATH,COM_SDCARD_DIR_PKI_CERT);//备份文件到emmc
 
     return 0;
 }

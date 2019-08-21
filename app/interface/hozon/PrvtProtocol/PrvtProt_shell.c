@@ -63,6 +63,7 @@ static int PP_shell_SetdiagReq(int argc, const char **argv);
 static int PP_shell_SetTboxSN(int argc, const char **argv);
 static int PP_shell_SetCertDLReq(int argc, const char **argv);
 static int PP_shell_SetCertDLUpdata(int argc, const char **argv);
+static int PP_shell_SetCfgSaveReq(int argc, const char **argv);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -102,6 +103,8 @@ void PrvtProt_shell_init(void)
 	/* cert download */
 	shell_cmd_register("hozon_setcertdlReq", PP_shell_SetCertDLReq, "set cert download req");
 	shell_cmd_register("hozon_setcertupdataReq", PP_shell_SetCertDLUpdata, "set cert updata req");
+
+    shell_cmd_register("hozon_setsavecfgReq", PP_shell_SetCfgSaveReq, "set save cfg req");
 }
 
 
@@ -547,3 +550,30 @@ static int PP_shell_SetCertDLUpdata(int argc, const char **argv)
     return 0;
 }
 
+/******************************************************
+*PP_shell_SetCfgSaveReq
+
+*��  �Σ�����
+
+
+*����ֵ��void
+
+*��  ����
+
+*��  ע��
+******************************************************/
+static int PP_shell_SetCfgSaveReq(int argc, const char **argv)
+{
+	unsigned int saveReq;
+    if (argc != 1)
+    {
+        shellprintf(" usage: hozon_setsavecfgReq <set save cfg req>\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &saveReq);
+
+	PrvtProt_SaveCfgPara((uint8_t)saveReq);
+    sleep(1);
+    return 0;
+}

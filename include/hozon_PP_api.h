@@ -5,6 +5,12 @@
 
 #define COM_SDCARD_DIR             "/media/sdcard"
 #define COM_SDCARD_DIR_PKI         COM_SDCARD_DIR"/pki"
+#define COM_SDCARD_DIR_PKI_CIPHER  "/media/sdcard/usrdata/pki/sn_sim_encinfo.txt"
+#define COM_SDCARD_DIR_PKI_CERT	   "/media/sdcard/usrdata/pki/userAuth.cer"
+#define COM_SDCARD_DIR_PKI_KEY	   "/media/sdcard/usrdata/pki/two_certreqmain.key"
+#define COM_SDCARD_DIR_PKI_CSR	   "/media/sdcard/usrdata/pki/two_certreqmain.csr"
+
+#define PP_CERTDL_CIPHER_PATH			"/usrdata/pki/sn_sim_encinfo.txt"
 
 #define PP_CERTDL_CERTPATH			"/usrdata/pki/userAuth.cer"
 #define PP_CERTDL_CERTPATH_UPDATE	"/usrdata/pki/update/userAuth.cer"
@@ -17,6 +23,11 @@
 #define PP_CERTDL_TWOCERTCSRPATH			"/usrdata/pki/two_certreqmain.csr"
 #define PP_CERTDL_TWOCERTRCSRPATH_UPDATE	"/usrdata/pki/update/two_certreqmain.csr"
 #define PP_CERTDL_TWOCERTRCSRPATH_BKUP		"/usrdata/pki/bkup/two_certreqmain.csr"
+
+#define PP_USER_CFG_PATH			"/usrdata/dev/data/usrdata/master/user_regseq.dat"
+#define PP_USER_CFG_BKUP_PATH		"/media/sdcard/usrdata/bkup/user_regseq.dat"
+#define PP_SYS_CFG_PATH				"/usrapp/current/data/cfg/master/sys_cfg.dat"
+#define PP_SYS_CFG_BKUP_PATH		"/media/sdcard/usrdata/bkup/sys_cfg.dat"
 
 /* diag struct */
 typedef struct
@@ -78,4 +89,5 @@ extern unsigned char GetPP_CertDL_CertValid(void);
 extern void PP_CertDL_CertDLReset(void);
 extern unsigned char GetPP_CertDL_CertUpdate(void);
 extern unsigned char GetPP_CertDL_allowBDLink(void);
+extern void PrvtProt_SaveCfgPara(unsigned char req);
 #endif

@@ -742,6 +742,23 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 	}
 }
 
+/******************************************************
+*������:PrvtProt_SaveCfgPara
+
+*��  �Σ�
+
+*����ֵ��
+
+*��  ����
+
+*��  ע��
+******************************************************/
+void PrvtProt_SaveCfgPara(unsigned char req)
+{
+	file_copy(PP_USER_CFG_PATH,PP_USER_CFG_BKUP_PATH);//备份配置文件
+	file_copy(PP_SYS_CFG_PATH,PP_SYS_CFG_BKUP_PATH);//备份配置文件
+}
+
 
 /******************************************************
 *������:PrvtProt_tboxsnValidity
