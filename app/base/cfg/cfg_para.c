@@ -422,7 +422,7 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     memset(&apn_auth, 0, sizeof(apn_auth));
     cfg_set_by_id(CFG_ITEM_LOC_APN_AUTH, &apn_auth, sizeof(apn_auth), type);
 
-    unsigned char dbc_path[256] = "/usrdata/dbc/GB-EP30_CAN_r4_012_v1.10.dbc";
+    unsigned char dbc_path[256] = "/usrdata/dbc/GB-EP30_CAN_r4_009WIP_v1.11.dbc";
     cfg_set_by_id(CFG_ITEM_DBC_PATH, dbc_path, 256, type);
 
     wifi_enable = 0;
