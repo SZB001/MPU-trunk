@@ -89,6 +89,7 @@ typedef struct
 {
 	uint8_t	checkStFlag;
 	uint8_t CertUpdataReq;
+	uint64_t ExpTime;
 	uint8_t CertUpdataSt;
 	uint8_t updataSt;
 }PP_checkCertSt_t;
@@ -207,6 +208,7 @@ void PP_CertDownload_init(void)
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,&len);
 
 	//PP_checkCertSt.checkStFlag = 1;
+	PP_checkCertSt.ExpTime = 0;
 }
 
 /******************************************************
@@ -1015,7 +1017,7 @@ static int PP_CertDL_do_checkCertStatus(void)
 		int statecert;
 		//int stat = 0;
 
-		time_t tm = time(NULL);//其值表示从UTC（Coordinated Universal Time）时间1970年1月1日00:00:00（称为UNIX系统的Epoch时间）到当前时刻的>秒数
+		time_t tm = time(NULL) + PP_checkCertSt.ExpTime;//其值表示从UTC（Coordinated Universal Time）时间1970年1月1日00:00:00（称为UNIX系统的Epoch时间）到当前时刻的>秒数
 		log_i(LOG_HOZON,"tm = [%d]\n", tm);
 
 		iRet = HzTboxCertUpdCheck(PP_CERTDL_CERTPATH,"DER",tm,&statecert);
@@ -1598,6 +1600,7 @@ void PP_CertDL_SetCertDLReq(unsigned char req)
 void PP_CertDL_SetCertDLUpdata(unsigned char req)
 {
 	PP_checkCertSt.CertUpdataReq = req;
+	PP_checkCertSt.ExpTime = 60*2628000;
 }
 
 /******************************************************

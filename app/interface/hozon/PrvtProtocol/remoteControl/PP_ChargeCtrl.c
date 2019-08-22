@@ -476,7 +476,6 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
  * 	预约充电触发后，若执行条件不满足导致执行失败，则持续检测6h。
  *  6h内检测到执行预约充电条件满足，则执行预约充电；
  *  持续检测时间超出6h，则不再执行。
- * 
  *  */
 	long currTimestamp;
 	if(1 == PP_rmtChargeCtrl.state.appointcharge)
@@ -556,9 +555,6 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 /*
  * 检查上电/掉电
  * */
-	//uint8_t PowerOffSt;
-	//PowerOffSt = gb32960_PowerOffSt();
-	//if((PowerOffSt == 1) || (PP_ChargeCtrl_Sleepflag) || (0 == dev_get_KL15_signal()))//掉电 || 睡眠
 	if(dev_get_KL15_signal())
 	{
 		/*
@@ -674,7 +670,6 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.eventId = %d\n",PP_rmtCharge_AppointBook.eventId);
 
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
-				//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
 
 				//inform HU appointment status
 				ivi_chargeSt.id = PP_rmtCharge_AppointBook.id;
@@ -683,7 +678,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				ivi_chargeSt.timestamp = PrvtPro_getTimestamp();
 				ivi_chargeSt.targetpower = PP_rmtCharge_AppointBook.targetSOC;
 				ivi_chargeSt.effectivestate = 1;
-				tbox_ivi_set_tspchager_InformHU(&ivi_chargeSt);
+				tbox_ivi_set_tspchager_InformHU(&ivi_chargeSt);//同步状态到HU
 
 				//inform TSP the Reservation instruction issued status
 				//PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
@@ -719,7 +714,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				ivi_chargeSt.timestamp = PrvtPro_getTimestamp();
 				ivi_chargeSt.targetpower = PP_rmtCharge_AppointBook.targetSOC;
 				ivi_chargeSt.effectivestate = 0;
-				tbox_ivi_set_tspchager_InformHU(&ivi_chargeSt);
+				tbox_ivi_set_tspchager_InformHU(&ivi_chargeSt);//同步状态到HU
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
 
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
@@ -792,7 +787,6 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 
 				PP_rmtCharge_AppointBook.eventId = 0;
 				PP_rmtCharge_AppointBook.validFlg  = 1;
-				PP_rmtCharge_AppointBook.bookupdataflag = 1;
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.id = %d\n",PP_rmtCharge_AppointBook.id);
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.hour = %d\n",PP_rmtCharge_AppointBook.hour);
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.min = %d\n",PP_rmtCharge_AppointBook.min);
@@ -802,7 +796,6 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 
 				//保存记录
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
-				//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
 
 				//inform TSP the Reservation instruction issued status
 				rmtCtrl_Stpara.rvcReqType 		= PP_rmtCharge_AppointBook.rvcReqType;
@@ -814,8 +807,8 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				rmtCtrl_Stpara.HUbookingId		= PP_rmtCharge_AppointBook.id;
 				rmtCtrl_Stpara.eventid 			= PP_rmtCharge_AppointBook.eventId;
 				rmtCtrl_Stpara.Resptype 		= PP_RMTCTRL_HUBOOKINGRESP;
-				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-
+				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);//同步状态到TSP
+				PP_rmtCharge_AppointBook.bookupdataflag = 1;
 				PP_can_send_data(PP_CAN_CHAGER,CAN_SETAPPOINT,0);
 			}
 			else if(ivi_chargeAppointSt_ptr->cmd == PP_COMAND_CANCELAPPOINTCHARGE)
@@ -833,11 +826,8 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				PP_rmtCharge_AppointBook.period = 0xff;
 				PP_rmtCharge_AppointBook.huBookingTime = ivi_chargeAppointSt_ptr->timestamp;
 
-				PP_rmtCharge_AppointBook.bookupdataflag = 1;
-
 				//保存记录
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
-				//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,16);
 
 				//inform TSP the Reservation instruction issued status
 				rmtCtrl_Stpara.rvcReqType 		= PP_COMAND_CANCELAPPOINTCHARGE;
@@ -849,8 +839,8 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				rmtCtrl_Stpara.HUbookingId		= PP_rmtCharge_AppointBook.id;
 				rmtCtrl_Stpara.eventid 			= PP_rmtCharge_AppointBook.eventId;
 				rmtCtrl_Stpara.Resptype 		= PP_RMTCTRL_HUBOOKINGRESP;
-				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-
+				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);//同步状态到TSP
+				PP_rmtCharge_AppointBook.bookupdataflag = 1;
 				PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);
 			}
 			else
