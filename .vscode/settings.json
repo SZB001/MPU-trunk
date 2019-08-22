@@ -7,6 +7,7 @@
         "cfg_api.h": "c",
         "shell_api.h": "c",
         "cfg_para.h": "c",
-        "udef_para_def.h": "c"
+        "udef_para_def.h": "c",
+        "asn_internal.h": "c"
     }
 }

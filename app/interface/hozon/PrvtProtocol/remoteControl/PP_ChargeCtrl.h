@@ -68,7 +68,7 @@ typedef struct
 
 	uint8_t appointcharge;
 	uint8_t appointchargeSt;
-	uint64_t appointchargeTimer;
+	uint64_t appointchargeTime;
 }__attribute__((packed))  PP_rmtChargeCtrlSt_t; /*remote control*/
 
 
