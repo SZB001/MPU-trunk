@@ -179,11 +179,11 @@ BO_ 631 BMS_Fr07_277: 8 BMS
  SG_ BMS7CellUnderTempSts : 3|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7CellOverVoltageSts_@2WG7205 : 5|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7CellUnderVoltageSts_@2WG7206 : 7|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ BMS7OverVoltageSts : 9|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ BMS7UnderVoltageSts : 11|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ BMS7OverVoltageSts_@2WG7202 : 9|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ BMS7UnderVoltageSts_@2WG7203 : 11|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7UnderSOCSts_@2WG7204 : 13|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7OverCurrentSts : 15|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ BMS7IsolSuperSts : 17|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ BMS7IsolSuperSts_@2WG720B : 17|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7TempDiffSts_@2WG7200 : 19|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7DiagSts : 21|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7CellConsistencySts_@2WG720A : 23|2@0+(1,0)[0|3] "" Vector__XXX
@@ -259,6 +259,7 @@ BO_ 972 MCU_Fr03_3CC: 8 MCU
  SG_ MCU3DClinkVoltage_@2WG2005 : 7|16@0+(0.05,0)[0|600] "V" Vector__XXX
  SG_ MCU3DClinkCurrent_@2WG2006 : 23|16@0+(0.05,-512)[-512|512] "A" Vector__XXX
  SG_ MCU3Mode_@2WGE00A : 39|3@0+(1,0)[0|7] "" Vector__XXX
+ SG_ GBMCU3Mode_@2WG2000 : 39|3@0+(1,0)[0|7] "" Vector__XXX
  SG_ MCU3InverterTemperature_@2WG2001 : 55|8@0+(1,-48)[-48|206] "¡æ" Vector__XXX
  SG_ MCU3MotorTemperature_@2WG2004 : 63|8@0+(1,-48)[-48|206] "¡æ" Vector__XXX
  SG_ MCU3HVILDCBus_@2WG3001 : 36|1@0+(1,0)[0|1] "" Vector__XXX
@@ -549,7 +550,7 @@ BO_ 661 ESC_Fr09_295: 8 ESC
  SG_ ESCACCOption : 8|1@0+(1,0)[0|1] "" Vector__XXX
 BO_ 1304 BMS_Fr12_518: 8 BMS
  SG_ BVOverTemp : 17|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ IsolationFault_@2WG720B : 31|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ IsolationFault : 31|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMSOverTempFault : 39|2@0+(1,0)[0|3] "" Vector__XXX
 BO_ 1345 BMS_Fr14_541: 8 BMS
  SG_ ChargingStationMaxOutpV : 7|10@0+(1,0)[0|1000] "V" Vector__XXX
@@ -837,14 +838,14 @@ BA_ "IN_SHIFT_0D" R
 BA_ "IN_SHIFT_0E" P
 BA_ "IN_SHIFT_0F" FF
 
-BA_ "IN_MOTSTATE1_03" 01
-BA_ "IN_MOTSTATE1_04" 01
-BA_ "IN_MOTSTATE1_05" 01
-BA_ "IN_MOTSTATE1_07" 01
-BA_ "IN_MOTSTATE1_02" 03
-BA_ "IN_MOTSTATE1_00" 03
-BA_ "IN_MOTSTATE1_06" 04
-BA_ "IN_MOTSTATE1_01" FE
+BA_ "IN_MOTSTATE0_03" 01
+BA_ "IN_MOTSTATE0_04" 01
+BA_ "IN_MOTSTATE0_05" 01
+BA_ "IN_MOTSTATE0_07" 01
+BA_ "IN_MOTSTATE0_02" 02
+BA_ "IN_MOTSTATE0_00" 03
+BA_ "IN_MOTSTATE0_06" 04
+BA_ "IN_MOTSTATE0_01" FE
 
 BA_ "SigDefault" BMS1StateOfCharge 255
 

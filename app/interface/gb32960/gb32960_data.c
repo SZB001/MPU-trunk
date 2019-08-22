@@ -1352,7 +1352,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     {
     	0,0,0,0,0,
 		0,0,0,0,0,
-		0,1,1,1,1,
+		0,0,1,1,1,
 		0,1,0,0,0,
 		0,0,0,0,0,
 		0,0,0,0,0,
@@ -1361,16 +1361,6 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 
     for(i = 0; i < 3; i++)
     {
-		if(gbinf->warn[i][5])
-		{
-			gbinf->warn[i][2] = gbinf->warn[i][5];
-		}
-
-		if(gbinf->warn[i][6])
-		{
-			gbinf->warn[i][3] = gbinf->warn[i][6];
-		}
-
 		if(gbinf->warn[i][15])
 		{
 			gbinf->warn[i][17] = gbinf->warn[i][15];
