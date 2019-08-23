@@ -981,7 +981,7 @@ static uint32_t gb_data_save_cell(gb_info_t *gbinf, uint8_t *buf)
     static uint32_t start = 0;
 
     buf[len++] = GB_DATA_BATTVOLT;
-    buf[len++] = 1;
+    buf[len++] = 1;//参考《national-standard_国标信息_EP30_20190823.xlsx》,子系统 1 个
     buf[len++] = 1;
 
     /* packet voltage, scale 0.1V */
@@ -1358,14 +1358,6 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 		0,0,0,0,0,
 		0,0
     };
-
-    for(i = 0; i < 3; i++)
-    {
-		if(gbinf->warn[i][15])
-		{
-			gbinf->warn[i][17] = gbinf->warn[i][15];
-		}
-    }
 
     /* DCDC state */
     if (gbinf->vehi.info[GB_VINF_DCDC])//dcdc为3级报警，客户提供

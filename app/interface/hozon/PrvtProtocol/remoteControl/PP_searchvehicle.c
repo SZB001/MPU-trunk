@@ -119,6 +119,7 @@ int PP_searchvehicle_mainfunction(void *task)
 				}
 				else
 				{
+					log_o(LOG_HOZON," low power or power state on");
 					PP_rmtsearchvehicle.state.req = 0;
 					serachvehicle_success_flag = 0;
 					search_vehicle_stage = PP_SEARCHVEHICLE_END;
@@ -298,9 +299,5 @@ void PP_searchvehicle_SetCtrlReq(unsigned char req,uint16_t reqType)
 	PP_rmtsearchvehicle.state.style = RMTCTRL_TSP;
 }
 /************************shell命令测试使用**************************/
-
-
-
-
 
 

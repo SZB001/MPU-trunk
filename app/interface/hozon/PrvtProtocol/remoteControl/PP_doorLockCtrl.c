@@ -151,7 +151,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 				}
 				else  //不满足门控条件
 				{
-					//log_o(LOG_HOZON," low power or power state on");
+					log_o(LOG_HOZON," low power or power state on");
 					PP_rmtdoorCtrl.state.req = 0;
 					doorLock_success_flag = 0;
 					door_lock_stage = PP_DOORLOCKCTRL_END;

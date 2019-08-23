@@ -34,6 +34,7 @@ description： include the header file
 #include "init.h"
 #include "log.h"
 #include "list.h"
+#include "cfg_api.h"
 #include "../../support/protocol.h"
 #include "../sockproxy/sockproxy_txdata.h"
 #include "gb32960_api.h"
@@ -58,7 +59,9 @@ description： include the header file
 #include "PP_StartEngine.h"
 #include "PP_StartForbid.h"
 #include "PP_SeatHeating.h"
+#include "PP_CameraCtrl.h"
 #include "../PrvtProt_SigParse.h"
+#include "../PrvtProt_remoteConfig.h"
 #include "PP_rmtCtrl.h"
 
 /*******************************************************
@@ -96,7 +99,8 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 	{RMTCTRL_AC,	         PP_ACCtrl_init, 	    PP_ACCtrl_mainfunction},
 	{RMTCTRL_CHARGE,         PP_ChargeCtrl_init,	PP_ChargeCtrl_mainfunction},
 	{RMTCTRL_ENGINECTRL,	 PP_startforbid_init, 	PP_startforbid_mainfunction},
-	{RMTCTRL_SEATHEATINGCTRL,PP_seatheating_init, 	PP_seatheating_mainfunction}
+	{RMTCTRL_SEATHEATINGCTRL,PP_seatheating_init, 	PP_seatheating_mainfunction},
+	{RMTCTRL_CAMERACTRL,     PP_CameraCtrl_init,    PP_CameraCtr_mainfunction}
 };
 
 static int PP_rmtCtrl_flag = 0;
@@ -120,6 +124,8 @@ static int PP_rmtCtrl_getIdleNode(void);
 /******************************************************
 description： function code
 ******************************************************/
+
+
 /******************************************************
 *函数名：PP_rmtCtrl_init
 
@@ -150,6 +156,52 @@ void PP_rmtCtrl_init(void)
 		memset(&rmtCtrl_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	}
 }
+uint8_t PP_rmtCtrl_request(void)
+{
+	uint8_t ret = 0;
+	ret  = PP_doorLockCtrl_start() ||
+		   PP_autodoorCtrl_start() ||
+		   PP_searchvehicle_start()||
+		   PP_sunroofctrl_start()  ||
+		   PP_startengine_start()  ||
+		   PP_seatheating_start()  ||
+		   PP_ChargeCtrl_start()   ||
+		   PP_ACCtrl_start()	   ||
+		   PP_startforbid_start()  ||
+		   PP_CameraCtrl_start();
+	return ret;
+}
+
+uint8_t PP_rmtCtrl_end(void)
+{
+	uint8_t ret = 0;
+	ret = PP_doorLockCtrl_end() &&	\
+		  PP_autodoorCtrl_end()   &&	\
+		  PP_searchvehicle_end()  &&	\
+		  PP_sunroofctrl_end()    &&	\
+		  PP_startengine_end()    &&	\
+		  PP_seatheating_end()    &&	\
+		  PP_ChargeCtrl_end()	  &&	\
+		  PP_ACCtrl_end()	      &&	\
+		  PP_startforbid_end()    &&    \
+		  PP_CameraCtrl_end();
+	return ret;
+}
+
+void PP_rmtCtrl_clear(void)
+{
+	PP_autodoorCtrl_ClearStatus();
+	PP_doorLockCtrl_ClearStatus();
+	PP_searchvehicle_ClearStatus();
+	PP_seatheating_ClearStatus();
+	PP_startengine_ClearStatus();
+	PP_startforbid_ClearStatus();
+	PP_sunroofctrl_ClearStatus();
+	PP_ChargeCtrl_ClearStatus();
+	PP_ACCtrl_ClearStatus();
+	PP_CameraCtrl_ClearStatus();
+}
+
 
 /******************************************************
 *函数名：PP_rmtCtrl_mainfunction
@@ -187,19 +239,29 @@ int PP_rmtCtrl_mainfunction(void *task)
 			PP_ChargeCtrl_chargeStMonitor(task_ptr);//监测充电状态
 			PP_AcCtrl_acStMonitor(task_ptr);        //查询空调预约时间
 			PP_SeatCtrl_SeatStMonitor(task_ptr);    //查询座椅加热是否满足睡眠条件
-			ret  = PP_doorLockCtrl_start() ||
-				   PP_autodoorCtrl_start() ||
-				   PP_searchvehicle_start()||
-				   PP_sunroofctrl_start()  ||
-				   PP_startengine_start()  ||
-				   PP_seatheating_start()  ||
-				   PP_ChargeCtrl_start()   ||
-				   PP_ACCtrl_start()	   ||
-				   PP_startforbid_start();
+			ret = PP_rmtCtrl_request();
 			if(ret == 1)
-			{
-				PP_can_mcu_awaken();//唤醒
-				PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
+			{	
+				if(PP_rmtCfg_enable_remotecontorl() == 1)
+				{
+					log_o(LOG_HOZON,"REMOTE CONTROL ENABLED");
+					PP_can_mcu_awaken();//唤醒
+					PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
+				}
+				else
+				{
+					log_o(LOG_HOZON,"REMOTE CONTROL NOT ENABLED");
+					// 清除远程控制请求
+					PP_rmtCtrl_clear();
+					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+					rmtCtrl_Stpara.reqType = PP_rmtCtrl.reqType;
+					rmtCtrl_Stpara.eventid = PP_rmtCtrl.eventid;
+					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
+					rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_NOTENABLE;
+					PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+					
+				}
 			}
 		}
 		break;
@@ -237,15 +299,7 @@ int PP_rmtCtrl_mainfunction(void *task)
     			PP_rmtCtrl_flag = RMTCTRL_IDLE;
 				log_o(LOG_HOZON,"-------identificat failed---------");
 				// 清除远程控制请求
-				PP_autodoorCtrl_ClearStatus();
-				PP_doorLockCtrl_ClearStatus();
-				PP_searchvehicle_ClearStatus();
-				PP_seatheating_ClearStatus();
-				PP_startengine_ClearStatus();
-				PP_startforbid_ClearStatus();
-				PP_sunroofctrl_ClearStatus();
-				PP_ChargeCtrl_ClearStatus();
-				PP_ACCtrl_ClearStatus();
+				PP_rmtCtrl_clear();
    			}
    			else
    			{}
@@ -263,15 +317,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 				}
 			}
 
-			ifend = PP_doorLockCtrl_end() &&	\
-				  PP_autodoorCtrl_end()   &&	\
-				  PP_searchvehicle_end()  &&	\
-				  PP_sunroofctrl_end()    &&	\
-				  PP_startengine_end()    &&	\
-				  PP_seatheating_end()    &&	\
-				  PP_ChargeCtrl_end()	  &&	\
-				  PP_ACCtrl_end()	      &&	\
-				  PP_startforbid_end();
+			ifend = PP_rmtCtrl_end();
 			if(ifend == 1)
 			{
 				PP_can_mcu_sleep();//休眠
@@ -417,11 +463,13 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 			case PP_RMTCTRL_DETECTCAMERA://驾驶员检测摄像头
 			{
+				SetPP_CameraCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote DETECTCAMERA control req");
 			}
 			break;
 			case PP_RMTCTRL_DATARECORDER://行车记录仪
 			{
+				SetPP_CameraCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote DATARECORDER control req");
 			}
 			break;
@@ -801,6 +849,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			else
 			{}
 			App_rmtCtrl.CtrlResp.basicSt.accMode 			= gb_data_ACMode()	/* OPTIONAL */;
+			
 			App_rmtCtrl.CtrlResp.basicSt.accBlowVolume		= gb_data_BlowerGears()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.innerTemp 			= gb_data_InnerTemp();
 			App_rmtCtrl.CtrlResp.basicSt.outTemp 			= gb_data_outTemp();

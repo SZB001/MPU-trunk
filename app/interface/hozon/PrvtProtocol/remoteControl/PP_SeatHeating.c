@@ -141,6 +141,7 @@ int PP_seatheating_mainfunction(void *task)
 					}
 					else
 					{
+						log_o(LOG_HOZON," low power or power state on");
 						PP_rmtseatheatCtrl[i].state.req = 0;
 						PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
 						PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END;
@@ -153,6 +154,7 @@ int PP_seatheating_mainfunction(void *task)
 			break;
 			case PP_SEATHEATING_REQSTART:        
 			{
+			#if 0
 				if(PP_get_powerst() == 1)//上高压电成功标志
 				{
 					if(i == 0)
@@ -174,6 +176,44 @@ int PP_seatheating_mainfunction(void *task)
 				}
 				else
 				{}
+			#endif
+				if(PP_rmtseatheatCtrl[i].state.reqType == cmd[i])
+				{
+					if(PP_get_powerst() == 1)//上高压电成功标志
+					{
+						if(i == 0)
+						{
+							PP_can_send_data(PP_CAN_SEATHEAT,PP_rmtseatheatCtrl[i].level + 1,CAN_SEATHEATMAIN);
+						}
+						else
+						{
+							PP_can_send_data(PP_CAN_SEATHEAT,PP_rmtseatheatCtrl[i].level + 1,CAN_SEATHEATPASS);
+						}
+				   		PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_RESPWAIT;
+				    	PP_rmtseatheatCtrl[i].PP_Respwaittime = tm_get_time();
+					}
+					else if(PP_get_powerst() == 3) //高压电操作失败
+					{
+						PP_seatheating_ClearStatus();//清除座椅请求
+						PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END;
+						PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
+					}
+					else
+					{}
+				}
+				else           //座椅加热关闭
+				{
+					if(i == 0)
+					{
+						PP_can_send_data(PP_CAN_SEATHEAT, 1,CAN_SEATHEATMAIN);
+					}
+					else
+					{
+						PP_can_send_data(PP_CAN_SEATHEAT, 1,CAN_SEATHEATPASS);
+					}
+					PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_RESPWAIT;
+				    PP_rmtseatheatCtrl[i].PP_Respwaittime = tm_get_time();
+				}
 			}
 			break;
 			case PP_SEATHEATING_RESPWAIT:  //  等待BDM应答
@@ -331,7 +371,7 @@ void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
 			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
 
-			log_i(LOG_HOZON, "remote door lock control req");
+			log_i(LOG_HOZON, "remote seatheating control req");
 			if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_MAINHEATOPEN) || \
 				(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_MAINHEATCLOSE))
 			{

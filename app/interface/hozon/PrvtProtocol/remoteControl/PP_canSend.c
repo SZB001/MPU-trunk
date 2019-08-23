@@ -305,7 +305,8 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 						PP_canSend_setbit(CAN_ID_445,14,1,0,NULL);//开启
 						break;
 					case CAN_SETACCTEP:
-						PP_canSend_setbit(CAN_ID_445,47,6,para,NULL); //设置温度
+						PP_canSend_setbit(CAN_ID_445,47,6,para,NULL); //设置主驾温度
+						PP_canSend_setbit(CAN_ID_445,55,6,para,NULL); //设置副驾温度
 						break;
 					default:
 						break;

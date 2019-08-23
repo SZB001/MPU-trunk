@@ -124,6 +124,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 				}
 				else
 				{
+					log_o(LOG_HOZON," low power or power state on");
 					PP_rmtsunroofCtrl.state.req = 0;
 					sunroof_success_flag = 0;
 					sunroof_ctrl_stage = PP_SUNROOFCTRL_END;	

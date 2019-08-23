@@ -50,6 +50,13 @@ description�� include the header file
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
+static uint8_t remote_control = 0;
+static uint8_t icall_enable = 0;
+static uint8_t bcall_enable = 0;
+static uint8_t ecall_enable = 0;
+
+
+
 
 /*******************************************************
 description�� static variable definitions
@@ -1166,19 +1173,36 @@ uint8_t PP_rmtCfg_getIccid(uint8_t* iccid)
 	return PP_rmtCfg.state.iccidValid;
 }
 
-#if 0
 void PP_rmtCfg_settbox(void)
 {	
 	//FICMConfigSettings
 	if(AppData_rmtCfg.ReadResp.FICM.ficmConfigValid == 1)
 	{
-		//AppData_rmtCfg.ReadResp.FICM.token;
+		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.FICM.token,33) == 1)  //国标Token
+		{
+			
+		}
+		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.FICM.userID,33) == 1) //国标用户
+		{
+			
+		}
+		if(AppData_rmtCfg.ReadResp.FICM.directConnEnable == 1)   //国标直连开关
+		{
+			
+		}
+		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.FICM.address,33) == 1)   //国标地址
+		{
+			
+		}
+		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.FICM.port,7) == 1)      //国标端口
+		{
+		}
 	}
 	
 	//APN1ConfigSettings APN1 
 	if(AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid == 1)
 	{
-		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.tspAddr,33) == 1)
+		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.tspAddr,33) == 1)   
 		{
 		}
 		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.tspUser,17) ==1 )
@@ -1222,51 +1246,67 @@ void PP_rmtCfg_settbox(void)
 	{
 		if(AppData_rmtCfg.ReadResp.COMMON.actived == 1) //T服务开启使能
 		{
-			uint8_t temp = 1;
-			(void)cfg_set_para(CFG_ITEM_ACTIVED,(void *)&temp,1);	
+			
 		}
 		if(AppData_rmtCfg.ReadResp.COMMON.rcEnabled == 1)  //远程控制使能
 		{
-			uint8_t temp = 1;
-			(void)cfg_set_para(CFG_ITEM_REMOTE_ENABLE,(void *)&temp,1);	
+			remote_control = 1;
 		}
 		if(AppData_rmtCfg.ReadResp.COMMON.svtEnabled == 1) //SVT使能
 		{
-			uint8_t temp = 1;
-			(void)cfg_set_para(CFG_ITEM_SVT_ENABLE,(void *)&temp,1);	
 			
 		}
 		if(AppData_rmtCfg.ReadResp.COMMON.vsEnabled == 1) //车辆状态使能
 		{
-			uint8_t temp = 1;
-			(void)cfg_set_para(CFG_ITEM_VS_ENABLE,(void *)&temp,1);	
+			
 		}
 		if(AppData_rmtCfg.ReadResp.COMMON.iCallEnabled == 1) //ICALL使能
 		{
+			icall_enable = 1;
 		}
 		if(AppData_rmtCfg.ReadResp.COMMON.bCallEnabled == 1) //BCALL使能
 		{
+			bcall_enable = 1;
 		}
 		if(AppData_rmtCfg.ReadResp.COMMON.eCallEnabled == 1) //ECALL使能
 		{
+			ecall_enable = 1;
 		}
 		if(AppData_rmtCfg.ReadResp.COMMON.dcEnabled == 1)  //DATA_COLLECTION_ENABLED
 		{
+			
 		}
 		if(AppData_rmtCfg.ReadResp.COMMON.dtcEnabled == 1) //REMOTE_DTC_ENABLED
 		{
+			
 		}
 		if(AppData_rmtCfg.ReadResp.COMMON.journeysEnabled == 1)//JOURNEYS_ENABLED
 		{
+			
 		}
 		if(AppData_rmtCfg.ReadResp.COMMON.onlineInfEnabled == 1)//ONLINE_INF_ENABLED
 		{
+			
 		}
 		if(AppData_rmtCfg.ReadResp.COMMON.rChargeEnabled == 1)//REMOTE CHARGE ENABLED
 		{
+			
 		}
 		if(AppData_rmtCfg.ReadResp.COMMON.btKeyEntryEnabled == 1)//BT_KEY_ENTRY_ENABLED
 		{
+			
+		}
+		if(AppData_rmtCfg.ReadResp.COMMON.carEmpowerEnabled == 1) //carEmpowerEnabled
+		{
+			
+		}
+		if(AppData_rmtCfg.ReadResp.COMMON.eventReportEnabled == 1) //eventReportEnabled
+		{
+			
+		}
+		if(AppData_rmtCfg.ReadResp.COMMON.carAlarmEnabled == 1)//carAlarmEnabled
+		{
+			
 		}
 	}
 	//ExtendConfigSettings
@@ -1319,4 +1359,55 @@ uint8_t PP_rmtCfg_is_empty(uint8_t *dt,int len)
 	}
 	return 0;
 }
-#endif
+uint8_t PP_rmtCfg_enable_remotecontorl(void)
+{
+	if(remote_control == 1)
+	{
+		return 1;
+	}
+	else
+	{
+		return 1;
+	}
+	
+}
+uint8_t PP_rmtCfg_enable_icall(void)
+{
+	if(icall_enable == 1)
+	{
+		return 1;
+	}
+	else
+	{
+		return 1;
+	}
+	
+}
+uint8_t PP_rmtCfg_enable_bcall(void)
+{
+	if(bcall_enable == 1)
+	{
+		return 1;
+	}
+	else
+	{
+		return 1;
+	}
+	
+}
+uint8_t PP_rmtCfg_enable_ecall(void)
+{
+	if(ecall_enable == 1)
+	{
+		return 1;
+	}
+	else
+	{
+		return 1;
+	}
+	
+}
+
+
+
+

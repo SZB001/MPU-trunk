@@ -277,6 +277,12 @@ extern int PP_rmtCfg_mainfunction(void *task);
 extern void PP_rmtCfg_SetCfgReq(unsigned char req);
 extern void PP_rmtCfg_ShowCfgPara(void);
 extern uint8_t PP_rmtCfg_getIccid(uint8_t* iccid);
-//extern void PP_rmtCfg_settbox(void);
-//extern uint8_t PP_rmtCfg_is_empty(uint8_t *dt,int len);
+extern void PP_rmtCfg_settbox(void);
+extern uint8_t PP_rmtCfg_is_empty(uint8_t *dt,int len);
+extern uint8_t PP_rmtCfg_enable_remotecontorl(void);
+extern uint8_t PP_rmtCfg_enable_icall(void);
+extern uint8_t PP_rmtCfg_enable_bcall(void);
+extern uint8_t PP_rmtCfg_enable_ecall(void);
+
+
 #endif 

@@ -85,57 +85,80 @@ int PP_startengine_mainfunction(void *task)
 	{
 		case PP_STARTENGINE_IDLE:
 		{
-			if(PP_rmtCtrl_cfg_RmtStartSt() == 0)   //上电走此流程
+			if(((PP_rmtengineCtrl.state.req == 1)&&(enginecation == PP_POWERON))|| (PP_get_seat_requestpower_flag() == 1 )||(PP_get_ac_requestpower_flag() == 1))
 			{
-				if((PP_rmtengineCtrl.state.req == 1)|| (PP_get_seat_requestpower_flag() == 1 )||(PP_get_ac_requestpower_flag() == 1))
+				log_o(LOG_HOZON,"request power on!!\n");
+				if(PP_rmtCtrl_cfg_RmtStartSt() == 0)   //上电走此流程
 				{
-					log_o(LOG_HOZON,"request power on!!\n");
 					if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 					{	
 						start_engine_stage = PP_STARTENGINE_REQSTART;
 						enginecation = PP_POWERON;
 						startengine_success_flag = 0;
+						if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp
+						{
+							PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+							rmtCtrl_Stpara.rvcReqStatus = 1;  
+							rmtCtrl_Stpara.rvcFailureType = 0;
+							rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
+							rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
+							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+							res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+						}
 					}
 					else
 					{
+						log_o(LOG_HOZON," low power or power state on");
+						PP_set_seat_requestpower_flag();
+						PP_set_ac_requestpower_flag();
 						start_engine_stage = PP_STARTENGINE_END;
 						startengine_success_flag = 3;  //不满足条件，失败标志位置起来
 					}
-					if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp
-					{
-						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-						rmtCtrl_Stpara.rvcReqStatus = 1;  
-						rmtCtrl_Stpara.rvcFailureType = 0;
-						rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
-						rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
-						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-					}
+				}
+				else  //已经上电了
+				{
+					startengine_success_flag = 1;  //上电成功
+					log_o(LOG_HOZON,"Successfully powered on\n");
+					PP_set_seat_requestpower_flag();
+					PP_set_ac_requestpower_flag();
+					start_engine_stage = PP_STARTENGINE_END;
 				}
 			}
-		
 			if((PP_rmtengineCtrl.state.req == 1)&&(enginecation == PP_POWEROFF)) //下电流程
 			{
 				if(PP_rmtCtrl_cfg_RmtStartSt() == 2)
 				{
-					start_engine_stage = PP_STARTENGINE_REQSTART;
-					startengine_success_flag = 0;
+					if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+					{
+						start_engine_stage = PP_STARTENGINE_REQSTART;
+						startengine_success_flag = 0;
+						if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp
+						{
+							PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+							rmtCtrl_Stpara.rvcReqStatus = 1;  
+							rmtCtrl_Stpara.rvcFailureType = 0;
+							rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
+							rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
+							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+							res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+						}
+					}
+					else
+					{
+						log_o(LOG_HOZON," low power or power state on");
+						PP_set_seat_requestpower_flag();
+						PP_set_ac_requestpower_flag();
+						start_engine_stage = PP_STARTENGINE_END;
+						startengine_success_flag = 3;  //不满足条件，失败标志位置起来
+					}
 				}
-		
-				else
+				else  //
 				{
 					start_engine_stage = PP_STARTENGINE_END;
-					startengine_success_flag = 3;  //不满足条件，失败标志位置起来
-				}
-				if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp
-				{
-					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-					rmtCtrl_Stpara.rvcReqStatus = 1;  
-					rmtCtrl_Stpara.rvcFailureType = 0;
-					rmtCtrl_Stpara.reqType =PP_rmtengineCtrl.state.reqType;
-					rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
-					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-					res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+					log_o(LOG_HOZON,"Successfully powered off\n");
+					PP_set_seat_requestpower_flag();
+					PP_set_ac_requestpower_flag();
+					startengine_success_flag = 1;
 				}
 			}
 			PP_rmtengineCtrl.state.req = 0;
@@ -379,10 +402,12 @@ void PP_rmtCtrl_checkenginetime(void)
 		if(PP_get_seat_requestpower_flag() == 2)
 		{
 			PP_set_seat_requestpower_flag();  //当已经下电了，又有请求下电的，清除标志
+			log_o(LOG_HOZON,"High voltage has been turned off,");
 		}
 		if(PP_get_ac_requestpower_flag() == 2)
 		{
 			PP_set_ac_requestpower_flag();    //当已经下电了，又有请求下电的，清除标志
+			log_o(LOG_HOZON,"High voltage has been turned off,");
 		}
 		if((PP_get_seat_requestpower_flag() == 1 )||(PP_get_ac_requestpower_flag() == 1))
 		{
@@ -396,10 +421,12 @@ void PP_rmtCtrl_checkenginetime(void)
 		if(PP_get_seat_requestpower_flag() == 1 )
 		{
 			PP_set_seat_requestpower_flag();  //当已经上电了，又有请求上电的，清除标志
+			log_o(LOG_HOZON,"High voltage has been turned on,");
 		}
 		if(PP_get_ac_requestpower_flag() == 1)
 		{
 			PP_set_ac_requestpower_flag(); //当已经上电了，又有请求上电的，清除标志
+			log_o(LOG_HOZON,"High voltage has been turned on,");
 		}
 		if(tm_get_time() - PP_Engine_time > 15 * 60 * 1000) //15分钟到请求下电
 		{
@@ -489,11 +516,11 @@ void PP_startengine_SetCtrlReq(unsigned char req,uint16_t reqType)
 	PP_rmtengineCtrl.state.req = 1;
 	if(PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_POWERON)
 	{
-		enginecation = 1;  //上高压电
+		enginecation = PP_POWERON;  //上高压电
 	}
 	else
 	{
-		enginecation = 0; //下高压电
+		enginecation = PP_POWEROFF; //下高压电
 	}
 	PP_rmtengineCtrl.state.style = RMTCTRL_TSP;
 }

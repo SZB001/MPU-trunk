@@ -22,6 +22,7 @@ description： include the header file
 #include "PrvtProt_callCenter.h"
 #include "tbox_ivi_api.h"
 #include "PrvtProt_cfg.h"
+#include "PrvtProt_remoteConfig.h"
 #include "cfg_api.h"
 
 
@@ -145,124 +146,152 @@ int PrvtProt_CC_mainfunction(void *task)
 		{
 			case 0:   //拨打ecall
 			{
-
-				if(assist_get_call_status() != 5) //是否空闲
+				if(PP_rmtCfg_enable_ecall() == 1)  //ecall使能
 				{
-					if( 0 == Get_call_tpye())  //ecall在通话
+					log_o(LOG_HOZON,"ECALL ENABLE");
+					if(assist_get_call_status() != 5) //是否空闲
 					{
-						log_o(LOG_HOZON,"Ecall dailing");
-						tbox_ivi_clear_call_flag();
-						return 0;	
-					}
-					else if( 1 == Get_call_tpye() ) //bcall 在通话
-					{
-						log_o(LOG_HOZON,"Bcall hang");
-						disconnectcall();
-						if(assist_get_call_status() == 5)
+						if( 0 == Get_call_tpye())  //ecall在通话
 						{
-							ivi_callstate_response_send(ivi_clients[0].fd);
+							log_o(LOG_HOZON,"Ecall dailing");
+							tbox_ivi_clear_call_flag();
+							return 0;	
 						}
-						else
+						else if( 1 == Get_call_tpye() ) //bcall 在通话
 						{
-							return 0;
+							log_o(LOG_HOZON,"Bcall hang");
+							disconnectcall();
+							if(assist_get_call_status() == 5)
+							{
+								ivi_callstate_response_send(ivi_clients[0].fd);
+							}
+							else
+							{
+								return 0;
+							}
+							tbox_ivi_clear_bcall_flag();
+							log_o(LOG_HOZON,"Ecall dailing");
+							
 						}
-						tbox_ivi_clear_bcall_flag();
-						log_o(LOG_HOZON,"Ecall dailing");
+						else if (2 == Get_call_tpye() ) //icall 在通话
+						{
+							log_o(LOG_HOZON,"Icall hang");
+							disconnectcall();
+							if(assist_get_call_status() == 5)
+							{
+								ivi_callstate_response_send(ivi_clients[0].fd);
+							}
+							else
+							{
+								return 0;
+							}
+							tbox_ivi_clear_icall_flag();
+							log_o(LOG_HOZON,"ecall dailing");
+						}
 						
 					}
-					else if (2 == Get_call_tpye() ) //icall 在通话
-					{
-						log_o(LOG_HOZON,"Icall hang");
-						disconnectcall();
-						if(assist_get_call_status() == 5)
-						{
-							ivi_callstate_response_send(ivi_clients[0].fd);
-						}
-						else
-						{
-							return 0;
-						}
-						tbox_ivi_clear_icall_flag();
-						log_o(LOG_HOZON,"ecall dailing");
-					}
-					
-				}
-		        memset(xcall, 0, sizeof(xcall));
-		        len = sizeof(xcall);
-		        ret = cfg_get_para(CFG_ITEM_ECALL, xcall, &len);
+			        memset(xcall, 0, sizeof(xcall));
+			        len = sizeof(xcall);
+			        ret = cfg_get_para(CFG_ITEM_ECALL, xcall, &len);
 
-		        if (ret != 0)
-		        {
-		            log_e(LOG_IVI, "ecall read failed!!!");
-		           
-		        }
-				log_o(LOG_HOZON,"xcall = %s",xcall);
-				if (strlen((char *)xcall) > 0)
-		        {
-		             makecall((char *)xcall);
-					 tbox_ivi_clear_call_flag();
-					 PrvtProtCfg_ecallSt(1);  //通知TSP
-					 log_o(LOG_HOZON,"Ecall dail");
-					 ecall_flag = 1;
-		        }
+			        if (ret != 0)
+			        {
+			            log_e(LOG_IVI, "ecall read failed!!!");
+			           
+			        }
+					log_o(LOG_HOZON,"xcall = %s",xcall);
+					if (strlen((char *)xcall) > 0)
+			        {
+			             makecall((char *)xcall);
+						 tbox_ivi_clear_call_flag();
+						 PrvtProtCfg_ecallSt(1);  //通知TSP
+						 log_o(LOG_HOZON,"Ecall dail");
+						 ecall_flag = 1;
+			        }
+					else
+					{
+						tbox_ivi_clear_call_flag();
+						log_o(LOG_HOZON,"No phone number set");
+					}
+				}
 				else
 				{
 					tbox_ivi_clear_call_flag();
-					log_o(LOG_HOZON,"No phone number set");
+					log_o(LOG_HOZON,"ECALL NOT ENABLE");
 				}
 				break;	
 			}
 			case 1:  //拨打bcall
 			{
-				if(assist_get_call_status() != 5) //是否空闲
+				if(PP_rmtCfg_enable_bcall() == 1)
 				{
-					return 0;
-				}
-		        memset(xcall, 0, sizeof(xcall));
-		        len = sizeof(xcall);
-		        ret = cfg_get_para(CFG_ITEM_BCALL, xcall, &len);
+					log_o(LOG_HOZON,"BCALL ENABNLE");
+					if(assist_get_call_status() != 5) //是否空闲
+					{
+						tbox_ivi_clear_bcall_flag();
+						return 0;
+					}
+			        memset(xcall, 0, sizeof(xcall));
+			        len = sizeof(xcall);
+			        ret = cfg_get_para(CFG_ITEM_BCALL, xcall, &len);
 
-		        if (ret != 0)
-		        {
-		            log_e(LOG_IVI, "bcall read failed!!!"); 
-		        }
-				if (strlen((char *)xcall) > 0)
-		        {
-		             makecall((char *)xcall);
-					 PrvtProtCfg_bcallSt(1);
-					 tbox_ivi_clear_call_flag();
-					 bcall_flag = 1;
-		        }
+			        if (ret != 0)
+			        {
+			            log_e(LOG_IVI, "bcall read failed!!!"); 
+			        }
+					if (strlen((char *)xcall) > 0)
+			        {
+			             makecall((char *)xcall);
+						 PrvtProtCfg_bcallSt(1);
+						 tbox_ivi_clear_bcall_flag();
+						 bcall_flag = 1;
+			        }
+					else
+					{
+						log_o(LOG_HOZON,"No phone number set");
+						tbox_ivi_clear_bcall_flag();
+					}
+				}
 				else
 				{
-					log_o(LOG_HOZON,"No phone number set");
 					tbox_ivi_clear_bcall_flag();
+					log_o(LOG_HOZON,"BCALL NOT ENABLE");
 				}
 				break;
 			}
 			case 2:  //拨打icall
 			{
-				if(assist_get_call_status() != 5) //是否空闲
+				if(PP_rmtCfg_enable_icall() == 1)
 				{
-					return 0;
+					log_o(LOG_HOZON,"ICALL ENABNLE");
+					if(assist_get_call_status() != 5) //是否空闲
+					{
+						tbox_ivi_clear_icall_flag();
+						return 0;
+					}
+			        memset(xcall, 0, sizeof(xcall));
+			        len = sizeof(xcall);
+			        ret = cfg_get_para(CFG_ITEM_BCALL, xcall, &len);
+			        if (ret != 0)
+			        {
+			            log_e(LOG_IVI, "icall read failed!!!"); 
+			        }
+					if (strlen((char *)xcall) > 0)
+			        {
+			             makecall((char *)xcall);
+						 tbox_ivi_clear_icall_flag();
+						 icall_flag = 1;
+			        }
+					else
+					{
+						tbox_ivi_clear_icall_flag();
+						log_o(LOG_HOZON,"No phone number set");
+					}
 				}
-		        memset(xcall, 0, sizeof(xcall));
-		        len = sizeof(xcall);
-		        ret = cfg_get_para(CFG_ITEM_BCALL, xcall, &len);
-		        if (ret != 0)
-		        {
-		            log_e(LOG_IVI, "icall read failed!!!"); 
-		        }
-				if (strlen((char *)xcall) > 0)
-		        {
-		             makecall((char *)xcall);
-					 tbox_ivi_clear_call_flag();
-					 icall_flag = 1;
-		        }
 				else
 				{
 					tbox_ivi_clear_icall_flag();
-					log_o(LOG_HOZON,"No phone number set");
+					log_o(LOG_HOZON,"ICALL NOT ENABLE");
 				}
 				break;	
 			}

@@ -120,6 +120,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				}
 				else
 				{
+					log_o(LOG_HOZON," low power or power state on");
 					PP_rmtautodoorCtrl.state.req = 0;
 					autodoor_success_flag = 0;
 					auto_door_stage = PP_AUTODOORCTR_END;

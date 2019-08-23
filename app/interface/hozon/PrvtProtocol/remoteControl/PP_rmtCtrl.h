@@ -94,6 +94,7 @@ description： macro definitions
 #define PP_RMTCTRL_INVALID_ID			0x08//无效的预约ID
 #define PP_RMTCTRL_READYLIGHTON			0x09//运动模式
 #define PP_RMTCTRL_UPPOWERFAIL          0x04//上电失败
+#define PP_RMTCTRL_NOTENABLE            0x0A//远控没有使能    
 
 //蓝牙请求消息类型
 #define BT_VEhICLE_DOOR_REQ       0x03 //车门锁
@@ -153,6 +154,7 @@ typedef enum
 	RMTCTRL_CHARGE,//充电
 	RMTCTRL_ENGINECTRL,//禁止启动
 	RMTCTRL_SEATHEATINGCTRL,//座椅加热
+	RMTCTRL_CAMERACTRL, //摄像头
 	RMTCTRL_OBJ_MAX
 }PP_RMTCTRL_OBJ;
 
