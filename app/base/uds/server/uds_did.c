@@ -958,7 +958,6 @@ int uds_did_get_ignition_status(unsigned char *did, unsigned int len)
     }
     else
     {
-
         did[0] &= 0xFB;
     }
      
@@ -1235,15 +1234,30 @@ int uds_did_get_installation_date(unsigned char *did, unsigned int len)
 }
 int uds_did_get_configuration_code(unsigned char *did, unsigned int len)
 {
+    unsigned int length;
+    
     if (DID_LEN_CONFIGURATION_CODE > len)
     {
         log_e(LOG_UDS, "get configuration code len error, len:%d", len);
         return UDS_INVALID_PARA;
     }
 
-    memset(did, 0x00, DID_LEN_CONFIGURATION_CODE);
-    return 0;
+    length = DID_LEN_CONFIGURATION_CODE;
+    
+    return cfg_get_para(CFG_ITEM_DID_CFG_CODE, did, &length);
 }
+
+int uds_did_set_configuration_code(unsigned char *did, unsigned int len)
+{
+    if (DID_LEN_CONFIGURATION_CODE != len)
+    {
+        log_e(LOG_UDS, "set configuration code len error, len:%d", len);
+        return UDS_INVALID_PARA;
+    }
+
+    return cfg_set_para(CFG_ITEM_DID_CFG_CODE, did, DID_LEN_CONFIGURATION_CODE); 
+}
+
 int uds_did_get_phone(unsigned char *did, unsigned int len)
 {
     unsigned int length;

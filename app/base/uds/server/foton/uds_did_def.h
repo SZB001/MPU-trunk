@@ -79,7 +79,7 @@
 #define DID_LEN_TESTER_SN                                   (10)
 #define DID_LEN_PROGRAMMING_DATE                            (4)
 #define DID_LEN_INSTALLATION_DATE                           (4)
-#define DID_LEN_CONFIGURATION_CODE                          (4)
+#define DID_LEN_CONFIGURATION_CODE                          (1)
 #define DID_LEN_PHONE                                       (15)
 #define DID_LEN_ICCID                                       (20)
 #define DID_LEN_IMSI                                        (15)

@@ -78,6 +78,7 @@ int uds_did_get_imei(unsigned char *did, unsigned int len);
 
 int uds_did_set_tester_sn(unsigned char *did, unsigned int len);
 int uds_did_set_installation_date(unsigned char *did, unsigned int len);
+int uds_did_set_configuration_code(unsigned char *did, unsigned int len);
 
 
 int uds_did_get_esk(unsigned char *did, unsigned int len);

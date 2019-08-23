@@ -142,7 +142,7 @@ DIAG_DID_ATTR("Installation Date", DID_INSTALLATION_DATE, DIAG_DATA_STRING, DID_
               SecurityAccess_LEVEL1, uds_did_get_installation_date, uds_did_set_installation_date)
 /* No need*/
 DIAG_DID_ATTR("Configuration Code", DID_CONFIGURATION_CODE, DIAG_DATA_UCHAR, DID_LEN_CONFIGURATION_CODE,
-              SecurityAccess_LEVEL0, uds_did_get_configuration_code, NULL)
+              SecurityAccess_LEVEL1, uds_did_get_configuration_code, uds_did_set_configuration_code)
 
 /* read only,developed and self-tested*/
 DIAG_DID_ATTR("Phone", DID_PHONE, DIAG_DATA_UCHAR, DID_LEN_PHONE,
