@@ -531,7 +531,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 	}
 	else
 	{
-		if(PP_RMTCTRL_CFG_CHARGEING == PP_rmtCtrl_cfg_chargeSt())//��⵽�����
+		if(PP_RMTCTRL_CFG_CHARGEING == PP_rmtCtrl_cfg_chargeSt())//
 		{
 			PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_ONGOING;
 		}
@@ -541,8 +541,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
  * 检查睡眠条件
  * */
 	if((PP_rmtChargeCtrl.state.appointchargeSt != PP_APPOINTCHARGE_ONGOING) && \
-	   (PP_rmtChargeCtrl.state.req != 1) && (PP_rmtChargeCtrl.state.CtrlSt == PP_CHARGECTRL_IDLE) && \
-			   (PP_rmtCharge_AppointBook.bookupdataflag != 2))
+	   (PP_rmtChargeCtrl.state.req != 1) && (PP_rmtChargeCtrl.state.CtrlSt == PP_CHARGECTRL_IDLE))
 	{
 		PP_ChargeCtrl_Sleepflag = 1;
 	}
@@ -577,7 +576,8 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 			PP_rmtChargeCtrl.state.dataUpdata = 1;
 		}
 	}
-	else//IGN OFF
+	
+	if((1 == gb32960_PowerOffSt()) || (0 == dev_get_KL15_signal()))//IGN OFF
 	{
 		/*
 		 * 检查是否有数据更新，注意若在此前出现异常复位，会导致记录丢失
