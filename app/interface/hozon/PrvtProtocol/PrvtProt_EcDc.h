@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_EcDc.h
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_EcDc.h
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 
 Data			  Vasion			author
 2019/4/29		V1.0			liujian
@@ -9,30 +9,30 @@ Data			  Vasion			author
 #ifndef		_PRVTPROT_ECDC_H
 #define		_PRVTPROT_ECDC_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
-#define PP_ECDC_DATA_LEN 	1024//³¤¶È
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
+#define PP_ECDC_DATA_LEN 	1024//ï¿½ï¿½ï¿½ï¿½
 
-#define PP_ENCODE_DISBODY 	0x01//±àÂëdispatcher header
-#define PP_ENCODE_APPDATA 	0x02//±àÂëapp data
+#define PP_ENCODE_DISBODY 	0x01//ï¿½ï¿½ï¿½ï¿½dispatcher header
+#define PP_ENCODE_APPDATA 	0x02//ï¿½ï¿½ï¿½ï¿½app data
 
 
-/***********ºêº¯Êý***********/
+/***********ï¿½êº¯ï¿½ï¿½***********/
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 typedef enum
@@ -57,18 +57,19 @@ typedef enum
 	ECDC_RMTDIAG_RESP,//remote diag status response
 	ECDC_RMTDIAG_STATUS,//remote diag status
 	ECDC_RMTDIAG_IMAGEACQRESP,//remote diag image acq response
+	ECDC_RMTDIAG_CLEANFAULTRESP,//remote diag image acq response
 	ECDC_APP_MID_MAX
-} ECDC_APP_MID_TYPE;//Ó¦ÓÃÀàÐÍ
+} ECDC_APP_MID_TYPE;//Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 /*****struct definitions*****/
 
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 							  void *disptrBody, void *appchoice);

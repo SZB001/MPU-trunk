@@ -445,4 +445,22 @@ LogAcquisitionRespInfo ::= SEQUENCE --mid = 5
 	durationTime 		INTEGER(0..65535) -- 
 }
 
+FaultCodeClearanceReqInfo ::= SEQUENCE --mid = 6
+{
+	diagType 			INTEGER(0..255) -- 
+}
+
+FaultCodeClearanceRespInfo ::= SEQUENCE --mid = 7
+{
+	diagType			INTEGER(0..255), -- 
+	result				BOOLEAN, --
+	failureType			INTEGER(0..255) OPTIONAL --
+}
+
+CanBusMessageCollectReqInfo ::= SEQUENCE --mid = 8
+{
+	durationTime 			INTEGER(0..65535) -- 
+}
+
+
 END

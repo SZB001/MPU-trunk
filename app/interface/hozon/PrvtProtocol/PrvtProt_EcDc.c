@@ -54,6 +54,9 @@ description�� include the header file
 
 #include "LogAcquisitionRespInfo.h"
 //#include "LogAcquisitionResInfo.h"
+#include "FaultCodeClearanceReqInfo.h"
+#include "FaultCodeClearanceRespInfo.h"
+#include "CanBusMessageCollectReqInfo.h"
 
 #include "per_encoder.h"
 #include "per_decoder.h"
@@ -107,6 +110,9 @@ static asn_TYPE_descriptor_t *pduType_GIAG_imageAcqReq = &asn_DEF_ImageAcquisiti
 
 static asn_TYPE_descriptor_t *pduType_GIAG_LogAcqResp = &asn_DEF_LogAcquisitionRespInfo;
 //static asn_TYPE_descriptor_t *pduType_GIAG_LogAcqRes = &asn_DEF_LogAcquisitionResInfo;
+static asn_TYPE_descriptor_t *pduType_GIAG_FaultCodeCleanReq = &asn_DEF_FaultCodeClearanceReqInfo;
+static asn_TYPE_descriptor_t *pduType_GIAG_FaultCodeCleanResp = &asn_DEF_FaultCodeClearanceRespInfo;
+static asn_TYPE_descriptor_t *pduType_GIAG_CanBusMsgCollReq = &asn_DEF_CanBusMessageCollectReqInfo;
 
 static uint8_t tboxAppdata[PP_ECDC_DATA_LEN];
 static int tboxAppdataLen;
@@ -987,6 +993,27 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			}
 		}
 		break;
+		case ECDC_RMTDIAG_CLEANFAULTRESP:
+		{
+			log_i(LOG_UPER_ECDC, "encode:appdata rmt_diag_cleanfaultcode_response\n");
+			PP_FaultCodeClearanceResp_t	*FaultCodeClearanceResp_ptr = (PP_FaultCodeClearanceResp_t*)appchoice;
+			FaultCodeClearanceRespInfo_t FaultCodeClearanceResp;
+			memset(&FaultCodeClearanceResp,0 , sizeof(FaultCodeClearanceRespInfo_t));
+			FaultCodeClearanceResp.diagType = FaultCodeClearanceResp_ptr->diagType;
+			FaultCodeClearanceResp.result   = FaultCodeClearanceResp_ptr->result;
+			FaultCodeClearanceResp.failureType = &(FaultCodeClearanceResp_ptr->failureType);
+			log_i(LOG_UPER_ECDC, "FaultCodeClearanceResp.diagType = %d\n",FaultCodeClearanceResp.diagType);
+			log_i(LOG_UPER_ECDC, "FaultCodeClearanceResp.result = %d\n",FaultCodeClearanceResp.result);
+			log_i(LOG_UPER_ECDC, "FaultCodeClearanceResp.failureType = %d\n",*FaultCodeClearanceResp.failureType);
+			
+			ec = uper_encode(pduType_GIAG_FaultCodeCleanResp,(void *) &FaultCodeClearanceResp,PrvtPro_writeout,&key);
+			if(ec.encoded  == -1)
+			{
+				log_e(LOG_UPER_ECDC, "encode:appdata rmt_diag_cleanfaultcode_response fail\n");
+				return -1;
+			}
+		}
+		break;
 		case ECDC_RMTDIAG_RESP:
 		{
 			log_i(LOG_UPER_ECDC, "encode:appdata rmt_diag_resp\n");
@@ -1675,6 +1702,43 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->LogAcquisitionResp.logLevel = %ld\n",app_rmtDiag_ptr->LogAcquisitionResp.logLevel);
 					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->LogAcquisitionResp.startTime = %ld\n",app_rmtDiag_ptr->LogAcquisitionResp.startTime);
 					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->LogAcquisitionResp.durationTime = %ld\n",app_rmtDiag_ptr->LogAcquisitionResp.durationTime);
+				}
+				else if(PP_MID_DIAG_FAULTCODECLEAN == MID)
+				{
+					FaultCodeClearanceReqInfo_t	FaultCodeClearanceReq;
+					FaultCodeClearanceReqInfo_t *FaultCodeClearanceReq_ptr = &FaultCodeClearanceReq;
+
+					memset(&FaultCodeClearanceReq,0 , sizeof(FaultCodeClearanceReqInfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_GIAG_FaultCodeCleanReq,(void *) &FaultCodeClearanceReq_ptr, \
+							 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_e(LOG_UPER_ECDC,   "Could not decode remote fault code clean req data Frame\n");
+						return -1;
+					}
+
+					app_rmtDiag_ptr->FaultCodeClearanceReq.diagType = FaultCodeClearanceReq.diagType;
+					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->FaultCodeClearanceReq.diagType = %ld\n",app_rmtDiag_ptr->FaultCodeClearanceReq.diagType);
+				
+				}
+				else if(PP_MID_DIAG_CANBUSMSGCOLLREQ == MID)
+				{
+					CanBusMessageCollectReqInfo_t	CanBusMessageCollectReq;
+					CanBusMessageCollectReqInfo_t *CanBusMessageCollectReq_ptr = &CanBusMessageCollectReq;
+
+					memset(&CanBusMessageCollectReq,0 , sizeof(CanBusMessageCollectReqInfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_GIAG_CanBusMsgCollReq,(void *) &CanBusMessageCollectReq_ptr, \
+							 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_e(LOG_UPER_ECDC,   "Could not decode Can Bus Message Collect Req data Frame\n");
+						return -1;
+					}
+
+					app_rmtDiag_ptr->CanBusMessageCollectReq.durationTime = CanBusMessageCollectReq.durationTime;
+					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->CanBusMessageCollectReq.durationTime = %ld\n", \
+										app_rmtDiag_ptr->CanBusMessageCollectReq.durationTime);
+				
 				}
 				else
 				{}

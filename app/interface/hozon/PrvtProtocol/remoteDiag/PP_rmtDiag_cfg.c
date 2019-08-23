@@ -99,3 +99,16 @@ void getPPrmtDiagCfg_NodeFault(PP_rmtDiag_NodeFault_t *rmtDiag_NodeFault)
 {
 	rmtDiag_NodeFault = get_PP_rmtDiag_NodeFault_t();
 }
+
+/******************************************************
+*setPPrmtDiagCfg_FaultCodeClean
+*��  �Σ�
+*����ֵ��
+*��  ����
+*��  ע��
+******************************************************/
+void setPPrmtDiagCfg_FaultCodeClean(uint8_t obj)
+{
+    
+
+}

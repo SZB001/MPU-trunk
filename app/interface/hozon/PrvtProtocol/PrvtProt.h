@@ -74,13 +74,14 @@ description�� macro definitions
 
 #define PP_AID_DIAG	 		140//Զ�����
 //MID
-#define PP_MID_DIAG_REQ 	1//request
-#define PP_MID_DIAG_RESP 	2//response
+#define PP_MID_DIAG_REQ 			1//request
+#define PP_MID_DIAG_RESP 			2//response
 #define PP_MID_DIAG_STATUS 			3
 #define PP_MID_DIAG_IMAGEACQREQ  	4
 #define PP_MID_DIAG_LOGACQRESP 		5
-//#define PP_MID_DIAG_IMAGEACQRESP  	6
-//#define PP_MID_DIAG_LOGACQRES		7
+#define PP_MID_DIAG_FAULTCODECLEAN  6
+#define PP_MID_DIAG_FAULTCODECLEANRESP		7
+#define PP_MID_DIAG_CANBUSMSGCOLLREQ		8
 
 #define PP_TXPAKG_FAIL 	(-1)//���ķ���ʧ��
 #define PP_TXPAKG_SUCCESS 	  1//���ķ��ͳɹ�

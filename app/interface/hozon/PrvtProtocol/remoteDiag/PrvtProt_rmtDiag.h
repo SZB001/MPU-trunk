@@ -23,6 +23,7 @@ description�� macro definitions
 
 #define PP_DIAGPWRON_WAITTIME    	5000//5s
 #define PP_DIAGQUERY_WAITTIME    	5000//5s
+#define PP_FAULTCODECLEAN_WAITTIME    	5000//5s
 #define PP_DIAGQUERYALL_WAITTIME	45000//45s
 /***********�꺯��***********/
 
@@ -86,6 +87,14 @@ typedef enum
 	PP_RMTDIAG_ERROR_NONE = 0,//
 }PP_RMTDIAG_QUERYWRONGTYPE;
 
+typedef enum
+{
+	PP_FAULTCODECLEAN_IDLE = 0,//
+	PP_FAULTCODECLEAN_REQ,//
+	PP_FAULTCODECLEAN_WAIT,//
+	PP_FAULTCODECLEAN_END
+} PP_FAULTCODECLEAN_ST;
+
 /*****struct definitions*****/
 typedef struct
 {
@@ -120,6 +129,16 @@ typedef struct
 	uint16_t durationTime;
 
 	uint8_t	 faultquerySt;
+
+	uint8_t  cleanfaultSt;
+	uint8_t  cleanfaultReq;
+	uint8_t  cleanfaultType;
+	long	 cleanfaulteventId;
+	long	 cleanfaultexpTime;
+	uint8_t	 faultCleanSuccess;
+	uint64_t faultcleanwaittime;
+	uint8_t	 faultCleanResult;
+	uint8_t	 faultCleanfailureType;
 }PrvtProt_rmtDiagSt_t; /*�ṹ��*/
 
 typedef struct
@@ -203,6 +222,22 @@ typedef struct
 
 typedef struct
 {
+	long	diagType;
+}PP_FaultCodeClearanceReq_t;
+
+typedef struct
+{
+	long	diagType;
+	int		result;
+	long	failureType;
+}PP_FaultCodeClearanceResp_t;
+
+typedef struct
+{
+	long	durationTime;
+}PP_CanBusMessageCollectReq_t;
+typedef struct
+{
 	PP_DiagnosticReq_t  		DiagnosticReq;
 	PP_DiagnosticResp_t 		DiagnosticResp;
 	PP_DiagnosticStatus_t 		DiagnosticSt;
@@ -210,6 +245,9 @@ typedef struct
 	PP_ImageAcquisitionResp_t 	ImageAcquisitionResp;
 	PP_LogAcquisitionResp_t		LogAcquisitionResp;
 	PP_LogAcquisitionRes_t		LogAcquisitionRes;
+	PP_FaultCodeClearanceReq_t	FaultCodeClearanceReq;
+	PP_FaultCodeClearanceResp_t	FaultCodeClearanceResp;
+	PP_CanBusMessageCollectReq_t CanBusMessageCollectReq;
 }PP_App_rmtDiag_t;
 
 
