@@ -8,6 +8,8 @@
         "shell_api.h": "c",
         "cfg_para.h": "c",
         "udef_para_def.h": "c",
-        "asn_internal.h": "c"
+        "asn_internal.h": "c",
+        "ql_nw.h": "c",
+        "netlink.h": "c"
     }
 }

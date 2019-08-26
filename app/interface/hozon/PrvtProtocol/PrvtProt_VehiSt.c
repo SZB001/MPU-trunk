@@ -382,8 +382,8 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 		{
 			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//���� x 1000000,��GPS�ź���Чʱ��ֵΪ0
 		}
-		log_i(LOG_HOZON, "PP_appData.latitude = %lf",PP_VS_appdata.VSResp.gpsPos.latitude);
-		log_i(LOG_HOZON, "PP_appData.longitude = %lf",PP_VS_appdata.VSResp.gpsPos.longitude);
+		log_i(LOG_HOZON, "PP_appData.latitude = %ld",PP_VS_appdata.VSResp.gpsPos.latitude);
+		log_i(LOG_HOZON, "PP_appData.longitude = %ld",PP_VS_appdata.VSResp.gpsPos.longitude);
 	}
 	else
 	{
@@ -439,53 +439,100 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	else
 	{}
 	PP_VS_appdata.VSResp.basicSt.accMode 			= gb_data_ACMode()	/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.accMode  = %ld",PP_VS_appdata.VSResp.basicSt.accMode);
 	PP_VS_appdata.VSResp.basicSt.accBlowVolume		= gb_data_BlowerGears()/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.accBlowVolume  = %ld",PP_VS_appdata.VSResp.basicSt.accBlowVolume);
 	PP_VS_appdata.VSResp.basicSt.innerTemp 			= gb_data_InnerTemp();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.innerTemp  = %ld",PP_VS_appdata.VSResp.basicSt.innerTemp);
 	PP_VS_appdata.VSResp.basicSt.outTemp 			= gb_data_outTemp();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.outTemp  = %ld",PP_VS_appdata.VSResp.basicSt.outTemp);
 	PP_VS_appdata.VSResp.basicSt.sideLightStatus	= gb_data_PostionLampSt();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.sideLightStatus  = %ld",PP_VS_appdata.VSResp.basicSt.sideLightStatus);
 	PP_VS_appdata.VSResp.basicSt.dippedBeamStatus	= gb_data_NearLampSt();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.dippedBeamStatus  = %ld",PP_VS_appdata.VSResp.basicSt.dippedBeamStatus);
 	PP_VS_appdata.VSResp.basicSt.mainBeamStatus		= gb_data_HighbeamLampSt();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.mainBeamStatus  = %ld",PP_VS_appdata.VSResp.basicSt.mainBeamStatus);
 	PP_VS_appdata.VSResp.basicSt.hazardLightStus	= gb_data_TwinFlashLampSt();//双闪灯
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.hazardLightStus  = %ld",PP_VS_appdata.VSResp.basicSt.hazardLightStus);
 	PP_VS_appdata.VSResp.basicSt.frtRightTyrePre	= gb_data_frontRightTyrePre()/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frtRightTyrePre  = %ld",PP_VS_appdata.VSResp.basicSt.frtRightTyrePre);
 	PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp	= gb_data_frontRightTyreTemp()/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp);
 	PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre	= gb_data_frontLeftTyrePre()/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre  = %ld",PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre);
 	PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp	= gb_data_frontLeftTyreTemp()	/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp);
 	PP_VS_appdata.VSResp.basicSt.rearRightTyrePre	= gb_data_rearRightTyrePre()/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearRightTyrePre  = %ld",PP_VS_appdata.VSResp.basicSt.rearRightTyrePre);
 	PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp	= gb_data_rearRightTyreTemp()	/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp);
 	PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre	= gb_data_rearLeftTyrePre()/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre  = %ld",PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre);
 	PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp	= gb_data_rearLeftTyreTemp()/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.batterySOCExact	= gb_data_vehicleSOC() * 100;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp);
+	long VehicleSOC;
+	VehicleSOC = gb_data_vehicleSOC();
+	if(VehicleSOC > 100)
+	{
+		VehicleSOC = 0;
+	}
+	PP_VS_appdata.VSResp.basicSt.batterySOCExact	= VehicleSOC * 100;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batterySOCExact  = %ld",PP_VS_appdata.VSResp.basicSt.batterySOCExact);
 	PP_VS_appdata.VSResp.basicSt.chargeRemainTim	= gb_data_ACChargeRemainTime()/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.chargeRemainTim  = %ld",PP_VS_appdata.VSResp.basicSt.chargeRemainTim);
 	PP_VS_appdata.VSResp.basicSt.availableOdomtr	= gb_data_ResidualOdometer();//续航里程
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.availableOdomtr  = %ld",PP_VS_appdata.VSResp.basicSt.availableOdomtr);
 	PP_VS_appdata.VSResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.bookingChargeSt	= GetPP_ChargeCtrl_appointSt();
 	PP_VS_appdata.VSResp.basicSt.bookingChargeHour	= GetPP_ChargeCtrl_appointHour()	/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.bookingChargeHour  = %ld",PP_VS_appdata.VSResp.basicSt.bookingChargeHour);
 	PP_VS_appdata.VSResp.basicSt.bookingChargeMin	= GetPP_ChargeCtrl_appointMin()/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.bookingChargeMin  = %ld",PP_VS_appdata.VSResp.basicSt.bookingChargeMin);
 	PP_VS_appdata.VSResp.basicSt.chargeMode			= PrvtProtCfg_chargeSt()/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.chargeMode  = %ld",PP_VS_appdata.VSResp.basicSt.chargeMode);
 	PP_VS_appdata.VSResp.basicSt.chargeStatus 		= gb_data_chargestauus();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.chargeStatus  = %ld",PP_VS_appdata.VSResp.basicSt.chargeStatus);
 	PP_VS_appdata.VSResp.basicSt.powerMode			= gb_data_powermode();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.powerMode  = %ld",PP_VS_appdata.VSResp.basicSt.powerMode);
 	PP_VS_appdata.VSResp.basicSt.speed				= gb_data_vehicleSpeed();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.speed  = %ld",PP_VS_appdata.VSResp.basicSt.speed);
 	PP_VS_appdata.VSResp.basicSt.totalOdometer		= gb_data_vehicleOdograph();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.totalOdometer  = %ld",PP_VS_appdata.VSResp.basicSt.totalOdometer);
 	PP_VS_appdata.VSResp.basicSt.batteryVoltage		= gb_data_batteryVoltage();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batteryVoltage  = %ld",PP_VS_appdata.VSResp.basicSt.batteryVoltage);
 	PP_VS_appdata.VSResp.basicSt.batteryCurrent		= gb_data_batteryCurrent();
-	PP_VS_appdata.VSResp.basicSt.batterySOCPrc		= gb_data_vehicleSOC();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batteryCurrent  = %ld",PP_VS_appdata.VSResp.basicSt.batteryCurrent);
+	PP_VS_appdata.VSResp.basicSt.batterySOCPrc		= VehicleSOC;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batterySOCPrc  = %ld",PP_VS_appdata.VSResp.basicSt.batterySOCPrc);
 	PP_VS_appdata.VSResp.basicSt.dcStatus			= 1;
 	PP_VS_appdata.VSResp.basicSt.gearPosition		= gb_data_gearPosition();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.gearPosition  = %ld",PP_VS_appdata.VSResp.basicSt.gearPosition);
 	PP_VS_appdata.VSResp.basicSt.insulationRstance	= gb_data_insulationResistance();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.insulationRstance  = %ld",PP_VS_appdata.VSResp.basicSt.insulationRstance);
 	PP_VS_appdata.VSResp.basicSt.acceleratePedalprc	= gb_data_acceleratePedalPrc();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.acceleratePedalprc  = %ld",PP_VS_appdata.VSResp.basicSt.acceleratePedalprc);
 	PP_VS_appdata.VSResp.basicSt.deceleratePedalprc	= gb_data_deceleratePedalPrc();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.deceleratePedalprc  = %ld",PP_VS_appdata.VSResp.basicSt.deceleratePedalprc);
 	PP_VS_appdata.VSResp.basicSt.canBusActive		= gb_data_CanbusActiveSt();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.canBusActive  = %ld",PP_VS_appdata.VSResp.basicSt.canBusActive);
 	PP_VS_appdata.VSResp.basicSt.bonnetStatus		= 1;
 	PP_VS_appdata.VSResp.basicSt.lockStatus			= PP_rmtCtrl_cfg_doorlockSt();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.lockStatus  = %ld",PP_VS_appdata.VSResp.basicSt.lockStatus);
 	PP_VS_appdata.VSResp.basicSt.gsmStatus			= gb32960_networkSt();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.gsmStatus  = %ld",PP_VS_appdata.VSResp.basicSt.gsmStatus);
 	PP_VS_appdata.VSResp.basicSt.wheelTyreMotrSt	= 1	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.vehicleAlarmSt		= 1;
 	PP_VS_appdata.VSResp.basicSt.currentJourneyID	= 1;
 	PP_VS_appdata.VSResp.basicSt.journeyOdom		= PP_rmtCtrl_cfg_vehicleOdograph(); /*里程*/
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.journeyOdom  = %ld",PP_VS_appdata.VSResp.basicSt.journeyOdom);
 	PP_VS_appdata.VSResp.basicSt.frtLeftSeatHeatLel	= PP_rmtCtrl_cfg_DrivHeatingSt()	/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frtLeftSeatHeatLel  = %ld",PP_VS_appdata.VSResp.basicSt.frtLeftSeatHeatLel);
 	PP_VS_appdata.VSResp.basicSt.frtRightSeatHeatLel = PP_rmtCtrl_cfg_PassHeatingSt()/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frtRightSeatHeatLel  = %ld",PP_VS_appdata.VSResp.basicSt.frtRightSeatHeatLel);
 	PP_VS_appdata.VSResp.basicSt.airCleanerSt		= PrvtProt_SignParse_pm25valid()/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.airCleanerSt  = %ld",PP_VS_appdata.VSResp.basicSt.airCleanerSt);
 	PP_VS_appdata.VSResp.basicSt.srsStatus 			= PrvtProtCfg_CrashOutputSt();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.srsStatus  = %ld",PP_VS_appdata.VSResp.basicSt.srsStatus);
 
 	uint8_t i;
 	if(PP_VS_appdata.VSResp.ExtSt.validFlg == 1)//上报故障报警

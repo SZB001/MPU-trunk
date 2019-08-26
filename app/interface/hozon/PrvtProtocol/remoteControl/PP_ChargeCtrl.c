@@ -289,7 +289,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				}
 				else
 				{
-					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 2) //充电关闭
+					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 0) //充电关闭
 					{
 						log_o(LOG_HOZON,"close charge success\n");
 						PP_rmtChargeCtrl.state.chargeSt = 2;//δ���
@@ -311,7 +311,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 		break;
 		case PP_CHARGECTRL_END:
 		{
-			log_o(LOG_HOZON,"exit charge ctrl\n");
+			//log_o(LOG_HOZON,"exit charge ctrl\n");
 			PP_rmtCtrl_Stpara_t rmtCtrl_chargeStpara;
 			memset(&rmtCtrl_chargeStpara,0,sizeof(PP_rmtCtrl_Stpara_t));
 			if((PP_rmtChargeCtrl.state.style   == RMTCTRL_TSP) || \

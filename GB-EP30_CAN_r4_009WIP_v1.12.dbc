@@ -667,14 +667,14 @@ BO_ 1430 BMS_Fr23_596: 8 BMS
 BO_ 1431 BMS_Fr24_597: 8 BMS
  SG_ BMS24HdsahReActiveCpSum : 7|25@0+(0.01,0)[0|210240] "Ah" Vector__XXX
  SG_ BMS24HdsahActiveCpSum_@2WGE023 : 30|25@0+(0.01,0)[0|210240] "Ah" Vector__XXX
-BO_ 1432 BMS_Fr25_598: 8 Vector__XXX
- SG_ BMS25FCCurrentRequest_@2WGE026 : 53|10@0+ (1,-400) [-400|400] "A"  TBOX
- SG_ BMS25FCType : 59|1@0+ (1,0) [0|1] ""  TBOX
- SG_ BMS25FCVoltageRequest_@2WGE027 : 47|10@0+ (1,0) [0|1000] "V"  TBOX
- SG_ BMS25ChargingStationMinOutpA : 25|10@0+ (1,-400) [-400|400] "A"  TBOX
- SG_ BMS25ChargingStationMaxOutpA : 19|10@0+ (1,-400) [-400|400] "A"  TBOX
- SG_ BMS25ChargingStationMinOutpV : 13|10@0+ (1,0) [0|1000] "V"  TBOX
- SG_ BMS25ChargingStationMaxOutpV : 7|10@0+ (1,0) [0|1000] "V"  TBOX
+BO_ 1432 BMS_Fr25_598: 8 BMS
+ SG_ BMS25FCCurrentRequest_@2WGE026 : 53|10@0+ (1,-400) [-400|400] "A"  Vector__XXX
+ SG_ BMS25FCType : 59|1@0+ (1,0) [0|1] ""  Vector__XXX
+ SG_ BMS25FCVoltageRequest_@2WGE027 : 47|10@0+ (1,0) [0|1000] "V"  Vector__XXX
+ SG_ BMS25ChargingStationMinOutpA : 25|10@0+ (1,-400) [-400|400] "A"  Vector__XXX
+ SG_ BMS25ChargingStationMaxOutpA : 19|10@0+ (1,-400) [-400|400] "A"  Vector__XXX
+ SG_ BMS25ChargingStationMinOutpV : 13|10@0+ (1,0) [0|1000] "V"  Vector__XXX
+ SG_ BMS25ChargingStationMaxOutpV : 7|10@0+ (1,0) [0|1000] "V"  Vector__XXX
 BO_ 1537 TBOXNM601: 8 TBOX
  SG_ TBOXSourceNodeIdentifier : 7|8@0+(1,0)[0|255] "" Vector__XXX
  SG_ TBOXRepeatMessageRequest : 8|1@0+(1,0)[0|1] "" Vector__XXX

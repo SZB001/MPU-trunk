@@ -4818,10 +4818,10 @@ uint8_t gb_data_BlowerGears(void)
 */
 uint8_t gb_data_outTemp(void)
 {
-	uint8_t temp = 150;
+	uint8_t temp = 25 + 55;
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_OUTTEMP])//
 	{
-		temp = (dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_OUTTEMP])->value + 55) * 2;
+		temp = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_OUTTEMP])->value + 55;
 	}
 
 	return temp;
@@ -4832,10 +4832,10 @@ uint8_t gb_data_outTemp(void)
 */
 uint8_t gb_data_InnerTemp(void)
 {
-	uint8_t temp = 150;
+	uint8_t temp = 25 + 55;
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_INTEMP])//
 	{
-		temp = (dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_INTEMP])->value + 55) * 2;
+		temp = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_INTEMP])->value + 55;
 	}
 
 	return temp;

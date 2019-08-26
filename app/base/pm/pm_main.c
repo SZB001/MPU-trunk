@@ -18,6 +18,7 @@
 #include "netlink.h"
 #include "ql_nw.h"
 #include "ble.h"
+#include "hozon_PP_api.h"
 
 static pthread_t     pm_tid;  /* thread id */
 static unsigned char pm_msgbuf[TCOM_MAX_MSG_LEN];
@@ -56,6 +57,7 @@ int pm_mode_proc(ST_DEF_ITEM_ID id, unsigned char *old_mode,
     {
         case PM_RUNNING_MODE:
             log_o(LOG_PM, "pm mode: running");
+            Setsocketproxy_Awaken();
             pm_send_evt(MPU_MID_PM, PM_EVT_RUNNING);
             return 0;
 
