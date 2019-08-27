@@ -416,9 +416,10 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 	{
 		case PP_DIAGRESP_IDLE:
 		{
-			if(1 == PP_rmtDiag.state.diagReq)//杩滅▼璇婃柇璇锋眰
+			if(1 == PP_rmtDiag.state.diagReq)//接收到tsp查询故障请求
 			{
 				log_i(LOG_HOZON, "start remote diag\n");
+				memset(&PP_rmtDiag_Fault,0 , sizeof(PP_rmtDiag_Fault_t));
 				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYFAILREQ;
 				PP_rmtDiag.state.diagReq = 0;
 			}
@@ -431,14 +432,15 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 				PP_rmtDiag.state.faultquerySt = 0;
 				log_i(LOG_HOZON, "diagType = %d\n",PP_rmtDiag.state.diagType);
 				setPPrmtDiagCfg_QueryFaultReq(PP_rmtDiag.state.diagType);
-				memset(&PP_rmtDiag_Fault,0 , sizeof(PP_rmtDiag_Fault_t));
 				PP_rmtDiag.state.waittime = tm_get_time();
 				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYWAIT;
 			}
 			else
 			{
 				log_e(LOG_HOZON, "vehicle speed > 5km/h");
-				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_END;
+				PP_rmtDiag.state.result = 0;
+				PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
+				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
 			}
 		}
 		break;
