@@ -196,7 +196,7 @@ BO_ 1288 BMS_Fr08_508: 8 BMS
  SG_ BMS8ChargeState_@2WGF029 : 4|3@0+(1,0)[0|7] "" Vector__XXX
  SG_ BMS8SlowChgMaxACCurrent : 23|16@0+(0.05,-1600)[0|600] "A" Vector__XXX
  SG_ BMS8SumOfCellNum_@2WG8000 : 39|8@0+(1,0)[0|254] "" Vector__XXX
- SG_ BMS8SumOfTSnsrNum : 47|8@0+(1,0)[0|254] "" Vector__XXX
+ SG_ BMS8SumOfTSnsrNum_@2WG9000 : 47|8@0+(1,0)[0|254] "" Vector__XXX
  SG_ BMS8AliveCounter : 55|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ BMS8ChargeSts_@2WGE01F : 5|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BMS8ChargeAppointmentEn_@2WR1015 : 6|1@0+(1,0)[0|1] "" Vector__XXX
@@ -215,16 +215,19 @@ BO_ 666 BMS_Fr10_29A: 8 BMS
  SG_ BMS10ChargeTime : 47|10@0+(1,0)[0|1023] "" Vector__XXX
  SG_ BMS10AliveCounter : 59|4@0+(1,0)[0|15] "" Vector__XXX
 BO_ 1291 BMS_Fr11_50B: 8 BMS
- SG_ 单体电压号_WI1 : 7|8@0+(1,0)[0|255] "" Vector__XXX
- SG_ 单体电压1_WM1I1G8000 : 15|16@0+(1,0)[0|5000] "" Vector__XXX
- SG_ 温度探针号_WI2 : 55|8@0+(1,0)[0|255] "" Vector__XXX
- SG_ 温度探针1_WM1I2G9000 : 63|8@0+(1,-40)[-40|125] "" Vector__XXX
+ SG_ BMS11BattCellNum1Vol_@2WG8001 : 15|16@0+ (1,0) [0|5000] ""  Vector__XXX
+ SG_ BMS11BattCellNum1_@2WG3008 : 7|8@0+ (1,0) [0|255] ""  Vector__XXX
+ SG_ BMS11BattCellNum2Vol_@2WG8002 : 39|16@0+ (1,0) [0|5000] ""  Vector__XXX
+ SG_ BMS11BattCellNum2_@2WG3009 : 31|8@0+ (1,0) [0|255] ""  Vector__XXX
+ SG_ BMS11BattTempSensorNum_@2WG3007 : 55|8@0+ (1,0) [0|255] ""  Vector__XXX
+ SG_ BMS11BattTempSensor_@2WG9001 : 63|8@0+ (1,-40) [-40|125] ""  Vector__XXX
 BO_ 170 MCU_Fr01_0AA: 8 MCU
  SG_ MCU1presentActivityFault : 63|8@0+(1,0)[0|128] "" Vector__XXX
  SG_ MCU1MaxAvailableTorque_@2WGE00D : 7|16@0+(0.05,0)[0|1024] "Nm" Vector__XXX
  SG_ MCU1MotorSpeed_@2WG2002 : 23|16@0+(0.5,-16000)[-16000|16000] "Rpm" Vector__XXX
  SG_ MCU1AliveCounter : 51|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ MCU1ControllerTorque_@2WGE00B : 39|16@0+(0.05,-1024)[-1024|1024] "Nm" Vector__XXX
+ SG_ MCU1MotorControllerTorque_@2WG2003 : 39|16@0+(0.05,-1024)[-1024|1024] "Nm" Vector__XXX
  SG_ MCU节点丢失_@2N004 : 39|16@0+(0.05,-1024)[-1024|1024] "Nm" Vector__XXX
 BO_ 187 MCU_Fr02_0BB: 8 MCU
  SG_ MCU2FaultLevel : 2|2@0+(1,0)[0|3] "" Vector__XXX
@@ -842,5 +845,9 @@ BA_ "IN_MOTSTATE0_06" 04
 BA_ "IN_MOTSTATE0_01" FE
 
 BA_ "SigDefault" BMS1StateOfCharge 255
-
+BA_ "SigDefault" BMS8SumOfCellNum  1
+BA_ "SigDefault" BMS8SumOfTSnsrNum 1
+BA_ "SigDefault" BMS11BattTempSensorNum 0
+BA_ "SigDefault" BMS11BattCellNum1 0
+BA_ "SigDefault" BMS11BattCellNum2 0
 

@@ -43,7 +43,10 @@ gb32960_api_fault_t gb_fault;
 #define GB_SUPPLEMENTARY_DATA_OUTLETTEMP	0x04//出风口温度值有效性
 #define GB_SUPPLEMENTARY_DATA_BPAV			0x05//制动踏板踩下信号有效性
 #define GB_SUPPLEMENTARY_DATA_BPDQ			0x06//制动踏板位移量有效性
-#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_BPDQ + 1)
+#define GB_SUPPLEMENTARY_DATA_BTSN			0x07//温度探头号
+#define GB_SUPPLEMENTARY_DATA_BCN1			0x08//单体电压号1
+#define GB_SUPPLEMENTARY_DATA_BCN2			0x09//单体电压号2
+#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_BCN2 + 1)
 
 #if GB_EXT
 /* event information index */
@@ -354,13 +357,31 @@ gb32960_api_fault_t gb_fault;
 /* report packets parameter */
 #define GB_MAX_REPORT       2000
 
+/* batt cell volt information index */
+#define GB_BATTCELLVOLT_NUM       	0x00
+#define GB_BATTCELLVOLT_ONE        	0x01
+#define GB_BATTCELLVOLT_TWO    		0x02
+#define GB_MAX_BATTCELLVLOT_INFO    GB_BATTCELLVOLT_TWO + 1
+
+/* batt cell temp information index */
+#define GB_BATTCELLTEMP_NUM        0x00
+#define GB_BATTCELLTEMP_ONE        0x01
+#define GB_MAX_BATTCELLTEMP_INFO   GB_BATTCELLTEMP_ONE + 1
+
 /* battery information structure */
 typedef struct
 {
     int voltage;
     int current;
+	//int cellNum;
+	//int cellvolONE;
+	//int cellvolTWO;
+	int cell_info[GB_MAX_BATTCELLVLOT_INFO];
+	int temp_info[GB_MAX_BATTCELLTEMP_INFO];
     int cell[GB_MAX_PACK_CELL];
     int temp[GB_MAX_PACK_TEMP];
+	//int tempSnsrNum;
+	//int tempSnsrvalue;
     uint32_t   cell_cnt;
     uint32_t   temp_cnt;
 }gb_batt_t;
@@ -706,7 +727,8 @@ static uint16_t gb_datintv;
 #define ERR_UNLOCK()        pthread_mutex_unlock(&gb_errmtx)
 #define DAT_LOCK()          pthread_mutex_lock(&gb_datmtx)
 #define DAT_UNLOCK()        pthread_mutex_unlock(&gb_datmtx)
-#define GROUP_SIZE(inf)     RDUP_DIV((inf)->batt.cell_cnt, 200)
+//#define GROUP_SIZE(inf)     RDUP_DIV((inf)->batt.cell_cnt, 200)
+#define GROUP_SIZE(inf)     RDUP_DIV(1, 200)
 
 
 static uint8_t gb_engineSt = 2;//Ϩ��
@@ -715,6 +737,25 @@ static long    gb_vehicleSOC = 0;//����
 static long    gb_vehicleSpeed = 0;//�ٶ�
 static uint8_t gb_chargeSt = 0;//
 static int canact = 0;
+
+/*
+	获取can广播电压单体和温度探针值
+*/
+static void gb_data_gainCellVoltTemp(gb_info_t *gbinf)
+{	
+	uint8_t cellVoltIndex[2],tempSnsrIndex;
+	tempSnsrIndex  = dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BTSN])->value;
+	cellVoltIndex[0] = dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BCN1])->value;
+	cellVoltIndex[1] = dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BCN2])->value;
+
+	gbinf->batt.temp[tempSnsrIndex]  = gbinf->batt.temp_info[GB_BATTCELLTEMP_ONE]?	\
+			(dbc_get_signal_from_id(gbinf->batt.temp_info[GB_BATTCELLTEMP_ONE])->value + 40):0xff;
+	gbinf->batt.cell[cellVoltIndex[0]] = gbinf->batt.cell_info[GB_BATTCELLVOLT_ONE]?	\
+			(dbc_get_signal_from_id(gbinf->batt.cell_info[GB_BATTCELLVOLT_ONE])->value * 1000):0xffff;
+	gbinf->batt.cell[cellVoltIndex[1]] = gbinf->batt.cell_info[GB_BATTCELLVOLT_TWO]?	\
+			(dbc_get_signal_from_id(gbinf->batt.cell_info[GB_BATTCELLVOLT_TWO])->value * 1000):0xffff;
+}
+
 
 #if GB_EXT
 /* event report */
@@ -986,19 +1027,22 @@ static uint32_t gb_data_save_cell(gb_info_t *gbinf, uint8_t *buf)
 
     /* packet voltage, scale 0.1V */
     tmp = gbinf->batt.voltage ?
-          dbc_get_signal_from_id(gbinf->batt.voltage)->value * 10 : 0xffff;
+          dbc_get_signal_from_id(gbinf->batt.voltage)->value * 10:0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
     /* packet current, scale 0.1A, offset -1000A */
     tmp = gbinf->batt.current ?
-          dbc_get_signal_from_id(gbinf->batt.current)->value * 10 + 10000 : 0xffff;
+          dbc_get_signal_from_id(gbinf->batt.current)->value * 10 + 10000:0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
     /* total cell count */
+	gbinf->batt.cell_cnt = gbinf->batt.cell_info[GB_BATTCELLVOLT_NUM]? \
+						   dbc_get_signal_from_id(gbinf->batt.cell_info[GB_BATTCELLVOLT_NUM])->value:0x1;
     buf[len++] = gbinf->batt.cell_cnt >> 8;
     buf[len++] = gbinf->batt.cell_cnt;
+	log_i(LOG_GB32960, "gbinf->batt.cell_cnt = %d",gbinf->batt.cell_cnt);
 
     /* start cell of current frame */
     buf[len++] = (start + 1) >> 8;
@@ -1010,8 +1054,7 @@ static uint32_t gb_data_save_cell(gb_info_t *gbinf, uint8_t *buf)
 
     for (i = start; i < start + cells; i++)
     {
-        tmp = gbinf->batt.cell[i] ?
-              dbc_get_signal_from_id(gbinf->batt.cell[i])->value * 1000:0xffff;
+        tmp = gbinf->batt.cell[i];
         buf[len++] = tmp >> 8;
         buf[len++] = tmp;
     }
@@ -1030,13 +1073,15 @@ static uint32_t gb_data_save_temp(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = 1;
 
     /* total temp count */
+	gbinf->batt.temp_cnt = gbinf->batt.temp_info[GB_BATTCELLTEMP_NUM]?	\
+							dbc_get_signal_from_id(gbinf->batt.temp_info[GB_BATTCELLTEMP_NUM])->value:0x1;
     buf[len++] = gbinf->batt.temp_cnt >> 8;
     buf[len++] = gbinf->batt.temp_cnt;
+	log_i(LOG_GB32960, "gbinf->batt.temp_cnt = %d",gbinf->batt.temp_cnt);
 
     for (i = 0; i < gbinf->batt.temp_cnt; i++)
     {
-        buf[len++] = gbinf->batt.temp[i]?
-			(uint8_t)(dbc_get_signal_from_id(gbinf->batt.temp[i])->value + 40):0xff;
+        buf[len++] = gbinf->batt.temp[i];
     }
 
     return len;
@@ -1191,153 +1236,61 @@ static uint32_t gb_data_save_fuelcell(gb_info_t *gbinf, uint8_t *buf)
 
 static uint32_t gb_data_save_extr(gb_info_t *gbinf, uint8_t *buf)
 {
-    uint32_t len = 0, i, tmpv, tmpi;
+    uint32_t len = 0;
     uint32_t maxvid = 0, maxtid = 0, minvid = 0, mintid = 0;
-    double maxv, maxt, minv, mint;
-    static uint32_t packnum = 0;
-
-    maxvid = maxtid = minvid = mintid = 1;
-    maxv = minv = gbinf->batt.cell_cnt > 0 ? dbc_get_signal_from_id(gbinf->batt.cell[0])->value : 0;
-    maxt = mint = gbinf->batt.temp_cnt > 0 ? dbc_get_signal_from_id(gbinf->batt.temp[0])->value : 0;
-
-    for (i = 0; i < gbinf->batt.cell_cnt; i++)
-    {
-        double value = dbc_get_signal_from_id(gbinf->batt.cell[i])->value;
-
-        if (value > 15)
-        {
-            continue;
-        }
-
-        if (minv > 15 || value < minv)
-        {
-            minv   = value;
-            minvid = i + 1;
-        }
-
-        if (maxv > 15 || value > maxv)
-        {
-            maxv   = value;
-            maxvid = i + 1;
-        }
-    }
-
-    for (i = 0; i < gbinf->batt.temp_cnt; i++)
-    {
-        double value = dbc_get_signal_from_id(gbinf->batt.temp[i])->value;
-
-        if (value > 210)
-        {
-            continue;
-        }
-
-        if (mint > 210 || value < mint)
-        {
-            mint   = value;
-            mintid = i + 1;
-        }
-
-        if (maxt > 210 || value > maxt)
-        {
-            maxt   = value;
-            maxtid = i + 1;
-        }
-    }
-
-    if (gbinf->extr[GB_XINF_MAXVCID])
-    {
-        maxvid = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXVCID])->value;
-    }
-
-    if (gbinf->extr[GB_XINF_MAXV])
-    {
-        maxv = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXV])->value;
-    }
-
-    if (gbinf->extr[GB_XINF_MAXTCID])
-    {
-        maxtid = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXTCID])->value;
-    }
-
-    if (gbinf->extr[GB_XINF_MAXT])
-    {
-        maxt = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXT])->value;
-    }
-
-    if (gbinf->extr[GB_XINF_MINVCID])
-    {
-        minvid = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINVCID])->value;
-    }
-
-    if (gbinf->extr[GB_XINF_MINV])
-    {
-        minv = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINV])->value;
-    }
-
-    if (gbinf->extr[GB_XINF_MINTCID])
-    {
-        mintid = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINTCID])->value;
-    }
-
-    if (gbinf->extr[GB_XINF_MINT])
-    {
-        mint = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINT])->value;
-    }
+    uint16_t maxv, maxt, minv, mint;
 
     buf[len++] = GB_DATA_EXTREMA;
 
     buf[len++] = 1;
-
-    if (maxvid > (packnum + 1) * 200)
+    if (gbinf->extr[GB_XINF_MAXVCID])
     {
-        tmpi = 200;
-        tmpv = 0xffff;
+        maxvid = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXVCID])->value;
     }
-    else if (maxvid > packnum * 200)
+    buf[len++] = (maxvid != 0)?maxvid:0xff;
+    if (gbinf->extr[GB_XINF_MAXV])
     {
-        tmpi = maxvid - packnum * 200;
-        tmpv = maxv * 1000;
+        maxv = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXV])->value;
     }
-    else
-    {
-        tmpi = 0;
-        tmpv = 0xffff;
-    }
-
-    buf[len++] = tmpi;
-    buf[len++] = tmpv >> 8;
-    buf[len++] = tmpv;
+    buf[len++] = maxv >> 8;
+    buf[len++] = maxv;
 
     buf[len++] = 1;
-
-    if (minvid > (packnum + 1) * 200)
+    if (gbinf->extr[GB_XINF_MINVCID])
     {
-        tmpi = 200;
-        tmpv = 0xffff;
+        minvid = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINVCID])->value;
     }
-    else if (minvid > packnum * 200)
+	buf[len++] = (minvid != 0)?maxvid:0xff;
+    if (gbinf->extr[GB_XINF_MINV])
     {
-        tmpi = minvid - packnum * 200;
-        tmpv = minv * 1000;
+        minv = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINV])->value;
     }
-    else
-    {
-        tmpi = 0;
-        tmpv = 0xffff;
-    }
-
-    buf[len++] = tmpi;
-    buf[len++] = tmpv >> 8;
-    buf[len++] = tmpv;
+    buf[len++] = minv >> 8;
+    buf[len++] = minv;
 
     buf[len++] = 1;
-    buf[len++] = maxtid;
+    if (gbinf->extr[GB_XINF_MAXTCID])
+    {
+        maxtid = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXTCID])->value;
+    }
+    buf[len++] = (maxtid != 0)?maxtid:0xff;
+    if (gbinf->extr[GB_XINF_MAXT])
+    {
+        maxt = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MAXT])->value;
+    }
     buf[len++] = maxt + 40;
-    buf[len++] = 1;
-    buf[len++] = mintid;
-    buf[len++] = mint + 40;
 
-    packnum = (packnum + 1) % GROUP_SIZE(gbinf);
+    buf[len++] = 1;
+	if (gbinf->extr[GB_XINF_MINTCID])
+    {
+        mintid = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINTCID])->value;
+    }
+    buf[len++] = (mintid != 0)?mintid:0xff;
+	if (gbinf->extr[GB_XINF_MINT])
+    {
+        mint = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINT])->value;
+    }
+    buf[len++] = mint + 40;
 
     return len;
 }
@@ -4011,47 +3964,39 @@ static int gb_data_parse_surfix(gb_info_t *gbinf, int sigid, const char *sfx)
             break;
 
         case GB_DATA_BATTVOLT:
-            if ((gbindex >> 10) >= 1)
-            {
-                log_e(LOG_GB32960, "battery number over %u! ", gbindex >> 10);
-            }
-            else if ((gbindex & 0x3ff) == 0x3fe)
+        {
+            if((gbindex & 0x3ff) == 0x3fe)
             {
                 gbinf->batt.voltage = sigid;
             }
-            else if ((gbindex & 0x3ff) == 0x3ff)
+            else if((gbindex & 0x3ff) == 0x3ff)
             {
                 gbinf->batt.current = sigid;
             }
-            else if ((gbindex & 0x3ff) >= GB_MAX_PACK_CELL)
-            {
-                log_e(LOG_GB32960, "battery cells count over %u! ", gbindex & 0x3ff);
-            }
-            else if (gbinf->batt.cell[gbindex & 0x3ff] == 0)
-            {
-                gbinf->batt.cell[gbindex & 0x3ff] = sigid;
-                gbinf->batt.cell_cnt++;
-            }
+			else
+			{
+				if (gbindex >= GB_MAX_BATTCELLVLOT_INFO)
+            	{
+                	log_e(LOG_GB32960, "batt volt info over %d! ", gbindex);
+                	break;
+            	}
 
-            break;
-
+            	gbinf->batt.cell_info[gbindex] = sigid;
+			}
+			//gbinf->batt.cell_cnt = 1;
+		}
+        break;
         case GB_DATA_BATTTEMP:
-            if ((gbindex >> 8) >= 1)
+		{
+            if (gbindex >= GB_MAX_BATTCELLTEMP_INFO)
             {
-                log_e(LOG_GB32960, "battery number over %d! ", gbindex >> 8);
-            }
-            else if ((gbindex & 0xff) >= GB_MAX_PACK_TEMP)
-            {
-                log_e(LOG_GB32960, "battery temperature count over %d! ", gbindex & 0xff);
-            }
-            else if (gbinf->batt.temp[gbindex & 0xff] == 0)
-            {
-                gbinf->batt.temp[gbindex & 0xff] = sigid;
-                gbinf->batt.temp_cnt++;
+                log_e(LOG_GB32960, "batt temp info over %d! ", gbindex);
+                break;
             }
 
-            break;
-
+            gbinf->batt.temp_info[gbindex] = sigid;	
+		}
+        break;
         case GB_DATA_VIRTUAL:
             log_i(LOG_GB32960, "get virtual channe %s", sfx);
             break;
@@ -4145,21 +4090,21 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
             {
                 int i;
 
-				for (i = 0; i < gb_rld->batt.cell_cnt && gb_rld->batt.cell[i]; i++);
+				//for (i = 0; i < gb_rld->batt.cell_cnt && gb_rld->batt.cell[i]; i++);
 
-				if (i < gb_rld->batt.cell_cnt)
-				{
-					log_e(LOG_GB32960, "battery cell defined in dbc is not incorrect");
-					break;
-				}
+				//if (i < gb_rld->batt.cell_cnt)
+				//{
+				//	log_e(LOG_GB32960, "battery cell defined in dbc is not incorrect");
+				//	break;
+				//}
 
-				for (i = 0; i < gb_rld->batt.temp_cnt && gb_rld->batt.temp[i]; i++);
+				//for (i = 0; i < gb_rld->batt.temp_cnt && gb_rld->batt.temp[i]; i++);
 
-				if (i < gb_rld->batt.temp_cnt)
-				{
-					log_e(LOG_GB32960, "temperature defined in dbc is not incorrect");
-					break;
-				}
+				//if (i < gb_rld->batt.temp_cnt)
+				//{
+				//	log_e(LOG_GB32960, "temperature defined in dbc is not incorrect");
+				//	break;
+				//}
 
                 gb_inf = gb_rld;
 
@@ -4172,7 +4117,6 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
                 }
 
                 ERR_LOCK();
-
                 if (GROUP_SIZE(gb_inf) > 0)
                 {
                     gb_errlst_head = &gb_errmem[0].link;
@@ -4192,7 +4136,7 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
                 }
 
                 ERR_UNLOCK();
-                gb_data_clear_report();
+                //gb_data_clear_report();
             }
 
             gb_rld = NULL;
@@ -4333,6 +4277,7 @@ static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 			{
 				//log_i(LOG_GB32960, "event check report");
 				gb_data_eventReport(gb_inf,msg->uptime);
+  				gb_data_gainCellVoltTemp(gb_inf);
 			}
 #endif
 		}
@@ -4455,7 +4400,7 @@ static int gb_shell_testwarning(int argc, const const char **argv)
 int gb_data_init(INIT_PHASE phase)
 {
     int ret = 0;
-
+	int i,j;
     switch (phase)
     {
         case INIT_PHASE_INSIDE:
@@ -4467,12 +4412,19 @@ int gb_data_init(INIT_PHASE phase)
             break;
 
         case INIT_PHASE_RESTORE:
+			for(i = 0;i < 2;i++)
+			{
+				for(j=0;j<GB_MAX_PACK_CELL;j++)
+					gb_infmem[i].batt.cell[j] = 0xffff;
+				for(j=0;j<GB_MAX_PACK_TEMP;j++)
+					gb_infmem[i].batt.temp[j] = 0xff;
+			}
             break;
 
         case INIT_PHASE_OUTSIDE:
             {
                 uint32_t cfglen;
-
+				gb_data_clear_report();
                 gb_warnflag = dbc_request_flag();
                 ret |= dbc_register_callback(gb_data_dbc_cb);
                 ret |= can_register_callback(gb_data_can_cb);

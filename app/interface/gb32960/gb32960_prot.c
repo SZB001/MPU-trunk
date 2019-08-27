@@ -931,7 +931,7 @@ static int gb_do_receive(gb_stat_t *state)
                 }
                 else
                 {
-                    gb_data_clear_report();
+                    //gb_data_clear_report();
                     gb_data_clear_error();
                     state->login = 1;
                 }
