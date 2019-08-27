@@ -199,7 +199,7 @@ int PP_rmtDiag_mainfunction(void *task)
 
 	if(1 == sockproxy_socketState())//socket open
 	{
-		//PP_rmtDiag_do_DiagActiveReport((PrvtProt_task_t*)task);//主动诊断上报
+		PP_rmtDiag_do_DiagActiveReport((PrvtProt_task_t*)task);//主动诊断上报
 	}
 
 	return res;
@@ -426,12 +426,20 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 		break;
 		case PP_DIAGRESP_QUERYFAILREQ:
 		{
-			PP_rmtDiag.state.faultquerySt = 0;
-			log_i(LOG_HOZON, "diagType = %d\n",PP_rmtDiag.state.diagType);
-			setPPrmtDiagCfg_QueryFaultReq(PP_rmtDiag.state.diagType);
-			memset(&PP_rmtDiag_Fault,0 , sizeof(PP_rmtDiag_Fault_t));
-			PP_rmtDiag.state.waittime = tm_get_time();
-			PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYWAIT;
+			if(gb_data_vehicleSpeed() <= 50)//判断车速<=5km/h,满足诊断条件
+			{
+				PP_rmtDiag.state.faultquerySt = 0;
+				log_i(LOG_HOZON, "diagType = %d\n",PP_rmtDiag.state.diagType);
+				setPPrmtDiagCfg_QueryFaultReq(PP_rmtDiag.state.diagType);
+				memset(&PP_rmtDiag_Fault,0 , sizeof(PP_rmtDiag_Fault_t));
+				PP_rmtDiag.state.waittime = tm_get_time();
+				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYWAIT;
+			}
+			else
+			{
+				log_e(LOG_HOZON, "vehicle speed > 5km/h");
+				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_END;
+			}
 		}
 		break;
 		case PP_DIAGRESP_QUERYWAIT:

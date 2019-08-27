@@ -1095,6 +1095,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 				}
 				else
 				{
+					log_i(LOG_UPER_ECDC, "DiagnosticSt_ptr->diagStatus[%d].diagcodenum = %d",i,DiagnosticSt_ptr->diagStatus[i].diagcodenum);
 					DiagnosticResp[i].diagCode = NULL;
 				}
 				ASN_SEQUENCE_ADD(&DiagnosticSt, &DiagnosticResp[i]);
@@ -1104,7 +1105,10 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			//释放ADD
 			for(i = 0;i<DiagnosticSt_ptr->diagobjnum;i++)
 			{
-				asn_set_empty(&diagcode[i]);
+				if(DiagnosticSt_ptr->diagStatus[i].diagcodenum > 0)
+				{
+					asn_set_empty(&diagcode[i]);
+				}
 			}
 			asn_set_empty(&DiagnosticSt);
 			if(ec.encoded  == -1)
