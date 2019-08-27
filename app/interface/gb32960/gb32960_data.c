@@ -2103,7 +2103,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 
     if(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])////加速度z
     {
-    	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])->value + 4095) * 100;
+    	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])->value + 40.95) * 100;
     	buf[len++] = tmp >> 8;
     	buf[len++] = tmp;
     }
