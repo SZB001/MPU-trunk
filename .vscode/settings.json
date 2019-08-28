@@ -10,6 +10,7 @@
         "udef_para_def.h": "c",
         "asn_internal.h": "c",
         "ql_nw.h": "c",
-        "netlink.h": "c"
+        "netlink.h": "c",
+        "file.h": "c"
     }
 }

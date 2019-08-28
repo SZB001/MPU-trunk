@@ -1,7 +1,7 @@
 
 #include <string.h>
 #include "tbox_ivi_api.h"
-
+#include <time.h>
 extern ivi_callrequest callrequest; 
 
 int tbox_ivi_get_call_type(void) //获取通话的类型
@@ -15,11 +15,15 @@ int tbox_ivi_get_call_type(void) //获取通话的类型
 	{
 		return 1;  // bcall
 	}
-	else
+	else if (callrequest.icall == 1)
 	{
 		return 2;  //icall
 	}
-	return 3;
+	else
+	{
+		return 3;
+	}
+	
 }
 int tbox_ivi_get_call_action(void) //获取通话的类型
 {
@@ -47,5 +51,13 @@ void tbox_ivi_clear_bcall_flag(void)
 void tbox_ivi_clear_icall_flag(void)
 {
 	callrequest.icall = 0;
+}
+
+long tbox_ivi_getTimestamp(void)
+{
+	struct timeval timestamp;
+	gettimeofday(&timestamp, NULL);
+	
+	return (long)(timestamp.tv_sec);
 }
 

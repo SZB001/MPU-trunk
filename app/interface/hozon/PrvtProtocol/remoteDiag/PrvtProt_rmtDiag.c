@@ -849,7 +849,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 static int PP_rmtDiag_FaultCodeCleanResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag)
 {
 	int msgdatalen;
-	int i;
+	//int i;
 	int idlenode;
 	
 	memset(&PP_rmtDiag_Pack,0 , sizeof(PrvtProt_pack_t));

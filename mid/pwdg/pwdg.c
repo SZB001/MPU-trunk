@@ -25,6 +25,7 @@ static unsigned short mid_filter_table[] = \
 	MPU_MID_FOTON, \
 	MPU_MID_AUTO,  \
 	MPU_MID_HOZON_PP,\
+	MPU_MID_IVI ,
 };
 
 /****************************************************************

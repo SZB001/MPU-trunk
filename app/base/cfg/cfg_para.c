@@ -4,6 +4,10 @@ description:  the source file of parameter definition implementation
 date:         2016/9/26
 author        liuzhongwen
 ****************************************************************/
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
 #include "com_app_def.h"
 #include "cfg.h"
 #include "cfg_api.h"
@@ -19,6 +23,9 @@ author        liuzhongwen
 #include "pm_api.h"
 #include "at_api.h"
 #include "uds.h"
+#include "hozon_PP_api.h"
+#include "dir.h"
+#include "file.h"
 
 static unsigned char cfg_para_buf[CFG_PARA_BUF_LEN];
 static pthread_mutex_t cfg_para_mutex;
@@ -578,7 +585,7 @@ int cfg_set_default_para(CFG_SET_TYPE type)
 	unsigned char status = 0;
 	cfg_set_by_id(CFG_ITEM_FT_REGISTER, &status, sizeof(status), type);
 
-	unsigned char ble_enable = 1;
+	unsigned char ble_enable = 0;
     cfg_set_by_id(CFG_ITEM_EN_BLE, &ble_enable, sizeof(ble_enable), type);
 
 	char ble_name[256];
@@ -620,6 +627,18 @@ int cfg_save_para(void)
 
     pthread_mutex_lock(&cfg_para_mutex);
     ret = rds_update_once(RDS_SYS_CFG, (unsigned char *)&cfg_para_buf, sizeof(cfg_para_buf));
+
+    if (dir_exists("/media/sdcard/usrdata/bkup/") == 0 &&
+    dir_make_path("/media/sdcard/usrdata/bkup/", S_IRUSR | S_IWUSR, false) != 0)
+    {
+        log_e(LOG_CFG, "creat path:/media/sdcard/usrdata/bkup/ fail");
+        //return;
+    }
+    else
+    {
+        file_copy(PP_SYS_CFG_PATH,PP_SYS_CFG_BKUP_PATH);//备份配置文件
+    }
+
     pthread_mutex_unlock(&cfg_para_mutex);
 
     return ret;

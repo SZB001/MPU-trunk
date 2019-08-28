@@ -26,6 +26,7 @@ static unsigned char pm_msgbuf[TCOM_MAX_MSG_LEN];
 static PM_MODE pm_mode = PM_RUNNING_MODE;
 static int     pm_sleep_fd;
 static timer_t pm_period_check_timer;
+extern void Setsocketproxy_Awaken(void);
 
 /****************************************************************
 function:     pm_mode_proc

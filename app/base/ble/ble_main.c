@@ -366,6 +366,43 @@ static int BleShellSetTest(int argc, const char **argv)
 	shellprintf("ucLen = %d\r\n",ucLen);
     return 0;
 }
+/****************************************************************
+ function:     BleShellGetUuid
+ description:  get ble uuid
+ input:        
+ output:       none
+ return:       0 indicates success,others indicates failed
+ *****************************************************************/
+static int BleShellBleEn(int argc, const char **argv)
+{  
+    if (argc != 1)
+    {
+        shellprintf(" usage:setble on/off\r\n");
+        return AT_INVALID_PARA;
+    }
+
+    if (0 == strncmp("on", argv[0], 2))
+    {
+		unsigned char ble_enable = 1;
+		cfg_set_para(CFG_ITEM_EN_BLE, (unsigned char *)&ble_enable, 1);
+
+    }
+    else if (0 == strncmp("off", argv[0], 3))
+    {
+		unsigned char ble_enable = 0;
+		cfg_set_para(CFG_ITEM_EN_BLE, (unsigned char *)&ble_enable, 1);
+    }
+    else
+    {
+        shellprintf(" usage:setble on/off\r\n");
+        return -1;
+    }
+
+	shellprintf(" set ble ok\r\n");
+	shellprintf(" please restart terminal!\r\n");
+	system("reboot");
+    return 0;
+}
 
 /****************************************************************
  function:     BleShellInit
@@ -377,9 +414,10 @@ static int BleShellSetTest(int argc, const char **argv)
 int BleShellInit(void)
 {
     int ret = 0;
-	shell_cmd_register_ex("bletest", 			"bletest",			BleShellSetTest, "bletest");
-	shell_cmd_register_ex("blegetmac", 			"blegetmac",		BleShellGetMac, "blegetmac");
-	shell_cmd_register_ex("blegetname", 		"blegetname",		BleShellGetName, "blegetname");
+	 shell_cmd_register_ex("bletest",    "bletest",   BleShellSetTest, "bletest");
+	 shell_cmd_register_ex("blegetmac",    "blegetmac",  BleShellGetMac, "blegetmac");
+	 shell_cmd_register_ex("blegetname",   "blegetname",  BleShellGetName, "blegetname");
+	 shell_cmd_register_ex("bleen",   "bleen",  BleShellBleEn, "blegetname ON/off");
     return ret;
 }
 /****************************************************************
@@ -439,6 +477,15 @@ int start_ble(void)
 	unsigned char vin[20] = {0};
 	unsigned char tmp[250] = {0};
 	unsigned char tmp_len = 0;
+	unsigned char ble_en = 0;
+
+	cfg_get_para(CFG_ITEM_EN_BLE, &ble_en, &len);
+	if (0 == ble_en)
+	{
+	 	return -1;
+	}
+
+	
 	cfg_get_user_para(CFG_ITEM_GB32960_VIN, vin, &len);
 	int iRet = -1;
 	

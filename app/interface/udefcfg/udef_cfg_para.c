@@ -12,7 +12,8 @@
 #include "../../base/dev/dev_mcu_cfg.h"
 #include "cfg_api.h"
 #include "hozon_PP_api.h"
-
+#include "dir.h"
+#include "file.h"
 
 #define USER_CFG_PARA_BUF_LEN     2*1024
 
@@ -216,6 +217,18 @@ int udef_cfg_save_para(udef_cfg_foton_item item)
         {
             CFG_PARA_CLBT_LOCK();
             ret = rds_update_once(RDS_USER_CFG, (unsigned char *)&clbt_cfg_para_buf, sizeof(clbt_cfg_para_buf));
+            
+            if (dir_exists("/media/sdcard/usrdata/bkup/") == 0 &&
+	        dir_make_path("/media/sdcard/usrdata/bkup/", S_IRUSR | S_IWUSR, false) != 0)
+	        {
+                log_e(LOG_CFG, "creat path:/media/sdcard/usrdata/bkup/ fail");
+                //return;
+	        }
+            else
+            {
+                file_copy(PP_USER_CFG_PATH,PP_USER_CFG_BKUP_PATH);//备份配置文件
+            }
+
             CFG_PARA_CLBT_UNLOCK();
         }
         break;

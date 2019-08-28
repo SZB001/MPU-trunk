@@ -666,12 +666,13 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 		break;
 		case PP_RMTCTRL_DETECTCAMERA://驾驶员检测摄像头
 		{
+			PP_CameraCtrl_SetCtrlReq(req,reqType);
 			log_i(LOG_HOZON, "remote DETECTCAMERA control req");
 		}
 		break;
 		case PP_RMTCTRL_DATARECORDER://行车记录仪
 		{
-			//PP_doorLockCtrl_StatusResp(reqType);
+			PP_CameraCtrl_SetCtrlReq(req,reqType);
 			log_i(LOG_HOZON, "remote DATARECORDER control req");
 		}
 		break;

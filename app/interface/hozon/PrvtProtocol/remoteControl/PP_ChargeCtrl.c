@@ -510,12 +510,18 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 	{
 		PP_rmtChargeCtrl.state.appointcharge = 0;
 		if((PP_RMTCTRL_CFG_CHARGEFINISH == PP_rmtCtrl_cfg_chargeSt()) || \
-				(PP_RMTCTRL_CFG_CHARGEFAIL == PP_rmtCtrl_cfg_chargeSt()))
+				(PP_RMTCTRL_CFG_CHARGEFAIL == PP_rmtCtrl_cfg_chargeSt()) || \
+				(gb_data_vehicleSOC() >= PP_rmtCharge_AppointBook.targetSOC ))
 		{
 			if(PP_RMTCTRL_CFG_CHARGEFINISH == PP_rmtCtrl_cfg_chargeSt())//charge finish
 			{
 				//PP_rmtChargeCtrl.state.appointcharge = 0;
 				PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_SUCCESS;
+			}
+			else if(gb_data_vehicleSOC() >= PP_rmtCharge_AppointBook.targetSOC )
+			{
+				PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_SUCCESS;
+				log_o(LOG_HOZON,"The appointment charge has reached the reserved target battery");
 			}
 			else
 			{
@@ -782,7 +788,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				PP_rmtCharge_AppointBook.hour = ivi_chargeAppointSt_ptr->hour;
 				PP_rmtCharge_AppointBook.min = ivi_chargeAppointSt_ptr->min;
 				PP_rmtCharge_AppointBook.targetSOC = ivi_chargeAppointSt_ptr->targetpower;
-				PP_rmtCharge_AppointBook.period = 0x84;
+				PP_rmtCharge_AppointBook.period = 0xff;
 				PP_rmtCharge_AppointBook.huBookingTime = ivi_chargeAppointSt_ptr->timestamp;
 
 				PP_rmtCharge_AppointBook.eventId = 0;

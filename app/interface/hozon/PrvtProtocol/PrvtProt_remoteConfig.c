@@ -1136,7 +1136,7 @@ static void PP_rmtCfg_send_cb(void * para)
 					AppData_rmtCfg.ReadResp.cfgsuccess = 1;
 					//�������ã�ʹ���µ�����
 					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
-
+					PP_rmtCfg_settbox();
 					memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersionlen);
 					AppData_rmtCfg.checkReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
 				}

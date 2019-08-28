@@ -31,6 +31,8 @@ description�� include the header file
 #include "../../support/protocol.h"
 #include "hozon_PP_api.h"
 #include "hozon_SP_api.h"
+#include "pm_api.h"
+#include "at.h"
 #include "sockproxy_rxdata.h"
 #include "sockproxy_txdata.h"
 #include "../PrvtProtocol/PrvtProt.h"
@@ -507,7 +509,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 
 	if(0 == dev_get_KL15_signal())
 	{
-		if((1 == gb32960_gbLogoutSt()) && (GetPrvtProt_Sleep()))
+		if((1 == gb32960_gbLogoutSt()) && (GetPrvtProt_Sleep())&&(at_get_pm_mode() != PM_RUNNING_MODE))
 		{
 			if(sockSt.state == PP_OPENED)
 			{

@@ -38,6 +38,7 @@
 #include "PPrmtCtrl_cfg.h"
 #include "../PrvtProt_SigParse.h"
 #include "tbox_ivi_api.h"
+#include "../../../../base/uds/server/uds_did.h"
 
 #include "PP_CameraCtrl.h"
 
@@ -82,7 +83,8 @@ int PP_CameraCtr_mainfunction(void *task)
 		tspInformHU.datatype = 2;
 		tspInformHU.cameraname = 1;
 		tbox_ivi_set_tspInformHU(&tspInformHU);  //通知车机
-
+		
+		log_o(LOG_HOZON,"Has notified HU to collect videos and pictures");
 		PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 		rmtCtrl_Stpara.rvcReqStatus = 2;         //执行成功
 		rmtCtrl_Stpara.rvcFailureType = 0;
@@ -92,6 +94,8 @@ int PP_CameraCtr_mainfunction(void *task)
 		PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 		
 	}
+	PP_rmtCameraCtrl.state.req = 0 ;
+	return 0;
 }
 
 
@@ -144,6 +148,42 @@ void PP_CameraCtrl_ClearStatus(void)
 	PP_rmtCameraCtrl.state.req = 0;
 }
 
+/************************shell命令测试使用**************************/
+
+void PP_CameraCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
+{
+	PP_rmtCameraCtrl.state.reqType = (long)reqType;
+	
+	PP_rmtCameraCtrl.state.req = 1;
+	PP_rmtCameraCtrl.state.style = RMTCTRL_TSP;
+#if 0
+	char vin[18] = {0};
+	char iccid[21] = {0};
+	char imei[16] = {0};
+	char iccid1[21] = {0};
+	char *pt = iccid1; 
+	char sw[12] = {0};
+	char hw[12] = {0};
+	gb32960_getvin(vin);
+	log_o(LOG_HOZON,"VIN = %s",vin);
+	if(PP_rmtCfg_getIccid((uint8_t *)iccid) == 1)
+	{
+		pt = iccid;
+	}
+	else
+	{
+		pt  = "00000000000000000000";
+	}
+	log_o(LOG_HOZON,"ICCID = %s",pt);
+	at_get_imei(imei);
+	log_o(LOG_HOZON,"IMEI = %s",imei);
+	strcpy(sw,DID_F1B0_SW_FIXED_VER);
+	strcpy(hw,DID_F191_HW_VERSION);
+	log_o(LOG_HOZON,"sw = %s",sw);
+	log_o(LOG_HOZON,"hw = %s",hw);
+#endif
+}
+/************************shell命令测试使用**************************/
 
 
 

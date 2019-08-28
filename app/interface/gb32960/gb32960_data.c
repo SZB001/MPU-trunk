@@ -1240,7 +1240,7 @@ static uint32_t gb_data_save_extr(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0;
     uint32_t maxvid = 0, maxtid = 0, minvid = 0, mintid = 0;
-    uint16_t maxv, maxt, minv, mint;
+    uint16_t maxv = 0, maxt = 0, minv = 0, mint = 0;
 
     buf[len++] = GB_DATA_EXTREMA;
 

@@ -26,7 +26,7 @@
 #define IVI_PKG_MSG_CNT                (4)
 
 #define GPS_NMEA_SIZE                  (1024)
-#define TBOX_PKI_IHU  0
+//#define TBOX_PKI_IHU  1
 #define PKI_IDLE      0
 #define PKI_INIT      1
 #define PKI_ACCEPT    2
@@ -125,5 +125,7 @@ extern void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp);
 extern void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp);
 
 extern void tbox_ivi_set_tspchager_InformHU(ivi_chargeAppointSt *tsp);
+
+extern long tbox_ivi_getTimestamp(void);
 #endif
 
