@@ -1129,9 +1129,11 @@ static uint32_t gb_data_save_motor(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = tmp;
 
         /* motor temperature */
-        tmp = gbinf->motor[i].info[GB_MINF_MOTTMP] ?
-              dbc_get_signal_from_id(gbinf->motor[i].info[GB_MINF_MOTTMP])->value + 48 : 0xff;
-        buf[len++] = tmp;
+		double motortemperature;
+        motortemperature = gbinf->motor[i].info[GB_MINF_MOTTMP] ?
+              dbc_get_signal_from_id(gbinf->motor[i].info[GB_MINF_MOTTMP])->value : 0xff;
+		if(motortemperature < (-40)) motortemperature = -40;
+        buf[len++] = motortemperature + 40;
 
         /* motor voltage, scale 0.1V*/
         tmp = gbinf->motor[i].info[GB_MINF_VOLTAGE] ?
@@ -1903,7 +1905,16 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     {
         if(gbinf->gb_VSExt.info[GB_VS_RFTYRETEMP+2*i])//
     	{
-    		buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYRETEMP+2*i])->value + 50;
+			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYRETEMP+2*i])->value;
+			if(tmp > 200) 
+			{
+				tmp = 0xfe;
+			}
+			else
+			{
+				tmp = tmp + 50;
+			}
+    		buf[len++] = tmp;
     	}
     	else
     	{
@@ -1913,7 +1924,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         if(gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])//
     	{
         	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])->value/100/0.0177;
-        	if(tmp > 253) tmp = 253;
+        	if(tmp > 253) tmp = 0xfe;//超过范围，上报异常
     		buf[len++] = tmp;
     	}
     	else
@@ -2101,13 +2112,13 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         }
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])////加速度z
-    {
-    	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])->value + 40.95) * 100;
-    	buf[len++] = tmp >> 8;
-    	buf[len++] = tmp;
-    }
-    else
+    //if(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])////加速度z
+    //{
+    //	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])->value + 40.95) * 100;
+    //	buf[len++] = tmp >> 8;
+    //	buf[len++] = tmp;
+    //}
+    //else
     {
     	 buf[len++] = 0xff;
     	 buf[len++] = 0xff;
@@ -2143,6 +2154,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 	if(gbinf->gb_VSExt.info[GB_VS_TRIP])//小计里程
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TRIP])->value * 10;
+		if(tmp > 20000) tmp = 20000;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -2152,9 +2164,10 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gbinf->gb_VSExt.info[GB_VS_SUBTOTALTRVLTIME])//С����ʻʱ��
+	if(gbinf->gb_VSExt.info[GB_VS_SUBTOTALTRVLTIME])//小计行驶时间
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_SUBTOTALTRVLTIME])->value;
+		if(tmp > 65000) tmp = 65000;
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
