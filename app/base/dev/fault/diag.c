@@ -13,6 +13,7 @@
 #include "gps_api.h"
 #include "pm_api.h"
 #include "timer.h"
+#include "uds.h"
 
 static unsigned char main_last_status = 0;
 static unsigned char vice_last_status = 0;
@@ -514,11 +515,15 @@ void dev_diag_emmc(void)
     }
 
     emmc_status = dev_diag_get_emmc_status();
+    log_i(LOG_DEV, "emmc status: %d", emmc_status);
 
     /* maybe driver not load */
     if(DIAG_EMMC_NOT_EXIST == emmc_status)  
     {
         log_e(LOG_DEV, "emmc driver is loaded failed!");
+        log_o(LOG_DEV, "echo 1 !!!");
+        system("echo 1 > /sys/devices/7864900.sdhci/mmc_host/mmc1/clk_scaling/enable_emmc");
+         
         if( 0 == err_time )
         {
             err_time = tm_get_time();
@@ -531,6 +536,15 @@ void dev_diag_emmc(void)
             log_o(LOG_DEV, "emmc is fault for a long time, reset 4G....");
             return;
         }
+    }
+    else if (DIAG_EMMC_NOT_FORMAT == emmc_status)
+    {
+         log_e(LOG_DEV, "emmc not format!");
+         err_time = 0;
+         log_o(LOG_DEV, "echo 0 !!!");
+         system("echo 0 > /sys/devices/7864900.sdhci/mmc_host/mmc1/clk_scaling/enable_emmc");
+         
+         return;
     }
     /* mount ponit not exist */
     else if (DIAG_EMMC_UMOUNT_POINT_NOT_EXIST == emmc_status)
@@ -570,6 +584,8 @@ void dev_diag_emmc(void)
         pclose(ptream);
 
         log_o(LOG_DEV, "remount eMMC OK!!!!");
+        log_o(LOG_DEV, "echo 2 !!!");
+        system("echo 2 > /sys/devices/7864900.sdhci/mmc_host/mmc1/clk_scaling/enable_emmc");
     }
 }
 
