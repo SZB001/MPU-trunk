@@ -1059,7 +1059,7 @@ static uint32_t gb_data_save_cell(gb_info_t *gbinf, uint8_t *buf)
         buf[len++] = tmp;
     }
 
-    start = (start + cells) % gbinf->batt.cell_cnt;
+    //start = (start + cells) % gbinf->batt.cell_cnt;
 
     return len;
 }
