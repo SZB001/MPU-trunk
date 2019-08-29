@@ -27,6 +27,8 @@ author        liuzhongwen
 #include "dir.h"
 #include "file.h"
 
+#define CFG_PARA_DBC_PATH   "/usrdata/dbc/GB-EP30_CAN_r4_009WIP_v1.13.dbc"
+
 static unsigned char cfg_para_buf[CFG_PARA_BUF_LEN];
 static pthread_mutex_t cfg_para_mutex;
 static bool cfg_para_status = true;
@@ -411,8 +413,8 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     tmp_char = UDS_12V_POWER;
     cfg_set_by_id(CFG_ITEM_FT_UDS_POWER,  &tmp_char, 1, type);
     
-    tmp_char = 0;
-    cfg_set_by_id(CFG_ITEM_DBC_PATH, &tmp_char, 256, type);
+    //tmp_char = 0;
+    //cfg_set_by_id(CFG_ITEM_DBC_PATH, &tmp_char, 256, type);
 
     sleep_mode = 3;
     cfg_set_by_id(CFG_ITEM_SLEEP_MODE, &sleep_mode, sizeof(sleep_mode), type);
@@ -429,7 +431,7 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     memset(&apn_auth, 0, sizeof(apn_auth));
     cfg_set_by_id(CFG_ITEM_LOC_APN_AUTH, &apn_auth, sizeof(apn_auth), type);
 
-    unsigned char dbc_path[256] = "/usrdata/dbc/GB-EP30_CAN_r4_009WIP_v1.12.dbc";
+    unsigned char dbc_path[256] = CFG_PARA_DBC_PATH;
     cfg_set_by_id(CFG_ITEM_DBC_PATH, dbc_path, 256, type);
 
     wifi_enable = 0;
@@ -674,6 +676,9 @@ int cfg_restore_para(void)
     {
         log_o(LOG_CFG, "cfg data ver:%s", ver);
     }
+
+    unsigned char dbc_path[256] = CFG_PARA_DBC_PATH;
+    cfg_set_by_id(CFG_ITEM_DBC_PATH, dbc_path, 256, CFG_SET_UNSILENT);
 
     /* if add new para in the new version, upgrade the para */
     if (0 != strcmp(COM_APP_MAIN_VER, ver))
