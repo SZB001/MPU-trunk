@@ -1244,7 +1244,7 @@ int uds_did_get_configuration_code(unsigned char *did, unsigned int len)
 
     length = DID_LEN_CONFIGURATION_CODE;
     
-    return cfg_get_para(CFG_ITEM_DID_CFG_CODE, did, &length);
+    return cfg_get_para(CFG_ITEM_EN_BLE, did, &length);
 }
 
 int uds_did_set_configuration_code(unsigned char *did, unsigned int len)
@@ -1255,7 +1255,7 @@ int uds_did_set_configuration_code(unsigned char *did, unsigned int len)
         return UDS_INVALID_PARA;
     }
 
-    return cfg_set_para(CFG_ITEM_DID_CFG_CODE, did, DID_LEN_CONFIGURATION_CODE); 
+    return cfg_set_para(CFG_ITEM_EN_BLE, did, 1); 
 }
 
 int uds_did_get_phone(unsigned char *did, unsigned int len)
