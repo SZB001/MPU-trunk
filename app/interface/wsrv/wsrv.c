@@ -9,6 +9,12 @@ author        chenyin
 #include "wsrv_http.h"
 #include "tcom_api.h"
 #include "timer.h"
+#include "PP_canSend.h"
+#include "dev_api.h"
+#include "cfg_api.h"
+#include "scom_msg_def.h"
+#include "scom_tl.h"
+#include "../../base/dev/dev_mcu_cfg.h"
 
 static pthread_t wsrv_tid;
 static unsigned char msgbuf[TCOM_MAX_MSG_LEN];
@@ -126,6 +132,41 @@ static int wsrv_timeout(unsigned int timer_msgid)
     return ret;
 }
 
+int wrsv_mode_in(int argc, const char **argv)
+{
+    unsigned char mode;
+
+    //(0:runing 1:listen 2:sleep 3:auto)
+    mode = 0;
+    
+    dev_set_from_mpu(MCU_CFG_ID_SYSMODE, &mode, sizeof(mode));
+    
+    PP_can_send_data(PP_CAN_OTAREQ, 0x02, 0);
+
+    return 0;
+}
+
+int wrsv_mode_in_result(int argc, const char **argv)
+{
+
+    return 0;
+
+}
+
+int wrsv_mode_out(int argc, const char **argv)
+{
+    unsigned char mode;
+
+    PP_can_send_data(PP_CAN_OTAREQ, 0x01, 0);
+    
+    //(0:runing 1:listen 2:sleep 3:auto)
+    mode = 3;
+    
+    dev_set_from_mpu(MCU_CFG_ID_SYSMODE, &mode, sizeof(mode));
+    
+    return 0;
+}
+
 int wsrv_init(INIT_PHASE phase)
 {
     int ret = 0;
@@ -145,6 +186,9 @@ int wsrv_init(INIT_PHASE phase)
             break;
 
         case INIT_PHASE_OUTSIDE:
+            ret |= shell_cmd_register("modein", wrsv_mode_in, "OTA Mode In");
+            ret |= shell_cmd_register("moderesult", wrsv_mode_in_result, "OTA Mode In Resullt");
+            ret |= shell_cmd_register("modeout", wrsv_mode_out, "OTA Mode Out");
             ret = tm_create(TIMER_REL, TIMER_WSRV_RECREATE, MPU_MID_WSRV, &recreate_timer);
 
             if (ret != 0)

@@ -31,6 +31,43 @@ extern int fota_uds_enter_diag_GW(void);
 extern int fota_uds_write_data_by_identifier(uint8_t *identifier, uint8_t *data, int len);
 extern int fota_uds_write_data_by_identifier_ex(uint8_t *identifier, uint8_t *data, int len);
 
+#define FOTA_MAX_ECU_NAME_LEN     (16)
+
+typedef struct
+{
+    unsigned char au8ECUName[FOTA_MAX_ECU_NAME_LEN];
+    unsigned int  u32PhyID;
+    unsigned int  u32ResID;
+    unsigned int  u32FunID;
+}ECU_NAME_2_UDSID_t;
+
+static ECU_NAME_2_UDSID_t s_atECUName2UDSID[] = {{"vcu",  0x7E2, 0x7EA, 0x7DF},
+                                                 {"bms",  0x706, 0x716, 0x7DF},
+                                                 {"mcup", 0x707, 0x717, 0x7DF},
+                                                 {"obcp", 0x70A, 0x71A, 0x7DF},
+                                                 {"flr",  0x7C1, 0x7D1, 0x7DF},
+                                                 {"flc",  0x7C2, 0x7D2, 0x7DF},
+                                                 {"apa",  0x7C0, 0x7D0, 0x7DF},
+                                                 {"esc",  0x720, 0x730, 0x7DF},
+                                                 {"eps",  0x724, 0x734, 0x7DF},
+                                                 {"ehb",  0x722, 0x732, 0x7DF},
+                                                 {"bdcm", 0x740, 0x750, 0x7DF},
+                                                 {"lsa",  0x763, 0x773, 0x7DF},
+                                                 {"clm",  0x74B, 0x75B, 0x7DF},
+                                                 {"ptc",  0x765, 0x775, 0x7DF},
+                                                 {"eacp", 0x74C, 0x75C, 0x7DF},
+                                                 {"egsm", 0x70B, 0x71B, 0x7DF},
+                                                 {"alm",  0x766, 0x776, 0x7DF},
+                                                 {"wpc",  0x786, 0x796, 0x7DF},
+                                                 {"ihu",  0x780, 0x790, 0x7DF},
+                                                 {"icu",  0x781, 0x791, 0x7DF},
+                                                 {"isr",  0x783, 0x793, 0x7DF},
+                                                 {"dvr",  0x787, 0x797, 0x7DF},
+                                                 {"tap",  0x785, 0x795, 0x7DF},
+                                                 {"mfcp", 0x782, 0x792, 0x7DF},
+                                                 {"acu",  0x746, 0x756, 0x7DF},
+                                                 {"plg",  0x764, 0x774, 0x7DF},};
+
 int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz, 
                                                char *h_ver, int *h_siz,
                                                char *sn,    int *sn_siz)
@@ -45,37 +82,40 @@ int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz,
 
         fota_uds_get_version_gw((uint8_t *)s_ver, s_siz, (uint8_t *)h_ver, h_siz, (uint8_t *)sn, sn_siz);
     }
-    else if (memcmp(name, "vcu", 3) == 0)
+    else
     {
-        if (fota_uds_open(1, 0x7DF, 0x7EA, 0x7E2) != 0)
+        unsigned char u8MaxECUCount = sizeof(s_atECUName2UDSID) / sizeof(ECU_NAME_2_UDSID_t);
+        unsigned char u8Loop = 0;
+
+        for(u8Loop = 0; u8Loop < u8MaxECUCount; u8Loop++)
         {
-            log_e(LOG_FOTA, "open UDS for ECU(%s) fail", name);
-            return -1;
+            if(memcmp(name, s_atECUName2UDSID[u8Loop].au8ECUName, strlen((char *)s_atECUName2UDSID[u8Loop].au8ECUName)) == 0)
+            {
+                log_o(LOG_FOTA, "Get ECU Information: name %s, PID = 0x%x, RID = 0x%x,", s_atECUName2UDSID[u8Loop].au8ECUName, 
+                                                                                         s_atECUName2UDSID[u8Loop].u32PhyID,
+                                                                                         s_atECUName2UDSID[u8Loop].u32ResID);
+                break;
+            }
         }
 
-        fota_uds_get_version((uint8_t *)s_ver, s_siz, (uint8_t *)h_ver, h_siz, (uint8_t *)sn, sn_siz);
-    }
-    else if (memcmp(name, "mfcp", 4) == 0)
-    {
-        if (fota_uds_open(1, 0x7DF, 0x792, 0x782) != 0)
+        if(u8Loop < u8MaxECUCount)
         {
-            log_e(LOG_FOTA, "open UDS for ECU(%s) fail", name);
+            if (fota_uds_open(1, s_atECUName2UDSID[u8Loop].u32FunID, 
+                                 s_atECUName2UDSID[u8Loop].u32ResID, 
+                                 s_atECUName2UDSID[u8Loop].u32PhyID) != 0)
+            {
+                log_e(LOG_FOTA, "open UDS for ECU(%s) fail", name);
+                return -1;
+            }
+            
+            fota_uds_get_version((uint8_t *)s_ver, s_siz, (uint8_t *)h_ver, h_siz, (uint8_t *)sn, sn_siz);
+        }
+        else
+        {
+            log_e(LOG_FOTA, "Can Not Find ECU(%s) Information UDS.", name);
             return -1;
         }
-
-        fota_uds_get_version((uint8_t *)s_ver, s_siz, (uint8_t *)h_ver, h_siz, (uint8_t *)sn, sn_siz);
     }
-    else if (memcmp(name, "dvr", 3) == 0)
-    {
-        if (fota_uds_open(1, 0x7DF, 0x797, 0x787) != 0)
-        {
-            log_e(LOG_FOTA, "open UDS for ECU(%s) fail", name);
-            return -1;
-        }
-
-        fota_uds_get_version((uint8_t *)s_ver, s_siz, (uint8_t *)h_ver, h_siz, (uint8_t *)sn, sn_siz);
-    }
-
 
     fota_uds_close();
 
@@ -183,77 +223,6 @@ static int fota_ecu_download(fota_ver_t *ver, int erase)
     return 0;
 }
 
-static int fota_ecu_upgrade(fota_ecu_t *ecu, fota_ver_t *ver)
-{
-    uint8_t seed[128], key[128];
-    int keysz = 4;
-
-    if (fota_uds_prog_prepare() != 0)
-    {
-        log_e(LOG_FOTA, "prepare program enveronment for ECU(%s) fail", ecu->name);
-        return -1;
-    }
-
-    if (fota_uds_enter_diag() != 0)
-    {
-        log_e(LOG_FOTA, "enter program session for ECU(%s) fail", ecu->name);
-        return -1;
-    }
-
-    if (fota_uds_req_seed(ecu->key_lvl, seed, sizeof(seed)) != 0)
-    {
-        log_e(LOG_FOTA, "can't get seed from ECU(%s)", ecu->name);
-        return -1;
-    }
-
-    if (ecu->security && (keysz = ecu->security(seed, ecu->key_par, key, sizeof(key))) < 0)
-    {
-        log_e(LOG_FOTA, "calculate key for ECU(%s) fail", ecu->name);
-        return -1;
-    }
-
-    if (fota_uds_send_key(ecu->key_lvl, key, keysz) != 0)
-    {
-        log_e(LOG_FOTA, "send key to ECU(%s) fail", ecu->name);
-        return -1;
-    }
-
-    if (ecu->drv.valid && fota_ecu_download(&ecu->drv, 0) != 0)
-    {
-        log_e(LOG_FOTA, "download flash driver for ECU(%s) fail", ecu->name);
-        return -1;
-    }
-
-    if (fota_ecu_download(ver, 1) != 0)
-    {
-        log_e(LOG_FOTA, "download image(%s) to ECU(%s) fail", ver->fpath, ecu->name);
-        return -1;
-    }
-
-    if (ver->ecu->check2 && ver->ecu->check2() != 0)
-    {
-        log_e(LOG_FOTA, "check download for ECU(%s) fail", ecu->name);
-        return -1;
-    }
-
-    if (fota_uds_reset() != 0)
-    {
-        log_e(LOG_FOTA, "reset for ECU(%s) fail", ecu->name);
-        return -1;
-    }
-
-    sleep(10);
-
-    if (fota_uds_prog_post() != 0)
-    {
-        log_e(LOG_FOTA, "post program enveronment for ECU(%s) fail", ecu->name);
-        return -1;
-    }
-
-    return 0;
-
-}
-
 static int fota_ecu_upgrade_GW(fota_ecu_t *ecu, fota_ver_t *ver)
 {
     uint8_t seed[128], key[128];
@@ -285,19 +254,23 @@ static int fota_ecu_upgrade_GW(fota_ecu_t *ecu, fota_ver_t *ver)
     }
 
     buf[0] = ecu->gw_sa;
-    buf[1] = '\x00';
+    
+	//If Have Flash Diver To Be Send, We Start Progress
+	if(ecu->drv.valid)
+	{
+		buf[1] = '\x00';
+	    if (fota_uds_write_data_by_identifier((uint8_t *)"\x74\x00", buf, 2) != 0)
+	    {
+	        log_e(LOG_FOTA, "write data by identifier 74 00 27 00 to ECU(%s) fail", ecu->name);
+	        return -1;
+	    }
 
-    if (fota_uds_write_data_by_identifier((uint8_t *)"\x74\x00", buf, 2) != 0)
-    {
-        log_e(LOG_FOTA, "write data by identifier 74 00 27 00 to ECU(%s) fail", ecu->name);
-        return -1;
-    }
-
-    if (ecu->drv.valid && fota_ecu_download(&ecu->drv, 0) != 0)
-    {
-        log_e(LOG_FOTA, "download flash driver for ECU(%s) fail", ecu->name);
-        return -1;
-    }
+	    if (fota_ecu_download(&ecu->drv, 0) != 0)
+	    {
+	        log_e(LOG_FOTA, "download flash driver for ECU(%s) fail", ecu->name);
+	        return -1;
+	    }
+	}
 
     buf[1] = '\x01';
 
@@ -312,6 +285,23 @@ static int fota_ecu_upgrade_GW(fota_ecu_t *ecu, fota_ver_t *ver)
         log_e(LOG_FOTA, "download image(%s) to ECU(%s) fail", ver->fpath, ecu->name);
         return -1;
     }
+
+	//If Have Calc To Be Send, We Start Progress
+	if(ecu->cal.valid)
+	{
+		buf[1] = '\x02';
+	    if (fota_uds_write_data_by_identifier((uint8_t *)"\x74\x00", buf, 2) != 0)
+	    {
+	        log_e(LOG_FOTA, "write data by identifier 74 00 27 00 to ECU(%s) fail", ecu->name);
+	        return -1;
+	    }
+
+	    if (fota_ecu_download(&ecu->cal, 0) != 0)
+	    {
+	        log_e(LOG_FOTA, "download flash driver for ECU(%s) fail", ecu->name);
+	        return -1;
+	    }
+	}
 
     if (fota_uds_write_data_by_identifier_ex((uint8_t *)"\x74\x01", (uint8_t *)&ecu->gw_sa, 1) != 0)
     {

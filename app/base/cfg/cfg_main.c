@@ -15,6 +15,7 @@ author        liuzhongwen
 #include "tcom_api.h"
 #include "shell_api.h"
 #include "hozon_PP_api.h"
+#include "file.h"
 
 static pthread_t cfg_tid;  /* thread id */
 static unsigned char cfg_reqmsgbuf[TCOM_MAX_MSG_LEN];

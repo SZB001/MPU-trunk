@@ -2,6 +2,8 @@
 #include <string.h>
 #include "tbox_ivi_api.h"
 #include <time.h>
+#include "timer.h"
+
 extern ivi_callrequest callrequest; 
 
 int tbox_ivi_get_call_type(void) //获取通话的类型
@@ -21,7 +23,8 @@ int tbox_ivi_get_call_type(void) //获取通话的类型
 	}
 	else
 	{
-		return 3;
+		return 3;
+
 	}
 	
 }

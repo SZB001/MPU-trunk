@@ -391,7 +391,7 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     unsigned char sleep_mode;
     unsigned char car_type;
     short tmp_short;
-    int   tmp_int;
+    //int   tmp_int;
     char  tmp_char;
 
     tmp_short = 0;

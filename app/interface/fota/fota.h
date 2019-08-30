@@ -43,6 +43,7 @@ struct fota_ecu
     int  pid, rid;
     fota_ver_t src, tar, rel[FOTA_MAX_REL_VER];
     fota_ver_t drv;
+    fota_ver_t cal;
     //proc_t proc;
     int  key_par[FOTA_MAX_KEY_PAR];
     int  key_lvl;

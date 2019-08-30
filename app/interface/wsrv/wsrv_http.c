@@ -20,6 +20,7 @@ author        chenyin
 #include "scom_tl.h"
 #include "gps_api.h"
 #include "PP_canSend.h"
+#include "../../base/dev/dev_mcu_cfg.h"
 
 extern timer_t restart_da_timer;
 
@@ -286,7 +287,6 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     unsigned char fw_ver[64] = {0};
     char mpu_ver[64] = {0};
     unsigned char mcu_run_ver[64] = {0};
-    unsigned char mcu_upg_ver[64] = {0};
     unsigned char gl_vin[18] = {0};
     //unsigned int t_sn; // tbox sn
     unsigned char file_path[64] = {0};
@@ -301,6 +301,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     int sn_len;
     unsigned int timer_wake;
     RTCTIME abstime;
+    unsigned char mode;
 
     log_i(LOG_WSRV, "fd: %d, cmd: %s, args: %s, data: %s", *p_cli_fd, cmd_buf, args_buf, data_buf);
 
@@ -314,7 +315,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             ret = upg_get_fw_ver(fw_ver, sizeof(fw_ver));
             strcpy(mpu_ver, dev_get_version());
             ret |= upg_get_mcu_run_ver(mcu_run_ver, sizeof(mcu_run_ver));
-            cfg_get_para(CFG_ITEM_SN_NUM, (unsigned char *)&tbox_sn, &sn_len);
+            cfg_get_para(CFG_ITEM_SN_NUM, (unsigned char *)&tbox_sn, (unsigned int *)&sn_len);
 
             if (0 == ret)
             {
@@ -325,29 +326,12 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                                     dev_buf, tmp_buf, dev_buf, fw_ver, dev_buf, tbox_sn);
             }
         }
-        else if (0 == strcmp(dev_buf, "vcu"))
-        {
-            fota_ecu_get_ver((unsigned char *)"vcu", s_ver, &s_len, h_ver, &h_len, sn, &sn_len);
-            sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, dev_buf,  h_ver, dev_buf, sn);
-        }
-        else if (0 == strcmp(dev_buf, "gw"))
-        {
-            fota_ecu_get_ver((unsigned char *)"gw", s_ver, &s_len, h_ver, &h_len, sn, &sn_len);
-            sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, dev_buf,  h_ver, dev_buf, sn);
-        }
-        else if (0 == strcmp(dev_buf, "mfcp"))
-        {
-            fota_ecu_get_ver((unsigned char *)"mfcp", s_ver, &s_len, h_ver, &h_len, sn, &sn_len);
-            sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, dev_buf,  h_ver, dev_buf, sn);
-        }
-        else if (0 == strcmp(dev_buf, "dvr"))
-        {
-            fota_ecu_get_ver((unsigned char *)"dvr", s_ver, &s_len, h_ver, &h_len, sn, &sn_len);
-            sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, dev_buf,  h_ver, dev_buf, sn);
-        }
         else
         {
-            ret = -1;
+            log_o(LOG_WSRV, "OTA Get %s Version", dev_buf);
+        
+            ret = fota_ecu_get_ver((unsigned char *)dev_buf, s_ver, &s_len, h_ver, &h_len, sn, &sn_len);
+            sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, dev_buf,  h_ver, dev_buf, sn);
         }
 
         if (ret < 0)
@@ -400,8 +384,8 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
         if (0 != file_path[0])
         {
-            file_path[strlen(file_path) - 2] = '/';
-            file_path[strlen(file_path) - 1] = 0;
+            file_path[strlen((char *)file_path) - 2] = '/';
+            file_path[strlen((char *)file_path) - 1] = 0;
             log_e(LOG_WSRV, " ######### file_path:%s", file_path);
 
             //call upgrade function
@@ -513,6 +497,11 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_MODEIN))
     {
+        //(0:runing 1:listen 2:sleep 3:auto)
+        mode = 0;
+    
+        dev_set_from_mpu(MCU_CFG_ID_SYSMODE, &mode, sizeof(mode));
+    
         PP_can_send_data(PP_CAN_OTAREQ, 0x02, 0);
         
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
@@ -531,8 +520,13 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     {
         PP_can_send_data(PP_CAN_OTAREQ, 0x01, 0);
     
-        sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 1);
+        sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
+        
+        //(0:runing 1:listen 2:sleep 3:auto)
+        mode = 3;
     
+        dev_set_from_mpu(MCU_CFG_ID_SYSMODE, &mode, sizeof(mode));
+
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }
     else

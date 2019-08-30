@@ -298,7 +298,6 @@ int foton_security(uint8_t *seed, int *par, uint8_t *key, int keysz)
     #define INITIAL_REMINDER 0xFFFE
     #define MSG_LEN 2 /* seed length in bytes */
 
-    uint8_t temp[2] = {0};
     uint8_t n;
     uint8_t i;
     uint16_t remainder;

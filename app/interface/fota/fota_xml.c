@@ -15,7 +15,6 @@ void xml_show(xml_t *xml);
 
 static int xml_load_ver(xml_node_t *ver_node, fota_ver_t *ver)
 {
-    xml_node_t *node;
     char *p;
 
     if ((p = xml_get_sub_value(ver_node, "version")) == NULL)
@@ -69,6 +68,7 @@ int xml_load_ecu(xml_node_t *ecu_node, fota_ecu_t *ecu)
     ecu->tar.ecu = ecu;
     ecu->drv.ecu = ecu;
     ecu->src.ecu = ecu;
+    ecu->cal.ecu = ecu;
 
     if ((p = xml_get_sub_value(ecu_node, "name")) == NULL)
     {
@@ -145,6 +145,14 @@ int xml_load_ecu(xml_node_t *ecu_node, fota_ecu_t *ecu)
         xml_load_ver(node, &ecu->drv) != 0)
     {
         log_e(LOG_FOTA, "load flash driver of ECU(%s) fail", ecu->name);
+        xml_destroy(&xml);
+        return -1;
+    }
+
+    if ((node = xml_get_sub_node(ecu_node, "cal")) != NULL &&
+        xml_load_ver(node, &ecu->cal) != 0)
+    {
+        log_e(LOG_FOTA, "load cal of ECU(%s) fail", ecu->name);
         xml_destroy(&xml);
         return -1;
     }
