@@ -707,7 +707,7 @@ static void nm_dial_set_dns(NM_NET_ITEM *phndl)
     char command[200];
 
     memset(command, 0, sizeof(command));
-
+#if 0
     if (phndl->pri_dns_addr.s_addr)
     {
         snprintf(command, sizeof(command), "echo 'nameserver %s' > /etc/resolv.conf",
@@ -722,6 +722,7 @@ static void nm_dial_set_dns(NM_NET_ITEM *phndl)
         }
     }
     else
+#endif
     {
         snprintf(command, sizeof(command), "echo 'nameserver 8.8.8.8' > /etc/resolv.conf");
         nm_sys_call(command);
@@ -846,7 +847,7 @@ static int nm_dial_get_conf(NM_NET_ITEM *phndl)
         /*set DNS config file*/
         nm_dial_set_dns(phndl);
 
-        nm_dial_add_dns_route(phndl);
+        //nm_dial_add_dns_route(phndl);
     }
 
     return 0;

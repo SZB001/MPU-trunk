@@ -2,7 +2,7 @@
 #include <string.h>
 #include "tbox_ivi_api.h"
 #include <time.h>
-#include "timer.h"
+#include <sys/time.h>
 
 extern ivi_callrequest callrequest; 
 
