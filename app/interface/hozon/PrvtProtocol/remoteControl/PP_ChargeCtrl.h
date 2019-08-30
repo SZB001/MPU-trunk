@@ -34,13 +34,13 @@ description�� macro definitions
 #define PP_CHARGECTRL_CLOSE  		1
 
 
-#define PP_APPOINTCHARGE_IDLE   	0
-#define PP_APPOINTCHARGE_READY	    1
-#define PP_APPOINTCHARGE_ONGOING   	2
-#define PP_APPOINTCHARGE_SUCCESS  	3
-#define PP_APPOINTCHARGE_UNCONNT  	4//充电枪未连接
-#define PP_APPOINTCHARGE_SPORT		5//运动模式
-#define PP_APPOINTCHARGE_ABNRSHUTDOWN	6//异常关闭
+#define PP_CHARGESTATE_IDLE   	0
+#define PP_CHARGESTATE_READY	    1
+#define PP_CHARGESTATE_ONGOING   	2
+#define PP_CHARGESTATE_SUCCESS  	3
+#define PP_CHARGESTATE_UNCONNT  	4//充电枪未连接
+#define PP_CHARGESTATE_SPORT		5//运动模式
+#define PP_CHARGESTATE_ABNRSHUTDOWN	6//异常关闭
 /***********�꺯��***********/
 
 /*******************************************************
@@ -67,7 +67,7 @@ typedef struct
 	uint8_t  dataUpdata;
 
 	uint8_t appointcharge;
-	uint8_t appointchargeSt;
+	//uint8_t appointchargeSt;
 	uint64_t appointchargeTime;
 }__attribute__((packed))  PP_rmtChargeCtrlSt_t; /*remote control*/
 

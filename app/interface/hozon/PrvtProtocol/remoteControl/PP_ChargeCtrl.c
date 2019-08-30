@@ -173,6 +173,7 @@ void PP_ChargeCtrl_init(void)
 ******************************************************/
 int PP_ChargeCtrl_mainfunction(void *task)
 {
+	uint8_t chargeonoffstate = 0;
 	switch(PP_rmtChargeCtrl.state.CtrlSt)
 	{
 		case PP_CHARGECTRL_IDLE:
@@ -247,7 +248,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 					}
 					PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_REQSTART;
 				}
-				PP_rmtChargeCtrl.state.chargeSt = 0;
+				chargeonoffstate = 0;
 				PP_rmtChargeCtrl.state.req = 0;
 			}
 		}
@@ -282,7 +283,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 					{
 						log_o(LOG_HOZON,"start charge success\n");
 						PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); //������ű�־λ
-						PP_rmtChargeCtrl.state.chargeSt = 1;//�����
+						chargeonoffstate = 1;//�����
 						PP_rmtChargeCtrl.fail     = 0;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
 					}
@@ -292,7 +293,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 0) //充电关闭
 					{
 						log_o(LOG_HOZON,"close charge success\n");
-						PP_rmtChargeCtrl.state.chargeSt = 2;//δ���
+						chargeonoffstate = 2;//δ���
 						PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); //������ű�־λ
 						PP_rmtChargeCtrl.fail     = 0;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
@@ -336,21 +337,21 @@ int PP_ChargeCtrl_mainfunction(void *task)
 			{
 				if(PP_rmtChargeCtrl.state.chargecmd == PP_CHARGECTRL_OPEN)
 				{
-					if(PP_rmtChargeCtrl.state.chargeSt == 1)
+					if(chargeonoffstate == 1)
 					{//按预约开启充电
 						rmtCtrl_chargeStpara.rvcReqCode = 0x710;
-						PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_ONGOING;
+						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_ONGOING;
 					}
 					else
 					{
 						rmtCtrl_chargeStpara.rvcReqCode = 0x711;
 						if(PP_rmtChargeCtrl.failtype == PP_RMTCTRL_CHRGGUNUNCONNT)
 						{
-							PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_UNCONNT;
+							PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_UNCONNT;
 						}
 						else if(PP_rmtChargeCtrl.failtype == PP_RMTCTRL_READYLIGHTON)
 						{
-							PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_SPORT;
+							PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_SPORT;
 						}
 						else
 						{}
@@ -358,9 +359,9 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				}
 				else
 				{
-					if(PP_rmtChargeCtrl.state.chargeSt == 2)
+					if(chargeonoffstate == 2)
 					{
-						if(PP_rmtChargeCtrl.state.appointchargeSt == PP_APPOINTCHARGE_SUCCESS)
+						if(PP_rmtChargeCtrl.state.chargeSt == PP_CHARGESTATE_SUCCESS)
 						{
 							rmtCtrl_chargeStpara.rvcReqCode = 0x700;
 						}
@@ -453,7 +454,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 								localdatetime->tm_hour, localdatetime->tm_min, localdatetime->tm_sec);
 						appointPerformFlg = 1;
 						PP_rmtChargeCtrl.state.appointcharge = 1;
-						PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_READY;
+						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_READY;
 						PP_rmtChargeCtrl.state.appointchargeTime = PrvtPro_getTimestamp();
 						uint8_t cmd = PP_CHARGECTRL_OPEN;
 						SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,&cmd,NULL);
@@ -483,14 +484,14 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 		currTimestamp = PrvtPro_getTimestamp();
 		if(currTimestamp <= (PP_rmtChargeCtrl.state.appointchargeTime + PP_CHARGECTRL_APPOINTHOLDTIME))
 		{
-			if((PP_rmtChargeCtrl.state.appointchargeSt == PP_APPOINTCHARGE_UNCONNT)	  || \
-				(PP_rmtChargeCtrl.state.appointchargeSt == PP_APPOINTCHARGE_SPORT))
+			if((PP_rmtChargeCtrl.state.chargeSt == PP_CHARGESTATE_UNCONNT)	  || \
+				(PP_rmtChargeCtrl.state.chargeSt == PP_CHARGESTATE_SPORT))
 			{
 				if((PP_rmtCtrl_cfg_chargeGunCnctSt() == 1) && \
 										(PP_rmtCtrl_cfg_readyLightSt() == 0))//充电枪连接 && 车辆非运动模式
 				{
 					log_i(LOG_HOZON,"Appointment time is up. Execute the charge appointment!!\n");
-					PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_READY;
+					PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_READY;
 					uint8_t cmd = PP_CHARGECTRL_OPEN;
 					SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,&cmd,NULL);
 				}
@@ -499,14 +500,14 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 		else
 		{
 			PP_rmtChargeCtrl.state.appointcharge = 0;
-			PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_IDLE;
+			PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_IDLE;
 		}
 	}
 
 /*
  * 	检查充电完成状况״̬
  *  */
-	if(PP_rmtChargeCtrl.state.appointchargeSt == PP_APPOINTCHARGE_ONGOING)
+	if(PP_rmtChargeCtrl.state.chargeSt == PP_CHARGESTATE_ONGOING)
 	{
 		PP_rmtChargeCtrl.state.appointcharge = 0;
 		if((PP_RMTCTRL_CFG_CHARGEFINISH == PP_rmtCtrl_cfg_chargeSt()) || \
@@ -516,16 +517,16 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 			if(PP_RMTCTRL_CFG_CHARGEFINISH == PP_rmtCtrl_cfg_chargeSt())//charge finish
 			{
 				//PP_rmtChargeCtrl.state.appointcharge = 0;
-				PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_SUCCESS;
+				PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_SUCCESS;
 			}
 			else if(gb_data_vehicleSOC() >= PP_rmtCharge_AppointBook.targetSOC )
 			{
-				PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_SUCCESS;
+				PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_SUCCESS;
 				log_o(LOG_HOZON,"The appointment charge has reached the reserved target battery");
 			}
 			else
 			{
-				PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_ABNRSHUTDOWN;
+				PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_ABNRSHUTDOWN;
 			}
 
 			//关闭充电
@@ -539,14 +540,14 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 	{
 		if(PP_RMTCTRL_CFG_CHARGEING == PP_rmtCtrl_cfg_chargeSt())//
 		{
-			PP_rmtChargeCtrl.state.appointchargeSt = PP_APPOINTCHARGE_ONGOING;
+			PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_ONGOING;
 		}
 	}
 
 /*
  * 检查睡眠条件
  * */
-	if((PP_rmtChargeCtrl.state.appointchargeSt != PP_APPOINTCHARGE_ONGOING) && \
+	if((PP_rmtChargeCtrl.state.chargeSt != PP_CHARGESTATE_ONGOING) && \
 	   (PP_rmtChargeCtrl.state.req != 1) && (PP_rmtChargeCtrl.state.CtrlSt == PP_CHARGECTRL_IDLE))
 	{
 		PP_ChargeCtrl_Sleepflag = 1;

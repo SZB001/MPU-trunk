@@ -326,7 +326,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 				log_i(LOG_HOZON, "receive remote ImageAcquisition request\n");
 				PP_rmtDiag.state.ImageAcquisitionReq = 1;
 				PP_rmtDiag.state.dataType    = Appdata.ImageAcquisitionReq.dataType;
-				PP_rmtDiag.state.durationTime  =  Appdata.ImageAcquisitionReq.durationTime;
+				PP_rmtDiag.state.ImagedurationTime  =  Appdata.ImageAcquisitionReq.durationTime;
 				//PP_rmtDiag.state.effectiveTime = Appdata.ImageAcquisitionReq.effectiveTime;
 				//PP_rmtDiag.state.sizeLimit   =  Appdata.ImageAcquisitionReq.sizeLimit;
 				PP_rmtDiag.state.imagereqeventId = MsgDataBody.eventId;
@@ -600,9 +600,9 @@ static int PP_rmtDiag_do_checkrmtImageReq(PrvtProt_task_t *task)
 			tspInformHU.mid = PP_MID_DIAG_IMAGEACQREQ;
 			tspInformHU.eventid = PP_rmtDiag.state.imagereqeventId;
 			tspInformHU.datatype = PP_rmtDiag.state.dataType;
-			tspInformHU.cameraname = PP_rmtDiag.state.cameraName;
-			tspInformHU.effectivetime = PP_rmtDiag.state.effectiveTime;
-			tspInformHU.sizelimit = PP_rmtDiag.state.sizeLimit;
+			tspInformHU.durationTime = PP_rmtDiag.state.ImagedurationTime;
+			//tspInformHU.effectivetime = PP_rmtDiag.state.effectiveTime;
+			//tspInformHU.sizelimit = PP_rmtDiag.state.sizeLimit;
 			tbox_ivi_set_tspInformHU(&tspInformHU);
 			PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
 		}

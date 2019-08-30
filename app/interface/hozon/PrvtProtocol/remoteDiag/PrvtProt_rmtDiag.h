@@ -105,9 +105,9 @@ typedef struct
 	uint8_t  ImageAcquisitionReq;
 	long	 imagereqeventId;
 	uint8_t  dataType;
-	uint8_t  cameraName;
-	uint32_t effectiveTime;
-	uint32_t sizeLimit;
+	uint16_t  ImagedurationTime;
+	//uint32_t effectiveTime;
+	//uint32_t sizeLimit;
 	uint8_t  result;//�ɼ�����֪ͨ״̬
 	uint8_t  failureType;//�ɼ�����ʧ������
 	char     fileName[255];//�ɼ������ļ���
