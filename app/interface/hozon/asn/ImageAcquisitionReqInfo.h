@@ -22,9 +22,7 @@ extern "C" {
 /* ImageAcquisitionReqInfo */
 typedef struct ImageAcquisitionReqInfo {
 	long	 dataType;
-	long	 cameraName;
-	long	 effectiveTime;
-	long	 sizeLimit;
+	long	 durationTime;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

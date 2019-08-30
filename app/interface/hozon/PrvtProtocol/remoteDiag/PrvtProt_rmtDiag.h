@@ -190,9 +190,9 @@ typedef struct
 typedef struct
 {
 	long dataType;
-	long cameraName;
-	long effectiveTime;
-	long sizeLimit;
+	long durationTime;
+	//long effectiveTime;
+	//long sizeLimit;
 }PP_ImageAcquisitionReq_t;
 
 typedef struct

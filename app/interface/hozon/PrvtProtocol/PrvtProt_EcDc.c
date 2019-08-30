@@ -1675,14 +1675,14 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 					}
 
 					app_rmtDiag_ptr->ImageAcquisitionReq.dataType = ImageAcquisitionReq.dataType;
-					app_rmtDiag_ptr->ImageAcquisitionReq.cameraName = ImageAcquisitionReq.cameraName;
-					app_rmtDiag_ptr->ImageAcquisitionReq.effectiveTime = ImageAcquisitionReq.effectiveTime;
-					app_rmtDiag_ptr->ImageAcquisitionReq.sizeLimit = ImageAcquisitionReq.sizeLimit;
+					app_rmtDiag_ptr->ImageAcquisitionReq.durationTime = ImageAcquisitionReq.durationTime;
+					//app_rmtDiag_ptr->ImageAcquisitionReq.effectiveTime = ImageAcquisitionReq.effectiveTime;
+					//app_rmtDiag_ptr->ImageAcquisitionReq.sizeLimit = ImageAcquisitionReq.sizeLimit;
 
 					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->ImageAcquisitionReq.dataType = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.dataType);
-					log_i(LOG_UPER_ECDC,"app_rmtDiag_ptr->ImageAcquisitionReq.cameraName = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.cameraName);
-					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->ImageAcquisitionReq.effectiveTime = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.effectiveTime);
-					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->ImageAcquisitionReq.sizeLimit = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.sizeLimit);
+					log_i(LOG_UPER_ECDC,"app_rmtDiag_ptr->ImageAcquisitionReq.durationTime = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.durationTime);
+					//log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->ImageAcquisitionReq.effectiveTime = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.effectiveTime);
+					//log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->ImageAcquisitionReq.sizeLimit = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.sizeLimit);
 				}
 				else if(PP_MID_DIAG_LOGACQRESP == MID)//giag logAcqReq
 				{

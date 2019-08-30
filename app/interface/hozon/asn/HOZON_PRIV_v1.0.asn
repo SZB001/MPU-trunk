@@ -432,9 +432,7 @@ DiagnosticStInfo ::= SEQUENCE --mid = 3
 ImageAcquisitionReqInfo ::= SEQUENCE  --mid = 4
 {
 	dataType 			INTEGER(0..255), -- 
-	cameraName			INTEGER(0..255), -- 
-	effectiveTime		INTEGER(0..2147483647), -- 
-	sizeLimit			INTEGER(0..2147483647) -- 
+	durationTime		INTEGER(0..65535) -- 
 }
 
 LogAcquisitionRespInfo ::= SEQUENCE --mid = 5

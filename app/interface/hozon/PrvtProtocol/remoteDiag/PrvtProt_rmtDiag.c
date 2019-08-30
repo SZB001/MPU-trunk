@@ -326,9 +326,9 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 				log_i(LOG_HOZON, "receive remote ImageAcquisition request\n");
 				PP_rmtDiag.state.ImageAcquisitionReq = 1;
 				PP_rmtDiag.state.dataType    = Appdata.ImageAcquisitionReq.dataType;
-				PP_rmtDiag.state.cameraName  =  Appdata.ImageAcquisitionReq.cameraName;
-				PP_rmtDiag.state.effectiveTime = Appdata.ImageAcquisitionReq.effectiveTime;
-				PP_rmtDiag.state.sizeLimit   =  Appdata.ImageAcquisitionReq.sizeLimit;
+				PP_rmtDiag.state.durationTime  =  Appdata.ImageAcquisitionReq.durationTime;
+				//PP_rmtDiag.state.effectiveTime = Appdata.ImageAcquisitionReq.effectiveTime;
+				//PP_rmtDiag.state.sizeLimit   =  Appdata.ImageAcquisitionReq.sizeLimit;
 				PP_rmtDiag.state.imagereqeventId = MsgDataBody.eventId;
 			}
 			else

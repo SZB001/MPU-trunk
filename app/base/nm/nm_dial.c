@@ -691,6 +691,8 @@ static void nm_dial_set_iptable(char *iface)
     snprintf(command, sizeof(command), "iptables -t nat -A POSTROUTING -o %s -j MASQUERADE --random" ,
              iface);
     nm_sys_call(command);
+    snprintf(command, sizeof(command), "iptables -t filter -F");
+    nm_sys_call(command);
 }
 
 /****************************************************************
