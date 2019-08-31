@@ -15,132 +15,118 @@ author        liuzhongwen
 #include "nm_api.h"
 #include "at.h"
 #include "nm_dial.h"
+#include "pm_api.h"
 
-static pthread_mutex_t nm_regtbl_mutex;
-static NM_REG_TBL      nm_tbl;
-static NM_NET_INFO     nm_net_info;
+
+static NM_REG_TBL   nm_tbl;
+static NM_NET_INFO nm_net_info[NM_NET_TYPE_NUM];
+
 static pthread_mutex_t nm_mutex;
+static pthread_mutex_t nm_regtbl_mutex;
 
-/*******************************************************************************
-function:     nm_sys_call
-description:  call ds_system_call
-input:        const char *cmd;
-output:       none
-return:       0 indicates success;
-              others indicates failed
-********************************************************************************/
-static int nm_sys_call(const char *cmd)
+static unsigned char nm_dcom_status = 0;
+
+extern unsigned int dsi_client_init;
+extern unsigned int g_call_id;
+extern int nm_sleep_available(void);
+
+int net_apn_config(NET_TYPE type)
 {
-    int ret, i = 0;
+    int ret = 0;
+    unsigned char profile_idx = 0;
+    NM_NET_INFO *info;
+    ql_apn_info_s apn;
+    ql_apn_add_s apn_add;
 
-    log_o(LOG_NM, "%s", cmd);
+    info = nm_net_info + type;
+    profile_idx = type + 3;
 
-    while (i < 3)
+    if (0 == strlen(info->apn))
     {
-        ret = ds_system_call(cmd, strlen(cmd));
+        log_e(LOG_NM, "net_apn_config apn is NULL,type is %d.", type);
+        return 0;
+    }
+
+    memset(&apn, 0, sizeof(ql_apn_info_s));
+    memset(&apn_add, 0, sizeof(ql_apn_add_s));
+
+    ret = QL_APN_Get(profile_idx, &apn);
+
+    if (ret != 0)
+    {
+        strcpy(apn_add.apn_name, info->apn);
+        ret = QL_APN_Add(&apn_add, &profile_idx);
 
         if (ret != 0)
         {
-            log_e(LOG_NM, "ds_system_call failed, ret:%u", ret);
-            i++;
+            log_e(LOG_NM, "QL_APN_Add apn %d failed,ret is %d.", profile_idx, ret);
+            return -1;
         }
-        else
+
+        log_e(LOG_NM, "QL_APN_Get apn failed,profile_idx is %d.", profile_idx);
+    }
+
+    log_o(LOG_NM, "QL_APN_Get apn %d is %s.", profile_idx, apn.apn_name);
+
+    if (0 != strcmp(apn.apn_name, info->apn))
+    {
+        apn.profile_idx = profile_idx;
+        apn.pdp_type = QL_APN_PDP_TYPE_IPV4;
+        strcpy(apn.apn_name, info->apn);
+
+        ret = QL_APN_Set(&apn);
+
+        if (ret != 0)
         {
-            break;
+            log_e(LOG_NM, "QL_APN_Set apn %d failed,ret is %d.", profile_idx, ret);
+            return -1;
         }
     }
 
-    return ret;
+    log_o(LOG_NM, "net_apn_config apn %d is %s.", profile_idx, info->apn);
+
+    return 0;
+
 }
 
-/*******************************************************************************
-function:     nm_notify_changed
+
+/****************************************************************
+function:     nm_dial_notify_changed
 description:  if network status is changed,this function will be called
-input:        type, network type;
-              status, network status;
+input:        nm_status_changed callback
 output:       none
 return:       0 indicates success;
               others indicates failed
-********************************************************************************/
-static int  nm_notify_changed(NET_TYPE type, NM_STATE_MSG status)
+****************************************************************/
+static int  nm_dial_notify_changed(NET_TYPE type, NM_STATE_MSG status)
 {
     int i, ret;
 
-    for (i = 0; i < nm_tbl.used_num; i++)
+    for (i = 0 ; i < nm_tbl.used_num; i++)
     {
-        if (nm_tbl.item[i].type == type)
-        {
-			if(NULL != nm_tbl.item[i].changed)//by liujian
-			{
-				ret = nm_tbl.item[i].changed(type, status);
+        ret = nm_tbl.changed[i](type , status);
 
-				if (ret != 0)
-				{
-					log_e(LOG_NM, "send net changed msg failed,ret:%d,type:%u", ret, type);
-					return NM_SEND_MSG_FAILED;
-				}
-			}
+        if (ret != 0)
+        {
+            log_e(LOG_NM, "send net changed msg failed,ret:%d", ret);
+            return NM_SEND_MSG_FAILED;
         }
     }
 
     return 0;
 }
 
-/*************************************************************************************
-function:     nm_dcom_changed
-description:  when dcom is set,this function will be called
-input:        CFG_PARA_ITEM_ID id, cfg item id;
-              unsigned char *old_para, old para value;
-              unsigned char *new_para, new para value;
-              unsigned int len, defined para length
+/****************************************************************
+function:     nm_dial_loc_apn_changed
+description:  when set the configuration,
+              this function will be called
+input:        none
 output:       none
 return:       0 indicates success;
               others indicates failed
-*************************************************************************************/
-static int nm_dcom_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
-                                             unsigned char *new_para, unsigned int len)
-{
-    int ret;
-    unsigned char dcom;
-    TCOM_MSG_HEADER msghdr;
-
-    if (CFG_ITEM_DCOM_SET != id)
-    {
-        log_e(LOG_NM, "invalid id, id:%u", id);
-        return NM_INVALID_PARA;
-    }
-
-    dcom = *new_para;
-    
-    msghdr.sender    = MPU_MID_NM;
-    msghdr.receiver  = MPU_MID_NM;
-    msghdr.msgid     = NM_MSG_ID_DCOM_CHANGED;
-    msghdr.msglen    = sizeof(dcom);
-
-    ret = tcom_send_msg(&msghdr, &dcom);
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "tcom_send_msg failed, ret:%u", ret);
-        return NM_SEND_MSG_FAILED;
-    }
-
-    return 0;
-}
-
-
-/*************************************************************************************
-function:     nm_loc_apn_changed
-description:  when set private apn,this function will be called
-input:        CFG_PARA_ITEM_ID id, cfg item id;
-              unsigned char *old_para, old para value;
-              unsigned char *new_para, new para value;
-              unsigned int len, defined para length
-output:       none
-return:       0 indicates success;
-              others indicates failed
-*************************************************************************************/
-static int nm_loc_apn_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
-                              unsigned char *new_para, unsigned int len)
+*****************************************************************/
+static int nm_dial_loc_apn_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
+                                   unsigned char *new_para, unsigned int len)
 {
     int ret;
     TCOM_MSG_HEADER msghdr;
@@ -156,11 +142,15 @@ static int nm_loc_apn_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
     /* not changed */
     if (0 == strcmp((char *)old_para , (char *)new_para))
     {
-        log_o(LOG_NM, "nm_net_local_apn_changed,there is no change!");
+        log_o(LOG_NM, "nm_net_local_apn_changed,there no change!");
         return 0;
     }
 
     log_o(LOG_NM, "nm_net_local_apn_changed,old apn:%s,new apn:%s", old_para, new_para);
+
+    /* update apn */
+    memcpy(nm_net_info[NM_PRIVATE_NET].apn, (char *)new_para,
+           sizeof(nm_net_info[NM_PRIVATE_NET].apn));
 
     msghdr.sender    = MPU_MID_NM;
     msghdr.receiver  = MPU_MID_NM;
@@ -179,19 +169,16 @@ static int nm_loc_apn_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
     return 0;
 }
 
-/************************************************************************************
-function:     nm_wan_apn_changed
-description:  when set the wan apn, this function will be called
-input:        CFG_PARA_ITEM_ID id, cfg item id;
-              unsigned char *old_para, old para value;
-              unsigned char *new_para, new para value;
-              unsigned int len, defined para length
+/****************************************************************
+function:     nm_dial_wan_apn_changed
+description:  when set the configuration, this function will be called
+input:        none
 output:       none
 return:       0 indicates success;
               others indicates failed
-************************************************************************************/
-static int nm_wan_apn_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
-                              unsigned char *new_para, unsigned int len)
+*****************************************************************/
+static int nm_dial_wan_apn_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
+                                   unsigned char *new_para, unsigned int len)
 {
     int ret;
     TCOM_MSG_HEADER msghdr;
@@ -213,6 +200,10 @@ static int nm_wan_apn_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
 
     log_o(LOG_NM, "nm_net_wan_apn_changed , old apn:%s, new apn:%s", old_para, new_para);
 
+    /* update apn */
+    memcpy(nm_net_info[NM_PUBLIC_NET].apn, (char *)new_para,
+           sizeof(nm_net_info[NM_PUBLIC_NET].apn));
+
     msghdr.sender    = MPU_MID_NM;
     msghdr.receiver  = MPU_MID_NM;
     msghdr.msgid     = NM_MSG_ID_WAN_APN_CHANGED;
@@ -230,28 +221,39 @@ static int nm_wan_apn_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
     return 0;
 }
 
+
 /****************************************************************
-function:     nm_loc_auth_changed
+function:     nm_dial_auth_changed
 description:  when set the configuration, this function will be called
-input:        CFG_PARA_ITEM_ID id, cfg item id;
-              unsigned char *old_para, old para value;
-              unsigned char *new_para, new para value;
-              unsigned int len, defined para length
+input:        none
 output:       none
 return:       0 indicates success;
               others indicates failed
 *****************************************************************/
-static int nm_loc_auth_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
-                               unsigned char *new_para, unsigned int len)
+static int nm_dial_auth_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
+                                unsigned char *new_para, unsigned int len)
 {
     int ret;
+    CFG_DIAL_AUTH *auth;
     TCOM_MSG_HEADER msghdr;
 
     if ((CFG_ITEM_LOC_APN_AUTH != id) || (len != sizeof(CFG_DIAL_AUTH)))
     {
-        log_e(LOG_NM, "invalid id, id:%u, len:%u", id, len);
+        log_e(LOG_NM, "invalid id, id:%u", id);
         return NM_INVALID_PARA;
     }
+
+    auth = (CFG_DIAL_AUTH *)new_para;
+
+    /* update para */
+    memset(nm_net_info[NM_PRIVATE_NET].user, 0,
+           sizeof(nm_net_info[NM_PRIVATE_NET].user));
+    memcpy(nm_net_info[NM_PRIVATE_NET].user, auth->user,
+           sizeof(nm_net_info[NM_PRIVATE_NET].user));
+    memset(nm_net_info[NM_PRIVATE_NET].pwd, 0,
+           sizeof(nm_net_info[NM_PRIVATE_NET].pwd));
+    memcpy(nm_net_info[NM_PRIVATE_NET].pwd, auth->pwd,
+           sizeof(nm_net_info[NM_PRIVATE_NET].pwd));
 
     msghdr.sender    = MPU_MID_NM;
     msghdr.receiver  = MPU_MID_NM;
@@ -270,107 +272,6 @@ static int nm_loc_auth_changed(CFG_PARA_ITEM_ID id, unsigned char *old_para,
     return 0;
 }
 
-/****************************************************************
-function:     nm_dial_init_loc
-description:  init private network
-input:        none
-output:       none
-return:       0 indicates success;
-              others indicates failed
-****************************************************************/
-static int nm_dial_init_loc(void)
-{
-    int ret;
-    unsigned int  len;
-    NM_NET_ITEM   *net_item;
-    CFG_DIAL_AUTH auth;
-
-    /* get the APN and auth para of private network */
-    net_item        = nm_net_info.item + NM_PRIVATE_NET;
-    net_item->type  = NM_PRIVATE_NET;
-    net_item->state = NM_NET_DISCONNECTED;
-
-    len = sizeof(auth);
-    ret = cfg_get_para(CFG_ITEM_LOC_APN_AUTH, &auth, &len);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "get apn auth failed, ret:0x%08x", ret);
-        return ret;
-    }
-
-    if ((0 != strlen(auth.user)) && (0 != strlen(auth.pwd)))
-    {
-        memcpy(net_item->user, auth.user, strlen(auth.user));
-        memcpy(net_item->pwd, auth.pwd, strlen(auth.pwd));
-    }
-
-    ret = cfg_register(CFG_ITEM_LOC_APN_AUTH, nm_loc_auth_changed);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "reg apn auth changed callback failed,ret:0x%08x", ret);
-        return ret;
-    }
-
-    len = sizeof(net_item->apn);
-    ret = cfg_get_para(CFG_ITEM_LOCAL_APN, (unsigned char *)net_item->apn, &len);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "get local apn failed, ret:0x%08x", ret);
-        return ret;
-    }
-
-    ret = cfg_register(CFG_ITEM_LOCAL_APN, nm_loc_apn_changed);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "reg local apn changed callback failed,ret:0x%08x", ret);
-        return ret;
-    }
-    
-    return 0;
-}
-
-/****************************************************************
-function:     nm_dial_init_wan
-description:  init private network
-input:        none
-output:       none
-return:       0 indicates success;
-              others indicates failed
-****************************************************************/
-static int nm_dial_init_wan(void)
-{
-    int ret;
-    unsigned int  len;
-    NM_NET_ITEM   *net_item;
-
-    /* get the APN of public network */
-    net_item = nm_net_info.item + NM_PUBLIC_NET;
-    net_item->type  = NM_PUBLIC_NET;
-    net_item->state = NM_NET_DISCONNECTED;
-
-    len = sizeof(net_item->apn);
-    ret = cfg_get_para(CFG_ITEM_WAN_APN, (unsigned char *)net_item->apn, &len);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "get wan apn failed, ret:0x%08x", ret);
-        return ret;
-    }
-
-    ret = cfg_register(CFG_ITEM_WAN_APN, nm_wan_apn_changed);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "reg wan apn changed callback failed,ret:0x%08x", ret);
-        return ret;
-    }
-
-    return 0;
-}
 
 /****************************************************************
 function:     nm_dial_init
@@ -383,6 +284,9 @@ return:       0 indicates success;
 int nm_dial_init(INIT_PHASE phase)
 {
     int ret, i;
+    unsigned int  len;
+    NM_NET_INFO   *info;
+    CFG_DIAL_AUTH auth;
 
     switch (phase)
     {
@@ -392,15 +296,13 @@ int nm_dial_init(INIT_PHASE phase)
             memset(&nm_tbl, 0, sizeof(nm_tbl));
             memset(&nm_net_info, 0x00, sizeof(nm_net_info));
 
-            nm_net_info.init_state = NM_NET_NOT_INITED;
-
             for (i = 0; i < NM_NET_TYPE_NUM; i++)
             {
-                nm_net_info.item[i].cdma_index = 1;
-                nm_net_info.item[i].umts_index = 1;
-                nm_net_info.item[i].ip_ver     = DSI_IP_VERSION_4;
-                nm_net_info.item[i].auth_pref  = DSI_AUTH_PREF_PAP_CHAP_NOT_ALLOWED;
-                nm_net_info.item[i].state      = NM_NET_DISCONNECTED;
+                nm_net_info[i].cdma_index = 1;
+                nm_net_info[i].umts_index = 1;
+                nm_net_info[i].ip_ver     = DSI_IP_VERSION_4;
+                nm_net_info[i].auth_pref  = DSI_AUTH_PREF_PAP_CHAP_NOT_ALLOWED;
+                nm_net_info[i].state      = NM_NET_IDLE;
             }
 
             break;
@@ -409,30 +311,92 @@ int nm_dial_init(INIT_PHASE phase)
             break;
 
         case INIT_PHASE_OUTSIDE:
-            ret  = nm_dial_init_loc();
-            ret |= nm_dial_init_wan();
+            /* get the APN of private network */
+            info = nm_net_info + NM_PRIVATE_NET;
+            info->type = NM_PRIVATE_NET;
+
+            if (0 != pm_reg_handler(MPU_MID_NM, (sleep_handler)nm_sleep_available))
+            {
+                log_e(LOG_NM, "pm_reg_handler failed!!!");
+                return NM_STATUS_INVALID;
+            }
+
+    		len = sizeof(auth);
+    		ret = cfg_get_para(CFG_ITEM_LOC_APN_AUTH, &auth, &len);
 
             if (ret != 0)
             {
-                log_e(LOG_NM, "init networkr failed, ret:0x%08x", ret);
-                return ret;
-            }
-            
-            ret = cfg_register(CFG_ITEM_DCOM_SET, nm_dcom_changed);
-            
-            if (ret != 0)
-            {
-                log_e(LOG_NM, "reg dcom changed callback failed,ret:0x%08x", ret);
+                log_e(LOG_NM, "get apn auth failed, ret:0x%08x", ret);
                 return ret;
             }
 
-            /* create dial timer */
-            nm_net_info.timername = NM_MSG_ID_TIMER_RECALL;
-            ret = tm_create(TIMER_REL, nm_net_info.timername, MPU_MID_NM, &(nm_net_info.recall_timer));
+            if ((0 != strlen(auth.user)) && (0 != strlen(auth.pwd)))
+            {
+                memcpy(info->user, auth.user, strlen(auth.user));
+                memcpy(info->pwd, auth.pwd, strlen(auth.pwd));
+            }
+
+    ret = cfg_register(CFG_ITEM_LOC_APN_AUTH, nm_dial_auth_changed);
+
+            if (ret != 0)
+            {
+                log_e(LOG_NM, "reg apn auth changed callback failed,ret:0x%08x", ret);
+                return ret;
+            }
+
+            len = sizeof(info->apn);
+            ret = cfg_get_para(CFG_ITEM_LOCAL_APN, (unsigned char *)info->apn, &len);
+
+            if (ret != 0)
+            {
+                log_e(LOG_NM, "get local apn failed, ret:0x%08x", ret);
+                return ret;
+            }
+
+            ret = cfg_register(CFG_ITEM_LOCAL_APN, nm_dial_loc_apn_changed);
+
+            if (ret != 0)
+            {
+                log_e(LOG_NM, "reg local apn changed callback failed,ret:0x%08x", ret);
+                return ret;
+            }
+
+            info->timername = NM_MSG_ID_PRIVATE_TIMER_RECALL;
+            ret = tm_create(TIMER_REL, info->timername, MPU_MID_NM, &info->recall_timer);
 
             if (ret != 0)
             {
                 log_e(LOG_NM, "tm_create reconnect private network timer failed, ret:0x%08x", ret);
+                return ret;
+            }
+
+            /* get the APN of public network */
+            info = nm_net_info + NM_PUBLIC_NET;
+            info->type = NM_PUBLIC_NET;
+
+            len = sizeof(info->apn);
+            ret = cfg_get_para(CFG_ITEM_WAN_APN, (unsigned char *)info->apn, &len);
+
+            if (ret != 0)
+            {
+                log_e(LOG_NM, "get wan apn failed, ret:0x%08x", ret);
+                return ret;
+            }
+
+            ret = cfg_register(CFG_ITEM_WAN_APN, nm_dial_wan_apn_changed);
+
+            if (ret != 0)
+            {
+                log_e(LOG_NM, "reg wan apn changed callback failed,ret:0x%08x", ret);
+                return ret;
+            }
+
+            info->timername = NM_MSG_ID_PUBLIC_TIMER_RECALL;
+            ret = tm_create(TIMER_REL, info->timername, MPU_MID_NM, &info->recall_timer);
+
+            if (ret != 0)
+            {
+                log_e(LOG_NM, "tm_create reconnect public network timer failed, ret:0x%08x", ret);
                 return ret;
             }
 
@@ -452,29 +416,10 @@ input:        void *user_data, user input data
 output:       none
 return:       none
 ****************************************************************/
-static void nm_dial_init_cb_fun(void *user_data)
+void nm_dial_init_cb_fun(void *user_data)
 {
-    int ret;
-    NET_TYPE type;
-    TCOM_MSG_HEADER msghdr;
-
-    type = *((NET_TYPE *)user_data);
-
-    log_o(LOG_NM, "network init successfully, dial net(%u) first", type);
-
-    /* send message to the nm */
-    msghdr.sender   = MPU_MID_NM;
-    msghdr.receiver = MPU_MID_NM;
-    msghdr.msgid    = NM_MSG_ID_DIAL_INITED;
-    msghdr.msglen   = sizeof(type);
-
-    ret = tcom_send_msg(&msghdr, (unsigned char *)&type);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "send message(msgid:%u) to moudle(0x%04x) failed, type:%u",
-              msghdr.msgid, msghdr.receiver, type);
-    }
+    dsi_client_init = 1;
+    log_o(LOG_NM, "dsi_init_ex successfully,dsi_client_init is %d.", dsi_client_init);
 }
 
 /****************************************************************
@@ -492,25 +437,20 @@ static void nm_dial_status_cb_fun(dsi_hndl_t handle, void *user_data, dsi_net_ev
 {
     int ret;
     unsigned int size = 0;
-    NET_TYPE type;
-    unsigned char buf[32];
+    unsigned int call_id;
+    unsigned char buf[32] = {0};
     TCOM_MSG_HEADER msghdr;
 
-    log_o(LOG_NM, "hndl=%p,evt=%d, payload_ptr=%p", handle, evt, payload_ptr);
+    call_id = (unsigned int)user_data;
 
-    type = *((NET_TYPE *)user_data);
-
-    memcpy(buf, &type, sizeof(type));
-    size += sizeof(type);
+    memcpy(buf, &call_id, sizeof(call_id));
+    size += sizeof(call_id);
 
     memcpy(buf + size, &evt, sizeof(evt));
     size += sizeof(evt);
 
-    if (DSI_EVT_WDS_CONNECTED == evt)
-    {
-        memcpy(buf + size, &payload_ptr->ip_type, sizeof(payload_ptr->ip_type));
-        size += sizeof(payload_ptr->ip_type);
-    }
+    log_o(LOG_NM, "call_id=%d,hndl=%p,evt=%d, payload_ptr=%p,enter %s.", call_id, handle, evt,
+          payload_ptr, __FUNCTION__);
 
     /* send message to nm */
     msghdr.sender   = MPU_MID_NM;
@@ -524,6 +464,40 @@ static void nm_dial_status_cb_fun(dsi_hndl_t handle, void *user_data, dsi_net_ev
     {
         log_e(LOG_NM, "send message(msgid:%u) to moudle(0x%04x) failed", msghdr.msgid, msghdr.receiver);
     }
+
+    log_o(LOG_NM, "nm_dial_status_cb_fun send NM_MSG_ID_DIAL_STATUS ok.");
+}
+
+/****************************************************************
+function:     nm_sys_call
+description:  call ds_system_call
+input:        const char *command,  command;
+output:       none
+return:       0 indicates success;
+              others indicates failed
+****************************************************************/
+int nm_sys_call(const char *command)
+{
+    int ret, i = 0;
+
+    log_o(LOG_NM, "%s", command);
+
+    while (i < 3)
+    {
+        ret = ds_system_call(command, strlen(command));
+
+        if (ret != 0)
+        {
+            log_e(LOG_NM, "ds_system_call failed,ret:%x08x", ret);
+            i++;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return ret;
 }
 
 /****************************************************************
@@ -536,59 +510,194 @@ return:       none
 void nm_dial_para_set(NET_TYPE type)
 {
     dsi_call_param_value_t param_info;
-    NM_NET_ITEM *item;
+    NM_NET_INFO *info;
 
-    item = nm_net_info.item + type;
+    info = nm_net_info + type;
 
-    /* set data call param */
-    param_info.buf_val = NULL;
-    param_info.num_val = DSI_RADIO_TECH_UNKNOWN;
-    dsi_set_data_call_param(item->handle, DSI_CALL_INFO_TECH_PREF, &param_info);
+    info->umts_index = type + 1;
+    info->cdma_index = type + 1;
 
-    param_info.buf_val = NULL;
-    param_info.num_val = item->umts_index;
-    dsi_set_data_call_param(item->handle, DSI_CALL_INFO_UMTS_PROFILE_IDX, &param_info);
-
-    param_info.buf_val = NULL;
-    param_info.num_val = item->cdma_index;
-    dsi_set_data_call_param(item->handle, DSI_CALL_INFO_CDMA_PROFILE_IDX, &param_info);
-
-    param_info.buf_val = NULL;
-    param_info.num_val = item->ip_ver;
-    dsi_set_data_call_param(item->handle, DSI_CALL_INFO_IP_VERSION, &param_info);
-
-    param_info.buf_val = strdup(item->apn);
-    param_info.num_val = strlen(param_info.buf_val);
-    dsi_set_data_call_param(item->handle, DSI_CALL_INFO_APN_NAME, &param_info);
-    log_o(LOG_NM, "apn=%s,apn len=%u", param_info.buf_val, param_info.num_val);
-
-    free(param_info.buf_val);
-    param_info.buf_val = NULL;
-
-    param_info.buf_val = strdup(item->user);
-    param_info.num_val = strlen(param_info.buf_val);
-    dsi_set_data_call_param(item->handle, DSI_CALL_INFO_USERNAME, &param_info);
-    free(param_info.buf_val);
-    param_info.buf_val = NULL;
-
-    param_info.buf_val = strdup(item->pwd);
-    param_info.num_val = strlen(param_info.buf_val);
-    dsi_set_data_call_param(item->handle, DSI_CALL_INFO_PASSWORD, &param_info);
-    free(param_info.buf_val);
-
-    if ((0 != strlen(item->user)) && (0 != strlen(item->pwd)))
+    if (strlen(info->apn) != 0)
     {
-        item->auth_pref = DSI_AUTH_PREF_CHAP_ONLY_ALLOWED;
+        /* set data call param */
         param_info.buf_val = NULL;
-        param_info.num_val = item->auth_pref;
-        dsi_set_data_call_param(item->handle, DSI_CALL_INFO_AUTH_PREF, &param_info);
+        param_info.num_val = DSI_RADIO_TECH_UNKNOWN;
+        dsi_set_data_call_param(info->handle, DSI_CALL_INFO_TECH_PREF, &param_info);
+
+        param_info.buf_val = NULL;
+        param_info.num_val = info->umts_index;
+        dsi_set_data_call_param(info->handle, DSI_CALL_INFO_UMTS_PROFILE_IDX, &param_info);
+
+        param_info.buf_val = NULL;
+        param_info.num_val = info->cdma_index;
+        dsi_set_data_call_param(info->handle, DSI_CALL_INFO_CDMA_PROFILE_IDX, &param_info);
+
+        param_info.buf_val = NULL;
+        param_info.num_val = info->ip_ver;
+        dsi_set_data_call_param(info->handle, DSI_CALL_INFO_IP_VERSION, &param_info);
+
+        param_info.buf_val = strdup(info->apn);
+        param_info.num_val = strlen(param_info.buf_val);
+        dsi_set_data_call_param(info->handle, DSI_CALL_INFO_APN_NAME, &param_info);
+        free(param_info.buf_val);
+        param_info.buf_val = NULL;
+
+        param_info.buf_val = strdup(info->user);
+        param_info.num_val = strlen(param_info.buf_val);
+        dsi_set_data_call_param(info->handle, DSI_CALL_INFO_USERNAME, &param_info);
+        free(param_info.buf_val);
+        param_info.buf_val = NULL;
+
+        param_info.buf_val = strdup(info->pwd);
+        param_info.num_val = strlen(param_info.buf_val);
+        dsi_set_data_call_param(info->handle, DSI_CALL_INFO_PASSWORD, &param_info);
+        free(param_info.buf_val);
+
+        if ((0 != strlen(info->user)) && (0 != strlen(info->pwd)))
+        {
+            info->auth_pref = DSI_AUTH_PREF_CHAP_ONLY_ALLOWED;
+            param_info.buf_val = NULL;
+            param_info.num_val = info->auth_pref;
+            dsi_set_data_call_param(info->handle, DSI_CALL_INFO_AUTH_PREF, &param_info);
+        }
+        else
+        {
+            param_info.buf_val = NULL;
+            param_info.num_val = info->auth_pref;
+            dsi_set_data_call_param(info->handle, DSI_CALL_INFO_AUTH_PREF, &param_info);
+        }
+    }
+
+}
+
+/****************************************************************
+function:     nm_dial_recall
+description:  recall the data link
+input:        NET_TYPE type, public network or private network
+output:       none
+return:       none
+****************************************************************/
+void nm_dial_recall(NET_TYPE type)
+{
+    int ret;
+    NM_NET_INFO *info;
+
+    info = nm_net_info + type;
+
+    if (NM_NET_CONNECTED == nm_net_info[type].state)
+    {
+        log_o(LOG_NM, "net state is NM_NET_CONNECTED.");
+        return;
+    }
+
+    if (NM_NET_CONNECTING == nm_net_info[type].state)
+    {
+        log_o(LOG_NM, "net state is NM_NET_CONNECTING.");
+        return;
+    }
+
+
+    if (strlen(info->apn) != 0)
+    {
+        /* start recall timer */
+        ret = tm_start(info->recall_timer, NM_RECALL_INTERVAL, TIMER_TIMEOUT_REL_ONCE);
+
+        if (ret != 0)
+        {
+            log_e(LOG_NM, "tm_start resend timer failed, type:%u,ret:0x%08x", type, ret);
+        }
+
     }
     else
     {
-        param_info.buf_val = NULL;
-        param_info.num_val = item->auth_pref;
-        dsi_set_data_call_param(item->handle, DSI_CALL_INFO_AUTH_PREF, &param_info);
+        /* no apn,return,stop call */
+        log_e(LOG_NM, "no apn,stop call,type = %d.", type);
+        return ;
     }
+
+    if (info->handle != NULL)
+    {
+        log_o(LOG_NM, "type = %d,dsi_rel_data_srvc_hndl,handle = %p. ", type, info->handle);
+        dsi_rel_data_srvc_hndl(info->handle);
+        info->handle = NULL;
+    }
+
+    if (NULL == info->handle)
+    {
+        /* acquire the handle. */
+        g_call_id ++;
+
+        /* over flow */
+        if (g_call_id == 0)
+        {
+            g_call_id = 1;
+        }
+
+        info->call_id = g_call_id;
+        info->handle = dsi_get_data_srvc_hndl(nm_dial_status_cb_fun, (void *)info->call_id);
+
+        log_o(LOG_NM, "type = %d,dsi_get_data_srvc_hndl,handle = %p. ", type, info->handle);
+
+        if (NULL == info->handle)
+        {
+            log_e(LOG_NM, "dsi_get_data_srvc_hndl fail,type:%u", type);
+            return;
+        }
+
+        nm_dial_para_set(type);
+    }
+
+    if ((info->state != NM_NET_CONNECTED) &&
+        (info->handle != NULL))
+    {
+        /* connecting WWAN */
+        ret = dsi_start_data_call(info->handle);
+
+        if (DSI_SUCCESS != ret)
+        {
+            log_e(LOG_NM, "dsi_start_data_call, type:%u,ret:0x%08x\n", type, ret);
+        }
+        else
+        {
+            info->state = NM_NET_CONNECTING;
+            log_o(LOG_NM, "dsi_start_data_call successful,type is %d,state is DCOM_NET_CONNECTING.", type);
+        }
+    }
+    else
+    {
+        log_e(LOG_NM, "info state is %d,handle is %p", info->state, info->handle);
+    }
+}
+
+/****************************************************************
+function:     nm_dial_call
+description:  request data call
+input:        NET_TYPE type, public network or private network
+output:       none
+return:       none
+****************************************************************/
+void nm_dial_call(NET_TYPE type)
+{
+    NM_NET_INFO *info;
+
+    info = nm_net_info + type;
+
+    if (NM_NET_CONNECTING == info->state)
+    {
+        log_o(LOG_NM, "net state is NM_NET_CONNECTING.");
+        return;
+    }
+
+    if ((NULL == info->handle) &&
+        (0 != strlen(info->apn)))
+    {
+        nm_dial_recall(type);
+        log_o(LOG_NM, "nm_dial_recall,type:%u", type);
+    }
+
+    log_o(LOG_NM, "nm_dial_call,handle:%p,type:%u", info->handle, type);
+
+    return ;
 }
 
 /****************************************************************
@@ -598,20 +707,20 @@ input:        nm_NET_INFO *phndl
 output:       none
 return:       none
 ****************************************************************/
-static void nm_dial_add_default_route(NM_NET_ITEM *phndl)
+static void nm_dial_add_default_route(NM_NET_INFO *phndl)
 {
     char command[200];
     memset(command, 0, sizeof(command));
-
-    /*del defaut route from route*/
-    snprintf(command, sizeof(command), "ip route del default");
-    nm_sys_call(command);
 
     /*add defaut route as the public route*/
     snprintf(command, sizeof(command), "ip route add default via %s dev %s", inet_ntoa(phndl->gw_addr),
              phndl->interface);
     nm_sys_call(command);
+
+    nm_dcom_status = 1;
 }
+
+#if 0
 
 /****************************************************************
 function:     nm_dial_del_default_route
@@ -620,17 +729,26 @@ input:        nm_NET_INFO *phndl
 output:       none
 return:       none
 ****************************************************************/
-static void nm_dial_del_default_route(void)
+static void nm_dial_del_default_route(NM_NET_INFO *phndl)
 {
     char command[200];
     memset(command, 0, sizeof(command));
 
-    /*del defaut route from route*/
-    snprintf(command, sizeof(command), "ip route del default");
+    /*add defaut route as the public route*/
+    snprintf(command, sizeof(command), "ip route del default via %s dev %s", inet_ntoa(phndl->gw_addr),
+             phndl->interface);
     nm_sys_call(command);
+
+    nm_dcom_status = 0;
 }
 
+#endif
+
+/* adding DNS routing to add 8.8.8.8 when
+   DNS is not obtained will cause the devices
+   connected by USB to be unable to access the Internet */
 #if 0
+
 /****************************************************************
 function:     nm_dial_add_dns_route
 description:  add the dns ip to route list
@@ -638,7 +756,7 @@ input:        nm_NET_INFO *phndl
 output:       none
 return:       none
 ****************************************************************/
-static void nm_dial_add_dns_route(NM_NET_ITEM *phndl)
+static void nm_dial_add_dns_route(NM_NET_INFO *phndl)
 {
     int len = 0;
     char command[200];
@@ -661,7 +779,6 @@ static void nm_dial_add_dns_route(NM_NET_ITEM *phndl)
             nm_sys_call(command);
         }
     }
-	#if 0
     else
     {
         len = snprintf(command, sizeof(command), "ip route add %s via ", "8.8.8.8");
@@ -669,7 +786,7 @@ static void nm_dial_add_dns_route(NM_NET_ITEM *phndl)
                  phndl->interface);
         nm_sys_call(command);
     }
-	#endif
+
 }
 #endif
 
@@ -704,7 +821,7 @@ input:        nm_NET_INFO *phndl;
 output:       none
 return:       none
 ****************************************************************/
-static void nm_dial_set_dns(NM_NET_ITEM *phndl)
+static void nm_dial_set_dns(NM_NET_INFO *phndl)
 {
     char command[200];
 
@@ -742,7 +859,7 @@ output:       none
 return:       0 indicates success;
               others indicates failed
 ****************************************************************/
-static int nm_dial_get_conf(NM_NET_ITEM *phndl)
+static int nm_dial_get_conf(NM_NET_INFO *phndl)
 {
     int ret;
     int num_entries = 1;
@@ -825,94 +942,38 @@ static int nm_dial_get_conf(NM_NET_ITEM *phndl)
         phndl->sec_dns_addr.s_addr = inet_addr(ip_str);
     }
 
-    log_o(LOG_NM, "public_ip: %s",    inet_ntoa(phndl->ip_addr));
-    log_o(LOG_NM, "gw_addr: %s",      inet_ntoa(phndl->gw_addr));
+    log_o(LOG_NM, "public_ip: %s", inet_ntoa(phndl->ip_addr));
+    log_o(LOG_NM, "gw_addr: %s",   inet_ntoa(phndl->gw_addr));
     log_o(LOG_NM, "pri_dns_addr: %s", inet_ntoa(phndl->pri_dns_addr));
     log_o(LOG_NM, "sec_dns_addr: %s", inet_ntoa(phndl->sec_dns_addr));
 
     /* if only one APN is configured or public networks is connected, set the router and dns */
     if ((NM_PUBLIC_NET == phndl->type) ||
-        (NM_PRIVATE_NET == phndl->type && 0 == strlen(nm_net_info.item[NM_PUBLIC_NET].apn)))
+        (NM_PRIVATE_NET == phndl->type && 0 == strlen(nm_net_info[NM_PUBLIC_NET].apn)))
     {
-        char dcom = 1;
-        unsigned int len = sizeof(dcom);
-        
-        if(0 != cfg_get_para(CFG_ITEM_DCOM_SET, &dcom, &len))
-        {
-           log_e(LOG_NM, "get dcom status failed"); 
-        }
-        if(dcom)
-        {
-            /*add defaut route used for the public net*/
-            nm_dial_add_default_route(phndl);
-        }
+        /*add defaut route used for the public net*/
+        nm_dial_add_default_route(phndl);
+
         /*add iptables rules*/
         nm_dial_set_iptable(iface);
 
         /*set DNS config file*/
         nm_dial_set_dns(phndl);
+        system("iptables -t filter -F");
+    }
 
-        //nm_dial_add_dns_route(phndl);
+    if (NM_PRIVATE_NET == phndl->type && 0 != strlen(nm_net_info[NM_PUBLIC_NET].apn))
+    {
+        /*set dns config in the first */
+        nm_dial_set_dns(phndl);
+
+        #if 0
+        /*add PRIVATE net DNS ip to route*/
+        nm_dial_add_dns_route(phndl);
+        #endif
     }
 
     return 0;
-}
-
-/****************************************************************
-function:     nm_dial_wds_connected
-description:  call data link
-input:        NET_TYPE type, public network or private network;
-              TCOM_MSG_HEADER *msghdr, msg header;
-              unsigned char *msgbody, msg data;
-output:       none
-return:       none
-****************************************************************/
-void nm_dial_wds_connected(NET_TYPE type, TCOM_MSG_HEADER *msghdr, unsigned char *msgbody)
-{
-    if (NULL != msgbody && msghdr->msglen > sizeof(dsi_net_evt_t) + sizeof(type))
-    {
-        nm_net_info.item[type].ip_type = *((dsi_ip_family_t *)(msgbody + sizeof(dsi_net_evt_t) + sizeof(type)));
-    }
-}
-
-/****************************************************************
-function:     nm_dial_get_next_dial_net
-description:  get next network need to dial
-input:        NET_TYPE type, public network or private network;
-output:       none
-return:       none
-****************************************************************/
-NET_TYPE nm_dial_get_next_dial_net(NET_TYPE type)
-{
-    NM_NET_ITEM *item;
-    NET_TYPE next;
-
-    if (type >= NM_NET_TYPE_NUM)
-    {
-        type =  NM_PRIVATE_NET;
-    }
-
-    next = (type + 1) % NM_NET_TYPE_NUM;
-
-    while (next != type)
-    {
-        item = nm_net_info.item + next;
-
-        if ((NM_NET_CONNECTED != item->state) && (0 != strlen(item->apn)))
-        {
-            return next;
-        }
-
-        next = (next + 1) % NM_NET_TYPE_NUM;
-    }
-
-    if ((NM_NET_CONNECTED != nm_net_info.item[type].state)
-        && (0 != strlen(nm_net_info.item[type].apn)))
-    {
-        return type;
-    }
-
-    return NM_NET_TYPE_NUM;
 }
 
 /****************************************************************
@@ -925,55 +986,42 @@ return:       none
 void nm_dial_connected(NET_TYPE type)
 {
     int ret;
-    NM_NET_ITEM *item;
-    NET_TYPE next;
+    NM_NET_INFO *info;
 
-    item = nm_net_info.item + type;
+    info = nm_net_info + type;
 
-    if (item->state != NM_NET_CONNECTING)
+    if (info->state != NM_NET_CONNECTING)
     {
-        log_e(LOG_NM, "invalid status:%u", item->state);
+        log_e(LOG_NM, "invalid status:%u", info->state);
         return;
     }
 
-    if (DSI_IP_FAMILY_V4 == item->ip_type)
+    if (DSI_IP_FAMILY_V4 == info->ip_type)
     {
-        ret = nm_dial_get_conf(item);
+        ret = nm_dial_get_conf(info);
 
         if (ret != 0)
         {
-            nm_dial_call(type);
+            nm_dial_restart();
             return;
         }
     }
-    else if (DSI_IP_FAMILY_V6 == item->ip_type)
+    else if (DSI_IP_FAMILY_V6 == info->ip_type)
     {
         log_e(LOG_NM, "DSI_IP_FAMILY_V6 is not support,type:%u", type);
-        nm_dial_call(type);
         return;
     }
 
-    item->state = NM_NET_CONNECTED;
-    log_o(LOG_NM, "network(%u) is connected", type);
+    info->state = NM_NET_CONNECTED;
 
-    ret = nm_notify_changed(type, NM_REG_MSG_CONNECTED);
+    ret = nm_dial_notify_changed(type, NM_REG_MSG_CONNECTED);
 
     if (0 != ret)
     {
         log_e(LOG_NM, "notify net status failed,type:%u", ret);
     }
 
-    next = nm_dial_get_next_dial_net(type);
-
-    if (next < NM_NET_TYPE_NUM)
-    {
-        nm_dial_call(next);
-    }
-    else  /* all networks is connected */
-    {
-        log_o(LOG_NM, "all networks is connected");
-        nm_net_info.cur_type = NM_NET_TYPE_NUM;
-    }
+    return;
 }
 
 /****************************************************************
@@ -987,95 +1035,39 @@ void nm_dial_disconnected(NET_TYPE type)
 {
     int ret;
     dsi_ce_reason_t reason;
-    NM_NET_ITEM *item;
+    NM_NET_INFO *info;
 
-    if (NM_NET_NOT_INITED == nm_net_info.init_state)
+    info = nm_net_info + type;
+
+    if (NULL != info->handle)
     {
-        nm_dial_all_net();
-        return;
-    }
-
-    item = nm_net_info.item + type;
-
-    log_o(LOG_NM, "network(%u) is disconnected", type);
-
-    if (NULL != item->handle)
-    {
-        if (dsi_get_call_end_reason(item->handle, &reason, item->ip_type) == DSI_SUCCESS)
+        if (dsi_get_call_end_reason(info->handle, &reason, info->ip_type) == DSI_SUCCESS)
         {
-            log_e(LOG_NM, "dsi_get_call_end_reason type=%d reason code =%d", reason.reason_type,
-                  reason.reason_code);
+            log_e(LOG_NM, "dsi_get_call_end_reason type=%d reason code =%d time=%u", reason.reason_type,
+                  reason.reason_code, (unsigned int)tm_get_time());
         }
-    }
 
-    if (NM_NET_CONNECTED == item->state)
-    {
-        item->state = NM_NET_DISCONNECTED;
-        ret = nm_notify_changed(type, NM_REG_MSG_DISCONNECTED);
+        /* start recall timer */
+        ret = tm_start(info->recall_timer, NM_RECALL_INTERVAL, TIMER_TIMEOUT_REL_ONCE);
 
-        if (0 != ret)
+        if (ret != 0)
         {
-            log_e(LOG_NM, "notify net status failed,type:%u", ret);
+            log_e(LOG_NM, "tm_start resend timer failed, ret:0x%08x, type:%u", ret, type);
         }
-    }
-    else
-    {
-        item->state = NM_NET_DISCONNECTED;
+
+        info->state = NM_NET_IDLE;
     }
 
-    /* start recall timer */
-    ret = tm_start(nm_net_info.recall_timer, NM_RECALL_INTERVAL, TIMER_TIMEOUT_REL_ONCE);
+    ret = nm_dial_notify_changed(type, NM_REG_MSG_DISCONNECTED);
 
-    if (ret != 0)
+    if (0 != ret)
     {
-        log_e(LOG_NM, "tm_start resend timer failed, type:%u,ret:0x%08x", type, ret);
-        return;
+        log_e(LOG_NM, "notify net status failed,type:%u", ret);
     }
+
+    return;
 }
 
-/****************************************************************
-function:     nm_dial_init_msg_proc
-description:  init result message process
-input:        TCOM_MSG_HEADER *msghdr, message header;
-              unsigned char *msgbody, message body
-output:       none
-return:       none
-****************************************************************/
-void nm_dial_init_msg_proc(TCOM_MSG_HEADER *msghdr, unsigned char *msgbody)
-{
-    NET_TYPE next, type;
-    NM_NET_ITEM *item;
-
-    if ((NULL == msgbody) || (msghdr->msglen < sizeof(NET_TYPE)))
-    {
-        log_e(LOG_NM, "invalid init msg, msgbody:%p,msglen:%u", msgbody, msghdr->msglen);
-        return;
-    }
-
-    nm_net_info.init_state = NM_NET_INITED;
-
-    type = *((NET_TYPE *)msgbody);
-    item = nm_net_info.item + type;
-
-    if (0 != strlen(item->apn))
-    {
-        nm_dial_call(type);
-    }
-    else
-    {
-        next = nm_dial_get_next_dial_net(type);
-
-        if (next < NM_NET_TYPE_NUM)
-        {
-            nm_dial_call(next);
-        }
-        else
-        {
-            log_o(LOG_NM, "all networks is connected");
-            nm_net_info.cur_type = NM_NET_TYPE_NUM;
-        }
-    }
-}
 
 /****************************************************************
 function:     nm_dial_status_msg_proc
@@ -1087,6 +1079,8 @@ return:       none
 ****************************************************************/
 void nm_dial_status_msg_proc(TCOM_MSG_HEADER *msghdr, unsigned char *msgbody)
 {
+    int i;
+    unsigned int call_id;
     NET_TYPE type;
     dsi_net_evt_t evt;
 
@@ -1096,15 +1090,28 @@ void nm_dial_status_msg_proc(TCOM_MSG_HEADER *msghdr, unsigned char *msgbody)
         return;
     }
 
-    type = *((NET_TYPE *)msgbody);
+    call_id = *((unsigned int *)msgbody);
     evt  = *((dsi_net_evt_t *)(msgbody + sizeof(type)));
 
-    /* acquire successfully */
-    if (DSI_EVT_WDS_CONNECTED == evt)
+    for (i = 0; i < NM_NET_TYPE_NUM; i ++)
     {
-        nm_dial_wds_connected(type, msghdr, msgbody);
+        if (nm_net_info[i].call_id == call_id)
+        {
+            type = nm_net_info[i].type;
+            break;
+        }
     }
-    else if (DSI_EVT_NET_IS_CONN == evt)
+
+    if (i >= NM_NET_TYPE_NUM)
+    {
+        log_o(LOG_NM, "not for current data call, ignor");
+        return;
+    }
+
+    log_o(LOG_NM, "type = %d,call_id = %d,evt = %d,enter%s", type, call_id, evt, __FUNCTION__);
+
+    /* acquire successfully */
+    if (DSI_EVT_NET_IS_CONN == evt)
     {
         nm_dial_connected(type);
     }
@@ -1114,146 +1121,55 @@ void nm_dial_status_msg_proc(TCOM_MSG_HEADER *msghdr, unsigned char *msgbody)
     }
 }
 
-/******************************************************************************
-function:     nm_dial_loc_net_proc
-description:  innner message process
-input:        TCOM_MSG_HEADER *msghdr, message header;
-              unsigned char *msgbody, message body
-output:       none
-return:       none
-*******************************************************************************/
-void nm_dial_loc_net_proc(void)
-{
-    int ret;
-    unsigned int  len;
-    NM_NET_ITEM *net_item = NULL;
-    CFG_DIAL_AUTH auth;
-
-    /* update the APN of private network */
-    net_item = nm_net_info.item + NM_PRIVATE_NET;
-    net_item->type = NM_PRIVATE_NET;
-
-    len = sizeof(auth);
-    ret = cfg_get_para(CFG_ITEM_LOC_APN_AUTH, &auth, &len);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "get apn auth failed, ret:0x%08x", ret);
-        return;
-    }
-
-    if ((0 != strlen(auth.user)) && (0 != strlen(auth.pwd)))
-    {
-        memcpy(net_item->user, auth.user, strlen(auth.user));
-        memcpy(net_item->pwd, auth.pwd, strlen(auth.pwd));
-    }
-
-    len = sizeof(net_item->apn);
-    ret = cfg_get_para(CFG_ITEM_LOCAL_APN, (unsigned char *)net_item->apn, &len);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "get local apn failed, ret:0x%08x", ret);
-        return;
-    }
-
-    nm_dial_restart();
-}
-
-/******************************************************************************
-function:     nm_dial_wan_net_proc
-description:  innner message process
-input:        TCOM_MSG_HEADER *msghdr, message header;
-              unsigned char *msgbody, message body
-output:       none
-return:       none
-*******************************************************************************/
-void nm_dial_wan_net_proc()
-{
-    int ret;
-    unsigned int  len;
-    NM_NET_ITEM *net_item = NULL;
-
-    /* update the APN of public network */
-    net_item = nm_net_info.item + NM_PUBLIC_NET;
-    net_item->type = NM_PUBLIC_NET;
-
-    len = sizeof(net_item->apn);
-    ret = cfg_get_para(CFG_ITEM_WAN_APN, (unsigned char *)net_item->apn, &len);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "get wan apn failed, ret:0x%08x", ret);
-        return;
-    }
-
-    nm_dial_restart();
-}
-
 /****************************************************************
-function:     nm_dial_timer_msg_proc
-description:  status changed message process
-input:        TCOM_MSG_HEADER *msghdr, message header;
-              unsigned char *msgbody, message body
+function:     nm_dial_wan_switch
+description:  control public network on/off
+input:        none
 output:       none
-return:       none
+return:       0 indicates success;
+              others indicates failed
 ****************************************************************/
-void nm_dial_timer_msg_proc()
+int nm_dial_wan_switch(unsigned char *msgbody)
 {
     int ret;
-	NET_TYPE next;
+    NM_NET_INFO *info;
+    info = nm_net_info + NM_PUBLIC_NET;
 
-    if (NM_NET_NOT_INITED == nm_net_info.init_state)
+    if (1 == *msgbody)
     {
-        nm_dial_all_net();
-        return;
+        log_o(LOG_NM, "NM_PRIVATE_NET sta = %d.", nm_net_info[NM_PUBLIC_NET].state);
+
+        if (nm_net_info[NM_PUBLIC_NET].state != NM_NET_CONNECTED)
+        {
+            nm_dial_call(NM_PUBLIC_NET);
+        }
+    }
+    else if (0 == *msgbody)
+    {
+        if (info->handle != NULL)
+        {
+            ret = dsi_stop_data_call(info->handle);
+
+            if (ret != 0)
+            {
+                log_e(LOG_NM, "dsi_stop_data_call failed,ret:0x%08x", ret);
+                return ret;
+            }
+
+            dsi_rel_data_srvc_hndl(info->handle);
+            info->handle = NULL;
+            log_o(LOG_NM, "dsi_stop_data_call ,apn is %s.", info->apn);
+        }
+
+        tm_stop(info->recall_timer);
+        info->state = NM_NET_IDLE;
     }
     else
     {
-        if( nm_net_info.cur_type < NM_NET_TYPE_NUM )
-        {
-        	log_i(LOG_NM, "wait connection result,%u,%u,%u", 
-			  	  nm_net_info.item[nm_net_info.cur_type].wait_cnt, 
-			  	  nm_net_info.cur_type,
-                  nm_net_info.item[nm_net_info.cur_type].state);
-
-			
-			/* start recall timer */
-			ret = tm_start(nm_net_info.recall_timer, NM_RECALL_INTERVAL, TIMER_TIMEOUT_REL_ONCE);
-
-			if (ret != 0)
-			{
-				log_e(LOG_NM, "tm_start resend timer failed, type:%u,ret:0x%08x",
-					  nm_net_info.cur_type, ret);
-			}
-
-		    if( (NM_NET_CONNECTING == nm_net_info.item[nm_net_info.cur_type].state) 
-				&& nm_net_info.item[nm_net_info.cur_type].wait_cnt < NM_MAX_DIAL_TIMES )
-		    {
-		    	nm_net_info.item[nm_net_info.cur_type].wait_cnt++;
-	            return;
-		    }
-
-			if( NM_NET_CONNECTING == nm_net_info.item[nm_net_info.cur_type].state )
-	        {
-	        	nm_dial_stop( nm_net_info.cur_type );
-				nm_net_info.item[nm_net_info.cur_type].state = NM_NET_DISCONNECTED;
-				return;
-	        }
-		}
-
-        next = nm_dial_get_next_dial_net(nm_net_info.cur_type);
-
-        if (next < NM_NET_TYPE_NUM)
-        {
-            nm_dial_call(next);
-        }
-        else
-        {
-            log_o(LOG_NM, "all networks is connected");
-            nm_net_info.cur_type = NM_NET_TYPE_NUM;
-        }
+        return NM_INVALID_PARA;
     }
+
+    return 0;
 }
 
 /****************************************************************
@@ -1266,193 +1182,120 @@ return:       none
 ****************************************************************/
 void nm_dial_msg_proc(TCOM_MSG_HEADER *msghdr, unsigned char *msgbody)
 {
-    switch (msghdr->msgid)
+    int ret = 0;
+    int retry_cnt = 0;
+    ql_apn_info_list_s apn_list;
+
+    if ((NM_MSG_ID_DIAL_STATUS == msghdr->msgid) && (MPU_MID_NM == msghdr->sender))
     {
-        case NM_MSG_ID_DIAL_INITED:
-            nm_dial_init_msg_proc(msghdr, msgbody);
-            break;
-
-        case NM_MSG_ID_DIAL_STATUS:
-            nm_dial_status_msg_proc(msghdr, msgbody);
-            break;
-
-        case NM_MSG_ID_TIMER_RECALL:
-            nm_dial_timer_msg_proc();
-            break;
-
-        case NM_MSG_ID_LOC_AUTH_CHANGED:
-        case NM_MSG_ID_LOCAL_APN_CHANGED:
-            nm_dial_loc_net_proc();
-            break;
-
-        case NM_MSG_ID_WAN_APN_CHANGED:
-            nm_dial_wan_net_proc();
-            break;
-            
-        case NM_MSG_ID_DCOM_CHANGED:
-            nm_set_dcom(msgbody[0]);
-            break;
-            
-        default:
-            log_e(LOG_NM, "unknow msg id: %d", msghdr->msgid);
-            break;
+        nm_dial_status_msg_proc(msghdr, msgbody);
     }
-}
-
-/****************************************************************
-function:     nm_dial_stop
-description:  stop data call
-input:        NET_TYPE type, public network or private network
-output:       none
-return:       none
-****************************************************************/
-void nm_dial_stop(NET_TYPE type)
-{
-    int ret;
-    NM_NET_ITEM *item;
-
-    item = nm_net_info.item + type;
-
-    if (item->handle != NULL)
+    else if ((NM_MSG_ID_PRIVATE_TIMER_RECALL == msghdr->msgid) && (MPU_MID_TIMER == msghdr->sender))
     {
-        if (NM_NET_CONNECTED == item->state)
-        {
-            ret = dsi_stop_data_call(item->handle);
+        log_o(LOG_NM, "NM_MSG_ID_PRIVATE_TIMER_RECALL...");
+        nm_dial_recall(NM_PRIVATE_NET);
+    }
+    else if ((NM_MSG_ID_PUBLIC_TIMER_RECALL == msghdr->msgid) && (MPU_MID_TIMER == msghdr->sender))
+    {
+        log_o(LOG_NM, "NM_MSG_ID_PUBLIC_TIMER_RECALL...");
+        nm_dial_recall(NM_PUBLIC_NET);
+    }
+    else if ((NM_MSG_ID_LOC_AUTH_CHANGED == msghdr->msgid) && (MPU_MID_NM == msghdr->sender))
+    {
+        nm_dial_restart();
+    }
+    else if ((NM_MSG_ID_WAN_APN_CHANGED == msghdr->msgid) && (MPU_MID_NM == msghdr->sender))
+    {
+        int retry_cnt = 0;
 
-            if (ret != 0)
+        /* waitting for api service is ready */
+        retry_cnt = 20;
+
+        while (retry_cnt > 0)
+        {
+            memset(&apn_list, 0, sizeof(apn_list));
+            ret = QL_APN_Get_Lists(&apn_list);
+
+            if (ret > 8)
             {
-                log_e(LOG_NM, "dsi_stop_data_call failed,ret:0x%08x", ret);
+                log_e(LOG_NM, "QL_APN_Get_Lists ret is %d.", ret);
             }
+
+            if (ret > 0)
+            {
+                break;
+            }
+
+            retry_cnt --;
+            usleep(500 * 1000);
         }
 
-        dsi_rel_data_srvc_hndl(item->handle);
-        item->handle = NULL;
-    }
-
-    if (NM_NET_CONNECTED == item->state)
-    {
-        item->state = NM_NET_DISCONNECTED;
-        log_o(LOG_NM, "network(%u) is disconnected", type);
-        ret = nm_notify_changed(type, NM_REG_MSG_DISCONNECTED);
-
-        if (0 != ret)
+        if (ret < 0)
         {
-            log_e(LOG_NM, "notify net status failed,type:%u", ret);
+            /* nerver happen */
+            log_e(LOG_NM, "Unknow, failed to get apn list");
+            return;
         }
+
+        ret = net_apn_config(NM_PUBLIC_NET);
+
+        if (ret != 0)
+        {
+            log_e(LOG_NM, "at change pub apn failed.");
+        }
+
+        nm_dial_restart();
+    }
+    else if ((NM_MSG_ID_LOCAL_APN_CHANGED == msghdr->msgid) && (MPU_MID_NM == msghdr->sender))
+    {
+        /* waitting for api service is ready */
+        retry_cnt = 20;
+
+        while (retry_cnt > 0)
+        {
+            memset(&apn_list, 0, sizeof(apn_list));
+            ret = QL_APN_Get_Lists(&apn_list);
+
+            if (ret > 8)
+            {
+                log_e(LOG_NM, "QL_APN_Get_Lists ret is %d.", ret);
+            }
+
+            if (ret > 0)
+            {
+                break;
+            }
+
+            retry_cnt --;
+            usleep(500 * 1000);
+        }
+
+        if (ret < 0)
+        {
+            /* nerver happen */
+            log_e(LOG_NM, "Unknow, failed to get apn list");
+            return;
+        }
+
+        ret = net_apn_config(NM_PRIVATE_NET);
+
+        if (ret != 0)
+        {
+            log_e(LOG_NM, "change pri apn failed.");
+        }
+
+        nm_dial_restart();
+    }
+    else if ((NM_MSG_ID_WAN_SWITCH == msghdr->msgid) && (MPU_MID_NM == msghdr->sender))
+    {
+        nm_dial_wan_switch(msgbody);
     }
     else
     {
-        item->state = NM_NET_DISCONNECTED;
-    }
-}
-
-/****************************************************************
-function:     nm_dial_call
-description:  request data call
-input:        NET_TYPE type, public network or private network
-output:       none
-return:       none
-****************************************************************/
-void nm_dial_call(NET_TYPE type)
-{
-    int ret;
-    NM_NET_ITEM *item;
-
-    /* start recall timer */
-    ret = tm_start(nm_net_info.recall_timer, NM_RECALL_INTERVAL, TIMER_TIMEOUT_REL_ONCE);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "tm_start resend timer failed, type:%u,ret:0x%08x", type, ret);
-        return;
+        log_e(LOG_NM, "unknow msg id: %d", msghdr->msgid);
     }
 
-    item = nm_net_info.item + type;
-	item->wait_cnt = 0;
-
-    if (0 == strlen(item->apn))
-    {
-        return;
-    }
-	
-	if (NM_NET_INITED != nm_net_info.init_state)
-	{
-		return;
-	}
-
-    if (NULL != item->handle)
-    {
-        nm_dial_stop(type);
-		return;
-    }
-
-    /* acquire the handle. */
-    item->handle = dsi_get_data_srvc_hndl(nm_dial_status_cb_fun, &(item->type));
-
-    if (NULL == item->handle)
-    {
-        log_e(LOG_NM, "dsi_get_data_srvc_hndl fail,type:%u", type);
-        return;
-    }
-
-    nm_dial_para_set(type);
-
-    log_i(LOG_NM, "start data call, handle:%p,type:%u", item->handle, type);
-    /* connecting WWAN */
-    ret = dsi_start_data_call(item->handle);
-
-    if (DSI_SUCCESS != ret)
-    {
-        log_e(LOG_NM, "dsi_start_data_call, type:%u,ret:0x%08x\n", type, ret);
-    }
-    else
-    {
-        item->state = NM_NET_CONNECTING;
-		nm_net_info.cur_type = type;
-    }
-}
-
-/****************************************************************
-function:     nm_dial_restart
-description:  start to dial data communciation
-input:        none
-output:       none
-return:       0 indicates success;
-              others indicates failed
-****************************************************************/
-void nm_dial_restart(void)
-{
-    int i,ret;
-
-     /* start recall timer */
-    ret = tm_start(nm_net_info.recall_timer, NM_RECALL_INTERVAL, TIMER_TIMEOUT_REL_ONCE);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "tm_start resend timer failed, ret:0x%08x", ret);
-        return;
-    }
-
-    for (i = NM_PRIVATE_NET; i < NM_NET_TYPE_NUM; i++)
-    {
-        nm_dial_stop(i);
-    }
-
-	nm_net_info.cur_type = NM_NET_TYPE_NUM;
-
-    #if 0
-	int ret;
-    ret = dsi_release(DSI_MODE_GENERAL);
-
-    if (ret != 0)
-    {
-        log_e(LOG_NM, "dsi_release failed,ret:0x%08x", ret);
-    }
-
-	nm_net_info.init_state = NM_NET_NOT_INITED;
-	#endif
-
-    //nm_dial_all_net();
+    return;
 }
 
 /****************************************************************
@@ -1463,65 +1306,84 @@ output:       none
 return:       0 indicates success;
               others indicates failed
 ****************************************************************/
-int nm_dial_all_net(void)
+int nm_dial_start(void)
 {
-    int type, ret = 0;
-    NM_NET_ITEM *item;
+    nm_dial_call(NM_PRIVATE_NET);
+    nm_dial_call(NM_PUBLIC_NET);
 
-    for (type = 0; type < NM_NET_TYPE_NUM; type++)
+    return 0;
+}
+
+int nm_dial_stop(void)
+{
+    int i, ret;
+    NM_NET_INFO *info;
+
+    for (i = NM_PRIVATE_NET; i <= NM_PUBLIC_NET; i++)
     {
-        item = nm_net_info.item + type;
+        info = nm_net_info + i;
 
-        if (0 != strlen(item->apn))
+        if ((info->handle != NULL) &&
+            (info->apn[0] != 0))
         {
-            break;
+            log_e(LOG_NM, "nm_dial_stop,i:%d,dsi_stop_data_call.", i);
+            ret = dsi_stop_data_call(info->handle);
+
+            if (ret != 0)
+            {
+                log_e(LOG_NM, "dsi_stop_data_call failed,ret:0x%08x", ret);
+            }
+
+            dsi_rel_data_srvc_hndl(info->handle);
+            info->handle = NULL;
         }
+
+        tm_stop(info->recall_timer);
+        info->state = NM_NET_IDLE;
     }
 
-    if (type >= NM_NET_TYPE_NUM)
+    return 0;
+}
+
+
+/****************************************************************
+function:     nm_dial_restart
+description:  redial network
+input:        NET_TYPE type, public network or private network;
+output:       none
+return:       0 indicates success;
+              others indicates failed
+****************************************************************/
+int nm_dial_restart(void)
+{
+    int i, ret;
+    NM_NET_INFO *info;
+
+    for (i = NM_PRIVATE_NET; i <= NM_PUBLIC_NET; i++)
     {
-        log_e(LOG_NM, "all apn is null");
-        return NM_APN_INVALID;
-    }
+        info = nm_net_info + i;
 
-    log_o(LOG_NM, "dial network, type:%u, apn:%s", type, item->apn);
-
-    if( NM_NET_NOT_INITED == nm_net_info.init_state )
-	{
-	    nm_net_info.init_state = NM_NET_INITING;
-
-	    ret = dsi_init_ex(DSI_MODE_GENERAL, nm_dial_init_cb_fun, &(item->type));
-
-	    if (DSI_SUCCESS != ret)
-	    {
-	        log_e(LOG_NM, "dsi_init_ex failed,ret:0x%08x,type:%u", ret, type);
-	        nm_net_info.init_state = NM_NET_NOT_INITED;
-
-	        /* start recall timer and retry to reinit when the timer timeout */
-	        ret = tm_start(nm_net_info.recall_timer, NM_RECALL_INTERVAL, TIMER_TIMEOUT_REL_ONCE);
-
-	        if (ret != 0)
-	        {
-	            log_e(LOG_NM, "tm_start resend timer failed, type:%u,ret:0x%08x", type, ret);
-	        }
-	    }
-	}
-	else if( NM_NET_INITING == nm_net_info.init_state ) 
-	{
-		/* start recall timer and retry to reinit when the timer timeout */
-        ret = tm_start(nm_net_info.recall_timer, NM_RECALL_INTERVAL, TIMER_TIMEOUT_REL_ONCE);
-
-        if (ret != 0)
+        if ((info->handle != NULL) &&
+            (info->apn[0] != 0))
         {
-            log_e(LOG_NM, "tm_start resend timer failed, type:%u,ret:0x%08x", type, ret);
-        }	
-    }
-	else
-	{
-		nm_dial_call(type);
-	}
+            log_e(LOG_NM, "nm_dial_restart,i:%d,dsi_stop_data_call.", i);
+            ret = dsi_stop_data_call(info->handle);
 
-    return ret;
+            if (ret != 0)
+            {
+                log_e(LOG_NM, "dsi_stop_data_call failed,ret:0x%08x", ret);
+            }
+
+            dsi_rel_data_srvc_hndl(info->handle);
+            info->handle = NULL;
+        }
+
+        tm_stop(info->recall_timer);
+        info->state = NM_NET_IDLE;
+    }
+
+    nm_dial_start();
+    return 0;
 }
 
 /****************************************************************
@@ -1534,15 +1396,41 @@ return:       0 indicates successful;
 ****************************************************************/
 int nm_set_dcom(unsigned char action)
 {
-    NM_NET_ITEM *phndl = nm_net_info.item + NM_PUBLIC_NET;
+    int ret;
+    TCOM_MSG_HEADER msghdr;
 
-    if(action == 0)
+    ret = cfg_set_para(CFG_ITEM_DCOM_SET, &action, sizeof(char));
+
+    if (0 != ret)
     {
-        nm_dial_del_default_route();
+        log_e(LOG_NM, "set dcom failed,ret:0x%08x", ret);
+        return ret;
     }
-    else if(action > 0)
+
+    /*if public net is empty,set invalid*/
+    pthread_mutex_lock(&nm_mutex);
+
+    if (0 == strlen(nm_net_info[NM_PUBLIC_NET].apn))
     {
-        nm_dial_add_default_route(phndl);
+        pthread_mutex_unlock(&nm_mutex);
+        return 0;
+    }
+
+    pthread_mutex_unlock(&nm_mutex);
+
+    /* send message to the nm */
+    msghdr.sender   = MPU_MID_NM;
+    msghdr.receiver = MPU_MID_NM;
+    msghdr.msgid    = NM_MSG_ID_WAN_SWITCH;
+    msghdr.msglen   = sizeof(char);
+
+    ret = tcom_send_msg(&msghdr, &action);
+
+    if (ret != 0)
+    {
+        log_e(LOG_NM, "send message(msgid:%u) to moudle(0x%04x) failed, ret:%u",
+              msghdr.msgid, msghdr.receiver, ret);
+        return ret;
     }
 
     return 0;
@@ -1556,12 +1444,13 @@ output:       none
 return:       1 indicates network is available;
               0 indicates network is unavailable
 ****************************************************************/
-int nm_get_dcom(unsigned char *state)
+unsigned char nm_get_dcom(void)
 {
     int ret;
+    unsigned char state = 0;;
     unsigned int len = sizeof(unsigned char);
 
-    ret = cfg_get_para(CFG_ITEM_DCOM_SET, state, &len);
+    ret = cfg_get_para(CFG_ITEM_DCOM_SET, &state, &len);
 
     if (0 != ret)
     {
@@ -1569,22 +1458,64 @@ int nm_get_dcom(unsigned char *state)
         return ret;
     }
 
-    return 0;
+    return state;
 }
 
 /****************************************************************
-function:     nm_bind
-description:  bind the socket to specified interface
-input:        int sockfd      
+function:     nm_get_dial_info
+description:  get network ip and interface
+input:        NET_TYPE type
+              NM_PRIVATE_DATA *data
+output:       none
+return:       0 indicates success;
+              others indicates failed
+****************************************************************/
+int nm_get_dial_info(NET_TYPE type, NM_DIAL_INFO *data)
+{
+    NM_NET_INFO *info;
+
+    if (type >= NM_NET_TYPE_NUM)
+    {
+        log_e(LOG_NM, "net type error, type:%d", type);
+        return NM_INVALID_PARA;
+    }
+
+    pthread_mutex_lock(&nm_mutex);
+    info = nm_net_info + type;
+
+    if (NULL == data)
+    {
+        log_e(LOG_NM, "para error:data is NULL");
+        pthread_mutex_unlock(&nm_mutex);
+        return NM_INVALID_PARA;
+    }
+
+    if (NM_NET_CONNECTED == info->state)
+    {
+        memcpy(&data->ip_addr, &info->ip_addr, sizeof(struct in_addr));
+        memcpy(data->interface.ifr_ifrn.ifrn_name, info->interface, sizeof(info->interface));
+        pthread_mutex_unlock(&nm_mutex);
+        return 0;
+    }
+
+    pthread_mutex_unlock(&nm_mutex);
+    log_o(LOG_NM, "the data link is disconnnected,status:%u", nm_net_info[type].state);
+    return NM_STATUS_INVALID;
+}
+
+/****************************************************************
+function:     nm_set_net
+description:  bind the different sock to different interface
+input:        int sockfd
               NET_TYPE type
 output:       none
 return:       0 indicates success;
               others indicates failed
 ****************************************************************/
-int nm_bind(int sockfd, NET_TYPE type)
+int nm_set_net(int sockfd, NET_TYPE type)
 {
     int ret;
-    NM_NET_ITEM *item;
+    NM_NET_INFO *info;
 
     if ((type >= NM_NET_TYPE_NUM) || (sockfd < 0))
     {
@@ -1593,15 +1524,15 @@ int nm_bind(int sockfd, NET_TYPE type)
     }
 
     pthread_mutex_lock(&nm_mutex);
-    item = nm_net_info.item + type;
+    info = nm_net_info + type;
 
-    if (NM_NET_CONNECTED == item->state)
+    if (NM_NET_CONNECTED == info->state)
     {
-        ret = setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, item->interface, sizeof(item->interface));
+        ret = setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, info->interface, sizeof(info->interface));
 
         if (ret < 0)
         {
-            log_e(LOG_NM, "bind interface failed,error:%s", strerror(errno));
+            log_e(LOG_NM, "set local interface failed,error:%s", strerror(errno));
             pthread_mutex_unlock(&nm_mutex);
             return ret;
         }
@@ -1611,8 +1542,9 @@ int nm_bind(int sockfd, NET_TYPE type)
     }
 
     pthread_mutex_unlock(&nm_mutex);
-    log_o(LOG_NM, "the data link is disconnnected,status:%u", nm_net_info.item[type].state);
+    log_o(LOG_NM, "the data link is disconnnected,status:%u", nm_net_info[type].state);
     return NM_STATUS_INVALID;
+
 }
 
 /****************************************************************
@@ -1626,7 +1558,6 @@ return:       0 indicates success;
 int nm_network_switch(unsigned char type)
 {
     int ret;
-
     ret = at_network_switch(type);
     return ret;
 }
@@ -1692,11 +1623,11 @@ input:        none
 return:       true indicates  CONNECTED;
               false indicates DISCONNECTED
 *****************************************************************/
-bool nm_get_net_status(NET_TYPE type)
+bool nm_get_net_status(void)
 {
     pthread_mutex_lock(&nm_mutex);
 
-    if (NM_NET_CONNECTED == nm_net_info.item[type].state)
+    if (NM_NET_CONNECTED == nm_net_info[NM_PRIVATE_NET].state)
     {
         pthread_mutex_unlock(&nm_mutex);
         return true;
@@ -1715,11 +1646,11 @@ input:        NET_TYPE type
 return:       true indicates  the apn is not null;
               false indicates the apn is null;
 *****************************************************************/
-bool nm_net_is_apn_valid( NET_TYPE type )
+bool nm_net_is_apn_valid(NET_TYPE type)
 {
     pthread_mutex_lock(&nm_mutex);
 
-    if (0 == strlen(nm_net_info.item[type].apn))
+    if (0 == strlen(nm_net_info[type].apn))
     {
         pthread_mutex_unlock(&nm_mutex);
         return false;
@@ -1732,14 +1663,37 @@ bool nm_net_is_apn_valid( NET_TYPE type )
 }
 
 /****************************************************************
-function:     nm_reg_status_changed
+function:     nm_get_net_status_ex
+description:  get network status
+input:        NET_TYPE type
+return:       true indicates  CONNECTED;
+              false indicates DISCONNECTED
+*****************************************************************/
+bool nm_get_net_status_ex(NET_TYPE type)
+{
+    pthread_mutex_lock(&nm_mutex);
+
+    if (NM_NET_CONNECTED == nm_net_info[type].state)
+    {
+        pthread_mutex_unlock(&nm_mutex);
+        return true;
+    }
+    else
+    {
+        pthread_mutex_unlock(&nm_mutex);
+        return false;
+    }
+}
+
+/****************************************************************
+function:     nm_register_status_changed
 description:  if network status is changed,notify callback
 input:        nm_status_changed callback
 output:       none
 return:       0 indicates success;
               others indicates failed
 ****************************************************************/
-int nm_reg_status_changed(NET_TYPE type, nm_status_changed callback)
+int nm_register_status_changed(nm_status_changed callback)
 {
     /* the paramerter is invalid */
     if (NULL == callback)
@@ -1757,11 +1711,8 @@ int nm_reg_status_changed(NET_TYPE type, nm_status_changed callback)
         return NM_TABLE_OVERFLOW;
     }
 
-    nm_tbl.item[nm_tbl.used_num].type    = type;
-    nm_tbl.item[nm_tbl.used_num].changed = callback;
+    nm_tbl.changed[nm_tbl.used_num] = callback;
     nm_tbl.used_num++;
     pthread_mutex_unlock(&nm_regtbl_mutex);
-
     return 0;
 }
-

@@ -99,7 +99,7 @@ int startCreateServerSocket()
         return -1;
     }
 
-    bzero(&serv_addr, sizeof(serv_addr)); //½«±äÁ¿serv_addrÖÃ0
+    bzero(&serv_addr, sizeof(serv_addr)); //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½serv_addrï¿½ï¿½0
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(ASSIST_SERVER_PORT);
     serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -228,7 +228,7 @@ void UdpProcessProtocol(unsigned char *data, unsigned int datalen, int clientfd)
 
     memcpy(protocoldata, data + 1, datalen - 2);
 
-    //×ªÒå´¦Àí
+    //×ªï¿½å´¦ï¿½ï¿½
     dataptr = data + 1;
     j = 0;
 
@@ -261,17 +261,17 @@ void UdpProcessProtocol(unsigned char *data, unsigned int datalen, int clientfd)
 
     log_buf_dump(LOG_ASSIST, "after transfer:", protocoldata, realdatalen);
 
-    //Ð£Ñé
+    //Ð£ï¿½ï¿½
     unsigned char checkresult = makeChecksum(protocoldata, realdatalen);
 
     if (checkresult == data[datalen - 2])
     {
         log_i(LOG_ASSIST, "check success\n");
 
-        //½âÎö
+        //ï¿½ï¿½ï¿½ï¿½
         processClientRequest(protocoldata, realdatalen);
 
-        //·¢ËÍresponse
+        //ï¿½ï¿½ï¿½ï¿½response
         makeResponseTailAndSend(clientfd);
     }
     else
@@ -302,12 +302,12 @@ void makeResponseTailAndSend(int clientfd)
     memset(response_data_send, 0, sizeof(response_data_send));
     response_data_send[response_data_send_len ++] = IDENTIFIER;
 
-    //Ð£Ñé
+    //Ð£ï¿½ï¿½
     checksum = makeChecksum(response_data, response_data_len);
     response_data[response_data_len ++] = checksum;
     //responsestr[response_data_len ++] = IDENTIFIER;
 
-    //×ªÒå
+    //×ªï¿½ï¿½
 
     for (i = 0; i < response_data_len; i++)
     {
@@ -328,7 +328,7 @@ void makeResponseTailAndSend(int clientfd)
     log_i(LOG_ASSIST, "Start send fd:%d", clientfd);
     log_buf_dump(LOG_ASSIST, "send response:", response_data_send, response_data_send_len);
 
-    //·¢ËÍ
+    //ï¿½ï¿½ï¿½ï¿½
     if (clientfd == sock_udp_fd)
     {
         sendlen = sendto(clientfd, response_data_send, response_data_send_len, 0,
@@ -356,18 +356,18 @@ void processClientRequest(unsigned char *data, int datalen)
     int pos = 0;
     int i;
 
-    //Á÷Ë®
+    //ï¿½ï¿½Ë®
     memcpy(request_water, data, 4);
     pos += 4;
 
-    //ÇëÇóÂë¸öÊý
+    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     request_num = data[pos++];
     log_i(LOG_ASSIST, "request number : %d\n", request_num);
 
-    //³õÊ¼»¯response  buffer
+    //ï¿½ï¿½Ê¼ï¿½ï¿½response  buffer
     memset(response_data, 0, sizeof(response_data));
 
-    //ÉèÖÃresponse»ù±¾ÐÅÏ¢
+    //ï¿½ï¿½ï¿½ï¿½responseï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
 
     memcpy(&response_data[0], request_water, 4);
     response_data[4] = request_num;
@@ -378,7 +378,7 @@ void processClientRequest(unsigned char *data, int datalen)
     {
         log_i(LOG_ASSIST, "request number index: %d\n", i);
 
-        //»ñÈ¡ÇëÇóÂë
+        //ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         short ch1 = data[pos ++];
         short ch2 = data[pos++] ;
 
@@ -387,7 +387,7 @@ void processClientRequest(unsigned char *data, int datalen)
         short requestCode = ch1  + (ch2 << 8);
         log_i(LOG_ASSIST, "requestcode : 0x%x\n", requestCode);
 
-        //ÇëÇóÂëÊý¾Ý³¤¶È
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½ï¿½ï¿½
         ch1 = data[pos ++];
         ch2 = data[pos++] ;
 
@@ -401,7 +401,7 @@ void processClientRequest(unsigned char *data, int datalen)
         }
         else
         {
-            //»ñÈ¡ÇëÇóÊý¾Ý
+            //ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
             unsigned char *request_data = (unsigned char *)reqbuff;
             memset(reqbuff, 0, sizeof(reqbuff));
             memcpy(request_data, &data[pos], request_datalen);
@@ -905,7 +905,7 @@ void executeRequestCommand(short requestCode, unsigned char *commandData, int da
                 unsigned char standard = commandData[1];
                 unsigned int len;
 
-                //ÅäÖÃÍøÂçÖÆÊ½
+                //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½
                 len = sizeof(standard);
                 cfg_set_para(CFG_ITEM_NET_TYPE, &standard, len);
                 makeSendResponse(RESPONSE_CFG_STANDARD, NULL, 0);
@@ -916,8 +916,8 @@ void executeRequestCommand(short requestCode, unsigned char *commandData, int da
             {
                 unsigned char state;
 
-                //»ñÈ¡Êý¾ÝÍ¨ÐÅ¿ª¹Ø×´Ì¬
-                nm_get_dcom(&state);
+                //ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Í¨ï¿½Å¿ï¿½ï¿½ï¿½×´Ì¬
+                state = nm_get_dcom();
                 data[0] = DATA_TYPE_U8;
                 data[1] = state;
                 makeSendResponse(RESPONSE_DATA_STATE, data, 2);
@@ -1060,7 +1060,7 @@ void executeRequestCommand(short requestCode, unsigned char *commandData, int da
                 break;
             }
 
-        //ÊÛºóAPP
+        //ï¿½Ûºï¿½APP
         case REQUEST_SHELL:
             {
                 int rsplen;
@@ -1411,7 +1411,7 @@ int app_socket_test(int argc, const char **argv)
             log_i(LOG_ASSIST, "test  Start send fd:%d", client_fd[i]);
             log_buf_dump(LOG_ASSIST, "send response:", data, 17);
 
-            //·¢ËÍ
+            //ï¿½ï¿½ï¿½ï¿½
             sendlen = send(client_fd[i], data, 17, 0);
 
             if (sendlen < 17)

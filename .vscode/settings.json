@@ -11,6 +11,13 @@
         "asn_internal.h": "c",
         "ql_nw.h": "c",
         "netlink.h": "c",
-        "file.h": "c"
+        "file.h": "c",
+        "ql_wwan_v2.h": "c",
+        "pm_api.h": "c",
+        "nm_diag.h": "c",
+        "nm_api.h": "c",
+        "nm_shell.h": "c",
+        "nm_dial.h": "c",
+        "at_api.h": "c"
     }
 }

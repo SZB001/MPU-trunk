@@ -12,7 +12,7 @@ author        wangqinglong
 #include <netdb.h>
 #include <net/if.h>
 #include <stdbool.h>
-
+#include <quectel-openlinux-sdk/ql_wwan_v2.h>
 /* nm timer definition */
 #define NM_RECALL_INTERVAL   (5000)
 #define NM_DIAG_INTERVAL     (30000)   /* 30s */
@@ -33,11 +33,14 @@ typedef enum  NM_MSG_ID
     NM_MSG_ID_LOCAL_APN_CHANGED,
     NM_MSG_ID_WAN_APN_CHANGED,
     NM_MSG_ID_LOC_AUTH_CHANGED,
+    NM_MSG_ID_WAN_SWITCH,
     NM_MSG_ID_DCOM_CHANGED,
     NM_MSG_ID_COM_AVAILABLE,
     NM_MSG_ID_DIAL_INITED,
     NM_MSG_ID_DIAL_STATUS,
     NM_MSG_ID_TIMER_RECALL,
+    NM_MSG_ID_PRIVATE_TIMER_RECALL,
+    NM_MSG_ID_PUBLIC_TIMER_RECALL,
     NM_MSG_ID_DIAG_TIMER,
     NM_MSG_ID_MAX,
 } NM_MSG_ID;
@@ -84,17 +87,17 @@ typedef struct NM_DIAL_INFO
 } NM_DIAL_INFO;
 
 
-int  nm_get_dcom(unsigned char *state);
+unsigned char nm_get_dcom(void);
 int  nm_set_dcom(unsigned char action);
 int  nm_network_switch(unsigned char type);
 int  nm_get_signal(void);
 int  nm_get_iccid(char *iccid);
 int  nm_get_net_type(void);
 int  nm_get_operator(unsigned char *operator);
-int  nm_bind(int sockfd, NET_TYPE type);
-bool nm_get_net_status(NET_TYPE type);
+int  nm_set_net(int sockfd, NET_TYPE type);
+bool nm_get_net_status(void);
 bool nm_net_is_apn_valid( NET_TYPE type );
-int  nm_reg_status_changed(NET_TYPE type, nm_status_changed callback);
+int  nm_register_status_changed(nm_status_changed callback);
 int  nm_register_get_ota_status(nm_ota_status_get callback);
 
 

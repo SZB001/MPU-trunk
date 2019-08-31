@@ -14,6 +14,9 @@ author        liuzhongwen
 #include "nm_diag.h"
 #include "diag.h"
 
+extern int at_get_cfun_status(void);
+extern bool nm_get_net_status_ex(NET_TYPE type);
+
 static NM_REG_OTA_TBL  nm_diag_tbl;
 static pthread_mutex_t nm_diag_regtbl_mutex;
 static timer_t         nm_diag_timer;
@@ -99,6 +102,7 @@ bool nm_diag_chk_ota_link(void)
 			} 
 		}
     }
+ 	log_e(LOG_NM, "All OTA module is not connect!");
 
     return false;
 }
@@ -114,29 +118,18 @@ return:       false indicates all the dial link are disconnected;
 ****************************************************************/
 bool nm_diag_chk_dial_link(void)
 {
-    int i;
-
-    for ( i = 0; i < NM_NET_TYPE_NUM; i++ )
-    {
-        if( nm_net_is_apn_valid(NM_PRIVATE_NET) )  
-        {
-            break;
-        }
-    }
-
     /* no dial link is used */
-    if( i >= NM_NET_TYPE_NUM )
+    if ((!nm_net_is_apn_valid(NM_PRIVATE_NET)) &&
+        (!nm_net_is_apn_valid(NM_PUBLIC_NET)))
     {
-        return true;    
+        return true;
     }
 
     /* at least one dial link is connected */
-    for ( i = 0; i < NM_NET_TYPE_NUM; i++ )
+    if (nm_get_net_status_ex(NM_PRIVATE_NET) ||
+        nm_get_net_status_ex(NM_PUBLIC_NET))
     {
-        if( nm_get_net_status(NM_PRIVATE_NET) )  
-        {
-            return true;
-        }
+        return true;
     }
 
     return false;

@@ -2223,19 +2223,19 @@ int ft_init(INIT_PHASE phase)
 			/*ECU Model number*/
             ret |= shell_cmd_register("ftsetdevtype", ft_shell_setdevtype, "set devices type");
 
-			/*Éè±¸±àºÅ*/
+			/*ï¿½è±¸ï¿½ï¿½ï¿½*/
             ret |= shell_cmd_register("ftsetdevsn", ft_shell_setdevsn, "set devices number");
 
-			/*·¢¶¯»úÀàÐÍ*/
+			/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
             ret |= shell_cmd_register("ftsettype", ft_shell_settype, "set engine type");
 
-			/*Æ½Ì¨¶Ë¿ÚºÅÐòºÅ*/
+			/*Æ½Ì¨ï¿½Ë¿Úºï¿½ï¿½ï¿½ï¿½*/
             ret |= shell_cmd_register("ftsetport", ft_shell_setport, "set foton port");		
 			
             ret |= shell_cmd_register("ftsetreg", ft_shell_set_register, "set foton register status");
             ret |= cfg_register(CFG_ITEM_FOTON_VIN, ft_vin_changed);
             ret |= can_register_callback(ft_can_callback);
-            ret |= nm_reg_status_changed(NM_PUBLIC_NET, ft_nm_callback);
+            ret |= nm_register_status_changed( ft_nm_callback);
             ret |= nm_register_get_ota_status(ft_get_ota_status);
             ret |= tm_create(TIMER_REL, FT_MSG_WAKEUP_TIMEOUT, MPU_MID_FOTON, &ft_wakeup_timer);
             break;

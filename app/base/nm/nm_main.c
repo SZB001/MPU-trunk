@@ -10,9 +10,40 @@ author        liuzhongwen
 #include "nm_dial.h"
 #include "nm_diag.h"
 #include "nm_shell.h"
+#include "pm_api.h"
+#include "at_api.h"
+#include "at.h"
 
 static pthread_t nm_tid;    /* thread id */
 static unsigned char nm_msgbuf[TCOM_MAX_MSG_LEN * 2];
+
+unsigned int dsi_client_init = 0;
+unsigned int g_call_id = 0;
+
+extern int net_apn_config(NET_TYPE type);
+extern void nm_dial_init_cb_fun(void *user_data);
+extern int nm_dial_stop(void);
+extern int nm_dial_restart(void);
+
+int nm_is_ready_sleep = 0;
+
+int nm_sleep_available(PM_EVT_ID id)
+{
+    switch (id)
+    {
+        case PM_MSG_SLEEP:
+        case PM_MSG_OFF:
+            return nm_is_ready_sleep;
+
+        case PM_MSG_EMERGENCY:
+        case PM_MSG_RTC_WAKEUP:
+            return 1;
+
+        default:
+            return 1;
+    }
+
+}
 
 /****************************************************************
 function:     nm_init
@@ -27,9 +58,10 @@ int nm_init(INIT_PHASE phase)
     NM_RET_CHK(nm_dial_init(phase));
     NM_RET_CHK(nm_diag_init(phase));
     NM_RET_CHK(nm_shell_init(phase));
-    
+
     return 0;
 }
+
 
 /****************************************************************
 function:     nm_main
@@ -42,6 +74,8 @@ void *nm_main(void)
 {
     int maxfd, tcom_fd, ret;
     TCOM_MSG_HEADER msghdr;
+    ql_apn_info_list_s apn_list;
+    unsigned int retry_cnt = 20;
     fd_set fds;
 
     prctl(PR_SET_NAME, "NM");
@@ -56,8 +90,74 @@ void *nm_main(void)
 
     maxfd = tcom_fd;
 
+    while (retry_cnt > 0)
+    {
+        ret = dsi_init_ex(DSI_MODE_GENERAL, nm_dial_init_cb_fun, (void *)&dsi_client_init);
+
+        if (ret != DSI_SUCCESS)
+        {
+            retry_cnt --;
+            sleep(1);
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    log_o(LOG_NM, "dsi_init_ex retry_cnt = %d.", retry_cnt);
+
+    /* waitting for api service is ready */
+    retry_cnt = 20;
+
+    while (retry_cnt > 0)
+    {
+        memset(&apn_list, 0, sizeof(apn_list));
+        ret = QL_APN_Get_Lists(&apn_list);
+
+        if (ret > 8)
+        {
+            log_e(LOG_NM, "QL_APN_Get_Lists ret is %d.", ret);
+        }
+
+        if (ret > 0)
+        {
+            break;
+        }
+
+        retry_cnt --;
+        usleep(500 * 1000);
+    }
+
+    log_o(LOG_NM, "QL_APN_Get_Lists retry_cnt = %d.", retry_cnt);
+
+    if (ret < 0)
+    {
+        /* nerver happen */
+        log_e(LOG_NM, "Unknow, failed to get apn list!!!");
+    }
+
+    retry_cnt = 20;
+
+    while (retry_cnt > 0)
+    {
+        if (1 == dsi_client_init)
+        {
+            break;
+        }
+
+        retry_cnt --;
+        usleep(500 * 1000);
+    }
+
+    if (net_apn_config(NM_PRIVATE_NET) != 0 || net_apn_config(NM_PUBLIC_NET) != 0)
+    {
+        /* nerver happen */
+        log_e(LOG_NM, "Unknow, failed to set apn");
+    }
+
     /* start dial data link */
-    nm_dial_all_net();
+    nm_dial_start();
 
     while (1)
     {
@@ -84,10 +184,28 @@ void *nm_main(void)
                 {
                     pwdg_feed(MPU_MID_NM);
                 }
-                else if( NM_MSG_ID_DIAG_TIMER == msghdr.msgid )
+                else if (NM_MSG_ID_DIAG_TIMER == msghdr.msgid)
                 {
                     nm_diag_msg_proc(&msghdr, nm_msgbuf);
-                } 
+                }
+                else if (PM_MSG_RUNNING == msghdr.msgid)
+                {
+                    nm_dial_restart();
+                    nm_is_ready_sleep = 0;
+
+                    /* check if in cfun 4 */
+                    if (4 == at_get_cfun_status())
+                    {
+                        at_set_cfun(1);//exit cfun 4
+                    }
+                }
+                else if ((PM_MSG_SLEEP == msghdr.msgid) || (PM_MSG_OFF == msghdr.msgid))
+                {
+                    nm_dial_stop();
+                    nm_is_ready_sleep = 1;
+
+                    log_o(LOG_NM, "nm recv pm sleep info...");
+                }
                 else
                 {
                     nm_dial_msg_proc(&msghdr, nm_msgbuf);

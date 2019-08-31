@@ -1679,7 +1679,7 @@ int gb_init(INIT_PHASE phase)
             ret |= shell_cmd_register("fuelcell", gb_shell_fuelcell, "set GB32960 whether use the fuelcell");
 
             ret |= can_register_callback(gb_can_callback);
-            ret |= nm_reg_status_changed(NM_PUBLIC_NET, gb_nm_callback);
+            ret |= nm_register_status_changed(gb_nm_callback);
 			
 			ret |= shell_cmd_register("gbnosend", gb_shell_nosend, "GB32960 don't send data");
             break;

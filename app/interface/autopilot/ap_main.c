@@ -99,7 +99,7 @@ int ap_init(INIT_PHASE phase)
 
                 ret |= tm_create(TIMER_REL, AP_MSG_TIMER_EVENT, MPU_MID_AUTO, &ap_check_timer);
                 
-                ret |= nm_reg_status_changed(NM_PUBLIC_NET, ap_nm_callback);
+                ret |= nm_register_status_changed(ap_nm_callback);
                 ret |= pm_reg_handler(MPU_MID_AUTO, ap_allow_sleep_handler);
                 break;
             }
@@ -142,7 +142,7 @@ int ap_sock_connect(int sockfd, char *url, uint16_t port)
 
     con_interval = 0;
 
-    //nm_bind(sockfd, NM_PUBLIC_NET);
+    //nm_set_net(sockfd, NM_PUBLIC_NET);
 
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;

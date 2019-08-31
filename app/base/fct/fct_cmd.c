@@ -197,11 +197,11 @@ int fct_emmc_test(unsigned char *req, unsigned int ilen, unsigned char *res, uns
 
     statfs(COM_SDCARD_DIR, &diskInfo);
 
-    unsigned long long blocksize = diskInfo.f_bsize;                    //Ã¿¸öblockÀï°üº¬µÄ×Ö½ÚÊý
+    unsigned long long blocksize = diskInfo.f_bsize;                    //Ã¿ï¿½ï¿½blockï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½
     unsigned long long totalsize = blocksize *
-                                   diskInfo.f_blocks;       //×ÜµÄ×Ö½ÚÊý£¬f_blocksÎªblockµÄÊýÄ¿
+                                   diskInfo.f_blocks;       //ï¿½Üµï¿½ï¿½Ö½ï¿½ï¿½ï¿½ï¿½ï¿½f_blocksÎªblockï¿½ï¿½ï¿½ï¿½Ä¿
 
-    unsigned long long availableDisk = diskInfo.f_bavail * blocksize;   //¿ÉÓÃ¿Õ¼ä´óÐ¡
+    unsigned long long availableDisk = diskInfo.f_bavail * blocksize;   //ï¿½ï¿½ï¿½Ã¿Õ¼ï¿½ï¿½Ð¡
 
     res_data[0] = totalsize >> 20;
     res_data[1] = availableDisk >> 20;
@@ -261,7 +261,7 @@ int fct_4G_net_test(unsigned char *req, unsigned int ilen, unsigned char *res, u
 
     *olen = 1;
 
-    if ((true == nm_get_net_status(NM_PRIVATE_NET))  || (true == nm_get_net_status(NM_PUBLIC_NET)))
+    if (true == nm_get_net_status())
     {
         res[0] = FCT_CMD_OK;
     }

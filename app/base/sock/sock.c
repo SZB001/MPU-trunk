@@ -94,7 +94,7 @@ int sock_status(int sid)
 }
 
 /**
-    Liu Binkui Ìí¼Ó£¬ÓÃÀ´»ñÈ¡socketÁ¬½ÓÊ§°Ü´ÎÊý
+    Liu Binkui ï¿½ï¿½ï¿½Ó£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡socketï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü´ï¿½ï¿½ï¿½
 */
 int sock_reconnect_times(int sid)
 {
@@ -109,7 +109,7 @@ int sock_reconnect_times(int sid)
 }
 
 /**
-    Liu Binkui Ìí¼Ó£¬ÓÃÀ´Çå³ýsocketÁ¬½ÓÊ§°Ü´ÎÊý
+    Liu Binkui ï¿½ï¿½ï¿½Ó£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½socketï¿½ï¿½ï¿½ï¿½Ê§ï¿½Ü´ï¿½ï¿½ï¿½
 */
 int sock_reconnect_times_clear(int sid)
 {
@@ -396,7 +396,7 @@ static void *sock_open_proc(sock_t *sock)
         return sock_finish(sock, sockfd, SOCK_STAT_CLOSED);
     }
 
-    nm_bind(sockfd, sock->apn_type);
+    nm_set_net(sockfd, sock->apn_type);
 
     fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL, 0) | O_NONBLOCK);
     addr.sin_family = AF_INET;
