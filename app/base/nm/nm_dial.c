@@ -630,6 +630,7 @@ static void nm_dial_del_default_route(void)
     nm_sys_call(command);
 }
 
+#if 0
 /****************************************************************
 function:     nm_dial_add_dns_route
 description:  add the dns ip to route list
@@ -670,6 +671,7 @@ static void nm_dial_add_dns_route(NM_NET_ITEM *phndl)
     }
 	#endif
 }
+#endif
 
 /****************************************************************
 function:     nm_dial_set_iptable
@@ -724,7 +726,10 @@ static void nm_dial_set_dns(NM_NET_ITEM *phndl)
     else
 #endif
     {
-        snprintf(command, sizeof(command), "echo 'nameserver 8.8.8.8' > /etc/resolv.conf");
+        snprintf(command, sizeof(command), "echo 'nameserver 114.114.114.114' > /etc/resolv.conf");
+        nm_sys_call(command);
+
+        snprintf(command, sizeof(command), "echo 'nameserver 180.76.76.76' >> /etc/resolv.conf");
         nm_sys_call(command);
     }
 }
