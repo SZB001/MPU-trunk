@@ -39,6 +39,8 @@ description�� include the header file
 #include "../sockproxy/sockproxy_txdata.h"
 #include "../../support/protocol.h"
 #include "cfg_api.h"
+#include "pm_api.h"
+//#include "gb32960.h"
 #include "hozon_SP_api.h"
 #include "hozon_PP_api.h"
 #include "shell_api.h"
@@ -95,6 +97,9 @@ static PrvtProt_RmtFunc_t PP_RmtFunc[PP_RMTFUNC_MAX] =
 };
 
 static uint8_t PP_sleepflag = 0;
+static uint8_t PP_hbtaskflag = 0;
+static uint8_t PP_hbtasksleepflag = 0;
+static uint16_t PP_hbtasksleeptestflag = 0;
 
 PrvtProt_TxInform_t 	PP_TxInform[PP_TXINFORM_NUM];
 /*******************************************************
@@ -266,7 +271,8 @@ static void *PrvtProt_main(void)
 			}
 		}
 
-		PP_sleepflag = GetPP_rmtCtrl_Sleep();
+		PP_sleepflag = PP_hbtasksleepflag &&	\
+					   GetPP_rmtCtrl_Sleep();
     }
 	(void)res;
     return NULL;
@@ -453,6 +459,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 			PP_heartbeat.timeoutCnt = 0;
 			PP_heartbeat.state = 1;
 			PP_heartbeat.waitSt = 0;
+			PP_hbtasksleepflag = 1;
 		}
 		break;
 		case PP_OPERATETYPE_NGTP://ngtp
@@ -534,6 +541,7 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
         	PP_heartbeat.waitSt = 0;
         	PP_heartbeat.state = 0;//
         	PP_heartbeat.timeoutCnt++;
+			PP_hbtasksleepflag = 1;
             log_e(LOG_HOZON, "heartbeat time out");
         }
         else
@@ -557,8 +565,11 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 {
 	PrvtProt_pack_Header_t pack_Header;
 
-	if((tm_get_time() - PP_heartbeat.timer) > (PP_heartbeat.period*1000))
+	if(((tm_get_time() - PP_heartbeat.timer) > (PP_heartbeat.period*1000)) || 
+		PP_hbtaskflag)
 	{
+		PP_hbtaskflag = 0;
+		PP_hbtasksleepflag = 0;
 		PP_PackHeader_HB.ver.Byte = task->version;
 		PP_PackHeader_HB.nonce  = PrvtPro_BSEndianReverse(task->nonce);
 		PP_PackHeader_HB.msglen = PrvtPro_BSEndianReverse((long)18);
@@ -570,6 +581,9 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 		SP_data_write(pack_Header.sign,18,PP_HB_send_cb,&HB_TxInform);
 
 		PP_heartbeat.timer = tm_get_time();
+
+		log_i(LOG_HOZON, "PP_hbtasksleeptestflag = %d\n",PP_hbtasksleeptestflag);
+
 		return -1;
 	}
 
@@ -577,7 +591,7 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 	{
 		PP_heartbeat.timeoutCnt = 0;
 		log_i(LOG_HOZON, "heartbeat timeout too much!close socket\n");
-		//sockproxy_socketclose();
+		//sockproxy_socketclose((int)(PP_SP_COLSE_PP));
 	}
 	return 0;
 }
@@ -816,10 +830,39 @@ void PrvtProt_gettboxsn(char *tboxsn)
 
 *��  ע��
 ******************************************************/
-void SetPrvtProt_Awaken(void)
+void SetPrvtProt_Awaken(int type)
 {
 	PP_sleepflag = 0;
 	SetPP_rmtCtrl_Awaken();
+	switch(type)
+	{
+		case PM_MSG_RTC_WAKEUP://mpu rtc wake up
+		{
+			PP_hbtaskflag = 1;
+			PP_hbtasksleepflag = 0;
+			PP_hbtasksleeptestflag++;
+		}
+		break;
+		default:
+		break;
+	}
+}
+
+/******************************************************
+*������:setPrvtProt_sendHeartbeat
+
+*��  �Σ�
+
+*����ֵ��
+
+*��  ����
+
+*��  ע��
+******************************************************/
+void setPrvtProt_sendHeartbeat(void)
+{
+	PP_hbtaskflag = 1;
+	PP_hbtasksleepflag = 0;
 }
 
 /******************************************************

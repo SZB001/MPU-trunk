@@ -279,7 +279,7 @@ static void *sockproxy_sendmain(void)
 *��  ����socket open/colse state
 *��  ע��ͬ������
 ******************************************************/
-void sockproxy_socketclose(void)
+void sockproxy_socketclose(int type)
 {
 	if(pthread_mutex_trylock(&closemtx) == 0)
 	{
@@ -288,6 +288,7 @@ void sockproxy_socketclose(void)
 			log_i(LOG_SOCK_PROXY, "close socket");
 			sockSt.state = PP_CLOSE_WAIT;//ر�̬
 			sockSt.asynCloseFlg = 1;
+			sockSt.asynCloseType = type;
 			sockSt.closewaittime = tm_get_time();
 		}
 		pthread_mutex_unlock(&closemtx);
@@ -355,7 +356,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				if (sock_error(state->socket) || sock_sync(state->socket))
 				{
 					log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
-					sockproxy_socketclose();
+					sockproxy_socketclose((int)(PP_SP_COLSE_SP));
 				}
 			}
 			else
@@ -369,7 +370,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				if (sock_error(state->socket) || sock_sync(state->socket))
 				{
 					log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
-					sockproxy_socketclose();
+					sockproxy_socketclose((int)(PP_SP_COLSE_SP + 1));
 				}
 				//else
 				//{
@@ -488,7 +489,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	}
 #endif
 
-#if 0
+#if 1
 	static uint64_t logtime = 0;
 	//static uint64_t closewaittime = 0;
 	if((tm_get_time() - logtime) > 5000)
@@ -496,6 +497,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		logtime = tm_get_time();
 
 		log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg = %d\n",sockSt.asynCloseFlg);
+		log_i(LOG_SOCK_PROXY, "sockSt.asynCloseType = %d\n",sockSt.asynCloseType);
 		log_i(LOG_SOCK_PROXY, "sockSt.rcvflag = %d\n",sockSt.rcvflag);
 		log_i(LOG_SOCK_PROXY, "sockSt.sleepFlag = %d\n",sockSt.sleepFlag);
 		log_i(LOG_SOCK_PROXY, "sockSt.state = %d\n",sockSt.state);
@@ -509,12 +511,13 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 
 	if(0 == dev_get_KL15_signal())
 	{
-		if((1 == gb32960_gbLogoutSt()) && (GetPrvtProt_Sleep())&&(at_get_pm_mode() != PM_RUNNING_MODE))
+		if((1 == gb32960_gbLogoutSt()) && (GetPrvtProt_Sleep()))//&&(at_get_pm_mode() != PM_RUNNING_MODE))
 		{
+			#if 0
 			if(sockSt.state == PP_OPENED)
 			{
 				log_i(LOG_HOZON, "start to sleep\n");
-				sockproxy_socketclose();
+				sockproxy_socketclose((int)(PP_SP_COLSE_SP + 2));
 				//closewaittime = tm_get_time();
 			}
 			else
@@ -526,10 +529,23 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				else
 				{}
 			}
+			#else
+			if(((sockSt.state == PP_OPENED) || \
+					((tm_get_time() - sockSt.sleepwaittime) > 15000)) && !sockSt.sleepFlag)
+			{
+				log_i(LOG_HOZON, "start to sleep\n");
+				sockSt.sleepFlag = 1;
+			}
+			#endif
+		}
+		else
+		{
+			sockSt.sleepwaittime = tm_get_time();
 		}
 	}
 	else
 	{
+		sockSt.sleepwaittime = tm_get_time();
 		sockSt.sleepFlag = 0;
 	}
 
@@ -636,9 +652,10 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					return 0;
 				}
 
-				if((sockSt.asynCloseFlg == 1) && (0 == sockSt.rcvflag))
+				if(sockSt.asynCloseFlg == 1)
 				{
 					sockSt.asynCloseFlg = 0;
+					setPrvtProt_sendHeartbeat();
 					log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg == 1 ,start to close sg socket\n");
 					sockSt.sglinkSt = SOCKPROXY_SGLINK_CLOSE;
 				}
@@ -648,7 +665,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 		case SOCKPROXY_SGLINK_CLOSE:
 		{
 			/*release all resources and close all connections*/
-			if(pthread_mutex_trylock(&sendmtx) == 0)//
+			if((0 == sockSt.rcvflag) && (pthread_mutex_trylock(&sendmtx) == 0))//
 			{
 				//sockSt.asynCloseFlg = 0;
 				sockSt.waittime = tm_get_time();
@@ -782,9 +799,10 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					return 0;
 				}
 
-				if((1 == sockSt.asynCloseFlg) && (0 == sockSt.rcvflag))
+				if(1 == sockSt.asynCloseFlg)
 				{
 					sockSt.asynCloseFlg = 0;
+					setPrvtProt_sendHeartbeat();
 					log_i(LOG_SOCK_PROXY, "sockSt.asynCloseFlg == 1 ,start to close socket\n");
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_CLOSE;
 				}
@@ -793,7 +811,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 		break;
 		case SOCKPROXY_BDLLINK_CLOSE:
 		{
-			if(pthread_mutex_trylock(&sendmtx) == 0)//
+			if((0 == sockSt.rcvflag) && (pthread_mutex_trylock(&sendmtx) == 0))//
 			{
 				if(sockSt.state != PP_CLOSED)
 				{
@@ -840,7 +858,7 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
 			{
 				log_e(LOG_SOCK_PROXY, "socket recv error: %s", strerror(errno));
 				log_e(LOG_SOCK_PROXY, "socket recv error, reset protocol");
-				sockproxy_socketclose();
+				sockproxy_socketclose((int)(PP_SP_COLSE_SP + 3));
 				pthread_mutex_unlock(&rcvmtx);
 				return -1;
 			}
@@ -972,7 +990,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 								TxInform_ptr->txfailtime = tm_get_time();
 								rpt->SendInform_cb(rpt->Inform_cb_para);
 							}
-							sockproxy_socketclose();//by liujian 20190510
+							sockproxy_socketclose((int)(PP_SP_COLSE_SP + 4));//by liujian 20190510
 						}
 						else if(res == 0)
 						{
@@ -1015,7 +1033,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 							TxInform_ptr->txfailtime = tm_get_time();
 							rpt->SendInform_cb(rpt->Inform_cb_para);
 						}
-						sockproxy_socketclose();//by liujian 20190510
+						sockproxy_socketclose((int)(PP_SP_COLSE_SP + 5));//by liujian 20190510
 					}
 					else if(res == 0)
 					{
@@ -1048,7 +1066,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 							rpt->SendInform_cb(rpt->Inform_cb_para);
 						}
 						SP_data_put_back(rpt);
-						sockproxy_socketclose();//by liujian 20190510
+						sockproxy_socketclose((int)(PP_SP_COLSE_SP + 6));//by liujian 20190510
 					}
 					else if(res == 0)
 					{
@@ -1082,7 +1100,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 				{
 					rpt->SendInform_cb(rpt->Inform_cb_para);
 				}
-				sockproxy_socketclose();//by liujian 20190510
+				sockproxy_socketclose((int)(PP_SP_COLSE_SP + 7));//by liujian 20190510
 			}
 			else if(res == 0)
 			{

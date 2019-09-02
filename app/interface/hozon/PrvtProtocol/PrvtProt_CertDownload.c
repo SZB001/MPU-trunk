@@ -609,7 +609,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 			PP_CertDL.state.verifyFlag = 0;
 			PP_CertDL.state.certAvailableFlag = 0;
 			certvalidflag = 1;
-			sockproxy_socketclose();
+			sockproxy_socketclose((int)(PP_SP_COLSE_CDL));
 		}
 	}
 	else if(1 == sockproxy_socketState())//双向链路

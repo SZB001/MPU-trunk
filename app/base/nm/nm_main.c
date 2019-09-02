@@ -190,7 +190,7 @@ void *nm_main(void)
                 }
                 else if (PM_MSG_RUNNING == msghdr.msgid)
                 {
-                    nm_dial_restart();
+                    // nm_dial_restart();    //JSQ
                     nm_is_ready_sleep = 0;
 
                     /* check if in cfun 4 */
@@ -201,7 +201,7 @@ void *nm_main(void)
                 }
                 else if ((PM_MSG_SLEEP == msghdr.msgid) || (PM_MSG_OFF == msghdr.msgid))
                 {
-                    nm_dial_stop();
+                    // nm_dial_stop();
                     nm_is_ready_sleep = 1;
 
                     log_o(LOG_NM, "nm recv pm sleep info...");

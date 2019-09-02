@@ -121,6 +121,7 @@ typedef struct
     char state;//
 	//char sendbusy;//����æ״̬
 	char asynCloseFlg;//�첽�ر�socket��
+	int  asynCloseType;
 	uint64_t closewaittime;
 	svr_addr_t sock_addr;
 	/* rcv */
@@ -136,6 +137,7 @@ typedef struct
 	char BDLlinkSt;
 	char rcvflag;
 	char sleepFlag;
+	uint64_t sleepwaittime;
 }__attribute__ ((packed)) sockproxy_stat_t;
 
 

@@ -18,7 +18,7 @@ author        liuzhongwen wangqinglong
 #include "init.h"
 #include "gpio.h"
 #include "cfg_api.h"
-#include "dev_api.h"
+#include "hozon_PP_api.h"
 #include "ql_powerdown.h"
 #include "sock_api.h"
 #include "at_api.h"
@@ -171,6 +171,7 @@ void pm_rtc_wakeup(void)
     log_o(LOG_PM, "--------------------------------------------------> rtc wakeup");
     pm_vote_oppose();
     pm_notify_moudle(PM_MSG_RTC_WAKEUP);
+    SetPrvtProt_Awaken((int)PM_MSG_RTC_WAKEUP);
 }
 
 /****************************************************************

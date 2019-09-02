@@ -113,7 +113,7 @@ static int gb_shell_nosend(int argc, const char **argv);
 static void gb_reset(gb_stat_t *state)
 {
     //sock_close(state->socket);
-	//sockproxy_socketclose();
+	//sockproxy_socketclose((int)(PP_SP_COLSE_GB));
     state->wait     = 0;
     state->online   = 0;
     state->retry    = 0;
@@ -658,7 +658,7 @@ static int gb_do_wait(gb_stat_t *state)
             if (res < 0)
             {
                 log_e(LOG_GB32960, "socket send error, reset protocol");
-                sockproxy_socketclose();//by liujian 20190510
+                sockproxy_socketclose((int)(PP_SP_COLSE_GB + 1));//by liujian 20190510
                 gb_reset(state);
             }
             else if (res == 0)
@@ -697,7 +697,7 @@ static int gb_do_login(gb_stat_t *state)
         if (res < 0)
         {
             log_e(LOG_GB32960, "socket send error, reset protocol");
-            sockproxy_socketclose();//by liujian 20190510
+            sockproxy_socketclose((int)(PP_SP_COLSE_GB + 2));//by liujian 20190510
             gb_reset(state);
         }
         else if (res == 0)
@@ -743,7 +743,7 @@ static int gb_do_logout(gb_stat_t *state)
         if (res < 0)
         {
             log_e(LOG_GB32960, "socket send error, reset protocol");
-            sockproxy_socketclose();//by liujian 20190510
+            sockproxy_socketclose((int)(PP_SP_COLSE_GB + 3));//by liujian 20190510
             gb_reset(state);
         }
         else if (res == 0)
@@ -783,7 +783,7 @@ static int gb_do_report(gb_stat_t *state)
         {
             log_e(LOG_GB32960, "socket send error, reset protocol");
             gb_data_put_back(rpt);
-            sockproxy_socketclose();//by liujian 20190510
+            sockproxy_socketclose((int)(PP_SP_COLSE_GB + 4));//by liujian 20190510
             gb_reset(state);
             return -1;
         }
@@ -1024,7 +1024,7 @@ static int gb_do_config(gb_stat_t *state, gb_cfg_t *cfg)
             }
 
             memcpy(&gb_addr, &cfg->addr, sizeof(cfg->addr));
-            sockproxy_socketclose();//by liujian 20190510
+            sockproxy_socketclose((int)(PP_SP_COLSE_GB + 5));//by liujian 20190510
             gb_reset(state);
             break;
 
@@ -1036,7 +1036,7 @@ static int gb_do_config(gb_stat_t *state, gb_cfg_t *cfg)
             }
 
             strcpy(gb_vin, cfg->vin);
-            sockproxy_socketclose();//by liujian 20190510
+            sockproxy_socketclose((int)(PP_SP_COLSE_GB + 6));//by liujian 20190510
             gb_reset(state);
             break;
 
@@ -1391,7 +1391,7 @@ static void *gb_main(void)
 
                 if (state.network != msgdata.network)
                 {
-                	sockproxy_socketclose();//by liujian 20190510
+                	sockproxy_socketclose((int)(PP_SP_COLSE_GB + 7));//by liujian 20190510
                     gb_reset(&state);
                     state.network = msgdata.network;
                 }
@@ -1405,7 +1405,7 @@ static void *gb_main(void)
 
             case PM_MSG_RUNNING:
             	 powerOffFlag = 0;
-            	 SetPrvtProt_Awaken();
+            	 SetPrvtProt_Awaken((int)PM_MSG_RUNNING);
             	 Setsocketproxy_Awaken();
             	break;
             case PM_MSG_OFF:
@@ -1416,7 +1416,7 @@ static void *gb_main(void)
             case GB_MSG_CANON:
                 log_i(LOG_GB32960, "get CANON message");
                 Setsocketproxy_Awaken();
-                SetPrvtProt_Awaken();
+                SetPrvtProt_Awaken((int)GB_MSG_CANON);
                 state.can = 1;
                 gb_allow_sleep = 0;
                 break;

@@ -76,7 +76,7 @@ extern void PrvtPro_ShowPara(void);
 extern void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd);
 extern void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara);
 
-extern void SetPrvtProt_Awaken(void);
+extern void SetPrvtProt_Awaken(int type);
 extern unsigned char GetPrvtProt_Sleep(void);
 extern void Setsocketproxy_Awaken(void);
 extern char sockproxy_Sleep(void);
@@ -90,4 +90,5 @@ extern void PP_CertDL_CertDLReset(void);
 extern unsigned char GetPP_CertDL_CertUpdate(void);
 extern unsigned char GetPP_CertDL_allowBDLink(void);
 extern void PrvtProt_SaveCfgPara(unsigned char req);
+extern void setPrvtProt_sendHeartbeat(void);
 #endif
