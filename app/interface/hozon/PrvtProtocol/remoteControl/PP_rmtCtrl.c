@@ -1064,6 +1064,8 @@ void SetPP_rmtCtrl_Awaken(void)
 ******************************************************/
 unsigned char GetPP_rmtCtrl_Sleep(void)
 {
-	//return ( && GetPP_ChargeCtrl_Sleep());
+	//log_i(LOG_HOZON, "GetPP_ChargeCtrl_Sleep = %d",GetPP_ChargeCtrl_Sleep());
+	//log_i(LOG_HOZON, "GetPP_ACtrl_Sleep = %d",GetPP_ACtrl_Sleep());
+	//log_i(LOG_HOZON, "GetPP_SeatCtrl_Sleep = %d",GetPP_SeatCtrl_Sleep());
 	return PP_rmtCtrl_sleepflag;
 }

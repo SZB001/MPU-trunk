@@ -97,7 +97,7 @@ static PrvtProt_RmtFunc_t PP_RmtFunc[PP_RMTFUNC_MAX] =
 };
 
 static uint8_t PP_sleepflag = 0;
-static uint8_t PP_hbtaskflag = 0;
+static uint8_t PP_hbtaskflag = 1;
 static uint8_t PP_hbtasksleepflag = 0;
 static uint16_t PP_hbtasksleeptestflag = 0;
 
@@ -878,6 +878,8 @@ void setPrvtProt_sendHeartbeat(void)
 ******************************************************/
 unsigned char GetPrvtProt_Sleep(void)
 {
+	//log_i(LOG_HOZON, "PP_hbtasksleepflag = %d",PP_hbtasksleepflag);
+	//log_i(LOG_HOZON, "GetPP_rmtCtrl_Sleep = %d",GetPP_rmtCtrl_Sleep());
 	return PP_sleepflag;
 }
 
