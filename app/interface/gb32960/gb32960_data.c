@@ -2007,7 +2007,11 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = 0xff;//蜂窝网络状态״̬
     buf[len++] = 0xff;//蜂窝网络信号 强度
     buf[len++] = (uint8_t)canact;//CAN通讯状态״̬
-    buf[len++] = 0xff;//12V 蓄电池电压
+	unsigned int length;
+    unsigned short voltage = 0;
+    length = sizeof(unsigned short);
+    st_get(ST_ITEM_POW_VOLTAGE, (unsigned char *)&voltage, &length);
+    buf[len++] = voltage/100;//12V 蓄电池电压
     if(gbinf->vehi.info[GB_VINF_SOC])
     {
     	tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value;
