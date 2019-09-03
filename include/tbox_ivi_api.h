@@ -62,7 +62,6 @@ typedef struct{
 	uint32_t timestamp;
 	uint8_t datatype;
 	uint8_t cameraname;
-	uint16_t durationTime;
 	uint32_t aid;
 	uint32_t mid;
 	uint32_t effectivetime;

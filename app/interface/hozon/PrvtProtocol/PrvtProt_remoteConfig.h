@@ -176,6 +176,8 @@ typedef struct
 	int carEmpowerEnabled;
 	int	eventReportEnabled;
 	int carAlarmEnabled;
+	int heartbeatTimeout;
+	int dormancyHeartbeatTimeout;
 	uint8_t commonConfigValid;
 }__attribute__((packed)) App_rmtCfg_COMMON_t;
 

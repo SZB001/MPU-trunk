@@ -7,6 +7,66 @@
 
 #include "CommonConfigSet.h"
 
+static int
+memb_heartbeatTimeout_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 65535)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_dormancyHeartbeatTimeout_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 65535)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static asn_per_constraints_t asn_PER_memb_heartbeatTimeout_constr_18 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_dormancyHeartbeatTimeout_constr_19 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 16,  16,  0,  65535 }	/* (0..65535) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
 static asn_TYPE_member_t asn_MBR_CommonConfigSet_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct CommonConfigSet, actived),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
@@ -152,6 +212,24 @@ static asn_TYPE_member_t asn_MBR_CommonConfigSet_1[] = {
 		0,
 		"carAlarmEnabled"
 		},
+	{ ATF_NOFLAGS, 0, offsetof(struct CommonConfigSet, heartbeatTimeout),
+		(ASN_TAG_CLASS_CONTEXT | (16 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_NativeInteger,
+		memb_heartbeatTimeout_constraint_1,
+		&asn_PER_memb_heartbeatTimeout_constr_18,
+		0,
+		"heartbeatTimeout"
+		},
+	{ ATF_NOFLAGS, 0, offsetof(struct CommonConfigSet, dormancyHeartbeatTimeout),
+		(ASN_TAG_CLASS_CONTEXT | (17 << 2)),
+		-1,	/* IMPLICIT tag at current level */
+		&asn_DEF_NativeInteger,
+		memb_dormancyHeartbeatTimeout_constraint_1,
+		&asn_PER_memb_dormancyHeartbeatTimeout_constr_19,
+		0,
+		"dormancyHeartbeatTimeout"
+		},
 };
 static const ber_tlv_tag_t asn_DEF_CommonConfigSet_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
@@ -172,13 +250,15 @@ static const asn_TYPE_tag2member_t asn_MAP_CommonConfigSet_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (12 << 2)), 12, 0, 0 }, /* btKeyEntryEnabled */
     { (ASN_TAG_CLASS_CONTEXT | (13 << 2)), 13, 0, 0 }, /* carEmpowerEnabled */
     { (ASN_TAG_CLASS_CONTEXT | (14 << 2)), 14, 0, 0 }, /* eventReportEnabled */
-    { (ASN_TAG_CLASS_CONTEXT | (15 << 2)), 15, 0, 0 } /* carAlarmEnabled */
+    { (ASN_TAG_CLASS_CONTEXT | (15 << 2)), 15, 0, 0 }, /* carAlarmEnabled */
+    { (ASN_TAG_CLASS_CONTEXT | (16 << 2)), 16, 0, 0 }, /* heartbeatTimeout */
+    { (ASN_TAG_CLASS_CONTEXT | (17 << 2)), 17, 0, 0 } /* dormancyHeartbeatTimeout */
 };
 static asn_SEQUENCE_specifics_t asn_SPC_CommonConfigSet_specs_1 = {
 	sizeof(struct CommonConfigSet),
 	offsetof(struct CommonConfigSet, _asn_ctx),
 	asn_MAP_CommonConfigSet_tag2el_1,
-	16,	/* Count of tags in the map */
+	18,	/* Count of tags in the map */
 	0, 0, 0,	/* Optional elements (not needed) */
 	-1,	/* Start extensions */
 	-1	/* Stop extensions */
@@ -204,7 +284,7 @@ asn_TYPE_descriptor_t asn_DEF_CommonConfigSet = {
 		/sizeof(asn_DEF_CommonConfigSet_tags_1[0]), /* 1 */
 	0,	/* No PER visible constraints */
 	asn_MBR_CommonConfigSet_1,
-	16,	/* Elements count */
+	18,	/* Elements count */
 	&asn_SPC_CommonConfigSet_specs_1	/* Additional specs */
 };
 

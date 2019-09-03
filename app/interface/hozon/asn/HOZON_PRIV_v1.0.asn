@@ -126,7 +126,9 @@ CommonConfigSettings ::= SEQUENCE
 	btKeyEntryEnabled	BOOLEAN,  -- Default false
 	carEmpowerEnabled 	BOOLEAN, -- Default false
 	eventReportEnabled 	BOOLEAN, -- Default false
-	carAlarmEnabled 	BOOLEAN  -- Default false		
+	carAlarmEnabled 	BOOLEAN,  -- Default false	
+	heartbeatTimeout 	INTEGER(0..65535), --
+	dormancyHeartbeatTimeout 	INTEGER(0..65535) --	
 }
 
 ExtendConfigSettings ::= SEQUENCE
@@ -211,7 +213,9 @@ CommonConfigSet ::= SEQUENCE
 	btKeyEntryEnabled	BOOLEAN,  -- Default false
 	carEmpowerEnabled 	BOOLEAN, -- Default false
 	eventReportEnabled 	BOOLEAN, -- Default false
-	carAlarmEnabled 	BOOLEAN  -- Default false
+	carAlarmEnabled 	BOOLEAN, -- Default false
+	heartbeatTimeout 	INTEGER(0..65535), --
+	dormancyHeartbeatTimeout 	INTEGER(0..65535) --
 }
 
 ExtendConfigSet ::= SEQUENCE
@@ -432,6 +436,7 @@ DiagnosticStInfo ::= SEQUENCE --mid = 3
 ImageAcquisitionReqInfo ::= SEQUENCE  --mid = 4
 {
 	dataType 			INTEGER(0..255), -- 
+	cameraName 			INTEGER(0..255), -- 
 	durationTime		INTEGER(0..65535) -- 
 }
 

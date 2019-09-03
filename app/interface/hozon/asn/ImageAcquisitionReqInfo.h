@@ -22,6 +22,7 @@ extern "C" {
 /* ImageAcquisitionReqInfo */
 typedef struct ImageAcquisitionReqInfo {
 	long	 dataType;
+	long	 cameraName;
 	long	 durationTime;
 	
 	/* Context for parsing across buffer boundaries */

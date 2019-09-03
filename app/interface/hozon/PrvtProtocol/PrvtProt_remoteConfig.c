@@ -1004,6 +1004,8 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_i(LOG_HOZON, "COMMON.carEmpowerEnabled  = %d",AppData_rmtCfg.ReadResp.COMMON.carEmpowerEnabled);
 	log_i(LOG_HOZON, "COMMON.eventReportEnabled  = %d",AppData_rmtCfg.ReadResp.COMMON.eventReportEnabled);
 	log_i(LOG_HOZON, "COMMON.carAlarmEnabled  = %d",AppData_rmtCfg.ReadResp.COMMON.carAlarmEnabled);
+	log_i(LOG_HOZON, "COMMON.heartbeatTimeout  = %d",AppData_rmtCfg.ReadResp.COMMON.heartbeatTimeout);
+	log_i(LOG_HOZON, "COMMON.dormancyHeartbeatTimeout  = %d",AppData_rmtCfg.ReadResp.COMMON.dormancyHeartbeatTimeout);
 
 	log_i(LOG_HOZON, "\n/* EXTEND info */");
 	log_i(LOG_HOZON, "EXTEND.ecallNO = %s",AppData_rmtCfg.ReadResp.EXTEND.ecallNO);
