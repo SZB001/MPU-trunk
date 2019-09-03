@@ -530,11 +530,22 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				{}
 			}
 			#else
-			if(((sockSt.state == PP_OPENED) || \
-					((tm_get_time() - sockSt.sleepwaittime) > 15000)) && !sockSt.sleepFlag)
+			if(sockSt.state == PP_OPENED)
 			{
 				log_i(LOG_HOZON, "start to sleep\n");
 				sockSt.sleepFlag = 1;
+			}
+			else
+			{
+				if((tm_get_time() - sockSt.sleepwaittime) > 15000)
+				{
+					log_i(LOG_HOZON, "wait sleep timeout,start to sleep\n");
+					sockSt.sleepFlag = 1;
+				}
+				else
+				{
+					sockSt.sleepFlag = 0;
+				}
 			}
 			#endif
 		}

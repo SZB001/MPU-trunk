@@ -301,6 +301,8 @@ static int PrvtPro_do_checksock(PrvtProt_task_t *task)
 
 	PP_heartbeat.waitSt = 0;
 	PP_heartbeat.state = 0;
+	PP_hbtaskflag = 0;
+	PP_hbtasksleepflag = 1;
 	return -1;
 }
 
