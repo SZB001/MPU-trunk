@@ -19,7 +19,7 @@ description�� macro definitions
 #define PP_THREAD   1//�����Ƿ񵥶������߳� 1-�� 0-����
 #define PP_SOCKPROXY   1//�����Ƿ�ʹ��socket����(�Ƿ�������ģ�鴴��socket��·) 1-�� 0-����
 /**********�곣������*********/
-#define PP_HEART_BEAT_TIME (180)//��������
+#define PP_HEART_BEAT_TIME (10)//��������
 
 #define PP_HB_WAIT_TIMEOUT 	(5*1000)//�����ȴ���ʱʱ��
 #define PP_XCALL_WAIT_TIMEOUT 	(5*1000)//�ȴ���ʱʱ��
