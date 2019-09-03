@@ -866,7 +866,13 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp	= gb_data_rearRightTyreTemp()	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre	= gb_data_rearLeftTyrePre()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp	= gb_data_rearLeftTyreTemp()/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.batterySOCExact 	= gb_data_vehicleSOC() * 100;
+			long VehicleSOC;
+			VehicleSOC = gb_data_vehicleSOC();
+			if(VehicleSOC > 100)
+			{
+				VehicleSOC = 0;
+			}
+			App_rmtCtrl.CtrlResp.basicSt.batterySOCExact 	= VehicleSOC * 100;
 			App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim	= gb_data_ACChargeRemainTime()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.availableOdomtr	= gb_data_ResidualOdometer();//续航里程;
 			App_rmtCtrl.CtrlResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
@@ -880,7 +886,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.totalOdometer		= gb_data_vehicleOdograph();
 			App_rmtCtrl.CtrlResp.basicSt.batteryVoltage		= gb_data_batteryVoltage();
 			App_rmtCtrl.CtrlResp.basicSt.batteryCurrent		= gb_data_batteryCurrent();
-			App_rmtCtrl.CtrlResp.basicSt.batterySOCPrc 		= gb_data_vehicleSOC();
+			App_rmtCtrl.CtrlResp.basicSt.batterySOCPrc 		= VehicleSOC;
 			App_rmtCtrl.CtrlResp.basicSt.dcStatus			= 1;
 			App_rmtCtrl.CtrlResp.basicSt.gearPosition		= gb_data_gearPosition();
 			App_rmtCtrl.CtrlResp.basicSt.insulationRstance	= gb_data_insulationResistance();
