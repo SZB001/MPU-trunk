@@ -27,5 +27,6 @@ typedef enum
 
 extern int PP_get_identificat_flag(void);
 extern int PP_identificat_mainfunction(void);
+extern void PP_identificat_init(void);
 #endif
 

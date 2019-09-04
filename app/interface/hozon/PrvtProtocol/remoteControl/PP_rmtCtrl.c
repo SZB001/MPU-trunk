@@ -1075,3 +1075,8 @@ unsigned char GetPP_rmtCtrl_Sleep(void)
 	//log_i(LOG_HOZON, "GetPP_SeatCtrl_Sleep = %d",GetPP_SeatCtrl_Sleep());
 	return PP_rmtCtrl_sleepflag;
 }
+
+unsigned char GetPP_rmtCtrl_idle(void)
+{
+	return PP_rmtCtrl_sleepflag;
+}

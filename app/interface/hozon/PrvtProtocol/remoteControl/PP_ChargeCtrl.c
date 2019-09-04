@@ -90,6 +90,7 @@ static PP_rmtCharge_Appointperiod_t PP_rmtCharge_Appointperiod[7] =
 };
 
 static uint8_t PP_ChargeCtrl_Sleepflag = 0;
+static uint8_t PP_appoint_charging = 0;
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -294,6 +295,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 					{
 						log_o(LOG_HOZON,"close charge success\n");
 						chargeonoffstate = 2;//δ���
+						PP_appoint_charging = 0;
 						PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); //������ű�־λ
 						PP_rmtChargeCtrl.fail     = 0;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
@@ -341,6 +343,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 					{//按预约开启充电
 						rmtCtrl_chargeStpara.rvcReqCode = 0x710;
 						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_ONGOING;
+						PP_appoint_charging = 1;
 					}
 					else
 					{
@@ -510,19 +513,26 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 	if(PP_rmtChargeCtrl.state.chargeSt == PP_CHARGESTATE_ONGOING)
 	{
 		PP_rmtChargeCtrl.state.appointcharge = 0;
+		if(PP_appoint_charging == 1)   //预约充电完成判断
+		{
+			if(PP_rmtCharge_AppointBook.targetSOC != 0)
+			{
+				if(gb_data_vehicleSOC() >= PP_rmtCharge_AppointBook.targetSOC)
+				{
+					PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_SUCCESS;
+					log_o(LOG_HOZON,"The appointment charge has reached the reserved target battery");
+					uint8_t cmd = PP_CHARGECTRL_CLOSE;
+					SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,&cmd,NULL);
+				}
+			}
+		}
 		if((PP_RMTCTRL_CFG_CHARGEFINISH == PP_rmtCtrl_cfg_chargeSt()) || \
-				(PP_RMTCTRL_CFG_CHARGEFAIL == PP_rmtCtrl_cfg_chargeSt()) || \
-				(gb_data_vehicleSOC() >= PP_rmtCharge_AppointBook.targetSOC ))
+				(PP_RMTCTRL_CFG_CHARGEFAIL == PP_rmtCtrl_cfg_chargeSt()))
 		{
 			if(PP_RMTCTRL_CFG_CHARGEFINISH == PP_rmtCtrl_cfg_chargeSt())//charge finish
 			{
 				//PP_rmtChargeCtrl.state.appointcharge = 0;
 				PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_SUCCESS;
-			}
-			else if(gb_data_vehicleSOC() >= PP_rmtCharge_AppointBook.targetSOC )
-			{
-				PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_SUCCESS;
-				log_o(LOG_HOZON,"The appointment charge has reached the reserved target battery");
 			}
 			else
 			{

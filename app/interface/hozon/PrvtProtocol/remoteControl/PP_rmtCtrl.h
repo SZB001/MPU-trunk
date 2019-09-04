@@ -377,4 +377,5 @@ extern void PP_ACCtrl_ClearStatus(void);
 //extern void PP_rmtCtrl_BluetoothSetCtrlReq(unsigned char obj, unsigned char cmd);
 extern void SetPP_rmtCtrl_Awaken(void);
 extern unsigned char GetPP_rmtCtrl_Sleep(void);
+
 #endif 

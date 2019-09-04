@@ -24,7 +24,6 @@ int tbox_ivi_get_call_type(void) //获取通话的类型
 	else
 	{
 		return 3;
-
 	}
 	
 }

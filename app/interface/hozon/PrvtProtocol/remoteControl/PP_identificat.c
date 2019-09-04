@@ -1,20 +1,18 @@
 /******************************************************
-鏂囦欢鍚嶏細	PP_identificat.c
+文件名：	PP_identificat.h
 
-鎻忚堪锛�	浼佷笟绉佹湁鍗忚锛堟禉姹熷悎浼楋級
-Data			Vasion			author
-2018/1/10		V1.0			liujian
+描述：	企业私有协议（浙江合众）
+
+Data			  Vasion			author
+2019/09/02		   V1.0			    liujian
 *******************************************************/
 
-/*******************************************************
-description锛� include the header file
-
-*******************************************************/
 #include <stdio.h>
 #include "can_api.h"
 #include "log.h"
 #include "PPrmtCtrl_cfg.h"
 #include "PP_canSend.h"
+#include "cfg_api.h"
 #include "PP_identificat.h"
 
 #define IDENTIFICAT_NUM 5
@@ -35,21 +33,23 @@ typedef unsigned int UINT32;
 
 static const UINT8 ConstSk[16]={0xA5,0x9E,0x2D,0x4B,0x49,0x18,0x0F,0x83,0x6E,0xA4,0xC5,0x48,0x55,0x15,0x5B,0xC3};
 static UINT8 DataSk[16]={0x15,0x36,0xC2,0x89,0x61,0xD6,0x40,0x3F,0x9A,0xE7,0x26,0x4B,0xD9,0x96,0x7E,0x75};
+//static UINT8 DataSk[16]={0};
 
 
 static void XteaEncipher(UINT8 *DataSK, UINT8 *DataChall, UINT8 *DataResp);
-extern int can_do_send(unsigned char port, CAN_SEND_MSG *msg);
+//extern int can_do_send(unsigned char port, CAN_SEND_MSG *msg);
+
 
 /******************************************************
-*鍑芥暟鍚嶏細XteaEncipher
+*函数名：XteaEncipher
 
-*褰�  鍙傦細void
+*形  参：UINT8   UINT8 UINT8
 
-*杩斿洖鍊硷細void
+*返回值：void
 
-*鎻�  杩帮細鍔犲瘑鍑芥暟
+*描  述：随机数加密函数
 
-*澶�  娉細
+*备  注：
 ******************************************************/
 static void XteaEncipher(UINT8 *DataSK, UINT8 *DataChall, UINT8 *DataResp)
 {
@@ -84,15 +84,34 @@ static void XteaEncipher(UINT8 *DataSK, UINT8 *DataChall, UINT8 *DataResp)
 }
 
 /******************************************************
-*鍑芥暟鍚嶏細PP_identificat_mainfunction
+*函数名：PP_identificat_init
 
-*褰�  鍙傦細void
+*形  参：void
 
-*杩斿洖鍊硷細int
+*返回值：void
 
-*鎻�  杩帮細璁よ瘉涓诲嚱鏁�
+*描  述：认证初始化，从emmc中读取ESK，用于加密
 
-*澶�  娉細
+*备  注：
+******************************************************/
+void PP_identificat_init()
+{
+	unsigned int length = 16;
+	cfg_get_para(CFG_ITEM_DID_ESK, DataSk, &length);
+	log_o(LOG_HOZON,"ESK read successful");
+	log_buf_dump(LOG_HOZON, "ESK", DataSk, length);
+}
+
+/******************************************************
+*函数名：PP_identificat_mainfunction
+
+*形  参：void
+
+*返回值：void
+
+*描  述：认证过程的5个步骤
+
+*备  注：
 ******************************************************/
 int PP_identificat_mainfunction()
 {
@@ -191,9 +210,18 @@ int PP_identificat_mainfunction()
 	return 0;
 }
 
-/*
- * 检查认证状态
- */
+
+/******************************************************
+*函数名：PP_get_identificat_flag
+
+*形  参：void
+
+*返回值：void
+
+*描  述 ：检查认证状态
+
+*备  注：
+******************************************************/
 int PP_get_identificat_flag()
 {
 	if(((tm_get_time() - valid_time) < 270000) && (BDM_AuthenticationStatu  == 1))  //
@@ -207,6 +235,17 @@ int PP_get_identificat_flag()
 	}
 }
 
+/******************************************************
+*函数名：PP_identificat_rcvdata
+
+*形  参：uint8_t
+
+*返回值：void
+
+*描  述 ：从can模块获取BDM发过来的随机数
+
+*备  注：
+******************************************************/
 int PP_identificat_rcvdata(uint8_t *dt)
 {
 	int i;

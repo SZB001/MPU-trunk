@@ -35,8 +35,8 @@ int PP_canSend_init(void)
 	canmsg_3D2.period = 100;  //100ms
 	canmsg_3D2.times_event = 1;
 	//初始化445报文数据
-	//ID445_data |= (uint64_t)1 << 46;
-	//ID445_data |= (uint64_t)1 << 54;
+	ID445_data |= (uint64_t)1 << 46;
+	ID445_data |= (uint64_t)1 << 54;
 	return 0;
 }
 

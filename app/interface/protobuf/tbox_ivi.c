@@ -56,7 +56,8 @@ unsigned char recv_buf[MAX_IVI_NUM][IVI_MSG_SIZE];
 extern int ecall_flag ;  //正在通话的标志
 extern int bcall_flag ;
 extern int icall_flag ;
-
+static int test = 0;
+static uint64_t test_time = 0;
 typedef void (*ivi_msg_proc)(unsigned char *msg, unsigned int len);
 typedef void (*ivi_msg_handler)(unsigned char *msg, unsigned int len, void *para);
 
@@ -1421,12 +1422,17 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 
 void ivi_tcp_protobuf_process(unsigned char *data, unsigned int datalen, void *para)
 {
+#ifndef TBOX_PKI_IHU
     int fd = *(int *)para;
 
-    //log_o(LOG_IVI,"ivi_tcp_protobuf_process fd = %d.",fd);
+    log_o(LOG_IVI,"received length  = %d",datalen);
 
     ivi_msg_request_process( data, datalen ,fd);
+#else 
+	log_o(LOG_IVI,"received length  = %d",datalen);
 
+    ivi_msg_request_process( data, datalen ,0);
+#endif
     return;
 }
 
@@ -1766,13 +1772,27 @@ void *ivi_main(void)
 			break;	
 			case PKI_ACCEPT:
 			{
+				test = 0;
 				log_o(LOG_IVI,"Waiting for ihu client connection\n");
-				ret = HzTboxSvrAccept();   //阻塞等待连接
+				test_time = tm_get_time();
+				test = HzTboxSvrAccept();   //阻塞等待连接
+				ret = test;
 				if(ret != 1230)
 				{
-					log_e(LOG_IVI,"HzTboxConnect error+++++++++++++++iRet[%d] \n", ret);
-					ihu_client.stage = PKI_ACCEPT;
-				}
+					if(ret == 1181)
+					{
+						log_o(LOG_IVI,"HzTboxConnect error+++++++++++++++iRet[%d] \n", ret);
+						HzTboxSvrClose();//HU client连接失败之后,需要关闭再重新建链路
+						log_o(LOG_IVI,"HzTboxSvrClose+++++++++++++++ \n");
+						ihu_client.stage = PKI_INIT;   
+						//wait = tm_get_time();
+					}
+					else
+					{
+						log_o(LOG_IVI,"HzTboxConnect error+++++++++++++++iRet[%d] \n", ret);
+						ihu_client.stage = PKI_ACCEPT;//HU client连接错误，等待HU下一次连接
+					}
+				} 
 				else
 				{
 					log_o(LOG_IVI,"HzTboxConnect +++++++++++++++iRet[%d] \n", ret);
@@ -1785,24 +1805,42 @@ void *ivi_main(void)
 			case PKI_RECV:
 			{
 				int num = 0;
+				if (rx_msg[0].used >= rx_msg[0].size)
+                {
+                   rx_msg[0].used =  0;
+                }
 				ret = HzTboxSvrDataRecv((char *)(rx_msg[0].data + rx_msg[0].used), rx_msg[0].size - rx_msg[0].used,&num);
-				if (num > 0)
-	            {
-	                ihu_client.lasthearttime = tm_get_time();
-	                rx_msg[0].used += num;
-	                log_buf_dump(LOG_IVI, "tcp recv", rx_msg[0].data, rx_msg[0].used);
-	                ivi_msg_decodex(&rx_msg[0], ivi_tcp_protobuf_process, 0);
-	            }
-				else if(num == 0)
+				if(ret != 1275)
 				{
-					log_e(LOG_IVI, "ihu Client exit\n");
+					log_o(LOG_IVI,"HzTboxSvrDataRecv error+++++++++++++++iRet[%d] \n", ret);
 					HzTboxSvrClose(); 
-					ihu_client.states = 0;
-					ihu_client.stage = PKI_ACCEPT;
+					log_o(LOG_IVI,"HzTboxSvrClose+++++++++++++++ \n");
+					ihu_client.stage = PKI_INIT;   
 				}
 				else
 				{
-				}		
+					if (num > 0)
+		            {
+		                ihu_client.lasthearttime = tm_get_time();
+						log_o(LOG_IVI,"ihu_client.lasthearttime = %ld ",ihu_client.lasthearttime);
+		                rx_msg[0].used += num;
+						log_o(LOG_IVI,"TBOX received from HU length = %d",num);
+						//log_o(LOG_IVI,"receiced data %d",rx_msg[0].data);
+		                log_buf_dump(LOG_IVI, "tcp recv", rx_msg[0].data, rx_msg[0].used);
+		                ivi_msg_decodex(&rx_msg[0], ivi_tcp_protobuf_process, 0);
+		            }
+					else if(num == 0)
+					{
+						log_e(LOG_IVI, "ihu Client exit\n");
+						HzTboxSvrClose(); 
+						log_o(LOG_IVI,"HzTboxSvrClose+++++++++++++++ \n");
+						ihu_client.states = 0;
+						ihu_client.stage = PKI_INIT;
+					}
+					else
+					{
+					}		
+				}
 			}
 			break;
 			case PKI_END:
@@ -1829,7 +1867,16 @@ void *ivi_txmain(void)
 			log_i(LOG_IVI, "start to send to HU");
 			//HU_data_ack_pack();
 			res = HzTboxSvrDataSend((char*)rpt->msgdata,rpt->msglen);
-			if(res == 1260)
+			//log_o(LOG_IVI,"receiced data %d",rpt->msgdata);
+			if(res != 1260)
+			{
+				log_e(LOG_IVI,"HzTboxSvrDataSend error+++++++++++++++iRet[%d] \n", res);
+				HzTboxSvrClose();
+				log_o(LOG_IVI,"HzTboxSvrClose+++++++++++++++ \n");
+				ihu_client.stage = PKI_INIT; 
+				
+			}
+			else
 			{
 				log_o(LOG_IVI, ">>>>> HzTboxDataSend >>>>>");
 				log_buf_dump(LOG_IVI, "tcp send", rpt->msgdata, rpt->msglen);
@@ -1870,13 +1917,44 @@ void *ivi_check(void)
 		if(ivi_clients[0].fd > 0)  //轮询任务：信号强度、电话状态、绑车激活、远程诊断、
 		{
 #else
+		if(PKI_ACCEPT == ihu_client.stage)
+		{
+			if(  tm_get_time()  - test_time > 120000 )
+			{
+				log_o(LOG_HOZON,"ihu_client.stage = %d",ihu_client.stage);
+				if((test == 0)&&(ihu_client.states !=1))
+				{
+					HzTboxSvrClose(); 
+					log_o(LOG_IVI,"HzTboxSvrClose+++++++++++++++ \n");
+					log_o(LOG_IVI,"2 minute arrived,close socken\t");
+					//test_time = tm_get_time() ;
+					tbox_ivi_pki_renew_pthread();
+				}
+			}
+		}
 		if(ihu_client.states == 1)   //车机连上来，判断是否超时
 		{
-			if((tm_get_time() - ihu_client.lasthearttime) > 30000 )
+			uint64_t temp = 0;
+			temp = tm_get_time() - ihu_client.lasthearttime;
+			if(temp > 30000 )
 			{
+				log_o(LOG_IVI," tm_get_time() - ihu_client.lasthearttime = %ld",tm_get_time() - ihu_client.lasthearttime);
+				time_t timep;
+				struct tm *localdatetime;
+
+				time(&timep);  //获取从1970.1.1 00:00:00到现在的秒数
+				localdatetime = localtime(&timep);//获取本地时间
+				log_i(LOG_HOZON,"%d-%d-%d ",(1900+localdatetime->tm_year), \
+								(1 +localdatetime->tm_mon), localdatetime->tm_mday);
+				log_i(LOG_HOZON,"%d:%d:%d\n",\
+								localdatetime->tm_hour, localdatetime->tm_min, localdatetime->tm_sec);
+				log_o(LOG_IVI,"tm_get_time() = %ld",tm_get_time());
+				log_o(LOG_IVI,"ihu_client.states = %d",ihu_client.states);
+				
+				log_o(LOG_IVI,"ihu_client.lasthearttime = %ld",ihu_client.lasthearttime);
 				HzTboxSvrClose(); 
-				ihu_client.states = 0;
-				ihu_client.stage = PKI_IDLE;
+				log_o(LOG_IVI,"HzTboxSvrClose+++++++++++++++ \n");
+				tbox_ivi_pki_renew_pthread();
 			}
 #endif
 			if( 1 == tbox_ivi_get_network_onoff() ) //已经请求网络制式
@@ -1908,6 +1986,27 @@ void *ivi_check(void)
 	}
 }
 
+void tbox_ivi_pki_renew_pthread()
+{
+	int ret;
+	pthread_attr_t ta;
+	pthread_cancel(ivi_rxtid);    //重启线程
+	pthread_attr_init(&ta);
+	pthread_attr_setdetachstate(&ta, PTHREAD_CREATE_DETACHED); //分离线程属性
+
+	/* create thread and monitor the incoming data */
+	ret = pthread_create(&ivi_rxtid, &ta, (void *)ivi_main, NULL);
+	if (ret != 0)
+	{
+	    log_e(LOG_IVI, "pthread_create failed, error:%s", strerror(errno));
+	}
+    else
+	{
+		log_e(LOG_IVI, "pthread Re-establish success , error:%s", strerror(errno));
+		printf("TBOX_IVI Re-establish pid = %lf",ivi_rxtid);
+	}
+	memset(&ihu_client,0,sizeof(ihu_client));
+}
 /****************************************************************
 function:     assist_run
 description:  startup data communciation module

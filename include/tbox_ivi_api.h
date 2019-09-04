@@ -8,11 +8,18 @@
 #define TBOX_PKI_IHU_EN                 0
 #define SCDPATH                         "/ursdata/pem/HozonCA.cer"
 #define ONEPATH                         "/ursdata/pem/TerminalCA.cer"
-//#define USCERTPath    
-//#define USKEYPath
+
+
+//#define TBOX_PKI_IHU                     1
 
 #define MAX_IVI_NUM                      1
+
+#ifndef TBOX_PKI_IHU
 #define IVI_SERVER_PORT                  5757
+#else 
+#define IVI_SERVER_PORT                  23000
+#endif
+
 #define IVI_GPS_TIME                     1000
 #define IVI_MSG_SIZE                     2048
 
@@ -127,5 +134,7 @@ extern void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp);
 extern void tbox_ivi_set_tspchager_InformHU(ivi_chargeAppointSt *tsp);
 
 extern long tbox_ivi_getTimestamp(void);
+
+extern void tbox_ivi_pki_renew_pthread();
 #endif
 
