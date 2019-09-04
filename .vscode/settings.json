@@ -20,6 +20,7 @@
         "nm_dial.h": "c",
         "at_api.h": "c",
         "sock_api.h": "c",
-        "prvtprot_queue.h": "c"
+        "prvtprot_queue.h": "c",
+        "dev_api.h": "c"
     }
 }

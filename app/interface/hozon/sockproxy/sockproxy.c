@@ -422,6 +422,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 					sockSt.linkSt = SOCKPROXY_SETUP_BDLLINK;
 				}
+				setPrvtProt_sendHeartbeat();
 			}
 		}
 		break;

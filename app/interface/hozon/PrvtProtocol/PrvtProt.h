@@ -190,7 +190,21 @@ typedef struct
 	PP_WAIT_STATE waitSt;/* �ȴ���Ӧ��״̬ */
 	uint64_t waittime;/* �ȴ���Ӧ��ʱ�� */
 	char timeoutCnt;
+	char hbtasksleepflag;
+	char hbtaskflag;
 }__attribute__((packed))  PrvtProt_heartbeat_t; /*�����ṹ��*/
+
+typedef struct 
+{		
+	//uint64_t  timer;/* ������ʱ�� */
+	uint8_t state;/* ����״̬ 1- ���� */
+	PP_WAIT_STATE waitSt;/* �ȴ���Ӧ��״̬ */
+	uint64_t waittime;/* �ȴ���Ӧ��ʱ�� */
+	char sendCnt;
+	char sleepflag;
+	char IGNoldst;
+	char IGNnewst;
+}__attribute__((packed))  PP_heartbeatrateswitch_t; /*�����ṹ��*/
 
 typedef struct 
 {	
