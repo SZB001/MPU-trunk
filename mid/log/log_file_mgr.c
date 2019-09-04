@@ -8,6 +8,7 @@
 #include "com_app_def.h"
 #include "file.h"
 #include "dir.h"
+#include "dev_api.h"
 
 int log_disk_check(int mode)
 {
@@ -109,7 +110,7 @@ char *log_find_oldfile(char const *path)
 
         if (2 != sscanf(file->d_name, "log_%d_%d", &reboot, &tmpIndex))  
         {
-            snprintf(old_file, sizeof(old_file), "%s%s", path, file->d_name);  //É¾³ýÃû³Æ²»·ûÎÄ¼þ
+            snprintf(old_file, sizeof(old_file), "%s%s", path, file->d_name);  //É¾ï¿½ï¿½ï¿½ï¿½ï¿½Æ²ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
             ret = old_file;
             closedir(dir);
             return ret;
@@ -117,7 +118,7 @@ char *log_find_oldfile(char const *path)
 
         y = reboot * 10000 + tmpIndex;
 
-        if( y > log_file_cur_get_num() )  //É¾³ý±Èµ±Ç°ÎÄ¼þºÅ´óµÄÎÄ¼þ
+        if( y > log_file_cur_get_num() )  //É¾ï¿½ï¿½ï¿½Èµï¿½Ç°ï¿½Ä¼ï¿½ï¿½Å´ï¿½ï¿½ï¿½Ä¼ï¿½
         {
             snprintf(old_file, sizeof(old_file), "%s%s", path, file->d_name);
             ret = old_file;
@@ -166,7 +167,7 @@ void log_do_diskfull(void)
         if ((avail >> 20) <= LOG_DIR_DISK_SIZE)
         {
             oldfile = log_find_oldfile(COM_LOG_DIR);
-            if(oldfile == NULL)  //ÎÞÎÄ¼þ
+            if(oldfile == NULL)  //ï¿½ï¿½ï¿½Ä¼ï¿½
             {
                 break;
             }

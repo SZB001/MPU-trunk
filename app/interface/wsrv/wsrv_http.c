@@ -47,7 +47,7 @@ extern timer_t restart_da_timer;
 #define WSRV_GPS_BODY               "{\"la\":%lf,\"lo\":%lf}"
 #define WSRV_VIN_BODY               "{\"vin\":\"%s\"}"
 #define WSRV_ECURESULT_BODY         "{\"name\":\"%s\",\"result\":\"%s\"}"
-#define WSRV_RTC_BODY               "{\"t\":%04d%02d%02dT%02d%02d%02dZ}"
+#define WSRV_RTC_BODY               "{\"t\":\"%04d%02d%02dT%02d%02d%02dZ\"}"
 #define WSRV_MODEINRESULT_BODY      "{\"r\":%d}"
 #define WSRV_MODEOUTRESULT_BODY     "{\"r\":%d}"
 

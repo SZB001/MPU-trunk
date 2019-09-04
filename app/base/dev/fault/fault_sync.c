@@ -9,7 +9,7 @@
 #include "fault_sync.h"
 #include "diag.h"
 #include "log.h"
-
+#include "dev_api.h"
 DIAG_MCU_FAULT mcu_fault;
 DIAG_MPU_FAULT mpu_fault;
 static pthread_mutex_t fault_sycn_mutex;
