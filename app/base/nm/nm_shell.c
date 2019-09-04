@@ -240,6 +240,28 @@ static int nm_shell_setcfun(int argc, const const char **argv)
     return 0;
 }
 
+static int nm_shell_recall(int argc, const const char **argv)
+{
+	int ret;
+    TCOM_MSG_HEADER msghdr;
+	
+	msghdr.sender    = MPU_MID_NM;
+    msghdr.receiver  = MPU_MID_NM;
+    msghdr.msgid     = NM_MSG_ID_RECALL;
+    msghdr.msglen    = 0;
+
+    /* notify recreate the connection */
+    ret = tcom_send_msg(&msghdr, NULL);
+
+    if (ret != 0)
+    {
+        shellprintf("tcom_send_msg failed, ret:%u\r\n", ret);
+        return -1;
+    }
+
+    return 0;
+}
+
 
 /****************************************************************
 function:     nm_shell_init
@@ -265,9 +287,9 @@ int nm_shell_init(INIT_PHASE phase)
             shell_cmd_register("setlocalapn", nm_shell_set_local_apn, "set local apn(private apn)");
             shell_cmd_register("setwanapn",   nm_shell_set_wan_apn,   "set public apn");
             shell_cmd_register("setdcom",     nm_shell_set_dcom,      "set public net on/off");
-            shell_cmd_register("dumpnm",      nm_shell_dumpnm,         "dump NM status");
+            shell_cmd_register("dumpnm",      nm_shell_dumpnm,        "dump NM status");
             shell_cmd_register("setcfun",     nm_shell_setcfun,       "set NM cfun state");
-
+			shell_cmd_register("recall",      nm_shell_recall,        "recall nm");
             break;
 
         default:

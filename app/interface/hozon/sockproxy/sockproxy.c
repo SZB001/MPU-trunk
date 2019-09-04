@@ -52,7 +52,8 @@ static pthread_mutex_t closemtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ���
 #if !SOCKPROXY_SAFETY_EN
 static pthread_mutex_t rcvmtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ����̬��
 #endif
-
+static char recall_idle = 0;
+static uint64_t    recall_timer;
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -72,6 +73,7 @@ static void *sockproxy_socketmain(void);
 static int sockproxy_sgLink(sockproxy_stat_t *state);
 static int sockproxy_BDLink(sockproxy_stat_t *state);
 #endif
+static void sockproxy_nm_dial_recall(void);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -605,8 +607,10 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
 					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 					sockSt.waittime = tm_get_time();
+					sockproxy_nm_dial_recall();
 					return -1;
 				}
+				recall_idle = 0;
 
 				for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
 				{
@@ -748,8 +752,10 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 					sockSt.waittime = tm_get_time();
+					sockproxy_nm_dial_recall();
 					return -1;
 				}
+				recall_idle = 0;
 
 				for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
 				{
@@ -1448,4 +1454,21 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 			break;
 		}
 	}
+}
+
+static void sockproxy_nm_dial_recall(void)
+{
+    if(!recall_idle)
+    {
+        recall_idle = 1;
+        recall_timer = tm_get_time();
+		nm_dial_restart();
+    }
+    else
+    {
+        if((tm_get_time() - recall_timer) > 60000)
+		{
+			recall_idle = 0;
+		}
+    }
 }

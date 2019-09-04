@@ -1204,6 +1204,10 @@ void nm_dial_msg_proc(TCOM_MSG_HEADER *msghdr, unsigned char *msgbody)
     {
         nm_dial_restart();
     }
+	else if( ( NM_MSG_ID_RECALL == msghdr->msgid ) && (MPU_MID_NM == msghdr->sender) )
+	{
+		nm_dial_restart();
+	}
     else if ((NM_MSG_ID_WAN_APN_CHANGED == msghdr->msgid) && (MPU_MID_NM == msghdr->sender))
     {
         int retry_cnt = 0;

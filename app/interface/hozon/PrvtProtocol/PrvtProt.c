@@ -275,7 +275,10 @@ static void *PrvtProt_main(void)
 			}
 		}
 
+	if(1 == sockproxy_socketState())
+	{
 		PrvtProt_do_HBRateSwitch(&pp_task);
+	}
 
 		PP_sleepflag = PP_HBRateSwitch.sleepflag	&&	\
 					   PP_heartbeat.hbtasksleepflag &&	\
