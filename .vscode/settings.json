@@ -21,6 +21,7 @@
         "at_api.h": "c",
         "sock_api.h": "c",
         "prvtprot_queue.h": "c",
-        "dev_api.h": "c"
+        "dev_api.h": "c",
+        "can_api.h": "c"
     }
 }

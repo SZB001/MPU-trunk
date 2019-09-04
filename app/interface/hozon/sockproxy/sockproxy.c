@@ -492,7 +492,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	}
 #endif
 
-#if 1
+#if 0
 	static uint64_t logtime = 0;
 	//static uint64_t closewaittime = 0;
 	if((tm_get_time() - logtime) > 5000)
@@ -514,7 +514,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 
 	if(0 == dev_get_KL15_signal())
 	{
-		if((1 == gb32960_gbLogoutSt()) && (GetPrvtProt_Sleep()))//&&(at_get_pm_mode() != PM_RUNNING_MODE))
+		if((1 == gb32960_gbLogoutSt()) && (1))//&&(at_get_pm_mode() != PM_RUNNING_MODE))
 		{
 			#if 0
 			if(sockSt.state == PP_OPENED)

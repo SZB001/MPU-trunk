@@ -67,9 +67,9 @@ int main(int argc , char **argv)
         fota_init,
         //hu_init,
         //ap_init,
-		PrvtProt_init,
-		sockproxy_init,
-		ivi_init,
+		//PrvtProt_init,
+		//sockproxy_init,
+		//ivi_init,
 		uds_node_miss_init,/* add by caoml*/
 		remote_diag_init,/* add by caoml*/
 		ble_init,
@@ -97,9 +97,9 @@ int main(int argc , char **argv)
         fota_run,
         //hu_run,
         //ap_run,
-		PrvtProt_run,
-		sockproxy_run,
-		ivi_run,
+		//PrvtProt_run,
+		//sockproxy_run,
+		//ivi_run,
 		uds_node_miss_run,/* add by caoml*/
 		remote_diag_run,/* add by caoml*/
 		ble_run,

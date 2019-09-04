@@ -3580,7 +3580,7 @@ static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime
 
     len += gb_data_save_gps(gbinf, buf + len);
     len += gb_data_save_warn(gbinf, buf + len);
-#if GB_EXT
+#if 0
     len += gb_data_save_VSExt(gbinf, buf + len);
     len += gb_data_save_VehiPosExt(gbinf, buf + len);
     len += gb_data_save_ComponentSt(gbinf, buf + len);
@@ -4278,6 +4278,7 @@ static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 					counter = 0;
 					gb_data_periodic(gb_inf, gb_datintv, msg->uptime);
 				}
+				#if 0
 				if(msg->MsgID == 0x3D1)
 				{
 					PP_identificat_rcvdata(msg->Data);
@@ -4287,13 +4288,13 @@ static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 						log_o(LOG_GB32960,"data[%d] = %d",i,msg->Data[i]);
 					}
 				}
+				#endif
 				msg++;
 			}
 #if GB_EXT
 			if(gb_inf)
 			{
-				//log_i(LOG_GB32960, "event check report");
-				gb_data_eventReport(gb_inf,msg->uptime);
+				//gb_data_eventReport(gb_inf,msg->uptime);
   				gb_data_gainCellVoltTemp(gb_inf);
 			}
 #endif

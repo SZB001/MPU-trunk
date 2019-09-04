@@ -2,8 +2,8 @@
 #define __GB32960_H__
 #include "../hozon/sockproxy/sockproxy_rxdata.h"
 
-#define GB32960_THREAD   1//定义是否单独创建线程 1-是 0-不是
-#define GB32960_SOCKPROXY   1//定义是否使用socket代理(是否由其他模块创建socket链路) 1-是 0-不是
+#define GB32960_THREAD   1//锟斤拷锟斤拷锟角否单讹拷锟斤拷锟斤拷锟竭筹拷 1-锟斤拷 0-锟斤拷锟斤拷
+#define GB32960_SOCKPROXY   0//锟斤拷锟斤拷锟角凤拷使锟斤拷socket锟斤拷锟斤拷(锟角凤拷锟斤拷锟斤拷锟斤拷模锟介创锟斤拷socket锟斤拷路) 1-锟斤拷 0-锟斤拷锟斤拷
 
 #define gb32960_rcvMsg(buf,buflen) RdSockproxyData_Queue(SP_GB,buf,buflen)
 
