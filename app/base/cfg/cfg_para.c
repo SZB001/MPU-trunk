@@ -629,16 +629,18 @@ int cfg_save_para(void)
 
     pthread_mutex_lock(&cfg_para_mutex);
     ret = rds_update_once(RDS_SYS_CFG, (unsigned char *)&cfg_para_buf, sizeof(cfg_para_buf));
-
-    if (dir_exists("/media/sdcard/usrdata/bkup/") == 0 &&
-    dir_make_path("/media/sdcard/usrdata/bkup/", S_IRUSR | S_IWUSR, false) != 0)
+    if(1 == dev_diag_get_emmc_status())//emmc挂载成功
     {
-        log_e(LOG_CFG, "creat path:/media/sdcard/usrdata/bkup/ fail");
-        //return;
-    }
-    else
-    {
-        file_copy(PP_SYS_CFG_PATH,PP_SYS_CFG_BKUP_PATH);//备份配置文件
+        if (dir_exists("/media/sdcard/usrdata/bkup/") == 0 &&
+        dir_make_path("/media/sdcard/usrdata/bkup/", S_IRUSR | S_IWUSR, false) != 0)
+        {
+            log_e(LOG_CFG, "creat path:/media/sdcard/usrdata/bkup/ fail");
+            //return;
+        }
+        else
+        {
+            file_copy(PP_SYS_CFG_PATH,PP_SYS_CFG_BKUP_PATH);//备份配置文件
+        }
     }
 
     pthread_mutex_unlock(&cfg_para_mutex);

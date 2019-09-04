@@ -596,7 +596,7 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 	
 	if((1 == gb32960_PowerOffSt()) || (0 == dev_get_KL15_signal()))//IGN OFF
 	{
-		if(1 == dev_diag_get_emmc_status())//emmc挂载成功
+		//if(1 == dev_diag_get_emmc_status())//emmc挂载成功
 		{
 			/*
 			* 检查是否有数据更新，注意若在此前出现异常复位，会导致记录丢失

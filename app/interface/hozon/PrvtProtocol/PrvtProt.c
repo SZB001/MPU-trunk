@@ -903,15 +903,18 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 ******************************************************/
 void PrvtProt_SaveCfgPara(unsigned char req)
 {
-	if (dir_exists("/media/sdcard/usrdata/bkup/") == 0 &&
-	        dir_make_path("/media/sdcard/usrdata/bkup/", S_IRUSR | S_IWUSR, false) != 0)
-	{
-        log_e(LOG_HOZON, "creat path:/media/sdcard/usrdata/bkup/ fail");
-        return;
-	}
+	if(1 == dev_diag_get_emmc_status())//emmc挂载成功
+    {
+		if (dir_exists("/media/sdcard/usrdata/bkup/") == 0 &&
+				dir_make_path("/media/sdcard/usrdata/bkup/", S_IRUSR | S_IWUSR, false) != 0)
+		{
+			log_e(LOG_HOZON, "creat path:/media/sdcard/usrdata/bkup/ fail");
+			return;
+		}
 
-	file_copy(PP_USER_CFG_PATH,PP_USER_CFG_BKUP_PATH);//备份配置文件
-	file_copy(PP_SYS_CFG_PATH,PP_SYS_CFG_BKUP_PATH);//备份配置文件
+		file_copy(PP_USER_CFG_PATH,PP_USER_CFG_BKUP_PATH);//备份配置文件
+		file_copy(PP_SYS_CFG_PATH,PP_SYS_CFG_BKUP_PATH);//备份配置文件
+	}
 }
 
 
