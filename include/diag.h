@@ -29,7 +29,7 @@ int  dev_diag_get_pow_status(void);
 int  dev_diag_get_can_status(int index);
 int  dev_diag_get_usb_status(void);
 int  dev_diag_get_sim_status(void);
-int  dev_diag_get_emmc_status(void);
+//int  dev_diag_get_emmc_status(void);
 int  dev_diag_get_gps_status(void);
 int  dev_diag_get_mic_status(void);
 bool dev_diag_availbale(void);

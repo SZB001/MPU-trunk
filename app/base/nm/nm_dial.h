@@ -61,7 +61,7 @@ typedef struct NM_REG_TBL
 
 int nm_dial_init(INIT_PHASE phase);
 int nm_dial_start(void);
-int nm_dial_restart(void);
+//int nm_dial_restart(void);
 void nm_dial_msg_proc(TCOM_MSG_HEADER *msghdr, unsigned char *msgbody);
 bool nm_get_net_status_ex(NET_TYPE type);
 

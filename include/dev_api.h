@@ -221,6 +221,6 @@ void dev_log_save_suspend(void);
 void dev_log_save_resume(void);
 char *dev_get_version(void);
 void dev_sync_timeout(void);
-
+extern int  dev_diag_get_emmc_status(void);
 #endif
 

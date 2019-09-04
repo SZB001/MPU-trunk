@@ -1466,7 +1466,7 @@ static void sockproxy_nm_dial_recall(void)
     }
     else
     {
-        if((tm_get_time() - recall_timer) > 60000)
+        if((tm_get_time() - recall_timer) > 20000)
 		{
 			recall_idle = 0;
 		}

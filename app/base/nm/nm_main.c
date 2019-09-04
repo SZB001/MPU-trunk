@@ -23,7 +23,7 @@ unsigned int g_call_id = 0;
 extern int net_apn_config(NET_TYPE type);
 extern void nm_dial_init_cb_fun(void *user_data);
 extern int nm_dial_stop(void);
-extern int nm_dial_restart(void);
+//extern int nm_dial_restart(void);
 
 int nm_is_ready_sleep = 0;
 

@@ -596,20 +596,23 @@ void PP_ChargeCtrl_chargeStMonitor(void *task)
 	
 	if((1 == gb32960_PowerOffSt()) || (0 == dev_get_KL15_signal()))//IGN OFF
 	{
-		/*
-		 * 检查是否有数据更新，注意若在此前出现异常复位，会导致记录丢失
-		* */
-		if(PP_rmtChargeCtrl.state.dataUpdata == 1)
+		if(1 == dev_diag_get_emmc_status())//emmc挂载成功
 		{
-			if(PP_rmtCharge_AppointBook.bookupdataflag == 1)
+			/*
+			* 检查是否有数据更新，注意若在此前出现异常复位，会导致记录丢失
+			* */
+			if(PP_rmtChargeCtrl.state.dataUpdata == 1)
 			{
-				PP_rmtCharge_AppointBook.bookupdataflag = 2;
-			}
+				if(PP_rmtCharge_AppointBook.bookupdataflag == 1)
+				{
+					PP_rmtCharge_AppointBook.bookupdataflag = 2;
+				}
 
-			//保存记录
-			log_o(LOG_HOZON,"save charge para when power off\n");
-			(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
-			PP_rmtChargeCtrl.state.dataUpdata = 0;
+				//保存记录
+				log_o(LOG_HOZON,"save charge para when power off\n");
+				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
+				PP_rmtChargeCtrl.state.dataUpdata = 0;
+			}
 		}
 	}
 }

@@ -100,7 +100,7 @@ bool nm_get_net_status(void);
 bool nm_net_is_apn_valid( NET_TYPE type );
 int  nm_register_status_changed(nm_status_changed callback);
 int  nm_register_get_ota_status(nm_ota_status_get callback);
-
+extern int nm_dial_restart(void);
 
 #endif
 
