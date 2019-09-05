@@ -927,9 +927,9 @@ int uds_did_get_vehicle_speed(unsigned char *did, unsigned int len)
         log_e(LOG_UDS, "get vehicle speed len error, len:%d", len);
         return UDS_INVALID_PARA;
     }
-    vehicle_speed = gb_data_vehicleSpeed();
+    vehicle_speed = gb_data_vehicleSpeed() * 10;
 
-    did[0] = (vehicle_speed & 0x0000ff00) << 8;
+    did[0] = (vehicle_speed & 0x0000ff00) >> 8;
     did[1] = (vehicle_speed & 0x000000ff);
     return 0;
 }

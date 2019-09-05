@@ -26,7 +26,7 @@ author        liuzhongwen
 #include "hozon_PP_api.h"
 #include "dir.h"
 #include "file.h"
-
+#include "dev_api.h"
 #define CFG_PARA_DBC_PATH   "/usrdata/dbc/GB-EP30_CAN_r4_009WIP_v1.14.dbc"
 
 static unsigned char cfg_para_buf[CFG_PARA_BUF_LEN];

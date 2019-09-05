@@ -419,17 +419,42 @@ return:       0 indicates no fault;
 ****************************************************************/
 int uds_diag_dev_can_busoff(void)
 {
+    const unsigned short low_voltage_threshold = 9000, high_voltage_threshold = 16000;
     int status = 0;
     status = flt_get_by_id(CAN_BUS2);
 
-    if (status == 1)
+    unsigned short voltage = 0;
+    unsigned int length = sizeof(unsigned short);
+
+    /* get voltage success*/
+    if(0 == st_get(ST_ITEM_POW_VOLTAGE, (unsigned char *)&voltage, &length))
     {
-        return 0;
+        /* If the voltage is normal, record the fault. */
+        if((voltage >= low_voltage_threshold) && (voltage <= high_voltage_threshold))
+        {
+            if (status == 1)
+            {
+                return 0;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+        else
+        {
+            /*If the voltage is abnormal, the fault will not be recorded.*/
+            return 0;
+        }
+
     }
     else
     {
-        return 1;
+        /* get voltage failed, return no fault*/
+        return 0;
     }
+
+    
 
 }
 

@@ -17,6 +17,8 @@
 #include "can_api.h"
 #include "uds_diag.h"
 #include "tcom_api.h"
+#include "fault_sync.h"
+#include "dev_api.h"
 
 
 
@@ -108,12 +110,17 @@ int set_node_sig_time(int node_id, long long sig_time)
 }
 static void test_all_node_miss(void)
 {
+    const unsigned short low_voltage_threshold = 9000, high_voltage_threshold = 16000;
     int node_num = 0;
-    #if 0
-    if (((VEHI_STATE_ON == data_get_vehi_state()) || (VEHI_STATE_START == data_get_vehi_state()))
-        && (0 == get_nv_state_busoff()))
-    #endif
-    if(1)
+    unsigned short voltage = 0;
+    unsigned int length = sizeof(unsigned short);
+    int can2_busoff_status = 0;
+    can2_busoff_status = flt_get_by_id(CAN_BUS2);
+
+    if((0 == st_get(ST_ITEM_POW_VOLTAGE, (unsigned char *)&voltage, &length))
+        &&(voltage >= low_voltage_threshold) 
+        &&(voltage <= high_voltage_threshold)
+        &&(can2_busoff_status == 1))
     {
         for (node_num = CAN_NODE_MISS_ITEM_ACU; node_num < CAN_NODE_MISS_ITEM_NUM; node_num++)
         {

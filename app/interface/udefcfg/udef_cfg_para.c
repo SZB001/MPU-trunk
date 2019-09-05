@@ -14,7 +14,7 @@
 #include "hozon_PP_api.h"
 #include "dir.h"
 #include "file.h"
-
+#include "dev_api.h"
 #define USER_CFG_PARA_BUF_LEN     2*1024
 
 typedef enum 
