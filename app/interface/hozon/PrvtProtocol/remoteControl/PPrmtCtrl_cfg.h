@@ -18,7 +18,7 @@ description�� macro definitions
 /**********�꿪�ض���*********/
 
 /**********�곣������*********/
-#define PP_RMTCTRL_CFG_CANSIGWAITTIME		200//can�ź�״̬��ʱ�о��ȴ�ʱ��
+#define PP_RMTCTRL_CFG_CANSIGWAITTIME		20//can�ź�״̬��ʱ�о��ȴ�ʱ��
 
 
 #define PP_RMTCTRL_CFG_NOTCHARGE			0//δ���
