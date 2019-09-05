@@ -160,7 +160,13 @@ DIAG_DID_ATTR("IMSI", DID_IMSI, DIAG_DATA_UCHAR, DID_LEN_IMSI,
 DIAG_DID_ATTR("IMEI", DID_IMEI, DIAG_DATA_UCHAR, DID_LEN_IMEI,
               SecurityAccess_LEVEL0, uds_did_get_imei, NULL)
 
+/* read only,developed and self-tested*/
+DIAG_DID_ATTR("HARD_NO", DID_HARD_NO, DIAG_DATA_STRING, DID_LEN_HARD_NO,
+              SecurityAccess_LEVEL0, uds_did_get_hard_no, NULL)
 
+/* read only,developed and self-tested*/
+DIAG_DID_ATTR("SOFT_NO", DID_SOFT_NO, DIAG_DATA_STRING, DID_LEN_SOFT_NO,
+              SecurityAccess_LEVEL0, uds_did_get_soft_no, NULL)
 
 DIAG_DID_TABLE_END()
 

@@ -86,6 +86,8 @@ int uds_did_get_pki_status(unsigned char *did, unsigned int len);
 
 int uds_did_set_esk(unsigned char *did, unsigned int len);
 int uds_did_set_pki_status(unsigned char *did, unsigned int len);
+int uds_did_get_hard_no(unsigned char *did, unsigned int len);
+int uds_did_get_soft_no(unsigned char *did, unsigned int len);
 
 #if 0
 int uds_did_set_manufacture_date(unsigned char *did, unsigned int len);

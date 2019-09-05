@@ -1346,6 +1346,29 @@ int uds_did_get_imei(unsigned char *did, unsigned int len)
 
 }
 
+int uds_did_get_hard_no(unsigned char *did, unsigned int len)
+{
+    if (DID_LEN_HARD_NO > len)
+    {
+        log_e(LOG_UDS, "get Vehicle Manufacturer ECU Hardware Number Data Identifier len error, len:%d", len);
+        return UDS_INVALID_PARA;
+    }
+    memcpy(did, DID_F191_HW_VERSION, DID_LEN_HARD_NO);
+    
+    return 0;
+}
+
+int uds_did_get_soft_no(unsigned char *did, unsigned int len)
+{
+    if (DID_LEN_SOFT_NO > len)
+    {
+        log_e(LOG_UDS, "get Vehicle Manufacturer ECU Software Assembly Number Data Identifier len error, len:%d", len);
+        return UDS_INVALID_PARA;
+    }
+    memcpy(did, DID_F1B0_SW_UPGRADE_VER, DID_LEN_SOFT_NO);
+    
+    return 0;
+}
 
 int uds_did_get_esk(unsigned char *did, unsigned int len)
 {

@@ -63,6 +63,8 @@
 #define DID_ICCID                                       (0X460B)
 #define DID_IMSI                                        (0X460C)
 #define DID_IMEI                                        (0X460D)
+#define DID_HARD_NO                                     (0xF1BF)
+#define DID_SOFT_NO                                     (0xF1C0)
 
 /*  StoredData DID Length*/
 #define DID_LEN_BOOTLOADER_IDENTIFIER                       (8)
@@ -84,5 +86,7 @@
 #define DID_LEN_ICCID                                       (20)
 #define DID_LEN_IMSI                                        (15)
 #define DID_LEN_IMEI                                        (15)
+#define DID_LEN_HARD_NO                                     (5)
+#define DID_LEN_SOFT_NO                                     (8)
 
 #endif
