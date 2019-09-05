@@ -64,6 +64,7 @@ static int PP_shell_SetTboxSN(int argc, const char **argv);
 static int PP_shell_SetCertDLReq(int argc, const char **argv);
 static int PP_shell_SetCertDLUpdata(int argc, const char **argv);
 static int PP_shell_SetCfgSaveReq(int argc, const char **argv);
+static int PP_shell_SetRmtCfgEnable(int argc, const char **argv);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -105,6 +106,8 @@ void PrvtProt_shell_init(void)
 	shell_cmd_register("hozon_setcertupdataReq", PP_shell_SetCertDLUpdata, "set cert updata req");
 
     shell_cmd_register("hozon_setsavecfgReq", PP_shell_SetCfgSaveReq, "set save cfg req");
+
+    shell_cmd_register("hozon_setcfgenable", PP_shell_SetRmtCfgEnable, "set save cfg enable");
 }
 
 
@@ -256,6 +259,36 @@ static int PP_shell_SetRmtCfgReq(int argc, const char **argv)
 
 	sscanf(argv[0], "%u", &rmtCfgReq);
 	PP_rmtCfg_SetCfgReq((uint8_t)rmtCfgReq);
+    sleep(1);
+    return 0;
+}
+
+
+/******************************************************
+*PP_shell_SetRmtCfgEnable
+
+*��  �Σ�����
+
+
+*����ֵ��void
+
+*��  ����
+
+*��  ע��
+******************************************************/
+static int PP_shell_SetRmtCfgEnable(int argc, const char **argv)
+{
+    unsigned int obj;
+	unsigned int enable;
+    if (argc != 2)
+    {
+        shellprintf(" usage: HOZON_PP_SetRemoteCfgEnable <remote config enable>\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &obj);
+    sscanf(argv[1], "%u", &enable);
+	PP_rmtCfg_setCfgEnable((uint8_t)obj,(uint8_t)enable);
     sleep(1);
     return 0;
 }

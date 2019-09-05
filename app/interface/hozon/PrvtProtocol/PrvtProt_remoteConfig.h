@@ -285,6 +285,6 @@ extern uint8_t PP_rmtCfg_enable_remotecontorl(void);
 extern uint8_t PP_rmtCfg_enable_icall(void);
 extern uint8_t PP_rmtCfg_enable_bcall(void);
 extern uint8_t PP_rmtCfg_enable_ecall(void);
-
+extern void PP_rmtCfg_setCfgEnable(unsigned char obj,unsigned char enable);
 
 #endif 

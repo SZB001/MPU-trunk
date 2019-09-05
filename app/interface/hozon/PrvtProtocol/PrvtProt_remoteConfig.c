@@ -50,11 +50,6 @@ description�� include the header file
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
-static uint8_t remote_control = 0;
-static uint8_t icall_enable = 0;
-static uint8_t bcall_enable = 0;
-static uint8_t ecall_enable = 0;
-
 
 
 
@@ -881,6 +876,117 @@ void PP_rmtCfg_SetCfgReq(unsigned char req)
 }
 
 /******************************************************
+*������:PP_rmtCfg_setCfgEnable
+
+*��  �Σ�
+
+*����ֵ��
+
+*��  �������� ����
+
+*��  ע��
+******************************************************/
+void PP_rmtCfg_setCfgEnable(unsigned char obj,unsigned char enable)
+{
+	switch(obj)
+	{
+		case 1:////T服务开启使能
+		{
+			AppData_rmtCfg.ReadResp.COMMON.actived = enable;
+		}
+		break;
+		case 2://远程控制使能
+		{
+			AppData_rmtCfg.ReadResp.COMMON.rcEnabled = enable;
+		}
+		break;
+		case 3://被盗追踪开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.svtEnabled = enable;
+		}
+		break;
+		case 4://车辆状态开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.vsEnabled = enable;
+		}
+		break;
+		case 5://呼叫中心开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.iCallEnabled = enable;
+		}
+		break;
+		case 6://道路救援开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.bCallEnabled = enable;
+		}
+		break;
+		case 7://紧急救援开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.eCallEnabled = enable;
+		}
+		break;
+		case 8://数据采集开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.dcEnabled = enable;
+		}
+		break;
+		case 9://远程诊断开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.dtcEnabled = enable;
+		}
+		break;
+		case 10://行程开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.journeysEnabled = enable;
+		}
+		break;
+		case 11://在线资讯开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.onlineInfEnabled = enable;
+		}
+		break;
+		case 12://远程充电开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.rChargeEnabled = enable;
+		}
+		break;
+		case 13://蓝牙钥匙开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.btKeyEntryEnabled = enable;
+		}
+		break;	
+		case 14://车辆授权服务开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.carEmpowerEnabled = enable;
+		}
+		break;
+		case 15://事件上报服务开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.eventReportEnabled = enable;
+		}
+		break;
+		case 16://车辆报警服务开关
+		{
+			AppData_rmtCfg.ReadResp.COMMON.carAlarmEnabled = enable;
+		}
+		break;	
+		case 17://心跳超时时间(s)
+		{
+			AppData_rmtCfg.ReadResp.COMMON.heartbeatTimeout = enable;
+		}
+		break;
+		case 18://休眠心跳超时时间(s)
+		{
+			AppData_rmtCfg.ReadResp.COMMON.dormancyHeartbeatTimeout = enable;
+		}
+		break;
+		default:
+		break;
+	}
+	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
+}
+
+/******************************************************
 *������:PP_rmtCfg_SetmcuSw
 
 *��  �Σ�
@@ -1243,74 +1349,7 @@ void PP_rmtCfg_settbox(void)
 		{
 		}
 	}
-	//CommonConfigSettings 
-	if(AppData_rmtCfg.ReadResp.COMMON.commonConfigValid == 1)
-	{
-		if(AppData_rmtCfg.ReadResp.COMMON.actived == 1) //T服务开启使能
-		{
-			
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.rcEnabled == 1)  //远程控制使能
-		{
-			remote_control = 1;
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.svtEnabled == 1) //SVT使能
-		{
-			
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.vsEnabled == 1) //车辆状态使能
-		{
-			
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.iCallEnabled == 1) //ICALL使能
-		{
-			icall_enable = 1;
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.bCallEnabled == 1) //BCALL使能
-		{
-			bcall_enable = 1;
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.eCallEnabled == 1) //ECALL使能
-		{
-			ecall_enable = 1;
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.dcEnabled == 1)  //DATA_COLLECTION_ENABLED
-		{
-			
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.dtcEnabled == 1) //REMOTE_DTC_ENABLED
-		{
-			
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.journeysEnabled == 1)//JOURNEYS_ENABLED
-		{
-			
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.onlineInfEnabled == 1)//ONLINE_INF_ENABLED
-		{
-			
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.rChargeEnabled == 1)//REMOTE CHARGE ENABLED
-		{
-			
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.btKeyEntryEnabled == 1)//BT_KEY_ENTRY_ENABLED
-		{
-			
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.carEmpowerEnabled == 1) //carEmpowerEnabled
-		{
-			
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.eventReportEnabled == 1) //eventReportEnabled
-		{
-			
-		}
-		if(AppData_rmtCfg.ReadResp.COMMON.carAlarmEnabled == 1)//carAlarmEnabled
-		{
-			
-		}
-	}
+
 	//ExtendConfigSettings
 	if(AppData_rmtCfg.ReadResp.EXTEND.extendConfigValid == 1)
 	{
@@ -1361,53 +1400,25 @@ uint8_t PP_rmtCfg_is_empty(uint8_t *dt,int len)
 	}
 	return 0;
 }
+
 uint8_t PP_rmtCfg_enable_remotecontorl(void)
 {
-	if(remote_control == 1)
-	{
-		return 1;
-	}
-	else
-	{
-		return 1;
-	}
-	
+	return AppData_rmtCfg.ReadResp.COMMON.rcEnabled;
 }
+
 uint8_t PP_rmtCfg_enable_icall(void)
 {
-	if(icall_enable == 1)
-	{
-		return 1;
-	}
-	else
-	{
-		return 1;
-	}
-	
+	return AppData_rmtCfg.ReadResp.COMMON.iCallEnabled;
 }
+
 uint8_t PP_rmtCfg_enable_bcall(void)
 {
-	if(bcall_enable == 1)
-	{
-		return 1;
-	}
-	else
-	{
-		return 1;
-	}
-	
+	return AppData_rmtCfg.ReadResp.COMMON.bCallEnabled;
 }
+
 uint8_t PP_rmtCfg_enable_ecall(void)
 {
-	if(ecall_enable == 1)
-	{
-		return 1;
-	}
-	else
-	{
-		return 1;
-	}
-	
+	return AppData_rmtCfg.ReadResp.COMMON.eCallEnabled;
 }
 
 
