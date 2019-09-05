@@ -275,10 +275,10 @@ static void *PrvtProt_main(void)
 			}
 		}
 
-	if(1 == sockproxy_socketState())
-	{
-		PrvtProt_do_HBRateSwitch(&pp_task);
-	}
+		if(1 == sockproxy_socketState())
+		{
+			PrvtProt_do_HBRateSwitch(&pp_task);
+		}
 
 		PP_sleepflag = PP_HBRateSwitch.sleepflag	&&	\
 					   PP_heartbeat.hbtasksleepflag &&	\
@@ -305,14 +305,19 @@ static int PrvtPro_do_checksock(PrvtProt_task_t *task)
 	if((1 == sockproxy_socketState()) || \
 			(sockproxy_sgsocketState()))//socket open
 	{
-
 		return 0;
 	}
+	else
+	{
+		if((tm_get_time() - PP_heartbeat.resettimer) > 10000)
+		{
+			PP_heartbeat.waitSt = 0;
+			PP_heartbeat.state = 0;
+			PP_heartbeat.hbtaskflag = 0;
+			PP_heartbeat.hbtasksleepflag = 1;
+		}
+	}
 
-	PP_heartbeat.waitSt = 0;
-	PP_heartbeat.state = 0;
-	PP_heartbeat.hbtaskflag = 0;
-	PP_heartbeat.hbtasksleepflag = 1;
 	return -1;
 }
 
@@ -1000,6 +1005,7 @@ void setPrvtProt_sendHeartbeat(void)
 {
 	PP_heartbeat.hbtaskflag = 1;
 	PP_heartbeat.hbtasksleepflag = 0;
+	PP_heartbeat.resettimer = tm_get_time();
 }
 
 /******************************************************

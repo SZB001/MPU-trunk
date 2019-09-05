@@ -537,7 +537,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 			{
 				if((tm_get_time() - sockSt.sleepwaittime) > 3000)
 				{
-					log_i(LOG_HOZON, "start to sleep\n");
+					//log_i(LOG_HOZON, "start to sleep\n");
 					sockSt.sleepFlag = 1;
 				}
 			}
@@ -545,7 +545,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 			{
 				if((tm_get_time() - sockSt.sleepwaittime) > 15000)
 				{
-					log_i(LOG_HOZON, "wait sleep timeout,start to sleep\n");
+					//log_i(LOG_HOZON, "wait sleep timeout,start to sleep\n");
 					sockSt.sleepFlag = 1;
 				}
 				else
