@@ -172,6 +172,22 @@ void PP_rmtCfg_init(void)
 	PP_rmtCfg.state.avtivecheckflag = 0;
 	PP_rmtCfg.state.iccidValid = 0;
 	PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
+	AppData_rmtCfg.ReadResp.COMMON.actived = 1;
+	AppData_rmtCfg.ReadResp.COMMON.rcEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.svtEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.vsEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.iCallEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.bCallEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.eCallEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.dcEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.dtcEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.journeysEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.onlineInfEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.rChargeEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.btKeyEntryEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.carEmpowerEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.eventReportEnabled = 1;
+	AppData_rmtCfg.ReadResp.COMMON.carAlarmEnabled = 1;
 }
 
 /******************************************************

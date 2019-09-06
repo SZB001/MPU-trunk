@@ -194,6 +194,7 @@ BO_ 1288 BMS_Fr08_508: 8 BMS
  SG_ BMS8ChargeCCSig_@2WGE018 : 0|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BMS8ChargeCPSig_@2WGE019 : 1|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BMS8ChargeState_@2WGF029 : 4|3@0+(1,0)[0|7] "" Vector__XXX
+ SG_ GBBMS8ChargeState_@2WG1001 : 4|3@0+(1,0)[0|7] "" Vector__XXX
  SG_ BMS8SlowChgMaxACCurrent : 23|16@0+(0.05,-1600)[0|600] "A" Vector__XXX
  SG_ BMS8SumOfCellNum_@2WG8000 : 39|8@0+(1,0)[0|254] "" Vector__XXX
  SG_ BMS8SumOfTSnsrNum_@2WG9000 : 47|8@0+(1,0)[0|254] "" Vector__XXX
