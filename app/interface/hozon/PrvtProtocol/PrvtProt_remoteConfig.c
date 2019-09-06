@@ -172,6 +172,8 @@ void PP_rmtCfg_init(void)
 	PP_rmtCfg.state.avtivecheckflag = 0;
 	PP_rmtCfg.state.iccidValid = 0;
 	PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
+
+	#if 1
 	AppData_rmtCfg.ReadResp.COMMON.actived = 1;
 	AppData_rmtCfg.ReadResp.COMMON.rcEnabled = 1;
 	AppData_rmtCfg.ReadResp.COMMON.svtEnabled = 1;
@@ -188,6 +190,10 @@ void PP_rmtCfg_init(void)
 	AppData_rmtCfg.ReadResp.COMMON.carEmpowerEnabled = 1;
 	AppData_rmtCfg.ReadResp.COMMON.eventReportEnabled = 1;
 	AppData_rmtCfg.ReadResp.COMMON.carAlarmEnabled = 1;
+	unsigned char wifienable = 1;
+	cfg_set_para(CFG_ITEM_WIFI_SET,&wifienable,1);
+	#endif
+
 }
 
 /******************************************************
