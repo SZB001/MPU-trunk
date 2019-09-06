@@ -1381,7 +1381,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     	warnlvl = warnlvltemp;
     }
 
-#if 0
+#if 1
     if(gbinf->warntest)
     {
         warnbit |= 1;
@@ -4199,7 +4199,8 @@ static void gb_data_periodic(gb_info_t *gbinf, int intv, uint32_t uptime)
     int period;
     static int ticks = 0, times = 0, triger = 0;
 
-    if (gbinf->warntrig)
+    /* times 在31-0期间为后30秒上报期间 */
+    if (gbinf && gbinf->warntrig)
     {
         RTCTIME time;
 
@@ -4320,7 +4321,7 @@ static int gb_shell_dumpgb(int argc, const char **argv)
     }
     else
     {
-        shellprintf(" [������Ϣ]\r\n");
+        shellprintf(" [车辆信息]\r\n");
         gb_disp_vinf(&gb_inf->vehi);
 
         if (gb_inf->vehi.vehi_type == GB_VEHITYPE_ELECT ||
@@ -4330,31 +4331,31 @@ static int gb_shell_dumpgb(int argc, const char **argv)
 
             for (i = 0; i < gb_inf->motor_cnt; i++)
             {
-                shellprintf(" [�����Ϣ-%d]\r\n", i + 1);
+                shellprintf(" [电机信息-%d]\r\n", i + 1);
                 gb_disp_minf(&gb_inf->motor[i]);
             }
-            
-            shellprintf(" [ȼ�ϵ����Ϣ]\r\n");
+
+            shellprintf(" [燃料电池信息]\r\n");
             gb_disp_finf(&gb_inf->fuelcell);
 
-            shellprintf(" [�����Ϣ]\r\n");
+            shellprintf(" [电池信息]\r\n");
             gb_disp_binf(&gb_inf->batt);
-            shellprintf(" [��ֵ��Ϣ]  (���ȫ��δ���壬�����ն˼���)\r\n");
+            shellprintf(" [极值信息]  (如果全部未定义，则由终端计算)\r\n");
             gb_disp_xinf(gb_inf->extr);
         }
 
         if (gb_inf->vehi.vehi_type == GB_VEHITYPE_GASFUEL ||
             gb_inf->vehi.vehi_type == GB_VEHITYPE_HYBIRD)
         {
-            shellprintf(" [��������Ϣ]\r\n");
+            shellprintf(" [发动机信息]\r\n");
             gb_disp_einf(&gb_inf->engin);
         }
 
-        shellprintf(" [������Ϣ-1��]\r\n");
+        shellprintf(" [报警信息-1级]\r\n");
         gb_disp_winf(gb_inf->warn[0]);
-        shellprintf(" [������Ϣ-2��]\r\n");
+        shellprintf(" [报警信息-2级]\r\n");
         gb_disp_winf(gb_inf->warn[1]);
-        shellprintf(" [������Ϣ-3��]\r\n");
+        shellprintf(" [报警信息-3级]\r\n");
         gb_disp_winf(gb_inf->warn[2]);
     }
 
@@ -4514,7 +4515,7 @@ gb_pack_t *gb_data_get_pack(void)
 
     DAT_UNLOCK();
 
-    return node == NULL ? NULL : list_entry(node, gb_pack_t, link);;
+    return node == NULL ? NULL : list_entry(node, gb_pack_t, link);
 }
 
 int gb_data_nosending(void)
