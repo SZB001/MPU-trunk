@@ -64,6 +64,7 @@ description： include the header file
 #include "../PrvtProt_remoteConfig.h"
 #include "PP_rmtCtrl.h"
 
+extern void pm_ring_wakeup(void);
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -245,6 +246,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 				if(PP_rmtCfg_enable_remotecontorl() == 1)
 				{
 					log_o(LOG_HOZON,"REMOTE CONTROL ENABLED");
+					pm_ring_wakeup();   //ring脚唤醒MCU
 					PP_can_mcu_awaken();//唤醒
 					PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
 				}
@@ -300,6 +302,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 				log_o(LOG_HOZON,"-------identificat failed---------");
 				// 清除远程控制请求
 				PP_rmtCtrl_clear();
+				PP_rmtCtrl_flag = RMTCTRL_END;
    			}
    			else
    			{}
@@ -320,9 +323,18 @@ int PP_rmtCtrl_mainfunction(void *task)
 			ifend = PP_rmtCtrl_end();
 			if(ifend == 1)
 			{
-				PP_can_mcu_sleep();//休眠
-				PP_rmtCtrl_flag = RMTCTRL_IDLE; //远程命令执行完，回到空闲
+				//PP_can_mcu_sleep();//休眠
+				PP_rmtCtrl_flag = RMTCTRL_END; //远程命令执行完，回到空闲
 			}
+		}
+		break;
+		case RMTCTRL_END:
+		{
+			if(GetPP_ChargeCtrl_Sleep()&&GetPP_ACtrl_Sleep()&&GetPP_SeatCtrl_Sleep() == 1)
+			{
+				PP_can_mcu_sleep();//清除虚拟on线
+			}
+			PP_rmtCtrl_flag = RMTCTRL_IDLE;
 		}
 		break;
 		default:

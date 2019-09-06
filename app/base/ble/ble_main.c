@@ -473,7 +473,7 @@ int ble_init(INIT_PHASE phase)
 ******************************************************************************/
 int start_ble(void)
 {
-	unsigned int len = 18;
+	unsigned int len = 1;
 	unsigned char vin[20] = {0};
 	unsigned char tmp[250] = {0};
 	unsigned char tmp_len = 0;
@@ -485,7 +485,7 @@ int start_ble(void)
 	 	return -1;
 	}
 
-	
+	len = 18;
 	cfg_get_user_para(CFG_ITEM_GB32960_VIN, vin, &len);
 	int iRet = -1;
 	

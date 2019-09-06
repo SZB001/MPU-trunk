@@ -19,7 +19,7 @@ description： macro definitions
 /**********宏开关定义*********/
 
 /**********宏常量定义*********/
-#define HU_MAX_SENDQUEUE		120
+#define HU_MAX_SENDQUEUE		360
 
 #define HU_SENDBUFLNG			2048
 /***********宏函数***********/
