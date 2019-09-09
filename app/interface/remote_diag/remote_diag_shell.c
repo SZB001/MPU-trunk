@@ -4,9 +4,10 @@
 #include <unistd.h>
 #include "remote_diag_api.h"
 #include "remote_diag.h"
-#include "hozon_PP_api.h"
+#include <stdlib.h>
 
-extern int remote_diag_fds[2];
+extern void setPPrmtDiagCfg_QueryFaultReq(uint8_t obj);
+extern void setPPrmtDiagCfg_ClearDTCReq(uint8_t obj);
 
 unsigned int remote_diag_tsp(char * diag_msg, int diag_msg_len)
 {
@@ -19,17 +20,75 @@ unsigned int remote_diag_tsp(char * diag_msg, int diag_msg_len)
     return ret;
 }
 
-static int remote_diag_shell_tbox(int argc, const char **argv)
+
+static int PP_get_remote_clearDTCresult_test(int argc, const char **argv)
 {
     if (argc != 1)
     {
         shellprintf(" usage: <UDS msg> \r\n");
         return -1;
     }
+    unsigned char request_msg[DIAG_REQUEST_LEN];
+    memset(request_msg, 0x00, DIAG_REQUEST_LEN);
+    
+    shellprintf("argv[0]:%s", argv[0]);
+    StrToHex(request_msg, (unsigned char *)argv[0], strlen(argv[0])/2);
+    shellprintf("request_msg:%x", request_msg[0]);
+    
+    shellprintf("PP_get_remote_clearDTCresult:%d", PP_get_remote_clearDTCresult(request_msg[0]));
+
+    return 0;
+
+}
+
+static int PPrmtDiagCfg_QueryFaultReq_test(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: <UDS msg> \r\n");
+        return -1;
+    }
+    unsigned char request_msg[DIAG_REQUEST_LEN];
+    memset(request_msg, 0x00, DIAG_REQUEST_LEN);
+    
+    shellprintf("argv[0]:%s", argv[0]);
+    StrToHex(request_msg, (unsigned char *)argv[0], strlen(argv[0])/2);
+    shellprintf("request_msg:%x", request_msg[0]);
+    setPPrmtDiagCfg_QueryFaultReq(request_msg[0]);
+
+    return 0;
+}
+
+static int setPPrmtDiagCfg_ClearDTCReq_test(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: <UDS msg> \r\n");
+        return -1;
+    }
+    unsigned char request_msg[DIAG_REQUEST_LEN];
+    memset(request_msg, 0x00, DIAG_REQUEST_LEN);
+    
+    shellprintf("argv[0]:%s", argv[0]);
+    StrToHex(request_msg, (unsigned char *)argv[0], strlen(argv[0])/2);
+    shellprintf("request_msg:%x", request_msg[0]);
+    setPPrmtDiagCfg_ClearDTCReq(request_msg[0]);
+
+    return 0;
+}
+
+
+
+static int remote_diag_shell_tbox(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: <ecutype> \r\n");
+        return -1;
+    }
     
     shellprintf("argv[0]:%s", argv[0]);
     remote_diag_tsp((char *)argv[0], strlen(argv[0]));
-
 
     return 0;
 }
@@ -80,10 +139,21 @@ int remote_diag_shell_init(INIT_PHASE phase)
             
             ret |= shell_cmd_register_ex("rdiagret", "rdiagret", remote_diag_shell_get_result,
                                          "remote diag get result");
+                                         
+            ret |= shell_cmd_register_ex("rdiagPPQF", "rdiagPPQF", PPrmtDiagCfg_QueryFaultReq_test,
+                                         "PPrmtDiagCfg_QueryFaultReq_test");
+
+            ret |= shell_cmd_register_ex("rdiagPPCD", "rdiagPPCD", setPPrmtDiagCfg_ClearDTCReq_test,
+                             "setPPrmtDiagCfg_ClearDTCReq_test");
+
+            ret |= shell_cmd_register_ex("rdiagPPCDRES", "rdiagPPCDRES", PP_get_remote_clearDTCresult_test,
+                          "PP_get_remote_clearDTCresult_test");
+
             break;
     }
 
     return ret;
 }
+
 
 

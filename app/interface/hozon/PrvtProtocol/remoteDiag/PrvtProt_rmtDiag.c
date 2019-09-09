@@ -55,7 +55,6 @@ description锛� include the header file
 #include "PP_rmtDiag_cfg.h"
 
 #include "PrvtProt_rmtDiag.h"
-
 /*******************************************************
 description锛� global variable definitions
 *******************************************************/
@@ -530,8 +529,8 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 		break;
 		case PP_FAULTCODECLEAN_REQ:
 		{
-			PP_rmtDiag.state.faultCleanSuccess = 0;
-			setPPrmtDiagCfg_FaultCodeClean(PP_rmtDiag.state.cleanfaultType);
+			PP_rmtDiag.state.faultCleanFinish = 0;
+			setPPrmtDiagCfg_ClearDTCReq(PP_rmtDiag.state.cleanfaultType);
 			PP_rmtDiag.state.faultcleanwaittime = tm_get_time();
 			PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_WAIT;
 		}
@@ -540,9 +539,10 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 		{
 			if((tm_get_time() - PP_rmtDiag.state.faultcleanwaittime) < PP_FAULTCODECLEAN_WAITTIME)
 			{
-				if(1 == PP_rmtDiag.state.faultCleanSuccess)
+				if(1 == PP_rmtDiag.state.faultCleanFinish)
 				{
-					PP_rmtDiag.state.faultCleanResult	= 1;
+					PP_rmtDiag.state.faultCleanResult = \
+								getPPrmtDiagCfg_clearDTCresult(PP_rmtDiag.state.cleanfaultType);
 					PP_rmtDiag.state.faultCleanfailureType = 0;
 					PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
 				}
@@ -1232,5 +1232,5 @@ void PP_rmtDiag_queryInform_cb(void)
 ******************************************************/
 void PP_rmtDiag_CleanFaultInform_cb(void)
 {
-	PP_rmtDiag.state.faultCleanSuccess = 1;
+	PP_rmtDiag.state.faultCleanFinish = 1;
 }

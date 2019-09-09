@@ -22,6 +22,7 @@
         "sock_api.h": "c",
         "prvtprot_queue.h": "c",
         "dev_api.h": "c",
-        "dev_rw.h": "c"
+        "dev_rw.h": "c",
+        "tbox_ivi_api.h": "c"
     }
 }

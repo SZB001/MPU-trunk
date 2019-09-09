@@ -380,7 +380,7 @@ void uds_diag_devices(int startno, int endno)
         }
     }
     set_is_uds_trigger_fault(is_fault);
-    log_i(LOG_UDS, "get_is_uds_trigger_fault:%d", get_is_uds_trigger_fault());
+    //log_i(LOG_UDS, "get_is_uds_trigger_fault:%d", get_is_uds_trigger_fault());
 }
 
 

@@ -60,9 +60,28 @@ int PPrmtDiagCfg_ecallTriggerEvent(void)
 ******************************************************/
 void setPPrmtDiagCfg_QueryFaultReq(uint8_t obj)
 {
-    remote_diag_request(MPU_MID_REMOTE_DIAG, (char *)(&obj), 1);
+    char tsp_diag_msg[2];
+    memset(tsp_diag_msg, 0x00, sizeof(tsp_diag_msg));
+    tsp_diag_msg[0] = 0x01;
+    tsp_diag_msg[1] = obj;
+    
+    remote_diag_request(MPU_MID_REMOTE_DIAG, tsp_diag_msg, sizeof(tsp_diag_msg));
 	/*PP_rmtDiag_queryInform_cb();*/
 }
+
+
+void setPPrmtDiagCfg_ClearDTCReq(uint8_t obj)
+{
+    char tsp_diag_msg[2];
+    memset(tsp_diag_msg, 0x00, sizeof(tsp_diag_msg));
+    
+    tsp_diag_msg[0] = 0x02;
+    tsp_diag_msg[1] = obj;
+    
+    remote_diag_request(MPU_MID_REMOTE_DIAG, tsp_diag_msg, sizeof(tsp_diag_msg));
+	/*PP_rmtDiag_queryInform_cb();*/
+}
+
 
 /******************************************************
 *��������getPPrmtDiagCfg_Faultcode
@@ -100,15 +119,20 @@ void getPPrmtDiagCfg_NodeFault(PP_rmtDiag_NodeFault_t *rmtDiag_NodeFault)
 	rmtDiag_NodeFault = get_PP_rmtDiag_NodeFault_t();
 }
 
-/******************************************************
-*setPPrmtDiagCfg_FaultCodeClean
-*��  �Σ�
-*����ֵ��
-*��  ����
-*��  ע��
-******************************************************/
-void setPPrmtDiagCfg_FaultCodeClean(uint8_t obj)
+/*
+*获取故障码清除结果
+*/
+unsigned char getPPrmtDiagCfg_clearDTCresult(unsigned char obj)
 {
-    
+	int result;
 
+	result = PP_get_remote_clearDTCresult(obj);
+	if(!result)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }

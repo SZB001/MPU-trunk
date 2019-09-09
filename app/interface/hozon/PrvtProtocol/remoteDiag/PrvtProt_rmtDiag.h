@@ -136,7 +136,7 @@ typedef struct
 	uint8_t  cleanfaultType;
 	long	 cleanfaulteventId;
 	long	 cleanfaultexpTime;
-	uint8_t	 faultCleanSuccess;
+	uint8_t	 faultCleanFinish;
 	uint64_t faultcleanwaittime;
 	uint8_t	 faultCleanResult;
 	uint8_t	 faultCleanfailureType;

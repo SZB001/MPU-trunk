@@ -60,7 +60,7 @@ uint32_t uds_data_request(UDS_T *uds, UDS_TL_ID msg_id, uint32_t can_id, uint8_t
     /* Ô¶³ÌÕï¶Ï·ÖÖ§ */
     if (uds->mode == UDS_TYPE_REMOTEDIAG)
     {
-        remote_diag_send_tbox_response(data, pos);
+        remote_diag_send_tbox_response(data + 1, pos - 1);
         return 0;
     }
     else
