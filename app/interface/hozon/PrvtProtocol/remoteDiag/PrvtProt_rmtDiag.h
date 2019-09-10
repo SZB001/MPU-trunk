@@ -24,7 +24,7 @@ description�� macro definitions
 #define PP_DIAGPWRON_WAITTIME    	5000//5s
 #define PP_DIAGQUERY_WAITTIME    	5000//5s
 #define PP_FAULTCODECLEAN_WAITTIME    	5000//5s
-#define PP_DIAGQUERYALL_WAITTIME	45000//45s
+#define PP_DIAGQUERYALL_WAITTIME	90000//90s
 /***********�꺯��***********/
 
 /*******************************************************

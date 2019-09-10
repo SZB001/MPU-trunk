@@ -1204,22 +1204,6 @@ void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 }
 
 /******************************************************
-*鍑芥暟鍚嶏細PP_rmtDiag_queryInform_cb
-
-*褰�  鍙傦細
-
-*杩斿洖鍊硷細
-
-*鎻�  杩帮細
-
-*澶�  娉細
-******************************************************/
-void PP_rmtDiag_queryInform_cb(void)
-{
-	PP_rmtDiag.state.faultquerySt = 1;
-}
-
-/******************************************************
 *PP_rmtDiag_CleanFaultInform_cb
 
 *褰�  鍙傦細
@@ -1233,4 +1217,21 @@ void PP_rmtDiag_queryInform_cb(void)
 void PP_rmtDiag_CleanFaultInform_cb(void)
 {
 	PP_rmtDiag.state.faultCleanFinish = 1;
+}
+
+/******************************************************
+*鍑芥暟鍚嶏細PP_rmtDiag_queryInform_cb
+
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*鎻�  杩帮細
+
+*澶�  娉細
+******************************************************/
+void PP_rmtDiag_queryInform_cb(void)
+{
+	PP_rmtDiag.state.faultquerySt = 1;
+	PP_rmtDiag_CleanFaultInform_cb();
 }
