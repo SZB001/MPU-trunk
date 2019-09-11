@@ -438,7 +438,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 			{
 				log_e(LOG_HOZON, "vehicle speed > 5km/h");
 				PP_rmtDiag.state.result = 0;
-				PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
+				PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_VEHISPEED;
 				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
 			}
 		}
@@ -459,7 +459,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 			else//超时
 			{
 				PP_rmtDiag.state.result = 0;
-				PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
+				PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_TIMEOUT;
 				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
 			}
 		}
@@ -473,7 +473,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_DIAG;
 				PP_TxInform[idlenode].mid = PP_MID_DIAG_RESP;
-				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
+				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
 				SP_data_write(PP_rmtDiag_Pack.Header.sign, \
 						PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&PP_TxInform[idlenode]);
@@ -771,7 +771,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 			{
 				log_e(LOG_HOZON, "diag active report is timeout\n");
 				PP_rmtDiag.state.result = 0;
-				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_NONE;
+				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_TIMEOUT;
 				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
 			}
@@ -792,7 +792,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_DIAG;
 				PP_TxInform[idlenode].mid = PP_MID_DIAG_STATUS;
-				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
+				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
 				SP_data_write(PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen, \
 						PP_rmtDiag_send_cb,&PP_TxInform[idlenode]);

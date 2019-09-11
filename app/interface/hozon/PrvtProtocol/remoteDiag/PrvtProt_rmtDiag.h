@@ -85,6 +85,8 @@ typedef enum
 typedef enum
 {
 	PP_RMTDIAG_ERROR_NONE = 0,//
+	PP_RMTDIAG_ERROR_VEHISPEED,//vehicle speed > 5km/h
+	PP_RMTDIAG_ERROR_TIMEOUT,//time out
 }PP_RMTDIAG_QUERYWRONGTYPE;
 
 typedef enum
