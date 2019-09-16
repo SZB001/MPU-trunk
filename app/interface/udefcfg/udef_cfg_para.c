@@ -384,7 +384,6 @@ int udef_cfg_para_back(int argc,const char **argv)
 }
 
 int udef_cfg_dump_para(int argc, const char **argv)
-
 {
     clbt_cfg_dump_para();
     return 0;

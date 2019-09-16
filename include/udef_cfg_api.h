@@ -33,5 +33,5 @@ typedef enum
 int udef_cfg_init(INIT_PHASE phase);
 int cfg_set_user_para(USER_CFG_PARA_ITEM_ID id, void *data, unsigned int len);
 int cfg_get_user_para(USER_CFG_PARA_ITEM_ID id, void *data, unsigned int *len);
-
+int clbt_cfg_dump_para(void);
 #endif
