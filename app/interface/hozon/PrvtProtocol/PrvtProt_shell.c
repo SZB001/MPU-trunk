@@ -65,6 +65,7 @@ static int PP_shell_SetCertDLReq(int argc, const char **argv);
 static int PP_shell_SetCertDLUpdata(int argc, const char **argv);
 static int PP_shell_SetCfgSaveReq(int argc, const char **argv);
 static int PP_shell_SetRmtCfgEnable(int argc, const char **argv);
+static int PP_shell_SetRmtFotaUpdate(int argc, const char **argv);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -108,6 +109,8 @@ void PrvtProt_shell_init(void)
     shell_cmd_register("hozon_setsavecfgReq", PP_shell_SetCfgSaveReq, "set save cfg req");
 
     shell_cmd_register("hozon_setcfgenable", PP_shell_SetRmtCfgEnable, "set save cfg enable");
+
+    shell_cmd_register("hozon_setfotaupdate", PP_shell_SetRmtFotaUpdate, "set rmt fota update");
 }
 
 
@@ -607,6 +610,34 @@ static int PP_shell_SetCfgSaveReq(int argc, const char **argv)
 	sscanf(argv[0], "%u", &saveReq);
 
 	PrvtProt_SaveCfgPara((uint8_t)saveReq);
+    sleep(1);
+    return 0;
+}
+
+/******************************************************
+*PP_shell_SetRmtFotaUpdate
+
+*��  �Σ�����
+
+
+*����ֵ��void
+
+*��  ����
+
+*��  ע��
+******************************************************/
+static int PP_shell_SetRmtFotaUpdate(int argc, const char **argv)
+{
+	unsigned int rmtfotaUpdateReq;
+    if (argc != 1)
+    {
+        shellprintf(" usage: HOZON_PP_SetRemoteVSReq <remote fota update req>\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &rmtfotaUpdateReq);
+
+	PP_rmtCtrl_SetFotaUpdateReq((uint8_t)rmtfotaUpdateReq);
     sleep(1);
     return 0;
 }

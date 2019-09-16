@@ -251,7 +251,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 			ret = PP_rmtCtrl_request();
 			if(ret == 1)
 			{	
-				log_o(LOG_HOZON,"REMOTE CONTROL ENABLED");
+				log_o(LOG_HOZON,"REMOTE CONTROL REQUEST\n");
 				pm_ring_wakeup();   //ring脚唤醒MCU
 				PP_can_mcu_awaken();//唤醒
 				PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDENTIFICAT_QUERY;
@@ -260,6 +260,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 			{
 				if(1 == PP_rmtCtrl.fotaAuthReq)
 				{
+					log_o(LOG_HOZON,"fota auth request\n");
 					PP_rmtCtrl.fotaAuthReq = 0;
 					pm_ring_wakeup();   //ring脚唤醒MCU
 					PP_can_mcu_awaken();//唤醒
@@ -1162,4 +1163,21 @@ int SetPP_rmtCtrl_FOTA_endInform(void)
 	PP_rmtCtrl.fotaUpgradeSt = 0;
 
 	return res;
+}
+
+/******************************************************
+*函数名：PP_rmtCtrl_SetFotaUpdateReq
+
+*形  参：
+
+*返回值：
+
+*描  述：设置 请求
+
+*备  注：
+******************************************************/
+void PP_rmtCtrl_SetFotaUpdateReq(unsigned char req)
+{
+	PP_rmtCtrl.fotaUpgradeSt = req;
+	PP_rmtCtrl.fotaAuthReq = 1;
 }
