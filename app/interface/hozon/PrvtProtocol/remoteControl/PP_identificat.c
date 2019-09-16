@@ -97,7 +97,20 @@ static void XteaEncipher(UINT8 *DataSK, UINT8 *DataChall, UINT8 *DataResp)
 void PP_identificat_init()
 {
 	unsigned int length = 16;
-	cfg_get_para(CFG_ITEM_DID_ESK, DataSk, &length);
+	uint8_t cnt = 0,i = 0;
+	UINT8 temp[16] = {0};
+	cfg_get_para(CFG_ITEM_DID_ESK, temp, &length);
+	for(i=0;i<16;i++)
+	{
+		if(temp[i] == 0)
+		{
+			cnt++;
+		}
+	}
+	if(cnt != 16)
+	{
+		memcpy(DataSk,temp,16);
+	}
 	log_o(LOG_HOZON,"ESK read successful");
 	log_buf_dump(LOG_HOZON, "ESK", DataSk, length);
 }
@@ -121,6 +134,7 @@ int PP_identificat_mainfunction()
 		{
 			PP_authcnt = 0;
 			PP_recv_can_flag = 0;
+			PP_identificat_init();//获取ESK，
 			PP_stage = PP_stage_start;
 		}
 		break;

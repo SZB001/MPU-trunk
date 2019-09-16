@@ -41,6 +41,7 @@ description�� macro definitions
 #define PP_CHARGESTATE_UNCONNT  	4//充电枪未连接
 #define PP_CHARGESTATE_SPORT		5//运动模式
 #define PP_CHARGESTATE_ABNRSHUTDOWN	6//异常关闭
+#define PP_CHARGESTATE_FOTA_UPGRADE	7//fota升级
 /***********�꺯��***********/
 
 /*******************************************************
@@ -63,12 +64,13 @@ typedef struct
 	uint8_t  waitSt;
 	uint64_t waittime;
 	uint8_t  chargeSt;//���״̬��1-����У�0-δ���
-
+	uint8_t	bookSyncflag;//
 	uint8_t  dataUpdata;
 
 	uint8_t appointcharge;
 	//uint8_t appointchargeSt;
 	uint64_t appointchargeTime;
+	uint64_t appointchargeCheckDelayTime;
 }__attribute__((packed))  PP_rmtChargeCtrlSt_t; /*remote control*/
 
 
@@ -97,7 +99,9 @@ typedef struct
 	uint32_t huBookingTime;
 	uint32_t HUbookingId;
 
-	uint8_t	bookupdataflag;//ԤԼ��¼���µ�tsp��־:0-Ĭ�ϣ�1-�ϱ��У�2-�ϱ�ʧ�ܣ�3-�ϱ����
+	//uint8_t	bookupdataflag;//
+	uint8_t appointChargeFlag;
+	uint32_t appointStartTime;
 }__attribute__((packed))  PP_rmtCharge_AppointBook_t; /*�ṹ��*/
 
 typedef struct
@@ -120,11 +124,11 @@ extern int 	PP_ChargeCtrl_mainfunction(void *task);
 extern void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 
 extern void PP_ChargeCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
-extern void PP_ChargeCtrl_chargeStMonitor(void *task);
 extern int PP_ChargeCtrl_start(void);
 extern int PP_ChargeCtrl_end(void);
 extern void PP_ChargeCtrl_ClearStatus(void);
 extern void PP_ChargeCtrl_send_cb(void);
 //extern void SetPP_ChargeCtrl_Awaken(void);
 extern unsigned char GetPP_ChargeCtrl_Sleep(void);
+extern void SetPP_ChargeCtrl_appointPara(void);
 #endif 

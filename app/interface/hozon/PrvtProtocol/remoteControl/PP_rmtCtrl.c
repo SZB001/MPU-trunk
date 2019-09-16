@@ -64,6 +64,7 @@ description： include the header file
 #include "../PrvtProt_remoteConfig.h"
 #include "PP_rmtCtrl.h"
 
+#define PP_TXINFORMNODE_NUM 100
 extern void pm_ring_wakeup(void);
 /*******************************************************
 description： global variable definitions
@@ -84,6 +85,13 @@ typedef struct
 	PrvtProt_rmtCtrlSt_t	state[RMTCTRL_OBJ_MAX];
 	long reqType;//请求类型
 	long eventid;//事件id
+
+	//uint8_t busyFlag;
+	uint8_t rmtCtrlSt;
+	uint8_t sleepflag;
+	uint8_t fotaAuthReq;
+	uint8_t fotaUpgradeSt;
+	int 	fotaAuthResult;
 }__attribute__((packed))  PrvtProt_rmtCtrl_t; /*结构体*/
 
 static PrvtProt_rmtCtrl_t 		PP_rmtCtrl;
@@ -98,16 +106,15 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 	{RMTCTRL_RMTSRCHVEHICLE, PP_searchvehicle_init,	PP_searchvehicle_mainfunction},
 	{RMTCTRL_HIGHTENSIONCTRL,PP_startengine_init,   PP_startengine_mainfunction},
 	{RMTCTRL_AC,	         PP_ACCtrl_init, 	    PP_ACCtrl_mainfunction},
-	{RMTCTRL_CHARGE,         PP_ChargeCtrl_init,	PP_ChargeCtrl_mainfunction},
+	{RMTCTRL_CHARGE,         PP_ChargeCtrl_init,	NULL},
 	{RMTCTRL_ENGINECTRL,	 PP_startforbid_init, 	PP_startforbid_mainfunction},
 	{RMTCTRL_SEATHEATINGCTRL,PP_seatheating_init, 	PP_seatheating_mainfunction},
 	{RMTCTRL_CAMERACTRL,     PP_CameraCtrl_init,    PP_CameraCtr_mainfunction}
 };
 
-static int PP_rmtCtrl_flag = 0;
-#define PP_TXINFORMNODE_NUM 100
 static PrvtProt_TxInform_t rmtCtrl_TxInform[PP_TXINFORMNODE_NUM];
-static uint8_t PP_rmtCtrl_sleepflag = 0;
+
+static pthread_mutex_t rmtCtrlmtx = 	PTHREAD_MUTEX_INITIALIZER;
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -157,6 +164,7 @@ void PP_rmtCtrl_init(void)
 		memset(&rmtCtrl_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	}
 }
+
 uint8_t PP_rmtCtrl_request(void)
 {
 	uint8_t ret = 0;
@@ -166,7 +174,7 @@ uint8_t PP_rmtCtrl_request(void)
 		   PP_sunroofctrl_start()  ||
 		   PP_startengine_start()  ||
 		   PP_seatheating_start()  ||
-		   PP_ChargeCtrl_start()   ||
+		   //PP_ChargeCtrl_start()   ||
 		   PP_ACCtrl_start()	   ||
 		   PP_startforbid_start()  ||
 		   PP_CameraCtrl_start();
@@ -182,7 +190,7 @@ uint8_t PP_rmtCtrl_end(void)
 		  PP_sunroofctrl_end()    &&	\
 		  PP_startengine_end()    &&	\
 		  PP_seatheating_end()    &&	\
-		  PP_ChargeCtrl_end()	  &&	\
+		  //PP_ChargeCtrl_end()	  &&	
 		  PP_ACCtrl_end()	      &&	\
 		  PP_startforbid_end()    &&    \
 		  PP_CameraCtrl_end();
@@ -198,7 +206,7 @@ void PP_rmtCtrl_clear(void)
 	PP_startengine_ClearStatus();
 	PP_startforbid_ClearStatus();
 	PP_sunroofctrl_ClearStatus();
-	PP_ChargeCtrl_ClearStatus();
+	//PP_ChargeCtrl_ClearStatus();
 	PP_ACCtrl_ClearStatus();
 	PP_CameraCtrl_ClearStatus();
 }
@@ -220,49 +228,42 @@ int PP_rmtCtrl_mainfunction(void *task)
 	int res;
 	int i;
 	PrvtProt_task_t* task_ptr = (PrvtProt_task_t*)task;
+	PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 
 	PP_rmtCtrl_task.nonce = task_ptr->nonce;
 	PP_rmtCtrl_task.tboxid = task_ptr->tboxid;
 	PP_rmtCtrl_task.version = task_ptr->version;
+	pthread_mutex_lock(&rmtCtrlmtx);
 
 	res = 	PP_rmtCtrl_do_checksock(task_ptr) ||
 			PP_rmtCtrl_do_rcvMsg(task_ptr);
 
-	switch(PP_rmtCtrl_flag)
+	switch(PP_rmtCtrl.rmtCtrlSt)
 	{
 		case RMTCTRL_IDLE://空闲
 		{
-			int ret ;
+			int ret = 0;
 			PP_Send_WakeUpTime_to_Mcu();//运行状态到listen模式，发一个最近的定时唤醒
 			PP_rmtCtrl_checkenginetime();//15分钟之后下高压电
 			//检测空调或座椅加热上电或下电
-
-			PP_ChargeCtrl_chargeStMonitor(task_ptr);//监测充电状态
 			PP_AcCtrl_acStMonitor(task_ptr);        //查询空调预约时间
 			PP_SeatCtrl_SeatStMonitor(task_ptr);    //查询座椅加热是否满足睡眠条件
 			ret = PP_rmtCtrl_request();
 			if(ret == 1)
 			{	
-				if(PP_rmtCfg_enable_remotecontorl() == 1)
+				log_o(LOG_HOZON,"REMOTE CONTROL ENABLED");
+				pm_ring_wakeup();   //ring脚唤醒MCU
+				PP_can_mcu_awaken();//唤醒
+				PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDENTIFICAT_QUERY;
+			}
+			else
+			{
+				if(1 == PP_rmtCtrl.fotaAuthReq)
 				{
-					log_o(LOG_HOZON,"REMOTE CONTROL ENABLED");
+					PP_rmtCtrl.fotaAuthReq = 0;
 					pm_ring_wakeup();   //ring脚唤醒MCU
 					PP_can_mcu_awaken();//唤醒
-					PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_QUERY;
-				}
-				else
-				{
-					log_o(LOG_HOZON,"REMOTE CONTROL NOT ENABLED");
-					// 清除远程控制请求
-					PP_rmtCtrl_clear();
-					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-					rmtCtrl_Stpara.reqType = PP_rmtCtrl.reqType;
-					rmtCtrl_Stpara.eventid = PP_rmtCtrl.eventid;
-					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
-					rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_NOTENABLE;
-					PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-					
+					PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDENTIFICAT_LAUNCH;
 				}
 			}
 		}
@@ -271,11 +272,11 @@ int PP_rmtCtrl_mainfunction(void *task)
 		{
 			if(PP_get_identificat_flag() == 1)	
 			{
-				PP_rmtCtrl_flag = RMTCTRL_COMMAND_LAUNCH;
+				PP_rmtCtrl.rmtCtrlSt = RMTCTRL_COMMAND_LAUNCH;
 			}
 			else
 			{
-				PP_rmtCtrl_flag = RMTCTRL_IDENTIFICAT_LAUNCH;
+				PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDENTIFICAT_LAUNCH;
 			}
 		}
 		break;
@@ -285,24 +286,33 @@ int PP_rmtCtrl_mainfunction(void *task)
 			authst = PP_identificat_mainfunction();
    			if(PP_AUTH_SUCCESS == authst)
    			{
-  				PP_rmtCtrl_flag = RMTCTRL_COMMAND_LAUNCH;
+				PP_rmtCtrl.fotaAuthResult = 1;
+				if(0 == PP_rmtCtrl.fotaUpgradeSt)
+				{
+					PP_rmtCtrl.rmtCtrlSt = RMTCTRL_COMMAND_LAUNCH;
+				}
+				else
+				{
+					PP_rmtCtrl.rmtCtrlSt = RMTCTRL_END;
+				}
 				log_o(LOG_HOZON,"-------identificat success---------");
   			}
   			else if(PP_AUTH_FAIL == authst)
   		    {
+				PP_rmtCtrl.fotaAuthResult = -1;
+				PP_rmtCtrl.fotaUpgradeSt = 0;
     			//通知tsp认证失败
-    			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+    			//PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 				rmtCtrl_Stpara.reqType = PP_rmtCtrl.reqType;
 				rmtCtrl_Stpara.eventid = PP_rmtCtrl.eventid;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
 				rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_BCDMAUTHFAIL;
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-    			PP_rmtCtrl_flag = RMTCTRL_IDLE;
 				log_o(LOG_HOZON,"-------identificat failed---------");
 				// 清除远程控制请求
 				PP_rmtCtrl_clear();
-				PP_rmtCtrl_flag = RMTCTRL_END;
+				PP_rmtCtrl.rmtCtrlSt = RMTCTRL_END;
    			}
    			else
    			{}
@@ -323,8 +333,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 			ifend = PP_rmtCtrl_end();
 			if(ifend == 1)
 			{
-				//PP_can_mcu_sleep();//休眠
-				PP_rmtCtrl_flag = RMTCTRL_END; //远程命令执行完，回到空闲
+				PP_rmtCtrl.rmtCtrlSt = RMTCTRL_END; //远程命令执行完，回到空闲
 			}
 		}
 		break;
@@ -334,16 +343,20 @@ int PP_rmtCtrl_mainfunction(void *task)
 			{
 				PP_can_mcu_sleep();//清除虚拟on线
 			}
-			PP_rmtCtrl_flag = RMTCTRL_IDLE;
+			PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDLE;
 		}
 		break;
 		default:
 		break;
 	}
-	
+
+	PP_ChargeCtrl_mainfunction(task_ptr);//充电功能，不需要BDCM认证
+
+	pthread_mutex_unlock(&rmtCtrlmtx);
+
 	PP_can_send_cycle();//广播440 445报文
 	
-	PP_rmtCtrl_sleepflag = GetPP_ChargeCtrl_Sleep()&& \
+	PP_rmtCtrl.sleepflag = GetPP_ChargeCtrl_Sleep()&& \
 						   GetPP_ACtrl_Sleep()     && \
 						   GetPP_SeatCtrl_Sleep();
 
@@ -447,6 +460,19 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 	PP_rmtCtrl.reqType = Appdata.CtrlReq.rvcReqType;
 	if(PP_MID_RMTCTRL_REQ == MsgDataBody.mID)//收到请求
 	{
+		PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+		if(PP_rmtCfg_enable_remotecontorl() != 1)
+		{
+			log_o(LOG_HOZON,"REMOTE CONTROL NOT ENABLED");
+			rmtCtrl_Stpara.reqType = PP_rmtCtrl.reqType;
+			rmtCtrl_Stpara.eventid = PP_rmtCtrl.eventid;
+			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+			rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
+			rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_NOTENABLE;
+			PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+			return;
+		}
+
 		switch((uint8_t)(Appdata.CtrlReq.rvcReqType >> 8))
 		{
 			case PP_RMTCTRL_DOORLOCK://控制车门锁
@@ -1065,7 +1091,7 @@ static int PP_rmtCtrl_getIdleNode(void)
 ******************************************************/
 void SetPP_rmtCtrl_Awaken(void)
 {
-	PP_rmtCtrl_sleepflag = 0;
+	PP_rmtCtrl.sleepflag = 0;
 	//SetPP_ChargeCtrl_Awaken();
 }
 
@@ -1085,10 +1111,55 @@ unsigned char GetPP_rmtCtrl_Sleep(void)
 	//log_i(LOG_HOZON, "GetPP_ChargeCtrl_Sleep = %d",GetPP_ChargeCtrl_Sleep());
 	//log_i(LOG_HOZON, "GetPP_ACtrl_Sleep = %d",GetPP_ACtrl_Sleep());
 	//log_i(LOG_HOZON, "GetPP_SeatCtrl_Sleep = %d",GetPP_SeatCtrl_Sleep());
-	return PP_rmtCtrl_sleepflag;
+	return PP_rmtCtrl.sleepflag;
 }
 
-unsigned char GetPP_rmtCtrl_idle(void)
+
+unsigned char GetPP_rmtCtrl_AuthResult(void)
 {
-	return PP_rmtCtrl_sleepflag;
+	return PP_rmtCtrl.fotaAuthResult;
+}
+
+void SetPP_rmtCtrl_AuthRequest(void)
+{
+	PP_rmtCtrl.fotaAuthReq = 1;
+	PP_rmtCtrl.fotaAuthResult = 0;
+}
+
+unsigned char GetPP_rmtCtrl_fotaUpgrade(void)
+{
+	return PP_rmtCtrl.fotaUpgradeSt;
+}
+
+int SetPP_rmtCtrl_FOTA_startInform(void)
+{
+	int res = 0;
+
+	pthread_mutex_lock(&rmtCtrlmtx);
+
+	if((0 == PP_rmtCtrl_request()) && (RMTCTRL_IDLE == PP_rmtCtrl.rmtCtrlSt) && \
+		GetPP_ChargeCtrl_Sleep() && GetPP_ACtrl_Sleep() && GetPP_SeatCtrl_Sleep())//远程车控空闲
+	{
+		SetPP_ChargeCtrl_appointPara();
+		PP_rmtCtrl.fotaAuthReq = 1;
+		PP_rmtCtrl.fotaUpgradeSt = 1;
+		PP_rmtCtrl.fotaAuthResult = 0;
+	}
+	else
+	{
+		res = -1;
+	}
+	
+	pthread_mutex_unlock(&rmtCtrlmtx);
+	
+	return res;
+}
+
+
+int SetPP_rmtCtrl_FOTA_endInform(void)
+{
+	int res = 0;
+	PP_rmtCtrl.fotaUpgradeSt = 0;
+
+	return res;
 }

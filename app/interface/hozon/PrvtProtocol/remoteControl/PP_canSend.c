@@ -281,7 +281,10 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 			PP_canSend_setbit(CAN_ID_440,17,2,data,NULL);
 			break;
 		case PP_CAN_SUNROOF:
-			PP_canSend_setbit(CAN_ID_440,47,3,data,NULL);
+			PP_canSend_setbit(CAN_ID_440,47,3,data,NULL);  //天窗
+			break;
+		case PP_CAN_SUNSHADE:
+			PP_canSend_setbit(CAN_ID_440,33,2,data,NULL); //遮阳帘
 			break;
 		case PP_CAN_AUTODOOR:
 			PP_canSend_setbit(CAN_ID_440,19,2,data,NULL);

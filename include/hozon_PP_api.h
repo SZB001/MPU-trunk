@@ -91,5 +91,8 @@ extern unsigned char GetPP_CertDL_CertUpdate(void);
 extern unsigned char GetPP_CertDL_allowBDLink(void);
 extern void PrvtProt_SaveCfgPara(unsigned char req);
 extern void setPrvtProt_sendHeartbeat(void);
-extern unsigned char GetPP_rmtCtrl_idle(void);
+extern void SetPP_rmtCtrl_AuthRequest(void);
+extern unsigned char GetPP_rmtCtrl_AuthResult(void);
+extern int SetPP_rmtCtrl_FOTA_startInform(void);
+extern int SetPP_rmtCtrl_FOTA_endInform(void);
 #endif

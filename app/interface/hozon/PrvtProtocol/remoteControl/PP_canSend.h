@@ -19,6 +19,9 @@
 #define CAN_SUNROOFCLOSE   2
 #define CAN_SUNROOFUP      3
 #define CAN_SUNROOFSTOP    4
+/***********Sunshade************/
+#define CAN_SUNSHADECLEAN  0
+#define CAN_SUNSHADECLOSE  2
 /**********auto****************/
 #define CAN_CLEANAUTODOOR 0
 #define CAN_CLOSEAUTODOOR 2
@@ -57,6 +60,7 @@ typedef enum
 {
     PP_CAN_DOORLOCK = 0,
 	PP_CAN_SUNROOF,
+	PP_CAN_SUNSHADE,
     PP_CAN_AUTODOOR,
     PP_CAN_SEARCH,
     PP_CAN_ENGINE,

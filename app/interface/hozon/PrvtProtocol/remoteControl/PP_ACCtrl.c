@@ -395,6 +395,7 @@ uint8_t PP_ACCtrl_start(void)
 }
 uint8_t PP_ACCtrl_end(void)
 {
+
 	if((PP_rmtACCtrl.state.CtrlSt == PP_ACCTRL_IDLE) && \
 			(PP_rmtACCtrl.state.req == 0))
 	{
@@ -776,8 +777,8 @@ void PP_AcCtrl_acStMonitor(void *task)
 		/*
 		 * 检查睡眠条件
 		 * */
-		if((PP_rmtCtrl_cfg_ACOnOffSt() != 1)&&(PP_rmtACCtrl.state.req != 1) && (PP_rmtACCtrl.state.CtrlSt == PP_ACCTRL_IDLE) && \
-					   (PP_rmtac_AppointBook[i].bookupdataflag != 2))
+		if((PP_rmtCtrl_cfg_ACOnOffSt() != 1)&&(PP_rmtACCtrl.state.req != 1) && \
+				(PP_rmtACCtrl.state.CtrlSt == PP_ACCTRL_IDLE))
 		{
 			PP_ACtrl_Sleepflag = 1;
 		}

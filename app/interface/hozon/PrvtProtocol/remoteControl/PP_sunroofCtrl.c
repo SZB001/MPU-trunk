@@ -141,7 +141,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 			}
 			else if(sunroof_type == PP_SUNROOFCLOSE)//天窗关闭
 			{
-				PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLOSE,0);
+				PP_can_send_data(PP_CAN_SUNSHADE,CAN_SUNSHADECLOSE,0);  //遮阳帘关闭
 			}
 			else if(sunroof_type == SUNROOFUPWARP)//天窗翘起
 			{
@@ -159,9 +159,9 @@ int PP_sunroofctrl_mainfunction(void *task)
 		{
 			if((tm_get_time() - PP_Respwaittime) > 200)
 			{
-				if((tm_get_time() - PP_Respwaittime) < 35000)
+				if(sunroof_type == PP_SUNROOFOPEN) //天窗打开结果
 				{
-					if(sunroof_type == PP_SUNROOFOPEN) //天窗打开结果
+					if((tm_get_time() - PP_Respwaittime) < 35000)
 					{
 						if(PP_rmtCtrl_cfg_sunroofSt() == 4) //状态为4，天窗打开ok
 						{
@@ -171,17 +171,37 @@ int PP_sunroofctrl_mainfunction(void *task)
 							sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 						}
 					}
-					else if(sunroof_type == PP_SUNROOFCLOSE)//天窗关闭结果
+					else//响应超时
+					{
+						log_o(LOG_HOZON,"timeout");
+						PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
+						sunroof_success_flag = 0;
+						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
+					}
+				}
+				else if(sunroof_type == PP_SUNROOFCLOSE)//天窗关闭结果
+				{
+					if((tm_get_time() - PP_Respwaittime) < 35000)
 					{
 						if(PP_rmtCtrl_cfg_sunroofSt() == 2) //
 						{
 							log_o(LOG_HOZON,"PP_SUNROOFCTRL_CLOSE SUCCESS");
-							PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
+							PP_can_send_data(PP_CAN_SUNSHADE,CAN_SUNSHADECLEAN,0);  //遮阳帘
 							sunroof_success_flag = 1;
 							sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 						}
 					}
-					else if(sunroof_type == SUNROOFUPWARP)//天窗翘起结果
+					else//响应超时
+					{
+						log_o(LOG_HOZON,"timeout");
+						PP_can_send_data(PP_CAN_SUNSHADE,CAN_SUNSHADECLEAN,0);  //遮阳帘
+						sunroof_success_flag = 0;
+						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
+					}
+				}
+				else if(sunroof_type == SUNROOFUPWARP)//天窗翘起结果
+				{
+					if((tm_get_time() - PP_Respwaittime) < 35000)
 					{
 						if(PP_rmtCtrl_cfg_sunroofSt() == 0) //
 						{
@@ -191,16 +211,17 @@ int PP_sunroofctrl_mainfunction(void *task)
 							sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 						}
 					}
-					else  //天窗停止结果
+					else//响应超时
 					{
+						log_o(LOG_HOZON,"timeout");
+						PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
+						sunroof_success_flag = 0;
+						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 					}
 				}
-				else//响应超时
+				else
 				{
-					PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
-					sunroof_success_flag = 0;
-					sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
-				}
+				}	
 			}
 		}
 		break;
