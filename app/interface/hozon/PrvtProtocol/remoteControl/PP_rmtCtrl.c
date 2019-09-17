@@ -340,7 +340,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 		break;
 		case RMTCTRL_END:
 		{
-			if(GetPP_ChargeCtrl_Sleep()&&GetPP_ACtrl_Sleep()&&GetPP_SeatCtrl_Sleep() == 1)
+			//if(GetPP_ChargeCtrl_Sleep()&&GetPP_ACtrl_Sleep()&&GetPP_SeatCtrl_Sleep() == 1)
 			{
 				PP_can_mcu_sleep();//清除虚拟on线
 			}
@@ -464,7 +464,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 		if(PP_rmtCfg_enable_remotecontorl() != 1)
 		{
-			log_o(LOG_HOZON,"REMOTE CONTROL NOT ENABLED");
+			log_e(LOG_HOZON,"REMOTE CONTROL NOT ENABLED");
 			rmtCtrl_Stpara.reqType = PP_rmtCtrl.reqType;
 			rmtCtrl_Stpara.eventid = PP_rmtCtrl.eventid;
 			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
@@ -1160,8 +1160,10 @@ int SetPP_rmtCtrl_FOTA_startInform(void)
 int SetPP_rmtCtrl_FOTA_endInform(void)
 {
 	int res = 0;
+	pthread_mutex_lock(&rmtCtrlmtx);
 	PP_rmtCtrl.fotaUpgradeSt = 0;
 
+	pthread_mutex_unlock(&rmtCtrlmtx);
 	return res;
 }
 

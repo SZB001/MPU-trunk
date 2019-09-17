@@ -631,7 +631,7 @@ static int PP_shell_SetRmtFotaUpdate(int argc, const char **argv)
 	unsigned int rmtfotaUpdateReq;
     if (argc != 1)
     {
-        shellprintf(" usage: HOZON_PP_SetRemoteVSReq <remote fota update req>\r\n");
+        shellprintf(" usage: hozon_setfotaupdate <remote fota update req>\r\n");
         return -1;
     }
 

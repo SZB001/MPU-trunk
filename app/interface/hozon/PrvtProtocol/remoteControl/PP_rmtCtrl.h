@@ -85,6 +85,7 @@ description： macro definitions
 
 
 //指令执行失败类型
+#define PP_RMTCTRL_NORMAL				0x00//
 #define PP_RMTCTRL_ACCNOOFF				0x01//power mode != OFF
 #define PP_RMTCTRL_UNKNOWCMD			0x02//unknow command
 #define PP_RMTCTRL_OTHERCMDEXECTING		0x03//Other instructions are executing

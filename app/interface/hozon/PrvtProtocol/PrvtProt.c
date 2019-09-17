@@ -791,14 +791,20 @@ void PrvtPro_SetHeartBeatPeriod(unsigned char period)
 ******************************************************/
 void PrvtPro_ShowPara(void)
 {
-	log_i(LOG_HOZON, "/******************************/");
-	log_i(LOG_HOZON, "     	  public parameters 	  ");
-	log_i(LOG_HOZON, "/******************************/");
-	log_i(LOG_HOZON, "tboxid = %d\n",pp_task.tboxid);
-	log_i(LOG_HOZON, "tboxsn = %s\n",pp_tboxsn);
-	log_i(LOG_HOZON, "PP_heartbeat.period = %d\n",PP_heartbeat.period);
+	log_o(LOG_HOZON, "/******************************/");
+	log_o(LOG_HOZON, "     	  public parameters 	  ");
+	log_o(LOG_HOZON, "/******************************/");
+	log_o(LOG_HOZON, "tboxid = %d\n",pp_task.tboxid);
+	log_o(LOG_HOZON, "tboxsn = %s\n",pp_tboxsn);
+	log_o(LOG_HOZON, "PP_heartbeat.period = %d\n",PP_heartbeat.period);
 
+	log_o(LOG_HOZON, "/**********show remote config para**********/");
 	PP_rmtCfg_ShowCfgPara();
+	log_o(LOG_HOZON, "/*****************data over*****************/");
+	log_o(LOG_HOZON, "/**********show charge control para*********/");
+	PP_ChargeCtrl_show();
+	log_o(LOG_HOZON, "/*****************data over*****************/");
+
 }
 
 /******************************************************

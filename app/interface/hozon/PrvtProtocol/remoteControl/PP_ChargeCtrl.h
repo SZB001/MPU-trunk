@@ -35,13 +35,14 @@ description�� macro definitions
 
 
 #define PP_CHARGESTATE_IDLE   	0
-#define PP_CHARGESTATE_READY	    1
-#define PP_CHARGESTATE_ONGOING   	2
-#define PP_CHARGESTATE_SUCCESS  	3
-#define PP_CHARGESTATE_UNCONNT  	4//充电枪未连接
-#define PP_CHARGESTATE_SPORT		5//运动模式
+#define PP_CHARGESTATE_READY	1
+#define PP_CHARGESTATE_ONGOING  2
+#define PP_CHARGESTATE_FINISH  	3
+//#define PP_CHARGESTATE_UNCONNT  	4//充电枪未连接
+//#define PP_CHARGESTATE_SPORT		5//运动模式
 #define PP_CHARGESTATE_ABNRSHUTDOWN	6//异常关闭
-#define PP_CHARGESTATE_FOTA_UPGRADE	7//fota升级
+//#define PP_CHARGESTATE_FOTA_UPGRADE	7//fota升级
+
 /***********�꺯��***********/
 
 /*******************************************************
@@ -100,8 +101,8 @@ typedef struct
 	uint32_t HUbookingId;
 
 	//uint8_t	bookupdataflag;//
-	uint8_t appointChargeFlag;
-	uint32_t appointStartTime;
+	//uint8_t appointChargeFlag;
+	//uint32_t appointStartTime;
 }__attribute__((packed))  PP_rmtCharge_AppointBook_t; /*�ṹ��*/
 
 typedef struct

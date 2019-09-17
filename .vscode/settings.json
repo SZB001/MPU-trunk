@@ -25,6 +25,7 @@
         "dev_rw.h": "c",
         "tbox_ivi_api.h": "c",
         "pp_rmtctrl.h": "c",
-        "udef_cfg_api.h": "c"
+        "udef_cfg_api.h": "c",
+        "prvtprot_vehist.h": "c"
     }
 }
