@@ -33,6 +33,9 @@ int icall_flag = 0;
 extern int assist_get_call_status(void);
 extern void ivi_callstate_response_send(int fd  );
 extern ivi_client ivi_clients[MAX_IVI_NUM];
+extern int audio_basic_ECall(void);
+extern int audio_basic_ICall(void);
+
 
 
 /*******************************************************
@@ -200,6 +203,7 @@ int PrvtProt_CC_mainfunction(void *task)
 			           
 			        }
 					log_o(LOG_HOZON,"xcall = %s",xcall);
+					audio_basic_ECall();
 					if (strlen((char *)xcall) > 0)
 			        {
 			             makecall((char *)xcall);
@@ -239,6 +243,7 @@ int PrvtProt_CC_mainfunction(void *task)
 			        {
 			            log_e(LOG_IVI, "bcall read failed!!!"); 
 			        }
+					audio_basic_ICall();
 					if (strlen((char *)xcall) > 0)
 			        {
 			             makecall((char *)xcall);

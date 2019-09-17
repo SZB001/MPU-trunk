@@ -186,5 +186,51 @@ void audio_show_all_registers(void)
         delay();
     }
 }
+int audio_basic_ECall(void)
+{
+     int ret = 0;
+
+     ret |= register_config(0x13, 0x04);
+     
+     /* 46: PGA_L to HPLOUT Volume Control Register */
+     ret |= register_config(0x2E, 0x00);
+
+     /* HPLOUT Output Level Control Register */
+     ret |= register_config(0x33, 0x00);
+
+      /* /Register 82: DAC_L1 to LEFT_LOP/M Volume Control Register */
+     ret |= register_config(0x52, 0x80);
+
+     /*92: DAC_R1 to RIGHT_LOP/M Volume Control Register */
+     ret |= register_config(0x5c, 0x00);
+     /* ICALL��Ϊһֱ����*/
+     //ret |= register_config(0x5c, 0x80);
+     
+     ret |= register_config(0x56, 0x9B);
+         
+
+     return (ret < 0) ? -1 : 0;
+}
+int audio_basic_ICall(void)
+{
+     int ret = 0;
+
+     ret |= register_config(0x13, 0x04);
+
+      /* 46: PGA_L to HPLOUT Volume Control Register */
+     ret |= register_config(0x2E, 0x00);
+
+     /* HPLOUT Output Level Control Register */
+     ret |= register_config(0x33, 0x00);
+
+      /* /Register 82: DAC_L1 to LEFT_LOP/M Volume Control Register */
+     ret |= register_config(0x52, 0x00);
+
+     /*92: DAC_R1 to RIGHT_LOP/M Volume Control Register */
+     ret |= register_config(0x5c, 0x80);
+         
+
+     return (ret < 0) ? -1 : 0;
+}
 
 

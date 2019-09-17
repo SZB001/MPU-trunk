@@ -752,7 +752,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 					sockSt.waittime = tm_get_time();
-					//sockproxy_nm_dial_recall();
+					sockproxy_nm_dial_recall();
 					return -1;
 				}
 				recall_idle = 0;

@@ -331,7 +331,7 @@ void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 
 int PP_doorLockCtrl_start(void)
 {
-	if(PP_rmtdoorCtrl.state.req == 1)
+	if((PP_rmtdoorCtrl.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
 	{
 		return 1;
 	}

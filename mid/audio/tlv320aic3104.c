@@ -9,6 +9,7 @@
 
 void audio_setup_aic3104(void)
 {
+	#if 0
     /*  Page Select Register */
     register_config(AUDIO_REG000, 0x00);
     /* Codec Sample Rate Select Register */
@@ -35,6 +36,7 @@ void audio_setup_aic3104(void)
     //register_config(0x10, 0x50);
     /* MIC1LP/LINE1LP to Left-ADC Control Register */
     register_config(AUDIO_REG019, 0x04);//fct04
+     //register_config(AUDIO_REG019, 0x84);//fct04
     /* MIC1RP/LINE1RP to Left-ADC Control Register */
     //register_config(0x15, 0x0);
 
@@ -76,6 +78,7 @@ void audio_setup_aic3104(void)
     register_config(AUDIO_REG090, 0x80);
     /* DAC_R1 to RIGHT_LOP/M Volume Control Register */
     register_config(AUDIO_REG092, 0x80);
+    //register_config(AUDIO_REG092, 0x8F);
     /* RIGHT_LOP/M Output Level Control Register */
     register_config(AUDIO_REG093, 0x0b);//fct 9b
     /*  Output Driver Short-Circuit Detection Status Register */
@@ -83,6 +86,128 @@ void audio_setup_aic3104(void)
     /* Clock Generation Control Register,MCLK or BCLK */
     register_config(AUDIO_REG102, 0xa2);
     //register_config(AUDIO_REG102, 0x02);//fct a2
+    register_config(AUDIO_REG108, 0x70);
+	#endif
+	int ret = 0;
+
+    //ret |= register_config(0x1, 0x80);
+    /* Codec Sample Rate Select Register */
+    ret |= register_config(0x2, 0xaa);
+
+    /* PLL Programming Register A */
+    ret |= register_config(0x3, 0x91);
+
+    /* PLL Programming Register B */
+    ret |= register_config(0x4, 0xc0);
+
+    /* Codec Data-Path Setup Register */
+    ret |= register_config(0x7, 0x1e);
+
+    /*Audio Serial Data Interface Control Register B*/
+    ret |= register_config(0x9, 0x40);
+
+    /*Audio Serial Data Interface Control Register C*/
+    ret |= register_config(0xa, 0x01);
+
+    /*Audio Codec Overflow Flag Register*/
+    ret |= register_config(0xb, 0x81);
+
+    /*Audio Codec Digital Filter Control Register*/
+    ret |= register_config(0xc, 0x5f);
+
+    /*Page 0/Register 16: Right-ADC PGA Gain Control Register*/
+    ret |= register_config(0x10, 0x50);
+
+    /* MIC1LP/LINE1LP to Left-ADC Control Register */
+    ret |= register_config(0x13, 0x04);
+
+    // ret |= register_config(0x15, 0x0);
+    /* MICBIAS Control Register */
+    ret |= register_config(0x19, 0x86);
+
+    /*  Left-AGC Gain Register */
+    ret |= register_config(0x20, 0x00);
+
+    /* Right-AGC Gain Register */
+    ret |= register_config(0x21, 0x00);
+
+    /* DAC Power and Output Driver Control Register */
+    ret |= register_config(0x25, 0xc0);
+
+    /* Left-DAC Digital Volume Control Register */
+    ret |= register_config(0x2b, 0x00);
+
+    /* Right-DAC Digital Volume Control Register */
+    ret |= register_config(0x2c, 0x00);
+
+    /* Right-DAC Digital Volume Control Register (continued) */
+    ret |= register_config(0x2f, 0x00);
+
+    /* HPLOUT Output Level Control Register */
+    ret |= register_config(0x33, 0x00);
+
+    /* 58: HPLCOM Output Level Control Register*/
+    ret |= register_config(0x3a, 0x07);
+
+    /* 64: DAC_R1 to HPROUT Volume Control Register */
+    //ret |= register_config(0x40, 0x80);
+
+    /* 65: HPROUT Output Level Control Register*/
+    ret |= register_config(0x41, 0x0f);
+
+    /* 72: HPRCOM Output Level Control Register */
+    //ret |= register_config(0x48, 0x07);
+
+    /*92: DAC_R1 to RIGHT_LOP/M Volume Control Register */
+    /* ICALL��Ϊһֱ����*/
+    //ret |= register_config(0x5c, 0x80);
+    ret |= register_config(0x5c, 0x00);
+
+    /* 95: Output Driver Short-Circuit Detection Status Register */
+    ret |= register_config(0x5f, 0x0c);
+
+    /*/Register 102: Clock Generation Control Register*/
+    ret |= register_config(0x66, 0xa2);
+
+     /* MIC1LP/LINE1LP to Left-ADC*/
+    ret |= register_config(0x13, 0x04);
+     
+    /*r 89: DAC_L1 to RIGHT_LOP/M Volume Control Register*/
+    ret |= register_config(0x59, 0x00); 
+
+    /* 93: RIGHT_LOP/M Output Level Control Register (continued)*/
+    ret |= register_config(0x5d, 0x5B); 
+
+    /* add */
+    /*r 15: Left-ADC PGA Gain Control Register*/
+    ret |= register_config(0xf, 0x00); 
+    /* r 22: MIC1RP/LINE1RP to Right-ADC Control Register */
+    ret |= register_config(0x16, 0x78);
+    
+    /* Register 23: Reserved Registe*/
+    // ret |= register_config(0x17, 0x78);
+    /*/Register 24: MIC1LP/LINE1LP to Right-ADC Control Register*/
+    ret |= register_config(0x18, 0x78); 
+
+    /* /Register 82: DAC_L1 to LEFT_LOP/M Volume Control Register */
+    //ret |= register_config(0x52, 0x80);
+    ret |= register_config(0x52, 0x00);
+
+    /*Register 86: LEFT_LOP/M Output Level Control Register*/
+    ret |= register_config(0x56, 0x91);
+
+
+     //ret |= register_config(0xf, 0x50);
+     //ret |= register_config(0x7, 0x80);
+     ret |= register_config(0x13, 0x40);
+
+     /* HPLOUT */
+     ret |= register_config(0x2E, 0x80);
+
+     ret |= register_config(0x33, 0x19);
+
+     //return (ret < 0) ? -1 : 0;
+     
 }
 
 
