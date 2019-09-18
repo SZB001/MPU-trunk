@@ -751,9 +751,9 @@ static void gb_data_gainCellVoltTemp(gb_info_t *gbinf)
 	gbinf->batt.temp[tempSnsrIndex]  = gbinf->batt.temp_info[GB_BATTCELLTEMP_ONE]?	\
 			(dbc_get_signal_from_id(gbinf->batt.temp_info[GB_BATTCELLTEMP_ONE])->value + 40):0xff;
 	gbinf->batt.cell[cellVoltIndex[0]] = gbinf->batt.cell_info[GB_BATTCELLVOLT_ONE]?	\
-			(dbc_get_signal_from_id(gbinf->batt.cell_info[GB_BATTCELLVOLT_ONE])->value * 1000):0xffff;
+			(dbc_get_signal_from_id(gbinf->batt.cell_info[GB_BATTCELLVOLT_ONE])->value):0xffff;
 	gbinf->batt.cell[cellVoltIndex[1]] = gbinf->batt.cell_info[GB_BATTCELLVOLT_TWO]?	\
-			(dbc_get_signal_from_id(gbinf->batt.cell_info[GB_BATTCELLVOLT_TWO])->value * 1000):0xffff;
+			(dbc_get_signal_from_id(gbinf->batt.cell_info[GB_BATTCELLVOLT_TWO])->value):0xffff;
 }
 
 
@@ -2812,9 +2812,9 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	}
 
 	/* 车载充电机 */
-	if(gbinf->vehi.info[GB_VINF_CHARGE])//
+	if(gbinf->gb_ConpSt.info[GB_CMPT_CHRGGUNCNCTLI])//
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_VINF_CHARGE])->value;
+		tmp = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHRGGUNCNCTLI])->value;
 		if((tmp>=0)&&(tmp<=2))
 		{
 			buf[len++] = tmp;
