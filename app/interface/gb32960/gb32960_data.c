@@ -1266,7 +1266,7 @@ static uint32_t gb_data_save_extr(gb_info_t *gbinf, uint8_t *buf)
     {
         minvid = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINVCID])->value;
     }
-	buf[len++] = (minvid != 0)?maxvid:0xff;
+	buf[len++] = (minvid != 0)?minvid:0xff;
     if (gbinf->extr[GB_XINF_MINV])
     {
         minv = dbc_get_signal_from_id(gbinf->extr[GB_XINF_MINV])->value;
