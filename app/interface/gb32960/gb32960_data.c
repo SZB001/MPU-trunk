@@ -997,9 +997,13 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 		if(gbinf->vehi.info[GB_VINF_BRKPAD])
 		{
 			tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value;
-			if(tmp >= 100)
+			if(tmp == 0)
 			{
-				tmp = 100;
+				tmp = 0x65;
+			}
+			else
+			{
+				tmp = 0;
 			}
 		}
 		else
