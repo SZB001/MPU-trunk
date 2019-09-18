@@ -751,9 +751,9 @@ static void gb_data_gainCellVoltTemp(gb_info_t *gbinf)
 	gbinf->batt.temp[tempSnsrIndex]  = gbinf->batt.temp_info[GB_BATTCELLTEMP_ONE]?	\
 			(dbc_get_signal_from_id(gbinf->batt.temp_info[GB_BATTCELLTEMP_ONE])->value + 40):0xff;
 	gbinf->batt.cell[cellVoltIndex[0]] = gbinf->batt.cell_info[GB_BATTCELLVOLT_ONE]?	\
-			(dbc_get_signal_from_id(gbinf->batt.cell_info[GB_BATTCELLVOLT_ONE])->value * 1000):0xffff;
+			(dbc_get_signal_from_id(gbinf->batt.cell_info[GB_BATTCELLVOLT_ONE])->value):0xffff;
 	gbinf->batt.cell[cellVoltIndex[1]] = gbinf->batt.cell_info[GB_BATTCELLVOLT_TWO]?	\
-			(dbc_get_signal_from_id(gbinf->batt.cell_info[GB_BATTCELLVOLT_TWO])->value * 1000):0xffff;
+			(dbc_get_signal_from_id(gbinf->batt.cell_info[GB_BATTCELLVOLT_TWO])->value):0xffff;
 }
 
 
@@ -1064,7 +1064,7 @@ static uint32_t gb_data_save_cell(gb_info_t *gbinf, uint8_t *buf)
 						   dbc_get_signal_from_id(gbinf->batt.cell_info[GB_BATTCELLVOLT_NUM])->value:0x1;
     buf[len++] = gbinf->batt.cell_cnt >> 8;
     buf[len++] = gbinf->batt.cell_cnt;
-	log_i(LOG_GB32960, "gbinf->batt.cell_cnt = %d",gbinf->batt.cell_cnt);
+	//log_i(LOG_GB32960, "gbinf->batt.cell_cnt = %d",gbinf->batt.cell_cnt);
 
     /* start cell of current frame */
     buf[len++] = (start + 1) >> 8;
@@ -1099,7 +1099,7 @@ static uint32_t gb_data_save_temp(gb_info_t *gbinf, uint8_t *buf)
 							dbc_get_signal_from_id(gbinf->batt.temp_info[GB_BATTCELLTEMP_NUM])->value:0x1;
     buf[len++] = gbinf->batt.temp_cnt >> 8;
     buf[len++] = gbinf->batt.temp_cnt;
-	log_i(LOG_GB32960, "gbinf->batt.temp_cnt = %d",gbinf->batt.temp_cnt);
+	//log_i(LOG_GB32960, "gbinf->batt.temp_cnt = %d",gbinf->batt.temp_cnt);
 
     for (i = 0; i < gbinf->batt.temp_cnt; i++)
     {
