@@ -972,6 +972,24 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
             }
             break;
         }
+
+
+		if((gbinf->vehi.info[GB_VINF_ACCPAD]) && \
+			(dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_ACCPAD])->value > 0))
+		{
+			tmp = tmp | 0x20;
+		}
+
+		if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV]) && \
+				(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV])->value))
+		{
+			if((gbinf->vehi.info[GB_VINF_BRKPAD]) && \
+				(0 == dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value))
+			{
+				tmp = tmp | 0x10;
+			}
+		}
+
         buf[len++] = tmp;
     }
     else
