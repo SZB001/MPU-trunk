@@ -77,6 +77,7 @@ extern int assist_get_call_status(void);
 extern void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara);
 extern uint8_t PP_rmtCfg_getIccid(uint8_t* iccid);
 extern unsigned char PP_rmtCtrl_cfg_CrashOutputSt(void);
+extern void audio_setup_aic3104(void);
 int Get_call_tpye(void);
 
 
@@ -823,11 +824,17 @@ void ivi_callstate_response_send(int fd  )
 		if(Get_call_tpye() == 1)
 		{
 			bcall_flag = 0;
+			//audio_reset_ICall();
+			//log_o(LOG_IVI,"reset ICAll");
 		}
 		if(Get_call_tpye() == 2)
 		{
-			bcall_flag = 0;
+			//audio_reset_ICall();
+			//log_o(LOG_IVI,"reset ICAll");
+			icall_flag = 0;
 		}
+		audio_setup_aic3104();
+		log_o(LOG_IVI,"reset ICAll");
 		log_o(LOG_IVI,"disconnected call");
 	}
 	
@@ -985,7 +992,7 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
         {
             TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_HEARTBEAT_RESULT;
             result.result = true;
-			log_o(LOG_IVI,"RESPONSE_HEARTBEAT");
+			//log_o(LOG_IVI,"RESPONSE_HEARTBEAT");
             break;
         }
 

@@ -76,23 +76,23 @@ int audio_open(void)
     }
 
     /* Automatic identification of audio chip */
-    audio_auto_ident();
+    //audio_auto_ident();
 
-    if (audio_dev_addr == LM49352_SLAVE_ADDR)
+   if (audio_dev_addr == LM49352_SLAVE_ADDR)
     {
-        ret |= lm49352_basic_setup();
+       ret |= lm49352_basic_setup();
         
-        // default
-        ret |= lm49352_route_mic_to_4G(false);
-        ret |= lm49352_route_4G_to_spkout(false);
-        ret |= lm49352_route_mic_bypass(false);
-        if (ret < 0)
-        {
-            log_e(LOG_MID, "Fail to init audio");
-            return -1;
-        }
-        log_o(LOG_MID, "open and init audio OK");
-        return 0;
+       //default
+       ret |= lm49352_route_mic_to_4G(false);
+       ret |= lm49352_route_4G_to_spkout(false);
+       ret |= lm49352_route_mic_bypass(false);
+       if (ret < 0)
+       {
+           log_e(LOG_MID, "Fail to init audio");
+           return -1;
+       }
+       log_o(LOG_MID, "open and init audio OK");
+       return 0;
     }
     else
     {
@@ -102,8 +102,8 @@ int audio_open(void)
 		//register_config(AUDIO_REG019,0x40);
 		//register_config(AUDIO_REG025,0x86);
 		//register_config(AUDIO_REG036,0xd0);
-		register_config(AUDIO_REG046,0x80);
-		register_config(AUDIO_REG047,0x00);
+		//register_config(AUDIO_REG046,0x80);
+		//register_config(AUDIO_REG047,0x00);
 		
         return 0;
     }     
@@ -193,10 +193,10 @@ int audio_basic_ECall(void)
      ret |= register_config(0x13, 0x04);
      
      /* 46: PGA_L to HPLOUT Volume Control Register */
-     ret |= register_config(0x2E, 0x00);
+     //ret |= register_config(0x2E, 0x00);
 
      /* HPLOUT Output Level Control Register */
-     ret |= register_config(0x33, 0x00);
+    // ret |= register_config(0x33, 0x00);
 
       /* /Register 82: DAC_L1 to LEFT_LOP/M Volume Control Register */
      ret |= register_config(0x52, 0x80);
@@ -218,10 +218,10 @@ int audio_basic_ICall(void)
      ret |= register_config(0x13, 0x04);
 
       /* 46: PGA_L to HPLOUT Volume Control Register */
-     ret |= register_config(0x2E, 0x00);
+     //ret |= register_config(0x2E, 0x00);
 
      /* HPLOUT Output Level Control Register */
-     ret |= register_config(0x33, 0x00);
+     //ret |= register_config(0x33, 0x00);
 
       /* /Register 82: DAC_L1 to LEFT_LOP/M Volume Control Register */
      ret |= register_config(0x52, 0x00);
@@ -232,5 +232,17 @@ int audio_basic_ICall(void)
 
      return (ret < 0) ? -1 : 0;
 }
-
+#if 0
+int audio_reset_ICall(void)
+{
+	int ret = 0;
+	ret |= register_config(0x13, 0x40);
+	ret |= register_config(0x20, 0x04);
+	ret |= register_config(0x5c, 0x00);
+	ret |= register_config(0x93, 0x40);
+	ret |= register_config(0xa0, 0x04);
+	ret |= register_config(0xdc, 0x00);
+	return ret;
+}
+#endif
 

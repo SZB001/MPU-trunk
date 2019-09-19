@@ -144,7 +144,8 @@ void audio_setup_aic3104(void)
     ret |= register_config(0x2f, 0x00);
 
     /* HPLOUT Output Level Control Register */
-    ret |= register_config(0x33, 0x00);
+    //ret |= register_config(0x33, 0x00);
+	ret |= register_config(0x33, 0x5b);
 
     /* 58: HPLCOM Output Level Control Register*/
     ret |= register_config(0x3a, 0x07);
@@ -199,13 +200,14 @@ void audio_setup_aic3104(void)
 
      //ret |= register_config(0xf, 0x50);
      //ret |= register_config(0x7, 0x80);
-     ret |= register_config(0x13, 0x40);
+     //ret |= register_config(0x13, 0x40);
+	 ret |= register_config(0x13, 0x00);
 
      /* HPLOUT */
      ret |= register_config(0x2E, 0x80);
 
-     ret |= register_config(0x33, 0x19);
-
+     //ret |= register_config(0x33, 0x19);
+	  ret |= register_config(0x33, 0x9b);
      //return (ret < 0) ? -1 : 0;
      
 }
