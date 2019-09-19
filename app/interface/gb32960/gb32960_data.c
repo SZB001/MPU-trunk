@@ -1074,7 +1074,7 @@ static uint32_t gb_data_save_cell(gb_info_t *gbinf, uint8_t *buf)
     cells = MIN(gbinf->batt.cell_cnt - start, 200);
     buf[len++] = cells;
 
-    for (i = start; i < start + cells; i++)
+    for (i = start + 1; i <= start + cells; i++)
     {
         tmp = gbinf->batt.cell[i];
         buf[len++] = tmp >> 8;
@@ -1101,7 +1101,7 @@ static uint32_t gb_data_save_temp(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = gbinf->batt.temp_cnt;
 	//log_i(LOG_GB32960, "gbinf->batt.temp_cnt = %d",gbinf->batt.temp_cnt);
 
-    for (i = 0; i < gbinf->batt.temp_cnt; i++)
+    for (i = 1; i <= gbinf->batt.temp_cnt; i++)
     {
         buf[len++] = gbinf->batt.temp[i];
     }
