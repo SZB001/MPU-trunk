@@ -241,7 +241,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 
 uint8_t PP_autodoorCtrl_start(void)  
 {
-	if(PP_rmtautodoorCtrl.state.req == 1)
+	if((PP_rmtautodoorCtrl.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
 	{
 		return 1;
 	}

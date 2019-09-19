@@ -229,7 +229,7 @@ int PP_ACCtrl_mainfunction(void *task)
 				else if(PP_get_powerst() == 3) //上高压电操作失败
 				{
 					PP_ACCtrl_ClearStatus();
-					log_o(LOG_HOZON,"request 1111111 ac\n");
+					//log_o(LOG_HOZON,"request 1111111 ac\n");
 					PP_rmtACCtrl.fail     = 1;
 					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 				}
@@ -384,7 +384,7 @@ int PP_ACCtrl_mainfunction(void *task)
 }
 uint8_t PP_ACCtrl_start(void)  
 {
-	if(PP_rmtACCtrl.state.req == 1)
+	if((PP_rmtACCtrl.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
 	{
 		return 1;
 	}
@@ -578,6 +578,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 			PP_rmtACCtrl.pack.DisBody.eventId = PP_rmtac_AppointBook[i].eventId; //eventid
 			PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
 			PP_rmtACCtrl.state.style   = RMTCTRL_TBOX;
+			
 			acc_requestpower_flag = 1;  //预约开空调时间到，请求上高压电
 		}
 		break;
@@ -772,8 +773,6 @@ void PP_AcCtrl_acStMonitor(void *task)
 				}
 			}
 		}
-
-		
 		/*
 		 * 检查睡眠条件
 		 * */

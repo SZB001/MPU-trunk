@@ -203,7 +203,7 @@ int PrvtProt_CC_mainfunction(void *task)
 			           
 			        }
 					log_o(LOG_HOZON,"xcall = %s",xcall);
-					audio_basic_ECall();
+					audio_basic_ICall();
 					if (strlen((char *)xcall) > 0)
 			        {
 			             makecall((char *)xcall);

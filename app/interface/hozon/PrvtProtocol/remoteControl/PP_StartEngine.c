@@ -299,7 +299,7 @@ uint8_t PP_get_powerst()
 
 uint8_t PP_startengine_start(void) 
 {
-	if(PP_rmtengineCtrl.state.req == 1)
+	if((PP_rmtengineCtrl.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
 	{
 		return 1;
 	}
@@ -414,6 +414,7 @@ void PP_rmtCtrl_checkenginetime(void)
 			log_o(LOG_HOZON, "Have seat heating or air conditioning turned on, request power on\n");
 			enginecation = PP_POWERON;  
 			PP_rmtengineCtrl.state.req = 1;
+			PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;
 		}
 	}
 	if(PP_rmtCtrl_cfg_RmtStartSt() == 2)   //在已经上高压电的情况下 
@@ -432,6 +433,7 @@ void PP_rmtCtrl_checkenginetime(void)
 		{
 			enginecation = PP_POWEROFF;
 			PP_rmtengineCtrl.state.req = 1;
+			PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;
 			log_o(LOG_HOZON,"15 minutes have arrived, request to shut down the engine\n");
 		}
 		if(PP_get_ac_requestpower_flag() == 2)  //空调关闭请求下电
@@ -442,6 +444,7 @@ void PP_rmtCtrl_checkenginetime(void)
 				log_o(LOG_HOZON,"Air conditioning is off, request to power off\n");
 				enginecation = PP_POWEROFF;
 				PP_rmtengineCtrl.state.req = 1;
+				PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;
 			}
 		}
 		if(PP_get_seat_requestpower_flag() == 2)  //座椅加热关闭请求下电
@@ -451,6 +454,7 @@ void PP_rmtCtrl_checkenginetime(void)
 				log_o(LOG_HOZON,"The seat is heated off and the request is powered off\n");
 				enginecation = PP_POWEROFF;
 				PP_rmtengineCtrl.state.req = 1;
+				PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;
 		
 			}
 		}

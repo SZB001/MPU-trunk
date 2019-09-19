@@ -288,7 +288,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 uint8_t PP_sunroofctrl_start(void) 
 {
 
-	if(PP_rmtsunroofCtrl.state.req == 1)
+	if((PP_rmtsunroofCtrl.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
 	{
 		return 1;
 	}

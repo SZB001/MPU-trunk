@@ -221,7 +221,7 @@ int PP_searchvehicle_mainfunction(void *task)
 
 uint8_t PP_searchvehicle_start(void) 
 {
-	if(PP_rmtsearchvehicle.state.req == 1)
+	if((PP_rmtsearchvehicle.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
 	{
 		return 1;
 	}

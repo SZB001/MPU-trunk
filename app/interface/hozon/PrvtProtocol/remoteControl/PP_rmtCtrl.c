@@ -30,7 +30,7 @@ description： include the header file
 #include "Bodyinfo.h"
 #include "per_encoder.h"
 #include "per_decoder.h"
-
+#include "ble.h"
 #include "init.h"
 #include "log.h"
 #include "list.h"
@@ -473,7 +473,17 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 			return;
 		}
-
+		if(GetPP_rmtCtrl_fotaUpgrade() == 1)
+		{
+			log_e(LOG_HOZON,"fota updating");
+			rmtCtrl_Stpara.reqType = PP_rmtCtrl.reqType;
+			rmtCtrl_Stpara.eventid = PP_rmtCtrl.eventid;
+			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+			rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
+			rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_FOTA_UPGRADE;
+			PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);	
+			return ;
+		}
 		switch((uint8_t)(Appdata.CtrlReq.rvcReqType >> 8))
 		{
 			case PP_RMTCTRL_DOORLOCK://控制车门锁
@@ -595,6 +605,53 @@ static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 {
+	pthread_mutex_lock(&rmtCtrlmtx);
+
+	if(GetPP_rmtCtrl_fotaUpgrade() == 1)
+	{
+		TCOM_MSG_HEADER msghdr;
+		PrvtProt_respbt_t respbt;
+		if(obj == BT_VEhICLE_DOOR_REQ)
+		{
+			respbt.msg_type = BT_VEhICLE_DOOR_RESP;
+		}
+		else if(obj == BT_PANORAMIC_SUNROOF_REQ)
+		{
+			respbt.msg_type = BT_PANORAMIC_SUNROOF_RESP;
+		}
+		else if(obj == BT_ELECTRIC_DOOR_REQ)
+		{
+			respbt.msg_type = BT_ELECTRIC_DOOR_RESP;
+		}
+		else if(obj == BT_REMOTE_FIND_CAR_REQ)
+		{
+			respbt.msg_type = BT_REMOTE_FIND_CAR_RESP;
+		}
+		else if(obj == BT_CHARGE_REQ)
+		{
+			respbt.msg_type = BT_CHARGE_RESP;
+		}
+		else if(obj == BT_POWER_CONTROL_REQ)
+		{
+			respbt.msg_type = BT_POWER_CONTROL_RESP;
+		}
+		else
+		{
+		}
+		respbt.cmd = cmd;
+		respbt.result = BT_FAIL;  //ִ执行失败
+		respbt.failtype = 0;
+		msghdr.sender    = MPU_MID_HOZON_PP;
+		msghdr.receiver  = MPU_MID_BLE;
+		msghdr.msgid     = BLE_MSG_CONTROL;
+		msghdr.msglen    = sizeof(PrvtProt_respbt_t);
+		tcom_send_msg(&msghdr, &respbt);
+
+		pthread_mutex_unlock(&rmtCtrlmtx);
+
+		return;
+	}
+
 	switch(obj)
 	{
 		case BT_VEhICLE_DOOR_REQ://控制车门锁
@@ -635,6 +692,8 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 		default:
 		break;
 	}
+
+	pthread_mutex_unlock(&rmtCtrlmtx);
 }
 
 
@@ -651,6 +710,8 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 ******************************************************/
 void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara)
 {
+	pthread_mutex_lock(&rmtCtrlmtx);
+
 	switch(obj)
 	{
 		case PP_RMTCTRL_CHARGE://充电
@@ -662,6 +723,8 @@ void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara)
 		default:
 		break;
 	}
+
+	pthread_mutex_unlock(&rmtCtrlmtx);
 }
 
 /******************************************************
@@ -677,6 +740,11 @@ void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara)
 ******************************************************/
 void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
+	if(GetPP_rmtCtrl_fotaUpgrade() == 1)
+	{
+		log_e(LOG_HOZON,"fota updating");
+		return 0;
+	}
 	switch((uint8_t)(reqType >> 8))
 	{
 		case PP_RMTCTRL_DOORLOCK://控制车门锁
@@ -1162,7 +1230,6 @@ int SetPP_rmtCtrl_FOTA_endInform(void)
 	int res = 0;
 	pthread_mutex_lock(&rmtCtrlmtx);
 	PP_rmtCtrl.fotaUpgradeSt = 0;
-
 	pthread_mutex_unlock(&rmtCtrlmtx);
 	return res;
 }

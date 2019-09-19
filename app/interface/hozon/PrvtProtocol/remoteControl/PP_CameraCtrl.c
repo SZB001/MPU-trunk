@@ -121,7 +121,7 @@ void SetPP_CameraCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 
 int PP_CameraCtrl_start(void)
 {	
-	if(PP_rmtCameraCtrl.state.req == 1)
+	if((PP_rmtCameraCtrl.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
 	{
 		return 1;
 	}

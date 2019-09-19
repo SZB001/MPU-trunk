@@ -215,7 +215,7 @@ int PP_startforbid_mainfunction(void *task)
 uint8_t PP_startforbid_start(void) 
 {
 
-	if(PP_rmtstartforbid.state.req == 1)
+	if((PP_rmtstartforbid.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
 	{
 		return 1;
 	}

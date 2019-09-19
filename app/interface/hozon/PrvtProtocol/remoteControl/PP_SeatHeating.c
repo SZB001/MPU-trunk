@@ -332,7 +332,8 @@ void PP_SeatCtrl_SeatStMonitor(void *task)
 
 uint8_t PP_seatheating_start(void) 
 {
-	if((PP_rmtseatheatCtrl[0].state.req == 1)||(PP_rmtseatheatCtrl[1].state.req == 1))
+	if(((PP_rmtseatheatCtrl[0].state.req == 1)||(PP_rmtseatheatCtrl[1].state.req == 1)) && \
+	   (GetPP_rmtCtrl_fotaUpgrade() == 0))
 	{
 		//log_o(LOG_HOZON,"seatheat start\n");
 		return 1;
