@@ -92,4 +92,5 @@ extern unsigned char GetPP_CertDL_allowBDLink(void);
 extern void PrvtProt_SaveCfgPara(unsigned char req);
 extern void setPrvtProt_sendHeartbeat(void);
 extern unsigned char GetPP_rmtCtrl_idle(void);
+extern int PrvtProt_do_heartbeatToTSP(void);
 #endif

@@ -108,7 +108,7 @@ static char powerOffFlag = 0xff;
 
 //static gb_stat_t *socket_st = NULL;
 static gb_stat_t state;
-static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void));
+//static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void));
 static int gb_shell_nosend(int argc, const char **argv);
 static void gb_reset(gb_stat_t *state)
 {
@@ -878,6 +878,10 @@ static int gb_do_receive(gb_stat_t *state)
     {
         int uselen, type, ack, dlen;
         uint8_t *data;
+        if (input[0] == '*' && input[1] == '*')
+        {
+            return 0;
+        }
 
         if (gb_makeup_pack(state, input, rlen, &uselen) != 0)
         {
@@ -1460,6 +1464,7 @@ static void *gb_main(void)
 		if(gbnosend != 0) continue;
 		
         res = gb_do_checksock(&state) ||	//检查连接
+              PrvtProt_do_heartbeatToTSP() || //心跳
               gb_do_receive(&state) ||		//socket 接收
               gb_do_wait(&state) ||			//等待
               gb_do_login(&state) ||		//登入
@@ -1786,7 +1791,7 @@ int gb_set_timeout(uint16_t timeout)
 *��  ������������
 *��  ע��
 ******************************************************/
-static int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void))
+int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void))
 {
 	int res;
 #if !GB32960_SOCKPROXY

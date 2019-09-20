@@ -288,4 +288,5 @@ extern int gb32960_networkSt(void);
 extern long gb_data_ResidualOdometer(void);
 extern long gb_data_ACChargeRemainTime(void);
 extern int gb32960_gbLogoutSt(void);
+extern int gb32960_MsgSend(uint8_t* Msg,int len,void (*sync)(void));
 #endif

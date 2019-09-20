@@ -67,7 +67,7 @@ int main(int argc , char **argv)
         fota_init,
         //hu_init,
         //ap_init,
-		//PrvtProt_init,
+		PrvtProt_init,
 		//sockproxy_init,
 		//ivi_init,
 		uds_node_miss_init,/* add by caoml*/

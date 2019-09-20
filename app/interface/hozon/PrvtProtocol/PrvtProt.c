@@ -177,16 +177,6 @@ int PrvtProt_init(INIT_PHASE phase)
 			ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN,pp_tboxsn,&cfglen);//��ȡtboxsn
 
 			PrvtProt_shell_init();
-			for(obj = 0;obj < PP_RMTFUNC_MAX;obj++)
-			{
-				if(PP_RmtFunc[obj].Init != NULL)
-				{
-					PP_RmtFunc[obj].Init();
-				}
-			}
-			InitPrvtProt_SignParse_Parameter();
-			PP_CertDownload_init();
-			//InitPPsignFltr_Parameter();
 		}
         break;
     }
@@ -259,30 +249,17 @@ static void *PrvtProt_main(void)
 		}
 		log_set_level(LOG_HOZON, LOG_DEBUG);
 
-		//TskPPsignFltr_MainFunction();
-		PP_CertDownload_mainfunction(&pp_task);
-
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
 				PrvtPro_do_wait(&pp_task) || 
 				PrvtProt_do_heartbeat(&pp_task);
 
-		for(obj = 0;obj < PP_RMTFUNC_MAX;obj++)
+#if 0
+		if(1 == sockproxy_socketState())
 		{
-			if(PP_RmtFunc[obj].mainFunc != NULL)
-			{
-				PP_RmtFunc[obj].mainFunc(&pp_task);
-			}
+			PrvtProt_do_HBRateSwitch(&pp_task);
 		}
-
-	if(1 == sockproxy_socketState())
-	{
-		PrvtProt_do_HBRateSwitch(&pp_task);
-	}
-
-		PP_sleepflag = PP_HBRateSwitch.sleepflag	&&	\
-					   PP_heartbeat.hbtasksleepflag &&	\
-					   GetPP_rmtCtrl_Sleep();
+#endif
     }
 	(void)res;
     return NULL;
@@ -614,24 +591,17 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 		PP_PackHeader_HB.tboxid = PrvtPro_BSEndianReverse(task->tboxid);
 		memcpy(&pack_Header, &PP_PackHeader_HB, sizeof(PrvtProt_pack_Header_t));
 
-		HB_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
-		HB_TxInform.eventtime = tm_get_time();
-		SP_data_write(pack_Header.sign,18,PP_HB_send_cb,&HB_TxInform);
-
+		gb32960_MsgSend(pack_Header.sign, 18, NULL);
+		protocol_dump(LOG_HOZON, "send heartbeat to tsp", pack_Header.sign, 18, 1);
 		PP_heartbeat.timer = tm_get_time();
-
-		log_i(LOG_HOZON, "PP_hbtaskmpurtcwakeuptestflag = %d\n",PP_hbtaskmpurtcwakeuptestflag);
-
-		return -1;
 	}
 
-	if(PP_heartbeat.timeoutCnt >= 3)
-	{
-		PP_heartbeat.timeoutCnt = 0;
-		log_i(LOG_HOZON, "heartbeat timeout too much!close socket\n");
-		//sockproxy_socketclose((int)(PP_SP_COLSE_PP));
-	}
 	return 0;
+}
+
+int PrvtProt_do_heartbeatToTSP(void)
+{
+	PrvtProt_do_heartbeat(&pp_task);
 }
 
 /******************************************************
