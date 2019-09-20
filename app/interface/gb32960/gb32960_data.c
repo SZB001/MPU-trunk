@@ -4690,11 +4690,11 @@ int gb_data_LHTemp(void)
 */
 uint8_t gb_data_chargeSt(void)
 {
-	//uint8_t st = 0;
-	//if(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])
-	//{
-	//	st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
-	//}
+	uint8_t st = 0;
+	if(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])
+	{
+		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
+	}
 
 	return gb_chargeSt;
 }

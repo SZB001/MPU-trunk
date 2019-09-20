@@ -49,6 +49,7 @@ description�� include the header file
 #include "../PrvtProt_cfg.h"
 #include "PP_rmtCtrl.h"
 #include "PP_canSend.h"
+#include "PP_SendWakeUptime.h"
 #include "PP_ChargeCtrl.h"
 
 /*******************************************************
@@ -1043,4 +1044,31 @@ void PP_ChargeCtrl_show(void)
 	log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.hour = %d",PP_rmtCharge_AppointBook.hour);
 	log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.min = %d",PP_rmtCharge_AppointBook.min);
 	log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.period = %d\n",PP_rmtCharge_AppointBook.period);
+}
+
+int PP_ChargeCtrl_waketime(void)
+{
+	waketime ch_time;
+	int low_time = 0;   
+	int temp_time = 0;
+	if(PP_rmtCharge_AppointBook.validFlg == 1)
+	{
+		ch_time.hour = PP_rmtCharge_AppointBook.hour;
+		ch_time.min = PP_rmtCharge_AppointBook.min;
+		ch_time.period = PP_rmtCharge_AppointBook.period;
+		temp_time = PP_waketime_to_min(&ch_time);
+		if(low_time == 0)
+		{
+			low_time = temp_time;
+		}
+		else
+		{
+			if(low_time > temp_time)
+			{
+				low_time = temp_time;
+			}
+		}
+	}
+	
+	return low_time;
 }

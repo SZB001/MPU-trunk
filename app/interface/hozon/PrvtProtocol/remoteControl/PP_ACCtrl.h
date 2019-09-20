@@ -22,7 +22,7 @@ typedef struct
 	uint8_t  waitSt;
 	uint64_t waittime;
 	uint8_t  dataUpdata;
-}__attribute__((packed))  PP_rmtACCtrlSt_t; /*remote control结构体*/
+}__attribute__((packed))  PP_rmtACCtrlSt_t; /*remote control锟结构锟斤拷*/
 
 typedef struct
 {
@@ -62,6 +62,6 @@ extern void ClearPP_ACCtrl_Request(void);
 extern void PP_ACCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 extern void PP_AcCtrl_acStMonitor(void *task);
 extern unsigned char GetPP_ACtrl_Sleep(void);
-
+extern int PP_ACCtrl_waketime(void);
 
 #endif 

@@ -190,7 +190,7 @@ unsigned char PP_rmtCtrl_cfg_HeatingSt(uint8_t dt)
 unsigned char PP_rmtCtrl_cfg_chargeOnOffSt(void)
 {
 	uint8_t OnOffSt = 0;
-	if((gb_data_chargeOnOffSt() == 1) && (PrvtProt_SignParse_chrgAptEnSt() == 0))
+	if((PrvtProt_SignParse_chrgOnOffSt() == 1) && (PrvtProt_SignParse_chrgAptEnSt() == 0))
 	{
 		OnOffSt = 1;
 	}

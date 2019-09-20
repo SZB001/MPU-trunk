@@ -1845,6 +1845,7 @@ void *ivi_main(void)
 				}
 				else
 				{
+					log_o(LOG_IVI,"HzTboxSvrDataRecv +++++++++++++++iRet[%d] \n", ret);
 					if (num > 0)
 		            {
 		                ihu_client.lasthearttime = tm_get_time();

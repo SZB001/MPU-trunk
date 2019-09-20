@@ -42,7 +42,7 @@
 #include "PP_rmtCtrl.h"
 #include "PP_canSend.h"
 #include "PPrmtCtrl_cfg.h"
-
+#include "PP_SendWakeUptime.h"
 
 #include "PP_ACCtrl.h"
 
@@ -153,7 +153,7 @@ void PP_ACCtrl_init(void)
 	PP_rmtACCtrl.pack.DisBody.appDataProVer = 256;
 	PP_rmtACCtrl.pack.DisBody.testFlag = 1;
 	len = ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t);
-	res = cfg_get_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,&len);  //从ROM中读出空调预约记录
+	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,&len);  //从ROM中读出空调预约记录
 	if(res==0) 
 	{
 		for(i=0;i<ACC_APPOINT_NUM;i++)
@@ -800,7 +800,7 @@ void PP_AcCtrl_acStMonitor(void *task)
 
 				//保存预约记录
 				log_o(LOG_HOZON,"save ac para when power off\n");
-				(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,10*sizeof(PP_rmtAC_AppointBook_t));
+				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,10*sizeof(PP_rmtAC_AppointBook_t));
 				PP_rmtACCtrl.state.dataUpdata = 0;
 			}
 		}
@@ -834,5 +834,34 @@ unsigned char GetPP_ACtrl_Sleep(void)
 	return PP_ACtrl_Sleepflag;
 }
 
+int PP_ACCtrl_waketime(void)
+{
+	int i;
+	waketime ac_time;
+	int low_time = 0;   
+	int temp_time = 0;
+	for(i=0;i<ACC_APPOINT_NUM;i++)
+	{
+		if(PP_rmtac_AppointBook[i].validFlg == 1)
+		{
+			ac_time.hour = PP_rmtac_AppointBook[i].hour;
+			ac_time.min = PP_rmtac_AppointBook[i].min;
+			ac_time.period = PP_rmtac_AppointBook[i].period;
+			temp_time = PP_waketime_to_min(&ac_time);
+			if(low_time == 0)
+			{
+				low_time = temp_time;
+			}
+			else
+			{
+				if(low_time > temp_time)
+				{
+					low_time = temp_time;
+				}
+			}
+		}
+	}
+	return low_time;
+}
 
 

@@ -27,7 +27,7 @@ int register_config(unsigned char reg, unsigned char val)
 {
     return audio_i2c_write(reg, &val, 1);
 }
-
+#if 0
 static void audio_auto_ident(void)
 {
     unsigned char rcvData[1];
@@ -62,7 +62,7 @@ static void audio_auto_ident(void)
     audio_dev_addr = TLV320AIC3104_SLAVE_ADDR;
 }
 
-
+#endif
 /* audio open */
 int audio_open(void)
 {

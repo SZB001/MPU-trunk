@@ -90,6 +90,7 @@ extern unsigned char PrvtProt_SignParse_cancelEngiSt(void);
 extern unsigned char PrvtProt_SignParse_autheSt(void);
 extern unsigned char PrvtProt_SignParse_authefailresion(void);
 extern unsigned char PrvtProt_SignParse_chrgAptEnSt(void);
+extern unsigned char PrvtProt_SignParse_chrgOnOffSt(void);
 extern unsigned char PrvtProt_SignParse_readyLightSt(void);
 extern unsigned char PrvtProt_SignParse_OtaFailSts(void);
 extern unsigned char PrvtProt_SignParse_pm25valid(void);
