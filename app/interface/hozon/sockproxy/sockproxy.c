@@ -1152,8 +1152,8 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 {
 	int res = 0;
-	log_i(LOG_SOCK_PROXY, "<<<<<sockproxy_MsgSend <<<<<");
-	if(pthread_mutex_trylock(&sendmtx) == 0)//(������������)��ȡ������
+	//log_i(LOG_SOCK_PROXY, "<<<<<sockproxy_MsgSend <<<<<");
+	if(pthread_mutex_trylock(&sendmtx) == 0)
 	{
 		if((sockSt.state == PP_OPENED) || (sockSt.state == PP_CLOSE_WAIT))
 		{
@@ -1202,11 +1202,8 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 		
 		pthread_mutex_unlock(&sendmtx);//解锁
 	}
-	else
-	{
-		log_e(LOG_SOCK_PROXY, "send busy");
-	}
-	log_i(LOG_SOCK_PROXY, ">>>>>sockproxy_MsgSend >>>>>");
+
+	//log_i(LOG_SOCK_PROXY, ">>>>>sockproxy_MsgSend >>>>>");
 	return res;
 }
 
