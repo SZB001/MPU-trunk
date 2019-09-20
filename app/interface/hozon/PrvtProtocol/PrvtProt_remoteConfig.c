@@ -1082,63 +1082,63 @@ void PP_rmtCfg_Seticcid(const char *iccid)
 ******************************************************/
 void PP_rmtCfg_ShowCfgPara(void)
 {
-	log_i(LOG_HOZON, "/******************************/");
-	log_i(LOG_HOZON, "       remote  cfg parameter    ");
-	log_i(LOG_HOZON, "/******************************/");
-	log_i(LOG_HOZON, "vehicleVin = %s",AppData_rmtCfg.checkReq.vehicleVin);
-	log_i(LOG_HOZON, "mcuSw = %s",AppData_rmtCfg.checkReq.mcuSw);
-	log_i(LOG_HOZON, "mpuSw = %s",AppData_rmtCfg.checkReq.mpuSw);
-	log_i(LOG_HOZON, "ICCID = %s",AppData_rmtCfg.checkReq.iccID);
-	log_i(LOG_HOZON, "cfgVersion = %s",AppData_rmtCfg.checkReq.cfgVersion);
-	log_i(LOG_HOZON, "configSw = %s",AppData_rmtCfg.checkReq.configSw);
-	log_i(LOG_HOZON, "btMacAddr = %s",AppData_rmtCfg.checkReq.btMacAddr);
+	log_o(LOG_HOZON, "/******************************/");
+	log_o(LOG_HOZON, "       remote  cfg parameter    ");
+	log_o(LOG_HOZON, "/******************************/");
+	log_o(LOG_HOZON, "vehicleVin = %s",AppData_rmtCfg.checkReq.vehicleVin);
+	log_o(LOG_HOZON, "mcuSw = %s",AppData_rmtCfg.checkReq.mcuSw);
+	log_o(LOG_HOZON, "mpuSw = %s",AppData_rmtCfg.checkReq.mpuSw);
+	log_o(LOG_HOZON, "ICCID = %s",AppData_rmtCfg.checkReq.iccID);
+	log_o(LOG_HOZON, "cfgVersion = %s",AppData_rmtCfg.checkReq.cfgVersion);
+	log_o(LOG_HOZON, "configSw = %s",AppData_rmtCfg.checkReq.configSw);
+	log_o(LOG_HOZON, "btMacAddr = %s",AppData_rmtCfg.checkReq.btMacAddr);
 
-	log_i(LOG_HOZON, "\n/* FICM info */");
-	log_i(LOG_HOZON, "FICM.token = %s",AppData_rmtCfg.ReadResp.FICM.token);
-	log_i(LOG_HOZON, "FICM.userID = %s",AppData_rmtCfg.ReadResp.FICM.userID);
-	log_i(LOG_HOZON, "FICM.directConnEnable = %d",AppData_rmtCfg.ReadResp.FICM.directConnEnable);
-	log_i(LOG_HOZON, "FICM.address = %s",AppData_rmtCfg.ReadResp.FICM.address);
-	log_i(LOG_HOZON, "FICM.port = %s",AppData_rmtCfg.ReadResp.FICM.port);
+	log_o(LOG_HOZON, "\n/* FICM info */");
+	log_o(LOG_HOZON, "FICM.token = %s",AppData_rmtCfg.ReadResp.FICM.token);
+	log_o(LOG_HOZON, "FICM.userID = %s",AppData_rmtCfg.ReadResp.FICM.userID);
+	log_o(LOG_HOZON, "FICM.directConnEnable = %d",AppData_rmtCfg.ReadResp.FICM.directConnEnable);
+	log_o(LOG_HOZON, "FICM.address = %s",AppData_rmtCfg.ReadResp.FICM.address);
+	log_o(LOG_HOZON, "FICM.port = %s",AppData_rmtCfg.ReadResp.FICM.port);
 
-	log_i(LOG_HOZON, "\n/* APN1 info */");
-	log_i(LOG_HOZON, "APN1.tspAddr = %s",AppData_rmtCfg.ReadResp.APN1.tspAddr);
-	log_i(LOG_HOZON, "APN1.tspUser = %s",AppData_rmtCfg.ReadResp.APN1.tspUser);
-	log_i(LOG_HOZON, "APN1.tspPass = %s",AppData_rmtCfg.ReadResp.APN1.tspPass);
-	log_i(LOG_HOZON, "APN1.tspIP = %s",AppData_rmtCfg.ReadResp.APN1.tspIP);
-	log_i(LOG_HOZON, "APN1.tspSms = %s",AppData_rmtCfg.ReadResp.APN1.tspSms);
-	log_i(LOG_HOZON, "APN1.tspPort = %s",AppData_rmtCfg.ReadResp.APN1.tspPort);
-	log_i(LOG_HOZON, "APN1.certAddress = %s",AppData_rmtCfg.ReadResp.APN1.certAddress);
-	log_i(LOG_HOZON, "APN1.certPort = %s",AppData_rmtCfg.ReadResp.APN1.certPort);
+	log_o(LOG_HOZON, "\n/* APN1 info */");
+	log_o(LOG_HOZON, "APN1.tspAddr = %s",AppData_rmtCfg.ReadResp.APN1.tspAddr);
+	log_o(LOG_HOZON, "APN1.tspUser = %s",AppData_rmtCfg.ReadResp.APN1.tspUser);
+	log_o(LOG_HOZON, "APN1.tspPass = %s",AppData_rmtCfg.ReadResp.APN1.tspPass);
+	log_o(LOG_HOZON, "APN1.tspIP = %s",AppData_rmtCfg.ReadResp.APN1.tspIP);
+	log_o(LOG_HOZON, "APN1.tspSms = %s",AppData_rmtCfg.ReadResp.APN1.tspSms);
+	log_o(LOG_HOZON, "APN1.tspPort = %s",AppData_rmtCfg.ReadResp.APN1.tspPort);
+	log_o(LOG_HOZON, "APN1.certAddress = %s",AppData_rmtCfg.ReadResp.APN1.certAddress);
+	log_o(LOG_HOZON, "APN1.certPort = %s",AppData_rmtCfg.ReadResp.APN1.certPort);
 
-	log_i(LOG_HOZON, "\n/* APN2 info */");
-	log_i(LOG_HOZON, "APN2.apn2Address = %s",AppData_rmtCfg.ReadResp.APN2.apn2Address);
-	log_i(LOG_HOZON, "APN2.apn2User = %s",AppData_rmtCfg.ReadResp.APN2.apn2User);
-	log_i(LOG_HOZON, "APN2.apn2Pass = %s",AppData_rmtCfg.ReadResp.APN2.apn2Pass);
+	log_o(LOG_HOZON, "\n/* APN2 info */");
+	log_o(LOG_HOZON, "APN2.apn2Address = %s",AppData_rmtCfg.ReadResp.APN2.apn2Address);
+	log_o(LOG_HOZON, "APN2.apn2User = %s",AppData_rmtCfg.ReadResp.APN2.apn2User);
+	log_o(LOG_HOZON, "APN2.apn2Pass = %s",AppData_rmtCfg.ReadResp.APN2.apn2Pass);
 
-	log_i(LOG_HOZON, "\n/* COMMON info */");
-	log_i(LOG_HOZON, "COMMON.actived = %d",AppData_rmtCfg.ReadResp.COMMON.actived);
-	log_i(LOG_HOZON, "COMMON.rcEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.rcEnabled);
-	log_i(LOG_HOZON, "COMMON.svtEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.svtEnabled);
-	log_i(LOG_HOZON, "COMMON.vsEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.vsEnabled);
-	log_i(LOG_HOZON, "COMMON.iCallEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.iCallEnabled);
-	log_i(LOG_HOZON, "COMMON.bCallEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.bCallEnabled);
-	log_i(LOG_HOZON, "COMMON.eCallEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.eCallEnabled);
-	log_i(LOG_HOZON, "COMMON.dcEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.dcEnabled);
-	log_i(LOG_HOZON, "COMMON.dtcEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.dtcEnabled);
-	log_i(LOG_HOZON, "COMMON.journeysEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.journeysEnabled);
-	log_i(LOG_HOZON, "COMMON.onlineInfEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.onlineInfEnabled);
-	log_i(LOG_HOZON, "COMMON.rChargeEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.rChargeEnabled);
-	log_i(LOG_HOZON, "COMMON.btKeyEntryEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.btKeyEntryEnabled);
-	log_i(LOG_HOZON, "COMMON.carEmpowerEnabled  = %d",AppData_rmtCfg.ReadResp.COMMON.carEmpowerEnabled);
-	log_i(LOG_HOZON, "COMMON.eventReportEnabled  = %d",AppData_rmtCfg.ReadResp.COMMON.eventReportEnabled);
-	log_i(LOG_HOZON, "COMMON.carAlarmEnabled  = %d",AppData_rmtCfg.ReadResp.COMMON.carAlarmEnabled);
-	log_i(LOG_HOZON, "COMMON.heartbeatTimeout  = %d",AppData_rmtCfg.ReadResp.COMMON.heartbeatTimeout);
-	log_i(LOG_HOZON, "COMMON.dormancyHeartbeatTimeout  = %d",AppData_rmtCfg.ReadResp.COMMON.dormancyHeartbeatTimeout);
+	log_o(LOG_HOZON, "\n/* COMMON info */");
+	log_o(LOG_HOZON, "COMMON.actived = %d",AppData_rmtCfg.ReadResp.COMMON.actived);
+	log_o(LOG_HOZON, "COMMON.rcEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.rcEnabled);
+	log_o(LOG_HOZON, "COMMON.svtEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.svtEnabled);
+	log_o(LOG_HOZON, "COMMON.vsEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.vsEnabled);
+	log_o(LOG_HOZON, "COMMON.iCallEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.iCallEnabled);
+	log_o(LOG_HOZON, "COMMON.bCallEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.bCallEnabled);
+	log_o(LOG_HOZON, "COMMON.eCallEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.eCallEnabled);
+	log_o(LOG_HOZON, "COMMON.dcEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.dcEnabled);
+	log_o(LOG_HOZON, "COMMON.dtcEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.dtcEnabled);
+	log_o(LOG_HOZON, "COMMON.journeysEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.journeysEnabled);
+	log_o(LOG_HOZON, "COMMON.onlineInfEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.onlineInfEnabled);
+	log_o(LOG_HOZON, "COMMON.rChargeEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.rChargeEnabled);
+	log_o(LOG_HOZON, "COMMON.btKeyEntryEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.btKeyEntryEnabled);
+	log_o(LOG_HOZON, "COMMON.carEmpowerEnabled  = %d",AppData_rmtCfg.ReadResp.COMMON.carEmpowerEnabled);
+	log_o(LOG_HOZON, "COMMON.eventReportEnabled  = %d",AppData_rmtCfg.ReadResp.COMMON.eventReportEnabled);
+	log_o(LOG_HOZON, "COMMON.carAlarmEnabled  = %d",AppData_rmtCfg.ReadResp.COMMON.carAlarmEnabled);
+	log_o(LOG_HOZON, "COMMON.heartbeatTimeout  = %d",AppData_rmtCfg.ReadResp.COMMON.heartbeatTimeout);
+	log_o(LOG_HOZON, "COMMON.dormancyHeartbeatTimeout  = %d",AppData_rmtCfg.ReadResp.COMMON.dormancyHeartbeatTimeout);
 
-	log_i(LOG_HOZON, "\n/* EXTEND info */");
-	log_i(LOG_HOZON, "EXTEND.ecallNO = %s",AppData_rmtCfg.ReadResp.EXTEND.ecallNO);
-	log_i(LOG_HOZON, "EXTEND.bcallNO = %s",AppData_rmtCfg.ReadResp.EXTEND.bcallNO);
-	log_i(LOG_HOZON, "EXTEND.ccNO = %s",AppData_rmtCfg.ReadResp.EXTEND.ccNO);
+	log_o(LOG_HOZON, "\n/* EXTEND info */");
+	log_o(LOG_HOZON, "EXTEND.ecallNO = %s",AppData_rmtCfg.ReadResp.EXTEND.ecallNO);
+	log_o(LOG_HOZON, "EXTEND.bcallNO = %s",AppData_rmtCfg.ReadResp.EXTEND.bcallNO);
+	log_o(LOG_HOZON, "EXTEND.ccNO = %s",AppData_rmtCfg.ReadResp.EXTEND.ccNO);
 
 }
 

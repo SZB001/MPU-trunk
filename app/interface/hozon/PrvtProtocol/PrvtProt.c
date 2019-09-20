@@ -41,6 +41,7 @@ description�� include the header file
 #include "cfg_api.h"
 #include "pm_api.h"
 #include "dev_api.h"
+#include "gb32960_api.h"
 #include "hozon_SP_api.h"
 #include "hozon_PP_api.h"
 #include "shell_api.h"
@@ -805,6 +806,15 @@ void PrvtPro_ShowPara(void)
 	PP_ChargeCtrl_show();
 	log_o(LOG_HOZON, "/*****************data over*****************/");
 
+	log_o(LOG_HOZON, "/**********show sleep status*********/");
+	sockproxy_showParameters();
+	log_o(LOG_SOCK_PROXY, "gb32960 sleep = %d\n",gb32960_gbLogoutSt());
+	log_o(LOG_SOCK_PROXY, "PrvtProt sleep = %d\n",GetPrvtProt_Sleep());
+	log_o(LOG_HOZON, "PP_heartbeat.hbtasksleepflag = %d",PP_heartbeat.hbtasksleepflag);
+	log_o(LOG_HOZON, "GetPP_rmtCtrl_Sleep = %d",GetPP_rmtCtrl_Sleep());
+	PP_rmtCtrl_showSleepPara();
+	log_o(LOG_HOZON, "/*****************data over*****************/");
+
 }
 
 /******************************************************
@@ -1027,8 +1037,6 @@ void setPrvtProt_sendHeartbeat(void)
 ******************************************************/
 unsigned char GetPrvtProt_Sleep(void)
 {
-	//log_i(LOG_HOZON, "PP_heartbeat.hbtasksleepflag = %d",PP_heartbeat.hbtasksleepflag);
-	//log_i(LOG_HOZON, "GetPP_rmtCtrl_Sleep = %d",GetPP_rmtCtrl_Sleep());
 	return PP_sleepflag;
 }
 

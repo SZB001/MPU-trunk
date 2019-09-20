@@ -16,7 +16,7 @@ description�� macro definitions
 /**********�꿪�ض���*********/
 #define SOCKPROXY_SHELL_PROTOCOL  	0//
 
-#define SOCKPROXY_SAFETY_EN		0//是否开启加密库
+#define SOCKPROXY_SAFETY_EN		1//是否开启加密库
 
 /**********�곣������*********/
 #define SOCK_SERVR_TIMEOUT    	(1000 * 5)

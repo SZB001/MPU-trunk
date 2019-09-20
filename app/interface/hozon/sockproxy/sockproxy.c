@@ -492,7 +492,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	}
 #endif
 
-#if 1
+#if 0
 	static uint64_t logtime = 0;
 	//static uint64_t closewaittime = 0;
 	if((tm_get_time() - logtime) > 5000)
@@ -1471,4 +1471,18 @@ static void sockproxy_nm_dial_recall(void)
 			recall_idle = 0;
 		}
     }
+}
+
+/*
+*	显示参数
+*/
+void sockproxy_showParameters(void)
+{
+	log_o(LOG_SOCK_PROXY, "sockSt.asynCloseFlg = %d\n",sockSt.asynCloseFlg);
+	log_o(LOG_SOCK_PROXY, "sockSt.asynCloseType = %d\n",sockSt.asynCloseType);
+	log_o(LOG_SOCK_PROXY, "sockSt.rcvflag = %d\n",sockSt.rcvflag);
+	log_o(LOG_SOCK_PROXY, "sockSt.sleepFlag = %d\n",sockSt.sleepFlag);
+	log_o(LOG_SOCK_PROXY, "sockSt.state = %d\n",sockSt.state);
+	log_o(LOG_SOCK_PROXY, "sockSt.BDLlinkSt = %d\n",sockSt.BDLlinkSt);
+	log_o(LOG_SOCK_PROXY, "sockSt.sglinkSt = %d\n",sockSt.sglinkSt);
 }

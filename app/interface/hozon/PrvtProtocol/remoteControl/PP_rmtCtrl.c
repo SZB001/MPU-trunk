@@ -743,8 +743,9 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 	if(GetPP_rmtCtrl_fotaUpgrade() == 1)
 	{
 		log_e(LOG_HOZON,"fota updating");
-		return 0;
+		return;
 	}
+	
 	switch((uint8_t)(reqType >> 8))
 	{
 		case PP_RMTCTRL_DOORLOCK://控制车门锁
@@ -1177,9 +1178,6 @@ void SetPP_rmtCtrl_Awaken(void)
 ******************************************************/
 unsigned char GetPP_rmtCtrl_Sleep(void)
 {
-	//log_i(LOG_HOZON, "GetPP_ChargeCtrl_Sleep = %d",GetPP_ChargeCtrl_Sleep());
-	//log_i(LOG_HOZON, "GetPP_ACtrl_Sleep = %d",GetPP_ACtrl_Sleep());
-	//log_i(LOG_HOZON, "GetPP_SeatCtrl_Sleep = %d",GetPP_SeatCtrl_Sleep());
 	return PP_rmtCtrl.sleepflag;
 }
 
@@ -1249,4 +1247,22 @@ void PP_rmtCtrl_SetFotaUpdateReq(unsigned char req)
 {
 	PP_rmtCtrl.fotaUpgradeSt = req;
 	PP_rmtCtrl.fotaAuthReq = 1;
+}
+
+/******************************************************
+*PP_rmtCtrl_showSleepPara
+
+*形  参：
+
+*返回值：
+
+*描  述：显示睡眠状态参数
+
+*备  注：
+******************************************************/
+void PP_rmtCtrl_showSleepPara(void)
+{
+	log_o(LOG_HOZON, "GetPP_ChargeCtrl_Sleep = %d",GetPP_ChargeCtrl_Sleep());
+	log_o(LOG_HOZON, "GetPP_ACtrl_Sleep = %d",GetPP_ACtrl_Sleep());
+	log_o(LOG_HOZON, "GetPP_SeatCtrl_Sleep = %d",GetPP_SeatCtrl_Sleep());
 }
