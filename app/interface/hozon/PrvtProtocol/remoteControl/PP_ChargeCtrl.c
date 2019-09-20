@@ -453,7 +453,8 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 		/*
 		 * IGN ON上电检查是否预约记录同步到tsp
 		 * */
-		if((PP_rmtChargeCtrl.state.bookSyncflag == 1) && (1 == PP_rmtCharge_AppointBook.validFlg))
+		if((1 == sockproxy_socketState()) && \
+			(PP_rmtChargeCtrl.state.bookSyncflag == 1) && (1 == PP_rmtCharge_AppointBook.validFlg))
 		{
 			log_i(LOG_HOZON,"Synchronize reservation records to TSP\n");
 			rmtCtrl_chargeStpara.rvcReqType 	= PP_rmtCharge_AppointBook.rvcReqType;
