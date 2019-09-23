@@ -1341,7 +1341,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     {
         if(2 == dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_DCDC])->value)
         {
-        	gb_warning[2][14] = 1;
+        	//gb_warning[2][14] = 1;
         }
     }
 
@@ -1351,7 +1351,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 		{
 			if(0 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_MAJORLOOP])->value)
 			{
-				gb_warning[2][16] = 1;
+				//gb_warning[2][16] = 1;
 			}
 		}
 
@@ -1359,7 +1359,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 		{
 			if(0 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_DCBUS])->value)
 			{
-				gb_warning[2][16] = 1;
+				//gb_warning[2][16] = 1;
 			}
 		}
 
@@ -1367,7 +1367,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 	    {
 			if(gbinf->warn[i][0x3F] && dbc_get_signal_from_id(gbinf->warn[i][0x3F])->value)
 			{
-				gb_warning[2][16] = 1;
+				//gb_warning[2][16] = 1;
 			}
 	    }
    }

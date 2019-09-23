@@ -599,9 +599,14 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 	return 0;
 }
 
-int PrvtProt_do_heartbeatToTSP(void)
+int PrvtProt_do_heartbeatToTSP(unsigned char noheartbeat)
 {
-	PrvtProt_do_heartbeat(&pp_task);
+	if(0 == noheartbeat)
+	{
+		PrvtProt_do_heartbeat(&pp_task);
+	}
+
+	return 0;
 }
 
 /******************************************************

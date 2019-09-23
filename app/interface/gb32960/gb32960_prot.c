@@ -103,7 +103,7 @@ static uint16_t   gb_regseq;
 static char       gb_iccid[21];
 static char       gb_battcode[64];
 static int        gb_allow_sleep;
-static char gbnosend = 0;
+static unsigned char gbnosend = 1;
 static char powerOffFlag = 0xff;
 
 //static gb_stat_t *socket_st = NULL;
@@ -1131,13 +1131,15 @@ static int gb_shell_setaddr(int argc, const char **argv)
 
 static int gb_shell_nosend(int argc, const char **argv)
 {
+    unsigned int val;
     if (argc != 1)
     {
         shellprintf(" usage: gbnosend <suspend> \r\n");
         return -1;
     }
 
-	sscanf(argv[0], "%c", &gbnosend);
+	sscanf(argv[0], "%u", &val);
+    gbnosend = (unsigned char)val;
     sleep(1);
 
     return 0;
@@ -1461,10 +1463,10 @@ static void *gb_main(void)
                 break;
         }
 
-		if(gbnosend != 0) continue;
+		//if(gbnosend != 0) continue;
 		
         res = gb_do_checksock(&state) ||	//检查连接
-              PrvtProt_do_heartbeatToTSP() || //心跳
+              PrvtProt_do_heartbeatToTSP(gbnosend) || //心跳
               gb_do_receive(&state) ||		//socket 接收
               gb_do_wait(&state) ||			//等待
               gb_do_login(&state) ||		//登入
