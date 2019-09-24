@@ -910,7 +910,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 
     /* total curr, scale 0.1V, offset -1000A */
     tmp = gbinf->vehi.info[GB_VINF_CURRENT] ?
-          (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_CURRENT])->value + 1000) * 10: 0xffff;
+          (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_CURRENT])->value *(-1) + 1000) * 10: 0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
@@ -1055,7 +1055,7 @@ static uint32_t gb_data_save_cell(gb_info_t *gbinf, uint8_t *buf)
 
     /* packet current, scale 0.1A, offset -1000A */
     tmp = gbinf->batt.current ?
-          dbc_get_signal_from_id(gbinf->batt.current)->value * 10 + 10000:0xffff;
+          dbc_get_signal_from_id(gbinf->batt.current)->value * (-1) * 10 + 10000:0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
