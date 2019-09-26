@@ -642,7 +642,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 				}
 
 				/*init SSL*/
-				iRet = SgHzTboxInit("/usrdata/pem/userAuth.crl");
+				iRet = SgHzTboxInit("/usrdata/pem/tbox.crl");
 				if(iRet != SOCKPROXY_SG_INIT_SUCCESS)
 				{
 					log_e(LOG_SOCK_PROXY,"HzTboxInit error+++++++++++++++iRet[%d] \n", iRet);

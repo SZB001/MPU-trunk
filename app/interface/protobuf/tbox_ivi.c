@@ -1547,7 +1547,7 @@ int tbox_ivi_create_pki_socket(void)
 	}
 	log_o(LOG_IVI,"HzTboxCertchainCfg +++++++++++++++iRet[%d] \n", ret);
 
-	ret  = HzTboxSrvInit("/usrdata/pem/userAuth.crl");//PKI 服务器初始化 
+	ret  = HzTboxSrvInit("/usrdata/pem/tbox.crl");//PKI 服务器初始化 
 	if(ret != 1151)
 	{
 		log_e(LOG_IVI,"HzTboxSrvInit error+++++++++++++++Ret[%d] \n", ret);
@@ -1870,7 +1870,8 @@ void *ivi_main(void)
 			case PKI_END:
 			{
 				ihu_client.stage = PKI_IDLE;
-			}
+			
+}
 			break;
 			default:
 	        break;
