@@ -78,6 +78,10 @@ int PrvtProtCfg_bcallTriggerEvent(void)
 	}
 	return 0;
 }
+int PrvtProtCfg_detectionTriggerEvent(void)
+{
+	return 0;
+}
 
 /******************************************************
 *��������PrvtProtCfg_engineSt

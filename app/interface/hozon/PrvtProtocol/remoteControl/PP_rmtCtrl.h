@@ -105,6 +105,7 @@ description： macro definitions
 #define BT_REMOTE_FIND_CAR_REQ    0x06 //寻车
 #define BT_CHARGE_REQ             0x07 //充电
 #define BT_POWER_CONTROL_REQ      0x08 //高压电
+#define BT_VEHILCLE_STATUS_REQ    0x0A //车辆状态查询
 
 
 //回复蓝牙消息类型
@@ -114,6 +115,8 @@ description： macro definitions
 #define BT_REMOTE_FIND_CAR_RESP   0x04 //寻车
 #define BT_CHARGE_RESP            0x05 //充电
 #define BT_POWER_CONTROL_RESP     0x06 //高压电
+#define BT_VEHILCLE_STATUS_RESP    0x0B //车辆状态查询
+
 
 /***********宏函数***********/
 typedef void (*PP_rmtCtrlInitObj)(void);//初始化
@@ -173,12 +176,24 @@ typedef enum
 	BT_SUCCESS = 0,
 	BT_FAIL ,
 }PP_REMTCTRL_BT;
+
+typedef struct
+{
+	size_t vehiclie_door_state;
+	size_t sunroof_state;
+	size_t electric_door_state;
+	size_t fine_car_state;
+	size_t charge_state;
+	size_t power_state;
+} bt_vihe_info_t;
+
 typedef struct
 {
 	uint8_t msg_type;
 	uint8_t cmd;
 	uint8_t result; // 0表示成功  1表示失败
 	uint8_t failtype;
+	bt_vihe_info_t state;
 }__attribute__((packed))  PrvtProt_respbt_t; /*resp bt结构体*/
 
 typedef struct
@@ -382,4 +397,5 @@ extern void SetPP_rmtCtrl_Awaken(void);
 extern unsigned char GetPP_rmtCtrl_Sleep(void);
 extern void PP_rmtCtrl_showSleepPara(void);
 extern unsigned char GetPP_rmtCtrl_fotaUpgrade(void);
+extern int PP_rmtCtrl_StInformBt(unsigned char obj, unsigned char cmd);
 #endif 

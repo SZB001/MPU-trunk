@@ -182,9 +182,34 @@ int pp_get_low_waketime(void)
 	int low_time = 0;
 	ac_time = PP_ACCtrl_waketime();
 	charge_time = PP_ChargeCtrl_waketime();
-	fota_time = 60;
-	
-	
+	fota_time = 1000;
+	low_time = ac_time;
+	if(low_time == 0)
+	{
+		if(charge_time != 0)
+		{
+			low_time = charge_time;
+			if((low_time > fota_time ) &&(fota_time != 0))
+			{
+				low_time = fota_time;
+			}
+		}
+		else
+		{
+			low_time = fota_time;
+		}
+	}
+	else
+	{
+		if((low_time > charge_time ) &&(charge_time != 0))
+		{
+			low_time = charge_time;
+		}
+		if((low_time > fota_time ) &&(fota_time != 0))
+		{
+			low_time = fota_time;
+		}
+	}
 	return low_time;
 }
 

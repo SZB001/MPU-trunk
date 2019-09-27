@@ -23,6 +23,7 @@ description�� include the header file
 #include <sys/types.h>
 #include <sysexits.h>	/* for EX_* exit codes */
 #include <assert.h>	/* for assert(3) */
+#include <fcntl.h>
 #include "constr_TYPE.h"
 #include "asn_codecs.h"
 #include "asn_application.h"
@@ -405,7 +406,7 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 				cretlistlen = rxPack->msgdata[7];
 				cretlistlen = (cretlistlen << 8) + rxPack->msgdata[8];
 
-				FILE *pfid = fopen("/usrdata/pem/tbox.crl","w");
+				FILE *pfid = fopen(PP_CERTDL_TBOXCRL,"w");
 				fwrite(&rxPack->msgdata[9],cretlistlen,1,pfid);
 				fclose(pfid);
 
@@ -929,7 +930,7 @@ static int PP_CertDL_do_checkRevocationList(PrvtProt_task_t *task)
 		{
 			int crtlen=0;
 			FILE *fp;
-			fp=fopen("/usrdata/pem/tbox.crl","r");
+			fp=fopen(PP_CERTDL_TBOXCRL,"a+");
 			if(fp!=NULL)
 			{
 			    fseek(fp, 0, SEEK_END);//将文件指针移动文件结尾
@@ -1056,7 +1057,18 @@ static int PP_CertDL_do_checkCertStatus(void)
 		int crlstatus;
 		if(0==PP_CertDL_getCertSn())
 		{
-			iRet = HzTboxUcRevokeStatus("/usrdata/pem/tbox.crl",PP_CertEn.para.certSn,&crlstatus);
+			if((access(PP_CERTDL_TBOXCRL,F_OK)) != 0)//文件不存在
+			{
+				int fd = file_create(PP_CERTDL_TBOXCRL, 0644);
+				if(fd < 0)
+				{
+					//log_e(LOG_SOCK_PROXY,"creat file /usrdata/pem/tbox.crl fail\n");
+					return -1;
+				}
+
+				close(fd);
+			}
+			iRet = HzTboxUcRevokeStatus(PP_CERTDL_TBOXCRL,PP_CertEn.para.certSn,&crlstatus);
 			if(iRet != 6205)
 			{
 				log_i(LOG_HOZON,"HzTboxUcRevokeStatus error+++++++++++++++iRet[%d] \n", iRet);

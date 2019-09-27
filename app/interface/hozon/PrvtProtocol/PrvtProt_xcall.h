@@ -41,6 +41,7 @@ typedef enum
 	PP_BCALL = 0,//
     PP_ECALL,//
 	PP_ICALL,
+	PP_detection,
 	PP_XCALL_MAX
 } PP_Xcall_INDEX;
 

@@ -175,6 +175,54 @@ set_exit:
 * Input 		 :	
 * Return		 : NONE
 ******************************************************************************/
+int bt_vihe_info_response_set(bt_send_t        *src, uint8_t *buf, size_t *bufsz)
+{
+	int res = YT_OK;
+    VehicleInfor *response;
+    size_t len;
+    if ((response = (VehicleInfor*) calloc(1, sizeof(VehicleInfor))) == NULL)
+    {
+        return YT_ERR;
+    }
+
+	vehicle_infor__init(response);
+	response->vehiclie_door_state = src->vehi_info.vehiclie_door_state;
+	response->sunroof_state 	  = src->vehi_info.sunroof_state ;
+	response->electric_door_state = src->vehi_info.electric_door_state;
+	response->fine_car_state	  = src->vehi_info.fine_car_state;
+	response->charge_state 		  = src->vehi_info.charge_state;
+	response->power_state         = src->vehi_info.power_state;
+    log_i(LOG_BLE, "src->vehi_info.vehiclie_door_state = %d", src->vehi_info.vehiclie_door_state);
+	log_i(LOG_BLE, "src->vehi_info.sunroof_state =%d", src->vehi_info.sunroof_state);
+
+	log_i(LOG_BLE, "src->vehi_info.electric_door_state = %d", src->vehi_info.electric_door_state);
+	log_i(LOG_BLE, "src->vehi_info.fine_car_state =%d", src->vehi_info.fine_car_state);
+	log_i(LOG_BLE, "src->vehi_info.charge_state =%d", src->vehi_info.charge_state);
+	log_i(LOG_BLE, "src->vehi_info.power_state =%d", src->vehi_info.power_state);
+
+	len = vehicle_infor__get_packed_size(response);
+	if (len > *bufsz)
+    {
+        goto set_exit0;
+    }
+	
+	*bufsz = len;
+
+	vehicle_infor__pack(response, buf);
+	goto set_exit;
+
+set_exit0:
+    res = YT_ERR;
+set_exit:
+    vehicle_infor__free_unpacked(response, NULL);
+    return res;
+}
+/******************************************************************************
+* Function Name  : bt_set_init
+* Description	 :	
+* Input 		 :	
+* Return		 : NONE
+******************************************************************************/
 int bt_channel_response_set(bt_send_t *src, uint8_t *buf, size_t *bufsz)
 {
 	int res = 0;
@@ -261,7 +309,7 @@ int hz_bt_send_init(bt_send_t *src, uint8_t *buf, size_t *bufsz)
 		}
 			
 	}
-	else
+	else if(APPLICATION_HEADER__MESSAGE_TYPE__ACK  == src->msg_type)
 	{
 		  iRet = bt_ack_response_set(src, aucTmp, &len);
 		  if (YT_ERR == iRet)
@@ -270,6 +318,19 @@ int hz_bt_send_init(bt_send_t *src, uint8_t *buf, size_t *bufsz)
 			  return YT_ERR;
 		  }
 		
+	}
+	else if(APPLICATION_HEADER__MESSAGE_TYPE__Vehicle_Infor  == src->msg_type)
+	{
+		  iRet = bt_vihe_info_response_set(src, aucTmp, &len);
+		  if (YT_ERR == iRet)
+		  {
+			  log_i(LOG_BLE, "bt_auth_response_set fail \r\n");
+			  return YT_ERR;
+		  }
+	}
+	else
+	{
+		return YT_ERR;
 	}
 	
 	src->ver_data1_len = len;
@@ -408,7 +469,7 @@ int set_cmd (uint8_t *buf, size_t len)
 	log_i(LOG_BLE, "request->msgcarrier.len = %d\r\n",request->msgcarrier.len);
 	switch(request->head->msg_type)
 	{
-		case BT_MSG_TYPE_VEH_DOOR:
+		case APPLICATION_HEADER__MESSAGE_TYPE__VEHICLE_DOOR:
 			{
 				VehicleDoor *door =  vehicle_door__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 				if (NULL == door)
@@ -426,7 +487,7 @@ int set_cmd (uint8_t *buf, size_t len)
 			    }
 			}
 			break;
-		case BT_MSG_TYPE_PAN_SUNROOf:
+		case APPLICATION_HEADER__MESSAGE_TYPE__PANORAMIC_SUNROOF:
 			{
 				PanoramicSunroof *sunroof =  panoramic_sunroof__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 			
@@ -445,7 +506,7 @@ int set_cmd (uint8_t *buf, size_t len)
 			    }
 			}
 			break;
-		case BT_MSG_TYPE_ELEC_DOOR:
+		case APPLICATION_HEADER__MESSAGE_TYPE__ELECTRIC_DOOR:
 			{
 				ElectricDoor *elec_door =  electric_door__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 			
@@ -464,7 +525,7 @@ int set_cmd (uint8_t *buf, size_t len)
 			    }
 			}
 			break;
-		case BT_MSG_TYPE_REMOTE_FIND_CAR:
+		case APPLICATION_HEADER__MESSAGE_TYPE__REMOTE_FINE_CAR:
 			{
 				RemoteFineCar *find_car =  remote_fine_car__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 				if (NULL == find_car)
@@ -482,7 +543,7 @@ int set_cmd (uint8_t *buf, size_t len)
 			    }
 			}
 			break;
-		case BT_MSG_TYPE_CHARGE:
+		case APPLICATION_HEADER__MESSAGE_TYPE__CHARGE:
 			{
 				Charge *charge =  charge__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 				if (NULL == charge)
@@ -500,7 +561,7 @@ int set_cmd (uint8_t *buf, size_t len)
 			    }
 			}
 			break;
-		case BT_VAH_MSG_TYPE_POWER_CONTRO:
+		case APPLICATION_HEADER__MESSAGE_TYPE__POWER_CONTRO:
 			{
 				PowerControl *control =  power_control__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 				if (NULL == control)
@@ -523,13 +584,21 @@ int set_cmd (uint8_t *buf, size_t len)
 		    break;
 	}
 
+	if (APPLICATION_HEADER__MESSAGE_TYPE__Vehicle_Status == request->head->msg_type)
+	{
+		g_hz_protocol.hz_send.msg_type =   APPLICATION_HEADER__MESSAGE_TYPE__Vehicle_Infor;
+	}
+	else
+	{
+		g_hz_protocol.hz_send.msg_type =   APPLICATION_HEADER__MESSAGE_TYPE__ACK;
+	}
 	if (request)
     {
         protocol_header__free_unpacked(request, NULL);
     }
 	
 	g_hz_protocol.type = request->head->msg_type;
-	g_hz_protocol.hz_send.msg_type =   BT_AH_MSG_TYPE_ACK;
+	
 	return YT_OK;
 }
 /******************************************************************************
@@ -538,7 +607,7 @@ int set_cmd (uint8_t *buf, size_t len)
 * Input 		 :	
 * Return		 : NONE
 ******************************************************************************/
-int bt_send_cmd_pack(unsigned char result, uint8_t *out, size_t *out_len)
+int bt_send_cmd_pack(unsigned char result, bt_vihe_info_t indata,  uint8_t *out, size_t *out_len)
 {
 	int temp_len = 0;
 	temp_len = 1024;
@@ -550,7 +619,29 @@ int bt_send_cmd_pack(unsigned char result, uint8_t *out, size_t *out_len)
 		return YT_ERR;
 	}
 
-	g_hz_protocol.hz_send.ack.state = result;
+	if (APPLICATION_HEADER__MESSAGE_TYPE__ACK == g_hz_protocol.hz_send.msg_type) 
+	{
+		g_hz_protocol.hz_send.ack.state = result;
+	}
+	else if (APPLICATION_HEADER__MESSAGE_TYPE__Vehicle_Infor == g_hz_protocol.hz_send.msg_type) 
+	{
+		log_i(LOG_BLE, "g_hz_protocol.hz_send.vehi_info.charge_state = %d \r\n",g_hz_protocol.hz_send.vehi_info.charge_state);
+		log_i(LOG_BLE, "indata.electric_door_state = %d \r\n",indata.electric_door_state);
+		log_i(LOG_BLE, "indata.fine_car_state = %d \r\n",indata.fine_car_state);
+		log_i(LOG_BLE, "indata.power_state = %d \r\n",indata.power_state);
+		log_i(LOG_BLE, "indata.sunroof_state = %d \r\n",indata.sunroof_state);
+		log_i(LOG_BLE, "indata.vehiclie_door_state = %d \r\n",indata.vehiclie_door_state);
+		g_hz_protocol.hz_send.vehi_info.charge_state 			= indata.charge_state;
+		g_hz_protocol.hz_send.vehi_info.electric_door_state		= indata.electric_door_state;
+		g_hz_protocol.hz_send.vehi_info.fine_car_state 			= indata.fine_car_state;
+		g_hz_protocol.hz_send.vehi_info.power_state				= indata.power_state;
+		g_hz_protocol.hz_send.vehi_info.sunroof_state 			= indata.sunroof_state;
+		g_hz_protocol.hz_send.vehi_info.vehiclie_door_state		= indata.vehiclie_door_state;
+	}
+	else
+	{
+		return YT_ERR;
+	}
 	  
 	if (YT_ERR == hz_bt_send_init(&g_hz_protocol.hz_send, Temp, (size_t *)&temp_len))
 	{

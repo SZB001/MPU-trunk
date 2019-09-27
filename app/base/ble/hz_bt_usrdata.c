@@ -227,3 +227,19 @@ int pb_ack_set(ACK **des, bt_send_t *src)
 
 	return 0;
 }
+int pb_vihe_info_set(VehicleInfor **des, bt_send_t *src)
+{
+	VehicleInfor *pobj = (VehicleInfor*) calloc(1, sizeof(VehicleInfor));
+    if (pobj)
+    {
+		vehicle_infor__init(pobj);
+		pobj->vehiclie_door_state = src->vehi_info.vehiclie_door_state;
+		pobj->sunroof_state = src->vehi_info.sunroof_state;
+		pobj->electric_door_state = src->vehi_info.electric_door_state;
+		pobj->fine_car_state = src->vehi_info.fine_car_state;
+		pobj->charge_state = src->vehi_info.charge_state;
+		pobj->power_state = src->vehi_info.power_state;
+        *des = pobj;
+    }
+	return 0;
+}

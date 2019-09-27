@@ -361,7 +361,6 @@ void PP_doorLockCtrl_ClearStatus(void)
 	PP_rmtdoorCtrl.state.req = 0;
 }
 /************************shell命令测试使用**************************/
-
 void PP_doorLockCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
 	PP_rmtdoorCtrl.state.reqType = (long)reqType;

@@ -161,6 +161,7 @@ void PP_rmtCfg_init(void)
 	else
 	{
 		memcpy(AppData_rmtCfg.ReadResp.cfgVersion,AppData_rmtCfg.checkReq.cfgVersion,32);
+		log_o(LOG_HOZON,"AppData_rmtCfg.ReadResp.cfgsuccess = %d",AppData_rmtCfg.ReadResp.cfgsuccess);
 		AppData_rmtCfg.ReadResp.cfgVersionlen = 32;
 		AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = 0;
 		AppData_rmtCfg.ReadResp.APN2.apn2ConfigValid = 0;

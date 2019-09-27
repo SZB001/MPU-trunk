@@ -29,6 +29,8 @@
 #define PP_SYS_CFG_PATH				"/usrapp/current/data/cfg/master/sys_cfg.dat"
 #define PP_SYS_CFG_BKUP_PATH		"/media/sdcard/usrdata/bkup/sys_cfg.dat"
 
+#define PP_CERTDL_TBOXCRL			"/usrdata/pem/tbox.crl"//吊销列表
+
 /* diag struct */
 typedef struct
 {

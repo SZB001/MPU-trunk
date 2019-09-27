@@ -20,6 +20,8 @@ description�� include the header file
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <fcntl.h>
+#include "file.h"
 #include "timer.h"
 #include "init.h"
 #include "log.h"
@@ -52,8 +54,7 @@ static pthread_mutex_t closemtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ���
 #if !SOCKPROXY_SAFETY_EN
 static pthread_mutex_t rcvmtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ����̬��
 #endif
-static char recall_idle = 0;
-static uint64_t    recall_timer;
+
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -99,8 +100,8 @@ int sockproxy_init(INIT_PHASE phase)
 			sockSt.sock_addr.port = 0;
 			sockSt.sock_addr.url[0] = 0;
 			sockSt.rcvType = PP_RCV_UNRCV;
-			sockSt.rcvstep = PP_RCV_IDLE;//���տ���
-			sockSt.rcvlen = 0;//��������֡�ܳ���
+			sockSt.rcvstep = PP_RCV_IDLE;
+			sockSt.rcvlen = 0;
 			sockSt.sleepFlag = 0;
 			SockproxyData_Init();
 		}
@@ -566,6 +567,8 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		sockSt.sleepFlag = 0;
 	}
 
+	sockproxy_nm_dial_recall();//重新拨号
+
     return 0;
 }
 
@@ -607,10 +610,9 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
 					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 					sockSt.waittime = tm_get_time();
-					sockproxy_nm_dial_recall();
+					//sockproxy_nm_dial_recall();
 					return -1;
 				}
-				recall_idle = 0;
 
 				for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
 				{
@@ -642,7 +644,18 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 				}
 
 				/*init SSL*/
-				iRet = SgHzTboxInit("/usrdata/pem/tbox.crl");
+				if((access(PP_CERTDL_TBOXCRL,F_OK)) != 0)//文件不存在
+				{
+					int fd = file_create(PP_CERTDL_TBOXCRL, 0644);
+					if(fd < 0)
+					{
+						//log_e(LOG_SOCK_PROXY,"creat file /usrdata/pem/tbox.crl fail\n");
+						return -1;
+					}
+
+					close(fd);
+				}
+				iRet = SgHzTboxInit(PP_CERTDL_TBOXCRL);
 				if(iRet != SOCKPROXY_SG_INIT_SUCCESS)
 				{
 					log_e(LOG_SOCK_PROXY,"HzTboxInit error+++++++++++++++iRet[%d] \n", iRet);
@@ -752,10 +765,9 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 					sockSt.waittime = tm_get_time();
-					sockproxy_nm_dial_recall();
+					//sockproxy_nm_dial_recall();
 					return -1;
 				}
-				recall_idle = 0;
 
 				for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
 				{
@@ -788,7 +800,18 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 				}
 
 				/*init SSL*/
-				iRet = HzTboxInit("/usrdata/pem/tbox.crl");
+				if((access(PP_CERTDL_TBOXCRL,F_OK)) != 0)//文件不存在
+				{
+					int fd = file_create(PP_CERTDL_TBOXCRL, 0644);
+					if(fd < 0)
+					{
+						//log_e(LOG_SOCK_PROXY,"creat file /usrdata/pem/tbox.crl fail\n");
+						return -1;
+					}
+
+					close(fd);
+				}
+				iRet = HzTboxInit(PP_CERTDL_TBOXCRL);
 				if(iRet != 1151)
 				{
 					log_e(LOG_SOCK_PROXY,"HzTboxInit error+++++++++++++++iRet[%d] \n", iRet);
@@ -1453,21 +1476,38 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 	}
 }
 
+/*
+*	重新拨号
+*/
 static void sockproxy_nm_dial_recall(void)
 {
-    if(!recall_idle)
-    {
-        recall_idle = 1;
-        recall_timer = tm_get_time();
-		nm_dial_restart();
-    }
-    else
-    {
-        if((tm_get_time() - recall_timer) > 20000)
+	static char IGNnewSt,IGNoldSt = 0;
+
+	IGNnewSt = dev_get_KL15_signal();
+	if(IGNoldSt != IGNnewSt)
+	{
+		IGNoldSt = IGNnewSt;
+		if(1 == IGNnewSt)//IGN ON
 		{
-			recall_idle = 0;
+			sockSt.recalltimer = tm_get_time();
 		}
-    }
+	}
+
+	if(1 == IGNnewSt)//IGN ON
+	{
+		if(sockSt.state == PP_CLOSED)
+		{
+			if((tm_get_time() - sockSt.recalltimer) >= 30000)
+			{
+				nm_dial_restart();
+				sockSt.recalltimer = tm_get_time();
+			}
+		}
+		else
+		{
+			sockSt.recalltimer = tm_get_time();
+		}
+	}
 }
 
 /*
@@ -1483,3 +1523,4 @@ void sockproxy_showParameters(void)
 	log_o(LOG_SOCK_PROXY, "sockSt.BDLlinkSt = %d\n",sockSt.BDLlinkSt);
 	log_o(LOG_SOCK_PROXY, "sockSt.sglinkSt = %d\n",sockSt.sglinkSt);
 }
+

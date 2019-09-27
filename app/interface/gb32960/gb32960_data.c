@@ -735,7 +735,6 @@ static uint8_t gb_engineSt = 2;//Ϩ��
 static long    gb_totalOdoMr = 0;//�ܼ����
 static long    gb_vehicleSOC = 0;//����
 static long    gb_vehicleSpeed = 0;//�ٶ�
-static uint8_t gb_chargeSt = 0;//
 static int canact = 0;
 
 /*
@@ -1985,7 +1984,6 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 	if(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])//
 	{
 		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
-		gb_chargeSt = tmp;//
 		switch(tmp)
 		{
 			case 0:
@@ -4691,12 +4689,12 @@ int gb_data_LHTemp(void)
 uint8_t gb_data_chargeSt(void)
 {
 	uint8_t st = 0;
-	if(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])
 	{
 		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
 	}
 
-	return gb_chargeSt;
+	return st;
 }
 
 /*

@@ -11,13 +11,14 @@
 #include <sys/types.h>  
 #include <sys/socket.h> 
 #include <pthread.h>
-
+#include "file.h"
 #include "timer.h"
 #include "msg_parse.h"
 #include "tbox_ivi_api.h"
 #include "log.h"
 #include "tcom_api.h"
 #include "gb32960_api.h"
+#include "hozon_PP_api.h"
 #include "pwdg.h"
 #include "cfg_api.h"
 #include "fault_sync.h"
@@ -1547,7 +1548,18 @@ int tbox_ivi_create_pki_socket(void)
 	}
 	log_o(LOG_IVI,"HzTboxCertchainCfg +++++++++++++++iRet[%d] \n", ret);
 
-	ret  = HzTboxSrvInit("/usrdata/pem/tbox.crl");//PKI 服务器初始化 
+    if((access(PP_CERTDL_TBOXCRL,F_OK)) != 0)//文件不存在
+    {
+        int fd = file_create(PP_CERTDL_TBOXCRL, 0644);
+        if(fd < 0)
+        {
+            //log_e(LOG_SOCK_PROXY,"creat file /usrdata/pem/tbox.crl fail\n");
+            return -1;
+        }
+
+        close(fd);
+    }
+	ret  = HzTboxSrvInit(PP_CERTDL_TBOXCRL);//PKI 服务器初始化 
 	if(ret != 1151)
 	{
 		log_e(LOG_IVI,"HzTboxSrvInit error+++++++++++++++Ret[%d] \n", ret);

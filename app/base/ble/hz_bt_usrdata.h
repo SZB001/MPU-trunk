@@ -143,6 +143,15 @@ typedef struct
 
 typedef struct
 {
+	size_t vehiclie_door_state;
+	size_t sunroof_state;
+	size_t electric_door_state;
+	size_t fine_car_state;
+	size_t charge_state;
+	size_t power_state;
+} bt_vihe_info_t;
+typedef struct
+{
 	uint8_t protocol_version; 
 	uint8_t msg_type;
 	valid_time_t Timestamp; 
@@ -181,6 +190,7 @@ typedef struct
 	int  ver_data1_len; 
     uint8_t  ver_data1[BT_BYTE_SZ_1024 -6];     /* data area */
 	bt_ack_t ack;
+	bt_vihe_info_t 		vehi_info;
 } bt_send_t;
 
 typedef struct
@@ -214,8 +224,9 @@ int pb_TimeStamp_set(TimeStamp **des, bt_send_t *src);
 int pb_ack_set(ACK **des, bt_send_t *src);
 
 void reset_hz_data(void);
-int bt_send_cmd_pack(unsigned char result, uint8_t *out, size_t *out_len);
+int bt_send_cmd_pack(unsigned char result, bt_vihe_info_t indata,  uint8_t *out, size_t *out_len);
 unsigned char bt_get_auth_flag(void);
 
+int pb_vihe_info_set(VehicleInfor **des, bt_send_t *src);
 
 #endif /* NGCP_PB_USR_H_ */

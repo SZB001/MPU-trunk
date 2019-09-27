@@ -258,7 +258,7 @@ static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,i
 #endif
 		case PP_MID_XCALL_REQ://�յ�tsp��ѯ����
 		{
-			if((Appdata.xcallType >=1) && (Appdata.xcallType <= 3))
+			if((Appdata.xcallType >=1) && (Appdata.xcallType <= 4))
 			{
 				if(PP_INIT_EVENTID == PP_xcall[Appdata.xcallType-1].packResp.DisBody.eventId)
 				{
@@ -326,6 +326,10 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 	{
 		PP_xcall[PP_BCALL].state.req = 1;
 	}
+	if(PrvtProtCfg_detectionTriggerEvent())//Live detection warning
+	{
+		PP_xcall[PP_detection].state.req = 1;
+	}
 	if(1 == PP_xcall[PP_ECALL].state.req)//ecall����
 	{
 		log_i(LOG_HOZON, "ecall trig\n");
@@ -365,6 +369,23 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		log_i(LOG_HOZON, "icall trig\n");
 		PP_xcall[PP_ICALL].state.req = 0;
 		if(0 == PP_xcall_xcallResponse(task,PP_ICALL))
+		{
+			idlenode = PP_getIdleNode();
+			memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+			PP_TxInform[idlenode].aid = PP_AID_XCALL;
+			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
+			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
+
+			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
+			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
+		}
+	}
+	/* Live detection warning  */
+	else if(1 == PP_xcall[PP_detection].state.req)
+	{
+		log_i(LOG_HOZON, "detection trig\n");
+		PP_xcall[PP_detection].state.req = 0;
+		if(0 == PP_xcall_xcallResponse(task,PP_detection))
 		{
 			idlenode = PP_getIdleNode();
 			memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
@@ -482,6 +503,16 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	Appdata_Xcall.srsSt 		= PrvtProtCfg_CrashOutputSt();//��ȫ����״̬ 1- ������2 - ����
 	Appdata_Xcall.updataTime 	= PrvtPro_getTimestamp();//����ʱ���
 	Appdata_Xcall.battSOCEx 	= PrvtProtCfg_vehicleSOC();//�������ʣ�������0-10000��0%-100%��
+	if(Appdata_Xcall.battSOCEx < 0)
+ 	{
+  		Appdata_Xcall.battSOCEx = 0;
+ 	}
+ 	else if (Appdata_Xcall.battSOCEx > 10000)
+	{
+  		Appdata_Xcall.battSOCEx = 10000;
+ 	}
+	else
+	{}
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_XCALL_RESP,PP_Xcall_Pack.msgdata,&msgdatalen,\
 									   &PP_xcall[XcallType].packResp.DisBody,&Appdata_Xcall))//���ݱ������Ƿ����
