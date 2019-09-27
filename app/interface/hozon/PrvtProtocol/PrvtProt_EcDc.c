@@ -566,6 +566,11 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					log_i(LOG_UPER_ECDC, "CommonConfigSet.eventReportEnabled  = %d\n",CommonConfigSet.eventReportEnabled );
 					CommonConfigSet.carAlarmEnabled  = rmtCfgReadResp_ptr->ReadResp.COMMON.carAlarmEnabled ;
 					log_i(LOG_UPER_ECDC, "CommonConfigSet.carAlarmEnabled  = %d\n",CommonConfigSet.carAlarmEnabled );
+					CommonConfigSet.heartbeatTimeout  = rmtCfgReadResp_ptr->ReadResp.COMMON.heartbeatTimeout ;
+					log_i(LOG_UPER_ECDC, "CommonConfigSet.heartbeatTimeout  = %d\n",CommonConfigSet.heartbeatTimeout );
+					CommonConfigSet.dormancyHeartbeatTimeout  = rmtCfgReadResp_ptr->ReadResp.COMMON.dormancyHeartbeatTimeout ;
+					log_i(LOG_UPER_ECDC, "CommonConfigSet.dormancyHeartbeatTimeout  = %d\n",CommonConfigSet.dormancyHeartbeatTimeout );
+					
 
 					commonConfig.list.array = &CommonConfigSet_ptr;
 					commonConfig.list.count =1;
