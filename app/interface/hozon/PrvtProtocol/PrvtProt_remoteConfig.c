@@ -1100,6 +1100,7 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_o(LOG_HOZON, "FICM.directConnEnable = %d",AppData_rmtCfg.ReadResp.FICM.directConnEnable);
 	log_o(LOG_HOZON, "FICM.address = %s",AppData_rmtCfg.ReadResp.FICM.address);
 	log_o(LOG_HOZON, "FICM.port = %s",AppData_rmtCfg.ReadResp.FICM.port);
+	log_o(LOG_HOZON, "FICM info length = %d\n",sizeof(App_rmtCfg_FICM_t));
 
 	log_o(LOG_HOZON, "\n/* APN1 info */");
 	log_o(LOG_HOZON, "APN1.tspAddr = %s",AppData_rmtCfg.ReadResp.APN1.tspAddr);
@@ -1110,11 +1111,13 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_o(LOG_HOZON, "APN1.tspPort = %s",AppData_rmtCfg.ReadResp.APN1.tspPort);
 	log_o(LOG_HOZON, "APN1.certAddress = %s",AppData_rmtCfg.ReadResp.APN1.certAddress);
 	log_o(LOG_HOZON, "APN1.certPort = %s",AppData_rmtCfg.ReadResp.APN1.certPort);
+	log_o(LOG_HOZON, "APN1 info length = %d\n",sizeof(App_rmtCfg_APN1_t));
 
 	log_o(LOG_HOZON, "\n/* APN2 info */");
 	log_o(LOG_HOZON, "APN2.apn2Address = %s",AppData_rmtCfg.ReadResp.APN2.apn2Address);
 	log_o(LOG_HOZON, "APN2.apn2User = %s",AppData_rmtCfg.ReadResp.APN2.apn2User);
 	log_o(LOG_HOZON, "APN2.apn2Pass = %s",AppData_rmtCfg.ReadResp.APN2.apn2Pass);
+	log_o(LOG_HOZON, "APN2 info length = %d\n",sizeof(App_rmtCfg_APN2_t));
 
 	log_o(LOG_HOZON, "\n/* COMMON info */");
 	log_o(LOG_HOZON, "COMMON.actived = %d",AppData_rmtCfg.ReadResp.COMMON.actived);
@@ -1135,12 +1138,13 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_o(LOG_HOZON, "COMMON.carAlarmEnabled  = %d",AppData_rmtCfg.ReadResp.COMMON.carAlarmEnabled);
 	log_o(LOG_HOZON, "COMMON.heartbeatTimeout  = %d",AppData_rmtCfg.ReadResp.COMMON.heartbeatTimeout);
 	log_o(LOG_HOZON, "COMMON.dormancyHeartbeatTimeout  = %d",AppData_rmtCfg.ReadResp.COMMON.dormancyHeartbeatTimeout);
+	log_o(LOG_HOZON, "COMMON info length = %d\n",sizeof(App_rmtCfg_COMMON_t));
 
 	log_o(LOG_HOZON, "\n/* EXTEND info */");
 	log_o(LOG_HOZON, "EXTEND.ecallNO = %s",AppData_rmtCfg.ReadResp.EXTEND.ecallNO);
 	log_o(LOG_HOZON, "EXTEND.bcallNO = %s",AppData_rmtCfg.ReadResp.EXTEND.bcallNO);
 	log_o(LOG_HOZON, "EXTEND.ccNO = %s",AppData_rmtCfg.ReadResp.EXTEND.ccNO);
-
+	log_o(LOG_HOZON, "EXTEND info length = %d\n",sizeof(App_rmtCfg_EXTEND_t));
 }
 
 #if 0

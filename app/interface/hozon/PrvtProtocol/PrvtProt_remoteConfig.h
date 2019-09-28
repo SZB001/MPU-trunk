@@ -116,7 +116,7 @@ typedef struct
 {
 	uint8_t token[33];
 	uint8_t userID[33];
-	int directConnEnable;
+	char directConnEnable;
 	uint8_t address[33];
 	uint8_t port[7];
 	uint8_t tokenlen;
@@ -160,22 +160,22 @@ typedef struct
 
 typedef struct
 {
-	int actived;
-	int rcEnabled;
-	int svtEnabled;
-	int vsEnabled;
-	int iCallEnabled;
-	int bCallEnabled;
-	int eCallEnabled;
-	int dcEnabled;
-	int dtcEnabled;
-	int journeysEnabled;
-	int onlineInfEnabled;
-	int rChargeEnabled;
-	int btKeyEntryEnabled;
-	int carEmpowerEnabled;
-	int	eventReportEnabled;
-	int carAlarmEnabled;
+	char actived;
+	char rcEnabled;
+	char svtEnabled;
+	char vsEnabled;
+	char iCallEnabled;
+	char bCallEnabled;
+	char eCallEnabled;
+	char dcEnabled;
+	char dtcEnabled;
+	char journeysEnabled;
+	char onlineInfEnabled;
+	char rChargeEnabled;
+	char btKeyEntryEnabled;
+	char carEmpowerEnabled;
+	char eventReportEnabled;
+	char carAlarmEnabled;
 	int heartbeatTimeout;
 	int dormancyHeartbeatTimeout;
 	uint8_t commonConfigValid;
@@ -228,7 +228,7 @@ typedef struct
 
 typedef struct
 {
-	int result;
+	char result;
 	uint8_t cfgVersion[33];
 	uint8_t cfgVersionlen;
 	App_rmtCfg_FICM_t 	FICM;
