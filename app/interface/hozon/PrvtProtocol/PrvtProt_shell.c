@@ -66,6 +66,7 @@ static int PP_shell_SetCertDLUpdata(int argc, const char **argv);
 static int PP_shell_SetCfgSaveReq(int argc, const char **argv);
 static int PP_shell_SetRmtCfgEnable(int argc, const char **argv);
 static int PP_shell_SetRmtFotaUpdate(int argc, const char **argv);
+static int PP_shell_SetNTPTime(int argc, const char **argv);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -111,6 +112,8 @@ void PrvtProt_shell_init(void)
     shell_cmd_register("hozon_setcfgenable", PP_shell_SetRmtCfgEnable, "set save cfg enable");
 
     shell_cmd_register("hozon_setfotaupdate", PP_shell_SetRmtFotaUpdate, "set rmt fota update");
+
+    shell_cmd_register("hozon_setntptime", PP_shell_SetNTPTime, "set ntp time");
 }
 
 
@@ -638,6 +641,34 @@ static int PP_shell_SetRmtFotaUpdate(int argc, const char **argv)
 	sscanf(argv[0], "%u", &rmtfotaUpdateReq);
 
 	PP_rmtCtrl_SetFotaUpdateReq((uint8_t)rmtfotaUpdateReq);
+    sleep(1);
+    return 0;
+}
+
+/******************************************************
+*PP_shell_SetNTPTime
+
+*��  �Σ�����
+
+
+*����ֵ��void
+
+*��  ����
+
+*��  ע��
+******************************************************/
+static int PP_shell_SetNTPTime(int argc, const char **argv)
+{
+	unsigned int ntpreq;
+    if (argc != 1)
+    {
+        shellprintf(" usage: hozon_setntptime <set ntp req>\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &ntpreq);
+
+	PP_SetNTPTime((uint8_t)ntpreq);
     sleep(1);
     return 0;
 }

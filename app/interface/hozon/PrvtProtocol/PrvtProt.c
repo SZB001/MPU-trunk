@@ -261,6 +261,7 @@ static void *PrvtProt_main(void)
 		log_set_level(LOG_HOZON, LOG_DEBUG);
 
 		//TskPPsignFltr_MainFunction();
+		PP_ntp_calibrationTime();
 		PP_CertDownload_mainfunction(&pp_task);
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||
