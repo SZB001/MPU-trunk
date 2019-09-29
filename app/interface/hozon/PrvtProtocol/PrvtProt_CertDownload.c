@@ -226,21 +226,24 @@ void PP_CertDownload_init(void)
 int PP_CertDownload_mainfunction(void *task)
 {
 	int res;
-	static uint8_t	checkcertflag = 0;
+	static char pp_certDL_IGNnewSt,pp_certDL_IGNoldSt = 0;
 	PrvtProt_task_t *task_ptr = (PrvtProt_task_t*)task;
 
-	if(dev_get_KL15_signal())
+	pp_certDL_IGNnewSt = dev_get_KL15_signal();
+	if(pp_certDL_IGNoldSt != pp_certDL_IGNnewSt)
 	{
-		if(!checkcertflag)
+		pp_certDL_IGNoldSt = pp_certDL_IGNnewSt;
+		if(1 == pp_certDL_IGNnewSt)//IGN ON
 		{
 			PP_CertDL_checkCertExist();
-			checkcertflag = 1;
+			PP_CertRevoList.checkRevoFlag = 1;
+		}
+		else
+		{
+			PP_CertUpdata.Cnt = 0;
 		}
 	}
-	else
-	{
-		checkcertflag = 0;
-	}
+
 
 	res = 		PP_CertDL_do_checksock(task_ptr) 			||	\
 				PP_CertDL_do_rcvMsg(task_ptr) 				||	\
@@ -478,14 +481,19 @@ static int PP_CertDL_do_wait(PrvtProt_task_t *task)
 static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 {
 	#define	PP_CERTDL_TIMES			3
-	#define	PP_CERTUPDATE_TIMES		1
+	#define	PP_CERTUPDATE_TIMES		3
 	static  uint8_t	certvalidflag = 0;
+
+	if(0 == dev_get_KL15_signal())
+	{
+		return 0;
+	}
 
 	if((1 != PP_rmtCfg_getIccid((uint8_t*)PP_CertDL_ICCID)) || \
 			(1 != PrvtProt_tboxsnValidity()) || \
 			(1 != gb32960_vinValidity()))
 	{
-		return -1;
+		return 0;
 	}
 
 
