@@ -916,6 +916,8 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
 			if(ret != 1275)
 			{
 				log_e(LOG_SOCK_PROXY,"SgHzTboxDataRecv error+++++++++++++++iRet[%d] [%d]\n", ret, rlen);
+				sockproxy_socketclose((int)(PP_SP_COLSE_SP + 8));
+				sockSt.rcvflag = 0;
 				return -1;
 			}
 		}
@@ -925,6 +927,8 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
 			if(ret != 1275)
 			{
 				log_e(LOG_SOCK_PROXY,"HzTboxDataRecv error+++++++++++++++iRet[%d] [%d]\n", ret, rlen);
+				sockproxy_socketclose((int)(PP_SP_COLSE_SP + 9));
+				sockSt.rcvflag = 0;	
 				return -1;
 			}
 		}
