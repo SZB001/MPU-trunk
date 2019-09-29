@@ -357,6 +357,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 			PP_rmtCfg.state.waitSt  = PP_RMTCFG_WAIT_IDLE;
 			PP_rmtCfg.state.CfgSt 	= PP_RMTCFG_CFG_IDLE;
 			rmtCfg->state.cfgAccept = 1;//�������ø�������
+			PP_rmtCfg.state.eventid = MsgDataBody.eventId;
 			if(0 == PP_rmtCfg_ConnResp(task,rmtCfg,&MsgDataBody))
 			{
 				idlenode = PP_getIdleNode();
@@ -379,7 +380,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 			{
 				AppData_rmtCfg.ReadResp.readreq[AppData_rmtCfg.ReadReq.SettingId[i] -1] = 1;
 			}
-
+			PP_rmtCfg.state.eventid = MsgDataBody.eventId;
 			if(0 == PP_rmtCfg_ReadCfgResp(task,rmtCfg,&MsgDataBody))
 			{
 				idlenode = PP_getIdleNode();
@@ -653,7 +654,7 @@ static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 	/*body*/
 	memcpy(rmtCfg->pack.DisBody.aID,"100",3);
 	rmtCfg->pack.DisBody.mID = PP_MID_CHECK_CFG_REQ;
-	rmtCfg->pack.DisBody.eventId = PP_AID_RMTCFG + PP_MID_CHECK_CFG_REQ;
+	rmtCfg->pack.DisBody.eventId = PP_rmtCfg.state.eventid;
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
@@ -700,7 +701,7 @@ static int PP_rmtCfg_getRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 	/*body*/
 	memcpy(rmtCfg->pack.DisBody.aID,"100",3);
 	rmtCfg->pack.DisBody.mID = PP_MID_GET_CFG_REQ;
-	rmtCfg->pack.DisBody.eventId = PP_AID_RMTCFG + PP_MID_GET_CFG_REQ;
+	rmtCfg->pack.DisBody.eventId = PP_rmtCfg.state.eventid;
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
@@ -749,7 +750,7 @@ static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtC
 	/*body*/
 	memcpy(rmtCfg->pack.DisBody.aID,"100",3);
 	rmtCfg->pack.DisBody.mID = PP_MID_CFG_END;
-	rmtCfg->pack.DisBody.eventId = PP_AID_RMTCFG + PP_MID_CFG_END;
+	rmtCfg->pack.DisBody.eventId = PP_rmtCfg.state.eventid;
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */

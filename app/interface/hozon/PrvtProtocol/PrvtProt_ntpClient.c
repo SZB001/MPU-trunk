@@ -17,11 +17,9 @@ Data			Vasion			author
 #include "dev_time.h"
 #include "gb32960_api.h"
 
-#define NTP_SERVICE_CNT 5
-//char ntp_serverURL[NTP_SERVICE_CNT][64]= {"ntp1.aliyun.com","time1.aliyun.com","time.syn029.com", \
+#define NTP_SERVICE_CNT 6
+char ntp_serverURL[NTP_SERVICE_CNT][64]= {"cn.ntp.org.cn","ntp1.aliyun.com","time1.aliyun.com","time.syn029.com", \
                                           "ntp.shu.edu.cn", "s2f.time.edu.cn"};
-char ntp_serverURL[NTP_SERVICE_CNT][64]= {"120.25.115.20","203.107.6.88","1.83.125.83", \
-                                          "202.120.127.191", "202.112.29.82"};
 static unsigned char ntp_test_flag = 0; 
 static int PP_ntp_service(char * serviceURL);
 /*
@@ -63,7 +61,7 @@ static int PP_ntp_service(char * serviceURL)
     int ret = 1;
     
     memset(line , 0 ,sizeof(line));
-    sprintf(line , "ntp server URL: %s\n", serviceURL);
+    sprintf(line , "ntpdate %s", serviceURL);
 
     /*start ntp calibration*/
     ptream = popen(line,"r");

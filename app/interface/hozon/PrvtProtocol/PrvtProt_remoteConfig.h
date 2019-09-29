@@ -78,6 +78,7 @@ typedef struct
 	uint8_t needUpdata;//�����Ƿ���Ҫ����
 	uint8_t cfgAccept;//�����Ƿ����
 	uint8_t cfgsuccess;//�����Ƿ�ɹ�
+	long 	eventid;
 }__attribute__((packed))  PrvtProt_rmtCfgSt_t; /*remote config�ṹ��*/
 
 /***********************************
