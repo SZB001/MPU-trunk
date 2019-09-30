@@ -177,8 +177,11 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 	Bodydata.eventTime 		= DisptrBody->eventTime;
 	log_i(LOG_UPER_ECDC, "Bodydata.eventTime = %d\n",Bodydata.eventTime);
 
-	Bodydata.expirationTime = &DisptrBody->expTime;	/* OPTIONAL */;
-	log_i(LOG_UPER_ECDC, "Bodydata.expirationTime = %d\n",*Bodydata.expirationTime);
+	if((-1) != DisptrBody->expTime)
+	{
+		Bodydata.expirationTime = &DisptrBody->expTime;	/* OPTIONAL */;
+		log_i(LOG_UPER_ECDC, "Bodydata.expirationTime = %d\n",*Bodydata.expirationTime);
+	}
 
 	Bodydata.eventId 		= &DisptrBody->eventId;/* OPTIONAL */
 	log_i(LOG_UPER_ECDC, "Bodydata.eventId = %d\n",*Bodydata.eventId);
@@ -1229,6 +1232,8 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 	
 	if(msgDataBody != NULL)
 	{
+		msgDataBody->expTime = -1;
+
 		memcpy(msgDataBody->aID,RxBodydata.aID.buf,sizeof(char)*3);
 		msgDataBody->mID 	= RxBodydata.mID;
 		msgDataBody->eventTime 	= RxBodydata.eventTime;

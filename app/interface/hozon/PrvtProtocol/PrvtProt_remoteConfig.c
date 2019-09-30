@@ -656,7 +656,7 @@ static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 	rmtCfg->pack.DisBody.mID = PP_MID_CHECK_CFG_REQ;
 	rmtCfg->pack.DisBody.eventId = PP_rmtCfg.state.eventid;
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.expTime   = PP_rmtCfg.state.expTime;
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	rmtCfg->pack.DisBody.appDataProVer = 256;
 	rmtCfg->pack.DisBody.testFlag = 1;
@@ -703,7 +703,7 @@ static int PP_rmtCfg_getRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 	rmtCfg->pack.DisBody.mID = PP_MID_GET_CFG_REQ;
 	rmtCfg->pack.DisBody.eventId = PP_rmtCfg.state.eventid;
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.expTime   = PP_rmtCfg.state.expTime;
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	rmtCfg->pack.DisBody.appDataProVer = 256;
 	rmtCfg->pack.DisBody.testFlag = 1;
@@ -752,7 +752,7 @@ static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtC
 	rmtCfg->pack.DisBody.mID = PP_MID_CFG_END;
 	rmtCfg->pack.DisBody.eventId = PP_rmtCfg.state.eventid;
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.expTime   = PP_rmtCfg.state.expTime;
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	rmtCfg->pack.DisBody.appDataProVer = 256;
 	rmtCfg->pack.DisBody.testFlag = 1;
@@ -808,7 +808,7 @@ static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,Pr
 	rmtCfg->pack.DisBody.eventId = MsgDataBody->eventId;
 	rmtCfg->pack.DisBody.mID = PP_MID_CONN_CFG_RESP;
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.expTime   = PP_rmtCfg.state.expTime;
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	rmtCfg->pack.DisBody.appDataProVer = 256;
 	rmtCfg->pack.DisBody.testFlag = 1;
@@ -861,7 +861,7 @@ static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg
 	rmtCfg->pack.DisBody.mID = PP_MID_READ_CFG_RESP;
 	rmtCfg->pack.DisBody.eventId = MsgDataBody->eventId;
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtCfg->pack.DisBody.expTime   = PrvtPro_getTimestamp();
+	rmtCfg->pack.DisBody.expTime   = PP_rmtCfg.state.expTime;
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	rmtCfg->pack.DisBody.appDataProVer = 256;
 	rmtCfg->pack.DisBody.testFlag = 1;
@@ -896,6 +896,7 @@ void PP_rmtCfg_SetCfgReq(unsigned char req)
 {
 	PP_rmtCfg.state.req  = req;
 	PP_rmtCfg.state.reqCnt = 0;
+	PP_rmtCfg.state.expTime = -1;
 	PP_rmtCfg.state.period = tm_get_time();
 }
 
@@ -1095,6 +1096,7 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_o(LOG_HOZON, "configSw = %s",AppData_rmtCfg.checkReq.configSw);
 	log_o(LOG_HOZON, "btMacAddr = %s",AppData_rmtCfg.checkReq.btMacAddr);
 
+	log_o(LOG_HOZON, "AppData_rmtCfg.ReadResp.cfgsuccess = %d",AppData_rmtCfg.ReadResp.cfgsuccess);
 	log_o(LOG_HOZON, "\n/* FICM info */");
 	log_o(LOG_HOZON, "FICM.token = %s",AppData_rmtCfg.ReadResp.FICM.token);
 	log_o(LOG_HOZON, "FICM.userID = %s",AppData_rmtCfg.ReadResp.FICM.userID);

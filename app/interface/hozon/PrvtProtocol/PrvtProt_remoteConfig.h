@@ -79,6 +79,7 @@ typedef struct
 	uint8_t cfgAccept;//�����Ƿ����
 	uint8_t cfgsuccess;//�����Ƿ�ɹ�
 	long 	eventid;
+	long	expTime;
 }__attribute__((packed))  PrvtProt_rmtCfgSt_t; /*remote config�ṹ��*/
 
 /***********************************
