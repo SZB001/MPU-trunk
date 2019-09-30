@@ -7,8 +7,8 @@
 #define COM_SDCARD_DIR_PKI         COM_SDCARD_DIR"/pki"
 #define COM_SDCARD_DIR_PKI_CIPHER  "/media/sdcard/usrdata/pki/sn_sim_encinfo.txt"
 #define COM_SDCARD_DIR_PKI_CERT	   "/media/sdcard/usrdata/pki/userAuth.cer"
-#define COM_SDCARD_DIR_PKI_KEY	   "/media/sdcard/usrdata/pki/two_certreqmain.key"
-#define COM_SDCARD_DIR_PKI_CSR	   "/media/sdcard/usrdata/pki/two_certreqmain.csr"
+#define COM_SDCARD_DIR_PKI_KEY	   "/media/sdcard/usrdata/pki/userAuth.key"
+#define COM_SDCARD_DIR_PKI_CSR	   "/media/sdcard/usrdata/pki/userAuth.csr"
 
 #define PP_CERTDL_CIPHER_PATH			"/usrdata/pki/sn_sim_encinfo.txt"
 
@@ -16,13 +16,13 @@
 #define PP_CERTDL_CERTPATH_UPDATE	"/usrdata/pki/update/userAuth.cer"
 #define PP_CERTDL_CERTPATH_BKUP		"/usrdata/pki/bkup/userAuth.cer"
 
-#define PP_CERTDL_TWOCERTKEYPATH			"/usrdata/pki/two_certreqmain.key"
-#define PP_CERTDL_TWOCERTRKEYPATH_UPDATE	"/usrdata/pki/update/two_certreqmain.key"
-#define PP_CERTDL_TWOCERTRKEYPATH_BKUP		"/usrdata/pki/bkup/two_certreqmain.key"
+#define PP_CERTDL_TWOCERTKEYPATH			"/usrdata/pki/userAuth.key"
+#define PP_CERTDL_TWOCERTRKEYPATH_UPDATE	"/usrdata/pki/update/userAuth.key"
+#define PP_CERTDL_TWOCERTRKEYPATH_BKUP		"/usrdata/pki/bkup/userAuth.key"
 
-#define PP_CERTDL_TWOCERTCSRPATH			"/usrdata/pki/two_certreqmain.csr"
-#define PP_CERTDL_TWOCERTRCSRPATH_UPDATE	"/usrdata/pki/update/two_certreqmain.csr"
-#define PP_CERTDL_TWOCERTRCSRPATH_BKUP		"/usrdata/pki/bkup/two_certreqmain.csr"
+#define PP_CERTDL_TWOCERTCSRPATH			"/usrdata/pki/userAuth.csr"
+#define PP_CERTDL_TWOCERTRCSRPATH_UPDATE	"/usrdata/pki/update/userAuth.csr"
+#define PP_CERTDL_TWOCERTRCSRPATH_BKUP		"/usrdata/pki/bkup/userAuth.csr"
 
 #define PP_USER_CFG_PATH			"/usrdata/dev/data/usrdata/master/user_regseq.dat"
 #define PP_USER_CFG_BKUP_PATH		"/media/sdcard/usrdata/bkup/user_regseq.dat"

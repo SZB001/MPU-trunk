@@ -788,7 +788,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 				/*create random string*/
 				sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
 				sprintf(ScdPath, "%s","/usrdata/pem/TspCA.cer");
-				sprintf(UsCertPath, "%s",PP_CERTDL_CERTPATH);//申请的证书，要跟two_certreqmain.key匹配使用
+				sprintf(UsCertPath, "%s",PP_CERTDL_CERTPATH);//申请的证书，要跟userAuth.key匹配使用
 				sprintf(UsKeyPath, "%s",PP_CERTDL_TWOCERTKEYPATH);
 				iRet = HzTboxCertchainCfg(OnePath, ScdPath, UsCertPath, UsKeyPath);
 				if(iRet != 2030)

@@ -1537,8 +1537,8 @@ int tbox_ivi_create_pki_socket(void)
 	
 	sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
 	sprintf(ScdPath, "%s","/usrdata/pem/TerminalCA.cer");
-	sprintf(UsCertPath, "%s","/usrdata/pki/userAuth.cer");
-	sprintf(UsKeyPath, "%s","/usrdata/pki/two_certreqmain.key");
+	sprintf(UsCertPath, "%s",PP_CERTDL_CERTPATH);
+	sprintf(UsKeyPath, "%s",PP_CERTDL_TWOCERTKEYPATH);
 	ret = HzTboxCertchainCfg(OnePath, ScdPath, UsCertPath, UsKeyPath);
 	//ret = HzTboxCertchainCfgSrv(OnePath, ScdPath, UsCertPath, UsKeyPath);
 	if(ret != 2030)

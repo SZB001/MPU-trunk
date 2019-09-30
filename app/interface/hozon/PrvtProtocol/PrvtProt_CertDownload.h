@@ -61,7 +61,7 @@ description�� macro definitions
 #define PP_CERTDL_MID_RESP			2
 #define PP_CERTDL_MID_UDREQ			3
 #define PP_CERTDL_MID_UDREQRESP		4
-#define PP_CERTDL_MID_CERT_EN		5
+#define PP_CERTDL_MID_CERT_STATUS	5
 #define PP_CERTDL_MID_REVOLISTREQ	6
 #define PP_CERTDL_MID_REVOLISTRESP	7
 
@@ -144,7 +144,7 @@ typedef struct
 	uint8_t		failureType;
 	uint8_t		certSnLength;
 	char 		certSn[256];
-}PP_CertificateEnReq_t;
+}PP_CertificateStatus_t;
 
 typedef struct
 {
