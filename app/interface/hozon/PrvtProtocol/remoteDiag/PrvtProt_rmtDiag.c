@@ -1020,7 +1020,7 @@ static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 	PP_rmtDiag.pack.DisBody.mID = PP_MID_DIAG_STATUS;
 	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	PP_rmtDiag.pack.DisBody.eventId = 0;//tsp未指定eventid，传0，已沟通
-	PP_rmtDiag.pack.DisBody.expTime = PrvtPro_getTimestamp();
+	PP_rmtDiag.pack.DisBody.expTime = -1;
 	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
 	PP_rmtDiag.pack.DisBody.testFlag = 1;
