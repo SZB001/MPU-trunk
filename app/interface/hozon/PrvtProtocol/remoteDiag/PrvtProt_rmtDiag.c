@@ -198,7 +198,7 @@ int PP_rmtDiag_mainfunction(void *task)
 
 	if(1 == sockproxy_socketState())//socket open
 	{
-		//PP_rmtDiag_do_DiagActiveReport((PrvtProt_task_t*)task);//主动诊断上报
+		PP_rmtDiag_do_DiagActiveReport((PrvtProt_task_t*)task);//主动诊断上报
 	}
 
 	return res;

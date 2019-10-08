@@ -1079,6 +1079,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			DiagCode_t DiagCode[255];
 
 			memset(&DiagnosticSt,0 , sizeof(DiagnosticStInfo_t));
+			memset(diagcode,0 , sizeof(diagcode));
 			for(i = 0;i<DiagnosticSt_ptr->diagobjnum;i++)
 			{
 				DiagnosticResp[i].diagType = DiagnosticSt_ptr->diagStatus[i].diagType;
@@ -1097,7 +1098,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 						DiagCode[j].faultCodeType = DiagnosticSt_ptr->diagStatus[i].diagCode[j].faultCodeType;
 						DiagCode[j].lowByte  = DiagnosticSt_ptr->diagStatus[i].diagCode[j].lowByte;
 						DiagCode[j].diagTime = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagTime;
-						ASN_SEQUENCE_ADD(&diagcode[i], &DiagCode[j]);
+						asn_set_add(&diagcode[i], &DiagCode[j]);
 
 						log_i(LOG_UPER_ECDC, "DiagCode[%d].diagCode.buf = %5.5s\n",j,DiagCode[j].diagCode.buf);
 						log_i(LOG_UPER_ECDC, "DiagCode[%d].diagCode.size = %d\n",j,DiagCode[j].diagCode.size);
@@ -1112,16 +1113,16 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					log_i(LOG_UPER_ECDC, "DiagnosticSt_ptr->diagStatus[%d].diagcodenum = %d",i,DiagnosticSt_ptr->diagStatus[i].diagcodenum);
 					DiagnosticResp[i].diagCode = NULL;
 				}
-				ASN_SEQUENCE_ADD(&DiagnosticSt, &DiagnosticResp[i]);
+				asn_set_add(&DiagnosticSt, &DiagnosticResp[i]);
 			}
 
 			ec = uper_encode(pduType_GIAG_st,(void *) &DiagnosticSt,PrvtPro_writeout,&key);
 			//释放ADD
 			for(i = 0;i<DiagnosticSt_ptr->diagobjnum;i++)
 			{
-				//if(DiagnosticSt_ptr->diagStatus[i].diagcodenum > 0)
+				if(DiagnosticSt_ptr->diagStatus[i].diagcodenum > 0)
 				{
-					//asn_set_empty(&diagcode[i]);
+					asn_set_empty(&diagcode[i]);
 				}
 			}
 			asn_set_empty(&DiagnosticSt);
