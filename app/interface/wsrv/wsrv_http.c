@@ -259,7 +259,7 @@ unsigned int wsrv_calc_wake_time(RTCTIME abstime,
     unsigned int settimetick = 0;
 
     settimetick = hour * 60 + min;
-    abstimetick = abstime.hour * 60 + min;
+    abstimetick = abstime.hour * 60 + abstime.min;
 
     if(settimetick >= abstimetick)
     {

@@ -67,6 +67,7 @@ static int PP_shell_SetCfgSaveReq(int argc, const char **argv);
 static int PP_shell_SetRmtCfgEnable(int argc, const char **argv);
 static int PP_shell_SetRmtFotaUpdate(int argc, const char **argv);
 static int PP_shell_SetNTPTime(int argc, const char **argv);
+static int PP_shell_rmtdiagtest(int argc, const char **argv);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -114,6 +115,8 @@ void PrvtProt_shell_init(void)
     shell_cmd_register("hozon_setfotaupdate", PP_shell_SetRmtFotaUpdate, "set rmt fota update");
 
     shell_cmd_register("hozon_setntptime", PP_shell_SetNTPTime, "set ntp time");
+
+    shell_cmd_register("hozon_rmtdiagtest", PP_shell_rmtdiagtest, "rmt diag test");
 }
 
 
@@ -504,6 +507,37 @@ static int PP_shell_SetdiagReq(int argc, const char **argv)
 	sscanf(argv[0], "%u", &diagReq);
 	sscanf(argv[1], "%u", &reqtype);
 	PP_diag_SetdiagReq((uint8_t)diagReq,(uint8_t)reqtype);
+    sleep(1);
+    return 0;
+}
+
+/******************************************************
+*PP_shell_rmtdiagtest
+
+*��  �Σ�����
+
+
+*����ֵ��void
+
+*��  ����
+
+*��  ע��
+******************************************************/
+static int PP_shell_rmtdiagtest(int argc, const char **argv)
+{
+	unsigned int diagType;
+	unsigned int sueecss;
+    unsigned int faultNum;
+    if (argc != 3)
+    {
+        shellprintf(" usage: hozon_RmtDiagTest <rmt diag test>\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &diagType);
+	sscanf(argv[1], "%u", &sueecss);
+    sscanf(argv[2], "%u", &faultNum);
+	PP_diag_rmtdiagtest((uint8_t)diagType,(uint8_t)sueecss,(uint8_t)faultNum);
     sleep(1);
     return 0;
 }

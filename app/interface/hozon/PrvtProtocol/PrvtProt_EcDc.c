@@ -1098,6 +1098,12 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 						DiagCode[j].lowByte  = DiagnosticSt_ptr->diagStatus[i].diagCode[j].lowByte;
 						DiagCode[j].diagTime = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagTime;
 						ASN_SEQUENCE_ADD(&diagcode[i], &DiagCode[j]);
+
+						log_i(LOG_UPER_ECDC, "DiagCode[%d].diagCode.buf = %s\n",j,DiagCode[j].diagCode.buf);
+						log_i(LOG_UPER_ECDC, "DiagCode[%d].diagCode.size = %d\n",j,DiagCode[j].diagCode.size);
+						log_i(LOG_UPER_ECDC, "DiagCode[%d].faultCodeType = %d\n",j,DiagCode[j].faultCodeType);
+						log_i(LOG_UPER_ECDC, "DiagCode[%d].lowByte = %d\n",j,DiagCode[j].lowByte);
+						log_i(LOG_UPER_ECDC, "DiagCode[%d].diagTime = %d\n",j,DiagCode[j].diagTime);
 					}
 					DiagnosticResp[i].diagCode = &diagcode[i];
 				}

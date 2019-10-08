@@ -198,7 +198,7 @@ int PP_rmtDiag_mainfunction(void *task)
 
 	if(1 == sockproxy_socketState())//socket open
 	{
-		//PP_rmtDiag_do_DiagActiveReport((PrvtProt_task_t*)task);//主动诊断上报
+		PP_rmtDiag_do_DiagActiveReport((PrvtProt_task_t*)task);//主动诊断上报
 	}
 
 	return res;
@@ -1234,4 +1234,38 @@ void PP_rmtDiag_queryInform_cb(void)
 {
 	PP_rmtDiag.state.faultquerySt = 1;
 	PP_rmtDiag_CleanFaultInform_cb();
+}
+
+/******************************************************
+*PP_diag_rmtdiagtest
+
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*远程诊断测试
+
+*澶�  娉細
+******************************************************/
+void PP_diag_rmtdiagtest(unsigned char diagType,unsigned char sueecss,unsigned char faultNum)
+{
+	uint8_t faulcnt;
+	PP_rmtDiag_faultcode_t faultcode[255];
+	if(sueecss)
+	{
+		PP_rmtDiag_allFault.code[diagType].sueecss  = 1;
+		PP_rmtDiag_allFault.code[diagType].faultNum = faultNum;
+		for(faulcnt = 0;faulcnt < faultNum;faulcnt++)
+		{
+			memcpy(PP_rmtDiag_allFault.code[diagType].faultcode[faulcnt].diagcode,"12233",5);
+			PP_rmtDiag_allFault.code[diagType].faultcode[faulcnt].faultCodeType	= 1;
+			PP_rmtDiag_allFault.code[diagType].faultcode[faulcnt].lowByte		= 0x01;
+	 		PP_rmtDiag_allFault.code[diagType].faultcode[faulcnt].diagTime		= PrvtPro_getTimestamp();
+		}
+	}
+	else
+	{
+		PP_rmtDiag_allFault.code[diagType].sueecss  = 0;
+		PP_rmtDiag_allFault.code[diagType].faultNum = 0;
+	}
 }

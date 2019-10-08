@@ -268,5 +268,5 @@ description�� function External declaration
 extern void PP_rmtDiag_init(void);
 extern int PP_rmtDiag_mainfunction(void *task);
 extern void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype);
-
+extern void PP_diag_rmtdiagtest(unsigned char diagType,unsigned char sueecss,unsigned char faultNum);
 #endif 
