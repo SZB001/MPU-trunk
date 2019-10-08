@@ -198,7 +198,7 @@ int PP_rmtDiag_mainfunction(void *task)
 
 	if(1 == sockproxy_socketState())//socket open
 	{
-		PP_rmtDiag_do_DiagActiveReport((PrvtProt_task_t*)task);//主动诊断上报
+		//PP_rmtDiag_do_DiagActiveReport((PrvtProt_task_t*)task);//主动诊断上报
 	}
 
 	return res;
@@ -1175,6 +1175,7 @@ static void PP_rmtDiag_send_cb(void * para)
 ******************************************************/
 void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 {
+	char i;
 	if(0 == reqtype)
 	{
 		log_i(LOG_HOZON, "receive remote diag request\n");
@@ -1206,6 +1207,12 @@ void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 		log_i(LOG_HOZON, " diag fault code active report test\n");
 		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
 		PP_rmtDiag.state.result = 1;
+		PP_rmtDiag_allFault.currdiagtype = PP_DIAG_VCU;
+		PP_rmtDiag_allFault.totalfaultCnt = 0;
+		for(i = 0;i < PP_DIAG_MAXECU;i++)
+		{
+			PP_rmtDiag_allFault.rptfaultcnt[i] = 0;		
+		}
 	}
 }
 

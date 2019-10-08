@@ -737,6 +737,10 @@ static long    gb_vehicleSOC = 0;//����
 static long    gb_vehicleSpeed = 0;//�ٶ�
 static int canact = 0;
 
+static uint32_t gb_data_save_VehiBasestationPos(gb_info_t *gbinf, uint8_t *buf);
+static uint32_t gb_data_save_gps(gb_info_t *gbinf, uint8_t *buf);
+static uint32_t gb_data_save_VehiPosExt(gb_info_t *gbinf, uint8_t *buf);
+
 /*
 	获取can广播电压单体和温度探针值
 */
@@ -810,6 +814,10 @@ static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
 			}
 		}
 	}
+
+	len += gb_data_save_gps(gbinf, buf + len);
+	len += gb_data_save_VehiPosExt(gbinf, buf + len);
+	len += gb_data_save_VehiBasestationPos(gbinf, buf + len);
 	
 	if(gbinf->event.triflg == 1)
 	{	
@@ -844,6 +852,34 @@ static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
 }
 
 #endif
+
+/* 车辆基站定位位置 */
+static uint32_t gb_data_save_VehiBasestationPos(gb_info_t *gbinf, uint8_t *buf)
+{
+    uint32_t len = 0;
+	uint32_t tmp;
+    /* data type : location data */
+    buf[len++] = 0x80;//信息类型
+
+    tmp = 460;//MCC
+    buf[len++] = tmp >> 8;
+    buf[len++] = tmp;
+
+    tmp = 1;//MNC
+    buf[len++] = tmp;
+
+    tmp = 1;//LAC
+    buf[len++] = tmp >> 8;
+    buf[len++] = tmp;
+
+    tmp =  1;//CELL ID
+    buf[len++] = tmp >> 24;
+	buf[len++] = tmp >> 16;
+	buf[len++] = tmp >> 8;
+    buf[len++] = tmp;
+
+    return len;
+}
 
 static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 {

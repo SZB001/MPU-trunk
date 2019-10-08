@@ -28,6 +28,7 @@
         "udef_cfg_api.h": "c",
         "prvtprot_vehist.h": "c",
         "msg_parse.h": "c",
-        "timer.h": "c"
+        "timer.h": "c",
+        "gb32960.h": "c"
     }
 }
