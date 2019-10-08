@@ -425,7 +425,6 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 					sockSt.linkSt = SOCKPROXY_SETUP_BDLLINK;
 				}
-				setPrvtProt_sendHeartbeat();
 			}
 		}
 		break;
@@ -676,6 +675,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 
 				log_i(LOG_HOZON, "set up sglink success\n");
 				sockSt.state = PP_OPENED;
+				setPrvtProt_sendHeartbeat();
 			}
 			else
 			{
@@ -834,6 +834,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 				log_i(LOG_HOZON, "set up BDLlink success\n");
 				sockSt.state = PP_OPENED;
+				setPrvtProt_sendHeartbeat();
 				//sockSt.waittime = tm_get_time();
 			}
 			else
