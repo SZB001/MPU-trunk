@@ -1185,7 +1185,7 @@ void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 		PP_rmtDiag.state.failureType = 0;
 
 	}
-	else//主动上报所有故障码
+	else if(1 == reqtype)//主动上报所有故障码
 	{
 		log_i(LOG_HOZON, " diag fault code active report request\n");
 		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
@@ -1200,6 +1200,12 @@ void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 		{
 			log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
 		}
+	}
+	else//test
+	{
+		log_i(LOG_HOZON, " diag fault code active report test\n");
+		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
+		PP_rmtDiag.state.result = 1;
 	}
 }
 
@@ -1250,7 +1256,6 @@ void PP_rmtDiag_queryInform_cb(void)
 void PP_diag_rmtdiagtest(unsigned char diagType,unsigned char sueecss,unsigned char faultNum)
 {
 	uint8_t faulcnt;
-	PP_rmtDiag_faultcode_t faultcode[255];
 	if(sueecss)
 	{
 		PP_rmtDiag_allFault.code[diagType].sueecss  = 1;

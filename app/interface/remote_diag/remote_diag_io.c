@@ -129,7 +129,7 @@ int parsing_remote_diag_msg(char * remote_diag_msg, TCOM_MSG_HEADER msg, remote_
        int ecutype_tmp = 0;
        unsigned char request_size = 0;
        
-       for(ecutype_tmp=ecutype;ecutype_tmp<(ecutype==0?REMOTE_DIAG_ECU_NUM:ecutype + 1);ecutype_tmp++)
+       for(ecutype_tmp=(ecutype==0?1:ecutype);ecutype_tmp<(ecutype==0?REMOTE_DIAG_ECU_NUM:ecutype + 1);ecutype_tmp++)
        {
            remote_diag_request_arr->remote_diag_request[request_size].baud = 500;
            remote_diag_request_arr->remote_diag_request[request_size].port = 1;
