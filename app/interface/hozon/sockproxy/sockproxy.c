@@ -535,7 +535,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 			#else
 			if(sockSt.state == PP_OPENED)
 			{
-				if((tm_get_time() - sockSt.sleepwaittime) > 3000)
+				//if((tm_get_time() - sockSt.sleepwaittime) > 3000)
 				{
 					//log_i(LOG_HOZON, "start to sleep\n");
 					sockSt.sleepFlag = 1;

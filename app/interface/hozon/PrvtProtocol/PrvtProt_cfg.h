@@ -22,7 +22,7 @@ description�� macro definitions
 #define PP_HEART_BEAT_TIME (10)//
 #define PP_HEART_BEAT_TIME_SLEEP (180)//
 
-#define PP_HB_WAIT_TIMEOUT 	(5*1000)//�����ȴ���ʱʱ��
+#define PP_HB_WAIT_TIMEOUT 	(2*1000)//�����ȴ���ʱʱ��
 #define PP_XCALL_WAIT_TIMEOUT 	(5*1000)//�ȴ���ʱʱ��
 #define PP_RMTCFG_WAIT_TIMEOUT 	(5*1000)//�ȴ���ʱʱ��
 #define	PP_INIT_EVENTID			0x0

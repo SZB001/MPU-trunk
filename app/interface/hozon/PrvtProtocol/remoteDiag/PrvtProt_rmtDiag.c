@@ -1262,7 +1262,7 @@ void PP_rmtDiag_queryInform_cb(void)
 ******************************************************/
 void PP_diag_rmtdiagtest(unsigned char diagType,unsigned char sueecss,unsigned char faultNum)
 {
-	uint8_t faulcnt;
+	uint8_t i,faulcnt;
 	if(sueecss)
 	{
 		PP_rmtDiag_allFault.code[diagType].sueecss  = 1;
@@ -1279,5 +1279,13 @@ void PP_diag_rmtdiagtest(unsigned char diagType,unsigned char sueecss,unsigned c
 	{
 		PP_rmtDiag_allFault.code[diagType].sueecss  = 0;
 		PP_rmtDiag_allFault.code[diagType].faultNum = 0;
+	}
+
+	for(i = 0;i < PP_DIAG_MAXECU;i++)
+	{
+		log_i(LOG_HOZON, "PP_rmtDiag_allFault.code[%d].sueecss = %d\n",i,\
+					PP_rmtDiag_allFault.code[i].sueecss);
+		log_i(LOG_HOZON, "PP_rmtDiag_allFault.code[%d].faultNum = %d\n",i,\
+					PP_rmtDiag_allFault.code[i].faultNum);
 	}
 }
