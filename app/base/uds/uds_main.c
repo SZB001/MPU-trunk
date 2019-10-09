@@ -27,6 +27,8 @@ static unsigned char uds_msgbuf[TCOM_MAX_MSG_LEN];
 static unsigned char uds_is_ready_sleep = 1;
 extern UDS_DIAG_ITEM_BUF_T uds_diag_item_buf_t;
 extern IS_UDS_TRIGGER_FAULT is_uds_trigger_fault;
+PM_EVT_ID uds_pm_state = PM_MSG_RUNNING;
+
 /****************************************************************
 function:     uds_sleep_available
 description:  whether uds module can sleep or other operation
@@ -175,6 +177,9 @@ int uds_init(INIT_PHASE phase)
 			    power_thred = UDS_12V_POWER;
 				cfg_set_para(CFG_ITEM_FT_UDS_POWER, (unsigned char *)&power_thred, len);	
 			}
+			
+            ret |= shell_cmd_register_ex("gbnodemiss", "gbnodemiss", get_PP_rmtDiag_NodeFault_t,
+                                         "gb module get node miss fault");
 
             break;
 
@@ -278,6 +283,7 @@ static void *uds_main(void)
                     {
                         uds_is_ready_sleep = J1939_fault_save();
                     }
+                    uds_pm_state = msgheader.msgid;
                 }
                 else if (MPU_MID_TIMER == msgheader.sender)
                 {
@@ -286,7 +292,10 @@ static void *uds_main(void)
                     {
                         if (uds_diag_available())
                         {
-                            uds_diag_devices(DTC_NUM_ECALL_SWITCH, DIAG_ITEM_NUM);
+                            if(uds_pm_state != PM_MSG_OFF)
+                            {
+                                uds_diag_devices(DTC_NUM_ECALL_SWITCH, DIAG_ITEM_NUM);
+                            }
                         }
                     }
                     /* used for J1939 application */

@@ -3,6 +3,7 @@
 #include "ql_powerdown.h"
 #include "com_app_def.h"
 #include "pm_api.h"
+#include "gb32960_api.h"
 
 #define HARDRESET      0x01
 #define SOFTWARERESET  0x03

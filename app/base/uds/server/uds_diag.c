@@ -36,22 +36,55 @@ IS_UDS_TRIGGER_FAULT_TYPE get_is_uds_trigger_fault(void)
     return ret_is_fault;
 }
 
-/* 处理 UDS 给 GB模块诊断信息处理 */
-static void uds_to_gb_process(int dtc_sn)
+void init_PP_rmtDiag_NodeFault(void)
 {
-    if(DTC_NUM_MISSING_BMS == dtc_sn)
+    memset(&g_PP_rmtDiag_NodeFault, 0x00, sizeof(PP_rmtDiag_NodeFault_t));
+}
+
+PP_rmtDiag_NodeFault_t * get_PP_rmtDiag_NodeFault_t(void)
+{
+    unsigned char dtc_confirmed[DIAG_ITEM_NUM], dtc_current[DIAG_ITEM_NUM];
+    int i = 0;
+    uint8_t tboxFault = 0;
+    
+    for(i=0;i<DIAG_ITEM_NUM;i++)
+    {
+        dtc_confirmed[i] = *(diag_table[i].confirmed);
+        dtc_current[i] = diag_table[i].fun();
+    }
+    
+    if((1 == dtc_confirmed[DTC_NUM_MISSING_BMS]) && (1 == dtc_current[DTC_NUM_MISSING_BMS]))
     {
         g_PP_rmtDiag_NodeFault.BMSMiss = 1;
     }
-    else if(DTC_NUM_MISSING_MCU == dtc_sn)
+    else
+    {
+        g_PP_rmtDiag_NodeFault.BMSMiss = 0;
+    }
+    
+    if((1 == dtc_confirmed[DTC_NUM_MISSING_MCU]) && (1 == dtc_current[DTC_NUM_MISSING_MCU]))
     {
         g_PP_rmtDiag_NodeFault.MCUMiss = 1;
     }
-    g_PP_rmtDiag_NodeFault.tboxFault = 1;
-}
+    else
+    {
+        g_PP_rmtDiag_NodeFault.MCUMiss = 0;
+    }
 
-PP_rmtDiag_NodeFault_t * get_PP_rmtDiag_NodeFault_t(void)
-{
+    tboxFault = 0;
+    for(i=0;i<DIAG_ITEM_NUM;i++)
+    {
+        if((1 == dtc_confirmed[i]) && (1 == dtc_current[i]))
+        {
+            tboxFault = 1;
+        }
+    }
+    g_PP_rmtDiag_NodeFault.tboxFault = tboxFault;
+
+    log_i(LOG_UDS, "g_PP_rmtDiag_NodeFault.BMSMiss:%d", g_PP_rmtDiag_NodeFault.BMSMiss);
+    log_i(LOG_UDS, "g_PP_rmtDiag_NodeFault.MCUMiss:%d", g_PP_rmtDiag_NodeFault.MCUMiss);
+    log_i(LOG_UDS, "g_PP_rmtDiag_NodeFault.tboxFault:%d", g_PP_rmtDiag_NodeFault.tboxFault);
+    
     return (&g_PP_rmtDiag_NodeFault);
 }
 
@@ -148,6 +181,7 @@ int uds_diag_init(void)
     pthread_mutex_unlock(&uds_diag_item_buf_t.uds_diag_item_buf_mtx);
 
     set_is_uds_trigger_fault(NO_FAULT);
+    init_PP_rmtDiag_NodeFault();
 
     //memset(uds_diag_item_buf, 0, sizeof(uds_diag_item_buf));
 
@@ -315,7 +349,6 @@ void uds_diag_all_devices(void)
         if ((0 == pre_confirmed) && (1 == *(diag_table[i].confirmed)))
         {
             is_gen_freeze = 1;
-            uds_to_gb_process(i);
         }
     }
 
