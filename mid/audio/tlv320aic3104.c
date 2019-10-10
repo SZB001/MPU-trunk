@@ -133,7 +133,7 @@ void audio_setup_aic3104(void)
 
     /* DAC Power and Output Driver Control Register */
     ret |= register_config(0x25, 0xc0);
-
+	
     /* Left-DAC Digital Volume Control Register */
     ret |= register_config(0x2b, 0x00);
 

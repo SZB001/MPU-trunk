@@ -79,6 +79,7 @@ extern void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara);
 extern uint8_t PP_rmtCfg_getIccid(uint8_t* iccid);
 extern unsigned char PP_rmtCtrl_cfg_CrashOutputSt(void);
 extern void audio_setup_aic3104(void);
+extern uint8_t PP_rmtCfg_enable_actived(void);
 int Get_call_tpye(void);
 
 
@@ -993,7 +994,6 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
         {
             TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_HEARTBEAT_RESULT;
             result.result = true;
-			//log_o(LOG_IVI,"RESPONSE_HEARTBEAT");
             break;
         }
 
@@ -1883,7 +1883,7 @@ void *ivi_main(void)
 			{
 				ihu_client.stage = PKI_IDLE;
 			
-}
+			}
 			break;
 			default:
 	        break;
@@ -1927,14 +1927,16 @@ void *ivi_txmain(void)
 void *ivi_check(void)
 {
 	uint8_t sos_flag = 0;
+	uint8_t active_flag = 0;
 	while(1)
 	{	
-		if(PP_rmtCtrl_cfg_CrashOutputSt() == 0)
+		if((PP_rmtCtrl_cfg_CrashOutputSt() == 0)&&( flt_get_by_id(SOSBTN) != 0))
 		{
 			sos_flag = 0;
 		}
 		//按键触发或者安全气囊弹出
-		if((2 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
+		if((0 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
+		//if(PP_rmtCtrl_cfg_CrashOutputSt() == 1)
 		{
 			if(sos_flag == 0)
 			{
@@ -1963,7 +1965,7 @@ void *ivi_check(void)
 				{
 					HzTboxSvrClose(); 
 					log_o(LOG_IVI,"HzTboxSvrClose+++++++++++++++ \n");
-					log_o(LOG_IVI,"2 minute arrived,close socken\t");
+					log_o(LOG_IVI,"2 minute arrived,close socket");
 					tbox_ivi_pki_renew_pthread();
 				}
 			}
@@ -1976,7 +1978,7 @@ void *ivi_check(void)
 			if(t_time > ihu_client.lasthearttime)
 			{
 				temp = t_time - ihu_client.lasthearttime;
-				if( temp >30000)
+				if( temp > 30000)
 				{
 					HzTboxSvrClose(); 
 					log_o(LOG_IVI,"HzTboxSvrClose+++++++++++++++ \n");
@@ -1995,10 +1997,11 @@ void *ivi_check(void)
 			}
 			ivi_callstate_response_send(ivi_clients[0].fd );  //电话状态变化，传给车机
 
-//			if()  //判断TSP是否下发激活信息
-//			{
-//				ivi_activestate_response_send( ivi_clients[0].fd ); //通知车机激活成功
-//			}
+			if((PP_rmtCfg_enable_actived() == 1)&&(active_flag == 0))  //判断TSP是否下发激活信息
+			{
+				active_flag = 1; //上电起来之后发一次绑车激活
+				ivi_activestate_response_send( ivi_clients[0].fd ); //通知车机激活成功
+			}
 			if(tspdiagnos_flag == 1) //TSP是否下发远程命令
 			{
 				tspdiagnos_flag = 0;

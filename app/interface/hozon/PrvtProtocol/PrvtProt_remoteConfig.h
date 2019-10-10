@@ -287,6 +287,16 @@ extern uint8_t PP_rmtCfg_enable_remotecontorl(void);
 extern uint8_t PP_rmtCfg_enable_icall(void);
 extern uint8_t PP_rmtCfg_enable_bcall(void);
 extern uint8_t PP_rmtCfg_enable_ecall(void);
+extern uint8_t PP_rmtCfg_enable_actived(void);
+extern uint8_t PP_rmtCfg_enable_dtcEnabled(void);
+extern uint8_t PP_rmtCfg_enable_dcEnabled(void);
+extern uint8_t PP_rmtCfg_enable_rChargeEnabled(void);
+extern uint8_t PP_rmtCfg_enable_svtEnabled(void);
+extern uint8_t PP_rmtCfg_enable_vsEnabled(void);
+extern uint8_t PP_rmtCfg_enable_btKeyEntryEnabled(void);
+extern uint8_t PP_rmtCfg_enable_journeysEnabled(void);
 extern void PP_rmtCfg_setCfgEnable(unsigned char obj,unsigned char enable);
+extern void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *data);
+extern void PP_rmtCfg_setCfgficm(unsigned char obj,const void *data);
 
 #endif 

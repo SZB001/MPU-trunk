@@ -14,7 +14,7 @@ description�� include the header file
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
-#include  <errno.h>
+#include <errno.h>
 #include <sys/times.h>
 #include <sys/time.h>
 #include "timer.h"
@@ -1008,6 +1008,89 @@ void PP_rmtCfg_setCfgEnable(unsigned char obj,unsigned char enable)
 		default:
 		break;
 	}
+
+}
+
+void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *data)
+{
+	switch(obj)
+	{
+		case 1:  //TSP APN Address
+		{
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspAddr,(const char*)data);
+		}
+		break;
+		case 2:
+		{
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspUser,(const char*)data);
+		}
+		break;
+		case 3:
+		{
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspPass,(const char*)data);
+		}
+		break;
+		case 4:
+		{
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspIP,(const char*)data);
+		}
+		break;
+		case 5:
+		{
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspSms,(const char*)data);
+		}
+		break;
+		case 6:
+		{
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspPort,(const char*)data);
+		}
+		break;
+		case 7:
+		{
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.certAddress,(const char*)data);
+		}
+		case 8:
+		{
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.certPort,(const char*)data);
+		}
+		break;
+		default:
+		break;	
+	}
+	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
+}
+void PP_rmtCfg_setCfgficm(unsigned char obj,const void *data)
+{
+	switch(obj)
+	{
+	  	case 1:  //TSP APN Address
+	  	{
+	  		strcpy((char *)AppData_rmtCfg.ReadResp.FICM.token,(const char*)data);
+	  	}
+	  	break;
+	  	case 2:  //TSP APN Address
+	  	{
+	  		strcpy((char *)AppData_rmtCfg.ReadResp.FICM.userID,(const char*)data);
+	  	}
+	  	break;
+	  	case 3:  //TSP APN Address
+	  	{
+	  		AppData_rmtCfg.ReadResp.FICM.directConnEnable = atoi(data);
+	  	}
+	  	break;
+	  	case 4:  //TSP APN Address
+	  	{
+	  		strcpy((char *)AppData_rmtCfg.ReadResp.FICM.address,(const char*)data);
+	  	}
+	  	break;
+	  	case 5:  //TSP APN Address
+	  	{
+	  		strcpy((char *)AppData_rmtCfg.ReadResp.FICM.port,(const char*)data);
+	  	}
+	  	break;
+		default:
+		break;
+	}
 	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
 }
 
@@ -1324,10 +1407,6 @@ void PP_rmtCfg_settbox(void)
 		{
 			
 		}
-		if(AppData_rmtCfg.ReadResp.FICM.directConnEnable == 1)   //国标直连开关
-		{
-			
-		}
 		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.FICM.address,33) == 1)   //国标地址
 		{
 			
@@ -1360,12 +1439,14 @@ void PP_rmtCfg_settbox(void)
 		}
 		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.certAddress,33) == 1)
 		{
+			
 		}
 		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.certPort,7) == 1)
 		{
+		
 		}
 	
-}
+	}
 	//APN2ConfigSettings APN2
 	if(AppData_rmtCfg.ReadResp.APN2.apn2ConfigValid == 1)
 	{
@@ -1431,6 +1512,13 @@ uint8_t PP_rmtCfg_is_empty(uint8_t *dt,int len)
 	return 0;
 }
 
+//国标直连开关
+uint8_t PP_rmtCfg_enable_directConnEnable(void)
+{
+	return AppData_rmtCfg.ReadResp.FICM.directConnEnable;
+}
+
+
 uint8_t PP_rmtCfg_enable_remotecontorl(void)
 {
 	return AppData_rmtCfg.ReadResp.COMMON.rcEnabled;
@@ -1451,6 +1539,39 @@ uint8_t PP_rmtCfg_enable_ecall(void)
 	return AppData_rmtCfg.ReadResp.COMMON.eCallEnabled;
 }
 
+uint8_t PP_rmtCfg_enable_actived(void)
+{
+	return AppData_rmtCfg.ReadResp.COMMON.actived;
+}
+uint8_t PP_rmtCfg_enable_dtcEnabled(void)
+{
+	return AppData_rmtCfg.ReadResp.COMMON.dtcEnabled;
+}
 
+uint8_t PP_rmtCfg_enable_dcEnabled(void)
+{
+	return AppData_rmtCfg.ReadResp.COMMON.dcEnabled;
+}
+
+uint8_t PP_rmtCfg_enable_rChargeEnabled(void)
+{
+	return AppData_rmtCfg.ReadResp.COMMON.rChargeEnabled;
+}
+uint8_t PP_rmtCfg_enable_svtEnabled(void)
+{
+	return AppData_rmtCfg.ReadResp.COMMON.svtEnabled;
+}
+uint8_t PP_rmtCfg_enable_vsEnabled(void)
+{
+	return AppData_rmtCfg.ReadResp.COMMON.vsEnabled;
+}
+uint8_t PP_rmtCfg_enable_btKeyEntryEnabled(void)
+{
+	return AppData_rmtCfg.ReadResp.COMMON.btKeyEntryEnabled;
+}
+uint8_t PP_rmtCfg_enable_journeysEnabled(void)
+{
+	return AppData_rmtCfg.ReadResp.COMMON.journeysEnabled;
+}
 
 

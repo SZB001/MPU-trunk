@@ -387,7 +387,24 @@ static int PP_rmtCtrl_do_checksock(PrvtProt_task_t *task)
 
 	return -1;
 }
+/******************************************************
+*函数名：PP_rmtCtrl_do_checksock
 
+*形  参：void
+
+*返回值：void
+
+*描  述：检查socket连接
+
+*备  注：
+******************************************************/
+long PP_rmtCtrl_getTimestamp(void)
+{
+	struct timeval timestamp;
+	gettimeofday(&timestamp, NULL);
+	
+	return (long)(timestamp.tv_sec);
+}
 /******************************************************
 *函数名：PP_rmtCtrl_do_rcvMsg
 
@@ -449,6 +466,18 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 	PrvtProt_DisptrBody_t MsgDataBody;
 	PrvtProt_App_rmtCtrl_t Appdata;
 	PrvtPro_decodeMsgData(rxPack->msgdata,(len - 18),&MsgDataBody,&Appdata);
+	if((MsgDataBody.expTime != (-1))&&(MsgDataBody.expTime < PP_rmtCtrl_getTimestamp()))//远控超时
+	{
+		PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+		log_e(LOG_HOZON,"This remote control timeout");
+		rmtCtrl_Stpara.reqType = PP_rmtCtrl.reqType;
+		rmtCtrl_Stpara.eventid = PP_rmtCtrl.eventid;
+		rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+		rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
+		rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_TIMEOUT;
+		PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);	
+		return ;
+	}
 	aid = (MsgDataBody.aID[0] - 0x30)*100 +  (MsgDataBody.aID[1] - 0x30)*10 + \
 			  (MsgDataBody.aID[2] - 0x30);
 	if(PP_AID_RMTCTRL != aid)
@@ -863,12 +892,70 @@ int PP_rmtCtrl_StInformBt(unsigned char obj, unsigned char cmd)
 	respbt.failtype = 0;
 	respbt.msg_type = BT_VEHILCLE_STATUS_RESP;
 	respbt.result = 0;
-	respbt.state.charge_state = 1;
-	respbt.state.electric_door_state = 1;
+	if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1)
+	{
+		respbt.state.charge_state = 2;
+	}
+	else if(PP_rmtCtrl_cfg_chargeOnOffSt() == 0)
+	{
+		respbt.state.charge_state = 1;
+	}
+	else
+	{
+	}
+	
+	if(gb_data_reardoorSt() == 1 )
+	{
+		respbt.state.electric_door_state = 1;  //尾门已开
+	}
+	else if(gb_data_reardoorSt() == 0 )
+	{
+		respbt.state.electric_door_state = 2;  //尾门已关
+	}
+	else
+	{
+	}
+	
 	respbt.state.fine_car_state = 1;  //保留
-	respbt.state.power_state = 1;
-	respbt.state.sunroof_state = 1;
-	respbt.state.vehiclie_door_state = 1;
+	if(PP_rmtCtrl_cfg_RmtStartSt() == 2)
+	{
+		respbt.state.power_state = 2;
+	}
+	else if(PP_rmtCtrl_cfg_RmtStartSt() == 0)
+	{
+		respbt.state.power_state = 2;
+	}
+	else
+	{
+	}
+	
+	if(PP_rmtCtrl_cfg_sunroofSt() == 4)
+	{
+		respbt.state.sunroof_state = 1;
+	}
+	else if(PP_rmtCtrl_cfg_sunroofSt() == 2)
+	{
+		respbt.state.sunroof_state = 2;
+	}
+	else if(PP_rmtCtrl_cfg_sunroofSt() == 0)
+	{
+		respbt.state.sunroof_state = 3;
+	}
+	else
+	{
+	}
+	
+	if(PP_rmtCtrl_cfg_doorlockSt() == 0)
+	{
+		respbt.state.vehiclie_door_state = 1;  //门已锁
+	}else if(PP_rmtCtrl_cfg_doorlockSt() == 1)
+	{
+		respbt.state.vehiclie_door_state = 2;  //门已关??
+	}
+	else
+	{
+	}
+	
 	msghdr.sender    = MPU_MID_HOZON_PP;
 	msghdr.receiver  = MPU_MID_BLE;
 	msghdr.msgid     = BLE_MSG_CONTROL;
@@ -908,6 +995,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 		{
 			/*body*/
 			memcpy(PP_rmtCtrl.pack.DisBody.aID,"110",3);
+			PP_rmtCtrl.pack.DisBody.expTime = -1;
 			PP_rmtCtrl.pack.DisBody.mID = PP_MID_RMTCTRL_RESP;
 			PP_rmtCtrl.pack.DisBody.eventId =  CtrlSt_para->eventid;
 			PP_rmtCtrl.pack.DisBody.eventTime = PrvtPro_getTimestamp();
@@ -1473,7 +1561,17 @@ unsigned char GetPP_rmtCtrl_fotaUpgrade(void)
 {
 	return PP_rmtCtrl.fotaUpgradeSt;
 }
+/******************************************************
+*函数名：SetPP_rmtCtrl_FOTA_startInform
 
+*形  参：
+
+*返回值：
+
+*描  述：fota升级开始通知
+
+*备  注：
+******************************************************/
 int SetPP_rmtCtrl_FOTA_startInform(void)
 {
 	int res = 0;
@@ -1498,7 +1596,17 @@ int SetPP_rmtCtrl_FOTA_startInform(void)
 	return res;
 }
 
+/******************************************************
+*函数名：SetPP_rmtCtrl_FOTA_endInform
 
+*形  参：
+
+*返回值：
+
+*描  述：fota升级完成通知
+
+*备  注：
+******************************************************/
 int SetPP_rmtCtrl_FOTA_endInform(void)
 {
 	int res = 0;

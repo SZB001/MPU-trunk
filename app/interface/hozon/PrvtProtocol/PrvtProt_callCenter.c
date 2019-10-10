@@ -220,7 +220,6 @@ int PrvtProt_CC_mainfunction(void *task)
 				}
 				else
 				{
-					
 					tbox_ivi_clear_call_flag();
 					log_o(LOG_HOZON,"ECALL NOT ENABLE");
 				}

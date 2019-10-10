@@ -512,7 +512,8 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
   		Appdata_Xcall.battSOCEx = 10000;
  	}
 	else
-	{}
+	{
+	}
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_XCALL_RESP,PP_Xcall_Pack.msgdata,&msgdatalen,\
 									   &PP_xcall[XcallType].packResp.DisBody,&Appdata_Xcall))//���ݱ������Ƿ����
