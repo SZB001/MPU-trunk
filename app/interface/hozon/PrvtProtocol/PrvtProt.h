@@ -202,6 +202,8 @@ typedef struct
 	PP_WAIT_STATE waitSt;/* �ȴ���Ӧ��״̬ */
 	uint64_t waittime;/* �ȴ���Ӧ��ʱ�� */
 	char sendCnt;
+	char switchtaskflag;
+	char switchsuccessflag;
 	char sleepflag;
 	char IGNoldst;
 	char IGNnewst;

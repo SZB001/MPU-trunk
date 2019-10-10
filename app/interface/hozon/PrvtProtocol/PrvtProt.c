@@ -155,6 +155,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			pp_task.version = 0x30;/* ��/С�汾(��TSPƽ̨����)*/
 
 			memset(&PP_PackHeader_HB,0 , sizeof(PrvtProt_pack_Header_t));
+			memset(&PP_HBRateSwitch,0 , sizeof(PP_heartbeatrateswitch_t));
 			memcpy(PP_PackHeader_HB.sign,"**",2);
 			PP_PackHeader_HB.ver.Byte = 0x30;
 			PP_PackHeader_HB.commtype.Byte = 0x70;
@@ -260,6 +261,15 @@ static void *PrvtProt_main(void)
 		}
 		log_set_level(LOG_HOZON, LOG_DEBUG);
 
+		PP_HBRateSwitch.IGNnewst = dev_get_KL15_signal();
+		if(PP_HBRateSwitch.IGNoldst != PP_HBRateSwitch.IGNnewst)
+		{
+			PP_HBRateSwitch.IGNoldst = PP_HBRateSwitch.IGNnewst;
+			PP_HBRateSwitch.switchtaskflag = 1;
+			PP_HBRateSwitch.sleepflag 	   = 0;
+			PP_HBRateSwitch.switchsuccessflag = 0;
+		}
+
 		//TskPPsignFltr_MainFunction();
 		PP_ntp_calibrationTime();
 		PP_CertDownload_mainfunction(&pp_task);
@@ -311,12 +321,14 @@ static int PrvtPro_do_checksock(PrvtProt_task_t *task)
 	}
 	else
 	{
-		if((tm_get_time() - PP_heartbeat.resettimer) > 10000)
+		//if((tm_get_time() - PP_heartbeat.resettimer) > 1000)
 		{
 			PP_heartbeat.waitSt = 0;
 			PP_heartbeat.state = 0;
 			PP_heartbeat.hbtaskflag = 0;
 			PP_heartbeat.hbtasksleepflag = 1;
+			PP_HBRateSwitch.switchtaskflag = 0;
+			PP_HBRateSwitch.sleepflag 	   = 1;
 		}
 	}
 
@@ -481,12 +493,18 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 				PP_heartbeat.state = 1;
 				PP_heartbeat.waitSt = 0;
 				PP_heartbeat.hbtasksleepflag = 1;
+				if(0 == PP_HBRateSwitch.switchsuccessflag)
+				{
+					PP_HBRateSwitch.switchtaskflag = 1;
+					PP_HBRateSwitch.sleepflag 	   = 0;
+				}
 			}
 			else if((19 == len) && ((2 == rxPack->msgdata[0]) || (1 == rxPack->msgdata[0])))//接收到心跳频率切换请求响应
 			{
 				log_i(LOG_HOZON, "the heartbeat rate switch when to sleep is ok");
 				PP_HBRateSwitch.waitSt = 0;
 				PP_HBRateSwitch.sleepflag = 1;
+				PP_HBRateSwitch.switchsuccessflag = 1;
 			}
 			else
 			{}
@@ -654,14 +672,12 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 ******************************************************/
 static int PrvtProt_do_HBRateSwitch(PrvtProt_task_t *task)
 {
-	PP_HBRateSwitch.IGNnewst = dev_get_KL15_signal();
-	if(PP_HBRateSwitch.IGNoldst != PP_HBRateSwitch.IGNnewst)
+	if(1 == PP_HBRateSwitch.switchtaskflag)
 	{
-		PP_HBRateSwitch.IGNoldst = PP_HBRateSwitch.IGNnewst;
+		PP_HBRateSwitch.switchtaskflag    = 0;
 		if(1 == PP_HBRateSwitch.IGNnewst)//IGN ON
 		{
 			log_i(LOG_HOZON, "Switch to normal heart rate\n");
-			PP_HBRateSwitch.sleepflag = 0;
 			PP_heartbeat.period = PP_HEART_BEAT_TIME;
 			PrvtProt_HBSPackage(task,1);//切换到正常通信心跳频率
 		}
@@ -1022,7 +1038,7 @@ void setPrvtProt_sendHeartbeat(void)
 {
 	PP_heartbeat.hbtaskflag = 1;
 	PP_heartbeat.hbtasksleepflag = 0;
-	PP_heartbeat.resettimer = tm_get_time();
+	//PP_heartbeat.resettimer = tm_get_time();
 }
 
 /******************************************************

@@ -538,19 +538,28 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				//if((tm_get_time() - sockSt.sleepwaittime) > 3000)
 				{
 					//log_i(LOG_HOZON, "start to sleep\n");
+					sockSt.sleepwaittimeoutcnt = 0;
 					sockSt.sleepFlag = 1;
 				}
 			}
 			else
 			{
-				if((tm_get_time() - sockSt.sleepwaittime) > 15000)
+				if(sockSt.sleepwaittimeoutcnt < 3)
 				{
-					//log_i(LOG_HOZON, "wait sleep timeout,start to sleep\n");
-					sockSt.sleepFlag = 1;
+					if((tm_get_time() - sockSt.sleepwaittime) > 15000)
+					{
+						//log_i(LOG_HOZON, "wait sleep timeout,start to sleep\n");
+						sockSt.sleepwaittimeoutcnt++;
+						sockSt.sleepFlag = 1;
+					}
+					else
+					{
+						sockSt.sleepFlag = 0;
+					}
 				}
 				else
 				{
-					sockSt.sleepFlag = 0;
+					sockSt.sleepFlag = 1;
 				}
 			}
 			#endif
@@ -564,6 +573,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	{
 		sockSt.sleepwaittime = tm_get_time();
 		sockSt.sleepFlag = 0;
+		sockSt.sleepwaittimeoutcnt = 0;
 	}
 
 	sockproxy_nm_dial_recall();//重新拨号
