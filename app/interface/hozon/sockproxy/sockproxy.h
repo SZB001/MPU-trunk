@@ -22,7 +22,7 @@ description�� macro definitions
 #define SOCK_SERVR_TIMEOUT    	(1000 * 5)
 #define SOCK_TXPAKG_OUTOFTIME    (1000 * 2)
 
-#define SOCK_CHECKCLOSEDTIMEOUT    	(1000 * 15)
+#define SOCK_CHECKCLOSEDTIMEOUT    	(2500)
 
 
 #define SOCKPROXY_CHECK_CERT				0//检查证书
