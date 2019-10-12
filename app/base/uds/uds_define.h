@@ -123,6 +123,7 @@ extern uint32_t                         g_u32DiagID;
 #define Set_SecurityAccess_LEVEL0()     {g_u8SecurityAccess = SecurityAccess_LEVEL0 ;} while(0)
 #define Set_SecurityAccess_LEVEL1()     {g_u8SecurityAccess = SecurityAccess_LEVEL1 ;} while(0)
 #define Set_SecurityAccess_LEVEL2()     {g_u8SecurityAccess = SecurityAccess_LEVEL2 ;} while(0)
+#define Set_SecurityAccess_LEVEL(level)     {g_u8SecurityAccess = level ;} while(0)
 
 
 /********************timer function*********************/

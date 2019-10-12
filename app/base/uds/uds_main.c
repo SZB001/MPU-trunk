@@ -214,6 +214,7 @@ static void *uds_main(void)
     }
 
     uds_set_server();
+    uds_send_can_CommunicationControl_to_mcu(2, 0);/*重启之后，MCU未重启，初始化通信控制。所有报文，允许收发*/
     tm_start(uds_diag_timer, UDS_DIAG_INTERVAL, TIMER_TIMEOUT_REL_PERIOD);
 
     while (1)

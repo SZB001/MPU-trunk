@@ -124,5 +124,7 @@ int uds_diag_get_freeze(DIAG_DEF_ITEM_ID id, unsigned char *freeze, unsigned int
                         unsigned int *did_num);
 void uds_diag_dtc_clear(void);
 int is_uds_diag_set_did_invalue(unsigned short did, unsigned char *value, unsigned int len);
+int uds_send_can_CommunicationControl_to_mcu(unsigned char mpu2mcu_msg_type,
+        unsigned char mpu2mcu_ctrl_value);
 
 #endif

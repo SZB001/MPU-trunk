@@ -10,6 +10,7 @@
 #include "uds_server.h"
 #include "uds_client.h"
 #include "uds_stack_def.h"
+#include "uds_diag.h"
 
 
 void UDS_SetDTCOn(void);
@@ -274,6 +275,7 @@ void uds_timeout(UDS_TIMER_E timer_id, uint16_t seq)
             Set_Seesion_Default();
             Clear_SecurityAccess();
             UDS_SetDTCOn();
+            uds_send_can_CommunicationControl_to_mcu(2, 0);/*初始化通信控制。所有报文，允许收发*/
             log_e(LOG_UDS, "uds s3_server timeout!!!");
             break;
 
@@ -477,12 +479,14 @@ void uds_proxy(uint8_t *msg, uint16_t len)
                     else
                     {
                         uds_set_timer(&uds_client, P2EXT_CLIENT, 0);
-                        if (uds_client_cb)
-                        {
-                            uds_client_cb(&uds_client, msg_id, can_id,(char *)msg, len);
-                        }
+                            
                     }
-
+                    
+                    if (uds_client_cb)
+                    {
+                        uds_client_cb(&uds_client, msg_id, can_id,(char *)msg, len);
+                    }
+                    
                 }
             }
             
@@ -593,7 +597,7 @@ int uds_set_client_ex(int port, int pid, int fid, int rid, void *cb)
     UDS_TL_CFG_T client_cfg;
 
     client_cfg.canport = port;
-    client_cfg.fill_value = 0xCC;
+    client_cfg.fill_value = 0x00;
     client_cfg.fc_stmin = 50;
     client_cfg.fc_bs = 8;
     client_cfg.n_bs = 150;

@@ -675,7 +675,11 @@ int uds_diag_set_did_value(unsigned short did, unsigned char *value, unsigned in
 
     ret = diag_did_table[i].set(value, len);
 
-    if (ret != 0)
+    if(ret == NRC_RequestOutOfRange)
+    {
+        return ret;
+    }
+    else if (ret != 0)
     {
         return NRC_IncorrectMessageLengthOrInvailFormat;
     }

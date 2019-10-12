@@ -58,7 +58,7 @@ uint32_t UDS_GetCANRxStatus(void)
  * @see
  * @note
 */
-static int uds_send_can_CommunicationControl_to_mcu(unsigned char mpu2mcu_msg_type,
+int uds_send_can_CommunicationControl_to_mcu(unsigned char mpu2mcu_msg_type,
         unsigned char mpu2mcu_ctrl_value)
 {
     int len = 0;

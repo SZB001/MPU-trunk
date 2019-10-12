@@ -1255,6 +1255,11 @@ int uds_did_set_configuration_code(unsigned char *did, unsigned int len)
         return UDS_INVALID_PARA;
     }
 
+    if(did[0]>1)
+    {
+        log_e(LOG_UDS, "set configuration code value error, value:%d", did[0]);
+        return NRC_RequestOutOfRange;
+    }
     return cfg_set_para(CFG_ITEM_EN_BLE, did, 1); 
 }
 

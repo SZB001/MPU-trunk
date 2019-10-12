@@ -31,6 +31,7 @@ void UDS_SRV_DiagSessionCtrl(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU
             Set_Seesion_Default();
             Clear_SecurityAccess();
             UDS_SetDTCOn();
+            uds_send_can_CommunicationControl_to_mcu(2, 0);/*所有报文，允许收发*/
             //UDS_RecoverCANTxRxDefaultStatus();
             break;
 

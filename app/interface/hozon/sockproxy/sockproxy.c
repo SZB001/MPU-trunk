@@ -156,12 +156,10 @@ int sockproxy_run(void)
         return ret;
     }
 
-    //pthread_t rcvtid;
-    //pthread_attr_t rcvta;
     pthread_attr_init(&rcvta);
-    pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_JOINABLE);
+    pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_DETACHED);
     ret = pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
-
+	log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
     if (ret != 0)
     {
         log_e(LOG_SOCK_PROXY, "pthread_create rcvmain failed, error: %s", strerror(errno));
@@ -242,12 +240,14 @@ static void *sockproxy_rcvmain(void)
 	int res = 0;
 	log_o(LOG_SOCK_PROXY, "socket proxy  of rcvmain thread running");
     prctl(PR_SET_NAME, "SOCK_PROXY_RCV");
-
+	
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);           //允许退出线程
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,   NULL);   //设置立即取消
     while (1)
     {
+		//pthread_testcancel();
         res = sockproxy_do_receive(&sockSt);
+		//pthread_testcancel();
     }
     (void)res;
     return NULL;
@@ -398,16 +398,19 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		{
 			if(0 == sockSt.sleepFlag)
 			{
-
-				if(ESRCH == pthread_kill(rcvtid,0))//线程不存在
+				int retval;
+				retval = pthread_kill(rcvtid,0);
+				if(ESRCH == retval)//线程不存在
 				{
 					log_i(LOG_HOZON, "thread sockproxy_rcvmain not exist\n");
 				    pthread_attr_init(&rcvta);
-				    pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_JOINABLE);
+				    pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_DETACHED);
 				    pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
+					log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
 				}
 				else
 				{
+					log_i(LOG_HOZON, "pthread_kill(rcvtid,0) = %d,rcvtid = %d\n",retval,rcvtid);
 					log_i(LOG_HOZON, "thread sockproxy_rcvmain exist\n");
 				}
 
@@ -461,9 +464,12 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		{
 			if(pthread_mutex_lock(&sendmtx) == 0)
 			{
-				pthread_cancel(rcvtid);
-				pthread_join(rcvtid, NULL);
-				log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel success\n");
+				void *ret=NULL;
+				int retcancel;
+				log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
+				retcancel = pthread_cancel(rcvtid);
+				//pthread_join(rcvtid, &ret);
+				log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel = %d,join code %d\n",retcancel,(int)ret);
 				sockSt.asynCloseFlg = 0;
 				sockSt.rcvflag = 0;
 				log_i(LOG_SOCK_PROXY, "socket closed\n");
@@ -479,7 +485,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 				sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 				sockSt.linkSt = SOCKPROXY_CHECK_CERT;
-
+				sleep(10);
 				pthread_mutex_unlock(&sendmtx);//解锁
 			}
 		}
