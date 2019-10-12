@@ -35,13 +35,6 @@ void UDS_SRV_DiagSessionCtrl(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU
             //UDS_RecoverCANTxRxDefaultStatus();
             break;
 
-        /*合众项目需要编程会话支持所有会话*/
-        case SESSION_TYPE_PROGRAM :
-                Set_Seesion_Program();
-                Clear_SecurityAccess();
-                UDS_SetDTCOn();
-            break;
-
         case SESSION_TYPE_EXTENDED :
             if (Get_Session_Current() != SESSION_TYPE_PROGRAM)
             {

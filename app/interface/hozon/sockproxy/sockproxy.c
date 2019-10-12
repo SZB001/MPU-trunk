@@ -104,6 +104,7 @@ int sockproxy_init(INIT_PHASE phase)
 			sockSt.rcvlen = 0;
 			sockSt.sleepFlag = 0;
 			SockproxyData_Init();
+			sockSt.cancelRcvphreadFlag = 0;
 		}
         break;
         case INIT_PHASE_RESTORE:
@@ -399,19 +400,26 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 			if(0 == sockSt.sleepFlag)
 			{
 				int retval;
-				retval = pthread_kill(rcvtid,0);
-				if(ESRCH == retval)//线程不存在
+				if(sockSt.cancelRcvphreadFlag)
 				{
-					log_i(LOG_HOZON, "thread sockproxy_rcvmain not exist\n");
-				    pthread_attr_init(&rcvta);
-				    pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_DETACHED);
-				    pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
-					log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
-				}
-				else
-				{
-					log_i(LOG_HOZON, "pthread_kill(rcvtid,0) = %d,rcvtid = %d\n",retval,rcvtid);
-					log_i(LOG_HOZON, "thread sockproxy_rcvmain exist\n");
+					retval = pthread_kill(rcvtid,0);
+					if(ESRCH == retval)//线程不存在
+					{
+						sockSt.cancelRcvphreadFlag = 0;
+						log_i(LOG_HOZON, "thread sockproxy_rcvmain not exist\n");
+				    	pthread_attr_init(&rcvta);
+				    	pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_DETACHED);
+				    	pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
+						log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
+					}
+					else
+					{
+						log_i(LOG_HOZON, "pthread_kill(rcvtid,0) = %d,rcvtid = %d\n",retval,rcvtid);
+						log_i(LOG_HOZON, "thread sockproxy_rcvmain exist\n");
+						log_i(LOG_HOZON, "tm_get_time() = %d\n",tm_get_time());
+						sleep(1);
+						return 0;
+					}
 				}
 
 				if(GetPP_CertDL_allowBDLink() == 0)//
@@ -470,6 +478,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				retcancel = pthread_cancel(rcvtid);
 				//pthread_join(rcvtid, &ret);
 				log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel = %d,join code %d\n",retcancel,(int)ret);
+				sockSt.cancelRcvphreadFlag = 1;
 				sockSt.asynCloseFlg = 0;
 				sockSt.rcvflag = 0;
 				log_i(LOG_SOCK_PROXY, "socket closed\n");
@@ -485,7 +494,8 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 				sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 				sockSt.linkSt = SOCKPROXY_CHECK_CERT;
-				sleep(10);
+				log_i(LOG_HOZON, "#####################tm_get_time() = %d\n",tm_get_time());
+				sleep(1);
 				pthread_mutex_unlock(&sendmtx);//解锁
 			}
 		}

@@ -140,6 +140,7 @@ typedef struct
 	uint64_t sleepwaittime;
 	char sleepwaittimeoutcnt;
 	uint64_t recalltimer;
+	char	 cancelRcvphreadFlag;
 }__attribute__ ((packed)) sockproxy_stat_t;
 
 

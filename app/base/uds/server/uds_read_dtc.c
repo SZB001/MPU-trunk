@@ -23,7 +23,39 @@
 #define  statusOfDTC_testNotCompletedThisOperationCycle         (1<<6)
 #define  statusOfDTC_warningIndicatorRequested                  (1<<7)
 
-static unsigned int DTC_index[DIAG_ITEM_NUM] = { 0 } ;
+static unsigned int DTC_index[DIAG_ITEM_NUM] = { 
+    1,//DTC_NUM_ECALL_SWITCH = 0,
+    1,//DTC_NUM_GPS_ANTENNA_SHORT_TO_GND,
+    1,//DTC_NUM_GPS_ANTENNA_OPEN,
+    1,//DTC_NUM_GPS_MODULE_FAULT,
+    1,//DTC_NUM_WAN_ANTENNA_SHORT_TO_GND,
+    1,//DTC_NUM_WAN_ANTENNA_OPEN,
+    1,//DTC_NUM_GSM_MODULE,
+    1,//DTC_NUM_SIM_FAULT,
+    1,//DTC_NUM_BATTERY_TOO_LOW,
+    1,//DTC_NUM_BATTERY_TOO_HIGH,
+    1,//DTC_NUM_BATTERY_AGED,
+    1,//DTC_NUM_POWER_VOLTAGE_HIGH,
+    1,//DTC_NUM_POWER_VOLTAGE_LOW,
+    1,//DTC_NUM_BUSOFF,
+    1,//DTC_NUM_MISSING_ACU,
+    1,//DTC_NUM_MISSING_BMS,
+    1,//DTC_NUM_MISSING_CDU,
+    1,//DTC_NUM_MISSING_MCU,
+    1,//DTC_NUM_MISSING_VCU1,
+    1,//DTC_NUM_MISSING_EPS,
+    1,//DTC_NUM_MISSING_ESC,
+    1,//DTC_NUM_MISSING_EHB,
+    1,//DTC_NUM_MISSING_EACP,
+    1,//DTC_NUM_MISSING_PTC,
+    1,//DTC_NUM_MISSING_PLG,
+    1,//DTC_NUM_MISSING_CLM,
+    1,//DTC_NUM_MISSING_BDCM,
+    1,//DTC_NUM_MISSING_ALM,
+    1,//DTC_NUM_MISSING_ICU,
+    1,//DTC_NUM_MISSING_IHU,
+    1,//DTC_NUM_MISSING_TAP,
+} ;
 
 static uint32_t ChangeDTCtoInt(uint8_t *dtcchar)
 {
@@ -221,13 +253,13 @@ static void GetDTCSnapshotRecordNumber(void)
 {
     uint32_t i, start_index = 1;
 
-    memset(DTC_index, 0xff, sizeof(DTC_index));
+    //memset(DTC_index, 0xff, sizeof(DTC_index));
 
     for (i = 0; i < DIAG_ITEM_NUM; i++)
     {
         if (uds_diag_is_cfm_dtc_valid(i))
         {
-            DTC_index[i] = start_index;
+            //DTC_index[i] = start_index;
             start_index++;
         }
     }
