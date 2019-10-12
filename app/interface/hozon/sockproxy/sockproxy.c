@@ -170,7 +170,7 @@ int sockproxy_run(void)
     pthread_t sendtid;
     pthread_attr_t sendta;
     pthread_attr_init(&sendta);
-    pthread_attr_setdetachstate(&sendta, PTHREAD_CREATE_DETACHED);
+    pthread_attr_setdetachstate(&sendta, PTHREAD_CREATE_JOINABLE);
 
     ret = pthread_create(&sendtid, &sendta, (void *)sockproxy_sendmain, NULL);
 
@@ -246,9 +246,9 @@ static void *sockproxy_rcvmain(void)
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,   NULL);   //设置立即取消
     while (1)
     {
-		//pthread_testcancel();
+		pthread_testcancel();
         res = sockproxy_do_receive(&sockSt);
-		//pthread_testcancel();
+		pthread_testcancel();
     }
     (void)res;
     return NULL;
@@ -376,10 +376,6 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
 					sockproxy_socketclose((int)(PP_SP_COLSE_SP + 1));
 				}
-				//else
-				//{
-				//	return 0;
-				//}
 			}
 		}
 		break;
@@ -408,7 +404,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 						sockSt.cancelRcvphreadFlag = 0;
 						log_i(LOG_HOZON, "thread sockproxy_rcvmain not exist\n");
 				    	pthread_attr_init(&rcvta);
-				    	pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_DETACHED);
+				    	pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_JOINABLE);
 				    	pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
 						log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
 					}
@@ -476,7 +472,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				int retcancel;
 				log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
 				retcancel = pthread_cancel(rcvtid);
-				//pthread_join(rcvtid, &ret);
+				pthread_join(rcvtid, &ret);
 				log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel = %d,join code %d\n",retcancel,(int)ret);
 				sockSt.cancelRcvphreadFlag = 1;
 				sockSt.asynCloseFlg = 0;
