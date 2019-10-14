@@ -54,7 +54,8 @@ static pthread_mutex_t closemtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ���
 #if !SOCKPROXY_SAFETY_EN
 static pthread_mutex_t rcvmtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ����̬��
 #endif
-
+	static uint64_t socketopentimer = 0;
+	static uint64_t socketclosetimer = 0;
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -75,6 +76,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state);
 static int sockproxy_BDLink(sockproxy_stat_t *state);
 #endif
 static void sockproxy_nm_dial_recall(void);
+static void sockproxy_testTask(void);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -118,6 +120,8 @@ int sockproxy_init(INIT_PHASE phase)
 			//HzTboxInit();
 			SP_data_init();
 			sockSt.linkSt = 0;
+			socketopentimer = tm_get_time();
+	  		socketclosetimer = tm_get_time();
 		}
         break;
     }
@@ -549,7 +553,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	}
 
 	sockproxy_nm_dial_recall();//重新拨号
-
+	//sockproxy_testTask();
     return 0;
 }
 
@@ -1515,3 +1519,51 @@ void sockproxy_showParameters(void)
 	log_o(LOG_SOCK_PROXY, "sockSt.sglinkSt = %d\n",sockSt.sglinkSt);
 }
 
+/*
+*	3G/4G制式切换测试
+*/
+static void sockproxy_testTask(void)
+{
+	int ret;
+	static uint32_t switchtimes = 0;
+	static char if_4GFlag = 1;
+	if(sockSt.state == PP_OPENED)
+	{
+		if((tm_get_time() - socketopentimer) >= 15000)
+		{
+			if(if_4GFlag)
+			{
+				if_4GFlag = 0;
+				ret = at_network_switch(2);    
+				if (ret != 0)
+				{
+					shellprintf(" set wan apn failed,ret:0x%08x\r\n", ret);
+					return;
+				}
+				switchtimes++;
+    			shellprintf(" set net ok\r\n");
+				socketopentimer = tm_get_time();
+				log_o(LOG_SOCK_PROXY, "switch to 3G,switch times %d\n",switchtimes);
+			}
+			else//切换到4G
+			{
+				if_4GFlag = 1;
+				ret = at_network_switch(3);    
+				if (ret != 0)
+				{
+					shellprintf(" set wan apn failed,ret:0x%08x\r\n", ret);
+					return;
+				}
+				switchtimes++;
+				shellprintf(" set net ok\r\n");
+				socketopentimer = tm_get_time();
+				log_o(LOG_SOCK_PROXY, "switch to 4G,switch times %d\n",switchtimes);
+			}
+		}
+	}
+	else
+	{
+		socketopentimer = tm_get_time();
+	  	//socketclosetimer = tm_get_time();
+	}
+}

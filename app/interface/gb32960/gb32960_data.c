@@ -2369,7 +2369,7 @@ static uint32_t gb_data_save_VehiPosExt(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    tmp =  gps_snap.msl * 10;//�߶�
+    tmp =  gps_snap.msl * 10 + 3000;//�߶�
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
