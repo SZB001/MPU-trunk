@@ -492,7 +492,7 @@ struct  _Tbox__Net__TopMessage
   Tbox__Net__TboxGPSInfo *tbox_gpsinfo;
   Tbox__Net__TboxActiveState *tbox_activestate;
   Tbox__Net__TboxRemoteDiagnose *tbox_remotedaignose;
-  Tbox__Net__MsgResult *msg_result;
+  Tbox__Net__MsgResult *msg_result; 
   Tbox__Net__IhuLogfile *ihu_logfile;
   Tbox__Net__IhuChargeAppoointmentSts *ihu_charge_appoointmentsts;
   Tbox__Net__TboxChargeAppoointmentSet *tbox_charge_appoointmentset;

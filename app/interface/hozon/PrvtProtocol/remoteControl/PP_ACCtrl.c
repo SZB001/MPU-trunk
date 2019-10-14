@@ -335,7 +335,7 @@ int PP_ACCtrl_mainfunction(void *task)
 			memset(&rmtCtrl_Stpara,0,sizeof(PP_rmtCtrl_Stpara_t));
 			if(PP_rmtACCtrl.state.style == RMTCTRL_TSP)//tsp
 			{
-				log_o(LOG_HOZON, "PP_ACCTRL_END");
+				//log_o(LOG_HOZON, "PP_ACCTRL_END");
 				rmtCtrl_Stpara.reqType =PP_rmtACCtrl.CtrlPara.reqType;
 				rmtCtrl_Stpara.eventid = PP_rmtACCtrl.pack.DisBody.eventId;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;//

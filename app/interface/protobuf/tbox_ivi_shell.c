@@ -41,6 +41,7 @@ int tbox_ivi_hu_charge_ctrl(int argc, const char **argv)
 	sscanf(argv[1], "%u", &hour);
 	sscanf(argv[2], "%u", &min);
 	log_o(LOG_IVI,"--------------HU chargeCtrl ------------------");
+
 	chargectrl.cmd = rmtCtrlReqtype;
 	chargectrl.effectivestate = 1;
 	chargectrl.hour = hour;
@@ -48,6 +49,7 @@ int tbox_ivi_hu_charge_ctrl(int argc, const char **argv)
 	chargectrl.id = 1111;
 	chargectrl.targetpower = 90;
 	PP_rmtCtrl_HuCtrlReq(PP_RMTCTRL_CHARGE,(void *)&chargectrl);
+
 	return 0;
 }
 int tbox_ivi_logctrl(void)

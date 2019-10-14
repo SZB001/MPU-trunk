@@ -126,7 +126,7 @@ int PP_startengine_mainfunction(void *task)
 			}
 			if((PP_rmtengineCtrl.state.req == 1)&&(enginecation == PP_POWEROFF)) //下电流程
 			{
-				if(PP_rmtCtrl_cfg_RmtStartSt() == 2)
+				if(PP_rmtCtrl_cfg_RmtStartSt() == 1)
 				{
 					if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 					{
@@ -173,7 +173,7 @@ int PP_startengine_mainfunction(void *task)
 			}
 			else     //发下高压电报文
 			{
-				if(PP_rmtCtrl_cfg_RmtStartSt() == 2)  //判断是否在远程启动模式下
+				if(PP_rmtCtrl_cfg_RmtStartSt() == 1)  //判断是否在远程启动模式下
 				{
 					PP_can_send_data(PP_CAN_ENGINE,CAN_CLOSEENGINE,0);
 				}	
@@ -190,7 +190,7 @@ int PP_startengine_mainfunction(void *task)
 				{
 					if(enginecation == PP_POWERON) //上高压电应答
 					{
-						if(PP_rmtCtrl_cfg_RmtStartSt() == 2)  // 2s后在远程启动状态
+						if(PP_rmtCtrl_cfg_RmtStartSt() == 1)  // 2s后在远程启动状态
 						{
 							PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);
 							PP_Engine_time = tm_get_time();       //记录上高压电成功的时间
@@ -237,7 +237,7 @@ int PP_startengine_mainfunction(void *task)
 				PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 				if(enginecation == PP_POWERON )
 				{
-				rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWERON ;
+					rmtCtrl_Stpara.reqType = PP_RMTCTRL_POWERON ;
 				}
 				else
 				{
@@ -417,7 +417,7 @@ void PP_rmtCtrl_checkenginetime(void)
 			PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;
 		}
 	}
-	if(PP_rmtCtrl_cfg_RmtStartSt() == 2)   //在已经上高压电的情况下 
+	if(PP_rmtCtrl_cfg_RmtStartSt() == 1)   //在已经上高压电的情况下 
 	{
 		if(PP_get_seat_requestpower_flag() == 1 )
 		{

@@ -689,6 +689,19 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 	{
 		case BT_VEhICLE_DOOR_REQ://控制车门锁
 		{
+			#if 0
+			TCOM_MSG_HEADER msghdr;
+			PrvtProt_respbt_t respbt;
+			respbt.msg_type = BT_VEhICLE_DOOR_RESP;
+			respbt.cmd = cmd;
+			respbt.result = 1;  //ִ执行成功
+			respbt.failtype = 0;
+			msghdr.sender    = MPU_MID_HOZON_PP;
+			msghdr.receiver  = MPU_MID_BLE;
+			msghdr.msgid     = BLE_MSG_CONTROL;
+			msghdr.msglen    = sizeof(PrvtProt_respbt_t);
+			tcom_send_msg(&msghdr, &respbt);
+			#endif
 			SetPP_doorLockCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
 		}
 		break;
@@ -734,8 +747,33 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 
 	pthread_mutex_unlock(&rmtCtrlmtx);
 }
-
-
+#if 0
+void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
+{
+	TCOM_MSG_HEADER msghdr;
+	PrvtProt_respbt_t respbt;
+	respbt.msg_type = type;
+	respbt.cmd = cmd;
+	switch(type)
+	{
+		case BT_VEhICLE_DOOR_RESP:
+		{
+			if(cmd == 1)  //蓝牙锁门，
+			{
+				if(result == 0)
+				{
+					respbt.result = 
+				}
+			}
+		}
+		case BT_PANORAMIC_SUNROOF_RESP:
+		case BT_ELECTRIC_DOOR_RESP:
+		case BT_REMOTE_FIND_CAR_RESP:
+		case BT_CHARGE_RESP:       
+		case BT_POWER_CONTROL_RESP:
+	}
+}
+#endif
 /******************************************************
 *函数名：PP_rmtCtrl_HuCtrlReq
 
@@ -917,7 +955,7 @@ int PP_rmtCtrl_StInformBt(unsigned char obj, unsigned char cmd)
 	}
 	
 	respbt.state.fine_car_state = 1;  //保留
-	if(PP_rmtCtrl_cfg_RmtStartSt() == 2)
+	if(PP_rmtCtrl_cfg_RmtStartSt() == 1)
 	{
 		respbt.state.power_state = 2;
 	}

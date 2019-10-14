@@ -1168,7 +1168,7 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 		
         default:
         {
-
+			break;
         }
     }
 
@@ -1265,6 +1265,12 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
         case TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION:
         {
         	memset(&callrequest,0 ,sizeof(ivi_callrequest));
+			
+			if( NULL == TopMsg->call_action )
+			{
+					log_e(LOG_IVI,"TopMsg->call_action == NULL !!!");
+					return;
+			}
             switch( TopMsg->call_action->type )
             {
                 case TBOX__NET__CALL_TYPE__ECALL:  //车机语音触发ECALL
@@ -1330,6 +1336,11 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
         
         case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_GPS_SET:
         {   
+        	if( NULL == TopMsg->tbox_gps_ctrl )
+			{
+					log_e(LOG_IVI,"TopMsg->tbox_gps_ctrl == NULL !!!");
+					return;
+			}
             log_o(LOG_IVI,"onoff sta %d.",TopMsg->tbox_gps_ctrl->onoff);
             switch ( TopMsg->tbox_gps_ctrl->onoff )
             {
@@ -1372,6 +1383,11 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 		//车机回复TBOX远程诊断结果
        case TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_REMOTEDIAGNOSE_RESULT:
 	   {
+	   		if( NULL == TopMsg->msg_result )
+			{
+				log_e(LOG_IVI,"TopMsg->msg_result == NULL !!!");
+				return;
+			}
 	   		if(TopMsg->msg_result->result == true)
 	   		{
 				log_o(LOG_IVI,"remotediagnos success...");
@@ -1382,6 +1398,11 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 	   //tbox收到tsp下发上传日志的消息通知HU，回复
 	   case TBOX__NET__MESSAGETYPE__RESPONSE_IHU_LOGFILE_RESULT:
 	   	{
+	   		if( NULL == TopMsg->msg_result )
+			{
+				log_e(LOG_IVI,"TopMsg->msg_result == NULL !!!");
+				return;
+			}
 			if(TopMsg->msg_result->result == true)
 			{
 				log_o(LOG_IVI,"tsplogfile success......");
@@ -1392,6 +1413,11 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 	   //HU回复TBOX更新充电预约状态
 	   case TBOX__NET__MESSAGETYPE__RESPONSE_IHU_CHARGEAPPOINTMENTSTS_RESULT:
 	   	{
+	   		if( NULL == TopMsg->msg_result )
+			{
+				log_e(LOG_IVI,"TopMsg->msg_result == NULL !!!");
+				return;
+			}
 			if(TopMsg->msg_result->result == true)
 			{
 				log_o(LOG_IVI,"chager appointment updata success......");
@@ -1403,20 +1429,24 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 	   case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGEAPPOINTMENTSET:
 	   {
 			ivi_chargeAppointSt HuChargeAppoint;
-			HuChargeAppoint.effectivestate = TopMsg->ihu_charge_appoointmentsts->effectivestate;
-			if(HuChargeAppoint.effectivestate == 0)
+			HuChargeAppoint.cmd = PP_RMTCTRL_APPOINTCHARGE;
+			if(TopMsg->ihu_charge_appoointmentsts == NULL)
 			{
-				HuChargeAppoint.cmd = PP_RMTCTRL_CHRGCANCELAPPOINT;
+				log_o(LOG_IVI,"TopMsg->ihu_charge_appoointmentsts == NULL");
+				return ;
 			}
-			else
-			{
-				HuChargeAppoint.cmd = PP_RMTCTRL_APPOINTCHARGE;
-			}
-			HuChargeAppoint.hour = TopMsg->ihu_charge_appoointmentsts->hour;
-			HuChargeAppoint.min = TopMsg->ihu_charge_appoointmentsts->min;
-			HuChargeAppoint.id = TopMsg->ihu_charge_appoointmentsts->id;
-			HuChargeAppoint.targetpower = TopMsg->ihu_charge_appoointmentsts->targetpower;
 			HuChargeAppoint.timestamp = TopMsg->ihu_charge_appoointmentsts->timestamp;
+			log_o(LOG_IVI,"HuChargeAppoint.timestamp = %d",HuChargeAppoint.timestamp);
+			HuChargeAppoint.hour = TopMsg->ihu_charge_appoointmentsts->hour;
+			log_o(LOG_IVI,"HuChargeAppoint.hour = %d",HuChargeAppoint.hour);
+			HuChargeAppoint.min = TopMsg->ihu_charge_appoointmentsts->min;
+			log_o(LOG_IVI,"HuChargeAppoint.min = %d",HuChargeAppoint.min);
+			HuChargeAppoint.id = TopMsg->ihu_charge_appoointmentsts->id;
+			log_o(LOG_IVI,"HuChargeAppoint.id = %d",HuChargeAppoint.id);
+			HuChargeAppoint.targetpower = TopMsg->ihu_charge_appoointmentsts->targetpower;
+			log_o(LOG_IVI,"HuChargeAppoint.targetpower = %d",HuChargeAppoint.targetpower);
+			HuChargeAppoint.effectivestate = TopMsg->ihu_charge_appoointmentsts->effectivestate;
+			log_o(LOG_IVI,"HuChargeAppoint.effectivestate = %d",HuChargeAppoint.effectivestate);
 			PP_rmtCtrl_HuCtrlReq(PP_RMTCTRL_CHARGE,(void *)&HuChargeAppoint);
 			ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGEAPPOINTMENTSET);
 			break;
@@ -1425,6 +1455,11 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 	   case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGECTRL:
 	   {
 			ivi_chargeAppointSt HuChargeCtrl;
+			if(TopMsg->tbox_chargectrl == NULL)
+			{
+				log_o(LOG_IVI,"TopMsg->tbox_chargectrl == NULL");
+				return ;
+			}
 			HuChargeCtrl.effectivestate = TopMsg->tbox_chargectrl->timestamp;
 			HuChargeCtrl.targetpower = TopMsg->tbox_chargectrl->targetpower;
 			if(TopMsg->tbox_chargectrl->commend == 0)

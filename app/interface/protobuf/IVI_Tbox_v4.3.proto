@@ -21,6 +21,14 @@ enum Messagetype
 	RESPONSE_TBOX_ACTIVESTATE_RESULT = 13;      //tbox response active state
 	REQUEST_TBOX_REMOTEDIAGNOSE =14;        //tbox request IVI to capture videos or pictures
 	RESPONSE_TBOX_REMOTEDIAGNOSE_RESULT =15;    //ivi response tbox : contrl result
+	REQUEST_IHU_LOGFILE = 16;                   //tbox request ihu to report log files
+	RESPONSE_IHU_LOGFILE_RESULT = 17;                  //ihu response tbox result
+	REQUEST_IHU_CHARGEAPPOINTMENTSTS = 18;      //tbox request ihu to update charge appointment state
+	RESPONSE_IHU_CHARGEAPPOINTMENTSTS_RESULT = 19;     //ihu response tbox result
+	REQUEST_TBOX_CHARGEAPPOINTMENTSET = 20;     //ihu request tbox to set charge appointment 
+	RESPONSE_TBOX_CHARGEAPPOINTMENTSET_RESULT = 21;    //tbox response ihu result
+	REQUEST_TBOX_CHARGECTRL = 22;               //ihu request tbox to charge
+	RESPONSE_TBOX_CHARGECTRL_RESULT = 23;       //tbox response ihu result
 	
 }
 
@@ -155,6 +163,46 @@ message TboxRemoteDiagnose
 	uint32 sizelimit = 9;
 }
 
+message IhuLogfile
+{
+	string vin = 1;
+	uint32 eventid = 2;
+	uint32 timestamp = 3;
+	uint32 aid = 4;
+	uint32 mid = 5;
+	uint32 starttime = 6;
+	uint32 durationtime = 7;
+	uint32 channel = 8;  //1:TBOX, 2:IHU
+	uint32 level = 9;   //1:ERROR, 2:WARN, 3:INFO, 4:DEBUG
+}
+
+message IhuChargeAppoointmentSts
+{
+	uint32 timestamp = 1;
+	uint32 hour = 2;
+	uint32 min = 3;
+	uint32 id = 4;
+	uint32 targetpower = 5;
+	bool effectivestate  = 6;  //true:effective, false:Invalid
+}
+
+message TboxChargeAppoointmentSet
+{
+	uint32 timestamp = 1;
+	uint32 hour = 2;
+	uint32 min = 3;
+	uint32 id = 4;
+	uint32 targetpower = 5;
+	bool effectivestate  = 6;  //true:effective, false:Invalid
+}
+
+message TboxChargeCtrl
+{
+	uint32 timestamp = 1;
+	bool commend = 2;  //0: stop, 1:start
+	uint32 targetpower = 3;
+}
+
 message MsgResult
 {
 	bool result =1;  //true:success    flase:failed
@@ -176,6 +224,10 @@ message TopMessage
 	TboxActiveState tbox_activestate = 11;
 	TboxRemoteDiagnose tbox_remotedaignose = 12;
 	MsgResult msg_result = 13;
+	IhuLogfile ihu_logfile = 14;
+	IhuChargeAppoointmentSts ihu_charge_appoointmentSts = 15;
+	TboxChargeAppoointmentSet tbox_charge_appoointmentSet = 16;
+	TboxChargeCtrl tbox_chargectrl = 17;
 }
 
 
