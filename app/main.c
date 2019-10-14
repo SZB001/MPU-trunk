@@ -34,6 +34,8 @@
 #include "wsrv_api.h"
 #include "udef_cfg_api.h"
 
+static void signal_PIPE_handler(void);
+
 int main(int argc , char **argv)
 {
     int ret;
@@ -42,7 +44,8 @@ int main(int argc , char **argv)
     typedef int (*module_run_fn)(void);
 
     prctl(PR_SET_NAME, "MAIN");
-    signal(SIGPIPE, SIG_IGN);
+    signal_PIPE_handler();
+
     static module_init_fn init_tbl[] =
     {
         tcom_init,
@@ -144,4 +147,17 @@ int main(int argc , char **argv)
     }
 
     return 0;
+}
+
+/*
+*   SIGPIPE处理
+*/
+static void signal_PIPE_handler(void)
+{
+    //sigset_t set;
+    //sigemptyset(&set);
+    //sigaddset(&set, SIGPIPE);
+    //sigprocmask(SIG_BLOCK, &set, NULL);//阻止SIGPIPE信号
+    
+    signal(SIGPIPE, SIG_IGN);//忽略SIGPIPE信号
 }
