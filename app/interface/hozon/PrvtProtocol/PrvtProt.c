@@ -639,7 +639,7 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 		PP_PackHeader_HB.tboxid = PrvtPro_BSEndianReverse(task->tboxid);
 		memcpy(&pack_Header, &PP_PackHeader_HB, sizeof(PrvtProt_pack_Header_t));
 
-		HB_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
+		HB_TxInform.pakgtype = PP_TXPAKG_SIGTRIG;
 		HB_TxInform.eventtime = tm_get_time();
 		SP_data_write(pack_Header.sign,18,PP_HB_send_cb,&HB_TxInform);
 
@@ -1016,6 +1016,7 @@ void SetPrvtProt_Awaken(int type)
 			PP_heartbeat.hbtaskflag = 1;
 			PP_heartbeat.hbtasksleepflag = 0;
 			PP_hbtaskmpurtcwakeuptestflag++;
+			PP_heartbeat.timer = tm_get_time();
 		}
 		break;
 		default:

@@ -406,8 +406,8 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				int retval;
 				if(sockSt.cancelRcvphreadFlag)
 				{
-					retval = pthread_kill(rcvtid,0);
-					if(ESRCH == retval)//线程不存在
+					//retval = pthread_kill(rcvtid,0);
+					//if(ESRCH == retval)//线程不存在
 					{
 						sockSt.cancelRcvphreadFlag = 0;
 						log_i(LOG_HOZON, "thread sockproxy_rcvmain not exist\n");
@@ -415,14 +415,6 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				    	pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_JOINABLE);
 				    	pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
 						log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
-					}
-					else
-					{
-						log_i(LOG_HOZON, "pthread_kill(rcvtid,0) = %d,rcvtid = %d\n",retval,rcvtid);
-						log_i(LOG_HOZON, "thread sockproxy_rcvmain exist\n");
-						log_i(LOG_HOZON, "tm_get_time() = %d\n",tm_get_time());
-						sleep(1);
-						return 0;
 					}
 				}
 
@@ -1060,7 +1052,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 					//protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
 					if (res < 0)
 					{
-						log_e(LOG_HOZON, "socket send error, reset protocol");
+						log_e(LOG_HOZON, "socket send error, reset protocol\n");
 						SP_data_put_send(rpt);
 						if(rpt->SendInform_cb != NULL)
 						{
@@ -1073,8 +1065,15 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 					}
 					else if(res == 0)
 					{
-						log_e(LOG_HOZON, "send wait, send is canceled");
-						SP_data_put_back(rpt);
+						log_e(LOG_HOZON, "send is canceled\n");
+						SP_data_put_send(rpt);
+						if(rpt->SendInform_cb != NULL)
+						{
+							TxInform_ptr->successflg = PP_TXPAKG_FAIL;
+							TxInform_ptr->failresion = PP_TXPAKG_TXFAIL;
+							TxInform_ptr->txfailtime = tm_get_time();
+							rpt->SendInform_cb(rpt->Inform_cb_para);
+						}
 					}
 					else
 					{//���ͳɹ�
