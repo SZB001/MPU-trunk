@@ -9,6 +9,7 @@ Data			Vasion			author
 description�� include the header file
 *******************************************************/
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <pthread.h>
@@ -90,23 +91,16 @@ description�� function code
 int sockproxy_init(INIT_PHASE phase)
 {
     int ret = 0;
-    //uint32_t reginf = 0, cfglen;
 
     switch (phase)
     {
         case INIT_PHASE_INSIDE:
 		{
-			sockSt.socket = 0;
+			memset(&sockSt, 0 , sizeof(sockproxy_stat_t));
 			sockSt.state = PP_CLOSED;
-			sockSt.asynCloseFlg = 0;
-			sockSt.sock_addr.port = 0;
-			sockSt.sock_addr.url[0] = 0;
 			sockSt.rcvType = PP_RCV_UNRCV;
 			sockSt.rcvstep = PP_RCV_IDLE;
-			sockSt.rcvlen = 0;
-			sockSt.sleepFlag = 0;
 			SockproxyData_Init();
-			sockSt.cancelRcvphreadFlag = 0;
 		}
         break;
         case INIT_PHASE_RESTORE:
@@ -119,7 +113,6 @@ int sockproxy_init(INIT_PHASE phase)
 			/*init SSL*/
 			//HzTboxInit();
 			SP_data_init();
-			sockSt.linkSt = 0;
 			socketopentimer = tm_get_time();
 	  		socketclosetimer = tm_get_time();
 		}
@@ -129,19 +122,12 @@ int sockproxy_init(INIT_PHASE phase)
     return ret;
 }
 
-//static	void *retcode1=NULL;
-//static	void *retcode2=NULL;
-//static	void *retcode3=NULL;
 static  pthread_t sockttid;
 static  pthread_attr_t socktta;
 static	pthread_t 		rcvtid;
 static  pthread_attr_t 	rcvta;
 static  pthread_t sendtid;
 static  pthread_attr_t sendta;
-//void cleanup(void *arg)
-//{
-//    pthread_mutex_unlock(&rcvmtx);
-//}
 
 /******************************************************
 *��������sockproxy_run
@@ -185,15 +171,6 @@ int sockproxy_run(void)
         log_e(LOG_SOCK_PROXY, "pthread_create sendmain failed, error: %s", strerror(errno));
         return ret;
     }
-
-	//int ret1;
-	//int ret2;
-	//int ret3;
-	//ret1 = pthread_join(sockttid, retcode1);
- 	//ret2 = pthread_join(rcvtid  , retcode2);
- 	//ret3 = pthread_join(sendtid , retcode3);
-	//log_o(LOG_SOCK_PROXY, "ret1 = [%d]   +++++  [%d]",ret1,retcode1);
-	//log_o(LOG_SOCK_PROXY, "ret3 = [%d]   +++++  [%d]",ret3,retcode3);
 
 	return 0;
 }
@@ -410,7 +387,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		{
 			if(0 == sockSt.sleepFlag)
 			{
-				int retval;
+				//int retval;
 				if(sockSt.cancelRcvphreadFlag)
 				{
 					//retval = pthread_kill(rcvtid,0);
@@ -596,13 +573,23 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 		{
 			if(sockSt.state == PP_CLOSED)
 			{
-				he=gethostbyname("tboxgw-qa.chehezhi.cn");
-				if(he == NULL)
+				getPP_rmtCfg_certAddrPort(sockSt.sgLinkAddr,&sockSt.sgPort);
+				if((sockSt.sgLinkAddr[0] == 0) || (sockSt.sgPort == 0))
 				{
-					log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
+					log_e(LOG_SOCK_PROXY,"invalid addr or port +++++++\n");
 					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 					sockSt.waittime = tm_get_time();
-					//sockproxy_nm_dial_recall();
+					sleep(1);
+					return -1;
+				}
+
+				he=gethostbyname(sockSt.sgLinkAddr);
+				if(he == NULL)
+				{
+					log_e(LOG_SOCK_PROXY,"gethostbyname %s error\n",sockSt.sgLinkAddr);
+					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+					sockSt.waittime = tm_get_time();
+					sleep(1);
 					return -1;
 				}
 
@@ -612,13 +599,14 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
 					 break;
 				}
-				/*port ipaddr*/
-				iRet = HzPortAddrCft(22000, 1,destIP,NULL);//TBOX端口地址配置初始化
+				/*port ipaddr*///22000
+				iRet = HzPortAddrCft(sockSt.sgPort, 1,destIP,NULL);//TBOX端口地址配置初始化
 				if(iRet != SOCKPROXY_SG_ADDR_INIT_SUCCESS)
 				{
 					log_e(LOG_SOCK_PROXY,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", iRet);
 					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 					sockSt.waittime = tm_get_time();
+					sleep(1);
 					return -1;
 				}
 
@@ -632,6 +620,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY,"SgHzTboxCertchainCfg +++++++++++++++iRet[%d] \n", iRet);
 					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 					sockSt.waittime = tm_get_time();
+					sleep(1);
 					return -1;
 				}
 
@@ -641,7 +630,8 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					int fd = file_create(PP_CERTDL_TBOXCRL, 0644);
 					if(fd < 0)
 					{
-						//log_e(LOG_SOCK_PROXY,"creat file /usrdata/pem/tbox.crl fail\n");
+						log_e(LOG_SOCK_PROXY,"creat file /usrdata/pem/tbox.crl fail\n");
+						sleep(1);
 						return -1;
 					}
 
@@ -653,6 +643,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY,"HzTboxInit error+++++++++++++++iRet[%d] \n", iRet);
 					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 					sockSt.waittime = tm_get_time();
+					sleep(1);
 					return -1;
 				}
 
@@ -663,6 +654,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY,"SgHzTboxConnect error+++++++++++++++iRet[%d] \n", iRet);
 					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 					sockSt.waittime = tm_get_time();
+					sleep(1);
 					return -1;
 				}
 
@@ -750,13 +742,24 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 			if(sockSt.state == PP_CLOSED)
 			{
-				he=gethostbyname("tboxgw-qa.chehezhi.cn");
-				if(he == NULL)
+				//he=gethostbyname("tboxgw-qa.chehezhi.cn");
+				getPP_rmtCfg_tspAddrPort(sockSt.BDLLinkAddr,&sockSt.BDLPort);
+				if((sockSt.BDLLinkAddr[0] == 0) || (sockSt.BDLPort == 0))
 				{
-					log_e(LOG_SOCK_PROXY,"gethostbyname error\n");
+					log_e(LOG_SOCK_PROXY,"invalid addr or port +++++++\n");
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 					sockSt.waittime = tm_get_time();
-					//sockproxy_nm_dial_recall();
+					sleep(1);
+					return -1;
+				}
+
+				he=gethostbyname(sockSt.BDLLinkAddr);
+				if(he == NULL)
+				{
+					log_e(LOG_SOCK_PROXY,"gethostbyname %s error\n",sockSt.BDLLinkAddr);
+					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+					sockSt.waittime = tm_get_time();
+					sleep(1);
 					return -1;
 				}
 
@@ -766,13 +769,14 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
 					 break;
 				}
-				/*port ipaddr*/
-				iRet = HzPortAddrCft(21000, 1,destIP,NULL);
+				/*port ipaddr*///21000
+				iRet = HzPortAddrCft(sockSt.BDLPort, 1,destIP,NULL);
 				if(iRet != 1010)
 				{
 					log_e(LOG_SOCK_PROXY,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", iRet);
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 					sockSt.waittime = tm_get_time();
+					sleep(1);
 					return -1;
 				}
 
@@ -787,6 +791,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY,"HzTboxCertchainCfg error+++++++++++++++iRet[%d] \n", iRet);
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 					sockSt.waittime = tm_get_time();
+					sleep(1);
 					return -1;
 				}
 
@@ -796,7 +801,8 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					int fd = file_create(PP_CERTDL_TBOXCRL, 0644);
 					if(fd < 0)
 					{
-						//log_e(LOG_SOCK_PROXY,"creat file /usrdata/pem/tbox.crl fail\n");
+						log_e(LOG_SOCK_PROXY,"creat file /usrdata/pem/tbox.crl fail\n");
+						sleep(1);
 						return -1;
 					}
 
@@ -808,6 +814,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY,"HzTboxInit error+++++++++++++++iRet[%d] \n", iRet);
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 					sockSt.waittime = tm_get_time();
+					sleep(1);
 					return -1;
 				}
 
@@ -819,7 +826,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY,"HzTboxConnect error+++++++++++++++iRet[%d] \n", iRet);
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 					sockSt.waittime = tm_get_time();
-					//PP_CertDL_CertDLReset();
+					sleep(1);
 					return -1;
 				}
 
@@ -1524,6 +1531,10 @@ void sockproxy_showParameters(void)
 	log_o(LOG_SOCK_PROXY, "sockSt.state = %d\n",sockSt.state);
 	log_o(LOG_SOCK_PROXY, "sockSt.BDLlinkSt = %d\n",sockSt.BDLlinkSt);
 	log_o(LOG_SOCK_PROXY, "sockSt.sglinkSt = %d\n",sockSt.sglinkSt);
+	log_o(LOG_SOCK_PROXY, "sockSt.BDLLinkAddr = %s\n",sockSt.BDLLinkAddr);
+	log_o(LOG_SOCK_PROXY, "sockSt.BDLPort = %d\n",sockSt.BDLPort);
+	log_o(LOG_SOCK_PROXY, "sockSt.sgLinkAddr = %s\n",sockSt.sgLinkAddr);
+	log_o(LOG_SOCK_PROXY, "sockSt.sgPort = %d\n",sockSt.sgPort);
 }
 
 /*
@@ -1573,4 +1584,32 @@ static void sockproxy_testTask(void)
 		socketopentimer = tm_get_time();
 	  	//socketclosetimer = tm_get_time();
 	}
+}
+
+/*
+* 设置双向连接域名地址
+*/
+void setsockproxy_bdlAddrPort(char* addr,char* port)
+{
+	memset(sockSt.BDLLinkAddr, 0 , 33);
+	memcpy(sockSt.BDLLinkAddr,addr,strlen((const char*)addr));
+	sockSt.BDLPort = atoi((const char*)port);
+	log_i(LOG_SOCK_PROXY, "sockSt.BDLLinkAddr: %s\n",sockSt.BDLLinkAddr);
+	log_i(LOG_SOCK_PROXY, "port = %s\n",port);
+	log_i(LOG_SOCK_PROXY, "sockSt.BDLPort = %d\n",sockSt.BDLPort);
+	sockproxy_socketclose((int)(PP_SP_COLSE_SP + 10));//by liujian 20191015
+}
+
+/*
+* 设置单向连接域名地址
+*/
+void setsockproxy_sgAddrPort(char* addr,char* port)
+{
+	memset(sockSt.sgLinkAddr, 0 , 33);
+	memcpy(sockSt.sgLinkAddr,addr,strlen((const char*)addr));
+	sockSt.sgPort = atoi((const char*)port);
+	log_i(LOG_SOCK_PROXY, "sockSt.sgLinkAddr: %s\n",sockSt.sgLinkAddr);
+	log_i(LOG_SOCK_PROXY, "port = %s\n",port);
+	log_i(LOG_SOCK_PROXY, "sockSt.sgPort = %d\n",sockSt.sgPort);
+	sockproxy_socketclose((int)(PP_SP_COLSE_SP + 11));//by liujian 20191015
 }

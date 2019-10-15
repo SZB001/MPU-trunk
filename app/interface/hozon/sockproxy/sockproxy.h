@@ -141,6 +141,10 @@ typedef struct
 	char sleepwaittimeoutcnt;
 	uint64_t recalltimer;
 	char	 cancelRcvphreadFlag;
+	char	sgLinkAddr[33];
+	int		sgPort;
+	char	BDLLinkAddr[33];
+	int		BDLPort;
 }__attribute__ ((packed)) sockproxy_stat_t;
 
 

@@ -16,4 +16,6 @@ extern int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void));
 extern void sockproxy_socketclose(int type);
 extern int sockproxy_sgsocketState(void);
 extern void sockproxy_showParameters(void);
+extern void setsockproxy_bdlAddrPort(char* addr,char* port);
+extern void setsockproxy_sgAddrPort(char* addr,char* port);
 #endif

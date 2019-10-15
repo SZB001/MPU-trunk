@@ -594,12 +594,43 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				memcpy(AppData_rmtCfg.ReadResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion, \
 														  AppData_rmtCfg.checkResp.cfgVersionlen);
 				AppData_rmtCfg.ReadResp.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
-				//AppData_rmtCfg.ReadResp.FICM.ficmConfigValid = AppData_rmtCfg.getResp.FICM.ficmConfigValid;
-				memcpy(&(AppData_rmtCfg.ReadResp.FICM),&(AppData_rmtCfg.getResp.FICM),sizeof(App_rmtCfg_FICM_t));
-				memcpy(&(AppData_rmtCfg.ReadResp.APN1),&(AppData_rmtCfg.getResp.APN1),sizeof(App_rmtCfg_APN1_t));
-				memcpy(&(AppData_rmtCfg.ReadResp.APN2),&(AppData_rmtCfg.getResp.APN2),sizeof(App_rmtCfg_APN2_t));
-				memcpy(&(AppData_rmtCfg.ReadResp.COMMON),&(AppData_rmtCfg.getResp.COMMON),sizeof(App_rmtCfg_COMMON_t));
-				memcpy(&(AppData_rmtCfg.ReadResp.EXTEND),&(AppData_rmtCfg.getResp.EXTEND),sizeof(App_rmtCfg_EXTEND_t));
+				if(1 == AppData_rmtCfg.getResp.FICM.ficmConfigValid)
+				{
+					memcpy(&(AppData_rmtCfg.ReadResp.FICM),&(AppData_rmtCfg.getResp.FICM),sizeof(App_rmtCfg_FICM_t));
+				}
+
+				if(1 == AppData_rmtCfg.getResp.APN1.apn1ConfigValid)
+				{
+					if((0 != strcmp((const char*)AppData_rmtCfg.ReadResp.APN1.tspAddr,(const char*)AppData_rmtCfg.getResp.APN1.tspAddr)) || \
+						(0 != strcmp((const char*)AppData_rmtCfg.ReadResp.APN1.tspPort,(const char*)AppData_rmtCfg.getResp.APN1.tspPort)))
+					{
+						rmtCfg->state.apn1tspaddrchangedflag = 1;
+					}
+
+					if((0 != strcmp((const char*)AppData_rmtCfg.ReadResp.APN1.certAddress,(const char*)AppData_rmtCfg.getResp.APN1.certAddress)) || \
+						(0 != strcmp((const char*)AppData_rmtCfg.ReadResp.APN1.certPort,(const char*)AppData_rmtCfg.getResp.APN1.certPort)))
+					{
+						rmtCfg->state.apn1certaddrchangeflag = 1;
+					}
+
+					memcpy(&(AppData_rmtCfg.ReadResp.APN1),&(AppData_rmtCfg.getResp.APN1),sizeof(App_rmtCfg_APN1_t));
+				}
+
+				if(1 == AppData_rmtCfg.getResp.APN2.apn2ConfigValid)
+				{
+					memcpy(&(AppData_rmtCfg.ReadResp.APN2),&(AppData_rmtCfg.getResp.APN2),sizeof(App_rmtCfg_APN2_t));
+				}
+		
+				if(1 == AppData_rmtCfg.getResp.COMMON.commonConfigValid)
+				{
+					memcpy(&(AppData_rmtCfg.ReadResp.COMMON),&(AppData_rmtCfg.getResp.COMMON),sizeof(App_rmtCfg_COMMON_t));
+				}
+
+				if(1 == AppData_rmtCfg.getResp.EXTEND.extendConfigValid)
+				{
+					memcpy(&(AppData_rmtCfg.ReadResp.EXTEND),&(AppData_rmtCfg.getResp.EXTEND),sizeof(App_rmtCfg_EXTEND_t));
+				}
+
 				rmtCfg->state.cfgsuccess = 1;
 			}
 
@@ -1011,54 +1042,59 @@ void PP_rmtCfg_setCfgEnable(unsigned char obj,unsigned char enable)
 
 }
 
-void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *data)
+void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *data1,const void *data2)
 {
 	switch(obj)
 	{
 		case 1:  //TSP APN Address
 		{
-			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspAddr,(const char*)data);
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspAddr,(const char*)data1);
+			AppData_rmtCfg.ReadResp.APN1.tspAddrlen = strlen((const char*)data1);
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspPort,(const char*)data2);
+			setsockproxy_bdlAddrPort((char*)AppData_rmtCfg.ReadResp.APN1.tspAddr, \
+				(char*)AppData_rmtCfg.ReadResp.APN1.tspPort);
 		}
 		break;
 		case 2:
 		{
-			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspUser,(const char*)data);
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspUser,(const char*)data1);
 		}
 		break;
 		case 3:
 		{
-			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspPass,(const char*)data);
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspPass,(const char*)data1);
 		}
 		break;
 		case 4:
 		{
-			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspIP,(const char*)data);
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspIP,(const char*)data1);
+			AppData_rmtCfg.ReadResp.APN1.tspIPlen = strlen((const char*)data1);
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspPort,(const char*)data2);
+			setsockproxy_bdlAddrPort((char*)AppData_rmtCfg.ReadResp.APN1.tspIP, \
+				(char*)AppData_rmtCfg.ReadResp.APN1.tspPort);
 		}
 		break;
 		case 5:
 		{
-			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspSms,(const char*)data);
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspSms,(const char*)data1);
 		}
 		break;
 		case 6:
 		{
-			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.tspPort,(const char*)data);
-		}
-		break;
-		case 7:
-		{
-			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.certAddress,(const char*)data);
-		}
-		case 8:
-		{
-			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.certPort,(const char*)data);
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.certAddress,(const char*)data1);
+			AppData_rmtCfg.ReadResp.APN1.certAddresslen = strlen((const char*)data1);
+			strcpy((char *)AppData_rmtCfg.ReadResp.APN1.certPort,(const char*)data2);
+			setsockproxy_sgAddrPort((char*)AppData_rmtCfg.ReadResp.APN1.certAddress, \
+				(char*)AppData_rmtCfg.ReadResp.APN1.certPort);
 		}
 		break;
 		default:
 		break;	
 	}
+	AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = 1;
 	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
 }
+
 void PP_rmtCfg_setCfgficm(unsigned char obj,const void *data)
 {
 	switch(obj)
@@ -1357,9 +1393,9 @@ static void PP_rmtCfg_send_cb(void * para)
 					AppData_rmtCfg.ReadResp.cfgsuccess = 1;
 					//�������ã�ʹ���µ�����
 					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
-					PP_rmtCfg_settbox();
 					memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersionlen);
 					AppData_rmtCfg.checkReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
+					PP_rmtCfg_settbox();
 				}
 			}
 			PP_rmtCfg.state.waitSt  = PP_RMTCFG_WAIT_IDLE;
@@ -1394,6 +1430,9 @@ uint8_t PP_rmtCfg_getIccid(uint8_t* iccid)
 	return PP_rmtCfg.state.iccidValid;
 }
 
+/*
+* 下发配置
+*/
 void PP_rmtCfg_settbox(void)
 {	
 	//FICMConfigSettings
@@ -1417,36 +1456,21 @@ void PP_rmtCfg_settbox(void)
 	}
 	
 	//APN1ConfigSettings APN1 
-	if(AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid == 1)
+	if(PP_rmtCfg.state.apn1tspaddrchangedflag)
 	{
-		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.tspAddr,33) == 1)   
-		{
-		}
-		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.tspUser,17) ==1 )
-		{
-		}
-		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.tspPass,17) == 1)
-		{
-		}
-		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.tspIP,17) == 1)
-		{
-		}
-		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.tspSms,33) == 1)
-		{
-		}
-		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.tspPort,7) == 1)
-		{
-		}
-		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.certAddress,33) == 1)
-		{
-			
-		}
-		if(PP_rmtCfg_is_empty(AppData_rmtCfg.ReadResp.APN1.certPort,7) == 1)
-		{
-		
-		}
-	
+		PP_rmtCfg.state.apn1tspaddrchangedflag = 0;
+		setsockproxy_bdlAddrPort((char*)AppData_rmtCfg.ReadResp.APN1.tspAddr, \
+				(char*)AppData_rmtCfg.ReadResp.APN1.tspPort);
 	}
+
+	if(PP_rmtCfg.state.apn1certaddrchangeflag)
+	{
+		PP_rmtCfg.state.apn1certaddrchangeflag = 0;
+		setsockproxy_sgAddrPort((char*)AppData_rmtCfg.ReadResp.APN1.certAddress, \
+				(char*)AppData_rmtCfg.ReadResp.APN1.certPort);
+	}
+
+
 	//APN2ConfigSettings APN2
 	if(AppData_rmtCfg.ReadResp.APN2.apn2ConfigValid == 1)
 	{
@@ -1577,7 +1601,7 @@ uint8_t PP_rmtCfg_enable_journeysEnabled(void)
 /*
 * 获取心跳超时时间配置
 */
-int PP_rmtCfg_heartbeatTimeout(void)
+int getPP_rmtCfg_heartbeatTimeout(void)
 {
 	int hbtimeout = 0;
 	if(1 == AppData_rmtCfg.ReadResp.COMMON.commonConfigValid)
@@ -1588,4 +1612,28 @@ int PP_rmtCfg_heartbeatTimeout(void)
 	return hbtimeout;
 }
 
+/*
+* 获取tsp ip addr和port
+*/
+void getPP_rmtCfg_tspAddrPort(char* addr,int* port)
+{
+	if(1 == AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid)
+	{
+		memcpy(addr,(char*)AppData_rmtCfg.ReadResp.APN1.tspAddr, \
+								AppData_rmtCfg.ReadResp.APN1.tspAddrlen);
+		*port = atoi((const char*)AppData_rmtCfg.ReadResp.APN1.tspPort);
+	}
+}
 
+/*
+* 获取cert ip addr和port
+*/
+void getPP_rmtCfg_certAddrPort(char* addr,int* port)
+{
+	if(1 == AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid)
+	{
+		memcpy(addr,(char*)AppData_rmtCfg.ReadResp.APN1.certAddress, \
+							AppData_rmtCfg.ReadResp.APN1.certAddresslen);
+		*port = atoi((const char*)AppData_rmtCfg.ReadResp.APN1.certPort);
+	}
+}

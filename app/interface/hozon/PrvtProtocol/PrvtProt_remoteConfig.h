@@ -80,6 +80,8 @@ typedef struct
 	uint8_t cfgsuccess;//�����Ƿ�ɹ�
 	long 	eventid;
 	long	expTime;
+	char	apn1tspaddrchangedflag;
+	char	apn1certaddrchangeflag;
 }__attribute__((packed))  PrvtProt_rmtCfgSt_t; /*remote config�ṹ��*/
 
 /***********************************
@@ -296,7 +298,7 @@ extern uint8_t PP_rmtCfg_enable_vsEnabled(void);
 extern uint8_t PP_rmtCfg_enable_btKeyEntryEnabled(void);
 extern uint8_t PP_rmtCfg_enable_journeysEnabled(void);
 extern void PP_rmtCfg_setCfgEnable(unsigned char obj,unsigned char enable);
-extern void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *data);
+extern void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *ddata1,const void *data2);
 extern void PP_rmtCfg_setCfgficm(unsigned char obj,const void *data);
-extern int PP_rmtCfg_heartbeatTimeout(void);
+extern int getPP_rmtCfg_heartbeatTimeout(void);
 #endif 

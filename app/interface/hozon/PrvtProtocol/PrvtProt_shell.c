@@ -309,7 +309,7 @@ static int PP_shell_SetRmtCfgapn1(int argc, const char **argv)
 {
     unsigned int obj;
 	//unsigned int str;
-    if (argc != 2)
+    if (argc != 3)
     {
         shellprintf(" usage: HOZON_PP_SetRemoteCfgEnable <remote config str>\r\n");
         return -1;
@@ -317,7 +317,7 @@ static int PP_shell_SetRmtCfgapn1(int argc, const char **argv)
 
 	sscanf(argv[0], "%u", &obj);
     //sscanf(argv[1], "%u", str);
-	PP_rmtCfg_setCfgapn1((uint8_t)obj,argv[1]);
+	PP_rmtCfg_setCfgapn1((uint8_t)obj,argv[1],argv[2]);
     sleep(1);
     return 0;
 }
