@@ -381,6 +381,7 @@ static int rds_read(const char *path, unsigned char *data, unsigned int *len,  c
     if (*len < hdr.len)
     {
         log_e(LOG_MID, "invalid data len,actual len:%u, buf len:%u, path:%s", hdr.len, *len, path);
+        close(fd);
         return RDS_INVALID_PARA;
     }
 
