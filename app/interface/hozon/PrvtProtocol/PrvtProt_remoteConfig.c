@@ -1574,4 +1574,18 @@ uint8_t PP_rmtCfg_enable_journeysEnabled(void)
 	return AppData_rmtCfg.ReadResp.COMMON.journeysEnabled;
 }
 
+/*
+* 获取心跳超时时间配置
+*/
+int PP_rmtCfg_heartbeatTimeout(void)
+{
+	int hbtimeout = 0;
+	if(1 == AppData_rmtCfg.ReadResp.COMMON.commonConfigValid)
+	{
+		hbtimeout = AppData_rmtCfg.ReadResp.COMMON.heartbeatTimeout;
+	}
+	
+	return hbtimeout;
+}
+
 

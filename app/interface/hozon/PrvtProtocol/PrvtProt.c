@@ -189,6 +189,10 @@ int PrvtProt_init(INIT_PHASE phase)
 			InitPrvtProt_SignParse_Parameter();
 			PP_CertDownload_init();
 			//InitPPsignFltr_Parameter();
+			int hbtimeout;
+			hbtimeout = PP_rmtCfg_heartbeatTimeout();
+			if(0 != hbtimeout)
+			PP_heartbeat.period = hbtimeout;
 		}
         break;
     }

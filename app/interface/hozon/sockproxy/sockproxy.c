@@ -129,9 +129,9 @@ int sockproxy_init(INIT_PHASE phase)
     return ret;
 }
 
-static	void *retcode1=NULL;
-static	void *retcode2=NULL;
-static	void *retcode3=NULL;
+//static	void *retcode1=NULL;
+//static	void *retcode2=NULL;
+//static	void *retcode3=NULL;
 static  pthread_t sockttid;
 static  pthread_attr_t socktta;
 static	pthread_t 		rcvtid;
@@ -186,11 +186,14 @@ int sockproxy_run(void)
         return ret;
     }
 
-	//int ret1,ret2,ret3;
+	//int ret1;
+	//int ret2;
+	//int ret3;
 	//ret1 = pthread_join(sockttid, retcode1);
  	//ret2 = pthread_join(rcvtid  , retcode2);
  	//ret3 = pthread_join(sendtid , retcode3);
-	//log_o(LOG_SOCK_PROXY, "ret1 = [%d], ret2 = [%d],ret3 = [%d]   +++++  [%d][%d][%d]",ret1,ret2,ret3,retcode1,retcode2,retcode3);
+	//log_o(LOG_SOCK_PROXY, "ret1 = [%d]   +++++  [%d]",ret1,retcode1);
+	//log_o(LOG_SOCK_PROXY, "ret3 = [%d]   +++++  [%d]",ret3,retcode3);
 
 	return 0;
 }
@@ -477,6 +480,10 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
 				retcancel = pthread_cancel(rcvtid);
 				pthread_join(rcvtid, &ret);
+				if(ESRCH != pthread_kill(rcvtid,0))//线程存在
+				{
+					log_i(LOG_HOZON, "thread sockproxy_rcvmain exist\n");
+				}
 				log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel = %d\n",retcancel);
 				sockSt.cancelRcvphreadFlag = 1;
 				sockSt.asynCloseFlg = 0;
@@ -844,7 +851,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 			{
 				if(sockSt.state != PP_CLOSED)
 				{
-					log_i(LOG_SOCK_PROXY, "socket closed\n");
+					log_i(LOG_SOCK_PROXY, "bdl socket closed\n");
 					(void)HzTboxClose();
 					sockSt.state = PP_CLOSED;
 				}
