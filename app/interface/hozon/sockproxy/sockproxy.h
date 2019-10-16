@@ -16,8 +16,6 @@ description�� macro definitions
 /**********�꿪�ض���*********/
 #define SOCKPROXY_SHELL_PROTOCOL  	0//
 
-#define SOCKPROXY_SAFETY_EN		1//是否开启加密库
-
 /**********�곣������*********/
 #define SOCK_SERVR_TIMEOUT    	(1000 * 5)
 #define SOCK_TXPAKG_OUTOFTIME    (1000 * 2)
@@ -145,6 +143,7 @@ typedef struct
 	int		sgPort;
 	char	BDLLinkAddr[33];
 	int		BDLPort;
+	uint8_t	pkiEnFlag;//pki使能标志
 }__attribute__ ((packed)) sockproxy_stat_t;
 
 

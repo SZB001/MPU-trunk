@@ -27,6 +27,8 @@ description�� include the header file
 #include "init.h"
 #include "log.h"
 #include "list.h"
+#include "cfg_api.h"
+#include "shell_api.h"
 #include "dev_api.h"
 #include "sock_api.h"
 #include "gb32960_api.h"
@@ -52,11 +54,10 @@ description�� static variable definitions
 static sockproxy_stat_t sockSt;
 static pthread_mutex_t sendmtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ����̬��
 static pthread_mutex_t closemtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ����̬��
-#if !SOCKPROXY_SAFETY_EN
 static pthread_mutex_t rcvmtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ����̬��
-#endif
-	static uint64_t socketopentimer = 0;
-	static uint64_t socketclosetimer = 0;
+
+static uint64_t socketopentimer = 0;
+static uint64_t socketclosetimer = 0;
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -71,13 +72,11 @@ static void sockproxy_gbMakeupMsg(uint8_t *data,int len);
 static void sockproxy_privMakeupMsg(uint8_t *data,int len);
 static int sockproxy_do_send(sockproxy_stat_t *state);
 static void *sockproxy_socketmain(void);
-
-#if SOCKPROXY_SAFETY_EN
 static int sockproxy_sgLink(sockproxy_stat_t *state);
 static int sockproxy_BDLink(sockproxy_stat_t *state);
-#endif
 static void sockproxy_nm_dial_recall(void);
 static void sockproxy_testTask(void);
+static int PP_shell_setPKIenable(int argc, const char **argv);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -112,9 +111,13 @@ int sockproxy_init(INIT_PHASE phase)
 		{
 			/*init SSL*/
 			//HzTboxInit();
+			unsigned int cfglen;
+			shell_cmd_register("hozon_pkien", PP_shell_setPKIenable, "set pki en");
 			SP_data_init();
 			socketopentimer = tm_get_time();
 	  		socketclosetimer = tm_get_time();
+			cfglen = 1;
+			ret |= cfg_get_para(CFG_ITEM_EN_PKI, &sockSt.pkiEnFlag, &cfglen);
 		}
         break;
     }
@@ -190,33 +193,35 @@ static void *sockproxy_socketmain(void)
 
 	log_set_level(LOG_SOCK_PROXY, LOG_DEBUG);
 
-#if !SOCKPROXY_SAFETY_EN
-	if ((sockSt.socket = sock_create("sockproxy", SOCK_TYPE_SYNCTCP)) < 0)
-    {
-        log_e(LOG_SOCK_PROXY, "create socket failed, thread exit");
-        return NULL;
-    }
-#else
-
-#endif
+	if(!sockSt.pkiEnFlag)
+	{
+		if ((sockSt.socket = sock_create("sockproxy", SOCK_TYPE_SYNCTCP)) < 0)
+		{
+			log_e(LOG_SOCK_PROXY, "create socket failed, thread exit");
+			return NULL;
+		}
+	}
 
     while (1)
     {
         res = sockproxy_do_checksock(&sockSt);
     }
 	(void)res;
-#if !SOCKPROXY_SAFETY_EN
-	sock_delete(sockSt.socket);
-#else
-	if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
+	if(!sockSt.pkiEnFlag)
 	{
-		(void)SgHzTboxClose();
+		sock_delete(sockSt.socket);
 	}
 	else
 	{
-		(void)HzTboxClose();
+		if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
+		{
+			(void)SgHzTboxClose();
+		}
+		else
+		{
+			(void)HzTboxClose();
+		}
 	}
-#endif
     return NULL;
 }
 
@@ -300,195 +305,199 @@ void sockproxy_socketclose(int type)
 ******************************************************/
 static int sockproxy_do_checksock(sockproxy_stat_t *state)
 {
-#if !SOCKPROXY_SAFETY_EN
 	static uint64_t time = 0;
-	if((1 == sockSt.asynCloseFlg) && (pthread_mutex_lock(&rcvmtx) == 0))
-	{
-		if(pthread_mutex_trylock(&sendmtx) == 0)//
-		{
-			if(sockSt.state != PP_CLOSED)
-			{
-				log_i(LOG_SOCK_PROXY, "socket closed");
-				sock_close(sockSt.socket);
-				sockSt.state = PP_CLOSED;
-				time = tm_get_time();
-				pthread_mutex_unlock(&sendmtx);
-			}
-			sockSt.asynCloseFlg = 0;
-		}
 
-		pthread_mutex_unlock(&rcvmtx);
-		return -1;
-	}
-	
-	sockproxy_getURL(&state->sock_addr);
-    if(sockproxy_SkipSockCheck() || !state->sock_addr.port || !state->sock_addr.url[0])
-    {
-    	//log_e(LOG_SOCK_PROXY, "state.network = %d",sockproxy_SkipSockCheck());
-        return -1;
-    }
-
-	switch(state->state)
+	if(!sockSt.pkiEnFlag)
 	{
-		case PP_CLOSED:
+		if((1 == sockSt.asynCloseFlg) && (pthread_mutex_lock(&rcvmtx) == 0))
 		{
-			if((sock_status(state->socket) == SOCK_STAT_CLOSED) && (dev_get_KL15_signal()))
+			if(pthread_mutex_trylock(&sendmtx) == 0)//
 			{
-				if((time == 0) || (tm_get_time() - time > SOCK_SERVR_TIMEOUT))
+				if(sockSt.state != PP_CLOSED)
 				{
-					log_i(LOG_SOCK_PROXY, "start to connect with server");
-					if (sock_open(NM_PUBLIC_NET,state->socket, state->sock_addr.url, state->sock_addr.port) != 0)
-					{
-						log_e(LOG_SOCK_PROXY, "open socket failed, retry later");
-					}
-
+					log_i(LOG_SOCK_PROXY, "socket closed");
+					sock_close(sockSt.socket);
+					sockSt.state = PP_CLOSED;
 					time = tm_get_time();
+					pthread_mutex_unlock(&sendmtx);
 				}
+				sockSt.asynCloseFlg = 0;
 			}
-			else if(sock_status(state->socket) == SOCK_STAT_OPENED)
-			{
-				log_i(LOG_SOCK_PROXY, "socket is open success");
-				state->state = PP_OPENED;
-				if (sock_error(state->socket) || sock_sync(state->socket))
-				{
-					log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
-					sockproxy_socketclose((int)(PP_SP_COLSE_SP));
-				}
-			}
-			else
-			{}
+
+			pthread_mutex_unlock(&rcvmtx);
+			return -1;
 		}
-		break;
-		default:
+		
+		sockproxy_getURL(&state->sock_addr);
+		if(sockproxy_SkipSockCheck() || !state->sock_addr.port || !state->sock_addr.url[0])
 		{
-			if(sock_status(state->socket) == SOCK_STAT_OPENED)
-			{
-				if (sock_error(state->socket) || sock_sync(state->socket))
-				{
-					log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
-					sockproxy_socketclose((int)(PP_SP_COLSE_SP + 1));
-				}
-			}
+			//log_e(LOG_SOCK_PROXY, "state.network = %d",sockproxy_SkipSockCheck());
+			return -1;
 		}
-		break;
-	}
 
-#else
-
-	if(sockproxy_SkipSockCheck())
-	{
-		//log_i(LOG_HOZON, "network is not ok\n");
-		return -1;
-	}
-
-	switch(sockSt.linkSt)
-	{
-		case SOCKPROXY_CHECK_CERT:
+		switch(state->state)
 		{
-			if(0 == sockSt.sleepFlag)
+			case PP_CLOSED:
 			{
-				//int retval;
-				if(sockSt.cancelRcvphreadFlag)
+				if((sock_status(state->socket) == SOCK_STAT_CLOSED) && (dev_get_KL15_signal()))
 				{
-					//retval = pthread_kill(rcvtid,0);
-					//if(ESRCH == retval)//线程不存在
+					if((time == 0) || (tm_get_time() - time > SOCK_SERVR_TIMEOUT))
 					{
-						sockSt.cancelRcvphreadFlag = 0;
-						log_i(LOG_HOZON, "thread sockproxy_rcvmain not exist\n");
-				    	pthread_attr_init(&rcvta);
-				    	pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_JOINABLE);
-				    	pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
-						log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
+						log_i(LOG_SOCK_PROXY, "start to connect with server");
+						if (sock_open(NM_PUBLIC_NET,state->socket, state->sock_addr.url, state->sock_addr.port) != 0)
+						{
+							log_e(LOG_SOCK_PROXY, "open socket failed, retry later");
+						}
+
+						time = tm_get_time();
 					}
 				}
-
-				if(GetPP_CertDL_allowBDLink() == 0)//
-				{//建立单向连接
-					log_i(LOG_HOZON, "Cert inValid,set up sglink\n");
-					sockSt.waittime = tm_get_time();
-					sockSt.sglinkSt =  SOCKPROXY_SGLINK_INIT;
-					sockSt.linkSt = SOCKPROXY_SETUP_SGLINK;
+				else if(sock_status(state->socket) == SOCK_STAT_OPENED)
+				{
+					log_i(LOG_SOCK_PROXY, "socket is open success");
+					state->state = PP_OPENED;
+					if (sock_error(state->socket) || sock_sync(state->socket))
+					{
+						log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
+						sockproxy_socketclose((int)(PP_SP_COLSE_SP));
+					}
 				}
 				else
-				{//建立双向连接
-					log_i(LOG_HOZON, "Cert Valid,set up BDLlink\n");
-					sockSt.waittime = tm_get_time();
-					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-					sockSt.linkSt = SOCKPROXY_SETUP_BDLLINK;
-				}
+				{}
 			}
-		}
-		break;
-		case SOCKPROXY_SETUP_SGLINK:
-		{
-			if(sockproxy_sgLink(state) < 0)
-			{//sg 退出
-				sockSt.linkSt = SOCKPROXY_CHECK_CERT;
-			}
-			else
-			{}
-		}
-		break;
-		case SOCKPROXY_SETUP_BDLLINK:
-		{
-			if(sockproxy_BDLink(state) < 0)
-			{//BDL 退出
-				sockSt.linkSt = SOCKPROXY_CHECK_CERT;
-			}
-			else
-			{}
-		}
-		break;
-		default:
-		break;
-	}
-#endif
-
-#if SOCKPROXY_SAFETY_EN
-	static uint64_t	checkclosedelaytime;
-	if(sockSt.state == PP_CLOSE_WAIT)
-	{
-		if((tm_get_time() - checkclosedelaytime) >= SOCK_CHECKCLOSEDTIMEOUT)
-		{
-			if(pthread_mutex_lock(&sendmtx) == 0)
+			break;
+			default:
 			{
-				void *ret=NULL;
-				int retcancel;
-				log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
-				retcancel = pthread_cancel(rcvtid);
-				pthread_join(rcvtid, &ret);
-				if(ESRCH != pthread_kill(rcvtid,0))//线程存在
+				if(sock_status(state->socket) == SOCK_STAT_OPENED)
 				{
-					log_i(LOG_HOZON, "thread sockproxy_rcvmain exist\n");
+					if (sock_error(state->socket) || sock_sync(state->socket))
+					{
+						log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
+						sockproxy_socketclose((int)(PP_SP_COLSE_SP + 1));
+					}
 				}
-				log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel = %d\n",retcancel);
-				sockSt.cancelRcvphreadFlag = 1;
-				sockSt.asynCloseFlg = 0;
-				sockSt.rcvflag = 0;
-				log_i(LOG_SOCK_PROXY, "socket closed\n");
-				if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
-				{
-					(void)SgHzTboxClose();
-				}
-				else
-				{
-					(void)HzTboxClose();
-				}
-				sockSt.state = PP_CLOSED;
-				sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-				sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
-				sockSt.linkSt = SOCKPROXY_CHECK_CERT;
-				log_i(LOG_HOZON, "#####################tm_get_time() = %d\n",tm_get_time());
-				sleep(1);
-				pthread_mutex_unlock(&sendmtx);//解锁
 			}
+			break;
 		}
 	}
 	else
 	{
-		checkclosedelaytime = tm_get_time();
+		if(sockproxy_SkipSockCheck())
+		{
+			log_e(LOG_HOZON, "network is not ok\n");
+			sleep(1);
+			return -1;
+		}
+
+		switch(sockSt.linkSt)
+		{
+			case SOCKPROXY_CHECK_CERT:
+			{
+				if(0 == sockSt.sleepFlag)
+				{
+					//int retval;
+					if(sockSt.cancelRcvphreadFlag)
+					{
+						//retval = pthread_kill(rcvtid,0);
+						//if(ESRCH == retval)//线程不存在
+						{
+							sockSt.cancelRcvphreadFlag = 0;
+							log_i(LOG_HOZON, "thread sockproxy_rcvmain not exist\n");
+							pthread_attr_init(&rcvta);
+							pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_JOINABLE);
+							pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
+							log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
+						}
+					}
+
+					if(GetPP_CertDL_allowBDLink() == 0)//
+					{//建立单向连接
+						log_i(LOG_HOZON, "Cert inValid,set up sglink\n");
+						sockSt.waittime = tm_get_time();
+						sockSt.sglinkSt =  SOCKPROXY_SGLINK_INIT;
+						sockSt.linkSt = SOCKPROXY_SETUP_SGLINK;
+					}
+					else
+					{//建立双向连接
+						log_i(LOG_HOZON, "Cert Valid,set up BDLlink\n");
+						sockSt.waittime = tm_get_time();
+						sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+						sockSt.linkSt = SOCKPROXY_SETUP_BDLLINK;
+					}
+				}
+			}
+			break;
+			case SOCKPROXY_SETUP_SGLINK:
+			{
+				if(sockproxy_sgLink(state) < 0)
+				{//sg 退出
+					sockSt.linkSt = SOCKPROXY_CHECK_CERT;
+				}
+				else
+				{}
+			}
+			break;
+			case SOCKPROXY_SETUP_BDLLINK:
+			{
+				if(sockproxy_BDLink(state) < 0)
+				{//BDL 退出
+					sockSt.linkSt = SOCKPROXY_CHECK_CERT;
+				}
+				else
+				{}
+			}
+			break;
+			default:
+			break;
+		}
 	}
-#endif
+
+	static uint64_t	checkclosedelaytime;
+	if(sockSt.pkiEnFlag)
+	{
+		if(sockSt.state == PP_CLOSE_WAIT)
+		{
+			if((tm_get_time() - checkclosedelaytime) >= SOCK_CHECKCLOSEDTIMEOUT)
+			{
+				if(pthread_mutex_lock(&sendmtx) == 0)
+				{
+					void *ret=NULL;
+					int retcancel;
+					log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
+					retcancel = pthread_cancel(rcvtid);
+					pthread_join(rcvtid, &ret);
+					if(ESRCH != pthread_kill(rcvtid,0))//线程存在
+					{
+						log_i(LOG_HOZON, "thread sockproxy_rcvmain exist\n");
+					}
+					log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel = %d\n",retcancel);
+					sockSt.cancelRcvphreadFlag = 1;
+					sockSt.asynCloseFlg = 0;
+					sockSt.rcvflag = 0;
+					log_i(LOG_SOCK_PROXY, "socket closed\n");
+					if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
+					{
+						(void)SgHzTboxClose();
+					}
+					else
+					{
+						(void)HzTboxClose();
+					}
+					sockSt.state = PP_CLOSED;
+					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+					sockSt.linkSt = SOCKPROXY_CHECK_CERT;
+					log_i(LOG_HOZON, "#####################tm_get_time() = %d\n",tm_get_time());
+					sleep(1);
+					pthread_mutex_unlock(&sendmtx);//解锁
+				}
+			}
+		}
+		else
+		{
+			checkclosedelaytime = tm_get_time();
+		}
+	}
 
 	if(0 == dev_get_KL15_signal())
 	{
@@ -541,7 +550,6 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
     return 0;
 }
 
-#if SOCKPROXY_SAFETY_EN
 /******************************************************
 *��������sockproxy_sgLink
 *��  �Σ�void
@@ -876,7 +884,6 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 	return 0;
 }
-#endif
 
 /******************************************************
 *��������sockproxy_do_receive
@@ -893,48 +900,49 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
     if(state->state == PP_OPENED)
 	{
     	sockSt.rcvflag = 1;
-#if !SOCKPROXY_SAFETY_EN
-    	if(pthread_mutex_lock(&rcvmtx) == 0)
-    	{
-			if ((rlen = sock_recv(state->socket, (uint8_t*)rbuf, sizeof(rbuf))) < 0)
-			{
-				log_e(LOG_SOCK_PROXY, "socket recv error: %s", strerror(errno));
-				log_e(LOG_SOCK_PROXY, "socket recv error, reset protocol");
-				sockproxy_socketclose((int)(PP_SP_COLSE_SP + 3));
-				pthread_mutex_unlock(&rcvmtx);
-				return -1;
-			}
-			pthread_mutex_unlock(&rcvmtx);
-    	}
-#else
-		//log_i(LOG_SOCK_PROXY,"recv data<<<<<<<<<<<<<<<<<<<<<<\n");
-		if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
+		if(!sockSt.pkiEnFlag)
 		{
-			ret = SgHzTboxDataRecv(rbuf, 1456, &rlen);
-			if(ret != 1275)
+			if(pthread_mutex_lock(&rcvmtx) == 0)
 			{
-				log_e(LOG_SOCK_PROXY,"SgHzTboxDataRecv error+++++++++++++++iRet[%d] [%d]\n", ret, rlen);
-				sockproxy_socketclose((int)(PP_SP_COLSE_SP + 8));
-				sockSt.rcvflag = 0;
-				return -1;
+				if ((rlen = sock_recv(state->socket, (uint8_t*)rbuf, sizeof(rbuf))) < 0)
+				{
+					log_e(LOG_SOCK_PROXY, "socket recv error: %s", strerror(errno));
+					log_e(LOG_SOCK_PROXY, "socket recv error, reset protocol");
+					sockproxy_socketclose((int)(PP_SP_COLSE_SP + 3));
+					pthread_mutex_unlock(&rcvmtx);
+					return -1;
+				}
+				pthread_mutex_unlock(&rcvmtx);
 			}
 		}
 		else
 		{
-			ret = HzTboxDataRecv(rbuf, 1456, &rlen);
-			if(ret != 1275)
+			if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
 			{
-				log_e(LOG_SOCK_PROXY,"HzTboxDataRecv error+++++++++++++++iRet[%d] [%d]\n", ret, rlen);
-				sockproxy_socketclose((int)(PP_SP_COLSE_SP + 9));
-				sockSt.rcvflag = 0;	
-				return -1;
+				ret = SgHzTboxDataRecv(rbuf, 1456, &rlen);
+				if(ret != 1275)
+				{
+					log_e(LOG_SOCK_PROXY,"SgHzTboxDataRecv error+++++++++++++++iRet[%d] [%d]\n", ret, rlen);
+					sockproxy_socketclose((int)(PP_SP_COLSE_SP + 8));
+					sockSt.rcvflag = 0;
+					return -1;
+				}
+			}
+			else
+			{
+				ret = HzTboxDataRecv(rbuf, 1456, &rlen);
+				if(ret != 1275)
+				{
+					log_e(LOG_SOCK_PROXY,"HzTboxDataRecv error+++++++++++++++iRet[%d] [%d]\n", ret, rlen);
+					sockproxy_socketclose((int)(PP_SP_COLSE_SP + 9));
+					sockSt.rcvflag = 0;	
+					return -1;
+				}
 			}
 		}
 
-#endif
-
 		protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_RCV", (uint8_t*)rbuf, rlen, 0);//��ӡ���յ�����
-		//log_i(LOG_SOCK_PROXY,"recv data>>>>>>>>>>>>>>>>>>>>>>>>>>>\n");
+
 #if SOCKPROXY_SHELL_PROTOCOL
 		while (ret == 0 && rlen > 0)
 		{
@@ -1184,48 +1192,50 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 {
 	int res = 0;
-	//log_i(LOG_SOCK_PROXY, "<<<<<sockproxy_MsgSend <<<<<");
+
 	if(pthread_mutex_trylock(&sendmtx) == 0)
 	{
 		if((sockSt.state == PP_OPENED) || (sockSt.state == PP_CLOSE_WAIT))
 		{
 			protocol_dump(LOG_HOZON, "send data to tsp", msg, len, 1);
-#if !SOCKPROXY_SAFETY_EN
-			res = sock_send(sockSt.socket, msg, len, sync);
-			if((res > 0) && (res != len))//ʵ�ʷ��ͳ�ȥ�����ݸ���Ҫ���͵����ݲ�һ��
+			if(!sockSt.pkiEnFlag)
 			{
-				res = 0;
-			}
-#else
-			SP_data_ack_pack();
-			if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
-			{
-				log_i(LOG_SOCK_PROXY, "<<<<< SgHzTboxDataSend <<<<<");
-				res = SgHzTboxDataSend((char*)msg,len);
-				log_i(LOG_SOCK_PROXY, ">>>>> SgHzTboxDataSend >>>>>");
-				if(res != 1260)
+				res = sock_send(sockSt.socket, msg, len, sync);
+				if((res > 0) && (res != len))//ʵ�ʷ��ͳ�ȥ�����ݸ���Ҫ���͵����ݲ�һ��
 				{
-					log_e(LOG_SOCK_PROXY,"SgHzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
-					//SP_data_ack_pack();
-					pthread_mutex_unlock(&sendmtx);//解锁
-					return -1;
+					res = 0;
 				}
 			}
 			else
 			{
-				log_i(LOG_SOCK_PROXY, "<<<<< HzTboxDataSend <<<<<");
-				res = HzTboxDataSend((char*)msg,len);
-				log_i(LOG_SOCK_PROXY, ">>>>> HzTboxDataSend >>>>>");
-				if(res != 1260)
+				SP_data_ack_pack();
+				if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
 				{
-					log_e(LOG_SOCK_PROXY,"HzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
-					//SP_data_ack_pack();
-					pthread_mutex_unlock(&sendmtx);//解锁
-					return -1;
+					log_i(LOG_SOCK_PROXY, "<<<<< SgHzTboxDataSend <<<<<");
+					res = SgHzTboxDataSend((char*)msg,len);
+					log_i(LOG_SOCK_PROXY, ">>>>> SgHzTboxDataSend >>>>>");
+					if(res != 1260)
+					{
+						log_e(LOG_SOCK_PROXY,"SgHzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
+						//SP_data_ack_pack();
+						pthread_mutex_unlock(&sendmtx);//解锁
+						return -1;
+					}
+				}
+				else
+				{
+					log_i(LOG_SOCK_PROXY, "<<<<< HzTboxDataSend <<<<<");
+					res = HzTboxDataSend((char*)msg,len);
+					log_i(LOG_SOCK_PROXY, ">>>>> HzTboxDataSend >>>>>");
+					if(res != 1260)
+					{
+						log_e(LOG_SOCK_PROXY,"HzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
+						//SP_data_ack_pack();
+						pthread_mutex_unlock(&sendmtx);//解锁
+						return -1;
+					}
 				}
 			}
-
-#endif
 		}
 		else
 		{
@@ -1235,7 +1245,6 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 		pthread_mutex_unlock(&sendmtx);//解锁
 	}
 
-	//log_i(LOG_SOCK_PROXY, ">>>>>sockproxy_MsgSend >>>>>");
 	return res;
 }
 
@@ -1248,20 +1257,23 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 ******************************************************/
 int sockproxy_socketState(void)
 {
-#if !SOCKPROXY_SAFETY_EN
-	if((sockSt.state == PP_OPENED) && \
-			(sock_status(sockSt.socket) == SOCK_STAT_OPENED))
+	if(!sockSt.pkiEnFlag)
 	{
-		return 1;
+		if((sockSt.state == PP_OPENED) && \
+			(sock_status(sockSt.socket) == SOCK_STAT_OPENED))
+		{
+			return 1;
+		}
+	}
+	else
+	{
+		if(((sockSt.state == PP_OPENED) || (sockSt.state == PP_CLOSE_WAIT))&& \
+			(sockSt.linkSt == SOCKPROXY_SETUP_BDLLINK))
+		{
+			return 1;
+		}
 	}
 
-#else
-	if(((sockSt.state == PP_OPENED) || (sockSt.state == PP_CLOSE_WAIT))&& \
-			(sockSt.linkSt == SOCKPROXY_SETUP_BDLLINK))
-	{
-		return 1;
-	}
-#endif
 	return 0;
 }
 
@@ -1535,6 +1547,7 @@ void sockproxy_showParameters(void)
 	log_o(LOG_SOCK_PROXY, "sockSt.BDLPort = %d\n",sockSt.BDLPort);
 	log_o(LOG_SOCK_PROXY, "sockSt.sgLinkAddr = %s\n",sockSt.sgLinkAddr);
 	log_o(LOG_SOCK_PROXY, "sockSt.sgPort = %d\n",sockSt.sgPort);
+	log_o(LOG_SOCK_PROXY, "sockSt.pkiEnFlag = %d\n",sockSt.pkiEnFlag);
 }
 
 /*
@@ -1612,4 +1625,25 @@ void setsockproxy_sgAddrPort(char* addr,char* port)
 	log_i(LOG_SOCK_PROXY, "port = %s\n",port);
 	log_i(LOG_SOCK_PROXY, "sockSt.sgPort = %d\n",sockSt.sgPort);
 	sockproxy_socketclose((int)(PP_SP_COLSE_SP + 11));//by liujian 20191015
+}
+
+/*
+* 设置pki使能状态
+*/
+static int PP_shell_setPKIenable(int argc, const char **argv)
+{  
+	unsigned int pkien;
+
+    if (argc != 1)
+    {
+        shellprintf(" usage:set pki en error\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &pkien);
+	cfg_set_para(CFG_ITEM_EN_PKI, (unsigned char *)&pkien, 1);
+	shellprintf(" set pki ok\r\n");
+	system("reboot");
+
+    return 0;
 }
