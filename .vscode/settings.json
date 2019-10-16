@@ -29,6 +29,8 @@
         "prvtprot_vehist.h": "c",
         "msg_parse.h": "c",
         "timer.h": "c",
-        "gb32960.h": "c"
+        "gb32960.h": "c",
+        "prvtprot_cfg.h": "c",
+        "prvtprot_sigparse.h": "c"
     }
 }

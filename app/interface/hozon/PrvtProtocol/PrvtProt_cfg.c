@@ -16,6 +16,7 @@ description�� include the header file
 #include "at.h"
 #include "../sockproxy/sockproxy_rxdata.h"
 #include "gb32960_api.h"
+#include "PrvtProt_SigParse.h"
 #include "PrvtProt_cfg.h"
 static uint8_t ecall_trigger = 0;
 static uint8_t bcall_trigger = 0;
@@ -58,9 +59,8 @@ int PrvtProtCfg_rcvMsg(unsigned char* buf,int buflen)
 *��  ������ȡecall����״̬
 *��  ע��
 ******************************************************/
-int PrvtProtCfg_ecallTriggerEvent(void)
+char PrvtProtCfg_ecallTriggerEvent(void)
 {
-	
 	if(ecall_trigger == 1)
 	{
 		ecall_trigger = 0;
@@ -68,9 +68,9 @@ int PrvtProtCfg_ecallTriggerEvent(void)
 	}
 	return 0;
 }
-int PrvtProtCfg_bcallTriggerEvent(void)
+
+char PrvtProtCfg_bcallTriggerEvent(void)
 {
-	
 	if(bcall_trigger == 1)
 	{
 		bcall_trigger = 0;
@@ -78,8 +78,21 @@ int PrvtProtCfg_bcallTriggerEvent(void)
 	}
 	return 0;
 }
-int PrvtProtCfg_detectionTriggerEvent(void)
+
+char PrvtProtCfg_detectionTriggerEvent(void)
 {
+	static char co2densityOldSts = 0;
+	static char co2densityNewSts = 0;
+	co2densityNewSts = PrvtProt_SignParse_CO2DensitySt();
+	if(co2densityNewSts != co2densityOldSts)
+	{
+		co2densityOldSts = co2densityNewSts;
+		if(0 != co2densityNewSts)
+		{
+			return 1;
+		}
+	}
+
 	return 0;
 }
 
@@ -227,14 +240,16 @@ uint8_t PrvtProtCfg_chargeSt(void)
 void PrvtProtCfg_ecallSt(uint8_t st)
 {
 	if(st == 1)
-	{
+	
+{
 		ecall_trigger = 1;
 	}
 }
 void PrvtProtCfg_bcallSt(uint8_t st)
 {
 	if(st == 1)
-	{
+	
+{
 		bcall_trigger = 1;
 	}
 }
