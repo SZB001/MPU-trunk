@@ -90,6 +90,28 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 }
 
 /*
+ *	CO2浓度报警状态
+  */
+unsigned char PrvtProt_SignParse_BleStartSt(void)
+{
+	unsigned char st;
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_BLUETOOTHSTARTST] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_BLUETOOTHSTARTST])->value: 0x0;
+	return st;
+}
+
+/*
+ *	CO2浓度报警状态
+  */
+unsigned char PrvtProt_SignParse_CO2DensitySt(void)
+{
+	unsigned char st;
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CO2DENSITYSTS] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CO2DENSITYSTS])->value: 0x0;
+	return st;
+}
+
+/*
  *	 空气净化器状态/
 	pm2.5有效性״̬
   */
