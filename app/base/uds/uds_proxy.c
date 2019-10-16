@@ -597,9 +597,9 @@ int uds_set_client_ex(int port, int pid, int fid, int rid, void *cb)
     UDS_TL_CFG_T client_cfg;
 
     client_cfg.canport = port;
-    client_cfg.fill_value = 0x00;
-    client_cfg.fc_stmin = 50;
-    client_cfg.fc_bs = 8;
+    client_cfg.fill_value = 0xCC;
+    client_cfg.fc_stmin = 10;
+    client_cfg.fc_bs = 0;
     client_cfg.n_bs = 150;
     client_cfg.n_cr = 150;
     client_cfg.can_id_phy = pid;

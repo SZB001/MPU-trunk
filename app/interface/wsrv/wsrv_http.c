@@ -21,8 +21,11 @@ author        chenyin
 #include "gps_api.h"
 #include "PP_canSend.h"
 #include "../../base/dev/dev_mcu_cfg.h"
+#include "hozon_PP_api.h"
+#include "gb32960_api.h"
 
 extern timer_t restart_da_timer;
+static unsigned int g_u32WsrvWakeTime = 0;
 
 #define URI_LENGTH                  128
 #define TIME_BUFFER_SIZE            32
@@ -81,6 +84,8 @@ typedef enum
 #define RSP_500_HTML    "<html><head></head><body>500 Server Internal Error<br/>please check your network!</body></html>\r\n"
 
 extern int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz, char *h_ver, int *h_siz, char *sn, int *sn_siz);
+extern int PP_send_virtual_on_to_mcu(unsigned char on);
+extern unsigned char PrvtProt_SignParse_OtaFailSts(void);
 
 static int wsrv_socket_recv(int fd, unsigned char *buf, int len)
 {
@@ -247,6 +252,11 @@ static void deal_after_send()
     // send MSG to other module
 }
 
+unsigned int wsrv_Get_WakeTime(void)
+{
+    return g_u32WsrvWakeTime;
+}
+
 unsigned int wsrv_calc_wake_time(RTCTIME abstime, 
                                       unsigned int year,
                                       unsigned int mon,
@@ -277,6 +287,8 @@ unsigned int wsrv_calc_wake_time(RTCTIME abstime,
 
 static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_buf)
 {
+    //0:BDCM Auth Doing 1:BDCM Auth Success 2:BDCM Auth Fail
+    static unsigned char s_u8BDCMAuthResult = 0;
     char tmp_buf[WSRV_MAX_BUFF_SIZE] = {0};
     char rsp_buf[WSRV_MAX_BUFF_SIZE] = {0};
     char body_buf[WSRV_MAX_BUFF_SIZE] = {0};
@@ -301,7 +313,6 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     int sn_len;
     unsigned int timer_wake;
     RTCTIME abstime;
-    unsigned char mode;
 
     log_i(LOG_WSRV, "fd: %d, cmd: %s, args: %s, data: %s", *p_cli_fd, cmd_buf, args_buf, data_buf);
 
@@ -449,12 +460,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
             if(0 != timer_wake)
             {
-                ret = scom_tl_send_frame(SCOM_TL_CMD_WAKE_TIME, SCOM_TL_SINGLE_FRAME, 0,
-                                         (unsigned char *)&timer_wake, sizeof(timer_wake));
-                if (0 != ret)
-                {
-                    log_e(LOG_PM, "set timer wake failed");
-                }
+                g_u32WsrvWakeTime = timer_wake;
             }
             else
             {
@@ -486,46 +492,149 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                                          abstime.min,
                                          abstime.sec);
 
-        if (ret < 0)
+        if (ret == 0)
         {
-            set_error_information(rsp_buf, HTTP_CODE_SERVER_INTERNAL_ERROR);
+            set_normal_information(rsp_buf, body_buf, MIME_JSON);
         }
         else
         {
-            set_normal_information(rsp_buf, body_buf, MIME_JSON);
+            set_error_information(rsp_buf, HTTP_CODE_SERVER_INTERNAL_ERROR);
         }
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_MODEIN))
     {
+        unsigned char u8Loop = 0;
         //(0:runing 1:listen 2:sleep 3:auto)
-        mode = 0;
+        //mode = 0;
     
-        dev_set_from_mpu(MCU_CFG_ID_SYSMODE, &mode, sizeof(mode));
-    
-        PP_can_send_data(PP_CAN_OTAREQ, 0x02, 0);
-        
+        //dev_set_from_mpu(MCU_CFG_ID_SYSMODE, &mode, sizeof(mode));
+
+        if(0 == SetPP_rmtCtrl_FOTA_startInform())
+        {
+            for(u8Loop = 0; u8Loop < 10; u8Loop++)
+            {
+                PP_send_virtual_on_to_mcu(1);
+            }
+            s_u8BDCMAuthResult = 0;
+        }
+        else
+        {
+            s_u8BDCMAuthResult = 2;
+        }
+
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_MODEINRESULT))
     {
-        sprintf(body_buf, WSRV_MODEINRESULT_BODY, 1);
+        //1:Success. 0:wait. Other:Fail
+        int u32AuthResult = 0;
+        //0x0 = No failure, 0x1 = BDM HW fail, 0x2 =Authentication fail, 0x3 =Bus communication fail
+        unsigned char u8OtaFailSts = 0;
+        //0x0=OFF, 0x1=ACC, 0x2=ON, 0x3=Crank
+        unsigned char u8PowerMode = 0;
 
-        //Start Check BDM_PowerMode And BDM_TBOX_OTAModeFailSts
-        //If BDM_PowerMode = 0x2=ON And BDM_TBOX_OTAModeFailSts 0x0 = No failure
-        //And No Time Out, Means OTA Mode In OK
-    
+        static unsigned long long s_u64OTAModeStartTime = 0;
+
+        if(0 == s_u8BDCMAuthResult)
+        {
+            u32AuthResult = GetPP_rmtCtrl_AuthResult();
+            if(1 == u32AuthResult)
+            {
+                s_u8BDCMAuthResult = 1;
+                PP_can_send_data(PP_CAN_OTAREQ, 0x02, 0);
+                s_u64OTAModeStartTime = tm_get_time();
+				sprintf(body_buf, WSRV_MODEINRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+            }
+            else if(0 == u32AuthResult)
+            {
+                //Tell Gmobi Wait
+                sprintf(body_buf, WSRV_MODEINRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+            }
+            else
+            {
+                sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
+            }
+        }
+        else if(1 == s_u8BDCMAuthResult)
+        {
+            do{
+                //Start Check BDM_PowerMode And BDM_TBOX_OTAModeFailSts
+                //If BDM_PowerMode = 0x2=ON And BDM_TBOX_OTAModeFailSts 0x0 = No failure
+                //And No Time Out, Means OTA Mode In OK
+                u8OtaFailSts = PrvtProt_SignParse_OtaFailSts();
+                u8PowerMode = gb_data_vehicleState();
+
+                if(tm_get_time() - s_u64OTAModeStartTime > 5000)
+                {
+                    log_i(LOG_WSRV, "Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
+                    sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
+                    break;
+                }
+
+                if(u8OtaFailSts != 0)
+                {
+                    log_i(LOG_WSRV, "Get Ota Fail Status %d", u8OtaFailSts);
+                    sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
+                    break;
+                }
+
+                log_i(LOG_WSRV, "Get Power Mode: %d", u8PowerMode);
+                if(2 == u8PowerMode)
+                {
+                    sprintf(body_buf, WSRV_MODEINRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
+                }
+                else
+                {
+                    sprintf(body_buf, WSRV_MODEINRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+                }
+
+            }while(0);
+
+        }
+        else
+        {
+            sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
+        }
+
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_MODEOUT))
     {
-        PP_can_send_data(PP_CAN_OTAREQ, 0x01, 0);
-    
-        sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
+        unsigned char u8Loop = 0;
+        //1:Success. 0:wait. Other:Fail
+        int u32AuthResult = 0;
         
+        SetPP_rmtCtrl_AuthRequest();
+
+        for(u8Loop = 0; u8Loop < 10; u8Loop++)
+        {
+            u32AuthResult = GetPP_rmtCtrl_AuthResult();
+            if(1 == u32AuthResult)
+            {
+                PP_can_send_data(PP_CAN_OTAREQ, 0x01, 0);
+                PP_send_virtual_on_to_mcu(0);
+
+                sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
+            }
+            else if(0 == u32AuthResult)
+            {
+                //Tell Gmobi Wait
+                sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+            }
+            else
+            {
+                PP_send_virtual_on_to_mcu(0);
+                sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, -1);
+                break;
+            }
+
+            sleep(1);
+        }
+
         //(0:runing 1:listen 2:sleep 3:auto)
-        mode = 3;
+        //mode = 3;
     
-        dev_set_from_mpu(MCU_CFG_ID_SYSMODE, &mode, sizeof(mode));
+        //dev_set_from_mpu(MCU_CFG_ID_SYSMODE, &mode, sizeof(mode));
 
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }
