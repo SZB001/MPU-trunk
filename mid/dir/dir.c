@@ -327,7 +327,12 @@ int dir_copy_path(const char *src_path, const char *dst_path)
     }
 
     fts = fts_open(path_array, FTS_PHYSICAL, NULL);
-
+    
+    if (fts == NULL)
+    {
+        log_e(LOG_MID, "fts_open(%s) failed, error:%s", src_path, strerror(errno));
+        return DIR_OPEN_FAILED;
+    }
     while ((entry = fts_read(fts)) != NULL)
     {
         memset(newPath, 0, sizeof(newPath));
@@ -394,7 +399,7 @@ int dir_copy_path(const char *src_path, const char *dst_path)
                 return DIR_COPY_FAILED;
         }
     }
-
+    fts_close(fts);
     return 0;
 }
 
@@ -441,7 +446,13 @@ static int dir_copy_no_st(const char *src_path, const char *dst_path)
     }
 
     fts = fts_open(path_array, FTS_PHYSICAL, NULL);
-
+    
+    if (fts == NULL)
+    {
+        log_e(LOG_MID, "fts_open(%s) failed, error:%s", src_path, strerror(errno));
+        return DIR_OPEN_FAILED;
+    }
+    
     while ((entry = fts_read(fts)) != NULL)
     {
         memset(newPath, 0, sizeof(newPath));
@@ -514,7 +525,7 @@ static int dir_copy_no_st(const char *src_path, const char *dst_path)
                 return DIR_COPY_FAILED;
         }
     }
-
+    fts_close(fts);
     return 0;
 }
 
