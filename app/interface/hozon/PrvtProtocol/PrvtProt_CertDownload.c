@@ -1221,7 +1221,7 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task)
 				CAR_INFO car_information = {0};
 
 				gb32960_getvin(vin);
-				car_information.tty_type="TBOX";
+				car_information.tty_type="Tbox";
 				car_information.unique_id=vin;
 				car_information.carowner_acct="18221802221";
 				car_information.impower_acct="12900100101";
@@ -1864,7 +1864,7 @@ static int  PP_CertDL_checkCipherCsr(void)
 	CAR_INFO car_information;
 	char vin[18] = {0};
 	gb32960_getvin(vin);
-	car_information.tty_type="TBOX";
+	car_information.tty_type="Tbox";
 	car_information.unique_id= vin;
 	car_information.carowner_acct="18221802221";
 	car_information.impower_acct="12900100101";

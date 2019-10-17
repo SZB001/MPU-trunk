@@ -181,6 +181,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN,pp_tboxsn,&cfglen);//��ȡtboxsn
 
 			PrvtProt_shell_init();
+			PP_ntp_Init();
 			for(obj = 0;obj < PP_RMTFUNC_MAX;obj++)
 			{
 				if(PP_RmtFunc[obj].Init != NULL)

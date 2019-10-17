@@ -90,7 +90,7 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 }
 
 /*
- *	CO2浓度报警状态
+ *	蓝牙一键启动状态
   */
 unsigned char PrvtProt_SignParse_BleStartSt(void)
 {

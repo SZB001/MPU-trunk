@@ -96,23 +96,9 @@ int PP_bluetoothstart_mainfunction(void *task)
 			{
 				if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
 				{   //有请求判断是否满足远控条件
-					
 					bluestart_success_flag = 0;
 					blue_start_stage = PP_BLUETOOTHSTART_REQSTART;
-					if(PP_bluetoothstart.state.style == RMTCTRL_TSP)//tsp
-					{
-						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-						rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
-						rmtCtrl_Stpara.rvcFailureType = 0;
-						rmtCtrl_Stpara.reqType =PP_bluetoothstart.state.reqType;
-						rmtCtrl_Stpara.eventid = PP_bluetoothstart.pack.DisBody.eventId;
-						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-					}
-					else//蓝牙
-					{
-
-					}
+					PP_bluetoothstart.state.req = 0;
 				}
 				else
 				{
@@ -120,8 +106,7 @@ int PP_bluetoothstart_mainfunction(void *task)
 					PP_bluetoothstart.state.req = 0;
 					bluestart_success_flag = 0;
 					blue_start_stage = PP_BLUETOOTHSTARTL_END;
-				}
-				PP_bluetoothstart.state.req = 0;
+				}	
 			}
 		}
 		break;
@@ -139,11 +124,11 @@ int PP_bluetoothstart_mainfunction(void *task)
 		{
 			if((tm_get_time() - PP_Respwaittime) > 200)
 			{
-				if((tm_get_time() - PP_Respwaittime) < 10000)
+				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
-					if(PP_bluetoothstart.state.cmd == 1) // 等待一键启动结果
+					if(PP_bluetoothstart.state.cmd == 2) // 等待一键启动结果
 					{
-						if(PP_rmtCtrl_cfg_reardoorSt() == 2) //一键启动成功
+						if(PP_rmtCtrl_cfg_bluestartSt() == 2) //一键启动成功
 						{
 							log_o(LOG_HOZON,"bluestart open successed!");
 							PP_can_send_data(PP_CAN_BLUESTART,CAN_BLUECLEAN,0);
@@ -154,6 +139,7 @@ int PP_bluetoothstart_mainfunction(void *task)
 				}
 				else//响应超时
 				{
+					log_o(LOG_HOZON,"timeout");
 					PP_can_send_data(PP_CAN_BLUESTART,CAN_BLUECLEAN,0);
 					bluestart_success_flag = 0;
 					blue_start_stage = PP_BLUETOOTHSTARTL_END;
@@ -163,10 +149,11 @@ int PP_bluetoothstart_mainfunction(void *task)
 		break;
 		case PP_BLUETOOTHSTARTL_END:
 		{
-			
+			PP_rmtCtrl_inform_tb(BT_POWER_CONTROL_RESP,PP_bluetoothstart.state.cmd,bluestart_success_flag);
+			#if 0
 			TCOM_MSG_HEADER msghdr;
 			PrvtProt_respbt_t respbt;
-			respbt.msg_type = BT_ELECTRIC_DOOR_RESP;
+			respbt.msg_type = BT_POWER_CONTROL_RESP;
 			respbt.cmd = PP_bluetoothstart.state.cmd; 
 			if(1 == bluestart_success_flag)
 			{
@@ -183,6 +170,7 @@ int PP_bluetoothstart_mainfunction(void *task)
 			msghdr.msgid     = BLE_MSG_CONTROL;
 			msghdr.msglen    = sizeof(PrvtProt_respbt_t);
 			tcom_send_msg(&msghdr, &respbt);
+			#endif
 			blue_start_stage = PP_BLUETOOTHSTART_IDLE;
 		}
 		break;
@@ -205,7 +193,7 @@ void SetPP_bluetoothstart_Request(char ctrlstyle,void *appdatarmtCtrl,void *disp
 			unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
 			if(cmd == 2 )//蓝牙一键启动
 			{
-				PP_bluetoothstart.state.cmd = 1;
+				PP_bluetoothstart.state.cmd = 2;
 			}
 			else
 			{
@@ -233,7 +221,7 @@ int PP_bluetoothstart_start(void)
 
 int PP_bluetoothstart_end(void)
 {
-	if(PP_bluetoothstart.state.req == 0)
+	if((blue_start_stage == PP_BLUETOOTHSTART_IDLE) &&(PP_bluetoothstart.state.req == 0))
 	{
 		return 1;
 	}
@@ -249,14 +237,10 @@ void PP_bluetoothstart_ClearStatus(void)
 	PP_bluetoothstart.state.req = 0;
 }
 
-
+/************************shell命令测试使用**************************/
 void PP_bluetoothstart_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
-	PP_bluetoothstart.state.reqType = (long)reqType;
-	if(PP_bluetoothstart.state.reqType ==PP_RMTCTRL_BLUESTART)
-	{
-		PP_bluetoothstart.state.cmd = 1;
-	}
+	PP_bluetoothstart.state.cmd = 2;
 	PP_bluetoothstart.state.req = 1;
 	PP_bluetoothstart.state.style = RMTCTRL_BLUETOOTH;
 }

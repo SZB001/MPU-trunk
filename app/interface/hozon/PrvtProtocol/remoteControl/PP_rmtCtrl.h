@@ -76,7 +76,7 @@ description： macro definitions
 #define PP_RMTCTRL_BANSTART				0x0900//
 #define PP_RMTCTRL_ALOWSTART			0x0901//
 
-#define PP_RMTCTRL_BLUESTART            0X0A00
+#define PP_RMTCTRL_BLUESTART            0X0A
 
 //执行状态
 #define PP_RMTCTRL_EXECUTEDWAIT 	0//等待执行
@@ -176,7 +176,7 @@ typedef enum
 
 typedef enum
 {
-	BT_SUCCESS = 0,
+	BT_SUCCESS = 1,
 	BT_FAIL ,
 }PP_REMTCTRL_BT;
 
@@ -409,5 +409,6 @@ extern void PP_rmtCtrl_showSleepPara(void);
 extern int PP_rmtCtrl_StInformBt(unsigned char obj, unsigned char cmd);
 extern void PP_rmtCtrl_settestflag(uint8_t flag);
 extern uint8_t PP_rmtCtrl_gettestflag(void);
+extern void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result);
 
 #endif 

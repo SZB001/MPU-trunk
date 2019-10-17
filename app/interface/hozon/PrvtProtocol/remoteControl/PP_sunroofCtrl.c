@@ -252,6 +252,8 @@ int PP_sunroofctrl_mainfunction(void *task)
 			}
 			else if(PP_rmtsunroofCtrl.state.style ==  RMTCTRL_BLUETOOTH) //蓝牙
 			{
+				PP_rmtCtrl_inform_tb(BT_PANORAMIC_SUNROOF_RESP,sunroof_type,sunroof_success_flag);
+				#if 0
 				TCOM_MSG_HEADER msghdr;
 				PrvtProt_respbt_t respbt;
 				respbt.msg_type = BT_PANORAMIC_SUNROOF_RESP;
@@ -271,6 +273,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 				msghdr.msgid     = BLE_MSG_CONTROL;
 				msghdr.msglen    = sizeof(PrvtProt_respbt_t);
 				tcom_send_msg(&msghdr, &respbt);
+				#endif
 			}
 			else
 			{

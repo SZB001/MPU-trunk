@@ -189,6 +189,8 @@ int PP_searchvehicle_mainfunction(void *task)
 			}
 			else//蓝牙
 			{
+				PP_rmtCtrl_inform_tb(BT_REMOTE_FIND_CAR_RESP,search_type,serachvehicle_success_flag);
+				#if 0
 				TCOM_MSG_HEADER msghdr;
 				PrvtProt_respbt_t respbt;
 				respbt.msg_type = BT_REMOTE_FIND_CAR_RESP;
@@ -210,6 +212,7 @@ int PP_searchvehicle_mainfunction(void *task)
 				msghdr.msglen    = sizeof(PrvtProt_respbt_t);
 				log_o(LOG_HOZON,"send BT success");
 				tcom_send_msg(&msghdr, &respbt);
+				#endif
 			}
 			search_vehicle_stage = PP_SEARCHVEHICLE_IDLE;
 		}

@@ -108,7 +108,6 @@ void PP_seatheating_init(void)
 	}
 }
 
-
 int PP_seatheating_mainfunction(void *task)
 {
 	int res = 0;
@@ -121,15 +120,15 @@ int PP_seatheating_mainfunction(void *task)
 			{
 				if(PP_rmtseatheatCtrl[i].state.req == 1)	
 				{
-					if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+					if(PP_get_powerst() == 1)//上高压电成功标志
 					{
 						PP_rmtseatheatCtrl[i].state.req = 0;
 						PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
-						
 						if(PP_rmtseatheatCtrl[i].state.style == RMTCTRL_TSP)//tsp平台
 						{
 							PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 							rmtCtrl_Stpara.rvcReqStatus = 1;  
+							PP_rmtseatheatCtrl[i].state.req = 0;
 							rmtCtrl_Stpara.rvcFailureType = 0;
 							rmtCtrl_Stpara.reqType =PP_rmtseatheatCtrl[i].state.reqType;
 							rmtCtrl_Stpara.eventid = PP_rmtseatheatCtrl[i].pack.DisBody.eventId;
@@ -139,24 +138,29 @@ int PP_seatheating_mainfunction(void *task)
 						else
 						{
 						}
+						PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_REQSTART;
+					}
+					else if(PP_get_powerst() == 3) //上高压电操作失败
+					{
+						log_i(LOG_HOZON,"Power failure failed to end the seat control");
+						PP_rmtseatheatCtrl[i].state.req = 0;
+						PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
+						PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END;	
 					}
 					else
 					{
-						log_o(LOG_HOZON," low power or power state on");
-						PP_rmtseatheatCtrl[i].state.req = 0;
-						PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
-						PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END;
-						
+						if((PP_rmtseatheatCtrl[i].state.reqType == 0x0606)||(PP_rmtseatheatCtrl[i].state.reqType == 0x0607))
+						{
+							log_i(LOG_HOZON,"Power failure");
+							PP_rmtseatheatCtrl[i].state.req = 0;
+						}
 					}
-					PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_REQSTART;
 				}
-				
 			}
 			break;
 			case PP_SEATHEATING_REQSTART:        
 			{
-			#if 0
-				if(PP_get_powerst() == 1)//上高压电成功标志
+				if(PP_rmtseatheatCtrl[i].state.reqType == cmd[i])
 				{
 					if(i == 0)
 					{
@@ -166,41 +170,8 @@ int PP_seatheating_mainfunction(void *task)
 					{
 						PP_can_send_data(PP_CAN_SEATHEAT,PP_rmtseatheatCtrl[i].level + 1,CAN_SEATHEATPASS);
 					}
-				    PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_RESPWAIT;
+				   	PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_RESPWAIT;
 				    PP_rmtseatheatCtrl[i].PP_Respwaittime = tm_get_time();
-				}
-				else if(PP_get_powerst() == 3) //高压电操作失败
-				{
-					PP_seatheating_ClearStatus();//清除座椅请求
-					PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END;
-					PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
-				}
-				else
-				{}
-			#endif
-				if(PP_rmtseatheatCtrl[i].state.reqType == cmd[i])
-				{
-					if(PP_get_powerst() == 1)//上高压电成功标志
-					{
-						if(i == 0)
-						{
-							PP_can_send_data(PP_CAN_SEATHEAT,PP_rmtseatheatCtrl[i].level + 1,CAN_SEATHEATMAIN);
-						}
-						else
-						{
-							PP_can_send_data(PP_CAN_SEATHEAT,PP_rmtseatheatCtrl[i].level + 1,CAN_SEATHEATPASS);
-						}
-				   		PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_RESPWAIT;
-				    	PP_rmtseatheatCtrl[i].PP_Respwaittime = tm_get_time();
-					}
-					else if(PP_get_powerst() == 3) //高压电操作失败
-					{
-						PP_seatheating_ClearStatus();//清除座椅请求
-						PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END;
-						PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
-					}
-					else
-					{}
 				}
 				else           //座椅加热关闭
 				{

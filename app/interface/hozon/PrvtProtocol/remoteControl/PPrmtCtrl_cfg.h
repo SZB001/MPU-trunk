@@ -67,4 +67,5 @@ extern unsigned char PP_rmtCtrl_cfg_CrashOutputSt(void);
 extern long PP_rmtCtrl_cfg_vehicleOdograph(void);
 extern unsigned char PP_rmtCtrl_cfg_DrivHeatingSt(void);
 extern unsigned char PP_rmtCtrl_cfg_PassHeatingSt(void);
+extern unsigned char PP_rmtCtrl_cfg_bluestartSt(void);
 #endif 

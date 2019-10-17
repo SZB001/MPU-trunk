@@ -210,6 +210,8 @@ int PP_autodoorCtrl_mainfunction(void *task)
 			}
 			else//蓝牙
 			{
+				PP_rmtCtrl_inform_tb(BT_ELECTRIC_DOOR_RESP,autodoor_type,autodoor_success_flag);
+				#if 0
 				TCOM_MSG_HEADER msghdr;
 				PrvtProt_respbt_t respbt;
 				respbt.msg_type = BT_ELECTRIC_DOOR_RESP;
@@ -230,6 +232,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				msghdr.msgid     = BLE_MSG_CONTROL;
 				msghdr.msglen    = sizeof(PrvtProt_respbt_t);
 				tcom_send_msg(&msghdr, &respbt);
+				#endif
 			}
 			auto_door_stage = PP_AUTODOORCTRL_IDLE;
 		}

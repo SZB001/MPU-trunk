@@ -269,29 +269,6 @@ int PP_startengine_mainfunction(void *task)
 				}
 				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 			}
-			if( PP_rmtengineCtrl.state.style == RMTCTRL_BLUETOOTH)
-			{
-				TCOM_MSG_HEADER msghdr;
-				PrvtProt_respbt_t respbt;
-				respbt.msg_type = BT_POWER_CONTROL_RESP;
-				respbt.cmd = enginecation;
-				if(1 == startengine_success_flag)
-				{
-					respbt.cmd_state.execution_result = BT_SUCCESS;  //ִ执行成功
-					respbt.failtype = 0;
-					
-				}
-				else
-				{
-					respbt.cmd_state.execution_result = BT_FAIL;  //ִ执行失败
-					respbt.failtype = 0;
-				}
-				msghdr.sender    = MPU_MID_HOZON_PP;
-				msghdr.receiver  = MPU_MID_BLE;
-				msghdr.msgid     = BLE_MSG_CONTROL;
-				msghdr.msglen    = sizeof(PrvtProt_respbt_t);
-				tcom_send_msg(&msghdr, &respbt);
-			}
 			start_engine_stage = PP_STARTENGINE_IDLE;
 		}
 		break;
@@ -304,7 +281,6 @@ int PP_startengine_mainfunction(void *task)
 uint8_t PP_get_powerst()
 {
 	return startengine_success_flag;
-	
 }
 
 uint8_t PP_startengine_start(void) 

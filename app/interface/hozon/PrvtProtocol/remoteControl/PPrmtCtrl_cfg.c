@@ -80,6 +80,14 @@ unsigned char PP_rmtCtrl_cfg_reardoorSt(void)
 {
 	return gb_data_reardoorSt();
 }
+/*
+ 	 读取蓝牙启动有效性状态
+*/
+
+unsigned char PP_rmtCtrl_cfg_bluestartSt(void)
+{
+	return PrvtProt_SignParse_BleStartSt();
+}
 
 /*
  	 读取电量状态

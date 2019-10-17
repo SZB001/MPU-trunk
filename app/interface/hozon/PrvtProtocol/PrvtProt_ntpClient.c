@@ -16,22 +16,35 @@ Data			Vasion			author
 #include "log.h"
 #include "dev_time.h"
 #include "gb32960_api.h"
+#include "shell_api.h"
 
 #define NTP_SERVICE_CNT 6
 char ntp_serverURL[NTP_SERVICE_CNT][64]= {"cn.ntp.org.cn","ntp1.aliyun.com","time1.aliyun.com","time.syn029.com", \
                                           "ntp.shu.edu.cn", "s2f.time.edu.cn"};
-static unsigned char ntp_test_flag = 0; 
+static unsigned char ntp_test_flag; 
+static int ntp_srv_cnt;
 static int PP_ntp_service(char * serviceURL);
+static int PP_ntp_shell_setntpaddr(int argc , const const char **argv);
+
+/*
+* ntp校时初始化
+*/
+void PP_ntp_Init(void)
+{
+    ntp_test_flag = 0;
+    ntp_srv_cnt = 0;
+    shell_cmd_register("hozon_setntpaddr", PP_ntp_shell_setntpaddr, "set ntp addr");
+}
+
 /*
 *   ntp校准时间
 */
 void PP_ntp_calibrationTime(void)
 {
-    static int i = 0;
     static uint64_t caltm_time = 0;
     
     if((!gb32960_networkSt() 
-        || (dev_is_time_syn())) && !ntp_test_flag)
+        || (dev_is_time_syn())) && (!ntp_test_flag))
     {
         return;
     }
@@ -39,15 +52,16 @@ void PP_ntp_calibrationTime(void)
     if ((0 == caltm_time) || \
             (tm_get_time() - caltm_time > 20000))
     {
-        i = (i < NTP_SERVICE_CNT)? i : 0;
-        if(PP_ntp_service(ntp_serverURL[i]))
+        ntp_srv_cnt = (ntp_srv_cnt < NTP_SERVICE_CNT)? ntp_srv_cnt : 0;
+        if(PP_ntp_service(ntp_serverURL[ntp_srv_cnt]))
         {
-            log_e(LOG_HOZON, "adjust time form %s faile,ntp:%d",ntp_serverURL[i],i);
-            i++;
+            log_e(LOG_HOZON, "adjust time form %s faile,ntp:%d",ntp_serverURL[ntp_srv_cnt],ntp_srv_cnt);
+            ntp_srv_cnt++;
         }
         else
         {
             log_i(LOG_HOZON, "ntp adjust time success!\n");
+            ntp_test_flag = 0;
         }
         
         caltm_time = tm_get_time();
@@ -99,4 +113,23 @@ void PP_SetNTPTime(unsigned char ntpreq)
 {
     ntp_test_flag = ntpreq;
     log_o(LOG_HOZON, "ntp calibration time request\n");
+}
+
+/*
+*  设置ntp addr
+*/
+static int PP_ntp_shell_setntpaddr(int argc , const const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: ntpaddr <addr>\r\n");
+        return -1;
+    }
+
+    ntp_srv_cnt = 0; 
+    log_o(LOG_HOZON,"ntp addr %s",argv[0]);
+    strcpy(ntp_serverURL[0] ,argv[0]);
+    sleep(1);
+
+    return 0;
 }

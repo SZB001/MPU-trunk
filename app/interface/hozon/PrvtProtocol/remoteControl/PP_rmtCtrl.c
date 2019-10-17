@@ -697,19 +697,6 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 	{
 		case BT_VEhICLE_DOOR_REQ://控制车门锁
 		{
-			#if 0
-			TCOM_MSG_HEADER msghdr;
-			PrvtProt_respbt_t respbt;
-			respbt.msg_type = BT_VEhICLE_DOOR_RESP;
-			respbt.cmd = cmd;
-			respbt.cmd_state.execution_result = 1;  //ִ执行成功
-			respbt.failtype = 0;
-			msghdr.sender    = MPU_MID_HOZON_PP;
-			msghdr.receiver  = MPU_MID_BLE;
-			msghdr.msgid     = BLE_MSG_CONTROL;
-			msghdr.msglen    = sizeof(PrvtProt_respbt_t);
-			tcom_send_msg(&msghdr, &respbt);
-			#endif
 			SetPP_doorLockCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
 		}
 		break;
@@ -756,38 +743,86 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 
 	PP_COMMON_UNLOCK();
 }
-#if 0
+ 
+#if 1
+//type  :回复蓝牙的消息类型
+//cmd   :回复蓝牙的命令
+//result:回复TBOX执行的结果
 void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
 {
 	TCOM_MSG_HEADER msghdr;
 	PrvtProt_respbt_t respbt;
 	respbt.msg_type = type;
 	respbt.cmd = cmd;
+	if(result == 1)//门控执行成功
+	{
+		respbt.cmd_state.execution_result = BT_SUCCESS;
+		respbt.cmd_state.state = cmd;  
+	}
 	switch(type)
 	{
 		case BT_VEhICLE_DOOR_RESP:
 		{
-			if(cmd == 1)  //蓝牙锁门，
+			if(result == 0)
 			{
-				if(result == 0)
-				{
-					respbt.cmd_state.execution_result = 1;//已锁车
-				}
-			}
-			if(cmd == 2)  //蓝牙开门
-			{
-				if(result == 0)
-				{
-					respbt.cmd_state.execution_result = 2
-				}
-			}
+				respbt.cmd_state.execution_result = BT_FAIL;
+				respbt.cmd_state.state = 2;
+			} 
 		}
+		break;
 		case BT_PANORAMIC_SUNROOF_RESP:
+		{
+	 		if(result == 0)
+			{
+				respbt.cmd_state.execution_result = BT_FAIL;
+				respbt.cmd_state.state = 2;
+			} 
+		}
+		break;
 		case BT_ELECTRIC_DOOR_RESP:
+		{
+			if(result == 0)
+			{
+				respbt.cmd_state.execution_result = BT_FAIL;
+				respbt.cmd_state.state = 2;
+			} 
+		}
+		break;
 		case BT_REMOTE_FIND_CAR_RESP:
-		case BT_CHARGE_RESP:       
+		{
+			if(result == 0)
+			{
+				respbt.cmd_state.execution_result = BT_FAIL;
+				respbt.cmd_state.state = 2;
+			} 
+		}
+		break;
+		case BT_CHARGE_RESP:  
+		{
+			if(result == 0)
+			{
+				respbt.cmd_state.execution_result = BT_FAIL;
+				respbt.cmd_state.state = 2;
+			} 
+		}
+		break;
 		case BT_POWER_CONTROL_RESP:
+		{ 
+			if(result == 0)
+			{
+				respbt.cmd_state.execution_result = BT_FAIL;
+				respbt.cmd_state.state = 1;    //已下高压电
+			} 
+		}
+		break;
+		default:
+		break;
 	}
+	msghdr.sender    = MPU_MID_HOZON_PP;
+	msghdr.receiver  = MPU_MID_BLE;
+	msghdr.msgid     = BLE_MSG_CONTROL;
+	msghdr.msglen    = sizeof(PrvtProt_respbt_t);
+	tcom_send_msg(&msghdr, &respbt);
 }
 #endif
 /******************************************************
@@ -974,6 +1009,7 @@ int PP_rmtCtrl_StInformBt(unsigned char obj, unsigned char cmd)
 	}
 	else
 	{
+		respbt.state.electric_door_state = 2;
 	}
 	
 	respbt.state.fine_car_state = 1;  //保留
@@ -1010,7 +1046,7 @@ int PP_rmtCtrl_StInformBt(unsigned char obj, unsigned char cmd)
 		respbt.state.vehiclie_door_state = 1;  //门已锁
 	}else if(PP_rmtCtrl_cfg_doorlockSt() == 1)
 	{
-		respbt.state.vehiclie_door_state = 2;  //门已关??
+		respbt.state.vehiclie_door_state = 2;  //门已关
 	}
 	else
 	{

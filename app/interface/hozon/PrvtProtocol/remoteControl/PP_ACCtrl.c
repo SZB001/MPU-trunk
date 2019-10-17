@@ -184,7 +184,6 @@ int PP_ACCtrl_mainfunction(void *task)
 			{
 				if(PP_get_powerst() == 1)//上高压电成功标志
 				{
-					log_o(LOG_HOZON,"1111111111");
 					if(PP_rmtACCtrl.state.style == RMTCTRL_TSP)   //tsp平台
 					{
 						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
