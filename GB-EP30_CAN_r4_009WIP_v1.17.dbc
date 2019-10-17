@@ -54,6 +54,7 @@ BO_ 825 BDM_Fr01_339: 8 BDCM
  SG_ BDMFindCarSts_@2WR1002 : 42|1@1+(1,0)[0|1] "" Vector__XXX
  SG_ BDCM�ڵ㶪ʧ_@2N013 : 42|1@1+(1,0)[0|1] "" Vector__XXX
 BO_ 601 BDM_Fr02_259: 8 BDCM
+ SG_ BDMBluetoothStartSts_@2WR101A : 23|2@0+ (1,0) [0|0] ""  TBOX
  SG_ BDMPowerMode_@2WG1000 : 3|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BDMEngineForbidStatus_@2WR1011 : 16|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BDMRemoteStartSt_@2WR1008 : 18|2@0+(1,0)[0|3] "" Vector__XXX
@@ -468,6 +469,7 @@ BO_ 1328 TBOX_Fr01_530: 8 TBOX
  SG_ SecsOfMinute : 45|6@0+(1,0)[0|59] "" Vector__XXX
  SG_ TimeDspFmt : 46|1@0+(1,0)[0|1] "" Vector__XXX
 BO_ 1088 TBOX_Fr03_440: 8 TBOX
+ SG_ TBOXBluetoothStartReq : 40|1@0+ (1,0) [0|0] "" Vector__XXX
  SG_ TBOXRemoteStartReq : 0|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ TBOXRemoteShutdownReq : 1|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ TBOXStartForbidReq : 31|2@0+(1,0)[0|3] "" Vector__XXX
