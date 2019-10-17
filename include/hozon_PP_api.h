@@ -103,4 +103,8 @@ extern void PP_ntp_calibrationTime(void);
 extern void PP_SetNTPTime(unsigned char ntpreq);
 extern void getPP_rmtCfg_tspAddrPort(char* addr,int* port);
 extern void getPP_rmtCfg_certAddrPort(char* addr,int* port);
+extern unsigned char GetPP_rmtCtrl_fotaUpgrade(void);
+extern void PP_COMMON_LOCK(void);
+extern void PP_COMMON_UNLOCK(void);
+extern char getPP_rmtDiag_Idle(void);
 #endif

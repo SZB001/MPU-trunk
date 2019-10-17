@@ -117,8 +117,6 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 
 static PrvtProt_TxInform_t rmtCtrl_TxInform[PP_TXINFORMNODE_NUM];
 
-static pthread_mutex_t rmtCtrlmtx = 	PTHREAD_MUTEX_INITIALIZER;
-
 static uint8_t testflag = 0;
 /*******************************************************
 description： function declaration
@@ -242,7 +240,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 	PP_rmtCtrl_task.nonce = task_ptr->nonce;
 	PP_rmtCtrl_task.tboxid = task_ptr->tboxid;
 	PP_rmtCtrl_task.version = task_ptr->version;
-	pthread_mutex_lock(&rmtCtrlmtx);
+	PP_COMMON_LOCK();
 
 	res = 	PP_rmtCtrl_do_checksock(task_ptr) ||
 			PP_rmtCtrl_do_rcvMsg(task_ptr);
@@ -363,7 +361,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 
 	PP_ChargeCtrl_mainfunction(task_ptr);//充电功能，不需要BDCM认证
 
-	pthread_mutex_unlock(&rmtCtrlmtx);
+	PP_COMMON_UNLOCK();
 
 	PP_can_send_cycle();//广播440 445报文
 	
@@ -512,7 +510,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 			return;
 		}
-		if(GetPP_rmtCtrl_fotaUpgrade() == 1)
+		if(PP_rmtCtrl.fotaUpgradeSt == 1)
 		{
 			log_e(LOG_HOZON,"fota updating");
 			rmtCtrl_Stpara.reqType = PP_rmtCtrl.reqType;
@@ -644,9 +642,9 @@ static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 {
-	pthread_mutex_lock(&rmtCtrlmtx);
+	PP_COMMON_LOCK();
 
-	if(GetPP_rmtCtrl_fotaUpgrade() == 1)
+	if(PP_rmtCtrl.fotaUpgradeSt == 1)
 	{
 		TCOM_MSG_HEADER msghdr;
 		PrvtProt_respbt_t respbt;
@@ -690,7 +688,7 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 		msghdr.msglen    = sizeof(PrvtProt_respbt_t);
 		tcom_send_msg(&msghdr, &respbt);
 
-		pthread_mutex_unlock(&rmtCtrlmtx);
+		PP_COMMON_UNLOCK();
 
 		return;
 	}
@@ -756,7 +754,7 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 		break;
 	}
 
-	pthread_mutex_unlock(&rmtCtrlmtx);
+	PP_COMMON_UNLOCK();
 }
 #if 0
 void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
@@ -805,7 +803,7 @@ void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
 ******************************************************/
 void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara)
 {
-	pthread_mutex_lock(&rmtCtrlmtx);
+	PP_COMMON_LOCK();
 
 	switch(obj)
 	{
@@ -819,7 +817,7 @@ void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara)
 		break;
 	}
 
-	pthread_mutex_unlock(&rmtCtrlmtx);
+	PP_COMMON_UNLOCK();
 }
 
 /******************************************************
@@ -835,7 +833,7 @@ void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara)
 ******************************************************/
 void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
-	if(GetPP_rmtCtrl_fotaUpgrade() == 1)
+	if(PP_rmtCtrl.fotaUpgradeSt == 1)
 	{
 		log_e(LOG_HOZON,"fota updating");
 		return;
@@ -1638,10 +1636,11 @@ int SetPP_rmtCtrl_FOTA_startInform(void)
 {
 	int res = 0;
 
-	pthread_mutex_lock(&rmtCtrlmtx);
+	PP_COMMON_LOCK();
 
-	if((0 == PP_rmtCtrl_request()) && (RMTCTRL_IDLE == PP_rmtCtrl.rmtCtrlSt) && \
-		GetPP_ChargeCtrl_Sleep() && GetPP_ACtrl_Sleep() && GetPP_SeatCtrl_Sleep())//远程车控空闲
+	if((RMTCTRL_IDLE == PP_rmtCtrl.rmtCtrlSt) && \
+	 	GetPP_ChargeCtrl_Sleep() && GetPP_ACtrl_Sleep() && GetPP_SeatCtrl_Sleep() && \
+	 	(1 == getPP_rmtDiag_Idle()))//远程车控、诊断空闲
 	{
 		SetPP_ChargeCtrl_appointPara();
 		PP_rmtCtrl.fotaAuthReq = 1;
@@ -1653,7 +1652,7 @@ int SetPP_rmtCtrl_FOTA_startInform(void)
 		res = -1;
 	}
 	
-	pthread_mutex_unlock(&rmtCtrlmtx);
+	PP_COMMON_UNLOCK();
 	
 	return res;
 }
@@ -1672,9 +1671,9 @@ int SetPP_rmtCtrl_FOTA_startInform(void)
 int SetPP_rmtCtrl_FOTA_endInform(void)
 {
 	int res = 0;
-	pthread_mutex_lock(&rmtCtrlmtx);
+	PP_COMMON_LOCK();
 	PP_rmtCtrl.fotaUpgradeSt = 0;
-	pthread_mutex_unlock(&rmtCtrlmtx);
+	PP_COMMON_UNLOCK();
 	return res;
 }
 

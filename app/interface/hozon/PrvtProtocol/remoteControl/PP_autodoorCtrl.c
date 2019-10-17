@@ -39,6 +39,7 @@ description： include the header file
 #include "../../support/protocol.h"
 #include "gb32960_api.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
 #include "../PrvtProt_EcDc.h"
@@ -74,7 +75,8 @@ static int autodoor_type ;
 
 
 void PP_autodoorCtrl_init(void)
-{
+{
+
 	memset(&PP_rmtautodoorCtrl,0,sizeof(PrvtProt_rmtautodoorCtrl_t));
 	memcpy(PP_rmtautodoorCtrl.pack.Header.sign,"**",2);
 	PP_rmtautodoorCtrl.pack.Header.ver.Byte = 0x30;

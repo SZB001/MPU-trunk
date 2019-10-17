@@ -32,6 +32,8 @@
         "gb32960.h": "c",
         "prvtprot_cfg.h": "c",
         "prvtprot_sigparse.h": "c",
-        "protocol.h": "c"
+        "protocol.h": "c",
+        "prvtprot_shell.h": "c",
+        "prvtprot.h": "c"
     }
 }

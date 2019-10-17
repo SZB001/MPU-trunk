@@ -27,6 +27,7 @@
 #include "../../support/protocol.h"
 #include "hozon_SP_api.h"
 #include "gb32960_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
 #include "../PrvtProt_EcDc.h"
@@ -75,7 +76,8 @@ void PP_startforbid_init(void)
 }
 
 int PP_startforbid_mainfunction(void *task)
-{
+{
+
 	int res = 0;
 	switch(start_forbid_stage)
 	{
@@ -285,7 +287,8 @@ void PP_startforbid_acStMonitor(void *task)
 	uint8_t cmd;
 		
 	//满足远程控制的条件，检查是否禁止启动或者取消禁止启动
-	if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
+
+	if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
 	{
 		res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_FORBIDEN,(void *)(&cmd),&len);
 		if(res == 0)

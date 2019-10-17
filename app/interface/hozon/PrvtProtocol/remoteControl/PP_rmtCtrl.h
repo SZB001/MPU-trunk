@@ -406,7 +406,6 @@ extern void PP_ACCtrl_ClearStatus(void);
 extern void SetPP_rmtCtrl_Awaken(void);
 extern unsigned char GetPP_rmtCtrl_Sleep(void);
 extern void PP_rmtCtrl_showSleepPara(void);
-extern unsigned char GetPP_rmtCtrl_fotaUpgrade(void);
 extern int PP_rmtCtrl_StInformBt(unsigned char obj, unsigned char cmd);
 extern void PP_rmtCtrl_settestflag(uint8_t flag);
 extern uint8_t PP_rmtCtrl_gettestflag(void);

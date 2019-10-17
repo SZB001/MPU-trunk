@@ -39,6 +39,7 @@ description： include the header file
 #include "../../support/protocol.h"
 #include "gb32960_api.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
 #include "../PrvtProt_EcDc.h"
@@ -93,7 +94,8 @@ void PP_sunroofctrl_init(void)
 
 
 int PP_sunroofctrl_mainfunction(void *task)
-{
+{
+
 	int res = 0;
 	switch(sunroof_ctrl_stage)
 	{

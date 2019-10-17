@@ -419,8 +419,23 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 			{
 				log_i(LOG_HOZON, "start remote diag\n");
 				memset(&PP_rmtDiag_Fault,0 , sizeof(PP_rmtDiag_Fault_t));
-				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYFAILREQ;
 				PP_rmtDiag.state.diagReq = 0;
+
+				PP_COMMON_LOCK();
+
+				if(1 == GetPP_rmtCtrl_fotaUpgrade())
+				{
+					log_e(LOG_HOZON, "In the fota upgrade/h");
+					PP_rmtDiag.state.result = 0;
+					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_FOTAING;
+					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
+				}
+				else
+				{
+					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYFAILREQ;
+				}
+
+				PP_COMMON_UNLOCK();
 			}
 		}
 		break;
@@ -523,7 +538,22 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 			if(1 == PP_rmtDiag.state.cleanfaultReq)
 			{
 				PP_rmtDiag.state.cleanfaultReq = 0;
-				PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_REQ;
+
+				PP_COMMON_LOCK();
+
+				if(1 == GetPP_rmtCtrl_fotaUpgrade())
+				{
+					log_e(LOG_HOZON, "In the fota upgrade\n");
+					PP_rmtDiag.state.faultCleanResult	= 0;
+					PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_FOTAING;
+					PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
+				}
+				else
+				{
+					PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_REQ;
+				}
+
+				PP_COMMON_UNLOCK();
 			}
 		}
 		break;
@@ -549,8 +579,9 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 			}
 			else
 			{
+				log_e(LOG_HOZON, "clean faultcode timeout\n");
 				PP_rmtDiag.state.faultCleanResult	= 0;
-				PP_rmtDiag.state.faultCleanfailureType = 0;
+				PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_TIMEOUT;
 				PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
 			}
 		}
@@ -695,8 +726,24 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 	{
 		case PP_ACTIVEDIAG_PWRON:
 		{
-			PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKREPORTST;
-			PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+			PP_COMMON_LOCK();
+
+			memset(&PP_rmtDiag_allFault,0 , sizeof(PP_rmtDiag_allFault_t));
+			if(1 == GetPP_rmtCtrl_fotaUpgrade())
+			{
+				log_e(LOG_HOZON, "In the fota upgrade\n");
+				PP_rmtDiag.state.result = 0;
+				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_FOTAING;
+				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
+			}
+			else
+			{
+				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKREPORTST;
+				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+			}
+
+			PP_COMMON_UNLOCK();
 		}
 		break;
 		case PP_ACTIVEDIAG_CHECKREPORTST:
@@ -736,7 +783,6 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 					log_i(LOG_HOZON,"vehicle speed <= 5km/h,start diag\n");
 					PP_rmtDiag.state.faultquerySt = 0;
 					setPPrmtDiagCfg_QueryFaultReq(PP_DIAG_ALL);//请求查询所有故障码
-					memset(&PP_rmtDiag_allFault,0 , sizeof(PP_rmtDiag_allFault_t));
 					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUREYWAIT;
 				}
@@ -1289,3 +1335,29 @@ void PP_diag_rmtdiagtest(unsigned char diagType,unsigned char sueecss,unsigned c
 					PP_rmtDiag_allFault.code[i].faultNum);
 	}
 }
+
+/******************************************************
+*getPP_rmtDiag_Idle
+
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*鎻�  杩帮細
+
+*澶�  娉細
+******************************************************/
+char getPP_rmtDiag_Idle(void)
+{
+	if((PP_rmtDiag.state.diagrespSt == PP_DIAGRESP_IDLE) && \
+		(PP_rmtDiag.state.cleanfaultSt == PP_FAULTCODECLEAN_IDLE)	&&	\
+		(PP_rmtDiag.state.activeDiagSt == PP_ACTIVEDIAG_END))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+

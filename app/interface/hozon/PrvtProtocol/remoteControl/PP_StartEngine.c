@@ -28,6 +28,7 @@
 #include "../../support/protocol.h"
 #include "gb32960_api.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
 #include "../PrvtProt_EcDc.h"

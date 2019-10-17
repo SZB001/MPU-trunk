@@ -27,6 +27,7 @@
 #include "../../support/protocol.h"
 #include "gb32960_api.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
 #include "../PrvtProt_EcDc.h"
@@ -76,7 +77,8 @@ int PP_CameraCtr_mainfunction(void *task)
 {
 	if(PP_rmtCameraCtrl.state.req == 1)
 	{
-		ivi_remotediagnos tspInformHU;
+		
+ivi_remotediagnos tspInformHU;
 		tspInformHU.aid = PP_AID_RMTCTRL;
 		tspInformHU.mid = PP_MID_RMTCTRL_RESP;
 		tspInformHU.eventid = PP_rmtCameraCtrl.pack.DisBody.eventId;

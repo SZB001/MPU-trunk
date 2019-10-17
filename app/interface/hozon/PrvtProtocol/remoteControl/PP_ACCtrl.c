@@ -28,6 +28,7 @@
 #include "list.h"
 #include "../../support/protocol.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 #include "../PrvtProt_shell.h"
 #include "../PrvtProt_EcDc.h"
@@ -217,7 +218,8 @@ int PP_ACCtrl_mainfunction(void *task)
 				}
 				else
 				{
-					if(PP_rmtACCtrl.state.accmd == PP_CLOSE_ACC)
+					if(PP_rmtACCtrl.state.accmd == PP_CLOSE_ACC)
+
 					{
 						log_i(LOG_HOZON,"Power failure ");
 						PP_rmtACCtrl.state.req = 0;
@@ -394,7 +396,8 @@ uint8_t PP_ACCtrl_start(void)
 	}
 }
 uint8_t PP_ACCtrl_end(void)
-{
+{
+
 
 	if((PP_rmtACCtrl.state.CtrlSt == PP_ACCTRL_IDLE) && \
 			(PP_rmtACCtrl.state.req == 0))
@@ -585,7 +588,8 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 		case RMTCTRL_BLUETOOTH:
 		{
 			
-		}
+		
+}
 		break;
 		case RMTCTRL_SHELL:
 		{

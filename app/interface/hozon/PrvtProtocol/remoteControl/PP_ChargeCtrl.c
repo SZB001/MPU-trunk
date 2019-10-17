@@ -41,6 +41,7 @@ description�� include the header file
 #include "PPrmtCtrl_cfg.h"
 #include "gb32960_api.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 #include "tbox_ivi_api.h"
 #include "../PrvtProt_shell.h"
