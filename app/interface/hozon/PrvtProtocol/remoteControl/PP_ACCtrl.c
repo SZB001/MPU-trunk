@@ -181,8 +181,9 @@ int PP_ACCtrl_mainfunction(void *task)
 		{
 			if(PP_rmtACCtrl.state.req == 1) 	
 			{
-				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+				if(PP_get_powerst() == 1)//上高压电成功标志
 				{
+					log_o(LOG_HOZON,"1111111111");
 					if(PP_rmtACCtrl.state.style == RMTCTRL_TSP)   //tsp平台
 					{
 						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
@@ -192,50 +193,49 @@ int PP_ACCtrl_mainfunction(void *task)
 						rmtCtrl_Stpara.eventid = PP_rmtACCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+						PP_rmtACCtrl.state.req = 0;
 					}
 					else if(PP_rmtACCtrl.state.style == RMTCTRL_TBOX)//tbox
 					{
 						//log_o(LOG_HOZON,"tbox platform\n");
+						PP_rmtACCtrl.state.req = 0;
 						
 					}
 					else//蓝牙
 					{
-
+						PP_rmtACCtrl.state.req = 0;
 					}
 					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_REQSTART;
 				}
-				else   //不满足远控条件
+				else if(PP_get_powerst() == 3) //上高压电操作失败
 				{
-					log_i(LOG_HOZON,"The vehicle control condition is not satisfied\n");
+					log_i(LOG_HOZON,"Power failure failed to end the air conditioning control");
 					PP_rmtACCtrl.fail = 0;
 					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
+					PP_rmtACCtrl.failtype = PP_RMTCTRL_UPPOWERFAIL;
+					PP_rmtACCtrl.state.req = 0;
 				}
-				PP_rmtACCtrl.state.req = 0;
+				else
+				{
+					if(PP_rmtACCtrl.state.accmd == PP_CLOSE_ACC)
+					{
+						log_i(LOG_HOZON,"Power failure ");
+						PP_rmtACCtrl.state.req = 0;
+					}	
+					
+				}
+				//PP_rmtACCtrl.state.req = 0;
 			}
 		}
 		break;
 		case PP_ACCTRL_REQSTART:     //下发报文
 		{
-			
 			if(PP_rmtACCtrl.state.accmd == PP_OPEN_ACC)    //打开空调
 			{
-				if(PP_get_powerst() == 1)//上高压电成功标志
-				{
-					log_o(LOG_HOZON,"request start ac\n");
-					PP_can_send_data(PP_CAN_ACCTRL,CAN_OPENACC,0);
-					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_RESPWAIT;
-					PP_rmtACCtrl.state.waittime = tm_get_time();	
-				}
-				else if(PP_get_powerst() == 3) //上高压电操作失败
-				{
-					PP_ACCtrl_ClearStatus();
-					//log_o(LOG_HOZON,"request 1111111 ac\n");
-					PP_rmtACCtrl.fail     = 1;
-					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
-				}
-				else
-				{
-				}
+				log_o(LOG_HOZON,"request start ac\n");
+				PP_can_send_data(PP_CAN_ACCTRL,CAN_OPENACC,0);
+				PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_RESPWAIT;
+				PP_rmtACCtrl.state.waittime = tm_get_time();	
 			}
 			else if(PP_rmtACCtrl.state.accmd == PP_CLOSE_ACC)  //关闭空调
 			{
@@ -253,8 +253,7 @@ int PP_ACCtrl_mainfunction(void *task)
 			}
 			else
 			{
-			}
-				
+			}		
 		}
 		break;
 		case PP_ACCTRL_RESPWAIT:
@@ -286,6 +285,7 @@ int PP_ACCtrl_mainfunction(void *task)
 				{
 					if((tm_get_time() - PP_rmtACCtrl.state.waittime) < 2000)
 					{
+						//log_o(LOG_HOZON,"PP_rmtCtrl_cfg_ACOnOffSt() = %d",PP_rmtCtrl_cfg_ACOnOffSt());
 						if(PP_rmtCtrl_cfg_ACOnOffSt() == 0)   // 关闭成功
 						{
 							log_o(LOG_HOZON,"close air success\n");
@@ -603,6 +603,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 					if(shell_actrl->cmd == PP_RMTCTRL_ACOPEN)
 					{
 						PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
+						log_o(LOG_HOZON,"PP_OPEN_ACC");
 						acc_requestpower_flag = 1;  //预约开空调时间到，请求上高压电
 					}
 					else if(shell_actrl->cmd == PP_RMTCTRL_ACCLOSE)
@@ -820,6 +821,7 @@ void PP_set_ac_requestpower_flag()
 
 void PP_ACCtrl_ClearStatus(void)
 {
+	log_o(LOG_HOZON,"dsfdsf");
 	PP_rmtACCtrl.state.req = 0;
 }
 

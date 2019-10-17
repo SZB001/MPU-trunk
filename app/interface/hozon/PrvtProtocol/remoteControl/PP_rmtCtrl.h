@@ -76,6 +76,7 @@ description： macro definitions
 #define PP_RMTCTRL_BANSTART				0x0900//
 #define PP_RMTCTRL_ALOWSTART			0x0901//
 
+#define PP_RMTCTRL_BLUESTART            0X0A00
 
 //执行状态
 #define PP_RMTCTRL_EXECUTEDWAIT 	0//等待执行
@@ -162,6 +163,7 @@ typedef enum
 	RMTCTRL_ENGINECTRL,//禁止启动
 	RMTCTRL_SEATHEATINGCTRL,//座椅加热
 	RMTCTRL_CAMERACTRL, //摄像头
+	RMTCTRL_BLUETOOTHSTART,
 	RMTCTRL_OBJ_MAX
 }PP_RMTCTRL_OBJ;
 
@@ -190,9 +192,16 @@ typedef struct
 
 typedef struct
 {
+	size_t msg_type;
+	size_t state;
+	size_t execution_result;
+} bt_ack_t;
+
+typedef struct
+{
 	uint8_t msg_type;
 	uint8_t cmd;
-	uint8_t result; // 0表示成功  1表示失败
+	bt_ack_t cmd_state; // 0表示成功  1表示失败
 	uint8_t failtype;
 	bt_vihe_info_t state;
 }__attribute__((packed))  PrvtProt_respbt_t; /*resp bt结构体*/
@@ -399,4 +408,7 @@ extern unsigned char GetPP_rmtCtrl_Sleep(void);
 extern void PP_rmtCtrl_showSleepPara(void);
 extern unsigned char GetPP_rmtCtrl_fotaUpgrade(void);
 extern int PP_rmtCtrl_StInformBt(unsigned char obj, unsigned char cmd);
+extern void PP_rmtCtrl_settestflag(uint8_t flag);
+extern uint8_t PP_rmtCtrl_gettestflag(void);
+
 #endif 

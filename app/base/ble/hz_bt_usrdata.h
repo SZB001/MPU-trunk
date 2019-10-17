@@ -139,6 +139,7 @@ typedef struct
 {
 	size_t msg_type;
 	size_t state;
+	size_t execution_result;
 } bt_ack_t;
 
 typedef struct
@@ -224,7 +225,7 @@ int pb_TimeStamp_set(TimeStamp **des, bt_send_t *src);
 int pb_ack_set(ACK **des, bt_send_t *src);
 
 void reset_hz_data(void);
-int bt_send_cmd_pack(unsigned char result, bt_vihe_info_t indata,  uint8_t *out, size_t *out_len);
+int bt_send_cmd_pack(bt_ack_t state, bt_vihe_info_t indata,  uint8_t *out, size_t *out_len);
 unsigned char bt_get_auth_flag(void);
 
 int pb_vihe_info_set(VehicleInfor **des, bt_send_t *src);

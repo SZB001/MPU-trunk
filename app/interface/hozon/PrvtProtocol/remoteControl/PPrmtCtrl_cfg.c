@@ -60,8 +60,8 @@ unsigned char PP_rmtCtrl_cfg_AuthStatus(void)
 
 unsigned char PP_rmtCtrl_cfg_vehicleState(void)
 {
-	//return gb_data_vehicleState();
-	return 0;
+	return gb_data_vehicleState();
+	//return 0;
 }
 
 /*
@@ -86,8 +86,8 @@ unsigned char PP_rmtCtrl_cfg_reardoorSt(void)
 */
 unsigned char PP_rmtCtrl_cfg_vehicleSOC(void)
 {
-	//return gb_data_vehicleSOC();
-	return 20;
+	return gb_data_vehicleSOC();
+	//return 20;
 }
 /*
 	寻车状态

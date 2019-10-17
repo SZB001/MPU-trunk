@@ -1973,7 +1973,7 @@ void *ivi_check(void)
 		if((0 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
 		//if(PP_rmtCtrl_cfg_CrashOutputSt() == 1)
 		{
-			if(sos_flag == 0)
+			if(sos_flag == 1)
 			{
 				memset(&callrequest,0 ,sizeof(ivi_callrequest));
 				callrequest.ecall = 1;
@@ -1983,7 +1983,7 @@ void *ivi_check(void)
 					//按键触发ECALL，下发远程诊断命令
 					ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
 				}
-				sos_flag = 1;
+				sos_flag = 0;
 				log_o(LOG_IVI, "SOS trigger!!!!!");
 			}
 		}

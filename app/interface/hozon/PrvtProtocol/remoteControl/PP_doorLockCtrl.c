@@ -129,8 +129,13 @@ int PP_doorLockCtrl_mainfunction(void *task)
 		{	
 			if(PP_rmtdoorCtrl.state.req == 1)	//门控是否有请求
 			{
-				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+				log_o(LOG_HOZON,"PP_rmtCtrl_cfg_vehicleSOC() = %d",PP_rmtCtrl_cfg_vehicleSOC());
+				log_o(LOG_HOZON,"PP_rmtCtrl_cfg_vehicleState() = %d",PP_rmtCtrl_cfg_vehicleState());
+				log_o(LOG_HOZON,"PP_rmtCtrl_gettestflag() = %d",PP_rmtCtrl_gettestflag());
+				if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
 				{	//有请求的时候判断是否满足远控条件(电量大于15%和电源转态位off)
+					
+					
 					doorLock_success_flag = 0;
 					door_lock_stage = PP_DOORLOCKCTRL_REQSTART;
 					if(PP_rmtdoorCtrl.state.style == RMTCTRL_TSP)//tsp 平台
@@ -246,12 +251,13 @@ int PP_doorLockCtrl_mainfunction(void *task)
 				respbt.cmd = doorctrl_type;
 				if(1 == doorLock_success_flag)
 				{
-					respbt.result = BT_SUCCESS;  //ִ执行成功
+					respbt.cmd_state.execution_result = doorctrl_type;  //ִ执行成功
+					respbt.cmd_state.state = 
 					respbt.failtype = 0;
 				}
 				else
 				{
-					respbt.result = BT_FAIL;  //ִ执行失败
+					respbt.cmd_state.execution_result = BT_FAIL;  //ִ执行失败
 					respbt.failtype = 0;
 				}
 				msghdr.sender    = MPU_MID_HOZON_PP;

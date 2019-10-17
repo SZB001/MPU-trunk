@@ -148,6 +148,7 @@ int bt_ack_response_set(bt_send_t        *src, uint8_t *buf, size_t *bufsz)
 	ack__init(response);
 	response->ack_state = src->ack.state;
 	response->msg_type = src->ack.msg_type;
+	response->execution_result = src->ack.execution_result;
 
 	log_i(LOG_BLE, "src->ack.state = %d",src->msg_type);
 	log_i(LOG_BLE, "src->ack.msg_type =%d",src->ack.msg_type);
@@ -607,7 +608,7 @@ int set_cmd (uint8_t *buf, size_t len)
 * Input 		 :	
 * Return		 : NONE
 ******************************************************************************/
-int bt_send_cmd_pack(unsigned char result, bt_vihe_info_t indata,  uint8_t *out, size_t *out_len)
+int bt_send_cmd_pack(bt_ack_t state, bt_vihe_info_t indata,  uint8_t *out, size_t *out_len)
 {
 	int temp_len = 0;
 	temp_len = 1024;
@@ -621,7 +622,8 @@ int bt_send_cmd_pack(unsigned char result, bt_vihe_info_t indata,  uint8_t *out,
 
 	if (APPLICATION_HEADER__MESSAGE_TYPE__ACK == g_hz_protocol.hz_send.msg_type) 
 	{
-		g_hz_protocol.hz_send.ack.state = result;
+		g_hz_protocol.hz_send.ack.state = state.state;
+		g_hz_protocol.hz_send.ack.execution_result = state.execution_result;
 	}
 	else if (APPLICATION_HEADER__MESSAGE_TYPE__Vehicle_Infor == g_hz_protocol.hz_send.msg_type) 
 	{

@@ -70,6 +70,8 @@ static int PP_shell_SetNTPTime(int argc, const char **argv);
 static int PP_shell_rmtdiagtest(int argc, const char **argv);
 static int PP_shell_SetRmtCfgapn1(int argc, const char **argv);
 static int PP_shell_SetRmtCfgficm(int argc, const char **argv);
+static int PP_shell_SetTestflag(int argc, const char **argv);
+
 /******************************************************
 description�� function code
 ******************************************************/
@@ -120,6 +122,7 @@ void PrvtProt_shell_init(void)
     shell_cmd_register("hozon_setntptime", PP_shell_SetNTPTime, "set ntp time");
 
     shell_cmd_register("hozon_rmtdiagtest", PP_shell_rmtdiagtest, "rmt diag test");
+	shell_cmd_register("hozon_testflag", PP_shell_SetTestflag, "rhozon_testflag");
 }
 
 
@@ -317,7 +320,7 @@ static int PP_shell_SetRmtCfgapn1(int argc, const char **argv)
 
 	sscanf(argv[0], "%u", &obj);
     //sscanf(argv[1], "%u", str);
-	PP_rmtCfg_setCfgapn1((uint8_t)obj,argv[1],argv[2]);
+    PP_rmtCfg_setCfgapn1((uint8_t)obj,argv[1],argv[2]);
     sleep(1);
     return 0;
 }
@@ -741,3 +744,20 @@ static int PP_shell_SetNTPTime(int argc, const char **argv)
     sleep(1);
     return 0;
 }
+
+static int PP_shell_SetTestflag(int argc, const char **argv)
+{
+    unsigned int obj;
+    if (argc != 1)
+    {
+        shellprintf(" usage: HOZON_PP_SetRemoteCfgEnable <remote config enable>\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &obj);
+  
+	PP_rmtCtrl_settestflag((uint8_t)obj);
+    sleep(1);
+    return 0;
+}
+

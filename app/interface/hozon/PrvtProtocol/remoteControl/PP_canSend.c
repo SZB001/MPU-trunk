@@ -20,13 +20,8 @@ static uint8_t can_data[8];
 
 static uint64_t lastsendtime;
 
-int shell_can_init()
-{	
-	return 0;
-}
 int PP_canSend_init(void)
 {
-	shell_can_init();
 	memset(&canmsg_3D2,0,sizeof(PP_can_msg_info_t));
 	canmsg_3D2.typ = PP_CAN_TYP_EVENT;  //事件报文
 	canmsg_3D2.len =8;
@@ -301,7 +296,7 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 				{
 					case CAN_OPENACC:
 						PP_canSend_setbit(CAN_ID_445,1,1,1,NULL);//有效
-						PP_canSend_setbit(CAN_ID_445,14,1,1,NULL);//开启
+						PP_canSend_setbit(CAN_ID_445,17,1,1,NULL);//开启
 						break;
 					case CAN_CLOSEACC:
 						PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//有效
@@ -350,6 +345,10 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 			break;
 		case PP_CAN_CERTIFICATE:
 			PP_canSend_setbit(CAN_ID_440,23,1,data,NULL);
+			break;
+		case PP_CAN_BLUESTART:  //蓝牙一键启动
+			PP_canSend_setbit(CAN_ID_440,40,1,data,NULL);	
+			break;
 		default:
 			break;
 

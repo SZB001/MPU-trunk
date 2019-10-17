@@ -146,6 +146,7 @@ void PP_ChargeCtrl_init(void)
 		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.min = %d\n",PP_rmtCharge_AppointBook.min);
 		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.targetSOC = %d\n",PP_rmtCharge_AppointBook.targetSOC);
 		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.period = %d\n",PP_rmtCharge_AppointBook.period);
+		PP_can_send_data(PP_CAN_CHAGER,CAN_SETAPPOINT,0);//有效充电预约，将预约充电使能位置起
 		//log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.appointChargeFlag = %d\n",PP_rmtCharge_AppointBook.appointChargeFlag);
 		//log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.appointStartTime = %d\n",PP_rmtCharge_AppointBook.appointStartTime);
 		PP_rmtChargeCtrl.state.bookSyncflag = 1;
@@ -331,6 +332,7 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 						PP_rmtChargeCtrl.state.appointchargeCheckDelayTime = tm_get_time();
 						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_READY;
 						uint8_t cmd = PP_CHARGECTRL_OPEN;
+						PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);//预约充电使能去掉
 						SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,&cmd,NULL);
 						log_i(LOG_HOZON,"Appointment time is up. Execute the charge appointment!\n");
 					}
@@ -347,7 +349,7 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 		}
 	}
 
-/*
+/* 
  * 	预约充电触发后，若执行条件不满足导致执行失败，则持续检测6h。
  *  6h内检测到执行预约充电条件满足，则执行预约充电；
  *  持续检测时间超出6h，则不再执行。
@@ -1013,13 +1015,19 @@ static void PP_ChargeCtrl_EndHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge)
 			respbt.cmd = pp_rmtCharge->state.chargecmd;
 			if(0 == pp_rmtCharge->fail)
 			{
-				respbt.result = BT_SUCCESS;  //ִ执行成功
-				respbt.failtype = 0;
-				
+				if(pp_rmtCharge->state.chargecmd == PP_CHARGECTRL_OPEN)
+				{
+					respbt.cmd_state.execution_result = 2;  //ִ执行成功
+				}
+				if(pp_rmtCharge->state.chargecmd == PP_CHARGECTRL_CLOSE)
+				{
+					respbt.cmd_state.execution_result = 1;  //ִ执行成功
+				}
+				respbt.failtype = 0;	
 			}
 			else
 			{
-				respbt.result = BT_FAIL;  //ִ执行失败
+				respbt.cmd_state.execution_result = BT_FAIL;  //ִ执行失败
 				respbt.failtype = 0;
 			}
 			msghdr.sender    = MPU_MID_HOZON_PP;

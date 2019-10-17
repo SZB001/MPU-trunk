@@ -44,7 +44,7 @@ typedef struct
 {
 	uint8_t msg_type;
 	uint8_t cmd;
-	uint8_t result;  
+	bt_ack_t cmd_state; // 0表示成功  1表示失败
 	uint8_t failtype;
 	bt_vihe_info_t state;
 	
@@ -653,11 +653,12 @@ static void *ble_main(void)
 						memcpy((char *)&respbt, g_pucbuf, msgheader.msglen);
 						log_i(LOG_BLE, "respbt.cmd = %d", respbt.cmd);
 						log_i(LOG_BLE, "msgheader.msglen = %d", msgheader.msglen);
-						log_i(LOG_BLE, "respbt.result = %d", respbt.result);
+					    log_i(LOG_BLE, "respbt.execution_result = %d", respbt.cmd_state.execution_result);
+						log_i(LOG_BLE, "respbt.cmd_state.state = %d", respbt.cmd_state.state);
 						log_i(LOG_BLE, "respbt.msg_type = %d", respbt.msg_type);
 	 					if ((g_hz_protocol.hz_send.ack.msg_type ==  (respbt.msg_type)) && (g_hz_protocol.hz_send.ack.state == respbt.cmd))
 	 					{
-	 						bt_send_cmd_pack(respbt.result,vihe_info, g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
+	 						bt_send_cmd_pack(respbt.cmd_state,vihe_info, g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
 							stBtApi.Send(g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
 	 					}
 						if (APPLICATION_HEADER__MESSAGE_TYPE__ACK == g_hz_protocol.hz_send.msg_type) 
@@ -666,7 +667,7 @@ static void *ble_main(void)
 						else if (APPLICATION_HEADER__MESSAGE_TYPE__Vehicle_Infor == g_hz_protocol.hz_send.msg_type) 
 						{
 						    log_i(LOG_BLE, "g_hz_protocol.hz_send.msg_type = %d", g_hz_protocol.hz_send.msg_type);
-						   	bt_send_cmd_pack(respbt.result, respbt.state, g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
+						   	bt_send_cmd_pack(respbt.cmd_state, respbt.state, g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
 							stBtApi.Send(g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
 	 					}
 				    }

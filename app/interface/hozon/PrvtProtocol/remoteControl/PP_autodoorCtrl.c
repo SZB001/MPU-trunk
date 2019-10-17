@@ -98,7 +98,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 		{			
 			if(PP_rmtautodoorCtrl.state.req == 1)  //是否有请求
 			{
-				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+				if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
 				{   //有请求判断是否满足远控条件
 					
 					autodoor_success_flag = 0;
@@ -211,16 +211,16 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				TCOM_MSG_HEADER msghdr;
 				PrvtProt_respbt_t respbt;
 				respbt.msg_type = BT_ELECTRIC_DOOR_RESP;
-				respbt.cmd = autodoor_type;
+				respbt.cmd = autodoor_type; 
 				if(1 == autodoor_success_flag)
 				{
-					respbt.result = BT_SUCCESS;  //ִ执行成功
+					respbt.cmd_state.execution_result = autodoor_type;  //ִ执行成功
 					respbt.failtype = 0;
 					
 				}
 				else
 				{
-					respbt.result = BT_FAIL;  //ִ执行失败
+					respbt.cmd_state.execution_result = BT_FAIL;  //ִ执行失败
 					respbt.failtype = 0;
 				}
 				msghdr.sender    = MPU_MID_HOZON_PP;

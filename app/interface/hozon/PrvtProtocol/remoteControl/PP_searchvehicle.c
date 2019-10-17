@@ -96,7 +96,7 @@ int PP_searchvehicle_mainfunction(void *task)
 		{
 			if(PP_rmtsearchvehicle.state.req == 1)
 			{
-				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+				if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
 				{
 					
 					serachvehicle_success_flag = 0;
@@ -194,13 +194,13 @@ int PP_searchvehicle_mainfunction(void *task)
 				respbt.cmd = search_type;
 				if(1 == serachvehicle_success_flag)
 				{
-					respbt.result = BT_SUCCESS;  //ִ执行成功
+					respbt.cmd_state.execution_result= search_type;  //ִ执行成功
 					respbt.failtype = 0;
 					
 				}
 				else
 				{
-					respbt.result = BT_FAIL;  //ִ执行失败
+					respbt.cmd_state.execution_result = BT_FAIL;  //ִ执行失败
 					respbt.failtype = 0;
 				}
 				msghdr.sender    = MPU_MID_HOZON_PP;

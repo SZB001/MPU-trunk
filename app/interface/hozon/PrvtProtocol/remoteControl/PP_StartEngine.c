@@ -90,7 +90,7 @@ int PP_startengine_mainfunction(void *task)
 				log_o(LOG_HOZON,"request power on!!\n");
 				if(PP_rmtCtrl_cfg_RmtStartSt() == 0)   //上电走此流程
 				{
-					if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+					if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
 					{	
 						start_engine_stage = PP_STARTENGINE_REQSTART;
 						enginecation = PP_POWERON;
@@ -115,7 +115,7 @@ int PP_startengine_mainfunction(void *task)
 						startengine_success_flag = 3;  //不满足条件，失败标志位置起来
 					}
 				}
-				else  //已经上电了
+				else if(PP_rmtCtrl_cfg_RmtStartSt() == 1) //已经上电了
 				{
 					startengine_success_flag = 1;  //上电成功
 					log_o(LOG_HOZON,"Successfully powered on\n");
@@ -123,13 +123,17 @@ int PP_startengine_mainfunction(void *task)
 					PP_set_ac_requestpower_flag();
 					start_engine_stage = PP_STARTENGINE_END;
 				}
+				else
+				{
+					log_o(LOG_HOZON,"UP:PP_rmtCtrl_cfg_RmtStartSt() = %d\n",PP_rmtCtrl_cfg_RmtStartSt());
+				}
 			}
 			if((PP_rmtengineCtrl.state.req == 1)&&(enginecation == PP_POWEROFF)) //下电流程
 			{
 				if(PP_rmtCtrl_cfg_RmtStartSt() == 1)
 				{
-					if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
-					{
+					//if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+					//{
 						start_engine_stage = PP_STARTENGINE_REQSTART;
 						startengine_success_flag = 0;
 						if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp
@@ -142,23 +146,27 @@ int PP_startengine_mainfunction(void *task)
 							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 							res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 						}
-					}
-					else
-					{
-						log_o(LOG_HOZON," low power or power state on");
-						PP_set_seat_requestpower_flag();
-						PP_set_ac_requestpower_flag();
-						start_engine_stage = PP_STARTENGINE_END;
-						startengine_success_flag = 3;  //不满足条件，失败标志位置起来
-					}
+					//}
+					//else
+					//{
+					//	log_o(LOG_HOZON," low power or power state on");
+					//	PP_set_seat_requestpower_flag();
+					//	PP_set_ac_requestpower_flag();
+					//	start_engine_stage = PP_STARTENGINE_END;
+					//	startengine_success_flag = 3;  //不满足条件，失败标志位置起来
+					//}
 				}
-				else  //
+				else if(PP_rmtCtrl_cfg_RmtStartSt() == 0) //已经下电了
 				{
 					start_engine_stage = PP_STARTENGINE_END;
 					log_o(LOG_HOZON,"Successfully powered off\n");
 					PP_set_seat_requestpower_flag();
 					PP_set_ac_requestpower_flag();
 					startengine_success_flag = 1;
+				}
+				else
+				{
+					log_o(LOG_HOZON,"DOWN:PP_rmtCtrl_cfg_RmtStartSt() = %d\n",PP_rmtCtrl_cfg_RmtStartSt());
 				}
 			}
 			PP_rmtengineCtrl.state.req = 0;
@@ -219,6 +227,7 @@ int PP_startengine_mainfunction(void *task)
 				}
 				else   //BDM 应答超时
 				{
+					log_o(LOG_HOZON,"timeout......");
 					PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);  
 					PP_set_seat_requestpower_flag();  
 					PP_seatheating_ClearStatus();
@@ -267,13 +276,13 @@ int PP_startengine_mainfunction(void *task)
 				respbt.cmd = enginecation;
 				if(1 == startengine_success_flag)
 				{
-					respbt.result = BT_SUCCESS;  //ִ执行成功
+					respbt.cmd_state.execution_result = BT_SUCCESS;  //ִ执行成功
 					respbt.failtype = 0;
 					
 				}
 				else
 				{
-					respbt.result = BT_FAIL;  //ִ执行失败
+					respbt.cmd_state.execution_result = BT_FAIL;  //ִ执行失败
 					respbt.failtype = 0;
 				}
 				msghdr.sender    = MPU_MID_HOZON_PP;

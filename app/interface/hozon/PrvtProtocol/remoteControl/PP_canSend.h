@@ -56,6 +56,11 @@
 #define CAN_APPOINTACC 5
 #define CAN_CANCELAPPOINTACC 6
 
+/**********BLUE****************/
+#define CAN_BLUECLEAN 0
+#define CAN_BLUESTART 1
+
+
 typedef enum
 {
     PP_CAN_DOORLOCK = 0,
@@ -70,6 +75,7 @@ typedef enum
     PP_CAN_SEATHEAT,
     PP_CAN_OTAREQ,
     PP_CAN_CERTIFICATE,
+    PP_CAN_BLUESTART,
     PP_CAN_CTRL_TYP_MAX,
 } PP_can_ctrl_typ;
 

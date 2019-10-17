@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #include "timer.h"
 #include <sys/prctl.h>
-
+#include <udef_cfg_api.h>
 #include <sys/types.h>
 #include <sysexits.h>	/* for EX_* exit codes */
 #include <assert.h>	/* for assert(3) */
@@ -41,7 +41,7 @@
 
 #include "PP_StartForbid.h"
 
-static int forbidaction = 0;
+
 typedef struct
 {
 	PrvtProt_pack_Header_t	Header;
@@ -83,9 +83,8 @@ int PP_startforbid_mainfunction(void *task)
 		{
 			if(PP_rmtstartforbid.state.req == 1)
 			{
-				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+				if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
 				{
-					
 					startforbid_success_flag = 0;
 					start_forbid_stage = PP_STARTFORBID_REQSTART;
 					if(PP_rmtstartforbid.state.style == RMTCTRL_TSP)//tsp
@@ -105,6 +104,8 @@ int PP_startforbid_mainfunction(void *task)
 				}
 				else
 				{
+					log_o(LOG_HOZON," low power or power state on");
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_FORBIDEN,(void *)(&PP_rmtstartforbid.state.cmd),1);
 					PP_rmtstartforbid.state.req = 0;
 					startforbid_success_flag = 0;
 					start_forbid_stage = PP_STARTFORBID_END;
@@ -115,11 +116,11 @@ int PP_startforbid_mainfunction(void *task)
 		break;
 		case PP_STARTFORBID_REQSTART:
 		{
-			if(forbidaction == 1)  //禁止启动
+			if(PP_rmtstartforbid.state.cmd == PP_STARTFORBID_OPEN)  //禁止启动
 			{
 				PP_can_send_data(PP_CAN_FORBID,CAN_STARTFORBID,0) ;
 			}
-			else if(forbidaction== 0)  
+			else if(PP_rmtstartforbid.state.cmd == PP_STARTFORBID_CLOSE)  
 			{
 				PP_can_send_data(PP_CAN_FORBID,CAN_NOFORBID,0) ;
 			}
@@ -132,7 +133,7 @@ int PP_startforbid_mainfunction(void *task)
 		break;
 		case PP_STARTFORBID_RESPWAIT:
 		{
-			if(forbidaction == 1) 
+			if(PP_rmtstartforbid.state.cmd == PP_STARTFORBID_OPEN) 
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
@@ -151,7 +152,7 @@ int PP_startforbid_mainfunction(void *task)
 					start_forbid_stage = PP_STARTFORBID_END;
 				}
 			}
-			else if(forbidaction == 0)
+			else if(PP_rmtstartforbid.state.cmd == PP_STARTFORBID_CLOSE)
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
@@ -178,6 +179,7 @@ int PP_startforbid_mainfunction(void *task)
 		break;
 		case PP_STARTFORBID_END:
 		{
+			uint8_t cmd = 0;
 			PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 			memset(&rmtCtrl_Stpara,0,sizeof(PP_rmtCtrl_Stpara_t));
 			if(PP_rmtstartforbid.state.style == RMTCTRL_TSP)//tsp
@@ -189,6 +191,8 @@ int PP_startforbid_mainfunction(void *task)
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 2;  
 					rmtCtrl_Stpara.rvcFailureType = 0;
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_FORBIDEN,(void *)(&cmd),1);
+					
 				}
 				else
 				{
@@ -254,11 +258,11 @@ void SetPP_startforbid_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			PP_rmtstartforbid.state.req = 1;
 			if(PP_rmtstartforbid.state.reqType == PP_RMTCTRL_BANSTART)
 			{
-				forbidaction = 1;	 //禁止启动
+				PP_rmtstartforbid.state.cmd = PP_STARTFORBID_OPEN;	 //禁止启动
 			}
 			else
 			{
-				forbidaction = 0;	
+				PP_rmtstartforbid.state.cmd = PP_STARTFORBID_CLOSE;	 //取消禁止启动
 			}
 			PP_rmtstartforbid.pack.DisBody.eventId = disptrBody_ptr->eventId;
 			PP_rmtstartforbid.state.style = RMTCTRL_TSP;
@@ -274,6 +278,37 @@ void SetPP_startforbid_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 	}
 
 }
+void PP_startforbid_acStMonitor(void *task)
+{
+	int res;
+	uint32_t len = 1;
+	uint8_t cmd;
+		
+	//满足远程控制的条件，检查是否禁止启动或者取消禁止启动
+	if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
+	{
+		res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_FORBIDEN,(void *)(&cmd),&len);
+		if(res == 0)
+		{
+			if(cmd == PP_STARTFORBID_OPEN)
+			{
+				PP_rmtstartforbid.state.req = 1;
+				PP_rmtstartforbid.state.cmd = PP_STARTFORBID_OPEN;
+				log_o(LOG_HOZON,"Satisfy the condition, the execution is prohibited");
+			}
+			else if (cmd == PP_STARTFORBID_CLOSE)
+			{
+				log_o(LOG_HOZON,"PP_STARTFORBID_CLOSE");
+				PP_rmtstartforbid.state.req = 1;
+				PP_rmtstartforbid.state.cmd = PP_STARTFORBID_CLOSE;
+				log_o(LOG_HOZON,"Satisfy the condition, execute the cancellation prohibition start");
+			}
+			else
+			{
+			}
+		}
+	}	
+}
 
 void PP_startforbid_ClearStatus(void)
 {
@@ -284,17 +319,24 @@ void PP_startforbid_ClearStatus(void)
 
 void PP_startforbid_SetCtrlReq(unsigned char req,uint16_t reqType)
 {
+	//uint8_t cmd = 0;
+	#if 1
 	PP_rmtstartforbid.state.reqType = (long)reqType;
+
 	PP_rmtstartforbid.state.req = 1;
 	if(PP_rmtstartforbid.state.reqType == PP_RMTCTRL_BANSTART)
 	{
-		forbidaction = 1;	 //禁止启动
+		PP_rmtstartforbid.state.cmd = PP_STARTFORBID_OPEN;	 //禁止启动
 	}
 	else
 	{
-		forbidaction = 0;	 
+		PP_rmtstartforbid.state.cmd = PP_STARTFORBID_CLOSE;	 
 	}
 	PP_rmtstartforbid.state.style = RMTCTRL_TSP;
+	#endif
+
+	//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_FORBIDEN,(void *)(&cmd),1);
+					
 }
 
 /************************shell命令测试使用**************************/

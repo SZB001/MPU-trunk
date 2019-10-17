@@ -62,6 +62,7 @@ description： include the header file
 #include "PP_CameraCtrl.h"
 #include "../PrvtProt_SigParse.h"
 #include "../PrvtProt_remoteConfig.h"
+#include "PP_bluetoothStart.h"
 #include "PP_rmtCtrl.h"
 
 #define PP_TXINFORMNODE_NUM 100
@@ -109,12 +110,16 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 	{RMTCTRL_CHARGE,         PP_ChargeCtrl_init,	NULL},
 	{RMTCTRL_ENGINECTRL,	 PP_startforbid_init, 	PP_startforbid_mainfunction},
 	{RMTCTRL_SEATHEATINGCTRL,PP_seatheating_init, 	PP_seatheating_mainfunction},
-	{RMTCTRL_CAMERACTRL,     PP_CameraCtrl_init,    PP_CameraCtr_mainfunction}
+	{RMTCTRL_CAMERACTRL,     PP_CameraCtrl_init,    PP_CameraCtr_mainfunction},
+	{RMTCTRL_BLUETOOTHSTART, PP_bluetoothstart_init,PP_bluetoothstart_mainfunction}, //蓝牙一键启动
+	
 };
 
 static PrvtProt_TxInform_t rmtCtrl_TxInform[PP_TXINFORMNODE_NUM];
 
 static pthread_mutex_t rmtCtrlmtx = 	PTHREAD_MUTEX_INITIALIZER;
+
+static uint8_t testflag = 0;
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -129,6 +134,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 
 static void PP_rmtCtrl_send_cb(void * para);
 static int PP_rmtCtrl_getIdleNode(void);
+
 /******************************************************
 description： function code
 ******************************************************/
@@ -177,7 +183,8 @@ uint8_t PP_rmtCtrl_request(void)
 		   //PP_ChargeCtrl_start()   ||
 		   PP_ACCtrl_start()	   ||
 		   PP_startforbid_start()  ||
-		   PP_CameraCtrl_start();
+		   PP_CameraCtrl_start()   ||
+		   PP_bluetoothstart_start(); 
 	return ret;
 }
 
@@ -193,7 +200,8 @@ uint8_t PP_rmtCtrl_end(void)
 		  //PP_ChargeCtrl_end()	  &&	
 		  PP_ACCtrl_end()	      &&	\
 		  PP_startforbid_end()    &&    \
-		  PP_CameraCtrl_end();
+		  PP_CameraCtrl_end()     &&    \
+		  PP_bluetoothstart_end();
 	return ret;
 }
 
@@ -209,6 +217,7 @@ void PP_rmtCtrl_clear(void)
 	//PP_ChargeCtrl_ClearStatus();
 	PP_ACCtrl_ClearStatus();
 	PP_CameraCtrl_ClearStatus();
+	PP_bluetoothstart_ClearStatus();
 }
 
 
@@ -248,6 +257,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 			//检测空调或座椅加热上电或下电
 			PP_AcCtrl_acStMonitor(task_ptr);        //查询空调预约时间
 			PP_SeatCtrl_SeatStMonitor(task_ptr);    //查询座椅加热是否满足睡眠条件
+			PP_startforbid_acStMonitor(task_ptr);   //满足车控条件的时候是否有禁止启动的请求
 			ret = PP_rmtCtrl_request();
 			if(ret == 1)
 			{	
@@ -671,8 +681,8 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 		else
 		{
 		}
+		respbt.cmd_state.execution_result = BT_FAIL;  //ִ执行失败
 		respbt.cmd = cmd;
-		respbt.result = BT_FAIL;  //ִ执行失败
 		respbt.failtype = 0;
 		msghdr.sender    = MPU_MID_HOZON_PP;
 		msghdr.receiver  = MPU_MID_BLE;
@@ -694,7 +704,7 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 			PrvtProt_respbt_t respbt;
 			respbt.msg_type = BT_VEhICLE_DOOR_RESP;
 			respbt.cmd = cmd;
-			respbt.result = 1;  //ִ执行成功
+			respbt.cmd_state.execution_result = 1;  //ִ执行成功
 			respbt.failtype = 0;
 			msghdr.sender    = MPU_MID_HOZON_PP;
 			msghdr.receiver  = MPU_MID_BLE;
@@ -731,7 +741,8 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 		break;
 		case BT_POWER_CONTROL_REQ://高电压控制
 		{
-			SetPP_startengine_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
+			SetPP_bluetoothstart_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
+			//SetPP_startengine_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
 			log_i(LOG_HOZON, "BT RMTCTRL_HIGHTENSIONCTRL control req");
 		}
 		break;
@@ -762,7 +773,14 @@ void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
 			{
 				if(result == 0)
 				{
-					respbt.result = 
+					respbt.cmd_state.execution_result = 1;//已锁车
+				}
+			}
+			if(cmd == 2)  //蓝牙开门
+			{
+				if(result == 0)
+				{
+					respbt.cmd_state.execution_result = 2
 				}
 			}
 		}
@@ -905,6 +923,12 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 			log_i(LOG_HOZON, "remote RMTCTRL_ENGINECTRL control req");
 		}
 		break;
+		case PP_RMTCTRL_BLUESTART:
+		{
+			PP_bluetoothstart_SetCtrlReq(req,reqType);
+			log_i(LOG_HOZON, "BLUESTART control req");
+		}
+		break;
 		default:
 		break;
 	}
@@ -929,7 +953,7 @@ int PP_rmtCtrl_StInformBt(unsigned char obj, unsigned char cmd)
 	respbt.cmd = cmd;
 	respbt.failtype = 0;
 	respbt.msg_type = BT_VEHILCLE_STATUS_RESP;
-	respbt.result = 0;
+	respbt.cmd_state.execution_result = 0;
 	if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1)
 	{
 		respbt.state.charge_state = 2;
@@ -1687,4 +1711,13 @@ void PP_rmtCtrl_showSleepPara(void)
 	log_o(LOG_HOZON, "GetPP_ChargeCtrl_Sleep = %d",GetPP_ChargeCtrl_Sleep());
 	log_o(LOG_HOZON, "GetPP_ACtrl_Sleep = %d",GetPP_ACtrl_Sleep());
 	log_o(LOG_HOZON, "GetPP_SeatCtrl_Sleep = %d",GetPP_SeatCtrl_Sleep());
+}
+void PP_rmtCtrl_settestflag(uint8_t flag)
+{
+	testflag = flag;
+}
+
+uint8_t PP_rmtCtrl_gettestflag(void)
+{
+	return testflag;
 }
