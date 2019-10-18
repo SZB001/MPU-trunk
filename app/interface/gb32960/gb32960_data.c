@@ -3568,7 +3568,8 @@ static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime
     uint32_t len = 0;
     RTCTIME time;
 
-    can_get_time(uptime, &time);
+    //can_get_time(uptime, &time);
+	tm_get_abstime(&time);
 
     buf[len++] = time.year - 2000;
     buf[len++] = time.mon;
@@ -4239,7 +4240,8 @@ static void gb_data_periodic(gb_info_t *gbinf, int intv, uint32_t uptime)
             triger = 1;
         }
 
-        can_get_time(uptime, &time);
+        //can_get_time(uptime, &time);
+		tm_get_abstime(&time);
         log_e(LOG_GB32960, "level 3 error start: %u, %02d/%02d/%02d, %02d:%02d:%02d",
               uptime, time.year, time.mon, time.mday, time.hour, time.min, time.sec);
     }
