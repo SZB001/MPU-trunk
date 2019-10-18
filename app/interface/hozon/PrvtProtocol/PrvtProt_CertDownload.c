@@ -404,21 +404,24 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 		{
 			if(rxPack->msgdata[6] == 1)//成功, result=1时，不传错误类型
 			{
-				PP_CertRevoList.RLSt = 1;
 				uint16_t	cretlistlen = 0;
+				PP_CertRevoList.RLSt = 1;
 				cretlistlen = rxPack->msgdata[7];
 				cretlistlen = (cretlistlen << 8) + rxPack->msgdata[8];
 
-				FILE *pfid = fopen(PP_CERTDL_TBOXCRL,"w");
-				fwrite(&rxPack->msgdata[9],cretlistlen,1,pfid);
-				fclose(pfid);
+				if(0 != cretlistlen)
+				{
+					FILE *pfid = fopen(PP_CERTDL_TBOXCRL,"w");
+					fwrite(&rxPack->msgdata[9],cretlistlen,1,pfid);
+					fclose(pfid);
 
-				uint16_t	certListSignLength  = 0;
-				certListSignLength = rxPack->msgdata[9 + cretlistlen];
-				certListSignLength = (certListSignLength << 8) + rxPack->msgdata[9 + cretlistlen + 1];
-				FILE *pfid1 = fopen("/usrdata/pem/tboxsign.crl","w");
-				fwrite(&rxPack->msgdata[9 + cretlistlen + 2],certListSignLength,1,pfid1);
-				fclose(pfid1);
+					uint16_t	certListSignLength  = 0;
+					certListSignLength = rxPack->msgdata[9 + cretlistlen];
+					certListSignLength = (certListSignLength << 8) + rxPack->msgdata[9 + cretlistlen + 1];
+					FILE *pfid1 = fopen("/usrdata/pem/tboxsign.crl","w");
+					fwrite(&rxPack->msgdata[9 + cretlistlen + 2],certListSignLength,1,pfid1);
+					fclose(pfid1);
+				}
 			}
 			else
 			{
@@ -633,9 +636,15 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 	{
 		certvalidflag = 0;
 		PP_CertDL.Cnt = 0;
+		PP_CertUpdata.Cnt = 0;
 		PP_CertDL.state.checkSt = PP_CHECK_CERT_IDLE;
 		PP_CertDL_do_EnableCertificate(task);
 		PP_CertDL_do_checkRevocationList(task);
+
+		if(1 == PP_CertDL_do_checkCertStatus())//检查吊销和过期
+		{
+			sockproxy_socketclose((int)(PP_SP_COLSE_CDL) + 1);
+		}
 	}
 	else
 	{}

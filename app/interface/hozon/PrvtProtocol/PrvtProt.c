@@ -889,11 +889,18 @@ void PrvtPro_Setsuspend(unsigned char suspend)
 ******************************************************/
 void PrvtPro_SettboxId(unsigned int tboxid)
 {
-	log_i(LOG_HOZON, "set tboxid = %d\n",tboxid);
-	pp_task.tboxid = tboxid;
-	if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, 4))
+	log_o(LOG_HOZON, "set tboxid = %d\n",tboxid);
+	if(0 != tboxid)
 	{
-		log_e(LOG_HOZON, "save server address failed");
+		pp_task.tboxid = tboxid;
+		if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, 4))
+		{
+			log_e(LOG_HOZON, "save tboxid failed");
+		}
+	}
+	else
+	{
+		log_e(LOG_HOZON, "invalid tboxid\n");
 	}
 }
 
