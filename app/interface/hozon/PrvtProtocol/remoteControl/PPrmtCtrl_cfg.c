@@ -247,7 +247,7 @@ unsigned char PP_rmtCtrl_cfg_chargeGunCnctSt(void)
 {
 	uint8_t chargeGunCnctSt = 0;
 
-	chargeGunCnctSt = gb_data_chargeGunCnctSt();
+	chargeGunCnctSt = PrvtProt_SignParse_chrgGunCnctSt();
 	if((1 == chargeGunCnctSt) || (2 == chargeGunCnctSt))
 	{
 		return 1;

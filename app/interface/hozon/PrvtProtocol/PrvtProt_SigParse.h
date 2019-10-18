@@ -49,7 +49,8 @@ description�� macro definitions
 #define PP_CANSIGN_PM25VALID    		0x18//空气净化器状态/pm2.5有效性
 #define PP_CANSIGN_CO2DENSITYSTS    	0x19//CO2浓度报警状态
 #define PP_CANSIGN_BLUETOOTHSTARTST    	0x1A//蓝牙一键启动状态
-#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_BLUETOOTHSTARTST + 1)
+#define PP_CANSIGN_CHRGGUNCNCTLIST    	0x1B//充电枪连接状态
+#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_CHRGGUNCNCTLIST + 1)
 /***********�꺯��***********/
 
 
@@ -98,4 +99,5 @@ extern unsigned char PrvtProt_SignParse_OtaFailSts(void);
 extern unsigned char PrvtProt_SignParse_pm25valid(void);
 extern unsigned char PrvtProt_SignParse_CO2DensitySt(void);
 extern unsigned char PrvtProt_SignParse_BleStartSt(void);
+extern unsigned char PrvtProt_SignParse_chrgGunCnctSt(void);
 #endif 

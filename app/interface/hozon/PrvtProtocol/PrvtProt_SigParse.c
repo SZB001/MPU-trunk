@@ -90,6 +90,17 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 }
 
 /*
+ *	充电枪连接状态
+  */
+unsigned char PrvtProt_SignParse_chrgGunCnctSt(void)
+{
+	unsigned char st;
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CHRGGUNCNCTLIST] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CHRGGUNCNCTLIST])->value: 0x0;
+	return st;
+}
+
+/*
  *	蓝牙一键启动状态
   */
 unsigned char PrvtProt_SignParse_BleStartSt(void)

@@ -255,7 +255,6 @@ extern uint8_t gb_data_reardoorlockSt(void);
 extern uint8_t gb_data_ACMode(void);
 extern uint8_t gb_data_ACOnOffSt(void);
 extern uint8_t gb_data_chargeOnOffSt(void);
-extern uint8_t gb_data_chargeGunCnctSt(void);
 extern uint8_t gb_data_BlowerGears(void);
 extern uint8_t gb_data_outTemp(void);
 extern uint8_t gb_data_InnerTemp(void);

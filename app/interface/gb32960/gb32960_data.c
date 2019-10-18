@@ -4806,20 +4806,6 @@ uint8_t gb_data_chargeOnOffSt(void)
 }
 
 /*
- 	充电枪连接状态״̬
-*/
-uint8_t gb_data_chargeGunCnctSt(void)
-{
-	uint8_t chargeGunCnctSt = 0;
-	if (gb_inf && gb_inf->vehi.info[GB_VINF_CHARGE])
-	{
-		chargeGunCnctSt = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_CHARGE])->value;
-	}
-
-	return chargeGunCnctSt;
-}
-
-/*
  	鼓风机档位״̬
 */
 uint8_t gb_data_BlowerGears(void)
