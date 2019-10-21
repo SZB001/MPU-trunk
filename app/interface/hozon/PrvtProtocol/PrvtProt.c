@@ -58,6 +58,7 @@ description�� include the header file
 #include "PrvtProt_SigParse.h"
 #include "remoteDiag/PrvtProt_rmtDiag.h"
 #include "PrvtProt_CertDownload.h"
+#include "PrvtProt_VehiInfo.h"
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -196,6 +197,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			hbtimeout = getPP_rmtCfg_heartbeatTimeout();
 			if(0 != hbtimeout)
 			PP_heartbeat.period = hbtimeout;
+			InitPP_VehiInfo_Parameter();
 		}
         break;
     }
@@ -278,6 +280,7 @@ static void *PrvtProt_main(void)
 		}
 
 		//TskPPsignFltr_MainFunction();
+		TskPP_VehiInfo_MainFunction();
 		PP_ntp_calibrationTime();
 		PP_CertDownload_mainfunction(&pp_task);
 

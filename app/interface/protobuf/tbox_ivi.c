@@ -1961,32 +1961,55 @@ void *ivi_txmain(void)
 
 void *ivi_check(void)
 {
-	uint8_t sos_flag = 0;
+    static uint8_t sos_newflag,sos_oldflag;
 	uint8_t active_flag = 0;
 	while(1)
 	{	
-		if((PP_rmtCtrl_cfg_CrashOutputSt() == 0)&&( flt_get_by_id(SOSBTN) != 0))
+
+		sos_newflag = tbox_ivi_ecall_trigger();
+		if(sos_newflag != sos_oldflag)
 		{
-			sos_flag = 0;
-		}
-		//按键触发或者安全气囊弹出
-		if((0 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
-		//if(PP_rmtCtrl_cfg_CrashOutputSt() == 1)
-		{
-			if(sos_flag == 1)
+			sos_oldflag = sos_newflag;
+			if(sos_newflag == 1)
 			{
 				memset(&callrequest,0 ,sizeof(ivi_callrequest));
 				callrequest.ecall = 1;
 				callrequest.action =1;
 				if(ivi_clients[0].fd > 0)
 				{
-					//按键触发ECALL，下发远程诊断命令
+					//下发远程诊断命令
 					ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
 				}
-				sos_flag = 0;
 				log_o(LOG_IVI, "SOS trigger!!!!!");
 			}
 		}
+		#if 0
+		if((PP_rmtCtrl_cfg_CrashOutputSt() == 0)&&( flt_get_by_id(SOSBTN) != 0))
+		{
+			sos_flag = 0;  //ECALL触发标志位清除
+		}
+		else
+		{
+			sos_flag == 1;//ECALL触发
+		}
+		//按键触发或者安全气囊弹出
+		//if((0 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
+		//if(PP_rmtCtrl_cfg_CrashOutputSt() == 1)
+	
+		if(sos_flag == 1)
+		{
+			memset(&callrequest,0 ,sizeof(ivi_callrequest));
+			callrequest.ecall = 1;
+			callrequest.action =1;
+			if(ivi_clients[0].fd > 0)
+			{
+				//下发远程诊断命令
+				ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
+			}
+			sos_flag = 0;
+			log_o(LOG_IVI, "SOS trigger!!!!!");
+		}
+		#endif
 #ifndef TBOX_PKI_IHU		
 		if(ivi_clients[0].fd > 0)  //轮询任务：信号强度、电话状态、绑车激活、远程诊断、
 		{
@@ -2151,4 +2174,19 @@ void tbox_ivi_set_tspchager_InformHU(ivi_chargeAppointSt *tsp)
 	tspchager_flag = 1;
 }
 
-
+uint8_t tbox_ivi_ecall_trigger(void)
+{
+    uint8_t flag = 0;
+    if((PP_rmtCtrl_cfg_CrashOutputSt() == 0)&&( flt_get_by_id(SOSBTN) != 2))
+    {
+        flag = 0;  //ECALL触发标志位清除
+    }
+    else if((2 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
+    {
+        flag = 1;//ECALL触发
+    }
+    else 
+    {}
+    
+    return flag;
+}

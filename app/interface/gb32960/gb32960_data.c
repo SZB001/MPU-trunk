@@ -1,10 +1,12 @@
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
 #include "com_app_def.h"
 #include "init.h"
 #include "log.h"
+#include <ql_oe.h>
 #include "list.h"
 #include "uds.h"
 #include "can_api.h"
@@ -18,6 +20,9 @@
 #include "../support/protocol.h"
 #include "../hozon/PrvtProtocol/PrvtProt_SigParse.h"
 #include "hozon_PP_api.h"
+
+static nw_client_handle_type    	h_nw = 0;
+static QL_MCM_NW_REG_STATUS_INFO_T	t_info;
 
 extern int PP_identificat_rcvdata(uint8_t *dt);
 gb32960_api_fault_t gb_fault;
@@ -861,18 +866,20 @@ static uint32_t gb_data_save_VehiBasestationPos(gb_info_t *gbinf, uint8_t *buf)
     /* data type : location data */
     buf[len++] = 0x80;//信息类型
 
-    tmp = 460;//MCC
+	QL_MCM_NW_GetRegStatus(h_nw, &t_info);
+
+    tmp = atoi((const char*)t_info.voice_registration_details_3gpp.mcc);//MCC
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    tmp = 1;//MNC
+    tmp = atoi((const char*)t_info.voice_registration_details_3gpp.mnc);//MNC
     buf[len++] = tmp;
 
-    tmp = 1;//LAC
+    tmp = t_info.voice_registration_details_3gpp.lac;//LAC
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    tmp =  1;//CELL ID
+    tmp =  t_info.voice_registration_details_3gpp.cid;//CELL ID
     buf[len++] = tmp >> 24;
 	buf[len++] = tmp >> 16;
 	buf[len++] = tmp >> 8;
@@ -4517,6 +4524,9 @@ int gb_data_init(INIT_PHASE phase)
                 cfglen = sizeof(gb_datintv);
                 ret |= cfg_get_user_para(CFG_ITEM_GB32960_INTERVAL, &gb_datintv, &cfglen);
                 break;
+
+				QL_MCM_NW_Client_Init(&h_nw);
+				memset(&t_info, 0, sizeof(QL_MCM_NW_REG_STATUS_INFO_T));
             }
     }
 

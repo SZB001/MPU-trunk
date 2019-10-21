@@ -5,8 +5,12 @@
 #ifndef	MIN
 #define MIN(a, b)           ((a) < (b) ? (a) : (b))
 #endif
+#ifndef	MAX
 #define MAX(a, b)           ((a) > (b) ? (a) : (b))
+#endif
+#ifndef	ABS
 #define ABS(d)              ((d) < 0 ? -(d) : (d))
+#endif
 #define GET_WORD(data)      GET_HWBE(data)
 #define GET_DWORD(data)     GET_WDBE(data)
 

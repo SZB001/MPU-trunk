@@ -27,13 +27,8 @@
         "pp_rmtctrl.h": "c",
         "udef_cfg_api.h": "c",
         "prvtprot_vehist.h": "c",
-        "msg_parse.h": "c",
-        "timer.h": "c",
-        "gb32960.h": "c",
-        "prvtprot_cfg.h": "c",
-        "prvtprot_sigparse.h": "c",
-        "protocol.h": "c",
-        "prvtprot_shell.h": "c",
-        "prvtprot.h": "c"
+        "gb32960_api.h": "c",
+        "prvtprot_signfltr.h": "c",
+        "protocol.h": "c"
     }
 }

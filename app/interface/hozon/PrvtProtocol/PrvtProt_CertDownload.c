@@ -93,6 +93,8 @@ typedef struct
 	uint64_t ExpTime;
 	uint8_t CertUpdataSt;
 	uint8_t updataSt;
+	uint8_t checkSDKVerflag;
+	uint64_t checkcerttimer;
 }PP_checkCertSt_t;
 
 typedef struct
@@ -210,6 +212,7 @@ void PP_CertDownload_init(void)
 
 	//PP_checkCertSt.checkStFlag = 1;
 	PP_checkCertSt.ExpTime = 0;
+	PP_checkCertSt.checkSDKVerflag = 1;
 }
 
 /******************************************************
@@ -249,6 +252,17 @@ int PP_CertDownload_mainfunction(void *task)
 				PP_CertDL_do_rcvMsg(task_ptr) 				||	\
 				PP_CertDL_do_wait(task_ptr) 				||	\
 				PP_CertDL_do_checkCertificate(task_ptr);
+
+
+	if(1 == PP_checkCertSt.checkSDKVerflag)
+	{
+		char sdkver[64];
+		memset(sdkver,0,sizeof(sdkver));
+		PP_checkCertSt.checkSDKVerflag = 0;
+		HzversionMain(sdkver);
+		mbTrimStr(sdkver);
+		log_o(LOG_HOZON, "hozon pki adk version: %s\n",sdkver);
+	}
 
 	return res;
 }
@@ -641,9 +655,13 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 		PP_CertDL_do_EnableCertificate(task);
 		PP_CertDL_do_checkRevocationList(task);
 
-		if(1 == PP_CertDL_do_checkCertStatus())//检查吊销和过期
+		if((tm_get_time() - PP_checkCertSt.checkcerttimer) >= 5000)
 		{
-			sockproxy_socketclose((int)(PP_SP_COLSE_CDL) + 1);
+			PP_checkCertSt.checkcerttimer = tm_get_time();
+			if(1 == PP_CertDL_do_checkCertStatus())//检查吊销和过期
+			{
+				sockproxy_socketclose((int)(PP_SP_COLSE_CDL) + 1);
+			}
 		}
 	}
 	else
@@ -1050,7 +1068,7 @@ static int PP_CertDL_do_checkCertStatus(void)
 		iRet = HzTboxCertUpdCheck(PP_CERTDL_CERTPATH,"DER",tm,&statecert);
 		if(iRet!=6010)
 		{
-			log_i(LOG_HOZON,"HzTboxCertUpdCheck error+++++++++++++++iRet[%d] \n", iRet);
+			log_e(LOG_HOZON,"HzTboxCertUpdCheck error+++++++++++++++iRet[%d] \n", iRet);
 			return -1;
 		}
 		else
@@ -1063,11 +1081,11 @@ static int PP_CertDL_do_checkCertStatus(void)
 			{
 				if(statecert==2)
 				{
-					log_i(LOG_HOZON,"Update time is up，\n");
+					log_e(LOG_HOZON,"Update time is up，\n");
 				}
 				else if(statecert==3)
 				{
-					log_i(LOG_HOZON,"Certificate invalid\n");
+					log_e(LOG_HOZON,"Certificate invalid\n");
 				}
 				else
 				{}
@@ -1097,14 +1115,14 @@ static int PP_CertDL_do_checkCertStatus(void)
 			iRet = HzTboxUcRevokeStatus(PP_CERTDL_TBOXCRL,PP_CertSt.para.certSn,&crlstatus);
 			if(iRet != 6205)
 			{
-				log_i(LOG_HOZON,"HzTboxUcRevokeStatus error+++++++++++++++iRet[%d] \n", iRet);
+				log_e(LOG_HOZON,"HzTboxUcRevokeStatus error+++++++++++++++iRet[%d] \n", iRet);
 				return -1;
 			}
 			else
 			{
 				if(1 == crlstatus)//已吊销
 				{
-					log_i(LOG_HOZON,"Certificate revoked\n");
+					log_e(LOG_HOZON,"Certificate revoked\n");
 					return 1;
 				}
 				else
@@ -1118,7 +1136,7 @@ static int PP_CertDL_do_checkCertStatus(void)
 		}
 
 	}
-
+	sleep(1);
 	return 0;
 }
 

@@ -90,6 +90,17 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 }
 
 /*
+ *	总计里程同步状态
+  */
+unsigned char PrvtProt_SignParse_OdomtrUpdtSt(void)
+{
+	unsigned char st;
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ODOMETERUPDATE] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ODOMETERUPDATE])->value: 0x0;
+	return st;
+}
+
+/*
  *	充电枪连接状态
   */
 unsigned char PrvtProt_SignParse_chrgGunCnctSt(void)
