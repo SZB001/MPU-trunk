@@ -29,6 +29,7 @@
         "prvtprot_vehist.h": "c",
         "gb32960_api.h": "c",
         "prvtprot_signfltr.h": "c",
-        "protocol.h": "c"
+        "protocol.h": "c",
+        "prvtprot_vehiinfo.h": "c"
     }
 }

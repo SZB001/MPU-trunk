@@ -21,8 +21,8 @@
 #include "../hozon/PrvtProtocol/PrvtProt_SigParse.h"
 #include "hozon_PP_api.h"
 
-static nw_client_handle_type    	h_nw = 0;
-static QL_MCM_NW_REG_STATUS_INFO_T	t_info;
+static nw_client_handle_type    	h_nw_type;
+static QL_MCM_NW_REG_STATUS_INFO_T	base_info;
 
 extern int PP_identificat_rcvdata(uint8_t *dt);
 gb32960_api_fault_t gb_fault;
@@ -819,10 +819,6 @@ static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
 			}
 		}
 	}
-
-	len += gb_data_save_gps(gbinf, buf + len);
-	len += gb_data_save_VehiPosExt(gbinf, buf + len);
-	len += gb_data_save_VehiBasestationPos(gbinf, buf + len);
 	
 	if(gbinf->event.triflg == 1)
 	{	
@@ -830,6 +826,11 @@ static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
 		list_t *node;
 		log_i(LOG_GB32960, "event trig.");
 		gbinf->event.triflg = 0;
+
+		len += gb_data_save_gps(gbinf, buf + len);
+		len += gb_data_save_VehiPosExt(gbinf, buf + len);
+		len += gb_data_save_VehiBasestationPos(gbinf, buf + len);
+
 		if ((node = list_get_first(&gb_free_lst)) == NULL)
 		{
 			if ((node = list_get_first(&gb_delay_lst)) == NULL &&
@@ -866,20 +867,33 @@ static uint32_t gb_data_save_VehiBasestationPos(gb_info_t *gbinf, uint8_t *buf)
     /* data type : location data */
     buf[len++] = 0x80;//信息类型
 
-	QL_MCM_NW_GetRegStatus(h_nw, &t_info);
+	QL_MCM_NW_GetRegStatus(h_nw_type, &base_info);
+	log_i(LOG_HOZON,"voice_registration_details_3gpp: \
+					tech_domain=%d, radio_tech=%d, mcc=%s, mnc=%s, \
+					roaming=%d, forbidden=%d, cid=%d, lac=%d, psc=%d, tac=%d\n", 
+			base_info.voice_registration_details_3gpp.tech_domain, 
+			base_info.voice_registration_details_3gpp.radio_tech,
+			base_info.voice_registration_details_3gpp.mcc,
+			base_info.voice_registration_details_3gpp.mnc,
+			base_info.voice_registration_details_3gpp.roaming,
+			base_info.voice_registration_details_3gpp.forbidden,                    
+			base_info.voice_registration_details_3gpp.cid,
+			base_info.voice_registration_details_3gpp.lac,
+			base_info.voice_registration_details_3gpp.psc,
+			base_info.voice_registration_details_3gpp.tac);
 
-    tmp = atoi((const char*)t_info.voice_registration_details_3gpp.mcc);//MCC
+    tmp = atoi((const char*)base_info.voice_registration_details_3gpp.mcc);//MCC
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    tmp = atoi((const char*)t_info.voice_registration_details_3gpp.mnc);//MNC
+    tmp = atoi((const char*)base_info.voice_registration_details_3gpp.mnc);//MNC
     buf[len++] = tmp;
 
-    tmp = t_info.voice_registration_details_3gpp.lac;//LAC
+    tmp = base_info.voice_registration_details_3gpp.lac;//LAC
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    tmp =  t_info.voice_registration_details_3gpp.cid;//CELL ID
+    tmp =  base_info.voice_registration_details_3gpp.cid;//CELL ID
     buf[len++] = tmp >> 24;
 	buf[len++] = tmp >> 16;
 	buf[len++] = tmp >> 8;
@@ -4523,11 +4537,12 @@ int gb_data_init(INIT_PHASE phase)
 
                 cfglen = sizeof(gb_datintv);
                 ret |= cfg_get_user_para(CFG_ITEM_GB32960_INTERVAL, &gb_datintv, &cfglen);
-                break;
 
-				QL_MCM_NW_Client_Init(&h_nw);
-				memset(&t_info, 0, sizeof(QL_MCM_NW_REG_STATUS_INFO_T));
+				h_nw_type = 0;
+				QL_MCM_NW_Client_Init(&h_nw_type);
+				memset(&base_info, 0, sizeof(QL_MCM_NW_REG_STATUS_INFO_T));
             }
+			break;
     }
 
     return ret;
