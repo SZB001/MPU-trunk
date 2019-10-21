@@ -106,6 +106,7 @@ typedef enum
 	PP_RMTFUNC_CTRL,//Զ�̿���
 	PP_RMTFUNC_VS,//����״̬
 	PP_RMTFUNC_DIAG,//Զ�����
+	PP_RMTFUNC_SYNC,
 	PP_RMTFUNC_MAX
 } PP_RMTFUNC_INDEX;
 

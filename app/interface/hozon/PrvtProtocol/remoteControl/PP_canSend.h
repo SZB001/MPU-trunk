@@ -123,5 +123,8 @@ extern void PP_can_mcu_awaken(void);
 extern void PP_can_mcu_sleep(void);
 
 extern void PP_can_send_identificat(uint8_t type,uint8_t *dt);
+
+extern void PP_can_send_mileage(uint8_t *dt);
+
 #endif
 

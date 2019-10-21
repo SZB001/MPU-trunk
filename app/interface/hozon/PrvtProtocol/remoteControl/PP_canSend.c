@@ -15,7 +15,7 @@
 static PP_can_msg_info_t canmsg_3D2;
 static uint64_t ID440_data;
 static uint64_t ID445_data;
-static uint64_t ID526_data;
+//static uint64_t ID526_data;
 static uint8_t can_data[8];
 
 static uint64_t lastsendtime;
@@ -172,19 +172,12 @@ data  ：具体的数据
 ****************************************************************************/
 void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uint8_t *dt)
 {
-	//int i;
 	if(id == CAN_ID_440)
 	{
 		ID440_data &= ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
 		ID440_data |= (uint64_t)data << (bit-bitl+1);      //置位
 		PP_send_virtual_on_to_mcu(1);
 		PP_can_unpack(ID440_data,can_data);
-		#if 0
-		for(i=0;i<8;i++)
-		{
-			log_o(LOG_HOZON,"ID440_data[%d] = %d",i,can_data[i]);
-		}
-		#endif
 		PP_send_cycle_ID440_to_mcu(can_data);
 	}
 	else if(id == CAN_ID_445)
@@ -193,20 +186,19 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 		ID445_data &=  ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
 		ID445_data |= (uint64_t)data << (bit-bitl+1);      //置位
 		PP_can_unpack(ID445_data,can_data);
-		#if 0
-		for(i=0;i<8;i++)
-		{
-			log_o(LOG_HOZON,"ID445_data[%d] = %d",i,can_data[i]);
-		}
-		#endif
 		PP_send_cycle_ID445_to_mcu(can_data);
 	}
 	else if(id == CAN_ID_526)
 	{
+		int i= 0;
+		for(i=0 ; i <8 ;i++)
+		{
+			can_data[i] = 0;
+		}
+		can_data[0] = dt[0];
+		can_data[1] = dt[1];
+		can_data[2] = dt[2];
 		PP_send_virtual_on_to_mcu(1);
-		ID526_data &=  ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
-		ID526_data |= (uint64_t)data << (bit-bitl+1);      //置位
-		PP_can_unpack(ID526_data,can_data);
 		PP_send_cycle_ID526_to_mcu(can_data);
 	}
 	else
@@ -371,4 +363,12 @@ void PP_can_send_identificat(uint8_t type,uint8_t *dt)
 		default:
 			break;	
 	}
+}
+
+/*****************************************************
+		TBOX 同步里程
+*****************************************************/
+void PP_can_send_mileage(uint8_t *dt)
+{
+	PP_canSend_setbit(CAN_ID_526,0,0,0,dt);	
 }

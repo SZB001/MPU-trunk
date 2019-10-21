@@ -51,6 +51,7 @@ description�� include the header file
 #include "PrvtProt_cfg.h"
 #include "PrvtProt_callCenter.h"
 #include "PrvtProt_xcall.h"
+#include "PrvtProt_Mileage_sync.h"
 #include "PrvtProt_remoteConfig.h"
 #include "PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
@@ -95,7 +96,8 @@ static PrvtProt_RmtFunc_t PP_RmtFunc[PP_RMTFUNC_MAX] =
 	{PP_RMTFUNC_CFG,  PP_rmtCfg_init,	PP_rmtCfg_mainfunction},
 	{PP_RMTFUNC_CTRL, PP_rmtCtrl_init,	PP_rmtCtrl_mainfunction},
 	{PP_RMTFUNC_VS,   PP_VS_init,		PP_VS_mainfunction},
-	{PP_RMTFUNC_DIAG, PP_rmtDiag_init,	PP_rmtDiag_mainfunction}
+	{PP_RMTFUNC_DIAG, PP_rmtDiag_init,	PP_rmtDiag_mainfunction},
+	{PP_RMTFUNC_SYNC,PP_Mileagesync_init,PP_Mileagesync_mainfunction},
 };
 
 static uint8_t PP_sleepflag = 0;

@@ -1538,6 +1538,7 @@ int tbox_ivi_create_tcp_socket(void)
     if (bind(tcp_fd, (struct sockaddr *)&serv_addr, serv_addr_len) < 0)
     {
         log_e(LOG_IVI, "Fail to bind,error:%s", strerror(errno));
+		sleep(1);
         return -3;
     }
 
@@ -1961,11 +1962,11 @@ void *ivi_txmain(void)
 
 void *ivi_check(void)
 {
-    static uint8_t sos_newflag,sos_oldflag;
+    static uint8_t sos_newflag ;
+	static uint8_t sos_oldflag ;
 	uint8_t active_flag = 0;
 	while(1)
 	{	
-
 		sos_newflag = tbox_ivi_ecall_trigger();
 		if(sos_newflag != sos_oldflag)
 		{
@@ -1986,17 +1987,17 @@ void *ivi_check(void)
 		#if 0
 		if((PP_rmtCtrl_cfg_CrashOutputSt() == 0)&&( flt_get_by_id(SOSBTN) != 0))
 		{
-			sos_flag = 0;  //ECALL触发标志位清除
+			sos_flag = 1;  //ECALL触发标志位清除
 		}
 		else
 		{
-			sos_flag == 1;//ECALL触发
+			sos_flag == 0;//ECALL触发
 		}
 		//按键触发或者安全气囊弹出
 		//if((0 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
 		//if(PP_rmtCtrl_cfg_CrashOutputSt() == 1)
 	
-		if(sos_flag == 1)
+		if(sos_flag == 0)
 		{
 			memset(&callrequest,0 ,sizeof(ivi_callrequest));
 			callrequest.ecall = 1;
@@ -2176,17 +2177,17 @@ void tbox_ivi_set_tspchager_InformHU(ivi_chargeAppointSt *tsp)
 
 uint8_t tbox_ivi_ecall_trigger(void)
 {
-    uint8_t flag = 0;
-    if((PP_rmtCtrl_cfg_CrashOutputSt() == 0)&&( flt_get_by_id(SOSBTN) != 2))
-    {
-        flag = 0;  //ECALL触发标志位清除
-    }
-    else if((2 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
-    {
-        flag = 1;//ECALL触发
-    }
-    else 
-    {}
-    
-    return flag;
+	uint8_t flag = 0;
+	if((PP_rmtCtrl_cfg_CrashOutputSt() == 0)&&( flt_get_by_id(SOSBTN) != 2))
+	{
+		flag = 0;  //ECALL触发标志位清除
+	}
+	else if((2 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
+	{
+		flag = 1;//ECALL触发
+	}
+	else 
+	{
+	}
+	return flag;
 }
