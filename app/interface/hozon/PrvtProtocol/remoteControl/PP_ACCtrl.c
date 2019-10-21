@@ -198,8 +198,7 @@ int PP_ACCtrl_mainfunction(void *task)
 					else if(PP_rmtACCtrl.state.style == RMTCTRL_TBOX)//tbox
 					{
 						//log_o(LOG_HOZON,"tbox platform\n");
-						PP_rmtACCtrl.state.req = 0;
-						
+						PP_rmtACCtrl.state.req = 0;	
 					}
 					else//蓝牙
 					{
@@ -222,6 +221,7 @@ int PP_ACCtrl_mainfunction(void *task)
 					{
 						log_i(LOG_HOZON,"Power failure ");
 						PP_rmtACCtrl.state.req = 0;
+						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 					}	
 					
 				}
@@ -647,7 +647,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 						PP_rmtac_AppointBook[index].id = shell_actrl->id;
 						PP_rmtac_AppointBook[index].hour = shell_actrl->hour;
 						PP_rmtac_AppointBook[index].min = shell_actrl->min;
-						PP_rmtac_AppointBook[index].period = 0xff;
+						PP_rmtac_AppointBook[index].period = 0x81;
 						PP_rmtac_AppointBook[index].eventId = 0;
 						PP_rmtac_AppointBook[index].validFlg  = 1;	
 						

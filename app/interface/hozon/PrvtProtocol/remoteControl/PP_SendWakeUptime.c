@@ -30,6 +30,8 @@
 #include "PP_ChargeCtrl.h"
 #include "PP_SendWakeUptime.h"
 
+extern unsigned int wsrv_Get_WakeTime(void);
+
 static PP_wake_t wake_period[7] =
 {
 	{0,0x40},//星期1
@@ -41,8 +43,7 @@ static PP_wake_t wake_period[7] =
 	{6,0x01},//星期7
 };
 
-static char localweekToAlgoweek[7] =
-{6,0,1,2,3,4,5};
+static char localweekToAlgoweek[7] = {6,0,1,2,3,4,5};
 
 /*
 * 计算最小唤醒时间（单位：min）
@@ -60,37 +61,37 @@ int PP_waketime_to_min(waketime * pt)
 	for(wday = 0;wday < 7;wday++)//逐一检查周一到周天
 	{
 		if(wake_period[wday].mask & pt->period)//检查到当前星期有预约
-		{
+		{	
 			if(wday < localweekToAlgoweek[localdatetime->tm_wday])//下周的预约
 			{
-				temp_min = ((6-localweekToAlgoweek[localdatetime->tm_wday])*24*60 - \
+				temp_min = ((7-localweekToAlgoweek[localdatetime->tm_wday])*24*60 - \
 							(localdatetime->tm_hour *60 + localdatetime->tm_min)) +	\
-							(wday*24*60 + pt->hour*60 + pt->min);
+							(wday*24*60 + pt->hour*60 + pt->min);	
 			}
 			else if(wday == localweekToAlgoweek[localdatetime->tm_wday])//
 			{
 				if(localdatetime->tm_hour > pt->hour)//下周的预约
 				{
-					temp_min = ((6-localweekToAlgoweek[localdatetime->tm_wday])*24*60 - \
+					temp_min = ((7-localweekToAlgoweek[localdatetime->tm_wday])*24*60 - \
 							(localdatetime->tm_hour *60 + localdatetime->tm_min)) +	\
-							(wday*24*60 + pt->hour*60 + pt->min);
+							(wday*24*60 + pt->hour*60 + pt->min);			
 				}
 				else if(localdatetime->tm_hour == pt->hour)
 				{
 					if(localdatetime->tm_min > pt->min)//下周的预约
 					{
-						temp_min = ((6-localweekToAlgoweek[localdatetime->tm_wday])*24*60 - \
+						temp_min = ((7-localweekToAlgoweek[localdatetime->tm_wday])*24*60 - \
 							(localdatetime->tm_hour *60 + localdatetime->tm_min)) +	\
-							(wday*24*60 + pt->hour*60 + pt->min);
+							(wday*24*60 + pt->hour*60 + pt->min);			
 					}
 					else//本周的预约
 					{
-						temp_min = pt->min - localdatetime->tm_min;
+						temp_min = pt->min - localdatetime->tm_min;		
 					}
 				}
 				else//本周的预约
 				{
-					temp_min = (pt->hour - localdatetime->tm_hour)*60 - localdatetime->tm_min + pt->min;
+					temp_min = (pt->hour - localdatetime->tm_hour)*60 - localdatetime->tm_min + pt->min;		
 				}
 			}
 			else//本周的预约
@@ -124,7 +125,7 @@ int pp_get_low_waketime(void)
 	int low_time = 0;
 	ac_time = PP_ACCtrl_waketime();
 	charge_time = PP_ChargeCtrl_waketime();
-	fota_time = 1000;
+	fota_time = wsrv_Get_WakeTime();
 	low_time = ac_time;
 	if(low_time == 0)
 	{

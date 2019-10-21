@@ -280,7 +280,9 @@ int PP_startengine_mainfunction(void *task)
 
 uint8_t PP_get_powerst()
 {
-	return startengine_success_flag;
+	if((startengine_success_flag == 1)||(PP_rmtCtrl_cfg_RmtStartSt() == 1))
+		return 1;     //返回1表示上电成功
+	return startengine_success_flag;    //高压电操作失败操作失败
 }
 
 uint8_t PP_startengine_start(void) 

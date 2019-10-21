@@ -122,6 +122,7 @@ int PP_seatheating_mainfunction(void *task)
 				{
 					if(PP_get_powerst() == 1)//上高压电成功标志
 					{
+						log_o(LOG_HOZON,"131232143214231");
 						PP_rmtseatheatCtrl[i].state.req = 0;
 						PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
 						if(PP_rmtseatheatCtrl[i].state.style == RMTCTRL_TSP)//tsp平台
@@ -149,10 +150,11 @@ int PP_seatheating_mainfunction(void *task)
 					}
 					else
 					{
-						if((PP_rmtseatheatCtrl[i].state.reqType == 0x0606)||(PP_rmtseatheatCtrl[i].state.reqType == 0x0607))
+						if((PP_rmtseatheatCtrl[i].state.reqType == 0x0606)||(PP_rmtseatheatCtrl[i].state.reqType == 0x0608))
 						{
 							log_i(LOG_HOZON,"Power failure");
 							PP_rmtseatheatCtrl[i].state.req = 0;
+							PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END;	
 						}
 					}
 				}
@@ -345,6 +347,7 @@ void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
 
 			log_i(LOG_HOZON, "remote seatheating control req");
+			log_o(LOG_HOZON,"appdatarmtCtrl_ptr->CtrlReq.rvcReqType = %d",appdatarmtCtrl_ptr->CtrlReq.rvcReqType);
 			if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_MAINHEATOPEN) || \
 				(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_MAINHEATCLOSE))
 			{
@@ -365,6 +368,7 @@ void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_MAINHEATOPEN)||\
 				(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_PASSENGERHEATOPEN))
 			{
+				log_o(LOG_HOZON,"fu\n");
 				seat_requestpower_flag = 1;  //请求上电
 			}
 		}

@@ -126,7 +126,6 @@ void tbox_ivi_clear_bcall_flag(void);
 
 void tbox_ivi_clear_icall_flag(void);
 
-
 extern void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp);
 
 extern void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp);
@@ -136,5 +135,7 @@ extern void tbox_ivi_set_tspchager_InformHU(ivi_chargeAppointSt *tsp);
 extern long tbox_ivi_getTimestamp(void);
 
 extern void tbox_ivi_pki_renew_pthread();
+
+extern uint8_t tbox_ivi_ecall_trigger(void);
 #endif
 
