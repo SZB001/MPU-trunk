@@ -5164,7 +5164,10 @@ uint8_t gb_data_acceleratePedalPrc(void)
 uint8_t gb_data_deceleratePedalPrc(void)
 {
 	uint8_t temp = 0;
-	if(gb_inf && gb_inf->vehi.info[GB_VINF_BRKPAD])
+
+	if(gb_inf && gb_inf->vehi.info[GB_VINF_BRKPAD] && \
+		gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV] && \
+		(1 == dbc_get_signal_from_id(gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV])->value))
 	{
 		temp = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_BRKPAD])->value;
 		if(temp >= 100)
