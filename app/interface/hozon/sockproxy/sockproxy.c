@@ -1048,7 +1048,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 						}
 						else if(res == 0)
 						{
-							log_e(LOG_HOZON, "send wait, send is canceled");
+							//log_e(LOG_HOZON, "send wait, send is canceled");
 							SP_data_put_back(rpt);
 						}
 						else
@@ -1091,7 +1091,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 					}
 					else if(res == 0)
 					{
-						log_e(LOG_HOZON, "send is canceled\n");
+						//log_e(LOG_HOZON, "send is canceled\n");
 						SP_data_put_send(rpt);
 						if(rpt->SendInform_cb != NULL)
 						{
@@ -1131,7 +1131,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 					}
 					else if(res == 0)
 					{
-						log_e(LOG_HOZON, "send wait, send is canceled");
+						//log_e(LOG_HOZON, "send wait, send is canceled");
 						SP_data_put_back(rpt);
 					}
 					else
@@ -1165,7 +1165,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 			}
 			else if(res == 0)
 			{
-				log_e(LOG_HOZON, "send wait, send is canceled");
+				//log_e(LOG_HOZON, "send wait, send is canceled");
 				SP_data_put_back(rpt);
 			}
 			else
@@ -1239,7 +1239,7 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 		}
 		else
 		{
-			log_e(LOG_SOCK_PROXY, "socket is not open");
+			//log_e(LOG_SOCK_PROXY, "socket is not open");
 		}
 		
 		pthread_mutex_unlock(&sendmtx);//解锁

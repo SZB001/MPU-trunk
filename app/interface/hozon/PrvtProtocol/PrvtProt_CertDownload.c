@@ -177,6 +177,7 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task);
 static int PP_CertDL_do_CertDownload(PrvtProt_task_t *task);
 static int PP_CertDL_do_CertRenew(PrvtProt_task_t *task);
 static int PP_CertDL_checkCertExist(void);
+extern char * mbTrimStr( char *pStrSrc );
 /******************************************************
 description�� function code
 ******************************************************/
@@ -1136,7 +1137,7 @@ static int PP_CertDL_do_checkCertStatus(void)
 		}
 
 	}
-	sleep(1);
+	
 	return 0;
 }
 
