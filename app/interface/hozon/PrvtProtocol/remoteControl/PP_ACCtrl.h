@@ -63,5 +63,5 @@ extern void PP_ACCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 extern void PP_AcCtrl_acStMonitor(void *task);
 extern unsigned char GetPP_ACtrl_Sleep(void);
 extern int PP_ACCtrl_waketime(void);
-
+extern void PP_ACCtrl_cmdoff(void);
 #endif 

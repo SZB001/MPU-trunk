@@ -107,7 +107,7 @@ int PP_send_event_info_to_mcu(PP_can_msg_info_t *caninfo)
 PP_send_cycle_info_to_mcu 用于发送周期性报文 440 
 ********************************************************/
 int PP_send_cycle_ID440_to_mcu(uint8_t *dt)
-{
+{
 	int len = 0;
 	unsigned char buf[64];
 	memcpy(buf + len, dt, 8*sizeof(uint8_t));
@@ -124,7 +124,7 @@ int PP_send_cycle_ID440_to_mcu(uint8_t *dt)
 PP_send_cycle_info_to_mcu 用于发送周期性报文 445 
 ********************************************************/
 int PP_send_cycle_ID445_to_mcu(uint8_t *dt)
-{
+{
 	int len = 0;
 	unsigned char buf[64];
 	memcpy(buf + len, dt, 8*sizeof(uint8_t));
@@ -140,7 +140,7 @@ int PP_send_cycle_ID445_to_mcu(uint8_t *dt)
 PP_send_cycle_info_to_mcu 用于发送周期性报文 526
 ********************************************************/
 int PP_send_cycle_ID526_to_mcu(uint8_t *dt)
-{
+{
 	int len = 0;
 	unsigned char buf[64];
 	memcpy(buf + len, dt, 8*sizeof(uint8_t));
@@ -198,7 +198,6 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 		can_data[0] = dt[0];
 		can_data[1] = dt[1];
 		can_data[2] = dt[2];
-		PP_send_virtual_on_to_mcu(1);
 		PP_send_cycle_ID526_to_mcu(can_data);
 	}
 	else

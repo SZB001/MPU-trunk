@@ -580,7 +580,6 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 			PP_rmtACCtrl.pack.DisBody.eventId = PP_rmtac_AppointBook[i].eventId; //eventid
 			PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
 			PP_rmtACCtrl.state.style   = RMTCTRL_TBOX;
-			
 			acc_requestpower_flag = 1;  //预约开空调时间到，请求上高压电
 		}
 		break;
@@ -588,7 +587,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 		{
 			
 		
-}
+		}
 		break;
 		case RMTCTRL_SHELL:
 		{
@@ -869,4 +868,11 @@ int PP_ACCtrl_waketime(void)
 	return low_time;
 }
 
-
+void PP_ACCtrl_cmdoff(void)
+{
+	if(PP_rmtCtrl_cfg_ACOnOffSt() == 1)
+	{
+		PP_rmtACCtrl.state.accmd = PP_CLOSE_ACC;
+		PP_rmtACCtrl.state.req = 1;
+	}
+}
