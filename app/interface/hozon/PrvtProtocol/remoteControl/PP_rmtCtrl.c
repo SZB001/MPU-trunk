@@ -1371,7 +1371,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.chargeMode			= PrvtProtCfg_chargeSt()/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.chargeStatus		= gb_data_chargestauus()/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.chargeStatus		= gb_data_chargestatus()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.powerMode			= gb_data_powermode()/* OPTIONAL */;//0x1--纯电;0x2--混动;0x3--燃油
 			App_rmtCtrl.CtrlResp.basicSt.speed				= gb_data_vehicleSpeed();
 			if(App_rmtCtrl.CtrlResp.basicSt.speed < 0)
@@ -1422,7 +1422,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.batterySOCPrc 		= VehicleSOC;
-			App_rmtCtrl.CtrlResp.basicSt.dcStatus			= 1;
+			App_rmtCtrl.CtrlResp.basicSt.dcStatus			= gb_data_dcdcstatus();
 			App_rmtCtrl.CtrlResp.basicSt.gearPosition		= gb_data_gearPosition();
 			App_rmtCtrl.CtrlResp.basicSt.insulationRstance	= gb_data_insulationResistance();
 			if(App_rmtCtrl.CtrlResp.basicSt.insulationRstance< 0)
@@ -1449,24 +1449,13 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.deceleratePedalprc	= gb_data_deceleratePedalPrc();
-			if(App_rmtCtrl.CtrlResp.basicSt.deceleratePedalprc< 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.deceleratePedalprc = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.deceleratePedalprc > 100)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.deceleratePedalprc = 100;
-			}
-			else
-			{}
-			
 			App_rmtCtrl.CtrlResp.basicSt.canBusActive		= gb_data_CanbusActiveSt();
-			App_rmtCtrl.CtrlResp.basicSt.bonnetStatus		= 1;
+			App_rmtCtrl.CtrlResp.basicSt.bonnetStatus		= 0;//引擎盖，默认关
 			App_rmtCtrl.CtrlResp.basicSt.lockStatus			= PP_rmtCtrl_cfg_doorlockSt();
 			App_rmtCtrl.CtrlResp.basicSt.gsmStatus			= gb32960_networkSt();
 			App_rmtCtrl.CtrlResp.basicSt.wheelTyreMotrSt	= 1	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.vehicleAlarmSt		= 1;
-			App_rmtCtrl.CtrlResp.basicSt.currentJourneyID	= 1;
+			App_rmtCtrl.CtrlResp.basicSt.currentJourneyID	= gb_data_trip();
 			App_rmtCtrl.CtrlResp.basicSt.journeyOdom		= PP_rmtCtrl_cfg_vehicleOdograph();
 			App_rmtCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel	= PP_rmtCtrl_cfg_DrivHeatingSt()	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.frtRightSeatHeatLel= PP_rmtCtrl_cfg_PassHeatingSt()/* OPTIONAL */;

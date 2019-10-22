@@ -771,7 +771,7 @@ memb_deceleratePedalprc_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr
 	
 	value = *(const long *)sptr;
 	
-	if((value >= 0 && value <= 100)) {
+	if((value >= 0 && value <= 101)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -1083,7 +1083,7 @@ static asn_per_constraints_t asn_PER_memb_acceleratePedalprc_constr_54 GCC_NOTUS
 	0, 0	/* No PER value map */
 };
 static asn_per_constraints_t asn_PER_memb_deceleratePedalprc_constr_55 GCC_NOTUSED = {
-	{ APC_CONSTRAINED,	 7,  7,  0,  100 }	/* (0..100) */,
+	{ APC_CONSTRAINED,	 7,  7,  0,  101 }	/* (0..101) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };

@@ -282,9 +282,11 @@ extern uint8_t gb_data_deceleratePedalPrc(void);
 extern uint16_t gb_data_batteryVoltage(void);
 extern uint16_t gb_data_batteryCurrent(void);
 extern uint8_t gb_data_powermode(void);
-extern uint8_t gb_data_chargestauus(void);
+extern uint8_t gb_data_chargestatus(void);
 extern int gb32960_networkSt(void);
 extern long gb_data_ResidualOdometer(void);
 extern long gb_data_ACChargeRemainTime(void);
 extern int gb32960_gbLogoutSt(void);
+extern uint8_t gb_data_dcdcstatus(void);
+extern uint16_t gb_data_trip(void);
 #endif

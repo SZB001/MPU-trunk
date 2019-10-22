@@ -299,7 +299,7 @@ unsigned char PP_rmtCtrl_cfg_CrashOutputSt(void)
 }
 
 /*
- 	获取总显示总的里程̬
+ 	获取总显示总的里程
 */
 long PP_rmtCtrl_cfg_vehicleOdograph(void)
 {

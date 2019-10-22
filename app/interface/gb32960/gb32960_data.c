@@ -5170,9 +5170,13 @@ uint8_t gb_data_deceleratePedalPrc(void)
 		(1 == dbc_get_signal_from_id(gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV])->value))
 	{
 		temp = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_BRKPAD])->value;
-		if(temp >= 100)
+		if(temp == 0)
 		{
-			temp = 100;
+			temp = 0x65;
+		}
+		else
+		{
+			temp = 0;
 		}
 	}
 
@@ -5227,7 +5231,7 @@ uint8_t gb_data_powermode(void)
 /*
  充电状态
 */
-uint8_t gb_data_chargestauus(void)
+uint8_t gb_data_chargestatus(void)
 {
 	uint8_t temp;
 	uint8_t status = 0;
@@ -5265,4 +5269,39 @@ long gb_data_ACChargeRemainTime(void)
 	}
 
 	return acremaintime;
+}
+
+/*
+ dcdc状态：0-断开；1-工作
+*/
+uint8_t gb_data_dcdcstatus(void)
+{
+	uint8_t dcst = 0;
+	if(gb_inf && gb_inf->vehi.info[GB_VINF_DCDC])
+    {
+        if(1 == dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_DCDC])->value)
+		{
+			dcst = 1;
+		}
+	}
+
+	return dcst;
+}
+
+/*
+	小计里程（0.1km）
+*/
+uint16_t gb_data_trip(void)
+{
+	uint16_t tripval = 0;
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_TRIP])
+	{
+		tripval = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_TRIP])->value * 10;
+		if(tripval > 20000)
+		{
+			tripval = 20000;
+		}
+	}
+
+	return tripval;
 }

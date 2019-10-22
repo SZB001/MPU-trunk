@@ -312,7 +312,7 @@ RvsBasicStatus ::= SEQUENCE
 	gearPosition		INTEGER(0..255), -- 
 	insulationRstance	INTEGER(0..60000), -- 
 	acceleratePedalprc	INTEGER(0..100), -- 
-	deceleratePedalprc	INTEGER(0..100), -- 
+	deceleratePedalprc	INTEGER(0..101), -- 
 	canBusActive		BOOLEAN, --
 	bonnetStatus		BOOLEAN, --
 	lockStatus			BOOLEAN, --
