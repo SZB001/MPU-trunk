@@ -55,10 +55,6 @@ int PP_send_virtual_on_to_mcu(unsigned char on)
         log_e(LOG_HOZON, "Fail to send msg to MCU");
         return -2;
     }
-
-   		// log_o(LOG_HOZON,
-  			//"############### send virtual on to mcu:%u #################", on);
-
     return 0;
 }
 

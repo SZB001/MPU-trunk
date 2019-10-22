@@ -381,6 +381,7 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 			}
 			else
 			{
+				PP_can_send_data(PP_CAN_CHAGER,CAN_SETAPPOINT,0);//预约充电使能置起
 				PP_rmtChargeCtrl.state.appointcharge = 0;
 			}
 		}

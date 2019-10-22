@@ -13,7 +13,7 @@
 #include "tbox_limit.h"
 #include "at.h"
 #include "audio.h"
-
+extern int audio_basic_ICall(void);
 /****************************************************************
 function:     at_shell_makecall
 description:  make call
@@ -38,6 +38,7 @@ int at_shell_makecall(int argc, const char **argv)
     }
 
     makecall((char *)argv[0]);
+	audio_basic_ICall();
     shellprintf(" begin to make call\r\n");
     return 0;
 }

@@ -2,8 +2,14 @@
 #define __GB32960_API_H__
 
 
-#define GB32960_API_FAULTNUM 103
 
+#define GB32960_EXWARN 57
+#define GB32960_VSWARN  (GB32960_EXWARN + 2)
+
+#define GB32960_GLWARN 32
+#define GB32960_MAXWARN (GB32960_EXWARN + GB32960_GLWARN + 2)
+
+//存在两个告警信号出现二对一的情况
 #define tempdiffWARN 					0//温度差异报警
 #define battovertempWARN				1//电池高温报警
 #define energystorovervolWARN			2//车载储能装置类型过压报警
@@ -36,77 +42,65 @@
 #define reserveWARN29					29//
 #define reserveWARN30					30//
 #define reserveWARN31					31//
-#define batt12vlowvolWARN				32//12V 蓄电池电压过低 报警
-#define epsfaultWARN					33//EPS 故障 报警
-#define epstorquesensorWARN				34//EPS 扭矩传感器信号故障报警
-#define mcuIGBTVovercurrentWARN			35//MCU IGBT 驱动电路过流故障（V 相） 报警
-#define mcuIGBTWovercurrentWARN			36//MCU IGBT 驱动电路过流故障（W 相） 报警
-#define mcupowermoduleWARN				37//MCU 电源模块故障 报警
-#define mcuIGBTUovertempWARN			38//MCU 内部 IGBT 过温（U 相） 报警
-#define mcuIGBTUdrivecircuitWARN		39//MCU 内部 IGBT 驱动电路报警（U 相）报警
-#define mcupossensorWARN				40//MCU 位置传感器检测回路故障报警
-#define mcuhardwareUflowWARN			41//MCU 相电流硬件过流（U 相）报警
-#define mcuDCbusovervolWARN				42//MCU 直流母线过压 报警
-#define mcuDCbuslowvolWARN				43//MCU 直流母线欠压报警
-#define MSDmainsafecutoffWARN			44//MSD 主保险断路故障 报警
-#define tboxfaultWARN					45//TBOX 故障报警
-#define SRSmoduleWARN					46//安全气囊模块异常报警
-#define carchargeroverloadWARN  		47//车载充电器过载报警
-#define carchargerundervolWARN			48//车载充电器欠压报警
-#define bigcreeninfonotconsWARN			49//大屏信息版本信息不一致报警
-#define gearsfaultWARN					50//档位故障报警
-#define gearssignfaultWARN				51//档位信号故障报警
-#define battmanagesysmissingWARN		52//电池管理系统丢失故障报警
-#define battheatsfastWARN				53//电池升温过快报警
-#define BatttempdiffWARN				54//电池温度差报警
-#define motorctrlIGBTfaultWARN			55//电机控制器 IGBT 故障 报警
-#define motorctrlmissingWARN			56//电机控制器丢失故障报警
-#define motorctrlinterlockWARN			57//电机控制器环路互锁报警
-#define motorctrlundervloWARN			58//电机控制器欠压故障 报警
-#define motorabnormalWARN				59//电机异常报警
-#define pwrbattcellovervolWARN			60//动力电池单体过压报警
-#define pwrbattcellovervolproWARN		61//动力电池单体电压过压保护
-#define pwrbattcellundervolproWARN		62//动力电池单体电压欠压保护故障报警
-#define pwrbattcellundervolWARN			63//动力电池单体欠压报警
-#define pwrbattsoclowWARN				64//动力电池电量过低报警
-#define pwrbattvolimbalanceproWARN		65//动力电池电压不均衡保护故障
-#define pwrbattinterlockWARN			66//动力电池环路互锁
-#define pwrbattinsolateWARN				67//动力电池绝缘报警
-#define pwrbattinsolatelowWARN			68//动力电池绝缘过低
-#define pwrbattheatupfastWARN			69//动力电池升温过快
-#define pwrbattovertempproWARN			70//动力电池温度过高保护故障
-#define pwrbattundervolWARN				71//动力蓄电池包欠压报警
-#define rearfoglampWARN					72//后雾灯故障
-#define accpedalsignalovershootWARN		73//加速踏板信号超幅错误
-#define accpedalsignalfaultWARN			74//加速踏板信号故障
-#define insolatelowWARN					75//绝缘电阻低
-#define acunworkWARN					76//空调不工作报警
-#define acfanunworkWARN					77//空调风扇不工作
-#define acinsolateWARN					78//空调绝缘报警
-#define actempdiffWARN					79//空调制冷、制热温差报警
-#define motorCANfaultWARN				80//驱动电机 CAN 通讯故障
-#define motoroverheatfaultWARN			81//驱动电机过热故障
-#define motorinsolateWARN				82//驱动电机绝缘报警
-#define motormcuoverheatWARN			83//驱动电机控制器 MCU 过热故障
-#define motorphasecurrsensorWARN		84//驱动电机相电流传感器故障
-#define motorphasecurrovercurrWARN		85//驱动电机相电流过流故障
-#define motorrotatingtransfaultWARN		86//驱动电机旋转变压器故障
-#define motordcbusovervolfaultWARN		87//驱动电机直流母线过压故障
-#define motordcundervolWARN				88//驱动电机直流欠压报警
-#define motorovertempWARN				89//驱动电温度高报警
-#define copperbarlooseWARN				90//铜排松动故障
-#define BMSmissingWARN					91//与 BMS 通讯丢失
-#define MCUmissingWARN					92//与 MCU 通讯丢失
-#define prechargeresistancebreakWARN	93//预充电电阻断路故障
-#define preresistancebreakWARN			94//预充电阻断路故障
-#define vacpumpconsrotationfaultWARN	95//真空泵常转故障
-#define abnormalvehicleheatWARN			96//整车加热工程异常
-#define brakesysvacpumppresfaultWARN	97//制动系统真空泵压力故障
-#define brakeassistlowvacuumfaultWARN	98//制动助力系统低真空度故障
-#define brakpwrvacuumsensorfaultWARN	99//制动助力系统真空度传感器故障
-#define VMSnodecommmissingWARN			100//子板 VMS 节点通讯丢失
-#define LRbrakelightsmalfaultWARN		101//左右刹车灯故障
-#define LRnearlampfaultWARN				102//左右近光灯故障
+#define batt12vlowvolWARN               32//12V 蓄电池电压过低 报警
+#define epsfaultWARN                    33//EPS 故障 报警
+#define epstorquesensorWARN             34//EPS 扭矩传感器信号故障报警
+#define mcuIGBTVovercurrentWARN         35//MCU IGBT 驱动电路过流故障（V 相） 报警
+#define mcuIGBTWovercurrentWARN         36//MCU IGBT 驱动电路过流故障（W 相） 报警
+#define mcupowermoduleWARN              37//MCU 电源模块故障 报警
+#define mcuIGBTUovertempWARN            38//MCU 内部 IGBT 过温（U 相） 报警
+#define mcuIGBTUdrivecircuitWARN        39//MCU 内部 IGBT 驱动电路报警（U 相）报警
+#define mcupossensorWARN                40//MCU 位置传感器检测回路故障报警
+#define mcuhardwareUflowWARN            41//MCU 相电流硬件过流（U 相）报警
+#define mcuDCbusovervolWARN             42//MCU 直流母线过压 报警
+#define mcuDCbuslowvolWARN              43//MCU 直流母线欠压报警
+#define tboxfaultWARN                   44//TBOX 故障报警
+#define SRSmoduleWARN                   45//安全气囊模块异常报警
+#define carchargeroverloadWARN          46//车载充电器过载报警
+#define carchargerundervolWARN          47//车载充电器欠压报警
+#define bigcreeninfonotconsWARN         48//大屏信息版本信息不一致报警
+#define singlebatteryovervoltageWARN    49//单体蓄电池过压报警
+#define gearsfaultWARN                  50//档位故障报警
+#define gearssignfaultWARN              51//档位信号故障报警
+#define battmanagesysmissingWARN        52//电池管理系统丢失故障报警
+#define battheatsfastWARN               53//电池升温过快报警
+#define motorctrlIGBTfaultWARN          54//电机控制器 IGBT 故障 报警
+#define motorctrlinterlockWARN          55//电机控制器环路互锁报警
+#define motorctrlundervloWARN           56//电机控制器欠压故障 报警
+#define motorabnormalWARN               57//电机异常报警
+#define pwrbattcellovervolproWARN       58//动力电池单体电压过压保护
+#define pwrbattcellundervolproWARN      59//动力电池单体电压欠压保护故障报警
+#define pwrbattsoclowWARN               60//动力电池电量过低报警
+#define pwrbattvolimbalanceproWARN      61//动力电池电压不均衡保护故障
+#define pwrbattinterlockWARN            62//动力电池环路互锁
+#define pwrbattovertempproWARN          63//动力电池温度过高保护故障
+#define accpedalsignalovershootWARN     64//加速踏板信号超幅错误
+#define accpedalsignalfaultWARN         65//加速踏板信号故障
+#define acfanunworkWARN                 66//空调风扇不工作
+#define motorCANfaultWARN               67//驱动电机 CAN 通讯故障
+#define BMSmissingWARN                  68//与 BMS 通讯丢失
+#define MCUmissingWARN                  69//与 MCU 通讯丢失
+#define abnormalvehicleheatWARN         70//整车加热工程异常
+#define brakesystemfaultWARN          	71//制动系统故障
+#define LRbrakelightsmalfaultWARN       72//左右刹车灯故障
+#define brakefluidfaultWARN 		    73//制动液异常
+#define tirepressuresystemfaultWARN     74//胎压系统故障
+#define antitheftintrusionalarmWARN	    75//防盗入侵报警
+#define trailerreminderWARN			    76//拖车提醒
+#define electronicassistfaultWARN       77//电子助力故障
+#define acunworkWARN 		            78//空调不工作报警
+#define compressorfaultWARN	            79//制冷不响应原因-压缩机故障
+#define electronicexpansionfaultWARN    80//制冷不响应原因-电子膨胀阀故障
+#define coolhvfaultWARN	                81//制冷不响应原因-HV 故障
+#define pressuresensorfaultWARN         82//制冷不响应原因-压力传感器故障
+#define coolingfanfaultWARN             83//制冷不响应原因-冷却风扇故障
+#define temperaturesensorfaultWARN      84//制冷不响应原因-蒸发器温度传感器故障
+#define ptcfaultWARN 	                85//制热不响应原因-PTC 故障
+#define hothvfaultWARN	                86//制热不响应原因-HV 故障
+#define ptcpumpfaultWARN                87//制热不响应原因-PTC 水泵故障
+#define watervalvefaultWARN             88//制热不响应原因-三通水阀故障
+
+#define GB32960_API_FAULTNUM (watervalvefaultWARN + 1)
 
 typedef union
 {
@@ -157,65 +151,51 @@ typedef union
 		unsigned char mcuhardwareUflowwarn;//MCU 相电流硬件过流（U 相）报警
 		unsigned char mcuDCbusovervolwarn;//MCU 直流母线过压 报警
 		unsigned char mcuDCbuslowvolwarn;//MCU 直流母线欠压报警
-		unsigned char MSDmainsafecutoffwarn;//MSD 主保险断路故障 报警
 		unsigned char tboxfaultwarn;//TBOX 故障报警
 		unsigned char SRSmodulewarn;//安全气囊模块异常报警
 		unsigned char carchargeroverloadwarn ;//车载充电器过载报警
 		unsigned char carchargerundervolwarn;//车载充电器欠压报警
 		unsigned char bigcreeninfonotconswarn;//大屏信息版本信息不一致报警
+		unsigned char singlebatteryovervoltage;//单体蓄电池过压报警
 		unsigned char gearsfaultwarn;//档位故障报警
 		unsigned char gearssignfaultwarn;//档位信号故障报警
 		unsigned char battmanagesysmissingwarn;//电池管理系统丢失故障报警
 		unsigned char battheatsfastwarn;//电池升温过快报警
-		unsigned char Batttempdiffwarn;//电池温度差报警
 		unsigned char motorctrlIGBTfaultwarn;//电机控制器 IGBT 故障 报警
-		unsigned char motorctrlmissingwarn;//电机控制器丢失故障报警
 		unsigned char motorctrlinterlockwarn;//电机控制器环路互锁报警
 		unsigned char motorctrlundervlowarn;//电机控制器欠压故障 报警
 		unsigned char motorabnormalwarn;//电机异常报警
-		unsigned char pwrbattcellovervolwarn;//动力电池单体过压报警
 		unsigned char pwrbattcellovervolprowarn;//动力电池单体电压过压保护
 		unsigned char pwrbattcellundervolprowarn;//动力电池单体电压欠压保护故障报警
-		unsigned char pwrbattcellundervolwarn;//动力电池单体欠压报警
 		unsigned char pwrbattsoclowwarn;//动力电池电量过低报警
 		unsigned char pwrbattvolimbalanceprowarn;//动力电池电压不均衡保护故障
 		unsigned char pwrbattinterlockwarn;//动力电池环路互锁
-		unsigned char pwrbattinsolatewarn;//动力电池绝缘报警
-		unsigned char pwrbattinsolatelowwarn;//动力电池绝缘过低
-		unsigned char pwrbattheatupfastwarn;//动力电池升温过快
 		unsigned char pwrbattovertempprowarn;//动力电池温度过高保护故障
-		unsigned char pwrbattundervolwarn;//动力蓄电池包欠压报警
-		unsigned char rearfoglampwarn;//后雾灯故障
 		unsigned char accpedalsignalovershootwarn;//加速踏板信号超幅错误
 		unsigned char accpedalsignalfaultwarn;//加速踏板信号故障
-		unsigned char insolatelowwarn;//绝缘电阻低
-		unsigned char acunworkwarn;//空调不工作报警
 		unsigned char acfanunworkwarn;//空调风扇不工作
-		unsigned char acinsolatewarn;//空调绝缘报警
-		unsigned char actempdiffwarn;//空调制冷、制热温差报警
 		unsigned char motorCANfaultwarn;//驱动电机 CAN 通讯故障
-		unsigned char motoroverheatfaultwarn;//驱动电机过热故障
-		unsigned char motorinsolatewarn;//驱动电机绝缘报警
-		unsigned char motormcuoverheatwarn;//驱动电机控制器 MCU 过热故障
-		unsigned char motorphasecurrsensorwarn;//驱动电机相电流传感器故障
-		unsigned char motorphasecurrovercurrwarn;//驱动电机相电流过流故障
-		unsigned char motorrotatingtransfaultwarn;//驱动电机旋转变压器故障
-		unsigned char motordcbusovervolfaultwarn;//驱动电机直流母线过压故障
-		unsigned char motordcundervolwarn;//驱动电机直流欠压报警
-		unsigned char motorovertempwarn;//驱动电温度高报警
-		unsigned char copperbarloosewarn;//铜排松动故障
 		unsigned char BMSmissingwarn;//与 BMS 通讯丢失
 		unsigned char MCUmissingwarn;//与 MCU 通讯丢失
-		unsigned char prechargeresistancebreakwarn;//预充电电阻断路故障
-		unsigned char preresistancebreakwarn;//预充电阻断路故障
-		unsigned char vacpumpconsrotationfaultwarn;//真空泵常转故障
 		unsigned char abnormalvehicleheatwarn;//整车加热工程异常
-		unsigned char brakesysvacpumppresfaultwarn;//制动系统真空泵压力故障
-		unsigned char brakeassistlowvacuumfaultwarn;//制动助力系统低真空度故障
-		unsigned char brakpwrvacuumsensorfaultwarn;//制动助力系统真空度传感器故障
-		unsigned char VMSnodecommmissingwarn;//子板 VMS 节点通讯丢失
+		unsigned char brakesystemfaultwarn;      //制动系统故障
 		unsigned char LRbrakelightsmalfaultwarn;//左右刹车灯故障
-		unsigned char LRnearlampfaultwarn;//左右近光灯故障
+		unsigned char brakefluidfaultwarn;		//制动液异常
+		unsigned char tirepressuresystemfaultwarn; //胎压系统故障
+		unsigned char antitheftintrusionalarm;     //防盗入侵报警
+		unsigned char trailerreminder;             //拖车提醒
+		unsigned char electronicassistfaultwarn;   //电子助力故障
+		unsigned char acunworkwarn;           //空调不工作报警
+		unsigned char compressorfaultwarn;    //制冷不响应原因-压缩机故障
+		unsigned char electronicexpansionfaultwarn;//制冷不响应原因-电子膨胀阀故障
+		unsigned char coolhvfaultwarn;     //制冷不响应原因-HV 故障
+		unsigned char pressuresensorfaultwarn;//制冷不响应原因-压力传感器故障
+		unsigned char coolingfanfaultwarn;//制冷不响应原因-冷却风扇故障
+		unsigned char temperaturesensorfaultwarn; //制冷不响应原因-蒸发器温度传感器故障
+		unsigned char ptcfaultwarn;     //制热不响应原因-PTC 故障
+		unsigned char hothvfaultwarn;   //制热不响应原因-HV 故障
+		unsigned char ptcpumpfaultwarn;   //制热不响应原因-PTC 水泵故障
+		unsigned char watervalvefaultwarn; //制热不响应原因-三通水阀故障
 	}type; /**/
 }gb32960_api_fault_t;
 
