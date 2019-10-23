@@ -34,7 +34,7 @@ gb32960_api_fault_t gb_fault;
 #define GB_MAX_FUEL_TEMP    200
 #define GB_MAX_FUEL_INFO    16
 #define GB_MAX_VEHI_INFO    16
-#define GB_MAX_WARN_INFO    (32 + 59)//33-91Ϊ��չ��������
+#define GB_MAX_WARN_INFO    GB32960_MAXWARN//33-91Ϊ��չ��������
 #define GB_MAX_MOTOR_INFO   8
 #define GB_MAX_ENGIN_INFO   4
 #define GB_MAX_EXTR_INFO    16
@@ -727,7 +727,7 @@ static int        gb_warnflag;
 static int        gb_pendflag;
 static pthread_mutex_t gb_errmtx;
 static pthread_mutex_t gb_datmtx;
-static uint16_t gb_datintv;
+static uint16_t   gb_datintv;
 
 #define ERR_LOCK()          pthread_mutex_lock(&gb_errmtx)
 #define ERR_UNLOCK()        pthread_mutex_unlock(&gb_errmtx)
@@ -3321,43 +3321,10 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
             // index 3,as a relevance channel,if the is two canid used for on warning
             {
             	warnvalue = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
-            	if(j == 0x50)//制冷不工作原因-压缩机故障
+            	if(j == 0x50)//制冷不工作原因
             	{
-            		switch(warnvalue)
-            		{
-            			case 0x01://压缩机故障
-            			{
-            				warn_code = 48;
-            			}
-            			break;
-            			case 0x02://电子膨胀阀故障
-            			{
-            				warn_code = 49;
-            			}
-            			break;
-            			case 0x03://HV 故障
-            			{
-            				warn_code = 50;
-            			}
-            			break;
-            			case 0x04://压力传感器故障
-            			{
-            				warn_code = 51;
-            			}
-            			break;
-            			case 0x05://冷却风扇故障
-            			{
-            				warn_code = 52;
-            			}
-            			break;
-            			case 0x06://蒸发器温度传感器故障
-            			{
-            				warn_code = 53;
-            			}
-            			break;
-            			default:
-            			break;
-            		}
+					warn_code = 0x50 + (warnvalue - 1) -32;
+					vs_warn[0x50 + (warnvalue - 1) -32] = 1;
     	        	buf[len++] = warn_code >> 8;
     	        	buf[len++] = warn_code;
     	        	(*warnnum_ptr)++;
@@ -3365,55 +3332,29 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
             	}
             	else if(j == 0x47)//制热不响应原因
             	{
-            		switch(warnvalue)
-            		{
-            			case 0x01://PTC故障
-            			{
-            				warn_code = 54;
-            				Abnormalheat_warnflag = 1;
-            			}
-            			break;
-            			case 0x02://HV故障
-            			{
-            				warn_code = 55;
-            				Abnormalheat_warnflag = 1;
-            			}
-            			break;
-            			case 0x03://PTC水泵故障
-            			{
-            				warn_code = 56;
-            				Abnormalheat_warnflag = 1;
-            			}
-            			break;
-            			case 0x04://三通水阀故障
-            			{
-            				warn_code = 57;
-            				Abnormalheat_warnflag = 1;
-            			}
-            			break;
-            			default:
-            			break;
-            		}
+					warn_code = 0x55 + warnvalue -32;
+					vs_warn[0x55 + warnvalue -32] = 1;
     	        	buf[len++] = warn_code >> 8;
     	        	buf[len++] = warn_code;
     	        	(*warnnum_ptr)++;
     	        	ac_warnflag=1;
+					Abnormalheat_warnflag = 1;
             	}
             	else
             	{
                 	buf[len++] = gb_alarmCode[j].code >> 8;
                 	buf[len++] = gb_alarmCode[j].code;
                 	(*warnnum_ptr)++;
+
+					if (gbinf->warn[i][j] &&
+					(dbc_get_signal_from_id(gbinf->warn[i][j])->value ||
+					(gbinf->warn[3][j] &&
+					dbc_get_signal_from_id(gbinf->warn[3][j])->value)))
+					{
+						vs_warn[j-32] = 1;
+					}
             	}
             }
-
-			if (gbinf->warn[i][j] &&
-            	(dbc_get_signal_from_id(gbinf->warn[i][j])->value ||
-            	(gbinf->warn[3][j] &&
-            	dbc_get_signal_from_id(gbinf->warn[3][j])->value)))
-			{
-				vs_warn[j-32] = 1;
-			}
         }
     }
 
@@ -3423,6 +3364,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	buf[len++] = warn_code >> 8;
     	buf[len++] = warn_code;
     	(*warnnum_ptr)++;
+		vs_warn[0x4f-32] = 1;
     }
 
     if(Abnormalheat_warnflag)//整车加热异常
@@ -3431,6 +3373,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 		buf[len++] = warn_code >> 8;
 		buf[len++] = warn_code;
 		(*warnnum_ptr)++;
+		vs_warn[0x47-32] = 1;
     }
 
     PP_rmtDiag_NodeFault_t NodeFault;
@@ -3442,6 +3385,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	buf[len++] = warn_code >> 8;
     	buf[len++] = warn_code;
     	(*warnnum_ptr)++;
+		vs_warn[0x2c-32] = 1;
     }
 
     //与BMS通讯丢失
@@ -3451,6 +3395,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	buf[len++] = warn_code >> 8;
     	buf[len++] = warn_code;
     	(*warnnum_ptr)++;
+		vs_warn[0x45-32] = 1;
     }
 
     //与MCU通讯丢失
@@ -3460,6 +3405,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	buf[len++] = warn_code >> 8;
     	buf[len++] = warn_code;
     	(*warnnum_ptr)++;
+		vs_warn[0x46-32] = 1;
     }
 
     //拖车提醒
@@ -3469,11 +3415,12 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	buf[len++] = warn_code >> 8;
     	buf[len++] = warn_code;
     	(*warnnum_ptr)++;
+		vs_warn[0x4D-32] = 1;
     }
+
 	//故障诊断,用于外部获取故障报警状态
     for(j = 0;j < GB32960_VSWARN;j++)
     {
-    	//gb_fault.warn[32] = 1;	
     	gb_fault.warn[gb32960_api_extwarn_indextable[j].vsindex] = \
 						vs_warn[gb32960_api_extwarn_indextable[j].gbindex - 32];
     }
@@ -5167,4 +5114,51 @@ uint16_t gb_data_trip(void)
 	}
 
 	return tripval;
+}
+
+/*
+* 获取报警状态
+*/
+char getgb_data_warnSt(void)
+{
+	int i;
+	char warnst = 0;
+
+	DAT_LOCK();
+
+	for(i= 0;i < GB32960_API_FAULTNUM;i++)
+	{
+		if(1== gb_fault.warn[i])
+		{
+			warnst = 1;
+			break;
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return warnst;
+}
+
+/*
+* 获取胎压系统故障
+*/
+long getgb_data_bdmsystemfailure(void)
+{
+	int i;
+	long sysfailureSt = 0;
+
+	DAT_LOCK();
+
+	for(i = 0; i < 3; i++)
+	{
+		if(gb_inf && gb_inf->warn[i][0x4B])
+		{
+			sysfailureSt = dbc_get_signal_from_id(gb_inf->warn[i][0x4B])->value;
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return sysfailureSt;
 }

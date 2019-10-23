@@ -1453,8 +1453,8 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.bonnetStatus		= 0;//引擎盖，默认关
 			App_rmtCtrl.CtrlResp.basicSt.lockStatus			= PP_rmtCtrl_cfg_doorlockSt();
 			App_rmtCtrl.CtrlResp.basicSt.gsmStatus			= gb32960_networkSt();
-			App_rmtCtrl.CtrlResp.basicSt.wheelTyreMotrSt	= 1	/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.vehicleAlarmSt		= 1;
+			App_rmtCtrl.CtrlResp.basicSt.wheelTyreMotrSt	= getgb_data_bdmsystemfailure();	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.vehicleAlarmSt		= getgb_data_warnSt();
 			App_rmtCtrl.CtrlResp.basicSt.currentJourneyID	= gb_data_trip();
 			App_rmtCtrl.CtrlResp.basicSt.journeyOdom		= PP_rmtCtrl_cfg_vehicleOdograph();
 			App_rmtCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel	= PP_rmtCtrl_cfg_DrivHeatingSt()	/* OPTIONAL */;

@@ -741,8 +741,8 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.lockStatus  = %ld",PP_VS_appdata.VSResp.basicSt.lockStatus);
 	PP_VS_appdata.VSResp.basicSt.gsmStatus			= gb32960_networkSt();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.gsmStatus  = %ld",PP_VS_appdata.VSResp.basicSt.gsmStatus);
-	PP_VS_appdata.VSResp.basicSt.wheelTyreMotrSt	= 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.vehicleAlarmSt		= 1;
+	PP_VS_appdata.VSResp.basicSt.wheelTyreMotrSt	= getgb_data_bdmsystemfailure();	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.vehicleAlarmSt		= getgb_data_warnSt();
 	PP_VS_appdata.VSResp.basicSt.currentJourneyID	= gb_data_trip();
 	PP_VS_appdata.VSResp.basicSt.journeyOdom		= PP_rmtCtrl_cfg_vehicleOdograph(); /*里程*/
 	if(PP_VS_appdata.VSResp.basicSt.journeyOdom < 0)
