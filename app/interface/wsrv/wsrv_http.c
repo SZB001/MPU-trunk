@@ -43,6 +43,7 @@ static unsigned int g_u32WsrvWakeTime = 0;
 #define WSRV_CMD_MODEIN             "modein"
 #define WSRV_CMD_MODEINRESULT       "modeinresult"
 #define WSRV_CMD_MODEOUT            "modeout"
+#define WSRV_CMD_MODEOUTRESULT      "modeoutresult"
 
 
 /* fill response body */
@@ -461,6 +462,12 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             if(0 != timer_wake)
             {
                 g_u32WsrvWakeTime = timer_wake;
+                ret = scom_tl_send_frame(SCOM_TL_CMD_WAKE_TIME, SCOM_TL_SINGLE_FRAME, 0,
+                         (unsigned char *)&timer_wake, sizeof(timer_wake));
+                if (0 != ret)
+                {
+                    log_e(LOG_PM, "set timer wake failed");
+                }
             }
             else
             {
@@ -509,6 +516,8 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     
         //dev_set_from_mpu(MCU_CFG_ID_SYSMODE, &mode, sizeof(mode));
 
+        log_i(LOG_WSRV, "Get Cmd Gmobi MODEIN");
+
         if(0 == SetPP_rmtCtrl_FOTA_startInform())
         {
             for(u8Loop = 0; u8Loop < 10; u8Loop++)
@@ -516,10 +525,12 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 PP_send_virtual_on_to_mcu(1);
             }
             s_u8BDCMAuthResult = 0;
+            log_i(LOG_WSRV, "Mode In Wait BDCM Auth");
         }
         else
         {
             s_u8BDCMAuthResult = 2;
+            log_i(LOG_WSRV, "Other Task Doing Can Not Upgrade ECU");
         }
 
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
@@ -544,6 +555,8 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 PP_can_send_data(PP_CAN_OTAREQ, 0x02, 0);
                 s_u64OTAModeStartTime = tm_get_time();
 				sprintf(body_buf, WSRV_MODEINRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+
+                log_i(LOG_WSRV, "Mode In BDCM Auth OK");
             }
             else if(0 == u32AuthResult)
             {
@@ -552,7 +565,10 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             }
             else
             {
+                PP_send_virtual_on_to_mcu(0);
                 sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
+                
+                log_i(LOG_WSRV, "Mode In BDCM Auth Fail");
             }
         }
         else if(1 == s_u8BDCMAuthResult)
@@ -566,6 +582,8 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
                 if(tm_get_time() - s_u64OTAModeStartTime > 5000)
                 {
+                    PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
+                    PP_send_virtual_on_to_mcu(0);
                     log_i(LOG_WSRV, "Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
                     sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
                     break;
@@ -573,6 +591,8 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
                 if(u8OtaFailSts != 0)
                 {
+                    PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
+                    PP_send_virtual_on_to_mcu(0);
                     log_i(LOG_WSRV, "Get Ota Fail Status %d", u8OtaFailSts);
                     sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
                     break;
@@ -581,6 +601,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 log_i(LOG_WSRV, "Get Power Mode: %d", u8PowerMode);
                 if(2 == u8PowerMode)
                 {
+                    PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     sprintf(body_buf, WSRV_MODEINRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
                 }
                 else
@@ -600,41 +621,36 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_MODEOUT))
     {
-        unsigned char u8Loop = 0;
-        //1:Success. 0:wait. Other:Fail
-        int u32AuthResult = 0;
-        
         SetPP_rmtCtrl_AuthRequest();
 
-        for(u8Loop = 0; u8Loop < 10; u8Loop++)
-        {
-            u32AuthResult = GetPP_rmtCtrl_AuthResult();
-            if(1 == u32AuthResult)
-            {
-                PP_can_send_data(PP_CAN_OTAREQ, 0x01, 0);
-                PP_send_virtual_on_to_mcu(0);
-
-                sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
-            }
-            else if(0 == u32AuthResult)
-            {
-                //Tell Gmobi Wait
-                sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
-            }
-            else
-            {
-                PP_send_virtual_on_to_mcu(0);
-                sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, -1);
-                break;
-            }
-
-            sleep(1);
-        }
-
-        //(0:runing 1:listen 2:sleep 3:auto)
-        //mode = 3;
+        set_normal_information(rsp_buf, body_buf, MIME_JSON);
+    }
+    else if (0 == strcmp(cmd_buf, WSRV_CMD_MODEOUTRESULT))
+    {
+        int u32AuthResult = 0;
     
-        //dev_set_from_mpu(MCU_CFG_ID_SYSMODE, &mode, sizeof(mode));
+        u32AuthResult = GetPP_rmtCtrl_AuthResult();
+        if(1 == u32AuthResult)
+        {
+            PP_can_send_data(PP_CAN_OTAREQ, 0x01, 0);
+            PP_send_virtual_on_to_mcu(0);
+        
+            sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
+
+            log_i(LOG_WSRV, "Mode Out BDCM Auth OK");
+        }
+        else if(0 == u32AuthResult)
+        {
+            //Tell Gmobi Wait
+            sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+        }
+        else
+        {
+            PP_send_virtual_on_to_mcu(0);
+            sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, -1);
+
+            log_i(LOG_WSRV, "Mode Out BDCM Auth Fail");
+        }
 
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }
