@@ -144,6 +144,8 @@ typedef struct
 	uint8_t		failureType;
 	uint8_t		certSnLength;
 	char 		certSn[256];
+	uint8_t		pakgtype;
+	uint8_t		middatatype;
 }PP_CertificateStatus_t;
 
 typedef struct

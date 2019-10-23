@@ -75,6 +75,8 @@ typedef struct
 typedef struct
 {
 	PP_CertificateStatus_t		para;
+	uint8_t waitEnSt;
+	uint64_t waitEntimer;
 	uint8_t enSt;
 	uint8_t	CertEnCnt;
 }PP_CertificateSt_t;
@@ -244,7 +246,8 @@ int PP_CertDownload_mainfunction(void *task)
 		}
 		else
 		{
-			PP_CertUpdata.Cnt = 0;
+			PP_CertUpdata.Cnt 	= 0;
+			PP_CertSt.CertEnCnt = 0;
 		}
 	}
 
@@ -464,6 +467,22 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 			PP_CertUpdata.allowupdata = 2;
 		}
 	}
+	else if(rxPack->msgdata[0] == PP_CERTDL_MID_CERT_STATUS)
+	{
+		if(1 == PP_CertSt.waitEnSt)
+		{
+			if(0 == rxPack->msgdata[5])
+			{
+				PP_CertSt.enSt = 1;
+			}
+			else
+			{
+				log_e(LOG_HOZON, "enable cert rxPack->msgdata[5] = %d\n",rxPack->msgdata[5]);
+				PP_CertSt.enSt = 2;
+			}
+			PP_CertSt.waitEnSt = 0;
+		}
+	}
 	else
 	{}
 }
@@ -481,6 +500,19 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 ******************************************************/
 static int PP_CertDL_do_wait(PrvtProt_task_t *task)
 {
+	if(1 == PP_CertSt.waitEnSt)
+	{
+		if((tm_get_time() - PP_CertSt.waitEntimer) > 5000)
+		{
+			log_e(LOG_HOZON, "wait cert enable timeout\n");
+			PP_CertSt.waitEnSt = 0;
+			PP_CertSt.enSt = 2;
+		}
+	}
+	else
+	{
+		PP_CertSt.waitEntimer = tm_get_time();
+	}
 
 	return 0;
 }
@@ -622,6 +654,8 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 						PP_CertSt.para.eventid = 0x55;
 						PP_CertSt.para.certType = 1;
 						PP_CertSt.para.failureType = 1;//失败类型为1--证书认证失败
+						PP_CertSt.para.pakgtype = PP_TXPAKG_CONTINUE;
+						PP_CertSt.para.middatatype	= 1;
 						(void)PP_CertDL_CertStatus(task,&PP_CertSt);
 					}
 				}
@@ -862,13 +896,7 @@ static int PP_CertDL_do_CertRenew(PrvtProt_task_t *task)
 static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 {
 	static 	uint8_t	CertEnSt = PP_CERTEN_IDLE;
-	#define PP_CERTEN_TIMES		1
-	static 	uint64_t 	Enwaittime;
-
-	//if(1 != PP_CertDL_checkCertExist())
-	//{
-	//	return 0;
-	//}
+	#define PP_CERTEN_TIMES		3
 
 	switch(CertEnSt)
 	{
@@ -887,13 +915,15 @@ static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 		{
 			if(0 == PP_CertDL_getCertSn(0))
 			{
+				PP_CertSt.waitEnSt = 0;
+				PP_CertSt.enSt = 0;
 				PP_CertSt.para.mid = PP_CERTDL_MID_CERT_STATUS;
 				PP_CertSt.para.eventid = 0x55;
 				PP_CertSt.para.certType = 1;
 				PP_CertSt.para.failureType = 0;//失败类型为0--启用证书
+				PP_CertSt.para.pakgtype = PP_TXPAKG_SIGTIME;
+				PP_CertSt.para.middatatype	= 2;
 				(void)PP_CertDL_CertStatus(task,&PP_CertSt);
-				PP_CertSt.enSt = 0;
-				Enwaittime = tm_get_time();
 				CertEnSt = PP_CERTEN_WAIT;
 			}
 			else
@@ -905,30 +935,22 @@ static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 		break;
 		case PP_CERTEN_WAIT:
 		{
-			if((tm_get_time() - Enwaittime) <= 5000)
+			if(PP_CertSt.enSt == 1)
 			{
-				if(PP_CertSt.enSt == 1)
-				{
-					log_i(LOG_HOZON, "enable certificate success\n");
-					PP_CertDL.state.CertEnflag = 1;
-					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
-					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT,PP_CertSt.para.certSn,32);
-					PP_CertRevoList.checkRevoFlag = 1;//检查吊销列表
-					CertEnSt = PP_CERTEN_END;
-				}
-				else if(PP_CertSt.enSt == 2)
-				{
-					log_e(LOG_HOZON, "enable certificate fail\n");
-					CertEnSt = PP_CERTEN_END;
-				}
-				else
-				{}
-			}
-			else
-			{
-				log_e(LOG_HOZON, "enable certificate timeout\n");
+				log_i(LOG_HOZON, "enable certificate success\n");
+				PP_CertDL.state.CertEnflag = 1;
+				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
+				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT,PP_CertSt.para.certSn,32);
+				PP_CertRevoList.checkRevoFlag = 1;//检查吊销列表
 				CertEnSt = PP_CERTEN_END;
 			}
+			else if(PP_CertSt.enSt == 2)
+			{
+				log_e(LOG_HOZON, "enable certificate fail\n");
+				CertEnSt = PP_CERTEN_END;
+			}
+			else
+			{}
 		}
 		break;
 		case PP_CERTEN_END:
@@ -1519,7 +1541,8 @@ static int PP_CertDL_CertStatus(PrvtProt_task_t *task,PP_CertificateSt_t *Certif
 	memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	CertDL_TxInform[i].mid = CertificateSt->para.mid;
 	CertDL_TxInform[i].eventtime = tm_get_time();
-	CertDL_TxInform[i].pakgtype = PP_TXPAKG_SIGTIME;
+	CertDL_TxInform[i].pakgtype = CertificateSt->para.pakgtype;
+	CertDL_TxInform[i].aid = CertificateSt->para.middatatype;
 
 	SP_data_write(PP_CertEn_pack.Header.sign,PP_CertEn_pack.totallen,PP_CertDL_send_cb,&CertDL_TxInform[i]);
 	//protocol_dump(LOG_HOZON, "CertDownload_request", PP_CertEn_pack.Header.sign,PP_CertEn_pack.totallen,1);
@@ -1613,13 +1636,17 @@ static void PP_CertDL_send_cb(void * para)
 
 	if(PP_CERTDL_MID_CERT_STATUS == TxInform_ptr->mid)
 	{
-		if(PP_TXPAKG_SUCCESS == TxInform_ptr->successflg)
+		if(2 == TxInform_ptr->aid)//启用证书
 		{
-			PP_CertSt.enSt = 1;
-		}
-		else
-		{
-			PP_CertSt.enSt = 2;
+			if(PP_TXPAKG_SUCCESS == TxInform_ptr->successflg)
+			{
+				PP_CertSt.waitEnSt = 1;
+			}
+			else
+			{
+				PP_CertSt.enSt = 2;
+				log_e(LOG_HOZON,"enable cert message send fail\n");
+			}
 		}
 	}
 
