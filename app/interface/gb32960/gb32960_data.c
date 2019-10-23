@@ -3994,7 +3994,7 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
         case DBC_EVENT_FINISHED:
             if (gb_rld && arg1 == 0)
             {
-                int i;
+                int i,j;
 
 				//for (i = 0; i < gb_rld->batt.cell_cnt && gb_rld->batt.cell[i]; i++);
 
@@ -4016,10 +4016,13 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 
                 for (i = 0; i < GB_MAX_WARN_INFO; i++)
                 {
-                    if (gb_inf->warn[2][i] != 0)
-                    {
-                        dbc_set_signal_flag(gb_inf->warn[2][i], gb_warnflag);
-                    }
+					for(j = 0;j < 3;j++)
+					{
+						if (gb_inf->warn[j][i] != 0)
+                    	{
+                        	dbc_set_signal_flag(gb_inf->warn[j][i], gb_warnflag);
+                    	}
+					}
                 }
 
                 ERR_LOCK();

@@ -703,6 +703,7 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	PP_VS_appdata.VSResp.basicSt.batterySOCPrc		= VehicleSOC;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batterySOCPrc  = %ld",PP_VS_appdata.VSResp.basicSt.batterySOCPrc);
 	PP_VS_appdata.VSResp.basicSt.dcStatus			= gb_data_dcdcstatus();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.dcStatus  = %ld",PP_VS_appdata.VSResp.basicSt.dcStatus);
 	PP_VS_appdata.VSResp.basicSt.gearPosition		= gb_data_gearPosition();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.gearPosition  = %ld",PP_VS_appdata.VSResp.basicSt.gearPosition);
 
@@ -737,13 +738,17 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	PP_VS_appdata.VSResp.basicSt.canBusActive		= gb_data_CanbusActiveSt();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.canBusActive  = %ld",PP_VS_appdata.VSResp.basicSt.canBusActive);
 	PP_VS_appdata.VSResp.basicSt.bonnetStatus		= 0;//引擎盖，默认关
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.bonnetStatus  = %ld",PP_VS_appdata.VSResp.basicSt.bonnetStatus);
 	PP_VS_appdata.VSResp.basicSt.lockStatus			= PP_rmtCtrl_cfg_doorlockSt();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.lockStatus  = %ld",PP_VS_appdata.VSResp.basicSt.lockStatus);
 	PP_VS_appdata.VSResp.basicSt.gsmStatus			= gb32960_networkSt();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.gsmStatus  = %ld",PP_VS_appdata.VSResp.basicSt.gsmStatus);
 	PP_VS_appdata.VSResp.basicSt.wheelTyreMotrSt	= getgb_data_bdmsystemfailure();	/* OPTIONAL */;
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.wheelTyreMotrSt  = %ld",PP_VS_appdata.VSResp.basicSt.wheelTyreMotrSt);
 	PP_VS_appdata.VSResp.basicSt.vehicleAlarmSt		= getgb_data_warnSt();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.vehicleAlarmSt  = %ld",PP_VS_appdata.VSResp.basicSt.vehicleAlarmSt);
 	PP_VS_appdata.VSResp.basicSt.currentJourneyID	= gb_data_trip();
+	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.currentJourneyID  = %ld",PP_VS_appdata.VSResp.basicSt.currentJourneyID);
 	PP_VS_appdata.VSResp.basicSt.journeyOdom		= PP_rmtCtrl_cfg_vehicleOdograph(); /*里程*/
 	if(PP_VS_appdata.VSResp.basicSt.journeyOdom < 0)
 	{
