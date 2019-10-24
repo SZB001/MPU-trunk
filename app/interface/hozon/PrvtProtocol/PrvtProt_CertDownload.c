@@ -1967,13 +1967,8 @@ static int  MatchCertVerify(void)
 
 	if(PP_checkCertSt.CertUpdataSt == 1)//更新证书
 	{
-		file_copy(PP_CERTDL_CERTPATH,PP_CERTDL_CERTPATH_BKUP);//备份旧证书
 		file_copy(PP_CERTDL_CERTPATH_UPDATE,PP_CERTDL_CERTPATH);//替换旧证书
-
-		file_copy(PP_CERTDL_TWOCERTKEYPATH,PP_CERTDL_TWOCERTRKEYPATH_BKUP);//备份旧userAuth.key
 		file_copy(PP_CERTDL_TWOCERTRKEYPATH_UPDATE,PP_CERTDL_TWOCERTKEYPATH);//替换旧userAuth.key
-
-		file_copy(PP_CERTDL_TWOCERTCSRPATH,PP_CERTDL_TWOCERTRCSRPATH_BKUP);//备份旧userAuth.csr
 		file_copy(PP_CERTDL_TWOCERTRCSRPATH_UPDATE,PP_CERTDL_TWOCERTCSRPATH);//替换旧userAuth.csr
 
 	}
