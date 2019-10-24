@@ -18,4 +18,5 @@ extern int sockproxy_sgsocketState(void);
 extern void sockproxy_showParameters(void);
 extern void setsockproxy_bdlAddrPort(char* addr,char* port);
 extern void setsockproxy_sgAddrPort(char* addr,char* port);
+extern uint8_t getsockproxy_pkiEnStatus(void);
 #endif

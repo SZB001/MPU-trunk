@@ -1286,10 +1286,17 @@ int sockproxy_socketState(void)
 ******************************************************/
 int sockproxy_sgsocketState(void)
 {
-	if(((sockSt.state == PP_OPENED) || (sockSt.state == PP_CLOSE_WAIT)) && \
-			(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK))
+	if(!sockSt.pkiEnFlag)
 	{
-		return 1;
+		return 0;
+	}
+	else
+	{
+		if(((sockSt.state == PP_OPENED) || (sockSt.state == PP_CLOSE_WAIT)) && \
+				(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK))
+		{
+			return 1;
+		}
 	}
 
 	return 0;
@@ -1646,4 +1653,12 @@ static int PP_shell_setPKIenable(int argc, const char **argv)
 	system("reboot");
 
     return 0;
+}
+
+/*
+* 获取pki使能状态
+*/
+uint8_t getsockproxy_pkiEnStatus(void)
+{
+	return sockSt.pkiEnFlag;
 }

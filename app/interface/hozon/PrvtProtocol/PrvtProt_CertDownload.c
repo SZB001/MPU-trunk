@@ -235,6 +235,11 @@ int PP_CertDownload_mainfunction(void *task)
 	static char pp_certDL_IGNnewSt,pp_certDL_IGNoldSt = 0;
 	PrvtProt_task_t *task_ptr = (PrvtProt_task_t*)task;
 
+	if(0 == getsockproxy_pkiEnStatus())
+	{
+		return 0;
+	}
+
 	pp_certDL_IGNnewSt = dev_get_KL15_signal();
 	if(pp_certDL_IGNoldSt != pp_certDL_IGNnewSt)
 	{
