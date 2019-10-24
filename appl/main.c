@@ -31,19 +31,19 @@ output:       none
 return:       0 indicates success;
               others indicates failed
 *****************************************************************/
-int appl_start_app(void)
+int appl_start_app(int *startup_cnt_ptr)
 {
     while (1)
     {
-    	if(!file_exists(COM_APP_CUR_IMAGE_DIR"/"COM_APP_IMAGE ))
-    	{
-    		log_e(LOG_APPL, "%s is not exist", COM_APP_CUR_IMAGE_DIR"/"COM_APP_IMAGE );
-			return -1;
-		}
-		
+        if (!file_exists(COM_APP_CUR_IMAGE_DIR"/"COM_APP_IMAGE))
+        {
+            log_e(LOG_APPL, "%s is not exist", COM_APP_CUR_IMAGE_DIR"/"COM_APP_IMAGE);
+            return -1;
+        }
+
         app_pid = fork();
 
-        if (-1 == app_pid)    /**/
+        if (-1 == app_pid)    /* error */
         {
             log_e(LOG_APPL, "fork failed, error:%s", strerror(errno));
             return 1;
@@ -79,7 +79,7 @@ int appl_start_app(void)
                 return 0;
             }
         }
-        else
+        else//parent process
         {
             int  ret, time = 0;
             int  statchild;
@@ -99,6 +99,7 @@ int appl_start_app(void)
 					
 				//wait for child to finished
 				ret = waitpid(app_pid, &statchild, WNOHANG);
+                
 				/* the child process is running */
 				if( 0 == ret )
 				{
@@ -114,6 +115,7 @@ int appl_start_app(void)
 		                {
 		                    if ( 0 != strncmp(start_status, "OK", strlen("OK")) )
 		                    {
+		                        /* tbox_app.bin¡Á¡Â?a¡Á¨®??3¨¬¡ê????¡¥o¨®APP_STARTUP_TIME???¨²??¨®D¨ª¨´12?¨ª?¨²¡ä??DD¡ä?¡ãOK?¡À */
 		                        if( time > APP_STARTUP_TIME * 1000 )
 		                        {
 		                        	log_e(LOG_APPL, "tbox app status is NOK");
@@ -127,15 +129,33 @@ int appl_start_app(void)
 		                    else
 		                    {
 		                        log_o(LOG_APPL, "tbox app status is OK");
+
+                                /* ??3y????¡ä?¨ºy¡ê?¡¤¨¤?1?¨®??¨ª? */
+                                *startup_cnt_ptr = 0;
+
+                                /* ¨¦y??o¨®¡ê?¨¨?APP3¨¦1|?¨¹?e¨¤¡ä¡ê??¨°¨¦?3y???¡ãAPP?¡é2?¨ºy¦Ì?¡À?¡¤Y?¡¤??¡ê?3¨¬D¨°¡À?¨¤¡ê3¡ä?o¨®¡ê?
+                                ??1?¨º¡À?D???¡¤??2?¡ä??¨²¡ê??¨¬D?¨¬?¦Ì?start app?¡äDD¡ê?¡À¨¹?a¨®¨¦¨®¨²¨°?D?¨¬?¨ºa?-¨°¨°¦Ì???TBOX
+                                ?¨²???a?¨²60???¨²¡ê?APP??¨¨£¤D¡ä12?¨ª?¨²¡ä?¡ê???¡À???¨ª? */
+                                ret = dir_remove_path(COM_APP_PRE_DIR);
+                                if (ret != 0)
+                                {
+                                    log_e(LOG_APPL, "remove previous dir failed, path:%s, ret:0x%08x",
+                                          COM_APP_PRE_DIR, ret);
+                                }
 								break;
 		                    }
 		                }
 	                }
 				}
-				else /* the child process exit */
+                
+                /* ¡Á¨®??3¨¬???¡¥o¨®?¡ä?-1yAPP_STARTUP_TIME??3?¨º¡À¨°??-¨ª?3?¡ê?
+                ?a???¨¦??3????¨²¨®?pkg¡ã¨¹¨¦y??¡ê?¨¦y??o¨®¦Ì?app¨®D?¨º¨¬a¡ê??¨¹2??e¨¤¡ä¡ê?
+                ¨ª¡§3¡êAPPL?¨¢?¨²¨¢?D?3¡ä?¨º¡ì¡ã¨¹o¨®??¡ã?¡À???¨ª?¦Ì?¨¦y???¡ã¦Ì?¡ã?¡À? */
+				else
 				{
 				    log_e(LOG_APPL, "tbox app exit");
-					break;
+                    return 1;
+					//break;
 				}
    			}
 
@@ -434,7 +454,8 @@ int main(int argc, char **argv)
     }
 
 start_app:
-	if(!dir_get_status(COM_DATA_CUR_DIR) || !dir_get_status(COM_DATA_CUR_CFG_DIR))
+	//if(!dir_get_status(COM_DATA_CUR_DIR) || !dir_get_status(COM_DATA_CUR_CFG_DIR))
+	if(!dir_get_status(COM_DATA_CUR_DIR))
 	{
 		ret = dir_copy(COM_APP_CUR_DIR, COM_DATA_CUR_DIR);
 		
@@ -458,7 +479,7 @@ start_app:
     {
         startup_cnt++;
         log_o(LOG_APPL, "current image is good");
-        ret = appl_start_app();
+        ret = appl_start_app(&startup_cnt);
         if (0 == ret)
         {
             log_o(LOG_APPL, "start app successfully");
@@ -466,7 +487,7 @@ start_app:
         }
         else
         {
-            log_e(LOG_APPL, "start app failed, ret:0x%08x", ret);            
+            log_e(LOG_APPL, "start app failed, ret:0x%08x", ret);
             appl_stop_app();
 
             if(startup_cnt <= 2)
@@ -487,6 +508,14 @@ start_app:
     }
 
 roll_back:
+
+    /* if previous dir not exist ,go to start_app */
+    if(!dir_exists(COM_APP_PRE_DIR) || dir_is_empty(COM_APP_PRE_DIR))
+    {
+        log_e(LOG_APPL, "\"%s\" dir is not exists or empty,go start app step",COM_APP_PRE_DIR);
+        goto start_app;
+    }
+
     /* if current directory is bad, rollback */
     if (dir_get_status(COM_APP_PRE_DIR) && (!dir_is_empty(COM_APP_PRE_DIR)) )
     {
