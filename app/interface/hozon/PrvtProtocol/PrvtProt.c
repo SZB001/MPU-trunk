@@ -60,6 +60,7 @@ description�� include the header file
 #include "remoteDiag/PrvtProt_rmtDiag.h"
 #include "PrvtProt_CertDownload.h"
 #include "PrvtProt_VehiInfo.h"
+#include "../../base/uds/server/uds_did.h"
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -835,7 +836,7 @@ void PrvtPro_ShowPara(void)
 	PP_ChargeCtrl_show();
 	log_o(LOG_HOZON, "/*****************data over*****************/");
 
-	log_o(LOG_HOZON, "/**********show sleep status*********/");
+	log_o(LOG_HOZON, "/*************show sleep status*************/");
 	sockproxy_showParameters();
 	log_o(LOG_SOCK_PROXY, "gb32960 sleep = %d\n",gb32960_gbLogoutSt());
 	log_o(LOG_SOCK_PROXY, "PrvtProt sleep = %d\n",GetPrvtProt_Sleep());
@@ -843,7 +844,10 @@ void PrvtPro_ShowPara(void)
 	log_o(LOG_HOZON, "GetPP_rmtCtrl_Sleep = %d",GetPP_rmtCtrl_Sleep());
 	PP_rmtCtrl_showSleepPara();
 	log_o(LOG_HOZON, "/*****************data over*****************/");
-
+	log_o(LOG_HOZON, "/****************show version***************/");
+	log_o(LOG_HOZON, "hozon software version : %s\n",DID_F1B0_SW_FIXED_VER);
+	log_o(LOG_HOZON, "hozon hardware version : %s\n",DID_F191_HW_VERSION);
+	log_o(LOG_HOZON, "/*****************data over*****************/");
 }
 
 /******************************************************
