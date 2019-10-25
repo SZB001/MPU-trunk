@@ -645,6 +645,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 
 					close(fd);
 				}
+
 				iRet = SgHzTboxInit(PP_CERTDL_TBOXCRL);
 				if(iRet != SOCKPROXY_SG_INIT_SUCCESS)
 				{
@@ -816,6 +817,17 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 					close(fd);
 				}
+
+				char vin[18] = {0};
+				gb32960_getvin(vin);
+				iRet = HzTboxSetVin(vin);
+				if(0 != iRet)
+				{
+					log_e(LOG_SOCK_PROXY,"HzTboxSetVin error+++++++++++++++iRet[%d]\n",iRet);
+					sleep(1);
+					return -1;
+				}
+
 				iRet = HzTboxInit(PP_CERTDL_TBOXCRL);
 				if(iRet != 1151)
 				{

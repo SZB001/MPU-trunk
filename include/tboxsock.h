@@ -16,7 +16,7 @@
 #define _INC_H_
 
 #define HOZON_TBOX_VERSION         0
-#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.7 - 2019-09-04"
+#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.8 - 2019-09-23"
 
 
 extern char *hurootcertstr;
@@ -126,6 +126,14 @@ int hz_base64_encode( unsigned char *dst, int *dlen, const unsigned char *src, i
 /*base64 decode*/
 int hz_base64_decode( unsigned char *dst, int *dlen, const unsigned char *src, int  slen );
 
+/**************************************** tbox info set *********************************************/
+int HzTboxSetVin(char *in_vin);
+//int HzTboxSetOwner(char *in_owner);
+//int HzTboxSetAuth(char *in_auth);
+
+
+//test
+//int HzTboxAesDecInfo( char *iFile, char *keynum);
 
 #endif  // _INC_H__
 
