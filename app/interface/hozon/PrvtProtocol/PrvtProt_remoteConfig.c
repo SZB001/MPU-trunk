@@ -1091,6 +1091,7 @@ void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *data1,const void *data2)
 		default:
 		break;	
 	}
+	AppData_rmtCfg.ReadResp.cfgsuccess = 1;
 	AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = 1;
 	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
 }
@@ -1217,6 +1218,7 @@ void PP_rmtCfg_ShowCfgPara(void)
 
 	log_o(LOG_HOZON, "AppData_rmtCfg.ReadResp.cfgsuccess = %d",AppData_rmtCfg.ReadResp.cfgsuccess);
 	log_o(LOG_HOZON, "\n/* FICM info */");
+	log_o(LOG_HOZON, "ficmConfigValid = %d",AppData_rmtCfg.ReadResp.FICM.ficmConfigValid);
 	log_o(LOG_HOZON, "FICM.token = %s",AppData_rmtCfg.ReadResp.FICM.token);
 	log_o(LOG_HOZON, "FICM.userID = %s",AppData_rmtCfg.ReadResp.FICM.userID);
 	log_o(LOG_HOZON, "FICM.directConnEnable = %d",AppData_rmtCfg.ReadResp.FICM.directConnEnable);
@@ -1225,6 +1227,7 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_o(LOG_HOZON, "FICM info length = %d\n",sizeof(App_rmtCfg_FICM_t));
 
 	log_o(LOG_HOZON, "\n/* APN1 info */");
+	log_o(LOG_HOZON, "apn1ConfigValid = %d",AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid);
 	log_o(LOG_HOZON, "APN1.tspAddr = %s",AppData_rmtCfg.ReadResp.APN1.tspAddr);
 	log_o(LOG_HOZON, "APN1.tspUser = %s",AppData_rmtCfg.ReadResp.APN1.tspUser);
 	log_o(LOG_HOZON, "APN1.tspPass = %s",AppData_rmtCfg.ReadResp.APN1.tspPass);
@@ -1236,12 +1239,14 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_o(LOG_HOZON, "APN1 info length = %d\n",sizeof(App_rmtCfg_APN1_t));
 
 	log_o(LOG_HOZON, "\n/* APN2 info */");
+	log_o(LOG_HOZON, "apn2ConfigValid = %d",AppData_rmtCfg.ReadResp.APN2.apn2ConfigValid);
 	log_o(LOG_HOZON, "APN2.apn2Address = %s",AppData_rmtCfg.ReadResp.APN2.apn2Address);
 	log_o(LOG_HOZON, "APN2.apn2User = %s",AppData_rmtCfg.ReadResp.APN2.apn2User);
 	log_o(LOG_HOZON, "APN2.apn2Pass = %s",AppData_rmtCfg.ReadResp.APN2.apn2Pass);
 	log_o(LOG_HOZON, "APN2 info length = %d\n",sizeof(App_rmtCfg_APN2_t));
 
 	log_o(LOG_HOZON, "\n/* COMMON info */");
+	log_o(LOG_HOZON, "commonConfigValid = %d",AppData_rmtCfg.ReadResp.COMMON.commonConfigValid);
 	log_o(LOG_HOZON, "COMMON.actived = %d",AppData_rmtCfg.ReadResp.COMMON.actived);
 	log_o(LOG_HOZON, "COMMON.rcEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.rcEnabled);
 	log_o(LOG_HOZON, "COMMON.svtEnabled = %d",AppData_rmtCfg.ReadResp.COMMON.svtEnabled);
@@ -1263,6 +1268,7 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_o(LOG_HOZON, "COMMON info length = %d\n",sizeof(App_rmtCfg_COMMON_t));
 
 	log_o(LOG_HOZON, "\n/* EXTEND info */");
+	log_o(LOG_HOZON, "extendConfigValid = %d",AppData_rmtCfg.ReadResp.EXTEND.extendConfigValid);
 	log_o(LOG_HOZON, "EXTEND.ecallNO = %s",AppData_rmtCfg.ReadResp.EXTEND.ecallNO);
 	log_o(LOG_HOZON, "EXTEND.bcallNO = %s",AppData_rmtCfg.ReadResp.EXTEND.bcallNO);
 	log_o(LOG_HOZON, "EXTEND.ccNO = %s",AppData_rmtCfg.ReadResp.EXTEND.ccNO);

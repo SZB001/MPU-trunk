@@ -488,7 +488,7 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,
 	{
 		if(1 == PP_CertSt.waitEnSt)
 		{
-			if(0 == rxPack->msgdata[5])
+			if((0 == rxPack->msgdata[5]) || (5 == rxPack->msgdata[5]))
 			{
 				PP_CertSt.enSt = 1;
 			}
@@ -1443,6 +1443,7 @@ static int PP_CertDL_CertRenewReq(PrvtProt_task_t *task,PP_CertUpdata_t *CertUpd
 	CertDL_TxInform[i].mid = CertUpdata->para.mid;
 	CertDL_TxInform[i].eventtime = tm_get_time();
 	CertDL_TxInform[i].pakgtype = PP_TXPAKG_SIGTIME;
+	CertDL_TxInform[i].idleflag = 1;
 
 	SP_data_write(PP_Certupdata_pack.Header.sign,PP_Certupdata_pack.totallen,PP_CertDL_send_cb,&CertDL_TxInform[i]);
 	//protocol_dump(LOG_HOZON, "Cert_updata_request", PP_Certupdata_pack.Header.sign,PP_Certupdata_pack.totallen,1);
@@ -1498,6 +1499,7 @@ static int PP_CertDL_RevoListRenewReq(PrvtProt_task_t *task,PP_CertRevoList_t *C
 	CertDL_TxInform[i].mid = CertRevoList->para.mid;
 	CertDL_TxInform[i].eventtime = tm_get_time();
 	CertDL_TxInform[i].pakgtype = PP_TXPAKG_SIGTIME;
+	CertDL_TxInform[i].idleflag = 1;
 
 	SP_data_write(PP_CertRevoList_pack.Header.sign,PP_CertRevoList_pack.totallen,PP_CertDL_send_cb,&CertDL_TxInform[i]);
 	//protocol_dump(LOG_HOZON, "CertDownload_request", PP_CertRevoList_pack.Header.sign,PP_CertRevoList_pack.totallen,1);
@@ -1560,6 +1562,8 @@ static int PP_CertDL_CertStatus(PrvtProt_task_t *task,PP_CertificateSt_t *Certif
 	CertDL_TxInform[i].eventtime = tm_get_time();
 	CertDL_TxInform[i].pakgtype = CertificateSt->para.pakgtype;
 	CertDL_TxInform[i].aid = CertificateSt->para.middatatype;
+	CertDL_TxInform[i].idleflag = 1;
+	log_i(LOG_HOZON, "CertificateSt[%d]->aid = %d\n",i,CertificateSt->para.middatatype);
 
 	SP_data_write(PP_CertEn_pack.Header.sign,PP_CertEn_pack.totallen,PP_CertDL_send_cb,&CertDL_TxInform[i]);
 	//protocol_dump(LOG_HOZON, "CertDownload_request", PP_CertEn_pack.Header.sign,PP_CertEn_pack.totallen,1);
@@ -1621,6 +1625,7 @@ static int PP_CertDL_CertDLReq(PrvtProt_task_t *task,PP_CertificateDownload_t *C
 	CertDL_TxInform[i].mid = CertificateDownload->CertDLReq.mid;
 	CertDL_TxInform[i].eventtime = tm_get_time();
 	CertDL_TxInform[i].pakgtype = PP_TXPAKG_SIGTIME;
+	CertDL_TxInform[i].idleflag = 1;
 
 	SP_data_write(PP_CertDL_pack.Header.sign,PP_CertDL_pack.totallen,PP_CertDL_send_cb,&CertDL_TxInform[i]);
 	//protocol_dump(LOG_HOZON, "CertDownload_request", PP_CertDL_pack.Header.sign,PP_CertDL_pack.totallen,1);
@@ -2032,6 +2037,15 @@ static int  MatchCertVerify(void)
 	char	 OnePath[128]="\0";
 	char	 ScdPath[128]="\0";
 	int 	 iRet;
+
+	char vin[18] = {0};
+	gb32960_getvin(vin);
+	iRet = HzTboxSetVin(vin);
+	if(0 != iRet)
+	{
+		log_e(LOG_HOZON,"HzTboxSetVin error+++++++++++++++iRet[%d]\n",iRet);
+		return -1;
+	}
 
 	sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
 	sprintf(ScdPath, "%s","/usrdata/pem/TerminalCA.cer");
