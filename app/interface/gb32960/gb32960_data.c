@@ -3285,6 +3285,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0, i, j;
+	uint8_t  warnlvl = 0,warnlvltemp = 0;
     uint8_t* warnlvl_ptr;
     uint8_t* warnnum_ptr;
     uint16_t warn_code = 0;
@@ -3294,11 +3295,11 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 	uint8_t vs_warn[GB32960_VSWARN] = {0};
 	const char Ext_gb_use_dbc_warnlvl[GB32960_VSWARN] =
     {
-    	0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,
+    	1,1,1,1,1,1,0,1,1,1,
+		0,0,0,1,0,1,1,0,0,1,
+		1,1,0,1,1,1,1,0,0,1,
+		0,0,0,1,1,1,1,0,0,1,
+		1,1,1,0,1,0,1,0,1,0,
 		0,0,0,0,0,0,0,0,0
     };
 	
@@ -3314,11 +3315,8 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     {
         for (j = 32; j < GB32960_MAXWARN; j++)
         {
-            if (gbinf->warn[i][j] &&
-            (dbc_get_signal_from_id(gbinf->warn[i][j])->value ||
-            (gbinf->warn[3][j] &&
-            dbc_get_signal_from_id(gbinf->warn[3][j])->value)))
-            // index 3,as a relevance channel,if the is two canid used for on warning
+            if (gbinf->warn[i][j] &&	\
+            		dbc_get_signal_from_id(gbinf->warn[i][j])->value)
             {
             	warnvalue = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
             	if(j == 0x50)//制冷不工作原因
@@ -3354,6 +3352,19 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 						vs_warn[j-32] = 1;
 					}
             	}
+
+				if(Ext_gb_use_dbc_warnlvl[j-32])
+                {
+                	warnlvl  = i + 1;
+                }
+				else
+				{
+					if (gbinf->warn[i][j] &&	\
+            				(dbc_get_signal_from_id(gbinf->warn[i][j])->value > warnlvltemp))
+					{
+						warnlvltemp = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
+					}
+				}
             }
         }
     }
@@ -3386,6 +3397,10 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	buf[len++] = warn_code;
     	(*warnnum_ptr)++;
 		vs_warn[0x2c-32] = 1;
+		if(warnlvltemp < 1)
+		{
+			warnlvltemp = 1;
+		}
     }
 
     //与BMS通讯丢失
@@ -3396,6 +3411,10 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	buf[len++] = warn_code;
     	(*warnnum_ptr)++;
 		vs_warn[0x45-32] = 1;
+		if(warnlvltemp < 2)
+		{
+			warnlvltemp = 2;
+		}
     }
 
     //与MCU通讯丢失
@@ -3406,6 +3425,10 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	buf[len++] = warn_code;
     	(*warnnum_ptr)++;
 		vs_warn[0x46-32] = 1;
+		if(warnlvltemp < 2)
+		{
+			warnlvltemp = 2;
+		}
     }
 
     //拖车提醒
@@ -3417,6 +3440,13 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     	(*warnnum_ptr)++;
 		vs_warn[0x4D-32] = 1;
     }
+
+	if(warnlvltemp > warnlvl)
+	{
+		warnlvl = warnlvltemp;
+	}
+
+	*warnlvl_ptr = warnlvl;
 
 	//故障诊断,用于外部获取故障报警状态
     for(j = 0;j < GB32960_VSWARN;j++)
