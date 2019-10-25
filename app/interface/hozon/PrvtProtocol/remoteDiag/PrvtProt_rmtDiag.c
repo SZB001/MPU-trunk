@@ -485,11 +485,13 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 			if(ret >= 0)
 			{
 				idlenode = PP_getIdleNode();
-				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+				//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_DIAG;
 				PP_TxInform[idlenode].mid = PP_MID_DIAG_RESP;
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
+				PP_TxInform[idlenode].idleflag = 1;
+
 				SP_data_write(PP_rmtDiag_Pack.Header.sign, \
 						PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&PP_TxInform[idlenode]);
 				protocol_dump(LOG_HOZON, "diag_req_response", PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen,1);
@@ -835,11 +837,13 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 			{
 				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 				idlenode = PP_getIdleNode();
-				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+				//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_DIAG;
 				PP_TxInform[idlenode].mid = PP_MID_DIAG_STATUS;
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
+				PP_TxInform[idlenode].idleflag = 1;
+
 				SP_data_write(PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen, \
 						PP_rmtDiag_send_cb,&PP_TxInform[idlenode]);
 				protocol_dump(LOG_HOZON, "diag_status_response", PP_rmtDiag_Pack.Header.sign,PP_rmtDiag_Pack.totallen,1);
@@ -936,11 +940,13 @@ static int PP_rmtDiag_FaultCodeCleanResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_
 	PP_rmtDiag_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
 
 	idlenode = PP_getIdleNode();
-	memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+	//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 	PP_TxInform[idlenode].aid = PP_AID_DIAG;
 	PP_TxInform[idlenode].mid = PP_MID_DIAG_FAULTCODECLEANRESP;
 	PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
 	PP_TxInform[idlenode].eventtime = tm_get_time();
+	PP_TxInform[idlenode].idleflag = 1;
+
 	SP_data_write(PP_rmtDiag_Pack.Header.sign, \
 			PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&PP_TxInform[idlenode]);
 	protocol_dump(LOG_HOZON, "diag_cleanfaultcode_response", \

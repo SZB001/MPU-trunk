@@ -1439,7 +1439,7 @@ static int PP_CertDL_CertRenewReq(PrvtProt_task_t *task,PP_CertUpdata_t *CertUpd
 	PP_Certupdata_pack.Header.msglen = PrvtPro_BSEndianReverse((long)PP_Certupdata_pack.totallen);
 
 	i = PP_CertDL_getIdleNode();
-	memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
+	//memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	CertDL_TxInform[i].mid = CertUpdata->para.mid;
 	CertDL_TxInform[i].eventtime = tm_get_time();
 	CertDL_TxInform[i].pakgtype = PP_TXPAKG_SIGTIME;
@@ -1495,7 +1495,7 @@ static int PP_CertDL_RevoListRenewReq(PrvtProt_task_t *task,PP_CertRevoList_t *C
 	PP_CertRevoList_pack.Header.msglen = PrvtPro_BSEndianReverse((long)PP_CertRevoList_pack.totallen);
 
 	i = PP_CertDL_getIdleNode();
-	memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
+	//memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	CertDL_TxInform[i].mid = CertRevoList->para.mid;
 	CertDL_TxInform[i].eventtime = tm_get_time();
 	CertDL_TxInform[i].pakgtype = PP_TXPAKG_SIGTIME;
@@ -1557,7 +1557,7 @@ static int PP_CertDL_CertStatus(PrvtProt_task_t *task,PP_CertificateSt_t *Certif
 	PP_CertEn_pack.Header.msglen = PrvtPro_BSEndianReverse((long)PP_CertEn_pack.totallen);
 
 	i = PP_CertDL_getIdleNode();
-	memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
+	//memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	CertDL_TxInform[i].mid = CertificateSt->para.mid;
 	CertDL_TxInform[i].eventtime = tm_get_time();
 	CertDL_TxInform[i].pakgtype = CertificateSt->para.pakgtype;
@@ -1621,7 +1621,7 @@ static int PP_CertDL_CertDLReq(PrvtProt_task_t *task,PP_CertificateDownload_t *C
 	PP_CertDL_pack.Header.msglen = PrvtPro_BSEndianReverse((long)PP_CertDL_pack.totallen);
 
 	i = PP_CertDL_getIdleNode();
-	memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
+	//memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	CertDL_TxInform[i].mid = CertificateDownload->CertDLReq.mid;
 	CertDL_TxInform[i].eventtime = tm_get_time();
 	CertDL_TxInform[i].pakgtype = PP_TXPAKG_SIGTIME;

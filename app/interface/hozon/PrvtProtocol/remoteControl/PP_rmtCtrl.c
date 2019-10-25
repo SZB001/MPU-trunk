@@ -1536,7 +1536,9 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 	int i = PP_rmtCtrl_getIdleNode();
 	rmtCtrl_TxInform[i].aid = PP_AID_RMTCTRL;
 	rmtCtrl_TxInform[i].mid = PP_rmtCtrl.pack.DisBody.mID;
+	rmtCtrl_TxInform[i].eventtime = tm_get_time();
 	rmtCtrl_TxInform[i].pakgtype = PP_TXPAKG_CONTINUE;
+	rmtCtrl_TxInform[i].idleflag = 1;
 
 	SP_data_write(PP_rmtCtrl_Pack.Header.sign,PP_rmtCtrl_Pack.totallen,PP_rmtCtrl_send_cb,&rmtCtrl_TxInform[i]);
 

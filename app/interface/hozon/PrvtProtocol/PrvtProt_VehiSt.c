@@ -116,7 +116,6 @@ void PP_VS_init(void)
 	PP_rmtVS.pack.DisBody.appDataProVer = 256;
 	PP_rmtVS.pack.DisBody.testFlag = 1;
 	PP_rmtVS.state.req = PP_VS_NOREQ;
-	//memset(&VS_TxInform,0,sizeof(PrvtProt_TxInform_t));
 }
 
 /******************************************************
@@ -290,11 +289,12 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 			if(0 == PP_VS_VehiStatusResp(task,&PP_rmtVS))
 			{
 				idlenode = PP_getIdleNode();
-				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+				//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_VS;
 				PP_TxInform[idlenode].mid = PP_MID_VS_RESP;
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
+				PP_TxInform[idlenode].idleflag = 1;
 
 				SP_data_write(PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,PP_VS_send_cb,&PP_TxInform[idlenode]);
 				protocol_dump(LOG_HOZON, "PP_VS_BASICSTATUS", PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,1);
@@ -308,11 +308,12 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 			if(0 == PP_VS_VehiStatusResp(task,&PP_rmtVS))
 			{
 				idlenode = PP_getIdleNode();
-				memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+				//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_VS;
 				PP_TxInform[idlenode].mid = PP_MID_VS_RESP;
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
+				PP_TxInform[idlenode].idleflag = 1;
 
 				SP_data_write(PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,PP_VS_send_cb,&PP_TxInform[idlenode]);
 				protocol_dump(LOG_HOZON, "PP_VS_EXTSTATUS", PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,1);

@@ -128,7 +128,6 @@ void PP_xcall_init(void)
 		PP_xcall[i].Type = i + 1;
 		PP_xcall[i].state.req = 0;
 
-		//memset(&Xcall_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	}
 }
 
@@ -337,10 +336,11 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		if(0 == PP_xcall_xcallResponse(task,PP_ECALL))
 		{
 			idlenode = PP_getIdleNode();
-			memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+			//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 			PP_TxInform[idlenode].aid = PP_AID_XCALL;
 			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
 			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
+			PP_TxInform[idlenode].idleflag = 1;
 
 			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
 			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
@@ -354,10 +354,11 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		if(0 == PP_xcall_xcallResponse(task,PP_BCALL))
 		{
 			idlenode = PP_getIdleNode();
-			memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+			//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 			PP_TxInform[idlenode].aid = PP_AID_XCALL;
 			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
 			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
+			PP_TxInform[idlenode].idleflag = 1;
 
 			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
 			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
@@ -371,10 +372,11 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		if(0 == PP_xcall_xcallResponse(task,PP_ICALL))
 		{
 			idlenode = PP_getIdleNode();
-			memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+			//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 			PP_TxInform[idlenode].aid = PP_AID_XCALL;
 			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
 			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
+			PP_TxInform[idlenode].idleflag = 1;
 
 			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
 			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
@@ -388,10 +390,11 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		if(0 == PP_xcall_xcallResponse(task,PP_detection))
 		{
 			idlenode = PP_getIdleNode();
-			memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
+			//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 			PP_TxInform[idlenode].aid = PP_AID_XCALL;
 			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
 			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
+			PP_TxInform[idlenode].idleflag = 1;
 
 			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
 			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
