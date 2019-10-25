@@ -179,6 +179,9 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task);
 static int PP_CertDL_do_CertDownload(PrvtProt_task_t *task);
 static int PP_CertDL_do_CertRenew(PrvtProt_task_t *task);
 static int PP_CertDL_checkCertExist(void);
+static int PP_CertDL_checkCertKeyExist(void);
+static int PP_CertDL_checkCertCsrExist(void);
+static int PP_CertDL_checkCipherExist(void);
 extern char * mbTrimStr( char *pStrSrc );
 /******************************************************
 description�� function code
@@ -246,7 +249,6 @@ int PP_CertDownload_mainfunction(void *task)
 		pp_certDL_IGNoldSt = pp_certDL_IGNnewSt;
 		if(1 == pp_certDL_IGNnewSt)//IGN ON
 		{
-			PP_CertDL_checkCertExist();
 			PP_CertRevoList.checkRevoFlag = 1;
 		}
 		else
@@ -256,6 +258,16 @@ int PP_CertDownload_mainfunction(void *task)
 		}
 	}
 
+	if(1 == pp_certDL_IGNnewSt)//IGN ON
+	{
+		if(1 == dev_diag_get_emmc_status())//emmc挂载成功
+		{
+			PP_CertDL_checkCertExist();
+			PP_CertDL_checkCertKeyExist();
+			PP_CertDL_checkCertCsrExist();
+			PP_CertDL_checkCipherExist();
+		}
+	}
 
 	res = 		PP_CertDL_do_checksock(task_ptr) 			||	\
 				PP_CertDL_do_rcvMsg(task_ptr) 				||	\
@@ -1776,6 +1788,9 @@ unsigned char GetPP_CertDL_CertUpdate(void)
 	return St;
 }
 
+/*
+* 检查证书：若主路径下证书文件丢失，备份路径下文件存在，则从备份路径恢复文件
+*/
 static int PP_CertDL_checkCertExist(void)
 {
 	uint8_t cert_exist_flag = 0;
@@ -1784,16 +1799,13 @@ static int PP_CertDL_checkCertExist(void)
 	
 	if((access(PP_CERTDL_CERTPATH,F_OK)) == 0)//证书存在
 	{
-		log_i(LOG_HOZON, "certificate exist!\n");
 		cert_exist_flag = 1;
 	}
 	else
 	{
 		if((access(COM_SDCARD_DIR_PKI_CERT,F_OK)) == 0)//检查备份路径下证书存在
 		{
-			log_i(LOG_HOZON, "certificate lost,copy from sdcard!\n");
-			file_copy(COM_SDCARD_DIR_PKI_KEY,PP_CERTDL_TWOCERTKEYPATH);//从备份文件还原
-			file_copy(COM_SDCARD_DIR_PKI_CSR,PP_CERTDL_TWOCERTCSRPATH);//从备份文件还原
+			log_i(LOG_HOZON, "certificate lost,recover from sdcard!\n");
 			file_copy(COM_SDCARD_DIR_PKI_CERT,PP_CERTDL_CERTPATH);//从备份文件还原
 			cert_exist_flag = 1;
 		}
@@ -1805,6 +1817,89 @@ static int PP_CertDL_checkCertExist(void)
 	return cert_exist_flag;
 }
 
+/*
+* 检查key文件：若主路径下文件丢失，备份路径下文件存在，则从备份路径恢复文件
+*/
+static int PP_CertDL_checkCertKeyExist(void)
+{
+	uint8_t key_exist_flag = 0;
+
+	pthread_mutex_lock(&checkcertmtx);
+	
+	if((access(PP_CERTDL_TWOCERTKEYPATH,F_OK)) == 0)//key文件存在
+	{
+		key_exist_flag = 1;
+	}
+	else
+	{
+		if((access(COM_SDCARD_DIR_PKI_KEY,F_OK)) == 0)//检查备份路径下是否存在
+		{
+			log_i(LOG_HOZON, "certificate key lost,recover from sdcard!\n");
+			file_copy(COM_SDCARD_DIR_PKI_KEY,PP_CERTDL_TWOCERTKEYPATH);//从备份文件还原
+			key_exist_flag = 1;
+		}
+	}
+	
+	pthread_mutex_unlock(&checkcertmtx);//解锁
+
+	return key_exist_flag;
+}
+
+/*
+* 检查csr：若主路径下文件丢失，备份路径下文件存在，则从备份路径恢复文件
+*/
+static int PP_CertDL_checkCertCsrExist(void)
+{
+	uint8_t csr_exist_flag = 0;
+
+	pthread_mutex_lock(&checkcertmtx);
+	
+	if((access(PP_CERTDL_TWOCERTCSRPATH,F_OK)) == 0)//证书存在
+	{
+		csr_exist_flag = 1;
+	}
+	else
+	{
+		if((access(COM_SDCARD_DIR_PKI_CSR,F_OK)) == 0)//检查备份路径下证书存在
+		{
+			log_i(LOG_HOZON, "certificate csr lost,recover from sdcard!\n");
+			file_copy(COM_SDCARD_DIR_PKI_CSR,PP_CERTDL_TWOCERTCSRPATH);//从备份文件还原
+			csr_exist_flag = 1;
+		}
+	}
+	
+	pthread_mutex_unlock(&checkcertmtx);//解锁
+
+	return csr_exist_flag;
+}
+
+/*
+* 检查密文：若主路径下文件丢失，备份路径下文件存在，则从备份路径恢复文件
+*/
+static int PP_CertDL_checkCipherExist(void)
+{
+	int cipher_exist_flag = 0;
+
+	pthread_mutex_lock(&checkcertmtx);
+	
+	if((access(PP_CERTDL_CIPHER_PATH,F_OK)) == 0)//密文存在
+	{
+		cipher_exist_flag = 1;
+	}
+	else
+	{
+		if((access(COM_SDCARD_DIR_PKI_CIPHER,F_OK)) == 0)//检查备份路径下密文存在
+		{
+			log_i(LOG_HOZON, "cipher lost,recover from sdcard!\n");
+			file_copy(COM_SDCARD_DIR_PKI_CIPHER,PP_CERTDL_CIPHER_PATH);//备份路径还原密文
+			cipher_exist_flag = 1;
+		}
+	}
+
+	pthread_mutex_unlock(&checkcertmtx);//解锁
+
+	return cipher_exist_flag;
+}
 
 /*
  * 转码
@@ -1909,10 +2004,6 @@ static int  PP_CertDL_checkCipherCsr(void)
 			}
 			
 		}
-		//else
-		//{
-		//	fclose(fp);
-		//}
 
 		PP_CertDL.state.cipherexist = 1;
 	}
