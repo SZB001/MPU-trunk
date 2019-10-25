@@ -99,7 +99,7 @@ typedef struct
 	uint8_t		CertValid;//证书有效性
 	uint8_t		CertEnflag;//证书启用状态
 	uint8_t		certDLTestflag;//证书下载测试标志
-	uint8_t		cipherexist;
+	//uint8_t		cipherexist;
 
 	uint8_t		checkSt;
 	uint8_t		verifyFlag;

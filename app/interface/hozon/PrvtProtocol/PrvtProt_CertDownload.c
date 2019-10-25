@@ -654,7 +654,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 				{
 					log_i(LOG_HOZON,"verify userAuth.cer success\n");
 					PP_checkCertSt.CertUpdataSt = 0;
-					PrvtPro_SettboxId(PP_CertDownloadPara.tboxid);
+					PrvtPro_SettboxId(1,PP_CertDownloadPara.tboxid);
 					PP_CertDL.state.CertValid = 1;
 					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
 					PP_CertDL.state.CertEnflag = 0;
@@ -1979,34 +1979,28 @@ static int  PP_CertDL_checkCipherCsr(void)
 	}
 	log_i(LOG_HOZON, "/usrdata/pki/ exist or create seccess\n");
 
-	if(!PP_CertDL.state.cipherexist)
+	if((access(PP_CERTDL_CIPHER_PATH,F_OK)) != 0)//检查密文文件不存在
 	{
-		//FILE *fp;
-		//if((fp = fopen("/usrdata/pki/sn_sim_encinfo.txt", "r")) == NULL)//检查密文文件不存在
-		if((access(PP_CERTDL_CIPHER_PATH,F_OK)) != 0)//检查密文文件不存在
+		if((access(COM_SDCARD_DIR_PKI_CIPHER,F_OK)) != 0)//检查备份路径下密文文件不存在
 		{
-			if((access(COM_SDCARD_DIR_PKI_CIPHER,F_OK)) != 0)//检查备份路径下密文文件不存在
+			iRet = HzTboxSnSimEncInfo(PP_CertDL_SN,PP_CertDL_ICCID,"/usrdata/pem/aeskey.txt", \
+					PP_CERTDL_CIPHER_PATH, &datalen);
+			if(iRet != 3520)
 			{
-				iRet = HzTboxSnSimEncInfo(PP_CertDL_SN,PP_CertDL_ICCID,"/usrdata/pem/aeskey.txt", \
-						PP_CERTDL_CIPHER_PATH, &datalen);
-				if(iRet != 3520)
-				{
-					log_e(LOG_HOZON,"HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
-					return -1;
-				}
+				log_e(LOG_HOZON,"HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
+				return -1;
+			}
 
-				file_copy(PP_CERTDL_CIPHER_PATH,COM_SDCARD_DIR_PKI_CIPHER);//备份文件到emmc
-				log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
-			}
-			else
-			{
-				file_copy(COM_SDCARD_DIR_PKI_CIPHER,PP_CERTDL_CIPHER_PATH);//备份路径还原密文
-			}
-			
+			file_copy(PP_CERTDL_CIPHER_PATH,COM_SDCARD_DIR_PKI_CIPHER);//备份文件到emmc
+			log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
 		}
-
-		PP_CertDL.state.cipherexist = 1;
+		else
+		{
+			file_copy(COM_SDCARD_DIR_PKI_CIPHER,PP_CERTDL_CIPHER_PATH);//备份路径还原密文
+		}
+		
 	}
+
 	/******HzTboxGenCertCsr *******/
     //C = cn, ST = shanghai, L = shanghai, O = hezhong, OU = hezhong,
 	//CN = hu_client, emailAddress = sm2_hu_client@160.com

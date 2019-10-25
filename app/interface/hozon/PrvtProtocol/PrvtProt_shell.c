@@ -421,7 +421,7 @@ static int PP_shell_SetTboxid(int argc, const char **argv)
 
 	sscanf(argv[0], "%d", &tboxid);
 
-	PrvtPro_SettboxId(tboxid);
+	PrvtPro_SettboxId(0,tboxid);
     sleep(1);
     return 0;
 }

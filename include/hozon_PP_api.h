@@ -67,7 +67,7 @@ extern int PrvtProt_run(void);
 
 extern void PrvtPro_SetHeartBeatPeriod(unsigned char period);
 extern void PrvtPro_Setsuspend(unsigned char suspend);
-extern void PrvtPro_SettboxId(unsigned int tboxid);
+extern void PrvtPro_SettboxId(char obj,unsigned int tboxid);
 extern void PrvtPro_SetEcallReq(unsigned char req);
 extern void PrvtPro_SetEcallResp(unsigned char resp);
 extern void PP_rmtCfg_SetmcuSw(const char *mcuSw);

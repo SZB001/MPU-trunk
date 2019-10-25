@@ -896,9 +896,22 @@ void PrvtPro_Setsuspend(unsigned char suspend)
 
 *��  ע��
 ******************************************************/
-void PrvtPro_SettboxId(unsigned int tboxid)
+void PrvtPro_SettboxId(char obj,unsigned int tboxid)
 {
 	log_o(LOG_HOZON, "set tboxid = %d\n",tboxid);
+
+	if(0 == obj)
+	{
+		pp_task.tboxid = tboxid;
+		if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, 4))
+		{
+			log_e(LOG_HOZON, "save tboxid failed");
+		}
+
+		return;
+	}
+
+
 	if(0 != tboxid)
 	{
 		pp_task.tboxid = tboxid;
