@@ -93,7 +93,6 @@ typedef struct
 	uint8_t	checkStFlag;
 	uint8_t CertUpdataReq;
 	uint64_t ExpTime;
-	uint8_t CertUpdataSt;
 	uint8_t updataSt;
 	uint8_t checkSDKVerflag;
 	uint64_t checkcerttimer;
@@ -183,6 +182,8 @@ static int PP_CertDL_checkCertKeyExist(void);
 static int PP_CertDL_checkCertCsrExist(void);
 static int PP_CertDL_checkCipherExist(void);
 extern char * mbTrimStr( char *pStrSrc );
+static int PP_CertDL_generateCipher(void);
+static int PP_CertDL_generateCsrKey(void);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -653,7 +654,6 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 				if(0 == MatchCertVerify())//验证证书
 				{
 					log_i(LOG_HOZON,"verify userAuth.cer success\n");
-					PP_checkCertSt.CertUpdataSt = 0;
 					PrvtPro_SettboxId(1,PP_CertDownloadPara.tboxid);
 					PP_CertDL.state.CertValid = 1;
 					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
@@ -710,10 +710,12 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 		if((tm_get_time() - PP_checkCertSt.checkcerttimer) >= 5000)
 		{
 			PP_checkCertSt.checkcerttimer = tm_get_time();
+			#if 0
 			if(1 == PP_CertDL_do_checkCertStatus())//检查吊销和过期
 			{
 				sockproxy_socketclose((int)(PP_SP_COLSE_CDL) + 1);
 			}
+			#endif
 		}
 	}
 	else
@@ -773,7 +775,7 @@ static int PP_CertDL_do_CertDownload(PrvtProt_task_t *task)
 			int 	 iRet = 0;
 			/*读取CSR文件内容*/
 			iRet = HzTboxApplicationData(PP_CERTDL_TWOCERTCSRPATH , \
-					"/usrdata/pki/sn_sim_encinfo.txt", gcsroutdata, &gcoutlen);
+					PP_CERTDL_CIPHER_PATH, gcsroutdata, &gcoutlen);
 			if(iRet == 3630)
 			{
 				char vin[18] = {0};
@@ -1205,7 +1207,6 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task)
 			{
 				PP_CertDL.state.dlsuccess = PP_CERTDL_INITVAL;
 				PP_checkCertSt.CertUpdataReq = 0;
-				PP_checkCertSt.CertUpdataSt = 1;
 				PP_checkCertSt.updataSt = PP_CERTUPDATA_CKREQ;
 			}
 		}
@@ -1273,72 +1274,50 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task)
 		break;
 		case PP_CERTUPDATA_UDREQ:
 		{
-			char vin[18] = {0};
-
-			if(dir_exists("/usrdata/pki/update/") == 0 &&
-			        dir_make_path("/usrdata/pki/update/", S_IRUSR | S_IWUSR, false) != 0)
+			if(0 == PP_CertDL_generateCsrKey())
 			{
-		        log_e(LOG_HOZON, "open cache path fail, reset all index");
-		        PP_checkCertSt.updataSt = PP_CERTUPDATA_END;
-			}
-			else
-			{
-				log_i(LOG_HOZON, "/usrdata/pki/update exist or create seccess\n");
-
-				CAR_INFO car_information = {0};
-
-				gb32960_getvin(vin);
-				car_information.tty_type="Tbox";
-				car_information.unique_id=vin;
-				car_information.carowner_acct="18221802221";
-				car_information.impower_acct="12900100101";
-				iRet = HzTboxGenCertCsr("SM2", NULL, &car_information, \
-						"CN|ShangHai|ShangHai|HOZON|Intelligent Cockpit Instiute|Tbox|tbox@hozonauto.com", \
-						"/usrdata/pki/update" ,"userAuth", "PEM");
-				if(iRet == 3180)
+				FILE *fp;
+				fp=fopen(PP_CERTDL_TWOCERTRCSRPATH_UPDATE,"r");
+				if(fp != NULL)
 				{
-					FILE *fp;
-					fp=fopen(PP_CERTDL_TWOCERTRCSRPATH_UPDATE,"r");
-					if(fp != NULL)
-					{
-						int size = 0;
-						char *filedata_ptr ;
-						//求得文件的大小
-						fseek(fp, 0, SEEK_END);
-						size = ftell(fp);
-						rewind(fp);
-						//申请一块能装下整个文件的空间
-						filedata_ptr = (char*)malloc(sizeof(char)*size);
-						fread(filedata_ptr,1,size,fp);//每次读一个，共读size次
+					int size = 0;
+					char vin[18] = {0};
+					char *filedata_ptr;
+					//求得文件的大小
+					fseek(fp, 0, SEEK_END);
+					size = ftell(fp);
+					rewind(fp);
+					//申请一块能装下整个文件的空间
+					filedata_ptr = (char*)malloc(sizeof(char)*size);
+					fread(filedata_ptr,1,size,fp);//每次读一个，共读size次
 
-						log_i(LOG_HOZON,"userAuth.csr =  %s",filedata_ptr);
-						PP_CertDL.para.CertDLReq.infoListLength = size + strlen(vin) + strlen("&&0&&0&&");
-						memcpy(PP_CertDL.para.CertDLReq.infoList,vin,strlen(vin));
-						memcpy(PP_CertDL.para.CertDLReq.infoList+17,"&&0&&0&&",strlen("&&0&&0&&"));
-						memcpy(PP_CertDL.para.CertDLReq.infoList+17+8,filedata_ptr,size);
+					log_i(LOG_HOZON,"userAuth.csr =  %s",filedata_ptr);
+					gb32960_getvin(vin);
+					PP_CertDL.para.CertDLReq.infoListLength = size + strlen(vin) + strlen("&&0&&0&&");
+					memcpy(PP_CertDL.para.CertDLReq.infoList,vin,strlen(vin));
+					memcpy(PP_CertDL.para.CertDLReq.infoList+17,"&&0&&0&&",strlen("&&0&&0&&"));
+					memcpy(PP_CertDL.para.CertDLReq.infoList+17+8,filedata_ptr,size);
 
-						fclose(fp);
-						free(filedata_ptr);
+					fclose(fp);
+					free(filedata_ptr);
 
-						PP_CertDL.para.CertDLReq.mid = PP_CERTDL_MID_REQ;
-						PP_CertDL.para.CertDLReq.eventid = PP_CertDownloadPara.eventid;
-						PP_CertDL.para.CertDLReq.cerType = 1;//tbox
-						PP_CertDL_CertDLReq(task,&PP_CertDL.para);
-						//PP_CertDL.state.dlsuccess = PP_CERTDL_INITVAL;
-						updatawaittime = tm_get_time();
-						PP_checkCertSt.updataSt = PP_CERTUPDATA_UDWAIT;
-					}
-					else
-					{
-						log_e(LOG_HOZON,"open update path userAuth.csr fail\n");
-						PP_checkCertSt.updataSt = PP_CERTUPDATA_END;
-					}
+					PP_CertDL.para.CertDLReq.mid = PP_CERTDL_MID_REQ;
+					PP_CertDL.para.CertDLReq.eventid = PP_CertDownloadPara.eventid;
+					PP_CertDL.para.CertDLReq.cerType = 1;//tbox
+					PP_CertDL_CertDLReq(task,&PP_CertDL.para);
+					updatawaittime = tm_get_time();
+					PP_checkCertSt.updataSt = PP_CERTUPDATA_UDWAIT;
 				}
 				else
 				{
-					log_e(LOG_HOZON,"HzTboxGenCertCsr error ---------------++++++++++++++.[%d]\n", iRet);
+					log_e(LOG_HOZON,"open update path userAuth.csr fail\n");
 					PP_checkCertSt.updataSt = PP_CERTUPDATA_END;
 				}
+			}
+			else
+			{
+				log_e(LOG_HOZON,"PP_CertDL_generateCsrKey error ---------------++++++++++++++\n");
+				PP_checkCertSt.updataSt = PP_CERTUPDATA_END;
 			}
 		}
 		break;
@@ -1360,7 +1339,6 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task)
 		break;
 		case PP_CERTUPDATA_END:
 		{
-			//PP_checkCertSt.CertUpdataSt = 0;
 			PP_checkCertSt.updataSt = PP_CERTUPDATA_IDLE;
 
 			if(((1 == PP_CertUpdata.allowupdata) && (PP_CERTDL_SUCCESS == PP_CertDL.state.dlsuccess)) || \
@@ -1972,58 +1950,13 @@ static int PP_CertDL_base64_decode( unsigned char *dst, unsigned int *dlen, \
 
 static int  PP_CertDL_checkCipherCsr(void)
 {
-	int iRet = 0;
-	/*sn_sim_encinfo.txt*/
-	int datalen = 0;
-
-	if (dir_exists("/usrdata/pki/") == 0 &&
-	        dir_make_path("/usrdata/pki/", S_IRUSR | S_IWUSR, false) != 0)
+	if(0 != PP_CertDL_generateCipher())
 	{
-        log_e(LOG_HOZON, "open cache path fail, reset all index");
-        return -1;
-	}
-	log_i(LOG_HOZON, "/usrdata/pki/ exist or create seccess\n");
-
-	if((access(PP_CERTDL_CIPHER_PATH,F_OK)) != 0)//检查密文文件不存在
-	{
-		if((access(COM_SDCARD_DIR_PKI_CIPHER,F_OK)) != 0)//检查备份路径下密文文件不存在
-		{
-			iRet = HzTboxSnSimEncInfo(PP_CertDL_SN,PP_CertDL_ICCID,"/usrdata/pem/aeskey.txt", \
-					PP_CERTDL_CIPHER_PATH, &datalen);
-			if(iRet != 3520)
-			{
-				log_e(LOG_HOZON,"HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
-				return -1;
-			}
-
-			file_copy(PP_CERTDL_CIPHER_PATH,COM_SDCARD_DIR_PKI_CIPHER);//备份文件到emmc
-			log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
-		}
-		else
-		{
-			file_copy(COM_SDCARD_DIR_PKI_CIPHER,PP_CERTDL_CIPHER_PATH);//备份路径还原密文
-		}
-		
+		return -1;
 	}
 
-	/******HzTboxGenCertCsr *******/
-    //C = cn, ST = shanghai, L = shanghai, O = hezhong, OU = hezhong,
-	//CN = hu_client, emailAddress = sm2_hu_client@160.com
-    //文件名：
-    //格式: PEM / DER or 两个格式同时生成
-	CAR_INFO car_information;
-	char vin[18] = {0};
-	gb32960_getvin(vin);
-	car_information.tty_type="Tbox";
-	car_information.unique_id= vin;
-	car_information.carowner_acct="18221802221";
-	car_information.impower_acct="12900100101";
-	int iret = HzTboxGenCertCsr("SM2", NULL, &car_information, \
-			"CN|ShangHai|ShangHai|HOZON|Intelligent Cockpit Instiute|Tbox|tbox@hozonauto.com", \
-			"/usrdata/pki","userAuth", "PEM");
-	if(iret != 3180)
+	if(0 != PP_CertDL_generateCsrKey())
 	{
-		log_e(LOG_HOZON,"HzTboxGenCertCsr error ---------------++++++++++++++.[%d]\n", iret);
 		return -1;
 	}
 
@@ -2064,17 +1997,9 @@ static int  MatchCertVerify(void)
 		return -1;
 	}
 
-	if(PP_checkCertSt.CertUpdataSt == 1)//更新证书
-	{
-		file_copy(PP_CERTDL_CERTPATH_UPDATE,PP_CERTDL_CERTPATH);//替换旧证书
-		file_copy(PP_CERTDL_TWOCERTRKEYPATH_UPDATE,PP_CERTDL_TWOCERTKEYPATH);//替换旧userAuth.key
-		file_copy(PP_CERTDL_TWOCERTRCSRPATH_UPDATE,PP_CERTDL_TWOCERTCSRPATH);//替换旧userAuth.csr
-
-	}
-	else
-	{
-		file_copy(PP_CERTDL_CERTPATH_UPDATE,PP_CERTDL_CERTPATH);//拷贝证书到用户路径
-	}
+	file_copy(PP_CERTDL_CERTPATH_UPDATE,PP_CERTDL_CERTPATH);//替换旧证书
+	file_copy(PP_CERTDL_TWOCERTRKEYPATH_UPDATE,PP_CERTDL_TWOCERTKEYPATH);//替换旧userAuth.key
+	file_copy(PP_CERTDL_TWOCERTRCSRPATH_UPDATE,PP_CERTDL_TWOCERTCSRPATH);//替换旧userAuth.csr
 
 	file_copy(PP_CERTDL_TWOCERTKEYPATH,COM_SDCARD_DIR_PKI_KEY);//备份文件到emmc
 	file_copy(PP_CERTDL_TWOCERTCSRPATH,COM_SDCARD_DIR_PKI_CSR);//备份文件到emmc
@@ -2126,5 +2051,83 @@ static int PP_CertDL_getCertSn(char Certpath)
 		log_i(LOG_HOZON,"PP_CertSt.para.certSnLength = %d ",PP_CertSt.para.certSnLength);
 		log_i(LOG_HOZON,"PP_CertSt.para.certSn = %s\n", PP_CertSt.para.certSn);
 	}
+	return 0;
+}
+
+/*
+* 生成密文
+*/
+static int PP_CertDL_generateCipher(void)
+{
+	int iRet = 0;
+	/*sn_sim_encinfo.txt*/
+	int datalen = 0;
+
+	if (dir_exists("/usrdata/pki/") == 0 &&
+	        dir_make_path("/usrdata/pki/", S_IRUSR | S_IWUSR, false) != 0)
+	{
+        log_e(LOG_HOZON, "open cache path fail, reset all index");
+        return -1;
+	}
+
+	if((access(PP_CERTDL_CIPHER_PATH,F_OK)) != 0)//检查密文文件不存在
+	{
+		if((access(COM_SDCARD_DIR_PKI_CIPHER,F_OK)) != 0)//检查备份路径下密文文件不存在
+		{
+			iRet = HzTboxSnSimEncInfo(PP_CertDL_SN,PP_CertDL_ICCID,"/usrdata/pem/aeskey.txt", \
+					PP_CERTDL_CIPHER_PATH, &datalen);
+			if(iRet != 3520)
+			{
+				log_e(LOG_HOZON,"HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
+				return -1;
+			}
+
+			file_copy(PP_CERTDL_CIPHER_PATH,COM_SDCARD_DIR_PKI_CIPHER);//备份文件到emmc
+			log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
+		}
+		else
+		{
+			file_copy(COM_SDCARD_DIR_PKI_CIPHER,PP_CERTDL_CIPHER_PATH);//备份路径还原密文
+		}
+		
+	}
+
+	return 0;
+}
+
+/*
+* 生成证书csr和key文件
+HzTboxGenCertCsr：
+    //C = cn, ST = shanghai, L = shanghai, O = hezhong, OU = hezhong,
+	//CN = hu_client, emailAddress = sm2_hu_client@160.com
+    //文件名：
+    //格式: PEM / DER or 两个格式同时生成
+*/
+static int PP_CertDL_generateCsrKey(void)
+{
+	CAR_INFO car_information;
+	char vin[18] = {0};
+
+	if(dir_exists("/usrdata/pki/update/") == 0 &&
+			dir_make_path("/usrdata/pki/update/", S_IRUSR | S_IWUSR, false) != 0)
+	{
+		log_e(LOG_HOZON, "open cache path fail, reset all index");
+		return -1;
+	}
+
+	gb32960_getvin(vin);
+	car_information.tty_type="Tbox";
+	car_information.unique_id=vin;
+	car_information.carowner_acct="18221802221";
+	car_information.impower_acct="12900100101";
+	int iret = HzTboxGenCertCsr("SM2", NULL, &car_information, \
+			"CN|ShangHai|ShangHai|HOZON|Intelligent Cockpit Instiute|Tbox|tbox@hozonauto.com", \
+			"/usrdata/pki/update","userAuth", "PEM");
+	if(iret != 3180)
+	{
+		log_e(LOG_HOZON,"HzTboxGenCertCsr error ---------------++++++++++++++.[%d]\n", iret);
+		return -1;
+	}
+
 	return 0;
 }
