@@ -16,7 +16,7 @@
 #define _INC_H_
 
 #define HOZON_TBOX_VERSION         0
-#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.8 - 2019-09-23"
+#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.10 - 2019-10-28"
 
 
 extern char *hurootcertstr;

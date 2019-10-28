@@ -50,11 +50,11 @@ int app_shell_drcfg(int argc, const char **argv)
 
     len = sizeof(unsigned int);
     cfg_get_para(CFG_ITEM_DEV_NUM, (unsigned char *)(&tmpInt), &len);
-    shellprintf("零部件编号 = %u\r\n", tmpInt);
+    shellprintf("parts number = %u\r\n", tmpInt);
 
     len = sizeof(vin);
     ret |= cfg_get_user_para(CFG_ITEM_GB32960_VIN, vin, &len);
-    shellprintf("车辆VIN = %s\r\n", vin);
+    shellprintf("vehicle VIN = %s\r\n", vin);
 
     char tboxsn[19];
     len = sizeof(tboxsn);
@@ -82,40 +82,40 @@ int app_shell_drcfg(int argc, const char **argv)
 
     char cfgver[33] = {0};
     getPP_rmtCfg_cfgVersion(cfgver);
-    shellprintf("TSP远程配置版本 = %s\r\n", cfgver);
+    shellprintf("TSP remote config version = %s\r\n", cfgver);
 
     len = sizeof(url.url);
     ret |= cfg_get_user_para(CFG_ITEM_GB32960_URL, url.url, &len);
-    shellprintf("平台地址(无PKI) = %s\r\n", url.url);
+    shellprintf("TSP ADDR NO PKI = %s\r\n", url.url);
     len = sizeof(url.port);
     ret |= cfg_get_user_para(CFG_ITEM_GB32960_PORT, &url.port, &len);
-    shellprintf("平台端口(无PKI) = %d\r\n", url.port);
+    shellprintf("TSP PORT NO PKI = %d\r\n", url.port);
 
     char sgLinkAddr[33];
 	int	 sgPort;
     getPP_rmtCfg_certAddrPort(sgLinkAddr,&sgPort);
-    shellprintf("单向链路地址(带PKI) = %s\r\n", sgLinkAddr);
-    shellprintf("单向链路端口(带PKI) = %d\r\n", sgPort);
+    shellprintf("SG LINK ADDR PKI = %s\r\n", sgLinkAddr);
+    shellprintf("SG LINK PORT PKI = %d\r\n", sgPort);
 
     char bdlLinkAddr[33];
 	int	 bdlPort;
     getPP_rmtCfg_tspAddrPort(bdlLinkAddr,&bdlPort);
-    shellprintf("双向链路地址(带PKI) = %s\r\n", bdlLinkAddr);
-    shellprintf("双向链路端口(带PKI) = %d\r\n", bdlPort);
+    shellprintf("BDL ADDR PKI = %s\r\n", bdlLinkAddr);
+    shellprintf("BDL PORT PKI = %d\r\n", bdlPort);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_DBC_PATH, buff, &len);
-    shellprintf("DBC配置 = %s\r\n", buff);
+    shellprintf("DBC PATH CONFIG = %s\r\n", buff);
 
     char certSn[32] = {0};
     len = sizeof(certSn);
     ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT,certSn,&len);
-    shellprintf("证书 = %s\r\n", certSn);
+    shellprintf("CERT FILE = %s\r\n", certSn);
     len = 1;
     uint8_t EnFlag;
 	ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&EnFlag,&len);
-    shellprintf("证书启用 = %d\r\n", EnFlag);
+    shellprintf("CERT ENABLE = %d\r\n", EnFlag);
 
     char wanAPN[32] = {0};
     len = sizeof(wanAPN);
@@ -124,7 +124,7 @@ int app_shell_drcfg(int argc, const char **argv)
 
     len = 1;
 	ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_FORBIDEN,&EnFlag,&len);
-    shellprintf("蓝牙一键启动 = %d\r\n", EnFlag);
+    shellprintf("ONE KEY START OF BLE ENABLE = %d\r\n", EnFlag);
 
     len = 1;
 	ret |= cfg_get_para(CFG_ITEM_WIFI_SET,&EnFlag,&len);
@@ -149,14 +149,14 @@ int app_shell_drcfg(int argc, const char **argv)
 
     len = sizeof(commpara.data_val);
     ret |= cfg_get_para(CFG_ITEM_FOTON_INTERVAL, &commpara.data_val, (uint32_t *)&len);
-    shellprintf("�����ϴ���� = %ds\r\n", commpara.data_val);
+    shellprintf("Data reporting interval = %ds\r\n", commpara.data_val);
     len = sizeof(commpara.hb_val);
     ret |= cfg_get_para(CFG_ITEM_FOTON_INTERVAL, &commpara.hb_val, (uint32_t *)&len);
-    shellprintf("�����ϴ���� = %ds\r\n", commpara.hb_val);
+    shellprintf("heartbeat interval = %ds\r\n", commpara.hb_val);
 
     len = sizeof(sleepmode);
     cfg_get_para(CFG_ITEM_SLEEP_MODE, &sleepmode, &len);
-    shellprintf("���߲��� = ");
+    shellprintf("SLEEP MODE = ");
 
     switch (sleepmode)
     {
@@ -183,39 +183,39 @@ int app_shell_drcfg(int argc, const char **argv)
 
     len = sizeof(canbaud);
     cfg_get_para(CFG_ITEM_CAN_DEFAULT_BAUD_0, &canbaud, &len);
-    shellprintf("HCAN DEFAULT������ = %dK\r\n", canbaud);
+    shellprintf("HCAN DEFAULT RATE = %dK\r\n", canbaud);
     len = sizeof(canbaud);
     cfg_get_para(CFG_ITEM_CAN_DEFAULT_BAUD_1, &canbaud, &len);
-    shellprintf("MCAN DEFAULT������ = %dK\r\n", canbaud);
+    shellprintf("MCAN DEFAULT RATE = %dK\r\n", canbaud);
     len = sizeof(canbaud);
     cfg_get_para(CFG_ITEM_CAN_DEFAULT_BAUD_2, &canbaud, &len);
-    shellprintf("LCAN DEFAULT������ = %dK\r\n", canbaud);
+    shellprintf("LCAN DEFAULT RATE = %dK\r\n", canbaud);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_ICALL, (unsigned char *)buff, &len);
-    shellprintf("ICALL���� = %s\r\n", buff);
+    shellprintf("ICALL = %s\r\n", buff);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_BCALL, (unsigned char *)buff, &len);
-    shellprintf("BCALL���� = %s\r\n", buff);
+    shellprintf("BCALL = %s\r\n", buff);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_WHITE_LIST, (unsigned char *)buff, &len);
-    shellprintf("���������� = %s\r\n", buff);
+    shellprintf("WHITE LIST = %s\r\n", buff);
 
-    shellprintf("INTEST_软件版本号 = %s\r\n", dev_get_version());
-    shellprintf("HOZON_软件版本号  = %s\r\n", DID_F1B0_SW_FIXED_VER);
-    shellprintf("HOZON_硬件版本号  = %s\r\n", DID_F191_HW_VERSION);
+    shellprintf("INTEST SOFTWARE VERSION = %s\r\n", dev_get_version());
+    shellprintf("HOZON SOFTWARE VERSION  = %s\r\n", DID_F1B0_SW_FIXED_VER);
+    shellprintf("HOZON HARDWARE VERSION  = %s\r\n", DID_F191_HW_VERSION);
 
     memset(version, 0, sizeof(version));
     upg_get_fw_ver(version, sizeof(version));
-    shellprintf("4Gģ��汾�� = %s\r\n", version);
+    shellprintf("FIRMWARE VERSION = %s\r\n", version);
 
     /* �������Ϊ���һ���������������ʾ�������ӵ�����֮ǰ */
-    shellprintf("ϵͳ����ʱ�� = %llus\r\n", tm_get_time() / 1000);
+    shellprintf("System running time = %llus\r\n", tm_get_time() / 1000);
     return 0;
 }
 

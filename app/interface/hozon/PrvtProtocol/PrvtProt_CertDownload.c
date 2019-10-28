@@ -710,12 +710,10 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 		if((tm_get_time() - PP_checkCertSt.checkcerttimer) >= 5000)
 		{
 			PP_checkCertSt.checkcerttimer = tm_get_time();
-			#if 0
 			if(1 == PP_CertDL_do_checkCertStatus())//检查吊销和过期
 			{
 				sockproxy_socketclose((int)(PP_SP_COLSE_CDL) + 1);
 			}
-			#endif
 		}
 	}
 	else

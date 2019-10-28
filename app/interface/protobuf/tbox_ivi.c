@@ -1581,7 +1581,7 @@ int tbox_ivi_create_pki_socket(void)
 		log_e(LOG_IVI,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", ret);
 		return -1;
 	}
-	log_o(LOG_IVI,"HzPortAddrCft +++++++++++++++iRet[%d] \n", ret);
+	//log_o(LOG_IVI,"HzPortAddrCft +++++++++++++++iRet[%d] \n", ret);
 	
 	sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
 	sprintf(ScdPath, "%s","/usrdata/pem/TerminalCA.cer");
@@ -1594,7 +1594,7 @@ int tbox_ivi_create_pki_socket(void)
 		log_e(LOG_IVI,"HzTboxCertchainCfg error+++++++++++++++iRet[%d] \n", ret);
 		return -1;
 	}
-	log_o(LOG_IVI,"HzTboxCertchainCfg +++++++++++++++iRet[%d] \n", ret);
+	//log_o(LOG_IVI,"HzTboxCertchainCfg +++++++++++++++iRet[%d] \n", ret);
 
     if((access(PP_CERTDL_TBOXCRL,F_OK)) != 0)//文件不存在
     {
@@ -1615,7 +1615,7 @@ int tbox_ivi_create_pki_socket(void)
         sleep(1);
 		return -1;
 	}
-	log_o(LOG_IVI,"HzTboxSrvInit +++++++++++++++Ret[%d] \n", ret);
+	//log_o(LOG_IVI,"HzTboxSrvInit +++++++++++++++Ret[%d] \n", ret);
 	return 0;
 	
 }
@@ -1876,7 +1876,7 @@ void *ivi_main(void)
 						HzTboxSvrClose();//HU client连接失败之后,需要关闭再重新建链路
 						log_o(LOG_IVI,"HzTboxSvrClose+++++++++++++++ \n");
 						ihu_client.stage = PKI_INIT;   
-						//wait = tm_get_time();
+						wait = tm_get_time();
 					}
 					else
 					{
@@ -2001,7 +2001,7 @@ void *ivi_check(void)
 				log_o(LOG_IVI, "SOS trigger!!!!!");
 			}
 		}
-        
+
 #ifndef TBOX_PKI_IHU		
 		if(ivi_clients[0].fd > 0)  //轮询任务：信号强度、电话状态、绑车激活、远程诊断、
 		{
