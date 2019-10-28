@@ -80,6 +80,7 @@ extern uint8_t PP_rmtCfg_getIccid(uint8_t* iccid);
 extern unsigned char PP_rmtCtrl_cfg_CrashOutputSt(void);
 extern void audio_setup_aic3104(void);
 extern uint8_t PP_rmtCfg_enable_actived(void);
+extern unsigned char gb32960_vinValidity(void);
 int Get_call_tpye(void);
 
 
@@ -1563,6 +1564,17 @@ int tbox_ivi_create_pki_socket(void)
 	char ScdPath[128]="\0";
 	char UsCertPath[128]="\0";
 	char UsKeyPath[128]="\0";
+    char vin[18] = {0};
+
+    gb32960_getvin(vin);
+    ret = HzTboxSetVin(vin);
+    if(0 != ret)
+    {
+        log_e(LOG_IVI,"HzTBoxSetVin error+++++++++++++++Ret[%d] \n", ret);
+        sleep(1);
+        return -1;
+    }
+
 	ret = HzPortAddrCft(IVI_SERVER_PORT,2,NULL,NULL);  //PKI 指定端口号
 	if(ret != 1010)
 	{
@@ -1595,10 +1607,12 @@ int tbox_ivi_create_pki_socket(void)
 
         close(fd);
     }
+    
 	ret  = HzTboxSrvInit(PP_CERTDL_TBOXCRL);//PKI 服务器初始化 
 	if(ret != 1151)
 	{
 		log_e(LOG_IVI,"HzTboxSrvInit error+++++++++++++++Ret[%d] \n", ret);
+        sleep(1);
 		return -1;
 	}
 	log_o(LOG_IVI,"HzTboxSrvInit +++++++++++++++Ret[%d] \n", ret);
@@ -1824,7 +1838,10 @@ void *ivi_main(void)
 	    {
 			case PKI_IDLE:
 			{
-				ihu_client.stage = PKI_INIT;
+                if(gb32960_vinValidity() == 1)
+                {
+                    ihu_client.stage = PKI_INIT;
+                }
 			}
 			break;
 			case PKI_INIT:
@@ -1984,33 +2001,7 @@ void *ivi_check(void)
 				log_o(LOG_IVI, "SOS trigger!!!!!");
 			}
 		}
-		#if 0
-		if((PP_rmtCtrl_cfg_CrashOutputSt() == 0)&&( flt_get_by_id(SOSBTN) != 0))
-		{
-			sos_flag = 1;  //ECALL触发标志位清除
-		}
-		else
-		{
-			sos_flag == 0;//ECALL触发
-		}
-		//按键触发或者安全气囊弹出
-		//if((0 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
-		//if(PP_rmtCtrl_cfg_CrashOutputSt() == 1)
-	
-		if(sos_flag == 0)
-		{
-			memset(&callrequest,0 ,sizeof(ivi_callrequest));
-			callrequest.ecall = 1;
-			callrequest.action =1;
-			if(ivi_clients[0].fd > 0)
-			{
-				//下发远程诊断命令
-				ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
-			}
-			sos_flag = 0;
-			log_o(LOG_IVI, "SOS trigger!!!!!");
-		}
-		#endif
+        
 #ifndef TBOX_PKI_IHU		
 		if(ivi_clients[0].fd > 0)  //轮询任务：信号强度、电话状态、绑车激活、远程诊断、
 		{

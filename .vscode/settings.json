@@ -31,6 +31,7 @@
         "prvtprot_signfltr.h": "c",
         "protocol.h": "c",
         "prvtprot_vehiinfo.h": "c",
-        "prvtprot_certdownload.h": "c"
+        "prvtprot_certdownload.h": "c",
+        "uds_did.h": "c"
     }
 }

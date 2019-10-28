@@ -22,7 +22,9 @@ author        liuwei
 #include "file.h"
 #include "timer.h"
 #include "dsu_api.h"
-
+#include "uds_did.h"
+#include "udef_cfg_api.h"
+#include "hozon_PP_api.h"
 
 /****************************************************************
 function:     app_shell_drcfg
@@ -44,36 +46,117 @@ int app_shell_drcfg(int argc, const char **argv)
     unsigned char buff[512];
     unsigned char version[64];
     int ret = 0;
+    char vin[18];
 
     len = sizeof(unsigned int);
     cfg_get_para(CFG_ITEM_DEV_NUM, (unsigned char *)(&tmpInt), &len);
+    shellprintf("é›¶éƒ¨ä»¶ç¼–å· = %u\r\n", tmpInt);
 
-    shellprintf("Áã²¿¼þ±àºÅ = %u\r\n", tmpInt);
+    len = sizeof(vin);
+    ret |= cfg_get_user_para(CFG_ITEM_GB32960_VIN, vin, &len);
+    shellprintf("è½¦è¾†VIN = %s\r\n", vin);
 
-    shellprintf("Èí¼þ°æ±¾ºÅ = %s\r\n", dev_get_version());
+    char tboxsn[19];
+    len = sizeof(tboxsn);
+    ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN, tboxsn, &len);
+    shellprintf("TBOX SN = %s\r\n", tboxsn);
+
+    uint32_t tboxid;
+    len = 4;
+    ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXID, &tboxid, &len);
+    shellprintf("TBOX ID = %d\r\n",tboxid);
+
+    char iccid[21];
+    getPP_rmtCfg_iccid(iccid);
+    shellprintf("TBOX ICCID = %s\r\n", iccid);
+
+    char mpusw[11];
+    len = sizeof(mpusw);
+    ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_MPUSW, mpusw, &len);
+    shellprintf("mpuSw = %s\r\n", mpusw);
+
+    char mcusw[11];
+    len = sizeof(mcusw);
+    ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_MCUSW, mcusw, &len);
+    shellprintf("mcuSw = %s\r\n", mcusw);
+
+    char cfgver[33] = {0};
+    getPP_rmtCfg_cfgVersion(cfgver);
+    shellprintf("TSPè¿œç¨‹é…ç½®ç‰ˆæœ¬ = %s\r\n", cfgver);
 
     len = sizeof(url.url);
-    ret |= cfg_get_para(CFG_ITEM_FOTON_URL, url.url, (uint32_t *)&len);
-    shellprintf("Æ½Ì¨ÓòÃû = %s\r\n", url.url);
+    ret |= cfg_get_user_para(CFG_ITEM_GB32960_URL, url.url, &len);
+    shellprintf("å¹³å°åœ°å€(æ— PKI) = %s\r\n", url.url);
     len = sizeof(url.port);
-    ret |= cfg_get_para(CFG_ITEM_FOTON_PORT, &url.port, (uint32_t *)&len);
-    shellprintf("Æ½Ì¨¶Ë¿Ú = %d\r\n", url.port);
+    ret |= cfg_get_user_para(CFG_ITEM_GB32960_PORT, &url.port, &len);
+    shellprintf("å¹³å°ç«¯å£(æ— PKI) = %d\r\n", url.port);
 
-    len = sizeof(commpara.data_val);
-    ret |= cfg_get_para(CFG_ITEM_FOTON_INTERVAL, &commpara.data_val, (uint32_t *)&len);
-    shellprintf("Êý¾ÝÉÏ´«¼ä¸ô = %ds\r\n", commpara.data_val);
-    len = sizeof(commpara.hb_val);
-    ret |= cfg_get_para(CFG_ITEM_FOTON_INTERVAL, &commpara.hb_val, (uint32_t *)&len);
-    shellprintf("ÐÄÌøÉÏ´«¼ä¸ô = %ds\r\n", commpara.hb_val);
+    char sgLinkAddr[33];
+	int	 sgPort;
+    getPP_rmtCfg_certAddrPort(sgLinkAddr,&sgPort);
+    shellprintf("å•å‘é“¾è·¯åœ°å€(å¸¦PKI) = %s\r\n", sgLinkAddr);
+    shellprintf("å•å‘é“¾è·¯ç«¯å£(å¸¦PKI) = %d\r\n", sgPort);
+
+    char bdlLinkAddr[33];
+	int	 bdlPort;
+    getPP_rmtCfg_tspAddrPort(bdlLinkAddr,&bdlPort);
+    shellprintf("åŒå‘é“¾è·¯åœ°å€(å¸¦PKI) = %s\r\n", bdlLinkAddr);
+    shellprintf("åŒå‘é“¾è·¯ç«¯å£(å¸¦PKI) = %d\r\n", bdlPort);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_DBC_PATH, buff, &len);
-    shellprintf("Ä¬ÈÏDBCÎÄ¼þ = %s\r\n", buff);
+    shellprintf("DBCé…ç½® = %s\r\n", buff);
+
+    char certSn[32] = {0};
+    len = sizeof(certSn);
+    ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT,certSn,&len);
+    shellprintf("è¯ä¹¦ = %s\r\n", certSn);
+    len = 1;
+    uint8_t EnFlag;
+	ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&EnFlag,&len);
+    shellprintf("è¯ä¹¦å¯ç”¨ = %d\r\n", EnFlag);
+
+    char wanAPN[32] = {0};
+    len = sizeof(wanAPN);
+    ret |= cfg_get_para(CFG_ITEM_WAN_APN,wanAPN,&len);
+    shellprintf("WAN APN = %s\r\n", wanAPN);
+
+    len = 1;
+	ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_FORBIDEN,&EnFlag,&len);
+    shellprintf("è“ç‰™ä¸€é”®å¯åŠ¨ = %d\r\n", EnFlag);
+
+    len = 1;
+	ret |= cfg_get_para(CFG_ITEM_WIFI_SET,&EnFlag,&len);
+    shellprintf("WIFI ENABLE = %d\r\n", EnFlag);
+
+    len = 1;
+	ret |= cfg_get_para(CFG_ITEM_DCOM_SET,&EnFlag,&len);
+    shellprintf("DCOM ENABLE = %d\r\n", EnFlag);
+
+    char blename[50] = {0};
+    len = sizeof(blename);
+    ret |= cfg_get_para(CFG_ITEM_BLE_NAME,blename,&len);
+    shellprintf("BLE NAME = %s\r\n", blename);
+
+    len = 1;
+	ret |= cfg_get_para(CFG_ITEM_EN_BLE,&EnFlag,&len);
+    shellprintf("BLE ENABLE = %d\r\n", EnFlag);
+
+    len = 1;
+	ret |= cfg_get_para(CFG_ITEM_EN_PKI,&EnFlag,&len);
+    shellprintf("PKI ENABLE = %d\r\n", EnFlag);
+
+    len = sizeof(commpara.data_val);
+    ret |= cfg_get_para(CFG_ITEM_FOTON_INTERVAL, &commpara.data_val, (uint32_t *)&len);
+    shellprintf("ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½ï¿½ = %ds\r\n", commpara.data_val);
+    len = sizeof(commpara.hb_val);
+    ret |= cfg_get_para(CFG_ITEM_FOTON_INTERVAL, &commpara.hb_val, (uint32_t *)&len);
+    shellprintf("ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½ï¿½ = %ds\r\n", commpara.hb_val);
 
     len = sizeof(sleepmode);
     cfg_get_para(CFG_ITEM_SLEEP_MODE, &sleepmode, &len);
-    shellprintf("ÐÝÃß²ßÂÔ = ");
+    shellprintf("ï¿½ï¿½ï¿½ß²ï¿½ï¿½ï¿½ = ");
 
     switch (sleepmode)
     {
@@ -100,35 +183,39 @@ int app_shell_drcfg(int argc, const char **argv)
 
     len = sizeof(canbaud);
     cfg_get_para(CFG_ITEM_CAN_DEFAULT_BAUD_0, &canbaud, &len);
-    shellprintf("HCAN DEFAULT²¨ÌØÂÊ = %dK\r\n", canbaud);
+    shellprintf("HCAN DEFAULTï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ = %dK\r\n", canbaud);
     len = sizeof(canbaud);
     cfg_get_para(CFG_ITEM_CAN_DEFAULT_BAUD_1, &canbaud, &len);
-    shellprintf("MCAN DEFAULT²¨ÌØÂÊ = %dK\r\n", canbaud);
+    shellprintf("MCAN DEFAULTï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ = %dK\r\n", canbaud);
     len = sizeof(canbaud);
     cfg_get_para(CFG_ITEM_CAN_DEFAULT_BAUD_2, &canbaud, &len);
-    shellprintf("LCAN DEFAULT²¨ÌØÂÊ = %dK\r\n", canbaud);
+    shellprintf("LCAN DEFAULTï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ = %dK\r\n", canbaud);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_ICALL, (unsigned char *)buff, &len);
-    shellprintf("ICALLºÅÂë = %s\r\n", buff);
+    shellprintf("ICALLï¿½ï¿½ï¿½ï¿½ = %s\r\n", buff);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_BCALL, (unsigned char *)buff, &len);
-    shellprintf("BCALLºÅÂë = %s\r\n", buff);
+    shellprintf("BCALLï¿½ï¿½ï¿½ï¿½ = %s\r\n", buff);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_WHITE_LIST, (unsigned char *)buff, &len);
-    shellprintf("°×Ãûµ¥ºÅÂë = %s\r\n", buff);
+    shellprintf("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ = %s\r\n", buff);
+
+    shellprintf("INTEST_è½¯ä»¶ç‰ˆæœ¬å· = %s\r\n", dev_get_version());
+    shellprintf("HOZON_è½¯ä»¶ç‰ˆæœ¬å·  = %s\r\n", DID_F1B0_SW_FIXED_VER);
+    shellprintf("HOZON_ç¡¬ä»¶ç‰ˆæœ¬å·  = %s\r\n", DID_F191_HW_VERSION);
 
     memset(version, 0, sizeof(version));
     upg_get_fw_ver(version, sizeof(version));
-    shellprintf("4GÄ£¿é°æ±¾ºÅ = %s\r\n", version);
+    shellprintf("4GÄ£ï¿½ï¿½æ±¾ï¿½ï¿½ = %s\r\n", version);
 
-    /* ´ËÏî±ØÐëÎª×îºóÒ»Ïî£¬ÈçÐèÐÂÔö²ÎÊýÏÔÊ¾£¬ÇëÌí¼Óµ½¸ÃÏîÖ®Ç° */
-    shellprintf("ÏµÍ³ÔËÐÐÊ±¼ä = %llus\r\n", tm_get_time() / 1000);
+    /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½Ò»ï¿½î£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½ï¿½ï¿½Ö®Ç° */
+    shellprintf("ÏµÍ³ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ = %llus\r\n", tm_get_time() / 1000);
     return 0;
 }
 
@@ -138,13 +225,13 @@ int app_shell_drsdinfo(int argc, const char **argv)
     struct statfs diskInfo;
 
     statfs(COM_SDCARD_DIR, &diskInfo);
-    unsigned long long blocksize = diskInfo.f_bsize;    //Ã¿¸öblockÀï°üº¬µÄ×Ö½ÚÊý
-    unsigned long long totalsize = blocksize * diskInfo.f_blocks;   //×ÜµÄ×Ö½ÚÊý£¬f_blocksÎªblockµÄÊýÄ¿
+    unsigned long long blocksize = diskInfo.f_bsize;    //Ã¿ï¿½ï¿½blockï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½
+    unsigned long long totalsize = blocksize * diskInfo.f_blocks;   //ï¿½Üµï¿½ï¿½Ö½ï¿½ï¿½ï¿½ï¿½ï¿½f_blocksÎªblockï¿½ï¿½ï¿½ï¿½Ä¿
     log_e(LOG_ASSIST, "Total_size = %llu B = %llu KB = %llu MB = %llu GB\n",
           totalsize, totalsize >> 10, totalsize >> 20, totalsize >> 30);
 
-    unsigned long long freeDisk = diskInfo.f_bfree * blocksize; //Ê£Óà¿Õ¼äµÄ´óÐ¡
-    unsigned long long availableDisk = diskInfo.f_bavail * blocksize;   //¿ÉÓÃ¿Õ¼ä´óÐ¡
+    unsigned long long freeDisk = diskInfo.f_bfree * blocksize; //Ê£ï¿½ï¿½Õ¼ï¿½Ä´ï¿½Ð¡
+    unsigned long long availableDisk = diskInfo.f_bavail * blocksize;   //ï¿½ï¿½ï¿½Ã¿Õ¼ï¿½ï¿½Ð¡
     log_e(LOG_ASSIST, "free_size = %llu B = %llu KB = %llu MB = %llu GB\n",
           freeDisk, freeDisk >> 10, freeDisk >> 20, freeDisk >> 30);
     log_e(LOG_ASSIST, "available_size = %llu B = %llu KB = %llu MB = %llu GB\n",

@@ -108,4 +108,6 @@ extern unsigned char GetPP_rmtCtrl_fotaUpgrade(void);
 extern void PP_COMMON_LOCK(void);
 extern void PP_COMMON_UNLOCK(void);
 extern char getPP_rmtDiag_Idle(void);
+extern void getPP_rmtCfg_cfgVersion(char* ver);
+extern void getPP_rmtCfg_iccid(char* iccid);
 #endif

@@ -55,6 +55,7 @@
 #define CAN_CLEANACC 4
 #define CAN_APPOINTACC 5
 #define CAN_CANCELAPPOINTACC 6
+#define CAN_ACCMD_INVAILD 7
 
 /**********BLUE****************/
 #define CAN_BLUECLEAN 0

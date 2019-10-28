@@ -142,7 +142,7 @@ void PP_ChargeCtrl_init(void)
 	if((res==0) && (PP_rmtCharge_AppointBook.validFlg == 1))
 	{
 		log_e(LOG_HOZON,"There are currently reservation records\n");
-		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.id = %d\n",PP_rmtCharge_AppointBook.id);
+		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.id = %u\n",PP_rmtCharge_AppointBook.id);
 		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.hour = %d\n",PP_rmtCharge_AppointBook.hour);
 		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.min = %d\n",PP_rmtCharge_AppointBook.min);
 		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.targetSOC = %d\n",PP_rmtCharge_AppointBook.targetSOC);
@@ -557,7 +557,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				PP_rmtCharge_AppointBook.period = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[7];
 				PP_rmtCharge_AppointBook.eventId = disptrBody_ptr->eventId;
 				PP_rmtCharge_AppointBook.validFlg  = 1;
-				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.id = %d\n",PP_rmtCharge_AppointBook.id);
+				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.id = %u\n",PP_rmtCharge_AppointBook.id);
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.hour = %d\n",PP_rmtCharge_AppointBook.hour);
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.min = %d\n",PP_rmtCharge_AppointBook.min);
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.targetSOC = %d\n",PP_rmtCharge_AppointBook.targetSOC);

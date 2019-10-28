@@ -13,6 +13,7 @@
 #include <pthread.h>
 #include "shell_api.h"
 #include "tbox_ivi_api.h"
+#include "tbox_ivi_pb.h"
 #include "log.h"
 #include "../hozon/PrvtProtocol/remoteControl/PP_rmtCtrl.h"
 
@@ -68,11 +69,51 @@ int tbox_ivi_chargeappoint(void)
 	ivi_chagerappointment_request_send(ivi_clients[0].fd);
 	return 0;
 }
+int tbox_ivi_test(void)
+{
+	int szlen =0;
+	int i;
+	unsigned char sendbuf[4096] = {0};
+	unsigned char buf[2048] = {0};
+	Tbox__Net__TopMessage TopMsg;
+	Tbox__Net__IhuChargeAppoointmentSts charge;
+	tbox__net__top_message__init( &TopMsg );
+	tbox__net__ihu_charge_appoointment_sts__init(&charge);
+	
+	TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGEAPPOINTMENTSET;
+	charge.timestamp = 0;
+	charge.hour = 8;
+	charge.min = 8;
+	charge.id = 8;
+	charge.targetpower = 8;
+	charge.effectivestate = 1;
+	TopMsg.ihu_charge_appoointmentsts = &charge;
+	
+	szlen = tbox__net__top_message__get_packed_size( &TopMsg );
+
+    tbox__net__top_message__pack(&TopMsg,buf);
+    
+    memcpy(sendbuf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
+
+    sendbuf[IVI_PKG_S_MARKER_SIZE] = szlen >> 8;
+    sendbuf[IVI_PKG_S_MARKER_SIZE + 1] = szlen;
+
+    for( i = 0; i < szlen; i ++ )
+    {
+        sendbuf[ i + IVI_PKG_S_MARKER_SIZE + 2 ] = buf[i];
+    }
+
+    memcpy(( sendbuf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
+	log_buf_dump(LOG_IVI, "test", sendbuf, 5+7+2+szlen);
+	return 0;
+	
+}
 void tbox_shell_init(void)
 {
 	shell_cmd_register("HuChargeCtrl", tbox_ivi_hu_charge_ctrl, "HU charge CTRL");	
 	shell_cmd_register("hozon_tsp_log_to_hu", tbox_ivi_logctrl, "HU charge CTRL");	
 	shell_cmd_register("hozon_tsp_active_to_hu", tbox_ivi_active, "HU charge CTRL");	
 	shell_cmd_register("hozon_tsp_charge_to_hu", tbox_ivi_chargeappoint, "TSP CHARGE TO HU");	
+	shell_cmd_register("hozon_test", tbox_ivi_test, "hozon_test");	
 }
 

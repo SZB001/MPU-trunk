@@ -290,6 +290,7 @@ int PP_ACCtrl_mainfunction(void *task)
 						if(PP_rmtCtrl_cfg_ACOnOffSt() == 0)   // 关闭成功
 						{
 							log_o(LOG_HOZON,"close air success\n");
+							PP_can_send_data(PP_CAN_ACCTRL,CAN_ACCMD_INVAILD,0);
 							PP_rmtACCtrl.fail     = 0;
 							acc_requestpower_flag = 2; //空调关闭请求下电
 							PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
@@ -309,13 +310,13 @@ int PP_ACCtrl_mainfunction(void *task)
 				{	
 					if((tm_get_time() - PP_rmtACCtrl.state.waittime) < 2000)
 					{
-						log_o(LOG_HOZON,"PP_rmtCtrl_cfg_LHTemp() = %d",PP_rmtCtrl_cfg_LHTemp());
+						//log_o(LOG_HOZON,"PP_rmtCtrl_cfg_LHTemp() = %d",PP_rmtCtrl_cfg_LHTemp());
 						if(PP_rmtCtrl_cfg_LHTemp() == temp)
 						{
 							log_o(LOG_HOZON,"Set the air conditioner temperature = %d successfully \n",temp);
 							PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 						}
-						log_o(LOG_HOZON,"PP_rmtCtrl_cfg_LHTemp() = %d",PP_rmtCtrl_cfg_LHTemp());
+						//log_o(LOG_HOZON,"PP_rmtCtrl_cfg_LHTemp() = %d",PP_rmtCtrl_cfg_LHTemp());
 					}
 					else
 					{

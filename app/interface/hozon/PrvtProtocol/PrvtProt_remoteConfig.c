@@ -1647,3 +1647,19 @@ void getPP_rmtCfg_certAddrPort(char* addr,int* port)
 		*port = atoi((const char*)AppData_rmtCfg.ReadResp.APN1.certPort);
 	}
 }
+
+/*
+* 获取配置版本
+*/
+void getPP_rmtCfg_cfgVersion(char* ver)
+{
+	memcpy(ver,AppData_rmtCfg.checkReq.cfgVersion,32);
+}
+
+/*
+* 获取iccid
+*/
+void getPP_rmtCfg_iccid(char* iccid)
+{
+	memcpy(iccid,AppData_rmtCfg.checkReq.iccID,20);
+}

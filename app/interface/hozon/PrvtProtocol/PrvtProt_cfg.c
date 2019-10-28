@@ -87,7 +87,7 @@ char PrvtProtCfg_detectionTriggerEvent(void)
 	if(co2densityNewSts != co2densityOldSts)
 	{
 		co2densityOldSts = co2densityNewSts;
-		if(0 != co2densityNewSts)
+		if(2 == co2densityNewSts)
 		{
 			return 1;
 		}

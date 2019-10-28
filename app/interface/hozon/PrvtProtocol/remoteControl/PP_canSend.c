@@ -221,6 +221,10 @@ void PP_can_send_cycle(void)
 {
 	if(tm_get_time() - lastsendtime > 50)    //50ms
 	{
+		if(PP_rmtCtrl_cfg_RmtStartSt() == 0)  //防止空调开启之后，高压电不是TBOX下的，导致一些状态不能恢复
+		{
+			PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//无效
+		}
 		PP_can_unpack(ID440_data,can_data);
 		PP_send_cycle_ID440_to_mcu(can_data);
 		PP_can_unpack(ID445_data,can_data);
@@ -286,12 +290,16 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 						PP_canSend_setbit(CAN_ID_445,17,1,1,NULL);//开启
 						break;
 					case CAN_CLOSEACC:
-						PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//有效
-						PP_canSend_setbit(CAN_ID_445,14,1,0,NULL);//开启
+						//PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//无效
+						PP_canSend_setbit(CAN_ID_445,14,1,1,NULL);//关闭
+						PP_canSend_setbit(CAN_ID_445,17,1,0,NULL);//autocmd 清零
 						break;
 					case CAN_SETACCTEP:
 						PP_canSend_setbit(CAN_ID_445,47,6,para,NULL); //设置主驾温度
 						PP_canSend_setbit(CAN_ID_445,55,6,para,NULL); //设置副驾温度
+						break;
+					case CAN_ACCMD_INVAILD:
+						PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//无效
 						break;
 					default:
 						break;

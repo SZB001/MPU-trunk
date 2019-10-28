@@ -10,7 +10,7 @@
 #define ONEPATH                         "/ursdata/pem/TerminalCA.cer"
 
 
-//#define TBOX_PKI_IHU                     1
+#define TBOX_PKI_IHU                     1
 
 #define MAX_IVI_NUM                      1
 
