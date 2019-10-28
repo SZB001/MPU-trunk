@@ -142,6 +142,11 @@ long PrvtProtCfg_vehicleSOC(void)
 {
 	long soc;
 	soc = gb_data_vehicleSOC();
+	if(soc < 0)
+	{
+		soc = 0;
+	}
+
 	if(soc > 100)
 	{
 		soc = 100;

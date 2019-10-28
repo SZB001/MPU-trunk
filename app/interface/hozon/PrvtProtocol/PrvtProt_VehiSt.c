@@ -444,29 +444,17 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	PP_VS_appdata.VSResp.basicSt.accBlowVolume		= gb_data_BlowerGears()/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.accBlowVolume  = %ld",PP_VS_appdata.VSResp.basicSt.accBlowVolume);
 	PP_VS_appdata.VSResp.basicSt.innerTemp 			= gb_data_InnerTemp();
-	if(PP_VS_appdata.VSResp.basicSt.innerTemp < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.innerTemp = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.innerTemp > 125)
+	if(PP_VS_appdata.VSResp.basicSt.innerTemp > 125)
 	{
 		PP_VS_appdata.VSResp.basicSt.innerTemp = 125;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.innerTemp  = %ld",PP_VS_appdata.VSResp.basicSt.innerTemp);
 	
 	PP_VS_appdata.VSResp.basicSt.outTemp 			= gb_data_outTemp();
-	if(PP_VS_appdata.VSResp.basicSt.outTemp  < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.outTemp  = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.outTemp  > 125)
+	if(PP_VS_appdata.VSResp.basicSt.outTemp  > 125)
 	{
 		PP_VS_appdata.VSResp.basicSt.outTemp  = 125;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.outTemp  = %ld",PP_VS_appdata.VSResp.basicSt.outTemp);
 	
 			
@@ -479,107 +467,59 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	PP_VS_appdata.VSResp.basicSt.hazardLightStus	= gb_data_TwinFlashLampSt();//双闪灯
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.hazardLightStus  = %ld",PP_VS_appdata.VSResp.basicSt.hazardLightStus);
 	PP_VS_appdata.VSResp.basicSt.frtRightTyrePre	= gb_data_frontRightTyrePre()/* OPTIONAL */;
-	if(PP_VS_appdata.VSResp.basicSt.frtRightTyrePre < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.frtRightTyrePre = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.frtRightTyrePre > 45)
+	if(PP_VS_appdata.VSResp.basicSt.frtRightTyrePre > 45)
 	{
 		PP_VS_appdata.VSResp.basicSt.frtRightTyrePre = 45;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frtRightTyrePre  = %ld",PP_VS_appdata.VSResp.basicSt.frtRightTyrePre);
 	
 	PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp	= gb_data_frontRightTyreTemp()/* OPTIONAL */;
-	if(PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp > 165)
+	if(PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp > 165)
 	{
 		PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp = 165;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp);
 
 	PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre	= gb_data_frontLeftTyrePre()/* OPTIONAL */;
-	if(PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre > 45)
+	if(PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre > 45)
 	{
 		PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre = 45;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre  = %ld",PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre);
 
 	PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp	= gb_data_frontLeftTyreTemp()	/* OPTIONAL */;
-	if(PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp > 165)
+	if(PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp > 165)
 	{
 		PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp = 165;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp);
 
 	PP_VS_appdata.VSResp.basicSt.rearRightTyrePre	= gb_data_rearRightTyrePre()/* OPTIONAL */;
-	if(PP_VS_appdata.VSResp.basicSt.rearRightTyrePre < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.rearRightTyrePre = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.rearRightTyrePre > 45)
+	if(PP_VS_appdata.VSResp.basicSt.rearRightTyrePre > 45)
 	{
 		PP_VS_appdata.VSResp.basicSt.rearRightTyrePre = 45;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearRightTyrePre  = %ld",PP_VS_appdata.VSResp.basicSt.rearRightTyrePre);
 
 	PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp	= gb_data_rearRightTyreTemp()	/* OPTIONAL */;
-	if(PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp > 165)
+	if(PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp > 165)
 	{
 		PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp = 165;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp);
 
 	PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre	= gb_data_rearLeftTyrePre()/* OPTIONAL */;
-	if(PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre > 45)
+	if(PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre > 45)
 	{
 		PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre = 45;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre  = %ld",PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre);
 
 	PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp	= gb_data_rearLeftTyreTemp()/* OPTIONAL */;
-	if(PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp > 165)
+	if(PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp > 165)
 	{
 		PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp = 165;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp);
 	long VehicleSOC;
 	VehicleSOC = gb_data_vehicleSOC();
@@ -604,43 +544,17 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.chargeRemainTim  = %ld",PP_VS_appdata.VSResp.basicSt.chargeRemainTim);
 
 	PP_VS_appdata.VSResp.basicSt.availableOdomtr	= gb_data_ResidualOdometer();//续航里程
-	if(PP_VS_appdata.VSResp.basicSt.availableOdomtr < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.availableOdomtr = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.availableOdomtr > 2000)
+	if(PP_VS_appdata.VSResp.basicSt.availableOdomtr > 2000)
 	{
 		PP_VS_appdata.VSResp.basicSt.availableOdomtr = 20000;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.availableOdomtr  = %ld",PP_VS_appdata.VSResp.basicSt.availableOdomtr);
 	PP_VS_appdata.VSResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.bookingChargeSt	= GetPP_ChargeCtrl_appointSt();
 	PP_VS_appdata.VSResp.basicSt.bookingChargeHour	= GetPP_ChargeCtrl_appointHour()	/* OPTIONAL */;
-	if(PP_VS_appdata.VSResp.basicSt.bookingChargeHour < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.bookingChargeHour = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.bookingChargeHour > 23)
-	{
-		PP_VS_appdata.VSResp.basicSt.bookingChargeHour = 23;
-	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.bookingChargeHour  = %ld",PP_VS_appdata.VSResp.basicSt.bookingChargeHour);
 
 	PP_VS_appdata.VSResp.basicSt.bookingChargeMin	= GetPP_ChargeCtrl_appointMin()/* OPTIONAL */;
-	if(PP_VS_appdata.VSResp.basicSt.bookingChargeMin < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.bookingChargeMin = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.bookingChargeMin > 59)
-	{
-		PP_VS_appdata.VSResp.basicSt.bookingChargeMin = 59;
-	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.bookingChargeMin  = %ld",PP_VS_appdata.VSResp.basicSt.bookingChargeMin);
 
 	PP_VS_appdata.VSResp.basicSt.chargeMode			= PrvtProtCfg_chargeSt()/* OPTIONAL */;
@@ -651,29 +565,17 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.powerMode  = %ld",PP_VS_appdata.VSResp.basicSt.powerMode);
 
 	PP_VS_appdata.VSResp.basicSt.speed				= gb_data_vehicleSpeed();
-	if(PP_VS_appdata.VSResp.basicSt.speed	 < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.speed	= 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.speed	 > 2500)
+	if(PP_VS_appdata.VSResp.basicSt.speed	 > 2500)
 	{
 		PP_VS_appdata.VSResp.basicSt.speed	 = 2500;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.speed  = %ld",PP_VS_appdata.VSResp.basicSt.speed);
 
 	PP_VS_appdata.VSResp.basicSt.totalOdometer		= gb_data_vehicleOdograph();
-	if(PP_VS_appdata.VSResp.basicSt.totalOdometer < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.totalOdometer = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.totalOdometer > 1000000)
+	if(PP_VS_appdata.VSResp.basicSt.totalOdometer > 1000000)
 	{
 		PP_VS_appdata.VSResp.basicSt.totalOdometer = 1000000;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.totalOdometer  = %ld",PP_VS_appdata.VSResp.basicSt.totalOdometer);
 
 	PP_VS_appdata.VSResp.basicSt.batteryVoltage		= gb_data_batteryVoltage();
@@ -709,29 +611,17 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.gearPosition  = %ld",PP_VS_appdata.VSResp.basicSt.gearPosition);
 
 	PP_VS_appdata.VSResp.basicSt.insulationRstance	= gb_data_insulationResistance();
-	if(PP_VS_appdata.VSResp.basicSt.insulationRstance< 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.insulationRstance = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.insulationRstance > 60000)
+	if(PP_VS_appdata.VSResp.basicSt.insulationRstance > 60000)
 	{
 		PP_VS_appdata.VSResp.basicSt.insulationRstance = 60000;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.insulationRstance  = %ld",PP_VS_appdata.VSResp.basicSt.insulationRstance);
 
 	PP_VS_appdata.VSResp.basicSt.acceleratePedalprc	= gb_data_acceleratePedalPrc();
-	if(PP_VS_appdata.VSResp.basicSt.acceleratePedalprc < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.acceleratePedalprc = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.acceleratePedalprc > 100)
+	if(PP_VS_appdata.VSResp.basicSt.acceleratePedalprc > 100)
 	{
 		PP_VS_appdata.VSResp.basicSt.acceleratePedalprc = 100;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.acceleratePedalprc  = %ld",PP_VS_appdata.VSResp.basicSt.acceleratePedalprc);
 
 	PP_VS_appdata.VSResp.basicSt.deceleratePedalprc	= gb_data_deceleratePedalPrc();
@@ -751,16 +641,10 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	PP_VS_appdata.VSResp.basicSt.currentJourneyID	= gb_data_trip();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.currentJourneyID  = %ld",PP_VS_appdata.VSResp.basicSt.currentJourneyID);
 	PP_VS_appdata.VSResp.basicSt.journeyOdom		= PP_rmtCtrl_cfg_vehicleOdograph(); /*里程*/
-	if(PP_VS_appdata.VSResp.basicSt.journeyOdom < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.journeyOdom = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.journeyOdom> 65535)
+	if(PP_VS_appdata.VSResp.basicSt.journeyOdom> 65535)
 	{
 		PP_VS_appdata.VSResp.basicSt.journeyOdom = 65535;
 	}
-	else
-	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.journeyOdom  = %ld",PP_VS_appdata.VSResp.basicSt.journeyOdom);
 	PP_VS_appdata.VSResp.basicSt.frtLeftSeatHeatLel	= PP_rmtCtrl_cfg_DrivHeatingSt()	/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frtLeftSeatHeatLel  = %ld",PP_VS_appdata.VSResp.basicSt.frtLeftSeatHeatLel);

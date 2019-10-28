@@ -835,6 +835,11 @@ unsigned char GetPP_ChargeCtrl_appointSt(void)
  */
 unsigned char GetPP_ChargeCtrl_appointHour(void)
 {
+	if(PP_rmtCharge_AppointBook.hour > 23)
+	{
+		return 23;
+	}
+
 	return PP_rmtCharge_AppointBook.hour;
 }
 
@@ -843,6 +848,11 @@ unsigned char GetPP_ChargeCtrl_appointHour(void)
  */
 unsigned char GetPP_ChargeCtrl_appointMin(void)
 {
+	if(PP_rmtCharge_AppointBook.min > 59)
+	{
+		return 59;
+	}
+
 	return PP_rmtCharge_AppointBook.min;
 }
 

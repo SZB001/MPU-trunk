@@ -1189,128 +1189,68 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			
 			App_rmtCtrl.CtrlResp.basicSt.accBlowVolume		= gb_data_BlowerGears()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.innerTemp 			= gb_data_InnerTemp();  //室内温度
-			if(App_rmtCtrl.CtrlResp.basicSt.innerTemp < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.innerTemp = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.innerTemp > 125)
+			if(App_rmtCtrl.CtrlResp.basicSt.innerTemp > 125)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.innerTemp = 125;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.outTemp 			= gb_data_outTemp();
-			if(App_rmtCtrl.CtrlResp.basicSt.outTemp < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.outTemp = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.outTemp > 125)
+			if(App_rmtCtrl.CtrlResp.basicSt.outTemp > 125)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.outTemp = 125;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.sideLightStatus 	= gb_data_PostionLampSt();//示位灯
 			App_rmtCtrl.CtrlResp.basicSt.dippedBeamStatus 	= gb_data_NearLampSt();//近光灯
 			App_rmtCtrl.CtrlResp.basicSt.mainBeamStatus 	= gb_data_HighbeamLampSt();//远光灯
 			App_rmtCtrl.CtrlResp.basicSt.hazardLightStus 	= gb_data_TwinFlashLampSt();//双闪灯
 			App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre	= gb_data_frontRightTyrePre();/* 右前胎压 */
-			if(App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre > 45)
+			if(App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre > 45)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre = 45;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp	= gb_data_frontRightTyreTemp();/*右前温度*/
-			if(App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp > 165)
+			if(App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp > 165)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp = 165;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre	= gb_data_frontLeftTyrePre();/* 左前胎压 */
-			if(App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre > 45)
+			if(App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre > 45)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre = 45;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp	= gb_data_frontLeftTyreTemp();	/* OPTIONAL */
-			if(App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp > 165)
+			if(App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp > 165)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp = 165;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre	= gb_data_rearRightTyrePre()/* OPTIONAL */;
-			if(App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre > 45)
+			if(App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre > 45)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre = 45;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp	= gb_data_rearRightTyreTemp()	/* OPTIONAL */;
-			if(App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp > 165)
+			if(App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp > 165)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp = 165;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre	= gb_data_rearLeftTyrePre()/* OPTIONAL */;
-			if(App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre > 45)
+			if(App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre > 45)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre = 45;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp	= gb_data_rearLeftTyreTemp()/* OPTIONAL */;
-			if(App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp > 165)
+			if(App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp > 165)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp = 165;
 			}
-			else
-			{}
 			
 			long VehicleSOC;
 			VehicleSOC = gb_data_vehicleSOC();
@@ -1320,82 +1260,36 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			}
 			App_rmtCtrl.CtrlResp.basicSt.batterySOCExact 	= VehicleSOC * 100;
 			App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim	= gb_data_ACChargeRemainTime()/* OPTIONAL */;
-			if(App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim > 2000)
+			if(App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim > 2000)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim = 20000;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.availableOdomtr	= gb_data_ResidualOdometer();//续航里程;
-			if(App_rmtCtrl.CtrlResp.basicSt.availableOdomtr < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.availableOdomtr = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.availableOdomtr > 2000)
+			if(App_rmtCtrl.CtrlResp.basicSt.availableOdomtr > 2000)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.availableOdomtr = 20000;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
 			
 			App_rmtCtrl.CtrlResp.basicSt.bookingChargeSt	= GetPP_ChargeCtrl_appointSt();
 			App_rmtCtrl.CtrlResp.basicSt.bookingChargeHour	= GetPP_ChargeCtrl_appointHour()	/* OPTIONAL */;
-			if(App_rmtCtrl.CtrlResp.basicSt.bookingChargeHour < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.bookingChargeHour = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.bookingChargeHour > 23)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.bookingChargeHour = 23;
-			}
-			else
-			{}
-			
 			App_rmtCtrl.CtrlResp.basicSt.bookingChargeMin	= GetPP_ChargeCtrl_appointMin()/* OPTIONAL */;
-			if(App_rmtCtrl.CtrlResp.basicSt.bookingChargeMin < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.bookingChargeMin = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.bookingChargeMin > 59)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.bookingChargeMin = 59;
-			}
-			else
-			{}
-			
 			App_rmtCtrl.CtrlResp.basicSt.chargeMode			= PrvtProtCfg_chargeSt()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.chargeStatus		= gb_data_chargestatus()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.powerMode			= gb_data_powermode()/* OPTIONAL */;//0x1--纯电;0x2--混动;0x3--燃油
 			App_rmtCtrl.CtrlResp.basicSt.speed				= gb_data_vehicleSpeed();
-			if(App_rmtCtrl.CtrlResp.basicSt.speed < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.speed = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.speed > 2500)
+			if(App_rmtCtrl.CtrlResp.basicSt.speed > 2500)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.speed = 2500;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.totalOdometer		= gb_data_vehicleOdograph();
-			if(App_rmtCtrl.CtrlResp.basicSt.totalOdometer < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.totalOdometer = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.totalOdometer > 1000000)
+			if(App_rmtCtrl.CtrlResp.basicSt.totalOdometer > 1000000)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.totalOdometer = 1000000;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.batteryVoltage		= gb_data_batteryVoltage();
 			if(App_rmtCtrl.CtrlResp.basicSt.batteryVoltage < 0)
@@ -1425,28 +1319,16 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.dcStatus			= gb_data_dcdcstatus();
 			App_rmtCtrl.CtrlResp.basicSt.gearPosition		= gb_data_gearPosition();
 			App_rmtCtrl.CtrlResp.basicSt.insulationRstance	= gb_data_insulationResistance();
-			if(App_rmtCtrl.CtrlResp.basicSt.insulationRstance< 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.insulationRstance = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.insulationRstance > 60000)
+			if(App_rmtCtrl.CtrlResp.basicSt.insulationRstance > 60000)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.insulationRstance = 60000;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.acceleratePedalprc	= gb_data_acceleratePedalPrc();
-			if(App_rmtCtrl.CtrlResp.basicSt.acceleratePedalprc< 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.acceleratePedalprc = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.acceleratePedalprc > 100)
+			if(App_rmtCtrl.CtrlResp.basicSt.acceleratePedalprc > 100)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.acceleratePedalprc = 100;
 			}
-			else
-			{}
 			
 			App_rmtCtrl.CtrlResp.basicSt.deceleratePedalprc	= gb_data_deceleratePedalPrc();
 			App_rmtCtrl.CtrlResp.basicSt.canBusActive		= gb_data_CanbusActiveSt();
