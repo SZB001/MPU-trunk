@@ -789,7 +789,7 @@ static int PP_CertDL_do_CertDownload(PrvtProt_task_t *task)
 			int 	 gcoutlen = 0;
 			int 	 iRet = 0;
 			/*读取CSR文件内容*/
-			iRet = HzTboxApplicationData(PP_CERTDL_TWOCERTCSRPATH , \
+			iRet = HzTboxApplicationData(PP_CERTDL_TWOCERTRCSRPATH_UPDATE , \
 					PP_CERTDL_CIPHER_PATH, gcsroutdata, &gcoutlen);
 			if(iRet == 3630)
 			{
