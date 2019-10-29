@@ -64,7 +64,7 @@ int app_shell_drcfg(int argc, const char **argv)
     uint32_t tboxid;
     len = 4;
     ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXID, &tboxid, &len);
-    shellprintf("TBOX ID = %d\r\n",tboxid);
+    shellprintf("TBOX ID = %u\r\n",tboxid);
 
     char iccid[21];
     getPP_rmtCfg_iccid(iccid);
@@ -89,19 +89,19 @@ int app_shell_drcfg(int argc, const char **argv)
     shellprintf("TSP ADDR NO PKI = %s\r\n", url.url);
     len = sizeof(url.port);
     ret |= cfg_get_user_para(CFG_ITEM_GB32960_PORT, &url.port, &len);
-    shellprintf("TSP PORT NO PKI = %d\r\n", url.port);
+    shellprintf("TSP PORT NO PKI = %u\r\n", url.port);
 
     char sgLinkAddr[33];
 	int	 sgPort;
     getPP_rmtCfg_certAddrPort(sgLinkAddr,&sgPort);
     shellprintf("SG LINK ADDR PKI = %s\r\n", sgLinkAddr);
-    shellprintf("SG LINK PORT PKI = %d\r\n", sgPort);
+    shellprintf("SG LINK PORT PKI = %u\r\n", sgPort);
 
     char bdlLinkAddr[33];
 	int	 bdlPort;
     getPP_rmtCfg_tspAddrPort(bdlLinkAddr,&bdlPort);
     shellprintf("BDL ADDR PKI = %s\r\n", bdlLinkAddr);
-    shellprintf("BDL PORT PKI = %d\r\n", bdlPort);
+    shellprintf("BDL PORT PKI = %u\r\n", bdlPort);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
@@ -115,7 +115,7 @@ int app_shell_drcfg(int argc, const char **argv)
     len = 1;
     uint8_t EnFlag;
 	ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&EnFlag,&len);
-    shellprintf("CERT ENABLE = %d\r\n", EnFlag);
+    shellprintf("CERT ENABLE = %u\r\n", EnFlag);
 
     char wanAPN[32] = {0};
     len = sizeof(wanAPN);
@@ -124,15 +124,15 @@ int app_shell_drcfg(int argc, const char **argv)
 
     len = 1;
 	ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_FORBIDEN,&EnFlag,&len);
-    shellprintf("ONE KEY START OF BLE ENABLE = %d\r\n", EnFlag);
+    shellprintf("ONE KEY START OF BLE ENABLE = %u\r\n", EnFlag);
 
     len = 1;
 	ret |= cfg_get_para(CFG_ITEM_WIFI_SET,&EnFlag,&len);
-    shellprintf("WIFI ENABLE = %d\r\n", EnFlag);
+    shellprintf("WIFI ENABLE = %u\r\n", EnFlag);
 
     len = 1;
 	ret |= cfg_get_para(CFG_ITEM_DCOM_SET,&EnFlag,&len);
-    shellprintf("DCOM ENABLE = %d\r\n", EnFlag);
+    shellprintf("DCOM ENABLE = %u\r\n", EnFlag);
 
     char blename[50] = {0};
     len = sizeof(blename);
@@ -141,11 +141,11 @@ int app_shell_drcfg(int argc, const char **argv)
 
     len = 1;
 	ret |= cfg_get_para(CFG_ITEM_EN_BLE,&EnFlag,&len);
-    shellprintf("BLE ENABLE = %d\r\n", EnFlag);
+    shellprintf("BLE ENABLE = %u\r\n", EnFlag);
 
     len = 1;
 	ret |= cfg_get_para(CFG_ITEM_EN_PKI,&EnFlag,&len);
-    shellprintf("PKI ENABLE = %d\r\n", EnFlag);
+    shellprintf("PKI ENABLE = %u\r\n", EnFlag);
 
     len = sizeof(commpara.data_val);
     ret |= cfg_get_para(CFG_ITEM_FOTON_INTERVAL, &commpara.data_val, (uint32_t *)&len);
@@ -161,7 +161,7 @@ int app_shell_drcfg(int argc, const char **argv)
     switch (sleepmode)
     {
         case 0:
-            shellprintf("RUNNING ONLY \r\n");
+            shellprintf("RUNNING ONLY\r\n");
             break;
 
         case 1:

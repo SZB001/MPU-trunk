@@ -29,7 +29,7 @@ author        liuzhongwen
 #include "dev_api.h"
 #include "udef_cfg_api.h"
 
-#define CFG_PARA_DBC_PATH   "/usrdata/dbc/GB-EP30_CAN_r4_009WIP_v1.16.dbc"
+#define CFG_PARA_DBC_PATH   "/usrdata/dbc/GB-EP30_CAN_r4_009WIP_v1.21.dbc"
 
 static unsigned char cfg_para_buf[CFG_PARA_BUF_LEN];
 static pthread_mutex_t cfg_para_mutex;
@@ -681,8 +681,8 @@ int cfg_restore_para(void)
         log_o(LOG_CFG, "cfg data ver:%s", ver);
     }
 
-    //unsigned char dbc_path[256] = CFG_PARA_DBC_PATH;
-    //cfg_set_by_id(CFG_ITEM_DBC_PATH, dbc_path, 256, CFG_SET_UNSILENT);
+    unsigned char dbc_path[256] = CFG_PARA_DBC_PATH;
+    cfg_set_by_id(CFG_ITEM_DBC_PATH, dbc_path, 256, CFG_SET_UNSILENT);
 
     /* if add new para in the new version, upgrade the para */
     if (0 != strcmp(COM_APP_MAIN_VER, ver))
