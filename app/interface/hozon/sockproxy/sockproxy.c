@@ -466,10 +466,10 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
 					retcancel = pthread_cancel(rcvtid);
 					pthread_join(rcvtid, &ret);
-					if(ESRCH != pthread_kill(rcvtid,0))//线程存在
-					{
-						log_i(LOG_HOZON, "thread sockproxy_rcvmain exist\n");
-					}
+					//if(ESRCH != pthread_kill(rcvtid,0))//线程存在
+					//{
+					//	log_i(LOG_HOZON, "thread sockproxy_rcvmain exist\n");
+					//}
 					log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel = %d\n",retcancel);
 					sockSt.cancelRcvphreadFlag = 1;
 					sockSt.asynCloseFlg = 0;

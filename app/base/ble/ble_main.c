@@ -44,7 +44,7 @@ typedef struct
 {
 	uint8_t msg_type;
 	uint8_t cmd;
-	bt_ack_t cmd_state; // 0±íÊ¾³É¹¦  1±íÊ¾Ê§°Ü
+	bt_ack_t cmd_state; // 0ï¿½ï¿½Ê¾ï¿½É¹ï¿½  1ï¿½ï¿½Ê¾Ê§ï¿½ï¿½
 	uint8_t failtype;
 	bt_vihe_info_t state;
 	
@@ -460,6 +460,8 @@ int ble_init(INIT_PHASE phase)
 			tm_start(g_BleMember.Retimer, BLE_TIMER_CMD, TIMER_TIMEOUT_REL_PERIOD);
 			
 			BleShellInit();
+			unsigned char ble_enable = 1;
+			cfg_set_para(CFG_ITEM_EN_BLE, (unsigned char *)&ble_enable, 1);
 			break;
 
 		default:

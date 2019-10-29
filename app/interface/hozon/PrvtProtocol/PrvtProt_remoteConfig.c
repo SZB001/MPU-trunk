@@ -1661,5 +1661,5 @@ void getPP_rmtCfg_cfgVersion(char* ver)
 */
 void getPP_rmtCfg_iccid(char* iccid)
 {
-	memcpy(iccid,AppData_rmtCfg.checkReq.iccID,20);
+	memcpy(iccid,AppData_rmtCfg.checkReq.iccID,21);
 }

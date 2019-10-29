@@ -46,7 +46,7 @@ int app_shell_drcfg(int argc, const char **argv)
     unsigned char buff[512];
     unsigned char version[64];
     int ret = 0;
-    char vin[18];
+    char vin[18] = {0};
 
     len = sizeof(unsigned int);
     cfg_get_para(CFG_ITEM_DEV_NUM, (unsigned char *)(&tmpInt), &len);
@@ -54,11 +54,19 @@ int app_shell_drcfg(int argc, const char **argv)
 
     len = sizeof(vin);
     ret |= cfg_get_user_para(CFG_ITEM_GB32960_VIN, vin, &len);
+    if(vin[0] == 0)
+    {
+        vin[0] = '0';
+    }
     shellprintf("vehicle VIN = %s\r\n", vin);
 
-    char tboxsn[19];
+    char tboxsn[19] = {0};
     len = sizeof(tboxsn);
     ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN, tboxsn, &len);
+    if(tboxsn[0]== 0)
+    {
+        tboxsn[0] = '0';
+    }
     shellprintf("TBOX SN = %s\r\n", tboxsn);
 
     uint32_t tboxid;
@@ -66,51 +74,87 @@ int app_shell_drcfg(int argc, const char **argv)
     ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXID, &tboxid, &len);
     shellprintf("TBOX ID = %u\r\n",tboxid);
 
-    char iccid[21];
+    char iccid[21] = {0};
     getPP_rmtCfg_iccid(iccid);
+    if(iccid[0] == 0)
+    {
+        iccid[0] = '0';
+    }
     shellprintf("TBOX ICCID = %s\r\n", iccid);
 
-    char mpusw[11];
+    char mpusw[11] = {0};
     len = sizeof(mpusw);
     ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_MPUSW, mpusw, &len);
+    if(mpusw[0] == 0)
+    {
+        mpusw[0] = '0';
+    }
     shellprintf("mpuSw = %s\r\n", mpusw);
 
-    char mcusw[11];
+    char mcusw[11] = {0};
     len = sizeof(mcusw);
     ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_MCUSW, mcusw, &len);
+    if(mcusw[0] == 0)
+    {
+        mcusw[0] = '0';
+    }
     shellprintf("mcuSw = %s\r\n", mcusw);
 
     char cfgver[33] = {0};
     getPP_rmtCfg_cfgVersion(cfgver);
+    if(cfgver[0] == 0)
+    {
+        cfgver[0] = '0';
+    }
     shellprintf("TSP remote config version = %s\r\n", cfgver);
 
     len = sizeof(url.url);
     ret |= cfg_get_user_para(CFG_ITEM_GB32960_URL, url.url, &len);
+    if(url.url[0] == 0)
+    {
+        url.url[0] = '0';
+    }
     shellprintf("TSP ADDR NO PKI = %s\r\n", url.url);
     len = sizeof(url.port);
     ret |= cfg_get_user_para(CFG_ITEM_GB32960_PORT, &url.port, &len);
     shellprintf("TSP PORT NO PKI = %u\r\n", url.port);
 
-    char sgLinkAddr[33];
+    char sgLinkAddr[33] = {0};
 	int	 sgPort;
     getPP_rmtCfg_certAddrPort(sgLinkAddr,&sgPort);
+    if(sgLinkAddr[0] == 0)
+    {
+        sgLinkAddr[0] = '0';
+    }
     shellprintf("SG LINK ADDR PKI = %s\r\n", sgLinkAddr);
-    shellprintf("SG LINK PORT PKI = %u\r\n", sgPort);
+    shellprintf("SG LINK PORT PKI = %d\r\n", sgPort);
 
-    char bdlLinkAddr[33];
+    char bdlLinkAddr[33] = {0};
 	int	 bdlPort;
     getPP_rmtCfg_tspAddrPort(bdlLinkAddr,&bdlPort);
+    if(bdlLinkAddr[0] == 0)
+    {
+        bdlLinkAddr[0] = '0';
+    }
     shellprintf("BDL ADDR PKI = %s\r\n", bdlLinkAddr);
-    shellprintf("BDL PORT PKI = %u\r\n", bdlPort);
+    shellprintf("BDL PORT PKI = %d\r\n", bdlPort);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_DBC_PATH, buff, &len);
+    if(buff[0] == 0)
+    {
+        buff[0] = '0';
+    }
     shellprintf("DBC PATH CONFIG = %s\r\n", buff);
 
     char certSn[32] = {0};
     len = sizeof(certSn);
     ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT,certSn,&len);
+    if(certSn[0] == 0)
+    {
+        certSn[0] = '0';
+    }
     shellprintf("CERT FILE = %s\r\n", certSn);
     len = 1;
     uint8_t EnFlag;
@@ -120,6 +164,10 @@ int app_shell_drcfg(int argc, const char **argv)
     char wanAPN[32] = {0};
     len = sizeof(wanAPN);
     ret |= cfg_get_para(CFG_ITEM_WAN_APN,wanAPN,&len);
+    if(wanAPN[0] == 0)
+    {
+        wanAPN[0] = '0';
+    }
     shellprintf("WAN APN = %s\r\n", wanAPN);
 
     len = 1;
@@ -137,6 +185,10 @@ int app_shell_drcfg(int argc, const char **argv)
     char blename[50] = {0};
     len = sizeof(blename);
     ret |= cfg_get_para(CFG_ITEM_BLE_NAME,blename,&len);
+    if(blename[0] == 0)
+    {
+        blename[0] = '0';
+    }
     shellprintf("BLE NAME = %s\r\n", blename);
 
     len = 1;
@@ -194,16 +246,28 @@ int app_shell_drcfg(int argc, const char **argv)
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_ICALL, (unsigned char *)buff, &len);
+    if(buff[0] == 0)
+    {
+        buff[0] = '0';
+    }
     shellprintf("ICALL = %s\r\n", buff);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_BCALL, (unsigned char *)buff, &len);
+    if(buff[0] == 0)
+    {
+        buff[0] = '0';
+    }
     shellprintf("BCALL = %s\r\n", buff);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_WHITE_LIST, (unsigned char *)buff, &len);
+    if(buff[0] == 0)
+    {
+        buff[0] = '0';
+    }
     shellprintf("WHITE LIST = %s\r\n", buff);
 
     shellprintf("INTEST SOFTWARE VERSION = %s\r\n", dev_get_version());
