@@ -689,7 +689,7 @@ static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 	/*body*/
 	memcpy(rmtCfg->pack.DisBody.aID,"100",3);
 	rmtCfg->pack.DisBody.mID = PP_MID_CHECK_CFG_REQ;
-	rmtCfg->pack.DisBody.eventId = PP_rmtCfg.state.eventid;
+	rmtCfg->pack.DisBody.eventId = 0;//主动上行数据，eventid为0
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	rmtCfg->pack.DisBody.expTime   = PP_rmtCfg.state.expTime;
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
@@ -736,7 +736,7 @@ static int PP_rmtCfg_getRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 	/*body*/
 	memcpy(rmtCfg->pack.DisBody.aID,"100",3);
 	rmtCfg->pack.DisBody.mID = PP_MID_GET_CFG_REQ;
-	rmtCfg->pack.DisBody.eventId = PP_rmtCfg.state.eventid;
+	rmtCfg->pack.DisBody.eventId = 0;//主动上行数据，eventid为0
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	rmtCfg->pack.DisBody.expTime   = PP_rmtCfg.state.expTime;
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
@@ -785,7 +785,7 @@ static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtC
 	/*body*/
 	memcpy(rmtCfg->pack.DisBody.aID,"100",3);
 	rmtCfg->pack.DisBody.mID = PP_MID_CFG_END;
-	rmtCfg->pack.DisBody.eventId = PP_rmtCfg.state.eventid;
+	rmtCfg->pack.DisBody.eventId = 0;//主动上行数据，eventid为0
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	rmtCfg->pack.DisBody.expTime   = PP_rmtCfg.state.expTime;
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
