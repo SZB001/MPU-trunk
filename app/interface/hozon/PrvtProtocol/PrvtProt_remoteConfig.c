@@ -1653,7 +1653,7 @@ void getPP_rmtCfg_certAddrPort(char* addr,int* port)
 */
 void getPP_rmtCfg_cfgVersion(char* ver)
 {
-	memcpy(ver,AppData_rmtCfg.checkReq.cfgVersion,32);
+	memcpy(ver,AppData_rmtCfg.checkReq.cfgVersion,33);
 }
 
 /*
