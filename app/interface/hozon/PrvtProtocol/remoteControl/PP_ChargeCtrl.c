@@ -181,15 +181,6 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				PP_rmtChargeCtrl.fail      = 0;
 				PP_rmtChargeCtrl.failtype  = PP_RMTCTRL_NORMAL;
 				PP_rmtChargeCtrl.chargeOnOffFlag = 0;
-				if(1 == GetPP_rmtCtrl_fotaUpgrade())//fota ing
-				{
-					log_i(LOG_HOZON,"in the fota upgrade\n");
-					PP_rmtChargeCtrl.state.req = 0;
-					PP_rmtChargeCtrl.fail      = 1;
-					PP_rmtChargeCtrl.failtype  = PP_RMTCTRL_FOTA_UPGRADE;
-					PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_END;
-					return 0;
-				}
 
 				pm_ring_wakeup();   //ring脚唤醒MCU
 				PP_can_mcu_awaken();//唤醒
