@@ -161,6 +161,15 @@ int app_shell_drcfg(int argc, const char **argv)
 	ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&EnFlag,&len);
     shellprintf("CERT ENABLE = %u\r\n", EnFlag);
 
+    char localAPN[32] = {0};
+    len = sizeof(localAPN);
+    ret |= cfg_get_para(CFG_ITEM_LOCAL_APN,localAPN,&len);
+    if(localAPN[0] == 0)
+    {
+        localAPN[0] = '0';
+    }
+    shellprintf("LOCAL APN = %s\r\n", localAPN);
+
     char wanAPN[32] = {0};
     len = sizeof(wanAPN);
     ret |= cfg_get_para(CFG_ITEM_WAN_APN,wanAPN,&len);
