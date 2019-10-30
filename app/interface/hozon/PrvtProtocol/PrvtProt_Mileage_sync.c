@@ -67,29 +67,27 @@ int PP_Mileagesync_mainfunction(void *task)
 			mileage = gb_data_vehicleOdograph();
 		}	
 		w_flag = 0;
+
+		data[0] = (uint8_t)(mileage >> 16);
+		data[1] = (uint8_t)(mileage >> 8);
+		data[2] = (uint8_t)(mileage);
+		
+		if(tm_get_time() -  lastsendtime > 200)  //200ms同步一次
+		{
+			PP_can_send_mileage(data);
+			lastsendtime = tm_get_time();
+		}
 	}
-	data[0] = (uint8_t)(mileage >> 16);
-	data[1] = (uint8_t)(mileage >> 8);
-	data[2] = (uint8_t)(mileage);
-	
-	if(tm_get_time() -  lastsendtime > 200)  //200ms同步一次
-	{
-		PP_can_send_mileage(data);
-		lastsendtime = tm_get_time();
-	}
-	
-	if(0 == dev_get_KL15_signal())  //IGN off
+	else
 	{
 		if(w_flag == 0)
 		{
-			if(0 == dev_get_KL15_signal())  //IGN off 保存里程同步
-			{
-				log_o(LOG_HOZON,"IGN off write mileage = %d  to ROM",mileage);
-				cfg_set_user_para(CFG_ITEM_HOZON_MILEAGE,&mileage,sizeof(uint32_t));
-				w_flag = 1;
-			}
+			log_o(LOG_HOZON,"IGN off write mileage = %d  to ROM",mileage);
+			cfg_set_user_para(CFG_ITEM_HOZON_MILEAGE,&mileage,sizeof(uint32_t));
+			w_flag = 1;
 		}
 	}
+	
 	return 0;
 }
 
