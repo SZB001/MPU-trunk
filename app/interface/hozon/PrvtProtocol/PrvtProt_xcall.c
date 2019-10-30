@@ -65,6 +65,8 @@ typedef struct
 	PrvtProt_xcall_pack_t 	packResp;
 	PrvtProt_xcallSt_t	 	state;
 	char 					Type;
+	long					eventId;
+	char					activeflag;
 }__attribute__((packed))  PrvtProt_xcall_t; /*xcall�ṹ��*/
 
 static PrvtProt_pack_t 		PP_Xcall_Pack;
@@ -244,26 +246,13 @@ static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,i
 
 	switch(MsgDataBody.mID)
 	{
-#if 0
-		case PP_MID_XCALL_RESP://�յ�xcall response�ظ�
+		case PP_MID_XCALL_REQ://车辆状态查询请求
 		{
-			if(PP_xcall[PP_ECALL].state.waitSt == 1)//���յ��ظ�
+			if((Appdata.xcallType >=1) && (Appdata.xcallType <= PP_XCALL_MAX))
 			{
-				PP_xcall[PP_ECALL].state.waitSt = 0;
-				log_i(LOG_HOZON, "\necall ok\n");
-			}
-		}
-		break;
-#endif
-		case PP_MID_XCALL_REQ://�յ�tsp��ѯ����
-		{
-			if((Appdata.xcallType >=1) && (Appdata.xcallType <= 4))
-			{
-				if(PP_INIT_EVENTID == PP_xcall[Appdata.xcallType-1].packResp.DisBody.eventId)
-				{
-					PP_xcall[Appdata.xcallType-1].packResp.DisBody.eventId = MsgDataBody.eventId;
-				}
+				PP_xcall[Appdata.xcallType-1].eventId = MsgDataBody.eventId;
 				PP_xcall[Appdata.xcallType-1].state.req = 1;
+				PP_xcall[Appdata.xcallType-1].activeflag = 0;
 				log_i(LOG_HOZON, "recv xcall request\n");
 			}
 		}
@@ -286,19 +275,6 @@ static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,i
 ******************************************************/
 static int PP_xcall_do_wait(PrvtProt_task_t *task)
 {
-#if 0
-    if(PP_xcall[PP_ECALL].state.waitSt == 1)
-    {
-    	 if((tm_get_time() - PP_xcall[PP_ECALL].state.waittime) > PP_XCALL_WAIT_TIMEOUT)
-    	 {
-    		 PP_xcall[PP_ECALL].state.waitSt = 0;
-    		 PP_xcall[PP_ECALL].state.retrans = 1;
-    		 log_e(LOG_HOZON, "ecall time out");
-    		 return 0;
-    	 }
-    	 return -1;
-    }
-#endif
 	return 0;
 }
 
@@ -320,15 +296,21 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 	if(PrvtProtCfg_ecallTriggerEvent())//ecall����
 	{
 		PP_xcall[PP_ECALL].state.req = 1;
+		PP_xcall[PP_ECALL].activeflag = 1;
 	}
+
 	if(PrvtProtCfg_bcallTriggerEvent())//ecall����
 	{
 		PP_xcall[PP_BCALL].state.req = 1;
+		PP_xcall[PP_BCALL].activeflag = 1;
 	}
+
 	if(PrvtProtCfg_detectionTriggerEvent())//Live detection warning
 	{
 		PP_xcall[PP_detection].state.req = 1;
+		PP_xcall[PP_detection].activeflag = 1;
 	}
+
 	if(1 == PP_xcall[PP_ECALL].state.req)//ecall����
 	{
 		log_i(LOG_HOZON, "ecall trig\n");
@@ -436,10 +418,16 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	memcpy(PP_xcall[XcallType].packResp.DisBody.aID,"170",3);
 	PP_xcall[XcallType].packResp.DisBody.mID = PP_MID_XCALL_RESP;
 	PP_xcall[XcallType].packResp.DisBody.eventTime = PrvtPro_getTimestamp();
-	if(PP_INIT_EVENTID == PP_xcall[XcallType].packResp.DisBody.eventId)
+
+	if(1 == PP_xcall[XcallType].activeflag)
 	{
-		PP_xcall[XcallType].packResp.DisBody.eventId = PP_AID_XCALL + PP_xcall[XcallType].Type;
+		PP_xcall[XcallType].packResp.DisBody.eventId = 0;
 	}
+	else
+	{
+		PP_xcall[XcallType].packResp.DisBody.eventId = PP_xcall[XcallType].eventId;
+	}
+	PP_xcall[XcallType].activeflag = 0;
 	PP_xcall[XcallType].packResp.DisBody.expTime = PrvtPro_getTimestamp();
 	PP_xcall[XcallType].packResp.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	PP_xcall[XcallType].packResp.DisBody.appDataProVer = 256;
