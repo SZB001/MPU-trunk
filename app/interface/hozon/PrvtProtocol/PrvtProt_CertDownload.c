@@ -675,7 +675,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 					if(0 == PP_CertDL_getCertSn(1))
 					{
 						PP_CertSt.para.mid = PP_CERTDL_MID_CERT_STATUS;
-						PP_CertSt.para.eventid = 0x55;
+						PP_CertSt.para.eventid = 0;//主动上行数据，eventid为0
 						PP_CertSt.para.certType = 1;
 						PP_CertSt.para.failureType = 1;//失败类型为1--证书认证失败
 						PP_CertSt.para.pakgtype = PP_TXPAKG_CONTINUE;
@@ -782,7 +782,7 @@ static int PP_CertDL_do_CertDownload(PrvtProt_task_t *task)
 		case PP_CERTDL_DLREQ:
 		{
 			PP_CertDL.para.CertDLReq.mid = PP_CERTDL_MID_REQ;
-			PP_CertDL.para.CertDLReq.eventid = PP_CertDownloadPara.eventid;
+			PP_CertDL.para.CertDLReq.eventid = 0;//主动上行数据，eventid为0
 			PP_CertDL.para.CertDLReq.cerType = 1;//tbox
 			//生成消息列表,VIN &&密文信息 &&密钥编号&& 证书申请文件内容 CSR，其中密文信息中包含 TBOXSN、IMISI、随机数信息
 			unsigned char gcsroutdata[4096] = {0};
@@ -952,7 +952,7 @@ static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 				PP_CertSt.waitEnSt = 0;
 				PP_CertSt.enSt = 0;
 				PP_CertSt.para.mid = PP_CERTDL_MID_CERT_STATUS;
-				PP_CertSt.para.eventid = 0x55;
+				PP_CertSt.para.eventid = 0;//主动上行数据，eventid为0
 				PP_CertSt.para.certType = 1;
 				PP_CertSt.para.failureType = 0;//失败类型为0--启用证书
 				PP_CertSt.para.pakgtype = PP_TXPAKG_SIGTIME;
@@ -1040,7 +1040,7 @@ static int PP_CertDL_do_checkRevocationList(PrvtProt_task_t *task)
 			    fclose (fp);
 
 				PP_CertRevoList.para.mid = PP_CERTDL_MID_REVOLISTREQ;
-				PP_CertRevoList.para.eventid = 0x55;
+				PP_CertRevoList.para.eventid = 0;//主动上行数据，eventid为0
 				PP_CertRevoList.para.certType = 1;
 				PP_CertRevoList.para.failureType = 0;
 				PP_CertRevoList.para.crlLength = crtlen;
@@ -1159,13 +1159,10 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task)
 		case PP_CERTUPDATA_CKREQ:
 		{
 			int len;
-			//int dstlen;
 			unsigned char signinfo[1024]={0};
-			//char signsernum[1024]={0};
 			PP_CertUpdata.para.mid = PP_CERTDL_MID_UDREQ;
-			PP_CertUpdata.para.eventid = 0x55;
+			PP_CertUpdata.para.eventid = 0;//主动上行数据，eventid为0
 			PP_CertUpdata.para.certType = 1;
-			//dev_get_KL15_signal();
 			memset(PP_CertUpdata.para.certSn,0,sizeof(PP_CertUpdata.para.certSn));
 			iRet = HzTboxGetserialNumber(PP_CERTDL_CERTPATH,"DER",(char*)PP_CertUpdata.para.certSn);//DER
 			if(iRet == 6107)
@@ -1247,7 +1244,7 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task)
 					free(filedata_ptr);
 
 					PP_CertDL.para.CertDLReq.mid = PP_CERTDL_MID_REQ;
-					PP_CertDL.para.CertDLReq.eventid = PP_CertDownloadPara.eventid;
+					PP_CertDL.para.CertDLReq.eventid = 0;//主动上行数据，eventid为0
 					PP_CertDL.para.CertDLReq.cerType = 1;//tbox
 					PP_CertDL_CertDLReq(task,&PP_CertDL.para);
 					updatawaittime = tm_get_time();
