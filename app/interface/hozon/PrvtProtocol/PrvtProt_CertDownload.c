@@ -97,7 +97,6 @@ typedef struct
 	uint8_t updataSt;
 	uint8_t checkSDKVerflag;
 	uint8_t checkoutofdateflag;
-	//uint64_t checkcerttimer;
 }PP_checkCertSt_t;
 
 typedef struct
@@ -557,7 +556,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 {
 	#define	PP_CERTDL_TIMES			3
 	#define	PP_CERTUPDATE_TIMES		3
-	static  uint8_t	certvalidflag = 0;
+	static  uint8_t	certDLRenewOkflag = 0;
 
 	if(0 == dev_get_KL15_signal())
 	{
@@ -572,7 +571,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 	}
 
 
-	if((1 == sockproxy_sgsocketState()) && (!certvalidflag))
+	if((1 == sockproxy_sgsocketState()) && (!certDLRenewOkflag))
 	{
 		switch(PP_CertDL.state.checkSt)
 		{
@@ -608,6 +607,10 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 				if(1 == certAvailableSt)//检查吊销和过期
 				{
 					log_i(LOG_HOZON, "certificate need renew\n");
+					PP_CertDL.state.CertValid = 0;
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
+					PP_CertDL.state.CertEnflag = 0;
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
 					PP_CertDL.state.checkSt = PP_CHECK_CERT_RENEWCERT;
 				}
 				else if(0 == certAvailableSt)
@@ -662,10 +665,10 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 				{
 					log_i(LOG_HOZON,"verify userAuth.cer success\n");
 					PrvtPro_SettboxId(1,PP_CertDownloadPara.tboxid);
-					PP_CertDL.state.CertValid = 1;
-					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
-					PP_CertDL.state.CertEnflag = 0;
-					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
+					if(0 == PP_CertDL_getCertSn(0))
+					{
+						(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT,PP_CertSt.para.certSn,32);
+					}
 					PP_CertSt.CertEnCnt = 0;
 					PP_CertDL.state.verifyFlag = 1;
 				}
@@ -695,19 +698,18 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 			break;
 		}
 
-		if(((1 == PP_CertDL.state.CertValid) && (PP_CertDL.state.verifyFlag == 1)) || \
-				(1 == PP_CertDL.state.certAvailableFlag))
-
+		if((PP_CertDL.state.verifyFlag == 1) || (1 == PP_CertDL.state.certAvailableFlag))
 		{
 			PP_CertDL.state.verifyFlag = 0;
 			PP_CertDL.state.certAvailableFlag = 0;
-			certvalidflag = 1;
+			certDLRenewOkflag = 1;
 			sockproxy_socketclose((int)(PP_SP_COLSE_CDL));
 		}
 	}
 	else if(1 == sockproxy_socketState())//双向链路
 	{
-		certvalidflag = 0;
+		uint8_t	certRevoOutofdateflag = 0;
+		certDLRenewOkflag = 0;
 		PP_CertDL.Cnt = 0;
 		PP_CertUpdata.Cnt = 0;
 		PP_CertDL.state.checkSt = PP_CHECK_CERT_IDLE;
@@ -717,21 +719,19 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 		if(1 == PP_CertRevoList.checkRevoFlag)
 		{
 			PP_CertRevoList.checkRevoFlag = 0;
-			if(1 == PP_CertDL_checkCertrevoked())//检查吊销
-			{
-				sockproxy_socketclose((int)(PP_SP_COLSE_CDL) + 1);
-			}
+			certRevoOutofdateflag |= PP_CertDL_checkCertrevoked();//检查吊销
 		}
-		else if(1 == PP_checkCertSt.checkoutofdateflag)
+
+		if(1 == PP_checkCertSt.checkoutofdateflag)
 		{
 			PP_checkCertSt.checkoutofdateflag = 0;
-			if(1 == PP_CertDL_checkCertOutofdate())//检查过期
-			{
-				sockproxy_socketclose((int)(PP_SP_COLSE_CDL) + 1);
-			}
+			certRevoOutofdateflag |= PP_CertDL_checkCertOutofdate();//检查过期
 		}
-		else
-		{}
+
+		if(1 == certRevoOutofdateflag)//cert need renew
+		{
+			sockproxy_socketclose((int)(PP_SP_COLSE_CDL) + 1);
+		}
 	}
 	else
 	{}
@@ -974,7 +974,8 @@ static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 				log_i(LOG_HOZON, "enable certificate success\n");
 				PP_CertDL.state.CertEnflag = 1;
 				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
-				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT,PP_CertSt.para.certSn,32);
+				PP_CertDL.state.CertValid = 1;
+				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
 				PP_CertRevoList.checkRevoReq = 1;//检查吊销列表
 				CertEnSt = PP_CERTEN_END;
 			}
@@ -1608,7 +1609,6 @@ static void PP_CertDL_send_cb(void * para)
 ******************************************************/
 void PP_CertDL_SetCertDLReq(unsigned char req)
 {
-	//PP_CertDL.state.CertValid 	   = 0;
 	PP_CertDL.state.certDLTestflag = req;
 }
 
@@ -1642,9 +1642,7 @@ void PP_CertDL_SetCertDLUpdata(unsigned char req)
 ******************************************************/
 void PP_CertDL_CertDLReset(void)
 {
-	//PP_CertDL.state.CertValid = 0;
-	//PP_CertDL.Cnt = 0;
-	//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
+	
 }
 
 /******************************************************
@@ -1736,7 +1734,6 @@ static int PP_CertDL_checkCertExist(void)
 		}
 	}
 	
-	PP_CertDL.state.CertValid = cert_exist_flag;
 	pthread_mutex_unlock(&checkcertmtx);//解锁
 
 	return cert_exist_flag;
