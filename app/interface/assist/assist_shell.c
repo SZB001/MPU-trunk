@@ -100,7 +100,7 @@ int app_shell_drcfg(int argc, const char **argv)
     }
     shellprintf("mcuSw = %s\r\n", mcusw);
 
-    char cfgver[33] = {0};
+    char cfgver[256] = {0};
     getPP_rmtCfg_cfgVersion(cfgver);
     if(cfgver[0] == 0)
     {

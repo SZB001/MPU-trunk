@@ -110,4 +110,5 @@ extern void PP_COMMON_UNLOCK(void);
 extern char getPP_rmtDiag_Idle(void);
 extern void getPP_rmtCfg_cfgVersion(char* ver);
 extern void getPP_rmtCfg_iccid(char* iccid);
+extern int PP_rmtCfg_ultoa(unsigned long value, char *string, int radix);
 #endif

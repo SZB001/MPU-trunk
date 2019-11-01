@@ -39,6 +39,7 @@ description�� include the header file
 #include "../sockproxy/sockproxy_txdata.h"
 #include "cfg_api.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 #include "PrvtProt_shell.h"
 #include "PrvtProt_queue.h"
@@ -1216,7 +1217,10 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_o(LOG_HOZON, "mcuSw = %s",AppData_rmtCfg.checkReq.mcuSw);
 	log_o(LOG_HOZON, "mpuSw = %s",AppData_rmtCfg.checkReq.mpuSw);
 	log_o(LOG_HOZON, "ICCID = %s",AppData_rmtCfg.checkReq.iccID);
-	log_o(LOG_HOZON, "cfgVersion = %s",AppData_rmtCfg.checkReq.cfgVersion);
+
+	char cfgversion[256] = {0};
+	getPP_rmtCfg_cfgVersion(cfgversion);
+	log_o(LOG_HOZON, "cfgVersion = %s",cfgversion);
 	log_o(LOG_HOZON, "configSw = %s",AppData_rmtCfg.checkReq.configSw);
 	log_o(LOG_HOZON, "btMacAddr = %s",AppData_rmtCfg.checkReq.btMacAddr);
 
@@ -1648,12 +1652,77 @@ void getPP_rmtCfg_certAddrPort(char* addr,int* port)
 	}
 }
 
+/*无符号长整形转字符型*/
+int PP_rmtCfg_ultoa(unsigned long value, char *string, int radix)
+{
+	char tmp[33] = {0};
+	char *tp = tmp;
+	int i;
+
+	if (radix > 36 || radix <= 1)
+	{
+		return -1;
+	}
+
+	if(value != 0)
+	{
+		while(value)
+		{
+			i = value % radix;
+			value = value / radix;
+			if (i < 10)
+			*tp++ = i +'0';
+			else
+			*tp++ = i + 'a' - 10;
+		}
+
+		while(tp > tmp)
+		{
+			*string++ = *(--tp);
+		}
+	}
+	else
+	{
+		*string++ = '0';
+	}
+
+	*string = 0;
+
+	return 0;
+}
+
 /*
 * 获取配置版本
 */
 void getPP_rmtCfg_cfgVersion(char* ver)
 {
-	memcpy(ver,AppData_rmtCfg.checkReq.cfgVersion,33);
+	char i,j;
+	uint32_t tempVal;
+	char stringVal[33] = {0};
+	char *ver_tp = ver;
+
+	for(i = 0;i < sizeof(AppData_rmtCfg.checkReq.cfgVersion)/4;i++)
+	{
+		tempVal = 0;
+		memset(stringVal,0,sizeof(stringVal));
+		tempVal |= ((uint32_t)AppData_rmtCfg.checkReq.cfgVersion[4*i]) << 24;
+		tempVal |= ((uint32_t)AppData_rmtCfg.checkReq.cfgVersion[4*i+1]) << 16;
+		tempVal |= ((uint32_t)AppData_rmtCfg.checkReq.cfgVersion[4*i+2]) << 8;
+		tempVal |= (uint32_t)AppData_rmtCfg.checkReq.cfgVersion[4*i+3];
+		PP_rmtCfg_ultoa(tempVal,stringVal,10);
+		log_i(LOG_HOZON, "tempVal[%d] = %d,tempstringVal = %s",i,tempVal,stringVal);
+		for(j=0;j<strlen(stringVal);j++)
+		{
+			*ver_tp++ = stringVal[j];
+		}
+		
+		if(i < 7)
+		{
+			*ver_tp++ = '.';
+		}
+	}
+
+	*ver_tp = 0;
 }
 
 /*

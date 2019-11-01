@@ -51,7 +51,8 @@ gb32960_api_fault_t gb_fault;
 #define GB_SUPPLEMENTARY_DATA_BTSN			0x07//温度探头号
 #define GB_SUPPLEMENTARY_DATA_BCN1			0x08//单体电压号1
 #define GB_SUPPLEMENTARY_DATA_BCN2			0x09//单体电压号2
-#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_BCN2 + 1)
+#define GB_SUPPLEMENTARY_DATA_AUTOST		0x0A//空调auto状态
+#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_AUTOST + 1)
 
 #if GB_EXT
 /* event information index */
@@ -1839,35 +1840,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		buf[len++] = 0xff;
 	}
 
-    if(gbinf->gb_VSExt.info[GB_VS_ACMODE])//空调模式
-    {
-    	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACMODE])->value;
-    	switch(tmp)
-    	{
-			case 1:
-			case 5:
-			case 7:
-			{
-				 buf[len++] = 1;//制热
-			}
-			break;
-			case 2:
-			case 6:
-			{
-				 buf[len++] = 2;//制冷
-			}
-			break;
-			default:
-			{
-				buf[len++] = 0xff;
-			}
-			break;
-    	}
-    }
-    else
-    {
-        buf[len++] = 0xff;
-    }
+	buf[len++] = gb_data_ACMode();//空调模式
 
     if(gbinf->gb_VSExt.info[GB_VS_AIRVOLUME])//
     {
@@ -4630,9 +4603,21 @@ uint8_t gb_data_reardoorlockSt(void)
 */
 uint8_t gb_data_ACMode(void)
 {
-	uint8_t acmode = 3;//�Զ�
+	#define	GB_AC_HEAT	1
+	#define	GB_AC_COLD	2
+	#define	GB_AC_AUTO	3
+	uint8_t acmode = 0xff;//无效
 	int32_t tmp;
-	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_ACMODE])//�յ�ģʽ
+
+	if(gb_inf && gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_AUTOST])
+	{
+		if(1 == dbc_get_signal_from_id(gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_AUTOST])->value)
+		{
+			return GB_AC_AUTO;
+		}
+	}
+
+	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_ACMODE])//
 	{
 		tmp = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ACMODE])->value;
 		switch(tmp)
@@ -4641,13 +4626,13 @@ uint8_t gb_data_ACMode(void)
 			case 5:
 			case 7:
 			{
-				acmode = 1;//����
+				acmode = GB_AC_HEAT;//制热
 			}
 			break;
 			case 2:
 			case 6:
 			{
-				acmode = 2;//����
+				acmode = GB_AC_COLD;//制冷
 			}
 			break;
 			default:
