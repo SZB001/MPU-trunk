@@ -440,6 +440,10 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	else
 	{}
 	PP_VS_appdata.VSResp.basicSt.accMode 			= gb_data_ACMode()	/* OPTIONAL */;
+	if(PP_VS_appdata.VSResp.basicSt.accMode > 3)
+	{
+		PP_VS_appdata.VSResp.basicSt.accMode = 3;
+	}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.accMode  = %ld",PP_VS_appdata.VSResp.basicSt.accMode);
 	PP_VS_appdata.VSResp.basicSt.accBlowVolume		= gb_data_BlowerGears()/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.accBlowVolume  = %ld",PP_VS_appdata.VSResp.basicSt.accBlowVolume);

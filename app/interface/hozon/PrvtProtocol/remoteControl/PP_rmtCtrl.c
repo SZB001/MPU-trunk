@@ -1186,6 +1186,10 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			else
 			{}
 			App_rmtCtrl.CtrlResp.basicSt.accMode 			= gb_data_ACMode()	/* OPTIONAL */;
+			if(App_rmtCtrl.CtrlResp.basicSt.accMode > 3)
+			{
+				App_rmtCtrl.CtrlResp.basicSt.accMode = 3;
+			}
 			
 			App_rmtCtrl.CtrlResp.basicSt.accBlowVolume		= gb_data_BlowerGears()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.innerTemp 			= gb_data_InnerTemp();  //室内温度
