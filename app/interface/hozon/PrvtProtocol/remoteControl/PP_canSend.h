@@ -49,13 +49,14 @@
 #define CAN_STARTFORBID  1
 #define CAN_NOFORBID     2
 /************ACC****************/
-#define CAN_OPENACC   1
-#define CAN_SETACCTEP 2
-#define CAN_CLOSEACC 3
-#define CAN_CLEANACC 4
-#define CAN_APPOINTACC 5
-#define CAN_CANCELAPPOINTACC 6
-#define CAN_ACCMD_INVAILD 7
+#define CAN_OPENACC          1
+#define CAN_OPNEACCFIAL      2
+#define CAN_SETACCTEP        3
+#define CAN_CLOSEACC         4
+#define CAN_CLOSEACCCLEAN     5
+#define CAN_APPOINTACC       6
+#define CAN_CANCELAPPOINTACC 7
+#define CAN_ACCMD_INVAILD    8
 
 /**********BLUE****************/
 #define CAN_BLUECLEAN 0

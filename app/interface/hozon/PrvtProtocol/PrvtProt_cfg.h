@@ -67,7 +67,7 @@ description�� function External declaration
 extern int PrvtProtCfg_rcvMsg(unsigned char* buf,int buflen);
 extern char PrvtProtCfg_ecallTriggerEvent(void);
 extern char PrvtProtCfg_bcallTriggerEvent(void);
-extern char PrvtProtCfg_detectionTriggerEvent(void);
+extern char PrvtProtCfg_detectionTriggerSt(void);
 extern int PrvtProtCfg_gpsStatus(void);
 extern long PrvtProtCfg_engineSt(void);
 extern long PrvtProtCfg_totalOdoMr(void);

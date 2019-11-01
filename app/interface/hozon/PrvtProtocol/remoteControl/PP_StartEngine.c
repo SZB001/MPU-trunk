@@ -393,6 +393,7 @@ void PP_rmtCtrl_checkenginetime(void)
 				PP_rmtengineCtrl.state.req = 1;
 				PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;
 			}
+			PP_set_ac_requestpower_flag(); //清除空调下电请求
 		}
 		if(PP_get_seat_requestpower_flag() == 2)  //座椅加热关闭请求下电
 		{
@@ -402,8 +403,8 @@ void PP_rmtCtrl_checkenginetime(void)
 				enginecation = PP_POWEROFF;
 				PP_rmtengineCtrl.state.req = 1;
 				PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;
-		
 			}
+			PP_set_seat_requestpower_flag();//清除座椅加热下电请求
 		}
 	}
 }

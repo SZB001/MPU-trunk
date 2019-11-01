@@ -1,13 +1,13 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_callCenter.c
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_callCenter.c
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -26,7 +26,7 @@ description£º include the header file
 #include "cfg_api.h"
 
 
-int ecall_flag = 0;  //ÕýÔÚÍ¨»°µÄ±êÖ¾
+int ecall_flag = 0;  //ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½Ä±ï¿½Ö¾
 int bcall_flag = 0;
 int icall_flag = 0;
 
@@ -35,38 +35,38 @@ extern void ivi_callstate_response_send(int fd  );
 extern ivi_client ivi_clients[MAX_IVI_NUM];
 extern int audio_basic_ECall(void);
 extern int audio_basic_ICall(void);
-
+extern void at_get_call_incoming_telno(char *incoming_num_str);
 
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 static PrvtProt_CC_task_t CC_task;
 
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
 /*Static function declaration*/
 
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 /******************************************************
-*º¯ÊýÃû£ºPrvtProt_CC_init
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtProt_CC_init
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º³õÊ¼»¯
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PrvtProt_CC_init(void)
 {
@@ -74,15 +74,15 @@ void PrvtProt_CC_init(void)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºGet_call_tpye
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Get_call_tpye
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºint      0:ECallÕ¼Ïß 1£ºBCallÕ¼Ïß 2£ºICall Õ¼Ïß
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½int      0:ECallÕ¼ï¿½ï¿½ 1ï¿½ï¿½BCallÕ¼ï¿½ï¿½ 2ï¿½ï¿½ICall Õ¼ï¿½ï¿½
 
-*Ãè  Êö£º »ñÈ¡ÕýÔÚÍ¨»°µÄµç»°ÀàÐÍ
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½Äµç»°ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int Get_call_tpye(void)
 {
@@ -105,36 +105,8 @@ int Get_call_tpye(void)
 	return 3;
 }
 
-/******************************************************
-*º¯ÊýÃû£ºPrvtProt_CC_mainfunction
-
-*ÐÎ  ²Î£ºvoid
-
-*·µ»ØÖµ£ºvoid
-
-*Ãè  Êö£º³õÊ¼»¯
-
-*±¸  ×¢£º
-******************************************************/
-int PrvtProt_CC_mainfunction(void *task)
+int PrvtProt_CC_Dial_Hang(void)
 {
-#if 0
-
-	char argv[11] = "17783007443";
-	if((1 == CC_task.callreq) || (PrvtProt_CC_callreq()))
-	{
-	    if( strlen(argv) > 32 )
-	    {
-	    	log_e(LOG_HOZON,"the telephone num too long\r\n");
-	        return -1;
-	    }
-
-	    makecall(argv);
-	    log_e(LOG_HOZON,"begin to make call\r\n");
-	    CC_task.callreq = 0;
-	}
-#endif
-
 	int type;
 	int action;
 	int ret;
@@ -142,25 +114,25 @@ int PrvtProt_CC_mainfunction(void *task)
 	unsigned char xcall[32];
 	action = tbox_ivi_get_call_action();
 	
-	if(action == 1) //²¦µç»°
+	if(action == 1) //ï¿½ï¿½ï¿½ç»°
 	{
 		type =  tbox_ivi_get_call_type();
 		switch(type)
 		{
-			case 0:   //²¦´òecall
+			case 0:   //ï¿½ï¿½ï¿½ï¿½ecall
 			{
-				if(PP_rmtCfg_enable_ecall() == 1)  //ecallÊ¹ÄÜ
+				if(PP_rmtCfg_enable_ecall() == 1)  //ecallÊ¹ï¿½ï¿½
 				{
 					log_o(LOG_HOZON,"ECALL ENABLE");
-					if(assist_get_call_status() != 5) //ÊÇ·ñ¿ÕÏÐ
+					if(assist_get_call_status() != 5) //ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 					{
-						if( 0 == Get_call_tpye())  //ecallÔÚÍ¨»°
+						if( 0 == Get_call_tpye())  //ecallï¿½ï¿½Í¨ï¿½ï¿½
 						{
 							log_o(LOG_HOZON,"Ecall dailing");
 							tbox_ivi_clear_call_flag();
 							return 0;	
 						}
-						else if( 1 == Get_call_tpye() ) //bcall ÔÚÍ¨»°
+						else if( 1 == Get_call_tpye() ) //bcall ï¿½ï¿½Í¨ï¿½ï¿½
 						{
 							log_o(LOG_HOZON,"Bcall hang");
 							disconnectcall();
@@ -176,7 +148,7 @@ int PrvtProt_CC_mainfunction(void *task)
 							log_o(LOG_HOZON,"Ecall dailing");
 							
 						}
-						else if (2 == Get_call_tpye() ) //icall ÔÚÍ¨»°
+						else if (2 == Get_call_tpye() ) //icall ï¿½ï¿½Í¨ï¿½ï¿½
 						{
 							log_o(LOG_HOZON,"Icall hang");
 							disconnectcall();
@@ -225,12 +197,12 @@ int PrvtProt_CC_mainfunction(void *task)
 				}
 				break;	
 			}
-			case 1:  //²¦´òbcall
+			case 1:  //ï¿½ï¿½ï¿½ï¿½bcall
 			{
 				if(PP_rmtCfg_enable_bcall() == 1)
 				{
 					log_o(LOG_HOZON,"BCALL ENABNLE");
-					if(assist_get_call_status() != 5) //ÊÇ·ñ¿ÕÏÐ
+					if(assist_get_call_status() != 5) //ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 					{
 						tbox_ivi_clear_bcall_flag();
 						return 0;
@@ -264,12 +236,12 @@ int PrvtProt_CC_mainfunction(void *task)
 				}
 				break;
 			}
-			case 2:  //²¦´òicall
+			case 2:  //ï¿½ï¿½ï¿½ï¿½icall
 			{
 				if(PP_rmtCfg_enable_icall() == 1)
 				{
 					log_o(LOG_HOZON,"ICALL ENABNLE");
-					if(assist_get_call_status() != 5) //ÊÇ·ñ¿ÕÏÐ
+					if(assist_get_call_status() != 5) //ï¿½Ç·ï¿½ï¿½ï¿½ï¿½
 					{
 						tbox_ivi_clear_icall_flag();
 						return 0;
@@ -303,7 +275,7 @@ int PrvtProt_CC_mainfunction(void *task)
 			default: break;
 		}
 	}
-	else if(action == 2)
+	else if(action == 2)  //ï¿½Òµç»°
 	{
 		disconnectcall();
 		if(assist_get_call_status() == 5)
@@ -322,16 +294,86 @@ int PrvtProt_CC_mainfunction(void *task)
 	return 0;
 }
 
+ int PrvtProt_CC_Answercall(void)
+{
+	char number[32] = {0};
+	char xcall[32] = {0};
+	uint32_t len = 32;
+	int ret;
+	if(assist_get_call_status() == 1)   //TBOXï¿½ï¿½ï¿½ï¿½
+	{
+		at_get_call_incoming_telno(number);//ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Äºï¿½ï¿½ï¿½
+		log_o(LOG_HOZON,"incoming number %s",number);
+		memset(xcall, 0, sizeof(xcall));
+		ret = cfg_get_para(CFG_ITEM_ECALL, xcall, &len);
+		if (ret != 0)
+		{
+			log_e(LOG_HOZON, "get ecall error"); 
+		}
+		if(strcmp(number,xcall) == 0) //ECALLï¿½ï¿½ï¿½ï¿½
+		{
+			audio_basic_ICall();
+			answercall();//ï¿½ï¿½ï¿½ï¿½
+			ecall_flag = 1; //ECALLÍ¨ï¿½ï¿½ï¿½ï¿½Ö¾
+			ivi_callstate_response_send(ivi_clients[0].fd);
+			return 0;
+		}
+		
+		memset(xcall, 0, sizeof(xcall));
+		ret = cfg_get_para(CFG_ITEM_BCALL, xcall, &len);
+		if (ret != 0)
+		{
+			log_e(LOG_HOZON, "get bcall error"); 
+		}
+		if(strcmp(number,xcall) == 0) //BCALLï¿½ï¿½ï¿½ï¿½
+		{
+			bcall_flag = 1; //BCALLÍ¨ï¿½ï¿½ï¿½ï¿½Ö¾
+			return 0;
+		}
+		
+		memset(xcall, 0, sizeof(xcall));
+		ret = cfg_get_para(CFG_ITEM_BCALL, xcall, &len);
+		if (ret != 0)
+		{
+			log_e(LOG_HOZON, "get bcall error"); 
+		}
+		if(strcmp(number,xcall) == 0) //ICALLï¿½ï¿½ï¿½ï¿½
+		{
+			icall_flag = 1; //ICALLÍ¨ï¿½ï¿½ï¿½ï¿½Ö¾
+			return 0;
+		}
+	}
+	return 0;
+}
+
 /******************************************************
-*º¯ÊýÃû£ºPrvtPro_SetEcallResp
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtProt_CC_mainfunction
 
-*ÐÎ  ²Î£º
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£º
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£ºÉèÖÃecall response
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
+******************************************************/
+int PrvtProt_CC_mainfunction(void *task)
+{
+	PrvtProt_CC_Dial_Hang();//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ç»°ï¿½ï¿½ï¿½ß¹Òµç»°
+	PrvtProt_CC_Answercall();//ï¿½ï¿½ï¿½ï¿½ï¿½Óµç»°
+	return 0;
+}
+
+/******************************************************
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PrvtPro_SetEcallResp
+
+*ï¿½ï¿½  ï¿½Î£ï¿½
+
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ecall response
+
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void PrvtPro_SetcallCCReq(unsigned char req)
 {

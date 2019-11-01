@@ -275,7 +275,7 @@ int PP_ACCtrl_mainfunction(void *task)
 					else//超时
 					{
 						log_e(LOG_HOZON,"Instruction execution timeout\n");
-						PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);  
+						PP_can_send_data(PP_CAN_ACCTRL,CAN_OPNEACCFIAL,0);  
 						acc_requestpower_flag = 2; //空调开启失败请求下电
 						PP_rmtACCtrl.fail     = 1;
 						PP_rmtACCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
@@ -291,6 +291,7 @@ int PP_ACCtrl_mainfunction(void *task)
 						{
 							log_o(LOG_HOZON,"close air success\n");
 							PP_can_send_data(PP_CAN_ACCTRL,CAN_ACCMD_INVAILD,0);
+							PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACCCLEAN,0);
 							PP_rmtACCtrl.fail     = 0;
 							acc_requestpower_flag = 2; //空调关闭请求下电
 							PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
@@ -299,7 +300,8 @@ int PP_ACCtrl_mainfunction(void *task)
 					else
 					{
 						log_e(LOG_HOZON,"Instruction execution timeout\n");
-						PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);  
+						//PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACC,0);  
+						PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACCCLEAN,0);
 						acc_requestpower_flag = 2; //空调开启失败请求下电
 						PP_rmtACCtrl.fail     = 1;
 						PP_rmtACCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
@@ -824,7 +826,6 @@ void PP_set_ac_requestpower_flag()
 
 void PP_ACCtrl_ClearStatus(void)
 {
-	log_o(LOG_HOZON,"dsfdsf");
 	PP_rmtACCtrl.state.req = 0;
 }
 

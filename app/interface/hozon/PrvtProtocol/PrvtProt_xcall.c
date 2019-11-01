@@ -44,6 +44,7 @@ description�� include the header file
 #include "PrvtProt_EcDc.h"
 #include "PrvtProt_cfg.h"
 #include "PrvtProt.h"
+#include "PrvtProt_SigParse.h"
 #include "PrvtProt_xcall.h"
 
 /*******************************************************
@@ -95,6 +96,7 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task);
 static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType);
 
 static void PP_xcall_send_cb(void * para);
+static char PP_xcall_VivoDetection(void);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -305,7 +307,7 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		PP_xcall[PP_BCALL].activeflag = 1;
 	}
 
-	if(PrvtProtCfg_detectionTriggerEvent())//Live detection warning
+	if(PP_xcall_VivoDetection())//Live detection warning
 	{
 		PP_xcall[PP_detection].state.req = 1;
 		PP_xcall[PP_detection].activeflag = 1;
@@ -328,8 +330,9 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
 		}
 	}
+
 	/* bcall */
-	else if(1 == PP_xcall[PP_BCALL].state.req)
+	if(1 == PP_xcall[PP_BCALL].state.req)
 	{
 		log_i(LOG_HOZON, "bcall trig\n");
 		PP_xcall[PP_BCALL].state.req = 0;
@@ -346,8 +349,9 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
 		}
 	}
+
 	/* icall */
-	else if(1 == PP_xcall[PP_ICALL].state.req)
+	if(1 == PP_xcall[PP_ICALL].state.req)
 	{
 		log_i(LOG_HOZON, "icall trig\n");
 		PP_xcall[PP_ICALL].state.req = 0;
@@ -364,8 +368,9 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
 		}
 	}
+
 	/* Live detection warning  */
-	else if(1 == PP_xcall[PP_detection].state.req)
+	if(1 == PP_xcall[PP_detection].state.req)
 	{
 		log_i(LOG_HOZON, "detection trig\n");
 		PP_xcall[PP_detection].state.req = 0;
@@ -382,8 +387,6 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
 		}
 	}
-	else
-	{}
 
 	return 0;
 }
@@ -554,3 +557,36 @@ void PP_xcall_SetXcallReq(unsigned char req)
 	PP_xcall[(req-1)].state.req = 1;
 }
 
+/*
+* 活体检测
+*/
+static char PP_xcall_VivoDetection(void)
+{
+	static uint64_t lastsendtime;
+	static uint8_t cnt;
+	if(PrvtProtCfg_detectionTriggerSt() == 1)
+	{
+		if(cnt < 3)
+		{
+			if(tm_get_time() - lastsendtime > 10000)
+			{
+				cnt++;
+				lastsendtime = tm_get_time() ;
+				return 1;
+			}
+		}
+		else
+		{
+			if(tm_get_time() - lastsendtime > 60000)
+			{
+				lastsendtime = tm_get_time() ;
+				return 1;
+			}
+		}
+	}
+	else
+	{
+		cnt = 0;
+	}
+	return 0;
+}

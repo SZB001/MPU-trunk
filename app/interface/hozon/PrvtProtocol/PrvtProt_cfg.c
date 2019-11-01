@@ -79,20 +79,13 @@ char PrvtProtCfg_bcallTriggerEvent(void)
 	return 0;
 }
 
-char PrvtProtCfg_detectionTriggerEvent(void)
+char PrvtProtCfg_detectionTriggerSt(void)
 {
-	static char co2densityOldSts = 0;
-	static char co2densityNewSts = 0;
-	co2densityNewSts = PrvtProt_SignParse_CO2DensitySt();
-	if(co2densityNewSts != co2densityOldSts)
+	if(PrvtProt_SignParse_CO2DensitySt() == 2)
 	{
-		co2densityOldSts = co2densityNewSts;
-		if(2 == co2densityNewSts)
-		{
-			return 1;
-		}
+		return 1;
 	}
-
+	
 	return 0;
 }
 

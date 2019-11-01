@@ -27,6 +27,8 @@ static PM_MODE pm_mode = PM_RUNNING_MODE;
 static int     pm_sleep_fd;
 static timer_t pm_period_check_timer;
 extern void Setsocketproxy_Awaken(void);
+extern void audio_setup_aic3104(void);
+
 
 /****************************************************************
 function:     pm_mode_proc
@@ -59,6 +61,7 @@ int pm_mode_proc(ST_DEF_ITEM_ID id, unsigned char *old_mode,
         case PM_RUNNING_MODE:
             log_o(LOG_PM, "pm mode: running");
             Setsocketproxy_Awaken();
+			audio_setup_aic3104();
             pm_send_evt(MPU_MID_PM, PM_EVT_RUNNING);
             return 0;
 

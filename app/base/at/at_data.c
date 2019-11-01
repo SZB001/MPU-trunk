@@ -1125,4 +1125,14 @@ int at_get_cfun(void)
     return cfun;
 }
 
+void at_get_call_incoming_telno(char *incoming_num_str)
+{
+    pthread_mutex_lock(&at_data_mutex);
+ 	if((at_call.status == 6)||(at_call.status == 7))
+ 		 memset(incoming_num_str,0,CALL_NUM_SIZE);
+ 	else
+  		strcpy(incoming_num_str,at_call.incoming_num);
+    pthread_mutex_unlock(&at_data_mutex);
+}
+
 

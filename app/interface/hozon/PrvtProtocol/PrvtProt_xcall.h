@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼şÃû£º	PrvtProt_xcall.h
+ÃÃ„Â¼â‚«Ä‚Ã»Â£Âº	PrvtProt_xcall.h
 
-ÃèÊö£º	ÆóÒµË½ÓĞĞ­Òé£¨Õã½­ºÏÖÚ£©	
+Ä‚Ã¨ÃŠÃ¶Â£Âº	Ã†Ã³Ì‰ÂµÃ‹Â½Ã“ÄÄÂ­Ì‰Ã©Â£Â¨Æ ÄƒÂ½Â­ÂºÃÃ–ÃšÂ£Â©	
 
 Data			  Vasion			author
 2019/04/16		   V1.0			    liujian
@@ -9,30 +9,30 @@ Data			  Vasion			author
 #ifndef		_PRVTPROT_XCALL_H
 #define		_PRVTPROT_XCALL_H
 /*******************************************************
-description£º include the header file
+descriptionÂ£Âº include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionÂ£Âº macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ÂºÃªÂ¿ÂªÂ¹Ã˜Â¶Â¨Ì‰Ã¥*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
-#define PP_XCALL_ACK_WAIT 		0x01//Ó¦´ğ³É¹¦
-#define PP_XCALL_ACK_SUCCESS 	0x02//Ó¦´ğ³É¹¦
+/**********ÂºÃªÂ³Â£ÃÂ¿Â¶Â¨Ì‰Ã¥*********/
+#define PP_XCALL_ACK_WAIT 		0x01//Ã“Â¦Â´Ä‘Â³Ã‰Â¹Â¦
+#define PP_XCALL_ACK_SUCCESS 	0x02//Ã“Â¦Â´Ä‘Â³Ã‰Â¹Â¦
 
 
 #define	PP_ECALL_TYPE 	2//ecall
 #define PP_BCALL_TYPE	1//bcall
 #define	PP_ICALL_TYPE	3//icall
-/***********ºêº¯Êı***********/
+/***********ÂºÃªÂºÂ¯ÃŠÆ°***********/
 
 /*******************************************************
-description£º struct definitions
+descriptionÂ£Âº struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionÂ£Âº typedef definitions
 *******************************************************/
 /******enum definitions******/
 
@@ -49,12 +49,12 @@ typedef enum
 
 typedef struct
 {
-	uint8_t req;/* ÇëÇó:box to tsp */
-	uint8_t resp;/* ÏìÓ¦:box to tsp */
+	uint8_t req;/* Ã‡Ã«Ã‡Ã³:box to tsp */
+	uint8_t resp;/* ÃÌÃ“Â¦:box to tsp */
 	uint8_t retrans;/* retransmission */
 	uint8_t waitSt;
 	uint64_t waittime;
-}__attribute__((packed))  PrvtProt_xcallSt_t; /*xcall½á¹¹Ìå*/
+}__attribute__((packed))  PrvtProt_xcallSt_t; /*xcallÂ½Ã¡Â¹Â¹Ì€Ã¥*/
 
 /* application data struct */
 /***********************************
@@ -62,38 +62,36 @@ typedef struct
 ***********************************/
 typedef struct
 {
-	int  gpsSt;//gps×´Ì¬ 0-ÎŞĞ§£»1-ÓĞĞ§
-	long gpsTimestamp;//gpsÊ±¼ä´Á
-	long latitude;//Î³¶È x 1000000,µ±GPSĞÅºÅÎŞĞ§Ê±£¬ÖµÎª0
-	long longitude;//¾­¶È x 1000000,µ±GPSĞÅºÅÎŞĞ§Ê±£¬ÖµÎª0
-	long altitude;//¸ß¶È£¨m£©
-	long heading;//³µÍ··½Ïò½Ç¶È£¬0ÎªÕı±±·½Ïò
-	long gpsSpeed;//ËÙ¶È x 10£¬µ¥Î»km/h
-	long hdop;//Ë®Æ½¾«¶ÈÒò×Ó x 10
+	int  gpsSt;//gpsÃ—Â´Ì€Â¬ 0-ÃÌƒÄÂ§Â£Â»1-Ã“ÄÄÂ§
+	long gpsTimestamp;//gpsÃŠÂ±Â¼Ã¤Â´Ã
+	long latitude;//ÃÂ³Â¶Ãˆ x 1000000,ÂµÂ±GPSÄÃ…ÂºÃ…ÃÌƒÄÂ§ÃŠÂ±Â£Â¬Ã–ÂµÃÂª0
+	long longitude;//Â¾Â­Â¶Ãˆ x 1000000,ÂµÂ±GPSÄÃ…ÂºÃ…ÃÌƒÄÂ§ÃŠÂ±Â£Â¬Ã–ÂµÃÂª0
+	long altitude;//Â¸ÃŸÂ¶ÃˆÂ£Â¨mÂ£Â©
+	long heading;//Â³ÂµÃÂ·Â·Â½ÃÌ£Â½Ã‡Â¶ÃˆÂ£Â¬0ÃÂªÆ Æ°Â±Â±Â·Â½ÃÌ£
+	long gpsSpeed;//Ã‹Ã™Â¶Ãˆ x 10Â£Â¬ÂµÂ¥ÃÂ»km/h
+	long hdop;//Ã‹Â®Ã†Â½Â¾Â«Â¶ÃˆÌ‰Ì£Ã—Ã“ x 10
 }PrvtProt_Rvsposition_t;
 
 typedef struct
 {
-	long xcallType;//ÀàĞÍ  1-µÀÂ·¾ÈÔ®   2-½ô¼±¾ÈÔ®£¨ecall£©  3-400µç»°½øÏß
-	long engineSt;//Æô¶¯×´Ì¬£»1-Ï¨»ğ£»2-Æô¶¯
-	long totalOdoMr;//Àï³ÌÓĞĞ§·¶Î§£º0 - 1000000£¨km£©
-	PrvtProt_Rvsposition_t gpsPos;//³µÁ¾¾ÈÔ®Î»ÖÃ
-	long srsSt;//°²È«ÆøÄÒ×´Ì¬ 1- Õı³££»2 - µ¯³ö
-	long updataTime;//Êı¾İÊ±¼ä´Á
-	long battSOCEx;//³µÁ¾µç³ØÊ£ÓàµçÁ¿£º0-10000£¨0%-100%£©
+	long xcallType;//Ã€Ã ÄÃ  1-ÂµÃ€Ã‚Â·Â¾ÃˆÃ”Â®   2-Â½Ã´Â¼Â±Â¾ÃˆÃ”Â®Â£Â¨ecallÂ£Â©  3-400ÂµÃ§Â»Â°Â½Ã¸ÃÃŸ
+	long engineSt;//Ã†Ã´Â¶Â¯Ã—Â´Ì€Â¬Â£Â»1-ÃÂ¨Â»Ä‘Â£Â»2-Ã†Ã´Â¶Â¯
+	long totalOdoMr;//Ã€Ã¯Â³Ì€Ã“ÄÄÂ§Â·Â¶ÃÂ§Â£Âº0 - 1000000Â£Â¨kmÂ£Â©
+	PrvtProt_Rvsposition_t gpsPos;//Â³ÂµÃÂ¾Â¾ÃˆÃ”Â®ÃÂ»Ã–Ä‚
+	long srsSt;//Â°Â²ÃˆÂ«Ã†Ã¸Ã„Ì‰Ã—Â´Ì€Â¬ 1- Æ Æ°Â³Â£Â£Â»2 - ÂµÂ¯Â³Ã¶
+	long updataTime;//ÃŠÆ°Â¾Æ¯ÃŠÂ±Â¼Ã¤Â´Ã
+	long battSOCEx;//Â³ÂµÃÂ¾ÂµÃ§Â³Ã˜ÃŠÂ£Ã“Ã ÂµÃ§ÃÂ¿Â£Âº0-10000Â£Â¨0%-100%Â£Â©
 }PrvtProt_App_Xcall_t;
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionÂ£Âº variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionÂ£Âº function External declaration
 *******************************************************/
 extern void PP_xcall_init(void);
 extern int PP_xcall_mainfunction(void *task);
 extern void PP_xcall_SetXcallReq(unsigned char req);
-//extern void PP_rmtCtrl_SetEcallResp(unsigned char resp);
-
 #endif 
