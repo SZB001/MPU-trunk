@@ -16,14 +16,19 @@ author        liuwei
 #include "cfg_api.h"
 #include "can_api.h"
 #include "dev_api.h"
+#include "at.h"
 #include "at_api.h"
 #include "../support/protocol.h"
 #include "dir.h"
 #include "file.h"
 #include "timer.h"
 #include "dsu_api.h"
+#include "gps_api.h"
 #include "uds_did.h"
 #include "udef_cfg_api.h"
+#include "fault_sync.h"
+#include "diag.h"
+#include "ble.h"
 #include "hozon_PP_api.h"
 
 /****************************************************************
@@ -47,6 +52,7 @@ int app_shell_drcfg(int argc, const char **argv)
     unsigned char version[64];
     int ret = 0;
     char vin[18] = {0};
+    int i;
 
     len = sizeof(unsigned int);
     cfg_get_para(CFG_ITEM_DEV_NUM, (unsigned char *)(&tmpInt), &len);
@@ -74,6 +80,27 @@ int app_shell_drcfg(int argc, const char **argv)
     ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXID, &tboxid, &len);
     shellprintf("TBOX ID = %u\r\n",tboxid);
 
+    shellprintf("NET TYPE = ");
+    switch (at_get_net_type())
+    {
+        case 0:
+            shellprintf("%s\r\n","2G");
+        break;
+        case 2:
+            shellprintf("%s\r\n","3G");
+        break;
+        case 7:
+            shellprintf("%s\r\n","4G");
+        break;
+        case 100:  // CDMA
+            shellprintf("%s\r\n","3G");
+        break;
+        default:
+            shellprintf("%s\r\n","unknown");
+        break;
+    }
+    shellprintf("4G SIGNAL = %d\r\n", nm_get_signal());
+    shellprintf("SIM STATUS = %s\r\n", 1 == dev_diag_get_sim_status() ? "normal" : "fault");
     char iccid[21] = {0};
     PP_rmtCfg_getIccid((uint8_t*)iccid);
     if(iccid[0] == 0)
@@ -81,6 +108,22 @@ int app_shell_drcfg(int argc, const char **argv)
         iccid[0] = '0';
     }
     shellprintf("TBOX ICCID = %s\r\n", iccid);
+    char imeiimsi[16] = {0};
+    memset(imeiimsi, 0, sizeof(imeiimsi));
+    at_get_imei((char *)imeiimsi);
+    if(imeiimsi[0] == 0)
+    {
+        imeiimsi[0] = '0';
+    }
+    shellprintf("IMEI = %s\r\n", imeiimsi);
+
+    memset(imeiimsi, 0, sizeof(imeiimsi));
+    at_get_imsi((char *)imeiimsi);
+    if(imeiimsi[0] == 0)
+    {
+        imeiimsi[0] = '0';
+    }
+    shellprintf("IMSI = %s\r\n", imeiimsi);
 
     char mpusw[11] = {0};
     len = sizeof(mpusw);
@@ -183,6 +226,15 @@ int app_shell_drcfg(int argc, const char **argv)
 	ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_FORBIDEN,&EnFlag,&len);
     shellprintf("ONE KEY START OF BLE ENABLE = %u\r\n", EnFlag);
 
+    if (2 == flt_get_by_id(WIFI))
+    {
+        shellprintf(" WIFI STATUS = %s\r\n","fault");
+    }
+    else
+    {
+        shellprintf(" WIFI STATUS = %s\r\n",  1 == at_get_wifi_status() ? "opened" : "closed");
+    }
+
     len = 1;
 	ret |= cfg_get_para(CFG_ITEM_WIFI_SET,&EnFlag,&len);
     shellprintf("WIFI ENABLE = %u\r\n", EnFlag);
@@ -199,6 +251,19 @@ int app_shell_drcfg(int argc, const char **argv)
         blename[0] = '0';
     }
     shellprintf("BLE NAME = %s\r\n", blename);
+
+    char bleaddr[32] = {0};
+    BleGetMac((uint8_t*)bleaddr);
+    shellprintf("BLE ADDR =");
+    for(i = 0;i < 6;i++)
+    {
+        shellprintf("%02X", bleaddr[i]);
+        if(i < 5)
+        {
+            shellprintf(":");
+        }
+    }
+    shellprintf("\r\n");
 
     len = 1;
 	ret |= cfg_get_para(CFG_ITEM_EN_BLE,&EnFlag,&len);
@@ -218,7 +283,6 @@ int app_shell_drcfg(int argc, const char **argv)
     len = sizeof(sleepmode);
     cfg_get_para(CFG_ITEM_SLEEP_MODE, &sleepmode, &len);
     shellprintf("SLEEP MODE = ");
-
     switch (sleepmode)
     {
         case 0:
@@ -239,6 +303,80 @@ int app_shell_drcfg(int argc, const char **argv)
 
         default:
             shellprintf("Unknown\r\n");
+            break;
+    }
+
+    shellprintf("GPS STATUS = ");
+    switch (gps_get_fix_status())
+    {
+        case GPS_UNCONNECTED:
+            shellprintf("unconnected\r\n");
+            break;
+
+        case GPS_UNFIX:
+            shellprintf("unfix\r\n");
+            break;
+
+        case GPS_FIX:
+            shellprintf("fix\r\n");
+            break;
+
+        case GPS_ERROR:
+            shellprintf("fault\r\n");
+            break;
+
+        default:
+            shellprintf("unknow Err\r\n");
+            break;
+    }
+
+    shellprintf("EMMC STATUS = ");
+    switch (dev_diag_get_emmc_status())
+    {
+        case DIAG_EMMC_OK:
+            shellprintf("eMMC OK\r\n");
+            struct statfs diskInfo;
+            statfs(COM_SDCARD_DIR, &diskInfo);
+
+            unsigned long long blocksize = diskInfo.f_bsize;                    
+            unsigned long long totalsize = blocksize *
+                                           diskInfo.f_blocks;                   
+            unsigned long long availableDisk = diskInfo.f_bavail * blocksize;   
+
+            unsigned int total_size_mb = totalsize >> 20;
+            unsigned int free_size_mb  = availableDisk >> 20;
+
+            shellprintf(" eMMC total size = %u MB\r\n", total_size_mb);
+            shellprintf(" eMMC free size = %u MB\r\n", free_size_mb);
+			
+            break;
+
+        case DIAG_EMMC_FULL:
+            shellprintf("eMMC full\r\n");
+            break;
+
+        case DIAG_EMMC_UMOUNT:
+            shellprintf("eMMC umount\r\n");
+            break;
+
+        case DIAG_EMMC_NOT_EXIST:
+            shellprintf("eMMC no exist\r\n");
+            break;
+
+        case DIAG_EMMC_NOT_FORMAT:
+            shellprintf("eMMC no format\r\n");
+            break;
+
+        case DIAG_EMMC_UMOUNT_POINT_NOT_EXIST:
+            shellprintf("eMMC mount point is not exist\r\n");
+            break;
+
+        case DIAG_EMMC_FORMATTING:
+            shellprintf("eMMC is formatting\r\n");
+            break;
+
+        default:
+            shellprintf("eMMC unknow Err\r\n");
             break;
     }
 
@@ -292,7 +430,7 @@ int app_shell_drcfg(int argc, const char **argv)
     }
     else
     {
-        shellprintf("INTEST MCU UPGRADE VERSION = NO\r\n");
+        shellprintf("INTEST MCU UPGRADE VERSION = UNKNOWN\r\n");
     }
 
     memset(version, 0, sizeof(version));

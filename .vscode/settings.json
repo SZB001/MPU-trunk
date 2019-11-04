@@ -34,6 +34,8 @@
         "prvtprot_certdownload.h": "c",
         "uds_did.h": "c",
         "bt_interface.h": "c",
-        "at.h": "c"
+        "at.h": "c",
+        "diag.h": "c",
+        "dsu_api.h": "c"
     }
 }
