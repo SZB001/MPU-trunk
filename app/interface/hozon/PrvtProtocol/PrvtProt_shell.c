@@ -73,6 +73,7 @@ static int PP_shell_SetRmtCfgapn1(int argc, const char **argv);
 static int PP_shell_SetRmtCfgficm(int argc, const char **argv);
 static int PP_shell_SetTestflag(int argc, const char **argv);
 static int PP_shell_showpldata(int argc, const char **argv);
+static int PP_shell_deleteCipher(int argc, const char **argv);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -89,12 +90,15 @@ description�� function code
 ******************************************************/
 void PrvtProt_shell_init(void)
 {
-	shell_cmd_register("hozon_setHeartBeatPeriod", PP_shell_setHeartBeatPeriod, "set HOZON PrvtProt HeartBeat Period");
+	shell_cmd_register("hozon_setHeartBeatPeriod", PP_shell_setHeartBeatPeriod, \
+                                            "set HOZON PrvtProt HeartBeat Period");
 	shell_cmd_register("hozon_setSuspend", PP_shell_setSuspend, "set HOZON PrvtProt suspend");
 	shell_cmd_register("hozon_setXcallReq", PP_shell_setXcallReq, "set HOZON PrvtProt ecall request");
 	shell_cmd_register("hozon_setEcallResp", PP_shell_setEcallResp, "set HOZON PrvtProt ecall response");
-	shell_cmd_register("hozon_setRmtCfgReq", PP_shell_SetRmtCfgReq, "set HOZON PrvtProt remote config request");
-	shell_cmd_register("hozon_setRmtCtrlReq", PP_shell_SetRmtCtrlReq, "set HOZON PrvtProt remote control request");
+	shell_cmd_register("hozon_setRmtCfgReq", PP_shell_SetRmtCfgReq, \
+                                        "set HOZON PrvtProt remote config request");
+	shell_cmd_register("hozon_setRmtCtrlReq", PP_shell_SetRmtCtrlReq, \
+                                        "set HOZON PrvtProt remote control request");
 	shell_cmd_register("hozon_setRmtVSReq", PP_shell_SetRmtVSReq, "set HOZON PrvtProt remote VS request");
 
 	shell_cmd_register("hozon_settboxid", PP_shell_SetTboxid, "set HOZON tboxid");
@@ -126,6 +130,7 @@ void PrvtProt_shell_init(void)
 	shell_cmd_register("hozon_testflag", PP_shell_SetTestflag, "rhozon_testflag");
 
     shell_cmd_register("hozon_pldata", PP_shell_showpldata, "show production line data");
+    shell_cmd_register("hozon_delcipher", PP_shell_deleteCipher, "delete cipher");
 }
 
 
@@ -809,3 +814,12 @@ static int PP_shell_showpldata(int argc, const char **argv)
     return 0;
 }
 
+/*
+* 删密文
+*/
+static int PP_shell_deleteCipher(int argc, const char **argv)
+{
+    PP_CertDL_deleteCipher();
+    sleep(1);
+    return 0;
+}

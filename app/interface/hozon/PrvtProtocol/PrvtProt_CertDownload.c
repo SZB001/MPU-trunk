@@ -1720,13 +1720,13 @@ static int PP_CertDL_checkCertExist(void)
 
 	pthread_mutex_lock(&checkcertmtx);
 	
-	if((access(PP_CERTDL_CERTPATH,F_OK)) == 0)//证书存在
+	if(access(PP_CERTDL_CERTPATH,F_OK) == 0)//证书存在
 	{
 		cert_exist_flag = 1;
 	}
 	else
 	{
-		if((access(COM_SDCARD_DIR_PKI_CERT,F_OK)) == 0)//检查备份路径下证书存在
+		if(access(COM_SDCARD_DIR_PKI_CERT,F_OK) == 0)//检查备份路径下证书存在
 		{
 			log_i(LOG_HOZON, "certificate lost,recover from sdcard!\n");
 			file_copy(COM_SDCARD_DIR_PKI_CERT,PP_CERTDL_CERTPATH);//从备份文件还原
@@ -1748,13 +1748,13 @@ static int PP_CertDL_checkCertKeyExist(void)
 
 	pthread_mutex_lock(&checkcertmtx);
 	
-	if((access(PP_CERTDL_TWOCERTKEYPATH,F_OK)) == 0)//key文件存在
+	if(access(PP_CERTDL_TWOCERTKEYPATH,F_OK) == 0)//key文件存在
 	{
 		key_exist_flag = 1;
 	}
 	else
 	{
-		if((access(COM_SDCARD_DIR_PKI_KEY,F_OK)) == 0)//检查备份路径下是否存在
+		if(access(COM_SDCARD_DIR_PKI_KEY,F_OK) == 0)//检查备份路径下是否存在
 		{
 			log_i(LOG_HOZON, "certificate key lost,recover from sdcard!\n");
 			file_copy(COM_SDCARD_DIR_PKI_KEY,PP_CERTDL_TWOCERTKEYPATH);//从备份文件还原
@@ -1776,13 +1776,13 @@ static int PP_CertDL_checkCertCsrExist(void)
 
 	pthread_mutex_lock(&checkcertmtx);
 	
-	if((access(PP_CERTDL_TWOCERTCSRPATH,F_OK)) == 0)//证书存在
+	if(access(PP_CERTDL_TWOCERTCSRPATH,F_OK) == 0)//证书存在
 	{
 		csr_exist_flag = 1;
 	}
 	else
 	{
-		if((access(COM_SDCARD_DIR_PKI_CSR,F_OK)) == 0)//检查备份路径下证书存在
+		if(access(COM_SDCARD_DIR_PKI_CSR,F_OK) == 0)//检查备份路径下证书存在
 		{
 			log_i(LOG_HOZON, "certificate csr lost,recover from sdcard!\n");
 			file_copy(COM_SDCARD_DIR_PKI_CSR,PP_CERTDL_TWOCERTCSRPATH);//从备份文件还原
@@ -1804,13 +1804,13 @@ static int PP_CertDL_checkCipherExist(void)
 
 	pthread_mutex_lock(&checkcertmtx);
 	
-	if((access(PP_CERTDL_CIPHER_PATH,F_OK)) == 0)//密文存在
+	if(access(PP_CERTDL_CIPHER_PATH,F_OK) == 0)//密文存在
 	{
 		cipher_exist_flag = 1;
 	}
 	else
 	{
-		if((access(COM_SDCARD_DIR_PKI_CIPHER,F_OK)) == 0)//检查备份路径下密文存在
+		if(access(COM_SDCARD_DIR_PKI_CIPHER,F_OK) == 0)//检查备份路径下密文存在
 		{
 			log_i(LOG_HOZON, "cipher lost,recover from sdcard!\n");
 			file_copy(COM_SDCARD_DIR_PKI_CIPHER,PP_CERTDL_CIPHER_PATH);//备份路径还原密文
@@ -2009,9 +2009,9 @@ static int PP_CertDL_generateCipher(void)
         return -1;
 	}
 
-	if((access(PP_CERTDL_CIPHER_PATH,F_OK)) != 0)//检查密文文件不存在
+	if(access(PP_CERTDL_CIPHER_PATH,F_OK) != 0)//检查密文文件不存在
 	{
-		if((access(COM_SDCARD_DIR_PKI_CIPHER,F_OK)) != 0)//检查备份路径下密文文件不存在
+		if(access(COM_SDCARD_DIR_PKI_CIPHER,F_OK) != 0)//检查备份路径下密文文件不存在
 		{
 			iRet = HzTboxSnSimEncInfo(PP_CertDL_SN,PP_CertDL_ICCID,"/usrdata/pem/aeskey.txt", \
 					PP_CERTDL_CIPHER_PATH, &datalen);
@@ -2032,6 +2032,22 @@ static int PP_CertDL_generateCipher(void)
 	}
 
 	return 0;
+}
+
+/*
+* 删去密文
+*/
+void PP_CertDL_deleteCipher(void)
+{
+	if(access(COM_SDCARD_DIR_PKI_CIPHER,F_OK) == 0)//检查备份路径下密文文件存在
+	{
+		file_delete(COM_SDCARD_DIR_PKI_CIPHER);
+	}
+
+	if(access(PP_CERTDL_CIPHER_PATH,F_OK) == 0)//检查密文文件存在
+	{
+		file_delete(PP_CERTDL_CIPHER_PATH);
+	}
 }
 
 /*
@@ -2111,7 +2127,7 @@ static int PP_CertDL_checkCertrevoked(void)
 		return -1;
 	}
 
-	if((access(PP_CERTDL_TBOXCRL,F_OK)) != 0)//文件不存在
+	if(access(PP_CERTDL_TBOXCRL,F_OK) != 0)//文件不存在
 	{
 		int fd = file_create(PP_CERTDL_TBOXCRL, 0644);
 		if(fd < 0)

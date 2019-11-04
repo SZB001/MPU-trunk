@@ -633,7 +633,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 				}
 
 				/*init SSL*/
-				if((access(PP_CERTDL_TBOXCRL,F_OK)) != 0)//文件不存在
+				if(access(PP_CERTDL_TBOXCRL,F_OK) != 0)//文件不存在
 				{
 					int fd = file_create(PP_CERTDL_TBOXCRL, 0644);
 					if(fd < 0)
@@ -805,7 +805,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 				}
 
 				/*init SSL*/
-				if((access(PP_CERTDL_TBOXCRL,F_OK)) != 0)//文件不存在
+				if(access(PP_CERTDL_TBOXCRL,F_OK) != 0)//文件不存在
 				{
 					int fd = file_create(PP_CERTDL_TBOXCRL, 0644);
 					if(fd < 0)

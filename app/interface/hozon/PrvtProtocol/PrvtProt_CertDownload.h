@@ -187,5 +187,5 @@ extern void PP_CertDownload_init(void);
 extern int PP_CertDownload_mainfunction(void *task);
 extern void PP_CertDL_SetCertDLReq(unsigned char req);
 extern void PP_CertDL_SetCertDLUpdata(unsigned char req);
-
+extern void PP_CertDL_deleteCipher(void);
 #endif 
