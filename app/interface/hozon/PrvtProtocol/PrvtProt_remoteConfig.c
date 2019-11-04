@@ -1710,7 +1710,7 @@ void getPP_rmtCfg_cfgVersion(char* ver)
 		tempVal |= ((uint32_t)AppData_rmtCfg.checkReq.cfgVersion[4*i+2]) << 8;
 		tempVal |= (uint32_t)AppData_rmtCfg.checkReq.cfgVersion[4*i+3];
 		PP_rmtCfg_ultoa(tempVal,stringVal,10);
-		log_i(LOG_HOZON, "tempVal[%d] = %d,tempstringVal = %s",i,tempVal,stringVal);
+		//log_i(LOG_HOZON, "tempVal[%d] = %d,tempstringVal = %s",i,tempVal,stringVal);
 		for(j=0;j<strlen(stringVal);j++)
 		{
 			*ver_tp++ = stringVal[j];

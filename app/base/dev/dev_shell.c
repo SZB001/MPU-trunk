@@ -42,7 +42,7 @@ static int dev_shell_show_verion(int argc, const char **argv)
 {
     int ret;
     unsigned char version[64];
-    unsigned int length = 14;      
+    //unsigned int length = 14;      
 
     memset(version, 0, sizeof(version));
     upg_get_fw_ver(version, sizeof(version));
@@ -70,13 +70,13 @@ static int dev_shell_show_verion(int argc, const char **argv)
     upg_get_mcu_blt_ver(version, sizeof(version));
     shellprintf(" mcu bootloader version           : %s\r\n", version);
 
-    memset(version, 0, sizeof(version));
-    cfg_get_para(CFG_ITEM_FT_UDS_HW, version, &length);
-    shellprintf(" custom hw version                : %s\r\n", version);
+    //memset(version, 0, sizeof(version));
+    //cfg_get_para(CFG_ITEM_FT_UDS_HW, version, &length);
+    //shellprintf(" custom hw version                : %s\r\n", version);
 
-    memset(version, 0, sizeof(version));
-    get_uds_sw_ver((UDS_DID_VER*)version);
-    shellprintf(" custom sw version                : %s\r\n", version);
+    //memset(version, 0, sizeof(version));
+    //get_uds_sw_ver((UDS_DID_VER*)version);
+    //shellprintf(" custom sw version                : %s\r\n", version);
  
     shellprintf(" version show ok\r\n");
     shellprintf(" --------------------------------dataover--------------------------------\r\n");
@@ -99,18 +99,18 @@ static int dev_shell_upgrade(int argc, const char **argv)
 
     if (!file_exists(path))
     {
-        shellprintf(" error:ÎÄ¼þ²»´æÔÚ!\r\n");
+        shellprintf(" error:ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!\r\n");
         return DEV_FILE_NOT_EXIST;
     }
 
     ret = upg_app_start(path);
     if (ret != 0)
     {
-        shellprintf(" error:Ö´ÐÐÉý¼¶Ê§°Ü!\r\n");
+        shellprintf(" error:Ö´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê§ï¿½ï¿½!\r\n");
         return ret;
     }
 
-    shellprintf(" ok:Éý¼¶ÎÄ¼þÐ£ÑéÍ¨¹ý,ÕýÔÚÖ´ÐÐÉý¼¶!\r\n");
+    shellprintf(" ok:ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½Ð£ï¿½ï¿½Í¨ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!\r\n");
     return 0;
 }
 
@@ -645,10 +645,10 @@ static int dev_shell_dump_status(int argc, const char **argv)
             struct statfs diskInfo;
             statfs(COM_SDCARD_DIR, &diskInfo);
 
-            unsigned long long blocksize = diskInfo.f_bsize;                    //Ã¿¸öblockÀï°üº¬µÄ×Ö½ÚÊý
+            unsigned long long blocksize = diskInfo.f_bsize;                    //Ã¿ï¿½ï¿½blockï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½
             unsigned long long totalsize = blocksize *
-                                           diskInfo.f_blocks;                   //×ÜµÄ×Ö½ÚÊý£¬f_blocksÎªblockµÄÊýÄ¿
-            unsigned long long availableDisk = diskInfo.f_bavail * blocksize;   //¿ÉÓÃ¿Õ¼ä´óÐ¡
+                                           diskInfo.f_blocks;                   //ï¿½Üµï¿½ï¿½Ö½ï¿½ï¿½ï¿½ï¿½ï¿½f_blocksÎªblockï¿½ï¿½ï¿½ï¿½Ä¿
+            unsigned long long availableDisk = diskInfo.f_bavail * blocksize;   //ï¿½ï¿½ï¿½Ã¿Õ¼ï¿½ï¿½Ð¡
 
             unsigned int total_size_mb = totalsize >> 20;
             unsigned int free_size_mb  = availableDisk >> 20;

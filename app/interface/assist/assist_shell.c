@@ -279,7 +279,26 @@ int app_shell_drcfg(int argc, const char **argv)
     }
     shellprintf("WHITE LIST = %s\r\n", buff);
 
-    shellprintf("INTEST SOFTWARE VERSION = %s\r\n", dev_get_version());
+    shellprintf("INTEST MPU SOFTWARE VERSION = %s\r\n", dev_get_version());
+
+    memset(version, 0, sizeof(version));
+    upg_get_mcu_run_ver(version, sizeof(version));
+    shellprintf("INTEST MCU SOFTWARE VERSION = %s\r\n", version);
+    memset(version, 0, sizeof(version));
+    ret = upg_get_mcu_upg_ver(version, sizeof(version));
+    if (0 == ret)
+    {
+        shellprintf("INTEST MCU UPGRADE VERSION = %s\r\n", version);
+    }
+    else
+    {
+        shellprintf("INTEST MCU UPGRADE VERSION = NO\r\n");
+    }
+
+    memset(version, 0, sizeof(version));
+    upg_get_mcu_blt_ver(version, sizeof(version));
+    shellprintf("INTEST MCU BOOTLOADER VERSION = %s\r\n", version);
+
     shellprintf("HOZON SOFTWARE VERSION  = %s\r\n", DID_F1B0_SW_FIXED_VER);
     shellprintf("HOZON HARDWARE VERSION  = %s\r\n", DID_F191_HW_VERSION);
 
