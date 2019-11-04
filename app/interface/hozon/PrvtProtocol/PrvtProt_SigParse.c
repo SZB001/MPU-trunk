@@ -31,6 +31,7 @@ description�� function declaration
 
 /*Static function declaration*/
 static PP_canSign_t PP_canSign;
+static pthread_mutex_t datatx = PTHREAD_MUTEX_INITIALIZER;
 /******************************************************
 description�� function code
 ******************************************************/
@@ -69,6 +70,7 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
         return 0;
     }
 
+	pthread_mutex_lock(&datatx);
     switch (pptype)
     {
 		case PP_RMTCTRL_CANSIGN:
@@ -85,6 +87,7 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
             log_o(LOG_HOZON, "unkonwn type %s%x", sfx ,pptype);
        break;
     }
+	pthread_mutex_unlock(&datatx);
 
     return 5;
 }
@@ -95,8 +98,10 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 unsigned char PrvtProt_SignParse_ACAutoSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ACAUTOST] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ACAUTOST])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -106,8 +111,10 @@ unsigned char PrvtProt_SignParse_ACAutoSt(void)
 unsigned char PrvtProt_SignParse_OdomtrUpdtSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ODOMETERUPDATE] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ODOMETERUPDATE])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -117,8 +124,10 @@ unsigned char PrvtProt_SignParse_OdomtrUpdtSt(void)
 unsigned char PrvtProt_SignParse_chrgGunCnctSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CHRGGUNCNCTLIST] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CHRGGUNCNCTLIST])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -128,8 +137,10 @@ unsigned char PrvtProt_SignParse_chrgGunCnctSt(void)
 unsigned char PrvtProt_SignParse_BleStartSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_BLUETOOTHSTARTST] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_BLUETOOTHSTARTST])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -139,8 +150,10 @@ unsigned char PrvtProt_SignParse_BleStartSt(void)
 unsigned char PrvtProt_SignParse_CO2DensitySt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CO2DENSITYSTS] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CO2DENSITYSTS])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -151,8 +164,10 @@ unsigned char PrvtProt_SignParse_CO2DensitySt(void)
 unsigned char PrvtProt_SignParse_pm25valid(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_PM25VALID] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_PM25VALID])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -162,8 +177,10 @@ unsigned char PrvtProt_SignParse_pm25valid(void)
 unsigned char PrvtProt_SignParse_OtaFailSts(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_OTAMODEFAILSTS] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_OTAMODEFAILSTS])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -173,8 +190,10 @@ unsigned char PrvtProt_SignParse_OtaFailSts(void)
 unsigned char PrvtProt_SignParse_readyLightSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_READYLIGHTST] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_READYLIGHTST])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -184,8 +203,10 @@ unsigned char PrvtProt_SignParse_readyLightSt(void)
 unsigned char PrvtProt_SignParse_chrgAptEnSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CHARGEAPPOINTEN] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CHARGEAPPOINTEN])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -195,8 +216,10 @@ unsigned char PrvtProt_SignParse_chrgAptEnSt(void)
 unsigned char PrvtProt_SignParse_chrgOnOffSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CHARGEON] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_CHARGEON])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -206,8 +229,10 @@ unsigned char PrvtProt_SignParse_chrgOnOffSt(void)
 unsigned char PrvtProt_SignParse_findcarSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_FINDCAR] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_FINDCAR])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -217,8 +242,10 @@ unsigned char PrvtProt_SignParse_findcarSt(void)
 unsigned char PrvtProt_SignParse_sunroofSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_SUNROOFOPEN] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_SUNROOFOPEN])->value: 0xff;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -228,8 +255,10 @@ unsigned char PrvtProt_SignParse_sunroofSt(void)
 unsigned char PrvtProt_SignParse_RmtStartSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_HIGHVOIELEC] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_HIGHVOIELEC])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -239,8 +268,10 @@ unsigned char PrvtProt_SignParse_RmtStartSt(void)
 unsigned char PrvtProt_SignParse_DrivHeatingSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_DRIVHEATING] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_DRIVHEATING])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -250,8 +281,10 @@ unsigned char PrvtProt_SignParse_DrivHeatingSt(void)
 unsigned char PrvtProt_SignParse_PassHeatingSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_PASSHEATING] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_PASSHEATING])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -261,8 +294,10 @@ unsigned char PrvtProt_SignParse_PassHeatingSt(void)
 unsigned char PrvtProt_SignParse_cancelEngiSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ENGIFORBID] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ENGIFORBID])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -272,8 +307,10 @@ unsigned char PrvtProt_SignParse_cancelEngiSt(void)
 unsigned char PrvtProt_SignParse_autheSt(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AUTHEST] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AUTHEST])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
 
@@ -283,7 +320,9 @@ unsigned char PrvtProt_SignParse_autheSt(void)
 unsigned char PrvtProt_SignParse_authefailresion(void)
 {
 	unsigned char st;
+	pthread_mutex_lock(&datatx);
 	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AUTHEFAILRESION] ?
 				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AUTHEFAILRESION])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
 	return st;
 }
