@@ -307,6 +307,18 @@ static int BleShellGetMac(int argc, const char **argv)
     return 0;
 }
 
+/****************************************************************
+ function:     BleShellGetUuid
+ description:  get ble mac
+ input:        
+ output:       none
+ return:       0 indicates success,others indicates failed
+ *****************************************************************/
+void BleGetMac(unsigned char *Mac)
+{
+	unsigned char ucLen = 0;
+	stBtApi.GetMac(Mac, &ucLen);
+}
 
 /****************************************************************
  function:     BleShellSetTest

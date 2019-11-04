@@ -75,7 +75,7 @@ int app_shell_drcfg(int argc, const char **argv)
     shellprintf("TBOX ID = %u\r\n",tboxid);
 
     char iccid[21] = {0};
-    getPP_rmtCfg_iccid(iccid);
+    PP_rmtCfg_getIccid((uint8_t*)iccid);
     if(iccid[0] == 0)
     {
         iccid[0] = '0';

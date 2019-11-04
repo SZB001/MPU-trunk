@@ -32,6 +32,8 @@
         "protocol.h": "c",
         "prvtprot_vehiinfo.h": "c",
         "prvtprot_certdownload.h": "c",
-        "uds_did.h": "c"
+        "uds_did.h": "c",
+        "bt_interface.h": "c",
+        "at.h": "c"
     }
 }

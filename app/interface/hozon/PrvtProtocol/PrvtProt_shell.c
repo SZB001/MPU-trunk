@@ -17,16 +17,17 @@ description�� include the header file
 #include <sys/times.h>
 #include "timer.h"
 #include "log.h"
+#include "at.h"
 #include "shell_api.h"
 #include "hozon_PP_api.h"
 #include "PrvtProt_callCenter.h"
 #include "PrvtProt_xcall.h"
 #include "PrvtProt_remoteConfig.h"
-//#include "remoteControl/PP_doorLockCtrl.h"
 #include "PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
 #include "remoteDiag/PrvtProt_rmtDiag.h"
 #include "PrvtProt_CertDownload.h"
+#include "udef_cfg_api.h"
 #include "PrvtProt_shell.h"
 
 /*******************************************************
@@ -71,7 +72,7 @@ static int PP_shell_rmtdiagtest(int argc, const char **argv);
 static int PP_shell_SetRmtCfgapn1(int argc, const char **argv);
 static int PP_shell_SetRmtCfgficm(int argc, const char **argv);
 static int PP_shell_SetTestflag(int argc, const char **argv);
-
+static int PP_shell_showpldata(int argc, const char **argv);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -123,6 +124,8 @@ void PrvtProt_shell_init(void)
 
     shell_cmd_register("hozon_rmtdiagtest", PP_shell_rmtdiagtest, "rmt diag test");
 	shell_cmd_register("hozon_testflag", PP_shell_SetTestflag, "rhozon_testflag");
+
+    shell_cmd_register("hozon_pldata", PP_shell_showpldata, "show production line data");
 }
 
 
@@ -757,6 +760,51 @@ static int PP_shell_SetTestflag(int argc, const char **argv)
 	sscanf(argv[0], "%u", &obj);
   
 	PP_rmtCtrl_settestflag((uint8_t)obj);
+    sleep(1);
+    return 0;
+}
+
+/*
+* 获取产线数据，pki相关
+*/
+static int PP_shell_showpldata(int argc, const char **argv)
+{
+    unsigned int len;
+    char showbuff[32] = {0};
+
+    len = 19;
+    cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN, showbuff, &len);
+    if(showbuff[0]== 0)
+    {
+        showbuff[0] = '0';
+    }
+    shellprintf("TBOX SN = %s\r\n", showbuff);
+
+    memset(showbuff, 0, sizeof(showbuff));
+    PP_rmtCfg_getIccid((uint8_t*)showbuff);
+    if(showbuff[0] == 0)
+    {
+        showbuff[0] = '0';
+    }
+    shellprintf("TBOX ICCID = %s\r\n", showbuff);
+
+    //memset(showbuff, 0, sizeof(showbuff));
+    //at_get_telno((char *)showbuff);
+    shellprintf("TELNO = %s\r\n", "0");
+
+    memset(showbuff, 0, sizeof(showbuff));
+    at_get_imei((char *)showbuff);
+    shellprintf("IMEI = %s\r\n", showbuff);
+
+    memset(showbuff, 0, sizeof(showbuff));
+    at_get_imsi((char *)showbuff);
+    shellprintf("IMSI = %s\r\n", showbuff);
+
+    shellprintf("TBOX MODEL = %s\r\n", "EP30");
+
+    memset(showbuff, 0, sizeof(showbuff));
+    shellprintf("BLUETOOTH ADDR= %s\r\n", "0");
+
     sleep(1);
     return 0;
 }

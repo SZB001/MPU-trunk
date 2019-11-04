@@ -2138,3 +2138,51 @@ static int PP_CertDL_checkCertrevoked(void)
 
 	return 0;
 }
+
+/*
+* 读取密文
+*/
+int PP_CertDL_getCipher(char* cipher,int* len)
+{
+	if((1 != PP_rmtCfg_getIccid((uint8_t*)PP_CertDL_ICCID)) || \
+			(1 != PrvtProt_tboxsnValidity()))
+	{
+		return -1;
+	}
+
+	memset(PP_CertDL_SN,0,sizeof(PP_CertDL_SN));
+	PrvtProt_gettboxsn(PP_CertDL_SN);
+	if(0 != PP_CertDL_generateCipher())
+	{
+		return -1;
+	}
+
+	FILE *fp;
+	fp=fopen(PP_CERTDL_CIPHER_PATH,"r");
+	if(fp == NULL)
+	{
+		return -1;
+	}
+
+	int size = 0;
+	char *filedata_ptr;
+	//求得文件的大小
+	fseek(fp, 0, SEEK_END);
+	size = ftell(fp);
+	if(size>sizeof(cipher))
+	{
+		fclose(fp);
+		return -1;
+	}
+	rewind(fp);
+	//申请一块能装下整个文件的空间
+	filedata_ptr = (char*)malloc(sizeof(char)*size);
+	fread(filedata_ptr,1,size,fp);//每次读一个，共读size次
+	memcpy(cipher,filedata_ptr,size);
+	*len = size;
+
+	fclose(fp);
+	free(filedata_ptr);
+
+	return 0;
+}

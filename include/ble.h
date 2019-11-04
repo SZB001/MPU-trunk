@@ -135,6 +135,6 @@ int BleSetName(unsigned char *pucName, unsigned char unLen);
 void set_ble_stats(unsigned char ucData);
 void ApiTraceBuf(unsigned char *buf, unsigned int len);
 void test_bt_hz(void);
-
+void BleGetMac(unsigned char *Mac);
 
 #endif

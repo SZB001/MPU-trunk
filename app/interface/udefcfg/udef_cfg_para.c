@@ -15,6 +15,8 @@
 #include "dir.h"
 #include "file.h"
 #include "dev_api.h"
+#include "ble.h"
+#include "at.h"
 #define USER_CFG_PARA_BUF_LEN     2*1024
 
 typedef enum 
@@ -374,7 +376,63 @@ int clbt_cfg_dump_para(void )
         }
     }
     
+
+    char plbuff[256] = {0};
+    char *bufftp;
+    int port;
+    port = 0;
+    memset(plbuff, 0, sizeof(plbuff));
+    getPP_rmtCfg_certAddrPort(plbuff,&port);
+    shellprintf(" %-32s : %.*s\r\n","sg addr", strlen(plbuff), (char *)plbuff);
+    shellprintf(" %-32s : %u\r\n", "sg port", port);
+
+    port = 0;
+    memset(plbuff, 0, sizeof(plbuff));
+    getPP_rmtCfg_tspAddrPort(plbuff,&port);
+    shellprintf(" %-32s : %.*s\r\n","bdl addr", strlen(plbuff), (char *)plbuff);
+    shellprintf(" %-32s : %u\r\n", "bdl port", port);
+
+    memset(plbuff, 0, sizeof(plbuff));
+    PP_rmtCfg_getIccid((uint8_t*)plbuff);
+    shellprintf(" %-32s : %.*s\r\n","iccid", 21, (char *)plbuff);
+    memset(plbuff, 0, sizeof(plbuff));
+    shellprintf(" %-32s : %.*s\r\n","simno", 12, (char *)plbuff);
+
+    memset(plbuff, 0, sizeof(plbuff));
+    at_get_imei((char *)plbuff);
+    shellprintf(" %-32s : %.*s\r\n","imei", 16, (char *)plbuff);
+
+    memset(plbuff, 0, sizeof(plbuff));
+    at_get_imsi((char *)plbuff);
+    shellprintf(" %-32s : %.*s\r\n","imsi", 16, (char *)plbuff);
+
+    shellprintf(" %-32s : %.*s\r\n","tboxmodel", 4, (char *)"EP30");
+
+    memset(plbuff, 0, sizeof(plbuff));
+    bufftp = plbuff;
+    BleGetMac((uint8_t*)plbuff);
+    shellprintf(" %-32s :","btaddr");
+    for(k = 0; k < 6; k++)
+    {	
+        shellprintf(" %u",*bufftp);
+        bufftp++;
+    }
+    shellprintf("\r\n");
+
+    char cipherbuff[1024] = {0};
+    bufftp = cipherbuff;
+    int len;
+    PP_CertDL_getCipher(cipherbuff,&len);
+    shellprintf(" %-32s :","cipher");
+    for(k = 0; k < len; k++)
+    {	
+        shellprintf(" %u",*bufftp);
+        bufftp++;
+    }
+    shellprintf("\r\n");
+
     shellprintf(" ------------------------------data over------------------------------\r\n");
+    sleep(1);
     return 0;
 }
 

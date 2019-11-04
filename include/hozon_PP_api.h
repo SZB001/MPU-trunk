@@ -109,6 +109,7 @@ extern void PP_COMMON_LOCK(void);
 extern void PP_COMMON_UNLOCK(void);
 extern char getPP_rmtDiag_Idle(void);
 extern void getPP_rmtCfg_cfgVersion(char* ver);
-extern void getPP_rmtCfg_iccid(char* iccid);
 extern int PP_rmtCfg_ultoa(unsigned long value, char *string, int radix);
+extern int PP_CertDL_getCipher(char* cipher,int* len);
+extern uint8_t PP_rmtCfg_getIccid(uint8_t* iccid);
 #endif

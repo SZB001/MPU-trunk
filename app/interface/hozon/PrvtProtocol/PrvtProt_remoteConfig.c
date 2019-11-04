@@ -1425,6 +1425,9 @@ static void PP_rmtCfg_send_cb(void * para)
 	TxInform_ptr->idleflag = 0;
 }
 
+/*
+* 获取iccid
+*/
 uint8_t PP_rmtCfg_getIccid(uint8_t* iccid)
 {
 	if(!AppData_rmtCfg.checkReq.iccID[0])
@@ -1438,7 +1441,7 @@ uint8_t PP_rmtCfg_getIccid(uint8_t* iccid)
 
 	if(PP_rmtCfg.state.iccidValid)
 	{
-		memcpy(iccid,AppData_rmtCfg.checkReq.iccID,20);
+		memcpy(iccid,AppData_rmtCfg.checkReq.iccID,21);
 	}
 
 	return PP_rmtCfg.state.iccidValid;
@@ -1723,12 +1726,4 @@ void getPP_rmtCfg_cfgVersion(char* ver)
 	}
 
 	*ver_tp = 0;
-}
-
-/*
-* 获取iccid
-*/
-void getPP_rmtCfg_iccid(char* iccid)
-{
-	memcpy(iccid,AppData_rmtCfg.checkReq.iccID,21);
 }
