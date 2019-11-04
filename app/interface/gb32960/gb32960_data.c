@@ -1840,7 +1840,39 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		buf[len++] = 0xff;
 	}
 
-	buf[len++] = gb_data_ACMode();//空调模式
+	//空调模式
+	uint8_t acmode = 0xff;//无效
+	if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_AUTOST] && \
+			(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_AUTOST])->value))
+	{
+		acmode = 0x3;
+	}
+	else
+	{
+		if(gbinf->gb_VSExt.info[GB_VS_ACMODE])//
+		{
+			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACMODE])->value;
+			switch(tmp)
+			{
+				case 1:
+				case 5:
+				case 7:
+				{
+					acmode = 0x1;//制热
+				}
+				break;
+				case 2:
+				case 6:
+				{
+					acmode = 0x2;//制冷
+				}
+				break;
+				default:
+				break;
+			}
+		}
+	}
+	buf[len++] = acmode;//空调模式
 
     if(gbinf->gb_VSExt.info[GB_VS_AIRVOLUME])//
     {
@@ -4458,10 +4490,13 @@ void gb_data_set_pendflag(int flag)
 uint8_t gb_data_vehicleState(void)
 {
 	uint8_t st = 0;
+
+	DAT_LOCK();
     if(gb_inf && gb_inf->vehi.info[GB_VINF_STATE])
     {
     	st = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_STATE])->value;
     }
+	DAT_UNLOCK();
 
 	return st;
 }
@@ -4472,10 +4507,13 @@ uint8_t gb_data_vehicleState(void)
 long gb_data_vehicleSOC(void)
 {
 	long soc = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->vehi.info[GB_VINF_SOC])
 	{
 		soc = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_SOC])->value;
 	}
+	DAT_UNLOCK();
 
 	return  soc;
 }
@@ -4487,10 +4525,12 @@ long gb_data_vehicleOdograph(void)
 {
 	long totalodoMr = 0;
 
+	DAT_LOCK();
 	if(gb_inf && gb_inf->vehi.info[GB_VINF_ODO])
 	{
 		totalodoMr = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_ODO])->value * 10;
 	}
+	DAT_UNLOCK();
 
     return totalodoMr;
 }
@@ -4502,10 +4542,12 @@ long gb_data_vehicleSpeed(void)
 {
 	long Vspeed = 0;
 
+	DAT_LOCK();
 	if(gb_inf && gb_inf->vehi.info[GB_VINF_SPEED])
 	{
 		Vspeed = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_SPEED])->value * 10;
 	}
+	DAT_UNLOCK();
 
     return Vspeed;
 }
@@ -4516,10 +4558,14 @@ long gb_data_vehicleSpeed(void)
 uint8_t gb_data_doorlockSt(void)
 {
 	uint8_t st = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])
 	{
 		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_DRIDOORLOCKST])->value;
 	}
+	DAT_UNLOCK();
+
 	return st;
 }
 
@@ -4529,10 +4575,14 @@ uint8_t gb_data_doorlockSt(void)
 uint8_t gb_data_reardoorSt(void)
 {
 	uint8_t st = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_BACKDOORST])
 	{
 		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_BACKDOORST])->value;
 	}
+	DAT_UNLOCK();
+
 	return st;
 }
 
@@ -4543,10 +4593,14 @@ uint8_t gb_data_reardoorSt(void)
 uint8_t gb_data_ACOnOffSt(void)
 {
 	uint8_t st = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_ACST])
 	{
 		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ACST])->value;
 	}
+	DAT_UNLOCK();
+
 	return st;
 }
 
@@ -4556,10 +4610,14 @@ uint8_t gb_data_ACOnOffSt(void)
 int gb_data_LHTemp(void)
 {
 	int st = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])
 	{
 		st = dbc_get_signal_from_id(gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])->value;
 	}
+	DAT_UNLOCK();
+
 	return st;
 }
 
@@ -4569,10 +4627,13 @@ int gb_data_LHTemp(void)
 uint8_t gb_data_chargeSt(void)
 {
 	uint8_t st = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])
 	{
 		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
 	}
+	DAT_UNLOCK();
 
 	return st;
 }
@@ -4583,6 +4644,8 @@ uint8_t gb_data_chargeSt(void)
 uint8_t gb_data_reardoorlockSt(void)
 {
 	uint8_t st = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])//��������
 	{
 		if(dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_REARDDOORLOCKST])->value)
@@ -4594,6 +4657,7 @@ uint8_t gb_data_reardoorlockSt(void)
 			st = 1;//����
 		}
 	}
+	DAT_UNLOCK();
 
 	return st;
 }
@@ -4609,6 +4673,7 @@ uint8_t gb_data_ACMode(void)
 	uint8_t acmode = 0xff;//无效
 	int32_t tmp;
 
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_AUTOST])
 	{
 		if(1 == dbc_get_signal_from_id(gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_AUTOST])->value)
@@ -4639,6 +4704,7 @@ uint8_t gb_data_ACMode(void)
 			break;
 		}
 	}
+	DAT_UNLOCK();
 
 	return acmode;
 }
@@ -4650,10 +4716,12 @@ uint8_t gb_data_chargeOnOffSt(void)
 {
 	uint8_t chargeSt = 0;
 
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_ConpSt.info[GB_CMPT_CHARGEST])
 	{
 		chargeSt = dbc_get_signal_from_id(gb_inf->gb_ConpSt.info[GB_CMPT_CHARGEST])->value;
 	}
+	DAT_UNLOCK();
 
 	return chargeSt;
 }
@@ -4665,6 +4733,8 @@ uint8_t gb_data_BlowerGears(void)
 {
 	uint8_t tmp;
 	uint8_t fangears = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_AIRVOLUME])//
 	{
 		tmp = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_AIRVOLUME])->value;
@@ -4677,6 +4747,7 @@ uint8_t gb_data_BlowerGears(void)
 			fangears = 0;
 		}
 	}
+	DAT_UNLOCK();
 
 	return fangears;
 }
@@ -4687,10 +4758,13 @@ uint8_t gb_data_BlowerGears(void)
 uint8_t gb_data_outTemp(void)
 {
 	uint8_t temp = 25 + 55;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_OUTTEMP])//
 	{
 		temp = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_OUTTEMP])->value + 55;
 	}
+	DAT_UNLOCK();
 
 	return temp;
 }
@@ -4701,10 +4775,13 @@ uint8_t gb_data_outTemp(void)
 uint8_t gb_data_InnerTemp(void)
 {
 	uint8_t temp = 25 + 55;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_INTEMP])//
 	{
 		temp = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_INTEMP])->value + 55;
 	}
+	DAT_UNLOCK();
 
 	return temp;
 }
@@ -4724,6 +4801,8 @@ uint8_t gb_data_CrashOutputSt(void)
 {
 	uint8_t tmp;
 	uint8_t crashSt = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_ConpSt.info[GB_CMPT_CRASHOUTPUTST])//
 	{
 		tmp = dbc_get_signal_from_id(gb_inf->gb_ConpSt.info[GB_CMPT_CRASHOUTPUTST])->value;
@@ -4732,6 +4811,7 @@ uint8_t gb_data_CrashOutputSt(void)
 			crashSt = tmp;
 		}
 	}
+	DAT_UNLOCK();
 
 	return crashSt;
 }
@@ -4742,10 +4822,14 @@ uint8_t gb_data_CrashOutputSt(void)
 uint8_t gb_data_ACTemperature(void)
 {
 	uint8_t actemp = 20;//默认20度
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_ACTEMP])//空调温度
 	{
 		actemp = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ACTEMP])->value;
 	}
+
+	DAT_UNLOCK();
 
 	return actemp;
 }
@@ -4756,10 +4840,13 @@ uint8_t gb_data_ACTemperature(void)
 uint8_t gb_data_TwinFlashLampSt(void)
 {
 	uint8_t hlampSt = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_HLAMPST])//״̬
 	{
 		hlampSt = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_HLAMPST])->value;
 	}
+	DAT_UNLOCK();
 
 	return hlampSt;
 }
@@ -4770,10 +4857,13 @@ uint8_t gb_data_TwinFlashLampSt(void)
 uint8_t gb_data_PostionLampSt(void)
 {
 	uint8_t posLampSt = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->event.info[GB_EVT_POSLAMP_ON])
 	{
 		posLampSt = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_POSLAMP_ON])->value;
 	}
+	DAT_UNLOCK();
 
 	return posLampSt;
 }
@@ -4784,10 +4874,14 @@ uint8_t gb_data_PostionLampSt(void)
 uint8_t gb_data_NearLampSt(void)
 {
 	uint8_t lampSt = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->event.info[GB_EVT_NEARLAMP_ON])//
 	{
 		lampSt = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_NEARLAMP_ON])->value;
 	}
+	DAT_UNLOCK();
+
 	return lampSt;
 }
 
@@ -4797,10 +4891,14 @@ uint8_t gb_data_NearLampSt(void)
 uint8_t gb_data_HighbeamLampSt(void)
 {
 	uint8_t lampSt = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->event.info[GB_EVT_HIGHBEAMLAMP_ON])//
 	{
 		lampSt = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_HIGHBEAMLAMP_ON])->value;
 	}
+	DAT_UNLOCK();
+
 	return lampSt;
 }
 
@@ -4810,10 +4908,13 @@ uint8_t gb_data_HighbeamLampSt(void)
 uint8_t gb_data_frontRightTyrePre(void)
 {
 	uint8_t tyrePre = 0x0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_RFTYREPRESSURE])//
 	{
 		tyrePre = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_RFTYREPRESSURE])->value/10;
 	}
+	DAT_UNLOCK();
 
 	return tyrePre;
 }
@@ -4824,10 +4925,13 @@ uint8_t gb_data_frontRightTyrePre(void)
 uint8_t gb_data_frontLeftTyrePre(void)
 {
 	uint8_t tyrePre = 0x0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_LFTYREPRESSURE])//
 	{
 		tyrePre = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_LFTYREPRESSURE])->value/10;
 	}
+	DAT_UNLOCK();
 
 	return tyrePre;
 }
@@ -4838,10 +4942,13 @@ uint8_t gb_data_frontLeftTyrePre(void)
 uint8_t gb_data_rearRightTyrePre(void)
 {
 	uint8_t tyrePre = 0x0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_RRTYREPRESSURE])//
 	{
 		tyrePre = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_RRTYREPRESSURE])->value/10;
 	}
+	DAT_UNLOCK();
 
 	return tyrePre;
 }
@@ -4852,10 +4959,13 @@ uint8_t gb_data_rearRightTyrePre(void)
 uint8_t gb_data_rearLeftTyrePre(void)
 {
 	uint8_t tyrePre = 0x0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_LRTYREPRESSURE])//
 	{
 		tyrePre = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_LRTYREPRESSURE])->value/10;
 	}
+	DAT_UNLOCK();
 
 	return tyrePre;
 }
@@ -4866,10 +4976,14 @@ uint8_t gb_data_rearLeftTyrePre(void)
 uint8_t gb_data_frontRightTyreTemp(void)
 {
 	uint8_t temperature = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_RFTYRETEMP])//
 	{
 		temperature = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_RFTYRETEMP])->value + 50;
 	}
+	DAT_UNLOCK();
+
 	return temperature;
 }
 
@@ -4879,10 +4993,14 @@ uint8_t gb_data_frontRightTyreTemp(void)
 uint8_t gb_data_frontLeftTyreTemp(void)
 {
 	uint8_t temperature = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_LFTYRETEMP])//
 	{
 		temperature = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_LFTYRETEMP])->value + 50;
 	}
+	DAT_UNLOCK();
+
 	return temperature;
 }
 
@@ -4892,10 +5010,14 @@ uint8_t gb_data_frontLeftTyreTemp(void)
 uint8_t gb_data_rearRightTyreTemp(void)
 {
 	uint8_t temperature = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_RRTYRETEMP])//
 	{
 		temperature = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_RRTYRETEMP])->value + 50;
 	}
+	DAT_UNLOCK();
+
 	return temperature;
 }
 
@@ -4905,16 +5027,22 @@ uint8_t gb_data_rearRightTyreTemp(void)
 uint8_t gb_data_rearLeftTyreTemp(void)
 {
 	uint8_t temperature = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_LRTYRETEMP])//
 	{
 		temperature = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_LRTYRETEMP])->value + 50;
 	}
+	DAT_UNLOCK();
+
 	return temperature;
 }
 
 uint8_t gb_data_gearPosition(void)
 {
 	uint8_t gearpos = 0;
+
+	DAT_LOCK();	
 	if (gb_inf  && gb_inf->vehi.info[GB_VINF_SHIFT])
 	{
 		uint8_t temp;
@@ -4956,6 +5084,8 @@ uint8_t gb_data_gearPosition(void)
 			break;
 		}
 	}
+	DAT_UNLOCK();
+
 	return gearpos;
 }
 
@@ -4965,10 +5095,14 @@ uint8_t gb_data_gearPosition(void)
 uint16_t  gb_data_insulationResistance(void)
 {
 	uint16_t temp = 0;
+
+	DAT_LOCK();
 	if (gb_inf  && gb_inf->vehi.info[GB_VINF_INSULAT])
 	{
 		temp = MIN(dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_INSULAT])->value, 60000);
 	}
+	DAT_UNLOCK();
+
 	return temp;
 }
 
@@ -4978,11 +5112,15 @@ uint16_t  gb_data_insulationResistance(void)
 uint8_t gb_data_acceleratePedalPrc(void)
 {
 	uint8_t temp  = 0;
+
+	DAT_LOCK();
 	if (gb_inf  && gb_inf->vehi.info[GB_VINF_ACCPAD])
 	{
 		temp = gb_inf->vehi.info[GB_VINF_ACCPAD] ?
 		dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_ACCPAD])->value : 0xff;
 	}
+	DAT_UNLOCK();
+
 	return temp;
 }
 
@@ -4993,6 +5131,7 @@ uint8_t gb_data_deceleratePedalPrc(void)
 {
 	uint8_t temp = 0;
 
+	DAT_LOCK();
 	if(gb_inf && gb_inf->vehi.info[GB_VINF_BRKPAD] && \
 		gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV] && \
 		(1 == dbc_get_signal_from_id(gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV])->value))
@@ -5007,6 +5146,7 @@ uint8_t gb_data_deceleratePedalPrc(void)
 			temp = 0;
 		}
 	}
+	DAT_UNLOCK();
 
 	return temp;
 }
@@ -5017,12 +5157,16 @@ uint8_t gb_data_deceleratePedalPrc(void)
 uint16_t gb_data_batteryVoltage(void)
 {
 	/* total voltage, scale 0.1V */
-	 uint16_t temp = 0;
-	 if (gb_inf && gb_inf->vehi.info[GB_VINF_VOLTAGE])
-	 {
-		 temp = gb_inf->vehi.info[GB_VINF_VOLTAGE] ?
+	uint16_t temp = 0;
+
+	DAT_LOCK();
+	if (gb_inf && gb_inf->vehi.info[GB_VINF_VOLTAGE])
+	{
+		temp = gb_inf->vehi.info[GB_VINF_VOLTAGE] ?
 		dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_VOLTAGE])->value * 10 : 0xffff;
-	 }
+	}
+	DAT_UNLOCK();
+
     return temp;
 }
 
@@ -5032,12 +5176,16 @@ uint16_t gb_data_batteryVoltage(void)
 uint16_t gb_data_batteryCurrent(void)
 {
 	uint16_t temp = 0;
+
+	DAT_LOCK();
 	/* total curr, scale 0.1V, offset -1000A */
 	if (gb_inf && gb_inf->vehi.info[GB_VINF_CURRENT])
 	{
 		temp = gb_inf->vehi.info[GB_VINF_CURRENT] ?
 				(dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_CURRENT])->value + 1000) * 10: 0xffff;
 	}
+	DAT_UNLOCK();
+
 	return temp;
 }
 
@@ -5048,11 +5196,15 @@ uint8_t gb_data_powermode(void)
 {
 	uint8_t temp;
 	uint8_t mode = 0;
+
+	DAT_LOCK();
 	if (gb_inf && gb_inf->vehi.info[GB_VINF_VEHIMODE])
 	{
 		temp = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_VEHIMODE])->value;
 		 mode = gb_inf->vehi.mode_tbl[temp] ? gb_inf->vehi.mode_tbl[temp] : 0xff;
 	}
+	DAT_UNLOCK();
+
 	return mode;
 }
 
@@ -5063,11 +5215,15 @@ uint8_t gb_data_chargestatus(void)
 {
 	uint8_t temp;
 	uint8_t status = 0;
+
+	DAT_LOCK();
 	if (gb_inf  && gb_inf->vehi.info[GB_VINF_CHARGE])
 	{
 		temp = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_CHARGE])->value;
 		status = gb_inf->vehi.charge_tbl[temp] ? gb_inf->vehi.charge_tbl[temp] : 0xff;
 	}
+	DAT_UNLOCK();
+
 	return status;
 }
 
@@ -5077,10 +5233,13 @@ uint8_t gb_data_chargestatus(void)
 long gb_data_ResidualOdometer(void)
 {
 	long odometer = 0;
+
+	DAT_LOCK();
 	if(gb_inf  && gb_inf->gb_VSExt.info[GB_VS_ENDURANCEMILE])//续航里程
 	{
 		odometer = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ENDURANCEMILE])->value * 10;
 	}
+	DAT_UNLOCK();
 
 	return odometer;
 }
@@ -5091,10 +5250,13 @@ long gb_data_ResidualOdometer(void)
 long gb_data_ACChargeRemainTime(void)
 {
 	long acremaintime = 0;
+
+	DAT_LOCK();
 	if(gb_inf  && gb_inf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])//
 	{
 		acremaintime = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])->value;
 	}
+	DAT_UNLOCK();
 
 	return acremaintime;
 }
@@ -5105,6 +5267,8 @@ long gb_data_ACChargeRemainTime(void)
 uint8_t gb_data_dcdcstatus(void)
 {
 	uint8_t dcst = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->vehi.info[GB_VINF_DCDC])
     {
         if(1 == dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_DCDC])->value)
@@ -5112,6 +5276,7 @@ uint8_t gb_data_dcdcstatus(void)
 			dcst = 1;
 		}
 	}
+	DAT_UNLOCK();
 
 	return dcst;
 }
@@ -5122,6 +5287,8 @@ uint8_t gb_data_dcdcstatus(void)
 uint16_t gb_data_trip(void)
 {
 	uint16_t tripval = 0;
+
+	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_TRIP])
 	{
 		tripval = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_TRIP])->value * 10;
@@ -5130,6 +5297,7 @@ uint16_t gb_data_trip(void)
 			tripval = 20000;
 		}
 	}
+	DAT_UNLOCK();
 
 	return tripval;
 }

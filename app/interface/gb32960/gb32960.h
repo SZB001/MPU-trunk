@@ -2,8 +2,8 @@
 #define __GB32960_H__
 #include "../hozon/sockproxy/sockproxy_rxdata.h"
 
-#define GB32960_THREAD   1//¶¨ÒåÊÇ·ñµ¥¶À´´½¨Ïß³Ì 1-ÊÇ 0-²»ÊÇ
-#define GB32960_SOCKPROXY   1//¶¨ÒåÊÇ·ñÊ¹ÓÃsocket´úÀí(ÊÇ·ñÓÉÆäËûÄ£¿é´´½¨socketÁ´Â·) 1-ÊÇ 0-²»ÊÇ
+#define GB32960_THREAD   1//ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ñµ¥¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½ 1-ï¿½ï¿½ 0-ï¿½ï¿½ï¿½ï¿½
+#define GB32960_SOCKPROXY   1//ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½Ê¹ï¿½ï¿½socketï¿½ï¿½ï¿½ï¿½(ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä£ï¿½é´´ï¿½ï¿½socketï¿½ï¿½Â·) 1-ï¿½ï¿½ 0-ï¿½ï¿½ï¿½ï¿½
 
 #define gb32960_rcvMsg(buf,buflen) RdSockproxyData_Queue(SP_GB,buf,buflen)
 
@@ -47,16 +47,6 @@ extern int gb_data_noreport(void);
 extern void gb_data_set_intv(uint16_t intv);
 extern int gb_data_get_intv(void);
 extern void gb_data_set_pendflag(int flag);
-#if 0
-extern uint8_t gb_data_vehicleState(void);
-extern long gb_data_vehicleSOC(void);
-extern long gb_data_vehicleOdograph(void);
-extern long gb_data_vehicleSpeed(void);
-extern uint8_t gb_data_doorlockSt(void);
-extern uint8_t gb_data_reardoorSt(void);
-extern int gb_data_LHTemp(void);
-extern uint8_t gb_data_chargeSt(void);
-#endif
 
 
 #endif
