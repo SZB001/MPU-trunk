@@ -40,6 +40,7 @@ typedef struct
 	uint64_t period;
 	uint8_t waitSt;
 	uint64_t waittime;
+	long expTime;
 	char style;//方式：tsp-1；2-蓝牙
 }__attribute__((packed))  PP_rmtdoorCtrlSt_t; /*remote control结构体*/
 

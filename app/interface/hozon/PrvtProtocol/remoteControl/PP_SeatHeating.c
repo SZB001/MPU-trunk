@@ -131,6 +131,7 @@ int PP_seatheating_mainfunction(void *task)
 							PP_rmtseatheatCtrl[i].state.req = 0;
 							rmtCtrl_Stpara.rvcFailureType = 0;
 							rmtCtrl_Stpara.reqType =PP_rmtseatheatCtrl[i].state.reqType;
+							rmtCtrl_Stpara.expTime = PP_rmtseatheatCtrl[i].state.expTime;
 							rmtCtrl_Stpara.eventid = PP_rmtseatheatCtrl[i].pack.DisBody.eventId;
 							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 							res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
@@ -256,6 +257,7 @@ int PP_seatheating_mainfunction(void *task)
 				{
 					rmtCtrl_Stpara.reqType =PP_rmtseatheatCtrl[i].state.reqType;
 					rmtCtrl_Stpara.eventid = PP_rmtseatheatCtrl[i].pack.DisBody.eventId;
+					rmtCtrl_Stpara.expTime = PP_rmtseatheatCtrl[i].state.expTime;
 					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 					if(1 == PP_rmtseatheatCtrl[i].seatheat_success_flag)
 					{
@@ -351,6 +353,7 @@ void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			{
 				PP_rmtseatheatCtrl[PP_seatheating_drviver].state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 				PP_rmtseatheatCtrl[PP_seatheating_drviver].state.req = 1;
+				PP_rmtseatheatCtrl[PP_seatheating_drviver].state.expTime = disptrBody_ptr->expTime;
 				PP_rmtseatheatCtrl[PP_seatheating_drviver].pack.DisBody.eventId = disptrBody_ptr->eventId;
 				PP_rmtseatheatCtrl[PP_seatheating_drviver].state.style = RMTCTRL_TSP;
 				PP_rmtseatheatCtrl[PP_seatheating_drviver].level = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
@@ -359,6 +362,7 @@ void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			{
 				PP_rmtseatheatCtrl[PP_seatheating_passenger].state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 				PP_rmtseatheatCtrl[PP_seatheating_passenger].state.req = 1;
+				PP_rmtseatheatCtrl[PP_seatheating_passenger].state.expTime = disptrBody_ptr->expTime;
 				PP_rmtseatheatCtrl[PP_seatheating_passenger].pack.DisBody.eventId = disptrBody_ptr->eventId;
 				PP_rmtseatheatCtrl[PP_seatheating_passenger].state.style = RMTCTRL_TSP;
 				PP_rmtseatheatCtrl[PP_seatheating_passenger].level = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
@@ -413,8 +417,12 @@ void PP_seatheating_SetCtrlReq(uint32_t reqType,unsigned char level)
 }
 /************************shell命令测试使用**************************/
 
-void PP_seatheating_cmdoff(void)
+uint8_t PP_seatheating_cmdoff(void)
 {
+	if((PP_rmtCtrl_cfg_HeatingSt(0) == 0)&&(PP_rmtCtrl_cfg_HeatingSt(1) == 0))
+	{
+		return 1;
+	}
 	if(PP_rmtCtrl_cfg_HeatingSt(0) != 0)
 	{
 		PP_rmtseatheatCtrl[0].state.req = 1;
@@ -427,6 +435,7 @@ void PP_seatheating_cmdoff(void)
 		PP_rmtseatheatCtrl[1].state.reqType = PP_RMTCTRL_PASSENGERHEATCLOSE;
 		
 	}
+	return 0;
 }
 
 

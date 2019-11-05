@@ -56,6 +56,7 @@ description�� typedef definitions
 typedef struct
 {
 	uint8_t req;
+	long	expTime	;
 	uint8_t chargecmd;
 	uint8_t bookingSt;//�Ƿ�ԤԼ
 	uint8_t executSt;//ִ��״̬

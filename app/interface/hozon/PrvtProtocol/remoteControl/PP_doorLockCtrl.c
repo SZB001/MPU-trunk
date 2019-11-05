@@ -145,6 +145,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 						rmtCtrl_Stpara.rvcReqStatus = 1;         //正在执行
 						rmtCtrl_Stpara.rvcFailureType = 0;
+						rmtCtrl_Stpara.expTime = PP_rmtdoorCtrl.state.expTime;
 						rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
@@ -230,6 +231,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 				rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
 				rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+				rmtCtrl_Stpara.expTime = PP_rmtdoorCtrl.state.expTime;
 				if(1 == doorLock_success_flag)
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 2;  //ִ执行完成
@@ -301,6 +303,7 @@ void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 			log_i(LOG_HOZON, "remote door lock control req");
 			PP_rmtdoorCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtdoorCtrl.state.req = 1;
+			PP_rmtdoorCtrl.state.expTime = disptrBody_ptr->expTime;
 			if(PP_rmtdoorCtrl.state.reqType == PP_RMTCTRL_DOORLOCKOPEN)
 			{
 				doorctrl_type = PP_OPENDOOR;

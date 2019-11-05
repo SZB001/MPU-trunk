@@ -1091,11 +1091,11 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 		{
 			/*body*/
 			memcpy(PP_rmtCtrl.pack.DisBody.aID,"110",3);
-			PP_rmtCtrl.pack.DisBody.expTime = -1;
+			PP_rmtCtrl.pack.DisBody.expTime = CtrlSt_para->expTime ;
 			PP_rmtCtrl.pack.DisBody.mID = PP_MID_RMTCTRL_RESP;
 			PP_rmtCtrl.pack.DisBody.eventId =  CtrlSt_para->eventid;
 			PP_rmtCtrl.pack.DisBody.eventTime = PrvtPro_getTimestamp();
-			PP_rmtCtrl.pack.DisBody.expTime   = PrvtPro_getTimestamp();
+			//PP_rmtCtrl.pack.DisBody.expTime   = PrvtPro_getTimestamp();
 			PP_rmtCtrl.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 			PP_rmtCtrl.pack.DisBody.appDataProVer = 256;
 			PP_rmtCtrl.pack.DisBody.testFlag = 1;
@@ -1104,6 +1104,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			PrvtProtcfg_gpsData_t gpsDt;
 			App_rmtCtrl.CtrlResp.rvcReqType = CtrlSt_para->reqType;
 			App_rmtCtrl.CtrlResp.rvcReqStatus = CtrlSt_para->rvcReqStatus;
+			log_i(LOG_HOZON, "App_rmtCtrl.CtrlResp.rvcReqStatus = %d",App_rmtCtrl.CtrlResp.rvcReqStatus);
 			App_rmtCtrl.CtrlResp.rvcFailureType = CtrlSt_para->rvcFailureType;
 			App_rmtCtrl.CtrlResp.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps状态 0-无效；1-有效;
 			App_rmtCtrl.CtrlResp.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gps时间戳:系统时间(通过gps校时)
@@ -1363,7 +1364,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			PP_rmtCtrl.pack.DisBody.mID = PP_MID_RMTCTRL_BOOKINGRESP;
 			PP_rmtCtrl.pack.DisBody.eventId =  CtrlSt_para->eventid;
 			PP_rmtCtrl.pack.DisBody.eventTime = PrvtPro_getTimestamp();
-			PP_rmtCtrl.pack.DisBody.expTime   = PrvtPro_getTimestamp();
+			PP_rmtCtrl.pack.DisBody.expTime   = CtrlSt_para->expTime;
 			PP_rmtCtrl.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 			PP_rmtCtrl.pack.DisBody.appDataProVer = 256;
 			PP_rmtCtrl.pack.DisBody.testFlag = 1;
@@ -1388,7 +1389,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			PP_rmtCtrl.pack.DisBody.mID = PP_MID_RMTCTRL_HUBOOKINGRESP;
 			PP_rmtCtrl.pack.DisBody.eventId =  CtrlSt_para->eventid;
 			PP_rmtCtrl.pack.DisBody.eventTime = PrvtPro_getTimestamp();
-			PP_rmtCtrl.pack.DisBody.expTime   = PrvtPro_getTimestamp();
+			PP_rmtCtrl.pack.DisBody.expTime   = -1;
 			PP_rmtCtrl.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 			PP_rmtCtrl.pack.DisBody.appDataProVer = 256;
 			PP_rmtCtrl.pack.DisBody.testFlag = 1;

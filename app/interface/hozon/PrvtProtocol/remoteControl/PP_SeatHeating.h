@@ -34,6 +34,7 @@ typedef struct
 	uint64_t period;
 	uint8_t waitSt;
 	uint64_t waittime;
+	long expTime;
 	char style;
 }__attribute__((packed))  PP_rmtseatheatingSt_t;
 
@@ -46,18 +47,13 @@ typedef enum
 
 extern void PP_seatheating_init(void);
 
-
 extern int PP_seatheating_mainfunction(void *task);
-
 
 extern uint8_t PP_seatheating_start(void) ;
 
-
 extern uint8_t PP_seatheating_end(void);
 
-
 extern void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
-
 
 extern void  PP_seatheating_SetCtrlReq(uint32_t reqType,unsigned char level);
 
@@ -67,7 +63,7 @@ extern unsigned char GetPP_SeatCtrl_Sleep(void);
 
 extern void PP_SeatCtrl_SeatStMonitor(void *task);
 
-extern void PP_seatheating_cmdoff(void);
+extern uint8_t PP_seatheating_cmdoff(void);
 
 #endif
 

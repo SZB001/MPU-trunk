@@ -109,6 +109,7 @@ int PP_searchvehicle_mainfunction(void *task)
 						rmtCtrl_Stpara.rvcFailureType = 0;
 						rmtCtrl_Stpara.reqType =PP_rmtsearchvehicle.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtsearchvehicle.pack.DisBody.eventId;
+						rmtCtrl_Stpara.expTime =  PP_rmtsearchvehicle.state.expTime;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 					}
@@ -173,6 +174,7 @@ int PP_searchvehicle_mainfunction(void *task)
 			{
 				rmtCtrl_Stpara.reqType =PP_rmtsearchvehicle.state.reqType;
 				rmtCtrl_Stpara.eventid = PP_rmtsearchvehicle.pack.DisBody.eventId;
+				rmtCtrl_Stpara.expTime =  PP_rmtsearchvehicle.state.expTime;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				if(1 == serachvehicle_success_flag)
 				{
@@ -261,6 +263,7 @@ void SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *dispt
 			log_i(LOG_HOZON, "remote door lock control req");
 			PP_rmtsearchvehicle.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtsearchvehicle.state.req = 1;
+			PP_rmtsearchvehicle.state.expTime = disptrBody_ptr->expTime;
 			if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN)
 			{
 				search_type = PP_SEARCH;

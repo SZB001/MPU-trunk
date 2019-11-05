@@ -113,6 +113,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 						rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
 						rmtCtrl_Stpara.rvcFailureType = 0;
+						rmtCtrl_Stpara.expTime = PP_rmtsunroofCtrl.state.expTime;
 						rmtCtrl_Stpara.reqType =PP_rmtsunroofCtrl.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtsunroofCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
@@ -236,6 +237,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 			{
 				rmtCtrl_Stpara.reqType =PP_rmtsunroofCtrl.state.reqType;
 				rmtCtrl_Stpara.eventid = PP_rmtsunroofCtrl.pack.DisBody.eventId;
+				rmtCtrl_Stpara.expTime = PP_rmtsunroofCtrl.state.expTime;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				if(1 == sunroof_success_flag)
 				{
@@ -330,6 +332,7 @@ void SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
 			log_i(LOG_HOZON, "remote door lock control req");
 			PP_rmtsunroofCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+			PP_rmtsunroofCtrl.state.expTime = disptrBody_ptr->expTime;
 			if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFOPEN) //天窗打开
 			{
 				sunroof_type = PP_SUNROOFOPEN;

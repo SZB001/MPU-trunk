@@ -110,6 +110,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 						PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 						rmtCtrl_Stpara.rvcReqStatus = 1;  //开始执行
 						rmtCtrl_Stpara.rvcFailureType = 0;
+						rmtCtrl_Stpara.expTime = PP_rmtautodoorCtrl.state.expTime;
 						rmtCtrl_Stpara.reqType =PP_rmtautodoorCtrl.state.reqType;
 						rmtCtrl_Stpara.eventid = PP_rmtautodoorCtrl.pack.DisBody.eventId;
 						rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
@@ -194,6 +195,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 			{
 				rmtCtrl_Stpara.reqType =PP_rmtautodoorCtrl.state.reqType;
 				rmtCtrl_Stpara.eventid = PP_rmtautodoorCtrl.pack.DisBody.eventId;
+				rmtCtrl_Stpara.expTime = PP_rmtautodoorCtrl.state.expTime;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				if(1 == autodoor_success_flag)
 				{
@@ -282,6 +284,7 @@ void SetPP_autodoorCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 			log_i(LOG_HOZON, "remote auto door control req");
 			PP_rmtautodoorCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtautodoorCtrl.state.req = 1;
+			PP_rmtautodoorCtrl.state.expTime = disptrBody_ptr->expTime;
 			if(PP_rmtautodoorCtrl.state.reqType ==PP_RMTCTRL_AUTODOOROPEN)
 			{
 				autodoor_type = PP_OPENDOOR;

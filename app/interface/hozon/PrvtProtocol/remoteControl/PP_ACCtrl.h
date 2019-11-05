@@ -21,6 +21,7 @@ typedef struct
 	uint64_t period;
 	uint8_t  waitSt;
 	uint64_t waittime;
+	long	expTime;
 	uint8_t  dataUpdata;
 }__attribute__((packed))  PP_rmtACCtrlSt_t; /*remote control�ṹ��*/
 
@@ -63,5 +64,5 @@ extern void PP_ACCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 extern void PP_AcCtrl_acStMonitor(void *task);
 extern unsigned char GetPP_ACtrl_Sleep(void);
 extern int PP_ACCtrl_waketime(void);
-extern void PP_ACCtrl_cmdoff(void);
+extern uint8_t PP_ACCtrl_cmdoff(void);
 #endif 

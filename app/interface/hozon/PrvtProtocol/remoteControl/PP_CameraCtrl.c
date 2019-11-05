@@ -77,8 +77,7 @@ int PP_CameraCtr_mainfunction(void *task)
 {
 	if(PP_rmtCameraCtrl.state.req == 1)
 	{
-		
-ivi_remotediagnos tspInformHU;
+		ivi_remotediagnos tspInformHU;
 		tspInformHU.aid = PP_AID_RMTCTRL;
 		tspInformHU.mid = PP_MID_RMTCTRL_RESP;
 		tspInformHU.eventid = PP_rmtCameraCtrl.pack.DisBody.eventId;
@@ -90,6 +89,7 @@ ivi_remotediagnos tspInformHU;
 		PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 		rmtCtrl_Stpara.rvcReqStatus = 2;         //执行成功
 		rmtCtrl_Stpara.rvcFailureType = 0;
+		rmtCtrl_Stpara.expTime = PP_rmtCameraCtrl.state.expTime;
 		rmtCtrl_Stpara.reqType =PP_rmtCameraCtrl.state.reqType;
 		rmtCtrl_Stpara.eventid = PP_rmtCameraCtrl.pack.DisBody.eventId;
 		rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
@@ -111,6 +111,7 @@ void SetPP_CameraCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
 			log_i(LOG_HOZON, "remote Camera control req");
 			PP_rmtCameraCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+			PP_rmtCameraCtrl.state.expTime = disptrBody_ptr->expTime;
 			PP_rmtCameraCtrl.state.req = 1;
 			PP_rmtCameraCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
 			PP_rmtCameraCtrl.state.style = RMTCTRL_TSP;	

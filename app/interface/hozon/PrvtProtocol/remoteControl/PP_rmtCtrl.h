@@ -363,6 +363,7 @@ typedef struct
 	char Resptype;//回复类型：非预约-1；2-预约
 	long reqType;//请求类型
 	long eventid;//事件id
+	long expTime;
 	long rvcReqStatus;
 	long rvcFailureType;
 

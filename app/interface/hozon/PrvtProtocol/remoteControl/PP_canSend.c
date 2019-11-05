@@ -10,6 +10,7 @@
 #include "scom_msg_def.h"
 #include "../../../../base/scom/scom_tl.h"
 #include "log.h"
+#include "PPrmtCtrl_cfg.h"
 #include "PP_canSend.h"
 
 static PP_can_msg_info_t canmsg_3D2;
@@ -20,6 +21,7 @@ static uint8_t can_data[8];
 
 static uint64_t lastsendtime;
 
+extern unsigned char GetPP_CertDL_CertValid(void);
 int PP_canSend_init(void)
 {
 	memset(&canmsg_3D2,0,sizeof(PP_can_msg_info_t));
@@ -223,6 +225,10 @@ void PP_can_send_cycle(void)
 		{
 			PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//无效
 			PP_canSend_setbit(CAN_ID_445,17,1,0,NULL);//autocmd 清零
+		}
+		if(GetPP_CertDL_CertValid() == 1) //TBOX与HU之间的证书有效
+		{
+			PP_canSend_setbit(CAN_ID_440,23,1,1,NULL);//证书有效
 		}
 		PP_can_unpack(ID440_data,can_data);
 		PP_send_cycle_ID440_to_mcu(can_data);

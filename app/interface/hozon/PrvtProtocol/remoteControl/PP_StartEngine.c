@@ -378,8 +378,11 @@ void PP_rmtCtrl_checkenginetime(void)
 		}
 		if(tm_get_time() - PP_Engine_time > 15 * 60 * 1000) //15分钟到请求下电
 		{
-			PP_seatheating_cmdoff();
-			PP_ACCtrl_cmdoff();
+			if((PP_seatheating_cmdoff() == 1)&&(PP_ACCtrl_cmdoff() == 1))  //如果空调和座椅加热都没有开启
+			{
+				enginecation = PP_POWEROFF;
+				PP_rmtengineCtrl.state.req = 1;
+			}
 			PP_rmtengineCtrl.state.style = RMTCTRL_TSP;
 			log_o(LOG_HOZON,"15 minutes have arrived, request to shut down the engine\n");
 		}

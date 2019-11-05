@@ -153,6 +153,7 @@ void PP_ACCtrl_init(void)
 	PP_rmtACCtrl.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
 	PP_rmtACCtrl.pack.DisBody.appDataProVer = 256;
 	PP_rmtACCtrl.pack.DisBody.testFlag = 1;
+	PP_rmtACCtrl.state.expTime = -1;
 	len = ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t);
 	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,&len);  //从ROM中读出空调预约记录
 	if(res==0) 
@@ -455,6 +456,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
 			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
 			PP_rmtACCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+			PP_rmtACCtrl.state.expTime = disptrBody_ptr->expTime;
 			if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACOPEN) || (appdatarmtCtrl_ptr->CtrlReq.rvcReqType== PP_RMTCTRL_ACCLOSE)\
 				||(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_SETTEMP))
 			{
@@ -531,6 +533,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 				}
 				rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 				rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
+				rmtCtrl_Stpara.expTime = disptrBody_ptr->expTime;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 			}
@@ -556,6 +559,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 							rmtCtrl_Stpara.rvcFailureType = 0;
 							rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 							rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
+							rmtCtrl_Stpara.expTime = disptrBody_ptr->expTime;
 							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 							cancel_flag = 1;
 							PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
@@ -870,11 +874,16 @@ int PP_ACCtrl_waketime(void)
 	return low_time;
 }
 
-void PP_ACCtrl_cmdoff(void)
+uint8_t PP_ACCtrl_cmdoff(void)
 {
 	if(PP_rmtCtrl_cfg_ACOnOffSt() == 1)
 	{
 		PP_rmtACCtrl.state.accmd = PP_CLOSE_ACC;
 		PP_rmtACCtrl.state.req = 1;
 	}
+	else
+	{
+		return 1;
+	}
+	return 0;
 }

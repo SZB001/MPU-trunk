@@ -14,6 +14,7 @@ typedef struct
 	uint64_t period;
 	uint8_t waitSt;
 	uint64_t waittime;
+	long expTime;
 	char style;
 }__attribute__((packed))  PP_rmtsearchvehicleSt_t;
 

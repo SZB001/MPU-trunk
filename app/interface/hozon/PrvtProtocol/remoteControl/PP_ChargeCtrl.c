@@ -135,6 +135,7 @@ void PP_ChargeCtrl_init(void)
 	PP_rmtChargeCtrl.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
 	PP_rmtChargeCtrl.pack.DisBody.appDataProVer = 256;
 	PP_rmtChargeCtrl.pack.DisBody.testFlag = 1;
+	PP_rmtChargeCtrl.state.expTime = -1;
 
 	//读取记录
 	len = 32;
@@ -511,6 +512,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 			log_i(LOG_HOZON, "tsp remote charge control req\n");
 
 			PP_rmtChargeCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+			PP_rmtChargeCtrl.state.expTime =  disptrBody_ptr->expTime;
 			if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_COMAND_STARTCHARGE) || \
 					(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_COMAND_STOPCHARGE))
 			{
@@ -572,6 +574,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				rmtCtrl_Stpara.rvcFailureType = 0;
 				rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 				rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
+				rmtCtrl_Stpara.eventid = disptrBody_ptr->expTime;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 
@@ -592,7 +595,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				PP_rmtCharge_AppointBook.validFlg  = 0;
 				rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//ִ�����
 				rmtCtrl_Stpara.rvcFailureType = 0;
-
+				rmtCtrl_Stpara.eventid = disptrBody_ptr->expTime;
 				//inform HU appointment status
 				ivi_chargeSt.id = PP_rmtCharge_AppointBook.id;
 				ivi_chargeSt.hour = PP_rmtCharge_AppointBook.hour;
@@ -640,7 +643,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 						(PP_rmtChargeCtrl.state.req == 0))
 				{
 					PP_rmtChargeCtrl.state.req = 1;
-					PP_rmtChargeCtrl.pack.DisBody.eventId = 0;
+					PP_rmtChargeCtrl.pack.DisBody.eventId = 0;//HU立即充电eventid = 0
 					if(ivi_chargeAppointSt_ptr->cmd == PP_COMAND_STARTCHARGE)
 					{
 						log_i(LOG_HOZON, "HU charge open request\n");
@@ -738,7 +741,8 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 			uint8_t *cmd = (uint8_t*)appdatarmtCtrl;
 			PP_rmtChargeCtrl.state.req = 1;
 			PP_rmtChargeCtrl.CtrlPara.bookingId = PP_rmtCharge_AppointBook.id;
-			PP_rmtChargeCtrl.pack.DisBody.eventId = PP_rmtCharge_AppointBook.eventId;
+			//PP_rmtChargeCtrl.pack.DisBody.eventId = PP_rmtCharge_AppointBook.eventId;
+			PP_rmtChargeCtrl.pack.DisBody.eventId = 0;
 			PP_rmtChargeCtrl.state.chargecmd = *cmd;
 			PP_rmtChargeCtrl.state.style   = RMTCTRL_TBOX;
 		}
@@ -886,6 +890,7 @@ static int PP_ChargeCtrl_startHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge)
 				PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 				rmtCtrl_Stpara.rvcReqStatus = 1;
 				rmtCtrl_Stpara.rvcFailureType = 0;
+				rmtCtrl_Stpara.expTime = pp_rmtCharge->state.expTime;
 				rmtCtrl_Stpara.reqType = pp_rmtCharge->CtrlPara.reqType;
 				rmtCtrl_Stpara.eventid = pp_rmtCharge->pack.DisBody.eventId;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
@@ -926,6 +931,7 @@ static int PP_ChargeCtrl_startHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge)
 			rmtCtrl_Stpara.rvcReqStatus = 1;//��ʼִ��
 			rmtCtrl_Stpara.rvcFailureType = 0;
 			rmtCtrl_Stpara.reqType = pp_rmtCharge->CtrlPara.reqType;
+			rmtCtrl_Stpara.expTime = pp_rmtCharge->state.expTime;
 			rmtCtrl_Stpara.eventid = pp_rmtCharge->pack.DisBody.eventId;
 			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 			PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
@@ -1006,6 +1012,7 @@ static void PP_ChargeCtrl_EndHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge)
 			//inform TSP
 			rmtCtrl_chargeStpara.bookingId  = pp_rmtCharge->CtrlPara.bookingId;
 			rmtCtrl_chargeStpara.eventid  = pp_rmtCharge->pack.DisBody.eventId;
+			rmtCtrl_chargeStpara.expTime = pp_rmtCharge->state.expTime;
 			rmtCtrl_chargeStpara.Resptype = PP_RMTCTRL_RVCBOOKINGRESP;//预约
 			PP_rmtCtrl_StInformTsp(&rmtCtrl_chargeStpara);
 		}
