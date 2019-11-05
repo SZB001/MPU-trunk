@@ -67,6 +67,7 @@ typedef struct
 	PrvtProt_xcallSt_t	 	state;
 	char 					Type;
 	long					eventId;
+	long					expTime;
 	char					activeflag;
 }__attribute__((packed))  PrvtProt_xcall_t; /*xcall�ṹ��*/
 
@@ -253,6 +254,7 @@ static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,i
 			if((Appdata.xcallType >=1) && (Appdata.xcallType <= PP_XCALL_MAX))
 			{
 				PP_xcall[Appdata.xcallType-1].eventId = MsgDataBody.eventId;
+				PP_xcall[Appdata.xcallType-1].expTime = MsgDataBody.expTime;
 				PP_xcall[Appdata.xcallType-1].state.req = 1;
 				PP_xcall[Appdata.xcallType-1].activeflag = 0;
 				log_i(LOG_HOZON, "recv xcall request\n");
@@ -431,7 +433,7 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 		PP_xcall[XcallType].packResp.DisBody.eventId = PP_xcall[XcallType].eventId;
 	}
 	PP_xcall[XcallType].activeflag = 0;
-	PP_xcall[XcallType].packResp.DisBody.expTime = PrvtPro_getTimestamp();
+	PP_xcall[XcallType].packResp.DisBody.expTime = PP_xcall[XcallType].expTime;
 	PP_xcall[XcallType].packResp.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	PP_xcall[XcallType].packResp.DisBody.appDataProVer = 256;
 	PP_xcall[XcallType].packResp.DisBody.testFlag = 1;

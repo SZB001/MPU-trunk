@@ -844,7 +844,7 @@ static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,Pr
 	rmtCfg->pack.DisBody.eventId = MsgDataBody->eventId;
 	rmtCfg->pack.DisBody.mID = PP_MID_CONN_CFG_RESP;
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtCfg->pack.DisBody.expTime   = PP_rmtCfg.state.expTime;
+	rmtCfg->pack.DisBody.expTime   = MsgDataBody->expTime;
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	rmtCfg->pack.DisBody.appDataProVer = 256;
 	rmtCfg->pack.DisBody.testFlag = 1;
@@ -897,7 +897,7 @@ static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg
 	rmtCfg->pack.DisBody.mID = PP_MID_READ_CFG_RESP;
 	rmtCfg->pack.DisBody.eventId = MsgDataBody->eventId;
 	rmtCfg->pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	rmtCfg->pack.DisBody.expTime   = PP_rmtCfg.state.expTime;
+	rmtCfg->pack.DisBody.expTime   = MsgDataBody->expTime;
 	rmtCfg->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
 	rmtCfg->pack.DisBody.appDataProVer = 256;
 	rmtCfg->pack.DisBody.testFlag = 1;
