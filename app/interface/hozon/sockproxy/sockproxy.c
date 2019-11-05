@@ -339,7 +339,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		{
 			case PP_CLOSED:
 			{
-				if((sock_status(state->socket) == SOCK_STAT_CLOSED) && (dev_get_KL15_signal()))
+				if(sock_status(state->socket) == SOCK_STAT_CLOSED)
 				{
 					if((time == 0) || (tm_get_time() - time > SOCK_SERVR_TIMEOUT))
 					{
