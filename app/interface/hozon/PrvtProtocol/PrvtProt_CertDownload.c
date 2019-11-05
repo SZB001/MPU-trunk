@@ -2022,7 +2022,7 @@ static int PP_CertDL_generateCipher(void)
 			}
 
 			file_copy(PP_CERTDL_CIPHER_PATH,COM_SDCARD_DIR_PKI_CIPHER);//备份文件到emmc
-			log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
+			//log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
 		}
 		else
 		{
