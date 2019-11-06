@@ -33,6 +33,7 @@ description�� include the header file
 #include "per_decoder.h"
 #include "dev_api.h"
 #include "init.h"
+#include "ble.h"
 #include "log.h"
 #include "list.h"
 #include "../../support/protocol.h"
@@ -93,6 +94,7 @@ static void PP_rmtCfg_reset(PrvtProt_rmtCfg_t *rmtCfg);
 static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,PrvtProt_DisptrBody_t *MsgDataBody);
 
 static void PP_rmtCfg_send_cb(void * para);
+static void PP_rmtCfg_HexToStr(uint8_t *pbDest, uint8_t *pbSrc, int nLen);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -495,6 +497,14 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 	else
 	{
 		PP_rmtCfg.state.iccidValid = 1;
+	}
+
+	unsigned char Mac[32];
+	if(0 == strcmp((char*)AppData_rmtCfg.checkReq.btMacAddr,"000000000000"))
+	{
+		BleGetMac(Mac);
+		PP_rmtCfg_HexToStr(AppData_rmtCfg.checkReq.btMacAddr,Mac,6);
+		log_i(LOG_HOZON, "bluetooth mac = %s\n",AppData_rmtCfg.checkReq.btMacAddr);
 	}
 
 	switch(rmtCfg->state.CfgSt)
@@ -1742,4 +1752,21 @@ void getPP_rmtCfg_cfgVersion(char* ver)
 	}
 
 	*ver_tp = 0;
+}
+
+static void PP_rmtCfg_HexToStr(uint8_t *pbDest, uint8_t *pbSrc, int nLen)
+{
+	char ddl,ddh;
+	int i;
+	for (i=0; i<nLen; i++)
+	{
+		ddh = 48 + pbSrc[i] / 16;
+		ddl = 48 + pbSrc[i] % 16;
+		if (ddh > 57) ddh = ddh + 7;
+		if (ddl > 57) ddl = ddl + 7;
+		pbDest[i*2] = ddh;
+		pbDest[i*2+1] = ddl;
+	}
+
+	pbDest[nLen*2] = 0;
 }

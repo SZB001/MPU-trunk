@@ -411,7 +411,7 @@ int clbt_cfg_dump_para(void )
     memset(plbuff, 0, sizeof(plbuff));
     bufftp = plbuff;
     BleGetMac((uint8_t*)plbuff);
-    shellprintf(" %-32s :","btaddr");
+    shellprintf(" %-32s :","bluetooth mac");
     for(k = 0; k < 6; k++)
     {	
         shellprintf("%u",*bufftp);

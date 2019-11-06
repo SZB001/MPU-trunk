@@ -37,6 +37,7 @@
         "at.h": "c",
         "diag.h": "c",
         "dsu_api.h": "c",
-        "prvtprot.h": "c"
+        "prvtprot.h": "c",
+        "list.h": "c"
     }
 }

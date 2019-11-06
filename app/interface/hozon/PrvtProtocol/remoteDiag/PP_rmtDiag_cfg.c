@@ -116,7 +116,11 @@ void getPPrmtDiagCfg_Faultcode(uint8_t obj,void *rmtDiag_Fault)
 ******************************************************/
 void getPPrmtDiagCfg_NodeFault(PP_rmtDiag_NodeFault_t *rmtDiag_NodeFault)
 {
-	rmtDiag_NodeFault = get_PP_rmtDiag_NodeFault_t();
+	PP_rmtDiag_NodeFault_t * NodeFault;
+	NodeFault = get_PP_rmtDiag_NodeFault_t();
+	rmtDiag_NodeFault->BMSMiss = NodeFault->BMSMiss;
+	rmtDiag_NodeFault->MCUMiss = NodeFault->MCUMiss;
+	rmtDiag_NodeFault->tboxFault = NodeFault->tboxFault;
 }
 
 /*
