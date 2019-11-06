@@ -96,9 +96,9 @@ description： macro definitions
 #define PP_RMTCTRL_INVALID_ID			0x08//无效的预约ID
 #define PP_RMTCTRL_READYLIGHTON			0x09//运动模式
 #define PP_RMTCTRL_UPPOWERFAIL          0x04//上电失败
-#define PP_RMTCTRL_NOTENABLE            0x0A//远控没有使能 
-#define PP_RMTCTRL_FOTA_UPGRADE         0x0B//fota升级中  
-#define PP_RMTCTRL_TIMEOUT              0x0C//远控超时
+#define PP_RMTCTRL_NOTENABLE            0x0B//远控没有使能 
+#define PP_RMTCTRL_FOTA_UPGRADE         0x0C//fota升级中  
+#define PP_RMTCTRL_INSTRTIMEOUT         0x0A//指令超时
 
 //蓝牙请求消息类型
 #define BT_VEhICLE_DOOR_REQ       0x03 //车门锁
