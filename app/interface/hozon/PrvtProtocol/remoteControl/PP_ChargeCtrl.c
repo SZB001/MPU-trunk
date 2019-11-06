@@ -703,7 +703,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 			else if(ivi_chargeAppointSt_ptr->cmd == PP_COMAND_CANCELAPPOINTCHARGE)
 			{//取消预约充电
 				log_i(LOG_HOZON, "HU cancel appointment\n");
-
+				PP_rmtCharge_AppointBook.eventId = 0;
 				PP_rmtCharge_AppointBook.appointType = RMTCTRL_HU;
 				PP_rmtCharge_AppointBook.validFlg = 0;
 
