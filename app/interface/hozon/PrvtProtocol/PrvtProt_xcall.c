@@ -199,15 +199,15 @@ static int PP_xcall_do_rcvMsg(PrvtProt_task_t *task)
 		return 0;
 	}
 	
-	log_i(LOG_HOZON, "receive xcall message");
+	log_o(LOG_HOZON, "receive xcall message");
 	protocol_dump(LOG_HOZON, "PRVT_PROT", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
-			(rlen <= 18))//�ж�����֡ͷ����������ݳ��Ȳ���
+			(rlen <= 18))
 	{
 		return 0;
 	}
 	
-	if(rlen > (18 + PP_MSG_DATA_LEN))//�������ݳ��ȳ�������buffer����
+	if(rlen > (18 + PP_MSG_DATA_LEN))
 	{
 		return 0;
 	}
@@ -257,7 +257,7 @@ static void PP_xcall_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,i
 				PP_xcall[Appdata.xcallType-1].expTime = MsgDataBody.expTime;
 				PP_xcall[Appdata.xcallType-1].state.req = 1;
 				PP_xcall[Appdata.xcallType-1].activeflag = 0;
-				log_i(LOG_HOZON, "recv xcall request\n");
+				log_o(LOG_HOZON, "recv xcall request\n");
 			}
 		}
 		break;
@@ -297,13 +297,13 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 {
 	int idlenode;
 	/* ecall */
-	if(PrvtProtCfg_ecallTriggerEvent())//ecall����
+	if(PrvtProtCfg_ecallTriggerEvent())//ecall trig
 	{
 		PP_xcall[PP_ECALL].state.req = 1;
 		PP_xcall[PP_ECALL].activeflag = 1;
 	}
 
-	if(PrvtProtCfg_bcallTriggerEvent())//ecall����
+	if(PrvtProtCfg_bcallTriggerEvent())//bcall trig
 	{
 		PP_xcall[PP_BCALL].state.req = 1;
 		PP_xcall[PP_BCALL].activeflag = 1;
@@ -315,59 +315,53 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		PP_xcall[PP_detection].activeflag = 1;
 	}
 
-	if(1 == PP_xcall[PP_ECALL].state.req)//ecall����
+	if(1 == PP_xcall[PP_ECALL].state.req)
 	{
-		log_i(LOG_HOZON, "ecall trig\n");
+		log_o(LOG_HOZON, "ecall trig\n");
 		PP_xcall[PP_ECALL].state.req = 0;
 		if(0 == PP_xcall_xcallResponse(task,PP_ECALL))
 		{
 			idlenode = PP_getIdleNode();
-			//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 			PP_TxInform[idlenode].aid = PP_AID_XCALL;
 			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
 			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 			PP_TxInform[idlenode].idleflag = 1;
 
 			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
-			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
 		}
 	}
 
 	/* bcall */
 	if(1 == PP_xcall[PP_BCALL].state.req)
 	{
-		log_i(LOG_HOZON, "bcall trig\n");
+		log_o(LOG_HOZON, "bcall trig\n");
 		PP_xcall[PP_BCALL].state.req = 0;
 		if(0 == PP_xcall_xcallResponse(task,PP_BCALL))
 		{
 			idlenode = PP_getIdleNode();
-			//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 			PP_TxInform[idlenode].aid = PP_AID_XCALL;
 			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
 			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 			PP_TxInform[idlenode].idleflag = 1;
 
 			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
-			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
 		}
 	}
 
 	/* icall */
 	if(1 == PP_xcall[PP_ICALL].state.req)
 	{
-		log_i(LOG_HOZON, "icall trig\n");
+		log_o(LOG_HOZON, "icall trig\n");
 		PP_xcall[PP_ICALL].state.req = 0;
 		if(0 == PP_xcall_xcallResponse(task,PP_ICALL))
 		{
 			idlenode = PP_getIdleNode();
-			//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 			PP_TxInform[idlenode].aid = PP_AID_XCALL;
 			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
 			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 			PP_TxInform[idlenode].idleflag = 1;
 
 			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
-			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
 		}
 	}
 
@@ -379,14 +373,12 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 		if(0 == PP_xcall_xcallResponse(task,PP_detection))
 		{
 			idlenode = PP_getIdleNode();
-			//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 			PP_TxInform[idlenode].aid = PP_AID_XCALL;
 			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
 			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 			PP_TxInform[idlenode].idleflag = 1;
 
 			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
-			protocol_dump(LOG_HOZON, "xcall_response", PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,1);
 		}
 	}
 
@@ -447,33 +439,33 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	log_i(LOG_HOZON, "longitude = %lf",gpsDt.longitude);
 	log_i(LOG_HOZON, "altitude = %lf",gpsDt.height);
 	Appdata_Xcall.xcallType = PP_xcall[XcallType].Type;//xcall type:ecall/icall/bcall
-	Appdata_Xcall.engineSt = PrvtProtCfg_engineSt();//����״̬��1-Ϩ��2-����
-	Appdata_Xcall.totalOdoMr = PrvtProtCfg_totalOdoMr();//�����Ч��Χ��0 - 1000000��km��
+	Appdata_Xcall.engineSt = PrvtProtCfg_engineSt();
+	Appdata_Xcall.totalOdoMr = PrvtProtCfg_totalOdoMr();
 	if(Appdata_Xcall.totalOdoMr > 1000000)
 	{
 		Appdata_Xcall.totalOdoMr = 1000000;
 	}
 
-	Appdata_Xcall.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps״̬ 0-��Ч��1-��Ч
-	Appdata_Xcall.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gpsʱ���:ϵͳʱ��(ͨ��gpsУʱ)
+	Appdata_Xcall.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();
+	Appdata_Xcall.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();
 	if(Appdata_Xcall.gpsPos.gpsSt == 1)
 	{
 		if(gpsDt.is_north)
 		{
-			Appdata_Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000);//γ�� x 1000000,��GPS�ź���Чʱ��ֵΪ0
+			Appdata_Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000);
 		}
 		else
 		{
-			Appdata_Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//γ�� x 1000000,��GPS�ź���Чʱ��ֵΪ0
+			Appdata_Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));
 		}
 
 		if(gpsDt.is_east)
 		{
-			Appdata_Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000);//���� x 1000000,��GPS�ź���Чʱ��ֵΪ0
+			Appdata_Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000);
 		}
 		else
 		{
-			Appdata_Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//���� x 1000000,��GPS�ź���Чʱ��ֵΪ0
+			Appdata_Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));
 		}
 		log_i(LOG_HOZON, "PP_appData.latitude = %lf",Appdata_Xcall.gpsPos.latitude);
 		log_i(LOG_HOZON, "PP_appData.longitude = %lf",Appdata_Xcall.gpsPos.longitude);
@@ -484,28 +476,28 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 		Appdata_Xcall.gpsPos.longitude = 0;
 	}
 
-	Appdata_Xcall.gpsPos.altitude = (long)gpsDt.height;//�߶ȣ�m��
+	Appdata_Xcall.gpsPos.altitude = (long)gpsDt.height;
 	if(Appdata_Xcall.gpsPos.altitude > 10000)
 	{
 		Appdata_Xcall.gpsPos.altitude = 10000;
 	}
-	Appdata_Xcall.gpsPos.heading = (long)gpsDt.direction;//��ͷ����Ƕȣ�0Ϊ��������
-	Appdata_Xcall.gpsPos.gpsSpeed = (long)gpsDt.kms*10;//�ٶ� x 10����λkm/h
-	Appdata_Xcall.gpsPos.hdop = (long)gpsDt.hdop*10;//ˮƽ�������� x 10
+	Appdata_Xcall.gpsPos.heading = (long)gpsDt.direction;
+	Appdata_Xcall.gpsPos.gpsSpeed = (long)gpsDt.kms*10;
+	Appdata_Xcall.gpsPos.hdop = (long)gpsDt.hdop*10;
 	if(Appdata_Xcall.gpsPos.hdop > 1000)
 	{
 		Appdata_Xcall.gpsPos.hdop = 1000;
 	}
-	Appdata_Xcall.srsSt 		= PrvtProtCfg_CrashOutputSt();//��ȫ����״̬ 1- ������2 - ����
-	Appdata_Xcall.updataTime 	= PrvtPro_getTimestamp();//����ʱ���
-	Appdata_Xcall.battSOCEx 	= PrvtProtCfg_vehicleSOC();//�������ʣ�������0-10000��0%-100%��
+	Appdata_Xcall.srsSt 		= PrvtProtCfg_CrashOutputSt();
+	Appdata_Xcall.updataTime 	= PrvtPro_getTimestamp();
+	Appdata_Xcall.battSOCEx 	= PrvtProtCfg_vehicleSOC();
 	if (Appdata_Xcall.battSOCEx > 10000)
 	{
   		Appdata_Xcall.battSOCEx = 10000;
  	}
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_XCALL_RESP,PP_Xcall_Pack.msgdata,&msgdatalen,\
-									   &PP_xcall[XcallType].packResp.DisBody,&Appdata_Xcall))//���ݱ������Ƿ����
+									   &PP_xcall[XcallType].packResp.DisBody,&Appdata_Xcall))
 	{
 		log_e(LOG_HOZON, "encode error\n");
 		return -1;

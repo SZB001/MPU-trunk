@@ -139,10 +139,10 @@ void PP_rmtCfg_init(void)
 	}
 
 	len = 18;
-	res = cfg_get_user_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);//��ȡvin
+	res = cfg_get_user_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);//vin
 	AppData_rmtCfg.checkReq.vehicleVinlen = 17;
 
-	res = PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//��ȡiccid
+	res = PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//iccid
 	AppData_rmtCfg.checkReq.iccIDlen = 20;
 
 	memcpy(AppData_rmtCfg.checkReq.btMacAddr,"000000000000",strlen("000000000000"));
@@ -246,7 +246,7 @@ static int PP_rmtCfg_do_checksock(PrvtProt_task_t *task)
 
 		return 0;
 	}
-	//�ͷ���Դ
+
 	PP_rmtCfg_reset(&PP_rmtCfg);
 	return -1;
 }
@@ -275,12 +275,12 @@ static int PP_rmtCfg_do_rcvMsg(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 	log_i(LOG_HOZON, "receive remote config message");
 	protocol_dump(LOG_HOZON, "remote_config_message", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
-			(rlen <= 18))//�ж�����֡ͷ����������ݳ��Ȳ���
+			(rlen <= 18))
 	{
 		return 0;
 	}
 	
-	if(rlen > (18 + PP_MSG_DATA_LEN))//�������ݳ��ȳ�������buffer����
+	if(rlen > (18 + PP_MSG_DATA_LEN))
 	{
 		return 0;
 	}
@@ -329,41 +329,39 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 	{
 		case PP_MID_CHECK_CFG_RESP://check remote config response
 		{
-			if(PP_rmtCfg.state.waitSt == PP_RMTCFG_CHECK_WAIT_RESP)//���յ��ظ�
+			if(PP_rmtCfg.state.waitSt == PP_RMTCFG_CHECK_WAIT_RESP)
 			{
-				if((1 == AppData_rmtCfg.checkResp.needUpdate) \
-						/*&& (PP_rmtCfg_strcmp(AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkReq.cfgVersion,32)!=0)*/)
+				if(1 == AppData_rmtCfg.checkResp.needUpdate)
 				{
 					rmtCfg->state.needUpdata = 1;
 				}
 				AppData_rmtCfg.checkResp.needUpdate = 0;
 				rmtCfg->state.waitSt = 0;
-				log_i(LOG_HOZON, "\r\ncheck config req ok\r\n");
+				log_o(LOG_HOZON, "\r\ncheck config req ok\r\n");
 			}
 		}
 		break;
 		case PP_MID_GET_CFG_RESP://get remote config response
 		{
-			if(rmtCfg->state.waitSt == PP_RMTCFG_GET_WAIT_RESP)//���յ��ظ�
+			if(rmtCfg->state.waitSt == PP_RMTCFG_GET_WAIT_RESP)
 			{
 				rmtCfg->state.waitSt = 0;
 
-				log_i(LOG_HOZON, "\r\nget config req ok\r\n");
+				log_o(LOG_HOZON, "\r\nget config req ok\r\n");
 			}
 		}
 		break;
-		case PP_MID_CONN_CFG_REQ://TAP �� TCU �������ø������� TCU ѡ����ʵ�ʱ��ȥ��̨��������
+		case PP_MID_CONN_CFG_REQ:
 		{
 			PP_rmtCfg.state.req 	= 0;
 			PP_rmtCfg.state.reqCnt 	= 0;
 			PP_rmtCfg.state.waitSt  = PP_RMTCFG_WAIT_IDLE;
 			PP_rmtCfg.state.CfgSt 	= PP_RMTCFG_CFG_IDLE;
-			rmtCfg->state.cfgAccept = 1;//�������ø�������
+			rmtCfg->state.cfgAccept = 1;
 			PP_rmtCfg.state.eventid = MsgDataBody.eventId;
 			if(0 == PP_rmtCfg_ConnResp(task,rmtCfg,&MsgDataBody))
 			{
 				idlenode = PP_getIdleNode();
-				//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_RMTCFG;
 				PP_TxInform[idlenode].mid = PP_MID_CONN_CFG_RESP;
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
@@ -372,11 +370,10 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 
 				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
 						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
-				protocol_dump(LOG_HOZON, "cfg_req_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 		}
 		break;
-		case PP_MID_READ_CFG_REQ://TAP �� TCU ����������
+		case PP_MID_READ_CFG_REQ:
 		{
 			memset(AppData_rmtCfg.ReadResp.readreq,0,PP_RMTCFG_SETID_MAX);
 			for(i = 0; i < AppData_rmtCfg.ReadReq.SettingIdlen;i++)
@@ -387,7 +384,6 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 			if(0 == PP_rmtCfg_ReadCfgResp(task,rmtCfg,&MsgDataBody))
 			{
 				idlenode = PP_getIdleNode();
-				//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_RMTCFG;
 				PP_TxInform[idlenode].mid = PP_MID_READ_CFG_RESP;
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
@@ -396,7 +392,6 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 
 				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
 						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
-				protocol_dump(LOG_HOZON, "cfg_read_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 
 			for(i = 0; i < PP_RMTCFG_SETID_MAX;i++)
@@ -430,37 +425,34 @@ static int PP_rmtCfg_do_wait(PrvtProt_task_t *task)
 
 	if(PP_rmtCfg.state.waitSt == PP_RMTCFG_CHECK_WAIT_RESP)
 	{
-		if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//�ȴ���Ӧ��ʱ
+		if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)
 		{
 			log_e(LOG_HOZON, "check cfg response time out");
 			PP_rmtCfg.state.reqCnt = 0;
 			PP_rmtCfg.state.req = 0;
 			PP_rmtCfg.state.waitSt = PP_RMTCFG_WAIT_IDLE;
 			PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
-			//PP_rmtCfg.state.period = tm_get_time() - RMTCFG_DELAY_TIME;
 		}
 	}
 	else if(PP_rmtCfg.state.waitSt == PP_RMTCFG_GET_WAIT_RESP)
 	{
-		 if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//�ȴ���Ӧ��ʱ
+		 if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)
 		 {
 			 log_e(LOG_HOZON, "get cfg response time out");
 			 PP_rmtCfg.state.reqCnt = 0;
 			 PP_rmtCfg.state.req = 0;
 			 PP_rmtCfg.state.waitSt = PP_RMTCFG_WAIT_IDLE;
 			 PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
-			 //PP_rmtCfg.state.period = tm_get_time() - RMTCFG_DELAY_TIME;
 		 }
 	}
 	else if(PP_rmtCfg.state.waitSt == PP_RMTCFG_END_WAIT_SENDRESP)
 	{
-		 if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)//�ȴ���Ӧ��ʱ
+		 if((tm_get_time() - PP_rmtCfg.state.waittime) > PP_RMTCFG_WAIT_TIMEOUT)
 		 {
 			 PP_rmtCfg.state.reqCnt = 0;
 			 PP_rmtCfg.state.req = 0;
 			 PP_rmtCfg.state.waitSt = PP_RMTCFG_WAIT_IDLE;
 			 PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
-			 //PP_rmtCfg.state.period = tm_get_time() - RMTCFG_DELAY_TIME;
 		 }
 	}
 	return -1;
@@ -504,7 +496,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 	{
 		BleGetMac(Mac);
 		PP_rmtCfg_HexToStr(AppData_rmtCfg.checkReq.btMacAddr,Mac,6);
-		log_i(LOG_HOZON, "bluetooth mac = %s\n",AppData_rmtCfg.checkReq.btMacAddr);
+		log_o(LOG_HOZON, "bluetooth mac = %s\n",AppData_rmtCfg.checkReq.btMacAddr);
 	}
 
 	switch(rmtCfg->state.CfgSt)
@@ -518,7 +510,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				{
 					if((tm_get_time() - rmtCfg->state.period) >= RMTCFG_DELAY_TIME)
 					{
-						log_i(LOG_HOZON, "start request remote config\r\n");
+						log_o(LOG_HOZON, "start request remote config\r\n");
 						rmtCfg->state.CfgSt = PP_CHECK_CFG_REQ;
 						rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
 						rmtCfg->state.reqCnt++;
@@ -537,7 +529,6 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 			if(0 == PP_rmtCfg_checkRequest(task,rmtCfg))
 			{
 				idlenode = PP_getIdleNode();
-				//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_RMTCFG;
 				PP_TxInform[idlenode].mid = PP_MID_CHECK_CFG_REQ;
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
@@ -546,10 +537,9 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 
 				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
 						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
-				protocol_dump(LOG_HOZON, "cfg_read_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 
-			rmtCfg->state.waitSt 	= PP_RMTCFG_CHECK_WAIT_RESP;//�ȴ����������������Ӧ
+			rmtCfg->state.waitSt 	= PP_RMTCFG_CHECK_WAIT_RESP;
 			rmtCfg->state.CfgSt 	= PP_CHECK_CFG_RESP;
 			rmtCfg->state.waittime 	= tm_get_time();
 		}
@@ -567,7 +557,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				rmtCfg->state.reqCnt = 0;
 				rmtCfg->state.waitSt = PP_RMTCFG_WAIT_IDLE;
 				rmtCfg->state.CfgSt = PP_RMTCFG_CFG_IDLE;
-				log_i(LOG_HOZON, "noneed updata\n");
+				log_o(LOG_HOZON, "noneed updata\n");
 			}
 		}
 		break;
@@ -577,7 +567,6 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 			if(0 == PP_rmtCfg_getRequest(task,rmtCfg))
 			{
 				idlenode = PP_getIdleNode();
-				//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_RMTCFG;
 				PP_TxInform[idlenode].mid = PP_MID_GET_CFG_REQ;
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
@@ -586,10 +575,9 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 
 				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
 						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
-				protocol_dump(LOG_HOZON, "cfg_read_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 
-			rmtCfg->state.waitSt 	= PP_RMTCFG_GET_WAIT_RESP;//�ȴ�������Ӧ
+			rmtCfg->state.waitSt 	= PP_RMTCFG_GET_WAIT_RESP;
 			rmtCfg->state.CfgSt 	= PP_GET_CFG_RESP;
 			rmtCfg->state.waittime 	= tm_get_time();
 		}
@@ -603,7 +591,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		case PP_RMTCFG_CFG_END://��������
 		{
 			if(AppData_rmtCfg.getResp.result == 1)
-			{//�������ã���֪ͨ�������������״̬
+			{
 				AppData_rmtCfg.getResp.result = 0;
 				memcpy(AppData_rmtCfg.ReadResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion, \
 														  AppData_rmtCfg.checkResp.cfgVersionlen);
@@ -657,7 +645,6 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 			if(0 == PP_rmtCfg_CfgEndRequest(task,rmtCfg))
 			{
 				idlenode = PP_getIdleNode();
-				//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_RMTCFG;
 				PP_TxInform[idlenode].mid = PP_MID_CFG_END;
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
@@ -666,10 +653,9 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 
 				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
 						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
-				protocol_dump(LOG_HOZON, "cfg_read_response", PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen,1);
 			}
 
-			rmtCfg->state.waitSt 	= PP_RMTCFG_END_WAIT_SENDRESP;//�ȴ���Ӧ
+			rmtCfg->state.waitSt 	= PP_RMTCFG_END_WAIT_SENDRESP;
 			rmtCfg->state.waittime 	= tm_get_time();
 		}
 		break;
@@ -715,7 +701,7 @@ static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 	/*appdata*/
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_CHECK_REQ,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//���ݱ������Ƿ����
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))
 	{
 		log_e(LOG_HOZON, "uper error");
 		return -1;
@@ -764,7 +750,7 @@ static int PP_rmtCfg_getRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 	AppData_rmtCfg.getReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_GET_REQ,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//���ݱ������Ƿ����
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))
 	{
 		log_e(LOG_HOZON, "uper error");
 		return -1;
@@ -820,7 +806,7 @@ static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtC
 	AppData_rmtCfg.EndReq.cfgVersionlen = AppData_rmtCfg.checkReq.cfgVersionlen;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_END_REQ,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//���ݱ������Ƿ����
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))
 	{
 		log_e(LOG_HOZON, "uper error");
 		return -1;
@@ -873,7 +859,7 @@ static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,Pr
 	}
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_CONN_RESP,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//���ݱ������Ƿ����
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))
 	{
 		log_e(LOG_HOZON, "uper error");
 		return -1;
@@ -921,7 +907,7 @@ static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg
 	AppData_rmtCfg.ReadResp.result = 1;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_READ_RESP,PP_rmtCfg_Pack.msgdata,&msgdatalen,\
-									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))//���ݱ������Ƿ����
+									   &rmtCfg->pack.DisBody,&AppData_rmtCfg))
 	{
 		log_e(LOG_HOZON, "uper error");
 		return -1;
@@ -1739,7 +1725,7 @@ void getPP_rmtCfg_cfgVersion(char* ver)
 		tempVal |= ((uint32_t)AppData_rmtCfg.checkReq.cfgVersion[4*i+2]) << 8;
 		tempVal |= (uint32_t)AppData_rmtCfg.checkReq.cfgVersion[4*i+3];
 		PP_rmtCfg_ultoa(tempVal,stringVal,10);
-		//log_i(LOG_HOZON, "tempVal[%d] = %d,tempstringVal = %s",i,tempVal,stringVal);
+
 		for(j=0;j<strlen(stringVal);j++)
 		{
 			*ver_tp++ = stringVal[j];

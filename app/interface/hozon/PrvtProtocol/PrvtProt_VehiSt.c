@@ -184,12 +184,12 @@ static int PP_VS_do_rcvMsg(PrvtProt_task_t *task)
 	log_i(LOG_HOZON, "receive vehi status message");
 	protocol_dump(LOG_HOZON, "PRVT_PROT", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
-			(rlen <= 18))//�ж�����֡ͷ����������ݳ��Ȳ���
+			(rlen <= 18))
 	{
 		return 0;
 	}
 	
-	if(rlen > (18 + PP_MSG_DATA_LEN))//�������ݳ��ȳ�������buffer����
+	if(rlen > (18 + PP_MSG_DATA_LEN))
 	{
 		return 0;
 	}
@@ -231,7 +231,7 @@ static void PP_VS_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int 
 
 	switch(MsgDataBody.mID)
 	{
-		case PP_MID_VS_REQ://�յ�tsp��ѯ����
+		case PP_MID_VS_REQ:
 		{
 			PP_rmtVS.state.req = Appdata.VSReq.vehStatusReqType;
 			PP_rmtVS.pack.DisBody.eventId = MsgDataBody.eventId;
@@ -289,7 +289,6 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 			if(0 == PP_VS_VehiStatusResp(task,&PP_rmtVS))
 			{
 				idlenode = PP_getIdleNode();
-				//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_VS;
 				PP_TxInform[idlenode].mid = PP_MID_VS_RESP;
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
@@ -297,7 +296,6 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 				PP_TxInform[idlenode].idleflag = 1;
 
 				SP_data_write(PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,PP_VS_send_cb,&PP_TxInform[idlenode]);
-				protocol_dump(LOG_HOZON, "PP_VS_BASICSTATUS", PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,1);
 			}
 			PP_rmtVS.state.req = PP_VS_NOREQ;
 		}
@@ -308,7 +306,6 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 			if(0 == PP_VS_VehiStatusResp(task,&PP_rmtVS))
 			{
 				idlenode = PP_getIdleNode();
-				//memset(&PP_TxInform[idlenode],0,sizeof(PrvtProt_TxInform_t));
 				PP_TxInform[idlenode].aid = PP_AID_VS;
 				PP_TxInform[idlenode].mid = PP_MID_VS_RESP;
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
@@ -316,7 +313,6 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 				PP_TxInform[idlenode].idleflag = 1;
 
 				SP_data_write(PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,PP_VS_send_cb,&PP_TxInform[idlenode]);
-				protocol_dump(LOG_HOZON, "PP_VS_EXTSTATUS", PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,1);
 			}
 			PP_rmtVS.state.req = PP_VS_NOREQ;
 		}
@@ -357,10 +353,10 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 
 	/*appdata*/
 	PrvtProtcfg_gpsData_t gpsDt;
-	PP_VS_appdata.VSResp.statusTime = PrvtPro_getTimestamp();//0��ʾ����ִ��
+	PP_VS_appdata.VSResp.statusTime = PrvtPro_getTimestamp();
 
-	PP_VS_appdata.VSResp.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();//gps״̬ 0-��Ч��1-��Ч;
-	PP_VS_appdata.VSResp.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();//gpsʱ���:ϵͳʱ��(ͨ��gpsУʱ)
+	PP_VS_appdata.VSResp.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();
+	PP_VS_appdata.VSResp.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();
 
 	PrvtProtCfg_gpsData(&gpsDt);
 
@@ -368,20 +364,20 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	{
 		if(gpsDt.is_north)
 		{
-			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(gpsDt.latitude*10000);//γ�� x 1000000,��GPS�ź���Чʱ��ֵΪ0
+			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(gpsDt.latitude*10000);
 		}
 		else
 		{
-			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//γ�� x 1000000,��GPS�ź���Чʱ��ֵΪ0
+			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));
 		}
 
 		if(gpsDt.is_east)
 		{
-			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(gpsDt.longitude*10000);//���� x 1000000,��GPS�ź���Чʱ��ֵΪ0
+			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(gpsDt.longitude*10000);
 		}
 		else
 		{
-			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//���� x 1000000,��GPS�ź���Чʱ��ֵΪ0
+			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));
 		}
 		log_i(LOG_HOZON, "PP_appData.latitude = %ld",PP_VS_appdata.VSResp.gpsPos.latitude);
 		log_i(LOG_HOZON, "PP_appData.longitude = %ld",PP_VS_appdata.VSResp.gpsPos.longitude);
@@ -391,14 +387,14 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 		PP_VS_appdata.VSResp.gpsPos.latitude  = 0;
 		PP_VS_appdata.VSResp.gpsPos.longitude = 0;
 	}
-	PP_VS_appdata.VSResp.gpsPos.altitude = (long)(gpsDt.height);//�߶ȣ�m��
+	PP_VS_appdata.VSResp.gpsPos.altitude = (long)(gpsDt.height);
 	if(PP_VS_appdata.VSResp.gpsPos.altitude > 10000)
 	{
 		PP_VS_appdata.VSResp.gpsPos.altitude = 10000;
 	}
-	PP_VS_appdata.VSResp.gpsPos.heading = (long)(gpsDt.direction);//��ͷ����Ƕȣ�0Ϊ��������
-	PP_VS_appdata.VSResp.gpsPos.gpsSpeed = (long)(gpsDt.kms*10);//�ٶ� x 10����λkm/h
-	PP_VS_appdata.VSResp.gpsPos.hdop = (long)(gpsDt.hdop*10);//ˮƽ�������� x 10
+	PP_VS_appdata.VSResp.gpsPos.heading = (long)(gpsDt.direction);
+	PP_VS_appdata.VSResp.gpsPos.gpsSpeed = (long)(gpsDt.kms*10);
+	PP_VS_appdata.VSResp.gpsPos.hdop = (long)(gpsDt.hdop*10);
 	if(PP_VS_appdata.VSResp.gpsPos.hdop > 1000)
 	{
 		PP_VS_appdata.VSResp.gpsPos.hdop = 1000;

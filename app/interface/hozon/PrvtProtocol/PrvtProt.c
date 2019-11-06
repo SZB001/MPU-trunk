@@ -151,14 +151,14 @@ int PrvtProt_init(INIT_PHASE phase)
         case INIT_PHASE_INSIDE:
 		{
 			//pp_task.heartbeat.ackFlag = 0;
-			PP_heartbeat.state = 1;//
-			PP_heartbeat.period = PP_HEART_BEAT_TIME;//
+			PP_heartbeat.state = 1;
+			PP_heartbeat.period = PP_HEART_BEAT_TIME;
 			PP_heartbeat.timer = tm_get_time();
 			PP_heartbeat.waitSt = 0;
 			PP_heartbeat.waittime = 0;
 			pp_task.suspend = 0;
-			pp_task.nonce = 0;/* TCP�ỰID ��TSPƽ̨���� */
-			pp_task.version = 0x30;/* ��/С�汾(��TSPƽ̨����)*/
+			pp_task.nonce = 0;
+			pp_task.version = 0x30;
 
 			memset(&PP_PackHeader_HB,0 , sizeof(PrvtProt_pack_Header_t));
 			memset(&PP_HBRateSwitch,0 , sizeof(PP_heartbeatrateswitch_t));
@@ -178,11 +178,11 @@ int PrvtProt_init(INIT_PHASE phase)
         case INIT_PHASE_OUTSIDE:
 		{
 			cfglen = 4;
-			ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, &cfglen);///* ƽ̨ͨ��tboxID��tboxSNӳ�� */
+			ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, &cfglen);
 			PP_PackHeader_HB.tboxid = pp_task.tboxid;
 
 			cfglen = 19;
-			ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN,pp_tboxsn,&cfglen);//��ȡtboxsn
+			ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN,pp_tboxsn,&cfglen);
 
 			PrvtProt_shell_init();
 			PP_ntp_Init();
@@ -384,7 +384,6 @@ static int PrvtPro_do_rcvMsg(PrvtProt_task_t *task)
 		return 0;
 	}
 	PrvtPro_makeUpPack(&RxPack,rcvbuf,rlen);
-	//protocol_dump(LOG_HOZON, "PRVT_PROT after makeUpPack", PP_RxPack.Header.sign, rlen, 0);
 	PrvtPro_RxMsgHandle(task,&RxPack,rlen);
 
 	return 0;
@@ -514,7 +513,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 			}
 			else if((19 == len) && ((2 == rxPack->msgdata[0]) || (1 == rxPack->msgdata[0])))//接收到心跳频率切换请求响应
 			{
-				log_i(LOG_HOZON, "the heartbeat rate switch when to sleep is ok");
+				log_o(LOG_HOZON, "the heartbeat rate switch when to sleep is ok");
 				PP_HBRateSwitch.waitSt = 0;
 				PP_HBRateSwitch.sleepflag = 1;
 				PP_HBRateSwitch.switchsuccessflag = 1;

@@ -607,7 +607,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
 					 break;
 				}
-				/*port ipaddr*///22000
+				/*port ipaddr*/
 				iRet = HzPortAddrCft(sockSt.sgPort, 1,destIP,NULL);//TBOX端口地址配置初始化
 				if(iRet != SOCKPROXY_SG_ADDR_INIT_SUCCESS)
 				{
@@ -751,7 +751,6 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 			if(sockSt.state == PP_CLOSED)
 			{
-				//he=gethostbyname("tboxgw-qa.chehezhi.cn");
 				getPP_rmtCfg_tspAddrPort(sockSt.BDLLinkAddr,&sockSt.BDLPort);
 				if((sockSt.BDLLinkAddr[0] == 0) || (sockSt.BDLPort == 0))
 				{
@@ -778,7 +777,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
 					 break;
 				}
-				/*port ipaddr*///21000
+				/*port ipaddr*/
 				iRet = HzPortAddrCft(sockSt.BDLPort, 1,destIP,NULL);
 				if(iRet != 1010)
 				{
@@ -953,7 +952,7 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
 			}
 		}
 
-		protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_RCV", (uint8_t*)rbuf, rlen, 0);//��ӡ���յ�����
+		protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_RCV", (uint8_t*)rbuf, rlen, 0);
 
 #if SOCKPROXY_SHELL_PROTOCOL
 		while (ret == 0 && rlen > 0)
@@ -974,15 +973,15 @@ static int sockproxy_do_receive(sockproxy_stat_t *state)
 		{
 			case PP_RCV_UNRCV:
 			{
-				sockSt.rcvstep = PP_RCV_IDLE;//���տ���
-				sockSt.rcvlen = 0;//��������֡�ܳ���
-				if((0x23 == rbuf[0]) && (0x23 == rbuf[1]))//��������
+				sockSt.rcvstep = PP_RCV_IDLE;
+				sockSt.rcvlen = 0;
+				if((0x23 == rbuf[0]) && (0x23 == rbuf[1]))
 				{
 					sockSt.rcvType = PP_RCV_GB;
 					sockproxy_gbMakeupMsg((uint8_t*)rbuf,rlen);
 
 				}
-				else if((0x2A == rbuf[0]) && (0x2A == rbuf[1]))//HOZON ��ҵ˽��Э������
+				else if((0x2A == rbuf[0]) && (0x2A == rbuf[1]))
 				{
 					sockSt.rcvType = PP_RCV_PRIV;
 					sockproxy_privMakeupMsg((uint8_t*)rbuf,rlen);
@@ -1032,7 +1031,6 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 	int res = 0;
 	if ((rpt = SP_data_get_pack()) != NULL)
 	{
-		log_i(LOG_HOZON, "start to send report to server");
 		if(rpt->Inform_cb_para != NULL)
 		{
 			PrvtProt_TxInform_t *TxInform_ptr = (PrvtProt_TxInform_t*)(rpt->Inform_cb_para);
@@ -1229,7 +1227,6 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 					if(res != 1260)
 					{
 						log_e(LOG_SOCK_PROXY,"SgHzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
-						//SP_data_ack_pack();
 						pthread_mutex_unlock(&sendmtx);//解锁
 						return -1;
 					}
@@ -1242,7 +1239,6 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 					if(res != 1260)
 					{
 						log_e(LOG_SOCK_PROXY,"HzTboxDataSend error+++++++++++++++iRet[%d] \n", res);
-						//SP_data_ack_pack();
 						pthread_mutex_unlock(&sendmtx);//解锁
 						return -1;
 					}
@@ -1389,7 +1385,7 @@ static void sockproxy_gbMakeupMsg(uint8_t *data,int len)
 					{
 						sockSt.rcvstep = PP_GB_RCV_DATA;
 					}
-					else//���ݳ������
+					else
 					{
 						sockSt.rcvstep = PP_RCV_IDLE;
 						//sockSt.rcvlen = 0;
@@ -1465,7 +1461,7 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 				{
 					sockSt.datalen = (((long)sockSt.rcvbuf[10]) << 24) + (((long)sockSt.rcvbuf[11]) << 16) + \
 									 (((long)sockSt.rcvbuf[12]) << 8) + ((long)sockSt.rcvbuf[13]);
-					if(sockSt.datalen == 18)//˵��û��message data
+					if(sockSt.datalen == 18)//message data length
 					{
 						if(WrSockproxyData_Queue(SP_PRIV,sockSt.rcvbuf,sockSt.rcvlen) < 0)
 						{
@@ -1476,7 +1472,7 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 						protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);//��ӡ˽��Э����յ�����
 
 					}
-					else if(sockSt.datalen > SOCK_PROXY_RCVLEN)//���ݳ������
+					else if(sockSt.datalen > SOCK_PROXY_RCVLEN)
 					{
 						sockSt.rcvstep = PP_RCV_IDLE;
 						//sockSt.rcvlen = 0;
@@ -1501,7 +1497,7 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 					}
 					sockSt.rcvstep = PP_RCV_IDLE;
 					sockSt.rcvType = PP_RCV_UNRCV;
-					protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);//��ӡ˽��Э����յ�����
+					//protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);
 				}
 			}
 			break;
