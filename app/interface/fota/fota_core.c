@@ -15,8 +15,16 @@
 #include "xml.h"
 
 extern int fota_uds_open(int port, int fid, int rid, int pid);
-extern int fota_uds_get_version_gw(uint8_t *s_ver, int *s_siz, uint8_t *h_ver, int *h_siz, uint8_t *sn, int *sn_siz);
-extern int fota_uds_get_version(uint8_t *s_ver, int *s_siz, uint8_t *h_ver, int *h_siz, uint8_t *sn, int *sn_siz);
+extern int fota_uds_get_version_gw(uint8_t *s_ver,           int *s_siz, 
+                                         uint8_t *h_ver,    int *h_siz, 
+                                         uint8_t *sn,       int *sn_siz,
+                                         uint8_t *partnum,  int *partnum_siz,
+                                         uint8_t *supplier, int *supplier_siz);
+extern int fota_uds_get_version(uint8_t *s_ver,           int *s_siz, 
+                                      uint8_t *h_ver,    int *h_siz, 
+                                      uint8_t *sn,       int *sn_siz,
+                                      uint8_t *partnum,  int *partnum_siz,
+                                      uint8_t *supplier, int *supplier_siz);
 extern void fota_uds_close(void);
 extern int fota_uds_req_download(uint32_t addr, int size);
 extern int fota_uds_trans_data(uint8_t *data, int size);
@@ -68,9 +76,11 @@ static ECU_NAME_2_UDSID_t s_atECUName2UDSID[] = {{"vcu",  0x7E2, 0x7EA, 0x7DF},
                                                  {"acu",  0x746, 0x756, 0x7DF},
                                                  {"plg",  0x764, 0x774, 0x7DF},};
 
-int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz, 
-                                               char *h_ver, int *h_siz,
-                                               char *sn,    int *sn_siz)
+int fota_ecu_get_ver(unsigned char *name, char *s_ver,    int *s_siz, 
+                                               char *h_ver,    int *h_siz,
+                                               char *sn,       int *sn_siz,
+                                               char *partnum,  int *partnum_siz,
+                                               char *supplier, int *supplier_siz)
 {
     if (memcmp(name, "gw", 2) == 0)
     {
@@ -80,7 +90,11 @@ int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz,
             return -1;
         }
 
-        fota_uds_get_version_gw((uint8_t *)s_ver, s_siz, (uint8_t *)h_ver, h_siz, (uint8_t *)sn, sn_siz);
+        fota_uds_get_version_gw((uint8_t *)s_ver,    s_siz, 
+                                (uint8_t *)h_ver,    h_siz, 
+                                (uint8_t *)sn,       sn_siz,
+                                (uint8_t *)partnum,  partnum_siz,
+                                (uint8_t *)supplier, supplier_siz);
     }
     else
     {
@@ -108,7 +122,11 @@ int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz,
                 return -1;
             }
             
-            fota_uds_get_version((uint8_t *)s_ver, s_siz, (uint8_t *)h_ver, h_siz, (uint8_t *)sn, sn_siz);
+            fota_uds_get_version((uint8_t *)s_ver,    s_siz, 
+                                 (uint8_t *)h_ver,    h_siz, 
+                                 (uint8_t *)sn,       sn_siz,
+                                 (uint8_t *)partnum,  partnum_siz,
+                                 (uint8_t *)supplier, supplier_siz);
         }
         else
         {
@@ -309,7 +327,10 @@ static int fota_ecu_upgrade_GW(fota_ecu_t *ecu, fota_ver_t *ver)
         return -1;
     }
 
-    //fota_uds_write_data_by_identifier((uint8_t *)"\x74\x02", (uint8_t *)&ecu->gw_sa, 1);
+    if (0x62 == ecu->gw_sa)
+    {
+        fota_uds_write_data_by_identifier((uint8_t *)"\x74\x02", (uint8_t *)&ecu->gw_sa, 1);
+    }
 
     //if (fota_uds_write_data_by_identifier((uint8_t *)"\x74\x03", (uint8_t *)&ecu->gw_sa, 1) != 0)
     //{

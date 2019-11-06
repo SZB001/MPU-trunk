@@ -479,13 +479,14 @@ void uds_proxy(uint8_t *msg, uint16_t len)
                     else
                     {
                         uds_set_timer(&uds_client, P2EXT_CLIENT, 0);
-                            
+                        
+                        if (uds_client_cb)
+                        {
+                            uds_client_cb(&uds_client, msg_id, can_id,(char *)msg, len);
+                        }
                     }
                     
-                    if (uds_client_cb)
-                    {
-                        uds_client_cb(&uds_client, msg_id, can_id,(char *)msg, len);
-                    }
+
                     
                 }
             }

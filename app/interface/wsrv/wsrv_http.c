@@ -23,6 +23,8 @@ author        chenyin
 #include "../../base/dev/dev_mcu_cfg.h"
 #include "hozon_PP_api.h"
 #include "gb32960_api.h"
+#include "uds_did.h"
+#include "../hozon/PrvtProtocol/PrvtProt.h"
 
 extern timer_t restart_da_timer;
 static unsigned int g_u32WsrvWakeTime = 0;
@@ -45,15 +47,24 @@ static unsigned int g_u32WsrvWakeTime = 0;
 #define WSRV_CMD_MODEOUT            "modeout"
 #define WSRV_CMD_MODEOUTRESULT      "modeoutresult"
 
+#define WSRV_CMD_UPGRADEMODEIN      "upgrademodein"
+#define WSRV_CMD_UPGRADEMODEOUT     "upgrademodeout"
+#define WSRV_CMD_WAKE               "wake"
+
+
 
 /* fill response body */
-#define WSRV_VERSION_BODY           "{\"%s_sv\":\"%s\",\"%s_hv\":\"%s\",\"%s_sn\":\"%s\"}"
+#define WSRV_VERSION_BODY           "{\"%s_sv\":\"%s\",\"%s_hv\":\"%s\",\"%s_sn\":\"%s\",\"%s_partnum\":\"%s\",\"%s_supplier\":\"%s\"}"
 #define WSRV_GPS_BODY               "{\"la\":%lf,\"lo\":%lf}"
 #define WSRV_VIN_BODY               "{\"vin\":\"%s\"}"
 #define WSRV_ECURESULT_BODY         "{\"name\":\"%s\",\"result\":\"%s\"}"
 #define WSRV_RTC_BODY               "{\"t\":\"%04d%02d%02dT%02d%02d%02dZ\"}"
 #define WSRV_MODEINRESULT_BODY      "{\"r\":%d}"
 #define WSRV_MODEOUTRESULT_BODY     "{\"r\":%d}"
+
+#define WSRV_UPGRADEMODEIN_BODY     "{\"r\":%d}"
+#define WSRV_UPGRADEMODEOUT_BODY    "{\"r\":%d}"
+#define WSRV_WAKE_BODY              "{\"r\":%d}"
 
 
 /* web server http */
@@ -84,9 +95,14 @@ typedef enum
 #define RSP_500_HEADER  "HTTP/1.1 500 Server Internal Error\r\nServer: tbox_webserver/Linux\r\nDate: %sContent-Type: text/html\r\nContent-Length: %d\r\n\r\n"
 #define RSP_500_HTML    "<html><head></head><body>500 Server Internal Error<br/>please check your network!</body></html>\r\n"
 
-extern int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz, char *h_ver, int *h_siz, char *sn, int *sn_siz);
+extern int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz, 
+                                                      char *h_ver, int *h_siz, 
+                                                      char *sn, int *sn_siz,
+                                                      char *partnum,  int *partnum_siz,
+                                                      char *supplier, int *supplier_siz);
 extern int PP_send_virtual_on_to_mcu(unsigned char on);
 extern unsigned char PrvtProt_SignParse_OtaFailSts(void);
+extern void PrvtProt_gettboxsn(char *tboxsn);
 
 static int wsrv_socket_recv(int fd, unsigned char *buf, int len)
 {
@@ -297,9 +313,6 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     int ret = 0;
 
     // TODO
-    unsigned char fw_ver[64] = {0};
-    char mpu_ver[64] = {0};
-    unsigned char mcu_run_ver[64] = {0};
     unsigned char gl_vin[18] = {0};
     //unsigned int t_sn; // tbox sn
     unsigned char file_path[64] = {0};
@@ -307,11 +320,14 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     unsigned int cfg_len;
     char s_ver[64] = {0};
     char h_ver[64] = {0};
-    char sn[64] = {0};
-    unsigned int tbox_sn = 0;
+    char sn[19] = {0};
+    char partnum[64] = {0};
+    char supplier[64] = {0};
     int s_len;
     int h_len;
     int sn_len;
+    int partnum_len;
+    int supplier_len;
     unsigned int timer_wake;
     RTCTIME abstime;
 
@@ -324,26 +340,35 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
         if (0 == strcmp(dev_buf, "tbox"))
         {
-            ret = upg_get_fw_ver(fw_ver, sizeof(fw_ver));
-            strcpy(mpu_ver, dev_get_version());
-            ret |= upg_get_mcu_run_ver(mcu_run_ver, sizeof(mcu_run_ver));
-            cfg_get_para(CFG_ITEM_SN_NUM, (unsigned char *)&tbox_sn, (unsigned int *)&sn_len);
+            memcpy(s_ver, DID_F1B0_SW_UPGRADE_VER, sizeof(DID_F1B0_SW_UPGRADE_VER));
+            memcpy(h_ver, DID_F191_HW_VERSION, sizeof(DID_F191_HW_VERSION));
+            PrvtProt_gettboxsn((char *)sn);
+            memcpy(partnum, DID_F187_SPARE_PART_NO, sizeof(DID_F187_SPARE_PART_NO));
+            memcpy(supplier, DID_F18A_SUPPLIER_IDENTIFIER, sizeof(DID_F18A_SUPPLIER_IDENTIFIER));
 
             if (0 == ret)
             {
-                // TODO: make the rules that return the ver info
-                memcpy(tmp_buf, mpu_ver, 23);
-                memcpy(tmp_buf + 23, mcu_run_ver, 23);
-                sprintf(body_buf, "{\"%s_sv\":\"%s\",\"%s_hv\":\"%s\",\"%s_sn\":\"%d\"}", 
-                                    dev_buf, tmp_buf, dev_buf, fw_ver, dev_buf, tbox_sn);
+                sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, 
+                                                     dev_buf, h_ver, 
+                                                     dev_buf, sn,
+                                                     dev_buf, partnum,
+                                                     dev_buf, supplier);
             }
         }
         else
         {
             log_o(LOG_WSRV, "OTA Get %s Version", dev_buf);
         
-            ret = fota_ecu_get_ver((unsigned char *)dev_buf, s_ver, &s_len, h_ver, &h_len, sn, &sn_len);
-            sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, dev_buf,  h_ver, dev_buf, sn);
+            ret = fota_ecu_get_ver((unsigned char *)dev_buf, s_ver,    &s_len, 
+                                                             h_ver,    &h_len, 
+                                                             sn,       &sn_len, 
+                                                             partnum,  &partnum_len, 
+                                                             supplier, &supplier_len);
+            sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, 
+                                                 dev_buf, h_ver, 
+                                                 dev_buf, sn,
+                                                 dev_buf, partnum,
+                                                 dev_buf, supplier);
         }
 
         if (ret < 0)
@@ -462,12 +487,12 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             if(0 != timer_wake)
             {
                 g_u32WsrvWakeTime = timer_wake;
-                ret = scom_tl_send_frame(SCOM_TL_CMD_WAKE_TIME, SCOM_TL_SINGLE_FRAME, 0,
-                         (unsigned char *)&timer_wake, sizeof(timer_wake));
-                if (0 != ret)
-                {
-                    log_e(LOG_PM, "set timer wake failed");
-                }
+                //ret = scom_tl_send_frame(SCOM_TL_CMD_WAKE_TIME, SCOM_TL_SINGLE_FRAME, 0,
+                //         (unsigned char *)&timer_wake, sizeof(timer_wake));
+                //if (0 != ret)
+                //{
+                //    log_e(LOG_PM, "set timer wake failed");
+                //}
             }
             else
             {
@@ -510,7 +535,6 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_MODEIN))
     {
-        unsigned char u8Loop = 0;
         //(0:runing 1:listen 2:sleep 3:auto)
         //mode = 0;
     
@@ -520,10 +544,6 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
         if(0 == SetPP_rmtCtrl_FOTA_startInform())
         {
-            for(u8Loop = 0; u8Loop < 10; u8Loop++)
-            {
-                PP_send_virtual_on_to_mcu(1);
-            }
             s_u8BDCMAuthResult = 0;
             log_i(LOG_WSRV, "Mode In Wait BDCM Auth");
         }
@@ -652,6 +672,38 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             log_i(LOG_WSRV, "Mode Out BDCM Auth Fail");
         }
 
+        set_normal_information(rsp_buf, body_buf, MIME_JSON);
+    }
+    else if (0 == strcmp(cmd_buf, WSRV_CMD_UPGRADEMODEIN))
+    {
+        log_i(LOG_WSRV, "Enable MCU Do Not Reset MPU");
+        
+        upg_set_status( DEV_UPG_BUSY );
+    
+        sprintf(body_buf, WSRV_UPGRADEMODEIN_BODY, 1);
+        set_normal_information(rsp_buf, body_buf, MIME_JSON);
+    }
+    else if (0 == strcmp(cmd_buf, WSRV_CMD_UPGRADEMODEOUT))
+    {
+        log_i(LOG_WSRV, "Disable MCU Do Not Reset MPU");
+
+        upg_set_status( DEV_UPG_IDLE );
+    
+        sprintf(body_buf, WSRV_UPGRADEMODEOUT_BODY, 1);
+        set_normal_information(rsp_buf, body_buf, MIME_JSON);
+    }
+    else if (0 == strcmp(cmd_buf, WSRV_CMD_WAKE))
+    {
+        unsigned char u8Loop = 0;
+
+        log_i(LOG_WSRV, "Keep TBOX Alive And Let Vehicle Alive");
+        
+        for(u8Loop = 0; u8Loop < 10; u8Loop++)
+        {
+            PP_send_virtual_on_to_mcu(1);
+        }
+    
+        sprintf(body_buf, WSRV_WAKE_BODY, 1);
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }
     else
