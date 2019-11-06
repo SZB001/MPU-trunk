@@ -482,7 +482,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		rmtCtrl_Stpara.eventid = PP_rmtCtrl.eventid;
 		rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 		rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
-		rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_TIMEOUT;
+		rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_INSTRTIMEOUT;
 		PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);	
 		return ;
 	}

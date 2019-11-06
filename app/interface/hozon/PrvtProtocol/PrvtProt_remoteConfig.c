@@ -617,6 +617,12 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 						rmtCfg->state.apn1certaddrchangeflag = 1;
 					}
 
+					if(0 != strcmp((const char*)AppData_rmtCfg.ReadResp.APN1.tspSms, \
+									(const char*)AppData_rmtCfg.getResp.APN1.tspSms))
+					{
+						rmtCfg->state.tspSMSchangeflag = 1;
+					}
+
 					memcpy(&(AppData_rmtCfg.ReadResp.APN1),&(AppData_rmtCfg.getResp.APN1),sizeof(App_rmtCfg_APN1_t));
 				}
 
@@ -1451,7 +1457,8 @@ uint8_t PP_rmtCfg_getIccid(uint8_t* iccid)
 * 下发配置
 */
 void PP_rmtCfg_settbox(void)
-{	
+{
+	int ret;	
 	//FICMConfigSettings
 	if(AppData_rmtCfg.ReadResp.FICM.ficmConfigValid == 1)
 	{
@@ -1487,6 +1494,15 @@ void PP_rmtCfg_settbox(void)
 				(char*)AppData_rmtCfg.ReadResp.APN1.certPort);
 	}
 
+	if(PP_rmtCfg.state.tspSMSchangeflag)
+	{
+		PP_rmtCfg.state.tspSMSchangeflag = 0;
+		ret = cfg_set_para(CFG_ITEM_WHITE_LIST, (unsigned char *)AppData_rmtCfg.ReadResp.APN1.tspSms, 512);
+		if (ret != 0)
+		{
+			log_e(LOG_HOZON,"set whitelist failed,ret=%d\r\n", ret);
+		}
+	}
 
 	//APN2ConfigSettings APN2
 	if(AppData_rmtCfg.ReadResp.APN2.apn2ConfigValid == 1)

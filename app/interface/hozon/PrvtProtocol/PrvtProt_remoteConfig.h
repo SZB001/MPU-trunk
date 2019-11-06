@@ -82,6 +82,7 @@ typedef struct
 	long	expTime;
 	char	apn1tspaddrchangedflag;
 	char	apn1certaddrchangeflag;
+	char	tspSMSchangeflag;
 }__attribute__((packed))  PrvtProt_rmtCfgSt_t; /*remote config�ṹ��*/
 
 /***********************************
