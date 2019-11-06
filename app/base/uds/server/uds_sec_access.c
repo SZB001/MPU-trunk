@@ -59,7 +59,7 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
 {
     static uint8_t is_seed_sent = SEED_NOT_SENT;/*是否已发送种子*/
     static uint8_t Att_Cnt = 0;/*尝试次数*/
-    static uint32_t time = 0;
+    static long long time = 0;
     static uint8_t sub_function = 0;/*保存的子功能*/
     static uint8_t counter = 0;/* 生成随机种子次数 */
     static uint16_t seed = 0;
@@ -69,7 +69,7 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
 
     uint8_t  Ar_u8RePDU_DATA[10], res_len = 0;
 
-    uint32_t  current_time = tm_get_time() / 1000;/* 当前时间 */
+    long long  current_time = tm_get_time();/* 当前时间 */
 
 
     /* 请求长度判断 */
@@ -118,7 +118,7 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
                 {
 
                     /* Delay expired */
-                    if ((current_time - time) > 10) // 10S
+                    if ((current_time - time) > 10 * 1000) // 10S
                     {
                         times_satisfy_delay++;
                         
@@ -257,7 +257,7 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
                                 Att_Cnt++;
 
                                 /* Start Delay_Timer for sub-function xx (if applicable) */
-                                time = tm_get_time() / 1000;
+                                time = tm_get_time();
                                 times_satisfy_delay = 0;
 
                                 /* Transmit negative response NRC 0x36. */
@@ -365,7 +365,7 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
                     else
                     {
                         /* Delay expired */
-                        if ((current_time - time) > 10) // 10S
+                        if ((current_time - time) > 10 * 1000) // 10S
                         {
                             times_satisfy_delay++;
                         
@@ -492,7 +492,7 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
                                 Att_Cnt++;
 
                                 /* Start Delay_Timer for sub-function xx (if applicable). */
-                                time = tm_get_time() / 1000;
+                                time = tm_get_time();
                                 times_satisfy_delay = 0;
 
                                 /* Transmit negative response NRC 0x36. */

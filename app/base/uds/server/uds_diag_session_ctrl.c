@@ -40,7 +40,7 @@ void UDS_SRV_DiagSessionCtrl(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU
             {
                 Set_Seesion_Extend();
                 Clear_SecurityAccess();
-                UDS_SetDTCOn();
+                //UDS_SetDTCOn();
             }
             else
             {

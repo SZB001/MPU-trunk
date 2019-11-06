@@ -7,8 +7,6 @@
 #define DID_F1B0_SW_FIXED_VER "00.05.03"
 #define DID_F1B0_SW_UPGRADE_VER "00.05.03"
 
-#define DID_F18C_SN "TEP305010A630A0001"
-
 #define DID_F191_HW_VERSION "H1.11"
 
 int uds_did_get_wakup_src(unsigned char *did, unsigned int len);

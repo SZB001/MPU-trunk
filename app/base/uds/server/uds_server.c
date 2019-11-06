@@ -321,7 +321,7 @@ void uds_server_proc(UDS_T *uds, unsigned int can_id, unsigned char *pdu_data, u
     }
     else
     {
-        uds_negative_response(uds, pdu_data[0], NRC_ConditionsNotCorrect);
+        //uds_negative_response(uds, pdu_data[0], NRC_ConditionsNotCorrect);
         return ;
     }
 
