@@ -584,7 +584,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 			PP_rmtACCtrl.state.req = 1;
 			PP_rmtACCtrl.state.bookingSt = 1;//预约
 			PP_rmtACCtrl.CtrlPara.bookingId = PP_rmtac_AppointBook[i].id; //ID
-			PP_rmtACCtrl.pack.DisBody.eventId = PP_rmtac_AppointBook[i].eventId; //eventid
+			PP_rmtACCtrl.pack.DisBody.eventId = 0; //eventid
 			PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
 			PP_rmtACCtrl.state.style   = RMTCTRL_TBOX;
 			acc_requestpower_flag = 1;  //预约开空调时间到，请求上高压电
