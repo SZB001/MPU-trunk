@@ -414,7 +414,7 @@ int clbt_cfg_dump_para(void )
     shellprintf(" %-32s :","bluetooth mac");
     for(k = 0; k < 6; k++)
     {	
-        shellprintf("%u",*bufftp);
+        shellprintf("%x",*bufftp);
         bufftp++;
     }
     shellprintf("\r\n");
