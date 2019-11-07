@@ -294,7 +294,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
 				PP_TxInform[idlenode].idleflag = 1;
-
+				PP_TxInform[idlenode].description = "vehi status";
 				SP_data_write(PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,PP_VS_send_cb,&PP_TxInform[idlenode]);
 			}
 			PP_rmtVS.state.req = PP_VS_NOREQ;
@@ -311,7 +311,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
 				PP_TxInform[idlenode].idleflag = 1;
-
+				PP_TxInform[idlenode].description = "vehi status etx";
 				SP_data_write(PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,PP_VS_send_cb,&PP_TxInform[idlenode]);
 			}
 			PP_rmtVS.state.req = PP_VS_NOREQ;

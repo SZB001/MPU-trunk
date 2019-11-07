@@ -1400,7 +1400,6 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlHUbookingResp.rvcReqHours 	= CtrlSt_para->rvcReqHours;
 			App_rmtCtrl.CtrlHUbookingResp.rvcReqMin 	= CtrlSt_para->rvcReqMin;
 			App_rmtCtrl.CtrlHUbookingResp.rvcReqEq 		= CtrlSt_para->rvcReqEq;
-			//memcpy(App_rmtCtrl.CtrlHUbookingResp.rvcReqCycle,CtrlSt_para->rvcReqCycle,8);
 			App_rmtCtrl.CtrlHUbookingResp.rvcReqCycle = CtrlSt_para->rvcReqCycle;
 			App_rmtCtrl.CtrlHUbookingResp.rvcReqCyclelen = 1;
 			App_rmtCtrl.CtrlHUbookingResp.bookingId = CtrlSt_para->bookingId;
@@ -1426,11 +1425,9 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 	rmtCtrl_TxInform[i].eventtime = tm_get_time();
 	rmtCtrl_TxInform[i].pakgtype = PP_TXPAKG_CONTINUE;
 	rmtCtrl_TxInform[i].idleflag = 1;
-
+	rmtCtrl_TxInform[i].description = "remote vehi control response";
 	SP_data_write(PP_rmtCtrl_Pack.Header.sign,PP_rmtCtrl_Pack.totallen,PP_rmtCtrl_send_cb,&rmtCtrl_TxInform[i]);
 
-	protocol_dump(LOG_HOZON, "get_remote_control_response", PP_rmtCtrl_Pack.Header.sign, \
-					18 + msgdatalen,1);
 	return res;
 
 }

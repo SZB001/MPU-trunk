@@ -326,7 +326,7 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
 			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 			PP_TxInform[idlenode].idleflag = 1;
-
+			PP_TxInform[idlenode].description = "ecall";
 			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
 		}
 	}
@@ -343,7 +343,7 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
 			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 			PP_TxInform[idlenode].idleflag = 1;
-
+			PP_TxInform[idlenode].description = "bcall";
 			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
 		}
 	}
@@ -360,7 +360,7 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
 			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 			PP_TxInform[idlenode].idleflag = 1;
-
+			PP_TxInform[idlenode].description = "icall";
 			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
 		}
 	}
@@ -377,7 +377,7 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 			PP_TxInform[idlenode].mid = PP_MID_XCALL_RESP;
 			PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 			PP_TxInform[idlenode].idleflag = 1;
-
+			PP_TxInform[idlenode].description = "vivo detection";
 			SP_data_write(PP_Xcall_Pack.Header.sign,PP_Xcall_Pack.totallen,PP_xcall_send_cb,&PP_TxInform[idlenode]);
 		}
 	}

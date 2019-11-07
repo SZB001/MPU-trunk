@@ -653,6 +653,7 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 
 		HB_TxInform.pakgtype = PP_TXPAKG_SIGTRIG;
 		HB_TxInform.eventtime = tm_get_time();
+		HB_TxInform.description = "heartbeat";
 		SP_data_write(pack_Header.sign,18,PP_HB_send_cb,&HB_TxInform);
 
 		PP_heartbeat.timer = tm_get_time();
@@ -729,6 +730,7 @@ static int PrvtProt_HBSPackage(PrvtProt_task_t *task,unsigned char type)
 
 	HBRS_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
 	HBRS_TxInform.eventtime = tm_get_time();
+	HBRS_TxInform.description = "frequency switching message";
 	SP_data_write(heartbeatrateswitch.Header.sign,19,PP_HBRS_send_cb,&HBRS_TxInform);
 
 	return 0;

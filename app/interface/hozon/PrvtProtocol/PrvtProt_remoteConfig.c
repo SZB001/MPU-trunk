@@ -367,7 +367,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
 				PP_TxInform[idlenode].idleflag = 1;
-
+				PP_TxInform[idlenode].description = "resp of cfg req";
 				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
 						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
 			}
@@ -389,7 +389,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
 				PP_TxInform[idlenode].idleflag = 1;
-
+				PP_TxInform[idlenode].description = "resp of cfg read";
 				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
 						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
 			}
@@ -534,7 +534,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
 				PP_TxInform[idlenode].idleflag = 1;
-
+				PP_TxInform[idlenode].description = "check cfg req";
 				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
 						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
 			}
@@ -572,7 +572,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
 				PP_TxInform[idlenode].idleflag = 1;
-
+				PP_TxInform[idlenode].description = "get cfg req";
 				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
 						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
 			}
@@ -650,7 +650,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
 				PP_TxInform[idlenode].eventtime = tm_get_time();
 				PP_TxInform[idlenode].idleflag = 1;
-
+				PP_TxInform[idlenode].description = "cfg end";
 				SP_data_write(PP_rmtCfg_Pack.Header.sign,PP_rmtCfg_Pack.totallen, \
 						PP_rmtCfg_send_cb,&PP_TxInform[idlenode]);
 			}

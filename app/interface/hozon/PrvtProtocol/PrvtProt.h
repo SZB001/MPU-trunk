@@ -250,11 +250,12 @@ typedef struct
 	uint8_t idleflag;
 	int aid;
 	int mid;
-	char pakgtype;//��������:1-�����ͣ���������ֱ�����ͳɹ�����2-���δ����ͣ�����ʧ�ܶ�������3-����ʱЧ�ԣ�����ʧ�ܶ�����ͬʱ���ľ���ʱЧ�ԣ�
-	uint64_t eventtime;//�¼�����ʱ��ʱ��
-	char successflg;//���ķ�����ɱ�־��-1 - ʧ�ܣ�1 - �ɹ���Ĭ��0
+	char pakgtype;//发送报文的类型：周期还是单次
+	uint64_t eventtime;//发送事件的时间
+	char successflg;//发送成功标志
 	uint8_t failresion;
-	uint64_t txfailtime;//����ʧ�ܵ�ʱ��
+	uint64_t txfailtime;//发送失败时间
+	char *description;
 }PrvtProt_TxInform_t; /*�ṹ��*/
 
 /******union definitions*****/

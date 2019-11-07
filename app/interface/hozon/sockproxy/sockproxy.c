@@ -1035,6 +1035,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 		{
 			PrvtProt_TxInform_t *TxInform_ptr = (PrvtProt_TxInform_t*)(rpt->Inform_cb_para);
 			pakgtype = TxInform_ptr->pakgtype;
+			log_i(LOG_HOZON, "send %s to tsp\n",TxInform_ptr->description);
 			switch(pakgtype)
 			{
 				case PP_TXPAKG_SIGTIME://����ʱЧ��
@@ -1042,7 +1043,6 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 					if((tm_get_time() - TxInform_ptr->eventtime) < SOCK_TXPAKG_OUTOFTIME)//����δ����
 					{
 						res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
-						//protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
 						if (res < 0)
 						{
 							log_e(LOG_HOZON, "socket send error, reset protocol");
@@ -1085,7 +1085,6 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 				case PP_TXPAKG_SIGTRIG:
 				{
 					res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
-					//protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
 					if (res < 0)
 					{
 						log_e(LOG_HOZON, "socket send error, reset protocol\n");
@@ -1125,7 +1124,6 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 				case PP_TXPAKG_CONTINUE:
 				{
 					res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
-					//protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
 					if (res < 0)
 					{
 						log_e(LOG_HOZON, "socket send error, reset protocol");
@@ -1162,7 +1160,6 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 		else
 		{
 			res = sockproxy_MsgSend(rpt->msgdata, rpt->msglen, SP_data_ack_pack);
-			//protocol_dump(LOG_HOZON, "send data to tsp", rpt->msgdata, rpt->msglen, 1);
 			if (res < 0)
 			{
 				log_e(LOG_HOZON, "socket send error, reset protocol");
@@ -1207,11 +1204,11 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 	{
 		if((sockSt.state == PP_OPENED) || (sockSt.state == PP_CLOSE_WAIT))
 		{
-			protocol_dump(LOG_HOZON, "send data to tsp", msg, len, 1);
+			protocol_dump(LOG_HOZON, "sending data", msg, len, 1);
 			if(!sockSt.pkiEnFlag)
 			{
 				res = sock_send(sockSt.socket, msg, len, sync);
-				if((res > 0) && (res != len))//ʵ�ʷ��ͳ�ȥ�����ݸ���Ҫ���͵����ݲ�һ��
+				if((res > 0) && (res != len))
 				{
 					res = 0;
 				}
@@ -1469,7 +1466,7 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 						}
 						sockSt.rcvstep = PP_RCV_IDLE;
 						sockSt.rcvType = PP_RCV_UNRCV;
-						protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);//��ӡ˽��Э����յ�����
+						//protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);//��ӡ˽��Э����յ�����
 
 					}
 					else if(sockSt.datalen > SOCK_PROXY_RCVLEN)

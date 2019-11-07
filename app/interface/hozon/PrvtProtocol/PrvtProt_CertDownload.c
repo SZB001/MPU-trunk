@@ -1360,15 +1360,12 @@ static int PP_CertDL_CertRenewReq(PrvtProt_task_t *task,PP_CertUpdata_t *CertUpd
 	PP_Certupdata_pack.Header.msglen = PrvtPro_BSEndianReverse((long)PP_Certupdata_pack.totallen);
 
 	i = PP_CertDL_getIdleNode();
-	//memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	CertDL_TxInform[i].mid = CertUpdata->para.mid;
 	CertDL_TxInform[i].eventtime = tm_get_time();
 	CertDL_TxInform[i].pakgtype = PP_TXPAKG_SIGTIME;
 	CertDL_TxInform[i].idleflag = 1;
-
+	CertDL_TxInform[i].description = "cert renew req";
 	SP_data_write(PP_Certupdata_pack.Header.sign,PP_Certupdata_pack.totallen,PP_CertDL_send_cb,&CertDL_TxInform[i]);
-	//protocol_dump(LOG_HOZON, "Cert_updata_request", PP_Certupdata_pack.Header.sign,PP_Certupdata_pack.totallen,1);
-
 	return 1;
 }
 
@@ -1416,15 +1413,12 @@ static int PP_CertDL_RevoListRenewReq(PrvtProt_task_t *task,PP_CertRevoList_t *C
 	PP_CertRevoList_pack.Header.msglen = PrvtPro_BSEndianReverse((long)PP_CertRevoList_pack.totallen);
 
 	i = PP_CertDL_getIdleNode();
-	//memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	CertDL_TxInform[i].mid = CertRevoList->para.mid;
 	CertDL_TxInform[i].eventtime = tm_get_time();
 	CertDL_TxInform[i].pakgtype = PP_TXPAKG_SIGTIME;
 	CertDL_TxInform[i].idleflag = 1;
-
+	CertDL_TxInform[i].description = "revoList renew req";
 	SP_data_write(PP_CertRevoList_pack.Header.sign,PP_CertRevoList_pack.totallen,PP_CertDL_send_cb,&CertDL_TxInform[i]);
-	//protocol_dump(LOG_HOZON, "CertDownload_request", PP_CertRevoList_pack.Header.sign,PP_CertRevoList_pack.totallen,1);
-
 	return 1;
 }
 
@@ -1478,16 +1472,14 @@ static int PP_CertDL_CertStatus(PrvtProt_task_t *task,PP_CertificateSt_t *Certif
 	PP_CertEn_pack.Header.msglen = PrvtPro_BSEndianReverse((long)PP_CertEn_pack.totallen);
 
 	i = PP_CertDL_getIdleNode();
-	//memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	CertDL_TxInform[i].mid = CertificateSt->para.mid;
 	CertDL_TxInform[i].eventtime = tm_get_time();
 	CertDL_TxInform[i].pakgtype = CertificateSt->para.pakgtype;
 	CertDL_TxInform[i].aid = CertificateSt->para.middatatype;
 	CertDL_TxInform[i].idleflag = 1;
-	log_i(LOG_HOZON, "CertificateSt[%d]->aid = %d\n",i,CertificateSt->para.middatatype);
+	CertDL_TxInform[i].description = "cert status inform";
 
 	SP_data_write(PP_CertEn_pack.Header.sign,PP_CertEn_pack.totallen,PP_CertDL_send_cb,&CertDL_TxInform[i]);
-	//protocol_dump(LOG_HOZON, "CertDownload_request", PP_CertEn_pack.Header.sign,PP_CertEn_pack.totallen,1);
 
 	return 1;
 }
@@ -1542,14 +1534,12 @@ static int PP_CertDL_CertDLReq(PrvtProt_task_t *task,PP_CertificateDownload_t *C
 	PP_CertDL_pack.Header.msglen = PrvtPro_BSEndianReverse((long)PP_CertDL_pack.totallen);
 
 	i = PP_CertDL_getIdleNode();
-	//memset(&CertDL_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	CertDL_TxInform[i].mid = CertificateDownload->CertDLReq.mid;
 	CertDL_TxInform[i].eventtime = tm_get_time();
 	CertDL_TxInform[i].pakgtype = PP_TXPAKG_SIGTIME;
 	CertDL_TxInform[i].idleflag = 1;
-
+	CertDL_TxInform[i].description = "cert dl req";
 	SP_data_write(PP_CertDL_pack.Header.sign,PP_CertDL_pack.totallen,PP_CertDL_send_cb,&CertDL_TxInform[i]);
-	//protocol_dump(LOG_HOZON, "CertDownload_request", PP_CertDL_pack.Header.sign,PP_CertDL_pack.totallen,1);
 
 	return 1;
 }
