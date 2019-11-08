@@ -299,26 +299,24 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 	if(PP_rmtCharge_AppointBook.validFlg == 1)
 	{
 		char *wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
-		time_t timep;
-		struct tm *localdatetime;
 
-		time(&timep);
-		localdatetime = localtime(&timep);
-
+		RTCTIME localdatetime;
+    	tm_get_abstime(&localdatetime);
+		
 		if(PP_rmtCharge_AppointBook.period & 0x80)
 		{//重复预约
-			if(PP_rmtCharge_Appointperiod[localdatetime->tm_wday].mask & PP_rmtCharge_AppointBook.period)
+			if(PP_rmtCharge_Appointperiod[localdatetime.week].mask & PP_rmtCharge_AppointBook.period)
 			{
-				if((localdatetime->tm_hour == PP_rmtCharge_AppointBook.hour) && \
-									(localdatetime->tm_min == PP_rmtCharge_AppointBook.min))
+				if((localdatetime.hour == PP_rmtCharge_AppointBook.hour) && \
+									(localdatetime.min == PP_rmtCharge_AppointBook.min))
 				{
 					if((PP_rmtChargeCtrl.state.chargeSt != PP_CHARGESTATE_ONGOING) && \
 						(appointPerformFlg == 0))
 					{
-						log_i(LOG_HOZON,"%d-%d-%d ",(1900+localdatetime->tm_year), \
-								(1 +localdatetime->tm_mon), localdatetime->tm_mday);
-						log_i(LOG_HOZON,"%s %d:%d:%d\n", wday[localdatetime->tm_wday], \
-								localdatetime->tm_hour, localdatetime->tm_min, localdatetime->tm_sec);
+						log_i(LOG_HOZON,"%d-%d-%d ",(localdatetime.year - 2000), \
+								(localdatetime.mon), localdatetime.mday);
+						log_i(LOG_HOZON,"%s %d:%d:%d\n", wday[localdatetime.week], \
+								localdatetime.hour, localdatetime.min, localdatetime.sec);
 						appointPerformFlg = 1;
 						PP_rmtChargeCtrl.state.appointcharge = 1;
 						PP_rmtChargeCtrl.state.appointchargeTime = PrvtPro_getTimestamp();

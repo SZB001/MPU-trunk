@@ -295,6 +295,7 @@ int tm_get_abstime(RTCTIME *abstime)
     abstime->mday  = timenow.tm_mday;
     abstime->mon   = timenow.tm_mon + 1;
     abstime->year  = timenow.tm_year + 1900;
+    abstime->week  = timenow.tm_wday;
 
     return 0;
 }
