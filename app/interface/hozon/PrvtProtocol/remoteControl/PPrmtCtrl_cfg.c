@@ -111,19 +111,6 @@ unsigned char PP_rmtCtrl_cfg_findcarSt(void)
 */
 unsigned char PP_rmtCtrl_cfg_sunroofSt(void)
 {
-	#if 0
-	unsigned char st;
-	if(PrvtProt_SignParse_sunroofSt() == 2)
-	{
-		st = 0;//关闭
-	}
-	else
-	{
-		st = 1;//开启
-	}
-
-	 return st;
-	#endif 
 	return PrvtProt_SignParse_sunroofSt();
 }
 /*

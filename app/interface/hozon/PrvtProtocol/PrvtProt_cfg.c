@@ -252,4 +252,25 @@ void PrvtProtCfg_bcallSt(uint8_t st)
 	}
 }
 
+/*
+ 	天窗状态״̬：打开、关闭、翘起
+*/
+uint8_t PrvtProtCfg_sunroofSt(void)
+{
+	unsigned char st;
+	st = PrvtProt_SignParse_sunroofSt();
+	if(st == 2)
+	{
+		return 0;//关闭
+	}
+	else if((st == 3) || (st == 4))
+	{
+		return 1;//开启
+	}
+	else if((st == 0) || (st == 1))
+	{
+		return 2;//翘起
+	}
 
+	 return 0;
+}

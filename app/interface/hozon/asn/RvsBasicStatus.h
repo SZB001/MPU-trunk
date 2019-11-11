@@ -36,7 +36,7 @@ typedef struct RvsBasicStatus {
 	BOOLEAN_t	*passengerWindow	/* OPTIONAL */;
 	BOOLEAN_t	*rearLeftWindow	/* OPTIONAL */;
 	BOOLEAN_t	*rearRightWinow	/* OPTIONAL */;
-	BOOLEAN_t	*sunroofStatus	/* OPTIONAL */;
+	long	*sunroofStatus	/* OPTIONAL */;
 	BOOLEAN_t	 engineStatus;
 	BOOLEAN_t	 accStatus;
 	long	*accTemp	/* OPTIONAL */;

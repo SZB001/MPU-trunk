@@ -273,7 +273,7 @@ RvsBasicStatus ::= SEQUENCE
 	passengerWindow		BOOLEAN	OPTIONAL, --
 	rearLeftWindow		BOOLEAN	OPTIONAL, --
 	rearRightWinow		BOOLEAN	OPTIONAL, --
-	sunroofStatus		BOOLEAN	OPTIONAL, --
+	sunroofStatus		INTEGER(0..2)	OPTIONAL, --
 	engineStatus		BOOLEAN, --
 	accStatus			BOOLEAN, --
 	accTemp				INTEGER(16..36)	OPTIONAL, -- 

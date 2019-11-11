@@ -8,6 +8,31 @@
 #include "RvsBasicStatus.h"
 
 static int
+memb_sunroofStatus_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	long value;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	value = *(const long *)sptr;
+	
+	if((value >= 0 && value <= 2)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
 memb_accTemp_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	long value;
@@ -932,6 +957,11 @@ memb_frtRightSeatHeatLel_constraint_1(asn_TYPE_descriptor_t *td, const void *spt
 	}
 }
 
+static asn_per_constraints_t asn_PER_memb_sunroofStatus_constr_16 GCC_NOTUSED = {
+	{ APC_CONSTRAINED,	 2,  2,  0,  2 }	/* (0..2) */,
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	0, 0	/* No PER value map */
+};
 static asn_per_constraints_t asn_PER_memb_accTemp_constr_19 GCC_NOTUSED = {
 	{ APC_CONSTRAINED,	 5,  5,  16,  36 }	/* (16..36) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
@@ -1247,9 +1277,9 @@ static asn_TYPE_member_t asn_MBR_RvsBasicStatus_1[] = {
 	{ ATF_POINTER, 1, offsetof(struct RvsBasicStatus, sunroofStatus),
 		(ASN_TAG_CLASS_CONTEXT | (14 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_BOOLEAN,
-		0,	/* Defer constraints checking to the member type */
-		0,	/* No PER visible constraints */
+		&asn_DEF_NativeInteger,
+		memb_sunroofStatus_constraint_1,
+		&asn_PER_memb_sunroofStatus_constr_16,
 		0,
 		"sunroofStatus"
 		},

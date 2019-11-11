@@ -400,21 +400,21 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 		PP_VS_appdata.VSResp.gpsPos.hdop = 1000;
 	}
 
-	PP_VS_appdata.VSResp.basicSt.driverDoor 		= 1	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.driverDoor 		= 0	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.driverLock 		= PP_rmtCtrl_cfg_doorlockSt();
-	PP_VS_appdata.VSResp.basicSt.passengerDoor 		= 1	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.passengerDoor 		= 0	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.passengerLock 		= PP_rmtCtrl_cfg_doorlockSt();
-	PP_VS_appdata.VSResp.basicSt.rearLeftDoor 		= 1	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.rearLeftDoor 		= 0	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.rearLeftLock 		= PP_rmtCtrl_cfg_doorlockSt();
-	PP_VS_appdata.VSResp.basicSt.rearRightDoor 		= 1	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.rearRightDoor 		= 0	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.rearRightLock 		= PP_rmtCtrl_cfg_doorlockSt();
 	PP_VS_appdata.VSResp.basicSt.bootStatus 		= gb_data_reardoorSt()	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.bootStatusLock 	= gb_data_reardoorlockSt();
-	PP_VS_appdata.VSResp.basicSt.driverWindow 		= 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.passengerWindow 	= 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.rearLeftWindow 	= 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.rearRightWinow 	= 1	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.sunroofStatus 		= PP_rmtCtrl_cfg_sunroofSt()	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.driverWindow 		= 0	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.passengerWindow 	= 0	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.rearLeftWindow 	= 0	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.rearRightWinow 	= 0	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.sunroofStatus 		= PrvtProtCfg_sunroofSt()	/* OPTIONAL */;
 	if(PP_rmtCtrl_cfg_RmtStartSt() == 0)
 	{
 		PP_VS_appdata.VSResp.basicSt.engineStatus = 0;

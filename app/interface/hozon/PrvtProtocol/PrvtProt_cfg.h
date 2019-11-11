@@ -78,5 +78,5 @@ extern uint8_t PrvtProtCfg_CrashOutputSt(void);
 extern uint8_t PrvtProtCfg_chargeSt(void);
 extern void PrvtProtCfg_ecallSt(uint8_t st);
 extern void PrvtProtCfg_bcallSt(uint8_t st);
-
+extern uint8_t PrvtProtCfg_sunroofSt(void);
 #endif 

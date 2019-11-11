@@ -252,7 +252,7 @@ typedef struct
 	int	passengerWindow	/* OPTIONAL */;
 	int	rearLeftWindow	/* OPTIONAL */;
 	int	rearRightWinow	/* OPTIONAL */;
-	int	sunroofStatus	/* OPTIONAL */;
+	long	sunroofStatus	/* OPTIONAL */;
 	int	 engineStatus;
 	int	 accStatus;
 	long	accTemp	/* OPTIONAL */;//取值范围：18-36

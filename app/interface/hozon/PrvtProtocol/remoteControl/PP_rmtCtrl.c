@@ -1151,13 +1151,13 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 				App_rmtCtrl.CtrlResp.gpsPos.hdop = 1000;
 			}
 
-			App_rmtCtrl.CtrlResp.basicSt.driverDoor 	= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.driverDoor 	= 0	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.driverLock 	= PP_rmtCtrl_cfg_doorlockSt();
-			App_rmtCtrl.CtrlResp.basicSt.passengerDoor 	= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.passengerDoor 	= 0	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.passengerLock 	= PP_rmtCtrl_cfg_doorlockSt();
-			App_rmtCtrl.CtrlResp.basicSt.rearLeftDoor 	= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftDoor 	= 0	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftLock 	= PP_rmtCtrl_cfg_doorlockSt();
-			App_rmtCtrl.CtrlResp.basicSt.rearRightDoor 	= 1	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.rearRightDoor 	= 0	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.rearRightLock 	= PP_rmtCtrl_cfg_doorlockSt();
 			App_rmtCtrl.CtrlResp.basicSt.bootStatus 	= gb_data_reardoorSt()	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.bootStatusLock = gb_data_reardoorlockSt();
@@ -1165,7 +1165,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.passengerWindow = 0	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftWindow = 0	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.rearRightWinow = 0 /* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.sunroofStatus 	= PP_rmtCtrl_cfg_sunroofSt()	/* OPTIONAL */;
+			App_rmtCtrl.CtrlResp.basicSt.sunroofStatus 	= PrvtProtCfg_sunroofSt()	/* OPTIONAL */;
 			if(PP_rmtCtrl_cfg_RmtStartSt() == 0)
 			{
 				App_rmtCtrl.CtrlResp.basicSt.engineStatus = 0;
