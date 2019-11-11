@@ -26,7 +26,7 @@ description�� include the header file
 #include "cfg_api.h"
 
 
-int ecall_flag = 0;  //����ͨ���ı�־
+int ecall_flag = 0;  //通话类型标志位
 int bcall_flag = 0;
 int icall_flag = 0;
 
@@ -57,33 +57,13 @@ description�� function declaration
 /******************************************************
 description�� function code
 ******************************************************/
-/******************************************************
-*��������PrvtProt_CC_init
 
-*��  �Σ�void
-
-*����ֵ��void
-
-*��  ������ʼ��
-
-*��  ע��
-******************************************************/
 void PrvtProt_CC_init(void)
 {
 	CC_task.callreq = 0;
 }
 
-/******************************************************
-*��������Get_call_tpye
 
-*��  �Σ�void
-
-*����ֵ��int      0:ECallռ�� 1��BCallռ�� 2��ICall ռ��
-
-*��  ���� ��ȡ����ͨ���ĵ绰����
-
-*��  ע��
-******************************************************/
 int Get_call_tpye(void)
 {
 	if(ecall_flag == 1)
@@ -114,25 +94,25 @@ int PrvtProt_CC_Dial_Hang(void)
 	unsigned char xcall[32];
 	action = tbox_ivi_get_call_action();
 	
-	if(action == 1) //���绰
+	if(action == 1) //拨号
 	{
 		type =  tbox_ivi_get_call_type();
 		switch(type)
 		{
-			case 0:   //����ecall
+			case 0:   //ECALL
 			{
-				if(PP_rmtCfg_enable_ecall() == 1)  //ecallʹ��
+				if(PP_rmtCfg_enable_ecall() == 1)  //ecall使能
 				{
-					log_o(LOG_HOZON,"ECALL ENABLE");
-					if(assist_get_call_status() != 5) //�Ƿ����
+					log_i(LOG_HOZON,"ECALL ENABLE");
+					if(assist_get_call_status() != 5) //电话状态非空闲
 					{
-						if( 0 == Get_call_tpye())  //ecall��ͨ��
+						if( 0 == Get_call_tpye())  //ecall正在通话中
 						{
 							log_o(LOG_HOZON,"Ecall dailing");
 							tbox_ivi_clear_call_flag();
 							return 0;	
 						}
-						else if( 1 == Get_call_tpye() ) //bcall ��ͨ��
+						else if( 1 == Get_call_tpye() ) //bcall正在通话中
 						{
 							log_o(LOG_HOZON,"Bcall hang");
 							disconnectcall();
@@ -148,7 +128,7 @@ int PrvtProt_CC_Dial_Hang(void)
 							log_o(LOG_HOZON,"Ecall dailing");
 							
 						}
-						else if (2 == Get_call_tpye() ) //icall ��ͨ��
+						else if (2 == Get_call_tpye() ) //icall 正在通话中
 						{
 							log_o(LOG_HOZON,"Icall hang");
 							disconnectcall();
@@ -187,22 +167,22 @@ int PrvtProt_CC_Dial_Hang(void)
 					else
 					{
 						tbox_ivi_clear_call_flag();
-						log_o(LOG_HOZON,"No phone number set");
+						log_e(LOG_HOZON,"No phone number set");
 					}
 				}
 				else
 				{
 					tbox_ivi_clear_call_flag();
-					log_o(LOG_HOZON,"ECALL NOT ENABLE");
+					log_e(LOG_HOZON,"ECALL NOT ENABLE");
 				}
 				break;	
 			}
-			case 1:  //����bcall
+			case 1:  //拨打bcall
 			{
 				if(PP_rmtCfg_enable_bcall() == 1)
 				{
-					log_o(LOG_HOZON,"BCALL ENABNLE");
-					if(assist_get_call_status() != 5) //�Ƿ����
+					log_i(LOG_HOZON,"BCALL ENABNLE");
+					if(assist_get_call_status() != 5) ///电话状态非空闲
 					{
 						tbox_ivi_clear_bcall_flag();
 						return 0;
@@ -225,23 +205,23 @@ int PrvtProt_CC_Dial_Hang(void)
 			        }
 					else
 					{
-						log_o(LOG_HOZON,"No phone number set");
+						log_e(LOG_HOZON,"No phone number set");
 						tbox_ivi_clear_bcall_flag();
 					}
 				}
 				else
 				{
 					tbox_ivi_clear_bcall_flag();
-					log_o(LOG_HOZON,"BCALL NOT ENABLE");
+					log_e(LOG_HOZON,"BCALL NOT ENABLE");
 				}
 				break;
 			}
-			case 2:  //����icall
+			case 2:  //拨打icall
 			{
 				if(PP_rmtCfg_enable_icall() == 1)
 				{
-					log_o(LOG_HOZON,"ICALL ENABNLE");
-					if(assist_get_call_status() != 5) //�Ƿ����
+					log_i(LOG_HOZON,"ICALL ENABNLE");
+					if(assist_get_call_status() != 5) //电话状态非空闲
 					{
 						tbox_ivi_clear_icall_flag();
 						return 0;
@@ -262,20 +242,20 @@ int PrvtProt_CC_Dial_Hang(void)
 					else
 					{
 						tbox_ivi_clear_icall_flag();
-						log_o(LOG_HOZON,"No phone number set");
+						log_e(LOG_HOZON,"No phone number set");
 					}
 				}
 				else
 				{
 					tbox_ivi_clear_icall_flag();
-					log_o(LOG_HOZON,"ICALL NOT ENABLE");
+					log_e(LOG_HOZON,"ICALL NOT ENABLE");
 				}
 				break;	
 			}
 			default: break;
 		}
 	}
-	else if(action == 2)  //�ҵ绰
+	else if(action == 2)  //挂电话
 	{
 		disconnectcall();
 		if(assist_get_call_status() == 5)
@@ -300,9 +280,9 @@ int PrvtProt_CC_Dial_Hang(void)
 	char xcall[32] = {0};
 	uint32_t len = 32;
 	int ret;
-	if(assist_get_call_status() == 1)   //TBOX����
+	if(assist_get_call_status() == 1)   //TBOX来电
 	{
-		at_get_call_incoming_telno(number);//��ȡ����ĺ���
+		at_get_call_incoming_telno(number);//获取来电号码
 		log_o(LOG_HOZON,"incoming number %s",number);
 		memset(xcall, 0, sizeof(xcall));
 		ret = cfg_get_para(CFG_ITEM_ECALL, xcall, &len);
@@ -310,11 +290,11 @@ int PrvtProt_CC_Dial_Hang(void)
 		{
 			log_e(LOG_HOZON, "get ecall error"); 
 		}
-		if(strcmp(number,xcall) == 0) //ECALL����
+		if(strcmp(number,xcall) == 0) //ECALL来电
 		{
 			audio_basic_ICall();
-			answercall();//����
-			ecall_flag = 1; //ECALLͨ����־
+			answercall();//接听电话
+			ecall_flag = 1; //ECALLͨ通话标志位置起
 			ivi_callstate_response_send(ivi_clients[0].fd);
 			return 0;
 		}
@@ -325,9 +305,9 @@ int PrvtProt_CC_Dial_Hang(void)
 		{
 			log_e(LOG_HOZON, "get bcall error"); 
 		}
-		if(strcmp(number,xcall) == 0) //BCALL����
+		if(strcmp(number,xcall) == 0) //BCALL来电
 		{
-			bcall_flag = 1; //BCALLͨ����־
+			bcall_flag = 1; //BCALLͨ通话标志位置起
 			return 0;
 		}
 		
@@ -337,9 +317,9 @@ int PrvtProt_CC_Dial_Hang(void)
 		{
 			log_e(LOG_HOZON, "get bcall error"); 
 		}
-		if(strcmp(number,xcall) == 0) //ICALL����
+		if(strcmp(number,xcall) == 0) //ICALL来电
 		{
-			icall_flag = 1; //ICALLͨ����־
+			icall_flag = 1; //ICALLͨ通话标志位置起
 			return 0;
 		}
 	}

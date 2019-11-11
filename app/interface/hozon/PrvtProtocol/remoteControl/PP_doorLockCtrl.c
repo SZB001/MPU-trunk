@@ -130,9 +130,6 @@ int PP_doorLockCtrl_mainfunction(void *task)
 		{	
 			if(PP_rmtdoorCtrl.state.req == 1)	//门控是否有请求
 			{
-				log_o(LOG_HOZON,"PP_rmtCtrl_cfg_vehicleSOC() = %d",PP_rmtCtrl_cfg_vehicleSOC());
-				log_o(LOG_HOZON,"PP_rmtCtrl_cfg_vehicleState() = %d",PP_rmtCtrl_cfg_vehicleState());
-				log_o(LOG_HOZON,"PP_rmtCtrl_gettestflag() = %d",PP_rmtCtrl_gettestflag());
 				if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
 				{	//有请求的时候判断是否满足远控条件(电量大于15%和电源转态位off)
 					

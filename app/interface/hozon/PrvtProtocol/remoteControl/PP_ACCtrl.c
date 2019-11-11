@@ -584,7 +584,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 			PP_rmtACCtrl.state.req = 1;
 			PP_rmtACCtrl.state.bookingSt = 1;//预约
 			PP_rmtACCtrl.CtrlPara.bookingId = PP_rmtac_AppointBook[i].id; //ID
-			PP_rmtACCtrl.pack.DisBody.eventId = 0; //eventid
+			PP_rmtACCtrl.pack.DisBody.eventId = PP_rmtac_AppointBook[i].eventId; //eventid
 			PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
 			PP_rmtACCtrl.state.style   = RMTCTRL_TBOX;
 			acc_requestpower_flag = 1;  //预约开空调时间到，请求上高压电
@@ -653,7 +653,7 @@ void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 						PP_rmtac_AppointBook[index].id = shell_actrl->id;
 						PP_rmtac_AppointBook[index].hour = shell_actrl->hour;
 						PP_rmtac_AppointBook[index].min = shell_actrl->min;
-						PP_rmtac_AppointBook[index].period = 0x81;
+						PP_rmtac_AppointBook[index].period = 0xff;
 						PP_rmtac_AppointBook[index].eventId = 0;
 						PP_rmtac_AppointBook[index].validFlg  = 1;	
 						
@@ -738,25 +738,32 @@ void PP_AcCtrl_acStMonitor(void *task)
 		if(PP_rmtac_AppointBook[i].validFlg == 1)
 		{
 			char *wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
-			time_t timep;
-			struct tm *localdatetime;
-
-			time(&timep);  //获取从1970.1.1 00:00:00到现在的秒数
-			localdatetime = localtime(&timep);//获取本地时间
+			
+			RTCTIME localdatetime;
+			
+			tm_get_abstime(&localdatetime);
+			
+			static uint64_t oldsec;
+			if(oldsec != localdatetime.sec)
+			{
+				oldsec = localdatetime.sec;
+				log_i(LOG_HOZON,"%s %d:%d:%d\n",wday[localdatetime.week],localdatetime.hour,localdatetime.min,localdatetime.sec);
+			}
+			
 			if(PP_rmtac_AppointBook[i].period & 0x80)//重复
 			{
-				if(PP_rmtAc_Appointperiod[localdatetime->tm_wday].mask & PP_rmtac_AppointBook[i].period)
+				if(PP_rmtAc_Appointperiod[localdatetime.week].mask & PP_rmtac_AppointBook[i].period)
 				{
-					if((localdatetime->tm_hour == PP_rmtac_AppointBook[i].hour) && \
-										(localdatetime->tm_min == PP_rmtac_AppointBook[i].min))
+					if((localdatetime.hour == PP_rmtac_AppointBook[i].hour) && \
+										(localdatetime.min == PP_rmtac_AppointBook[i].min))
 					{
 	
 						if(appointPerformFlg == 0)
 						{
-							log_i(LOG_HOZON,"%d-%d-%d ",(1900+localdatetime->tm_year), \
-								(1 +localdatetime->tm_mon), localdatetime->tm_mday);
-							log_i(LOG_HOZON,"%s %d:%d:%d\n", wday[localdatetime->tm_wday], \
-								localdatetime->tm_hour, localdatetime->tm_min, localdatetime->tm_sec);
+							log_i(LOG_HOZON,"%d-%d-%d ",(localdatetime.year - 2000), \
+								(localdatetime.mon), localdatetime.mday);
+							log_i(LOG_HOZON,"%s %d:%d:%d\n", wday[localdatetime.week], \
+								localdatetime.hour, localdatetime.min, localdatetime.sec);
 							log_i(LOG_HOZON,"Air conditioning reservation time is up, turn on the air conditioner");
 							appointPerformFlg = 1;
 							SetPP_ACCtrl_Request(RMTCTRL_TBOX,(void *)&i,NULL);	
@@ -773,8 +780,8 @@ void PP_AcCtrl_acStMonitor(void *task)
 			}
 			else
 			{ //不重复
-				if((localdatetime->tm_hour == PP_rmtac_AppointBook[i].hour) && \
-						(localdatetime->tm_min == PP_rmtac_AppointBook[i].min))
+				if((localdatetime.hour == PP_rmtac_AppointBook[i].hour) && \
+						(localdatetime.min == PP_rmtac_AppointBook[i].min))
 				{
 					SetPP_ACCtrl_Request(RMTCTRL_TBOX,(void *)&i,NULL);
 					PP_rmtACCtrl.state.dataUpdata = 1;
@@ -783,6 +790,7 @@ void PP_AcCtrl_acStMonitor(void *task)
 				}
 			}
 		}
+	
 		/*
 		 * 检查睡眠条件
 		 * */

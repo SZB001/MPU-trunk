@@ -48,15 +48,15 @@ int SgHzTboxCertchainCfg(char *RtcertPath, char *ScdCertPath);
 
 int SgHzTboxInit(char *uc_crl);
 
-int SgHzTboxConnect( );
+int SgHzTboxConnect();
 
-int SgHzTboxDataSend( char *reqbuf , int sendlen );
+int SgHzTboxDataSend(char *reqbuf , int sendlen);
 
-int SgHzTboxDataRecv( char *rspbuf, int recvl, int *recvlen );
+int SgHzTboxDataRecv(char *rspbuf, int recvl, int *recvlen);
 
-int SgHzTboxCloseSession( );
+int SgHzTboxCloseSession();
 
-int SgHzTboxClose( );
+int SgHzTboxClose();
 
 
 /************************************** Functions *************************************************/
@@ -64,15 +64,15 @@ int HzTboxCertchainCfg(char *RtcertPath, char *ScdCertPath, char *UsrCertPath, c
 
 int HzTboxInit(char *uc_crl);
 
-int HzTboxConnect( );
+int HzTboxConnect();
 
 int HzTboxDataSend(char *reqbuf , int sendlen);
 
 int HzTboxDataRecv(char *rspbuf, int recvl, int *recvlen);
 
-int HzTboxClose( );
+int HzTboxClose();
 
-int HzTboxCloseSession( );
+int HzTboxCloseSession();
 
 
 /************************************** cert Functions *************************************************/
@@ -80,21 +80,25 @@ int HzTboxGenCertCsr(char *sn_curvesname, char *ln_curvesname, CAR_INFO *carinfo
 
 int HzTboxSnSimEncInfo(const char *sSnstr, const char *sSimstr, char *sfile, char *ofile, int *cipherlen);
 
-int HzTboxApplicationData (char *filename , char *simfile, unsigned char *phexout, int *len);
+int HzTboxApplicationData(char *filename , char *simfile, unsigned char *phexout, int *len);
 
 
 /************************************** tbox server Functions *************************************/
-int HzTboxSrvInit(char *uc_crl);
+int HzTboxSrvInit (char *uc_crl);
 
-int HzTboxSvrAccept ( );
+int HzTboxSvrAccept ();
 
-int HzTboxSvrDataSend ( char *reqbuf , int sendlen );
+int HzTboxSvrDataSend(char *reqbuf , int sendlen);
 
-int HzTboxSvrDataRecv( char *rspbuf, int recvl, int *recvlen );
+int HzTboxSvrDataRecv(char *rspbuf, int recvl, int *recvlen);
 
-int HzTboxSvrClose ( );
+int HzTboxSvrClose();
 
-int HzTboxSvrCloseSession ( );
+int HzTboxSvrCloseSession();
+
+int HzTboxSrvCloseCtrlState();
+
+int HzTboxSrvListenCtrlState();
 
 
 /************************************** tbox ks *************************************************/
@@ -122,9 +126,9 @@ int HzversionMain(char *vs);
 /********************************* tbox cert transcode *********************************************/
 /* --author: chenL  --dayte: 20190715 */
 /*base64 encode*/
-int hz_base64_encode( unsigned char *dst, int *dlen, const unsigned char *src, int  slen );
+int hz_base64_encode(unsigned char *dst, int *dlen, const unsigned char *src, int  slen);
 /*base64 decode*/
-int hz_base64_decode( unsigned char *dst, int *dlen, const unsigned char *src, int  slen );
+int hz_base64_decode(unsigned char *dst, int *dlen, const unsigned char *src, int  slen);
 
 /**************************************** tbox info set *********************************************/
 int HzTboxSetVin(char *in_vin);

@@ -101,7 +101,7 @@ typedef struct
 	uint32_t huBookingTime;
 	uint32_t HUbookingId;
 
-	//uint8_t	bookupdataflag;//
+	uint8_t	informtspflag;// 通知平台是否成功标志位
 	//uint8_t appointChargeFlag;
 	//uint32_t appointStartTime;
 }__attribute__((packed))  PP_rmtCharge_AppointBook_t; /*�ṹ��*/

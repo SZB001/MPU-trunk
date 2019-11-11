@@ -451,18 +451,22 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 		if((1 == sockproxy_socketState()) && \
 			(PP_rmtChargeCtrl.state.bookSyncflag == 1) && (1 == PP_rmtCharge_AppointBook.validFlg))
 		{
-			log_i(LOG_HOZON,"Synchronize reservation records to TSP\n");
-			rmtCtrl_chargeStpara.rvcReqType 	= PP_rmtCharge_AppointBook.rvcReqType;
-			rmtCtrl_chargeStpara.huBookingTime 	= PP_rmtCharge_AppointBook.huBookingTime;
-			rmtCtrl_chargeStpara.rvcReqHours  	= PP_rmtCharge_AppointBook.hour;
-			rmtCtrl_chargeStpara.rvcReqMin		= PP_rmtCharge_AppointBook.min;
-			rmtCtrl_chargeStpara.rvcReqEq		= PP_rmtCharge_AppointBook.targetSOC	/* OPTIONAL */;
-			rmtCtrl_chargeStpara.rvcReqCycle	= PP_rmtCharge_AppointBook.period	/* OPTIONAL */;
-			rmtCtrl_chargeStpara.HUbookingId	= PP_rmtCharge_AppointBook.id;
-			rmtCtrl_chargeStpara.eventid 		= PP_rmtCharge_AppointBook.eventId;
-			rmtCtrl_chargeStpara.Resptype 		= PP_RMTCTRL_HUBOOKINGRESP;
-			PP_rmtCtrl_StInformTsp(&rmtCtrl_chargeStpara);
-			PP_rmtChargeCtrl.state.bookSyncflag = 2;
+			if((PP_rmtCharge_AppointBook.appointType == RMTCTRL_HU)&&(PP_rmtCharge_AppointBook.informtspflag == 1))
+			{
+				log_i(LOG_HOZON,"Synchronize reservation records to TSP\n");
+				rmtCtrl_chargeStpara.rvcReqType 	= PP_rmtCharge_AppointBook.rvcReqType;
+				rmtCtrl_chargeStpara.huBookingTime 	= PP_rmtCharge_AppointBook.huBookingTime;
+				rmtCtrl_chargeStpara.rvcReqHours  	= PP_rmtCharge_AppointBook.hour;
+				rmtCtrl_chargeStpara.rvcReqMin		= PP_rmtCharge_AppointBook.min;
+				rmtCtrl_chargeStpara.rvcReqEq		= PP_rmtCharge_AppointBook.targetSOC	/* OPTIONAL */;
+				rmtCtrl_chargeStpara.rvcReqCycle	= PP_rmtCharge_AppointBook.period	/* OPTIONAL */;
+				rmtCtrl_chargeStpara.HUbookingId	= PP_rmtCharge_AppointBook.id;
+				rmtCtrl_chargeStpara.eventid 		= PP_rmtCharge_AppointBook.eventId;
+				rmtCtrl_chargeStpara.Resptype 		= PP_RMTCTRL_HUBOOKINGRESP;
+				PP_rmtCtrl_StInformTsp(&rmtCtrl_chargeStpara);
+				PP_rmtCharge_AppointBook.informtspflag = 0;
+				PP_rmtChargeCtrl.state.bookSyncflag = 2;
+			}
 		}
 	}
 	else
@@ -572,7 +576,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				rmtCtrl_Stpara.rvcFailureType = 0;
 				rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 				rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
-				rmtCtrl_Stpara.eventid = disptrBody_ptr->expTime;
+				//rmtCtrl_Stpara.eventid = disptrBody_ptr->expTime;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 
@@ -671,9 +675,9 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				PP_rmtCharge_AppointBook.targetSOC = ivi_chargeAppointSt_ptr->targetpower;
 				PP_rmtCharge_AppointBook.period = 0xff;
 				PP_rmtCharge_AppointBook.huBookingTime = ivi_chargeAppointSt_ptr->timestamp;
-
 				PP_rmtCharge_AppointBook.eventId = 0;
 				PP_rmtCharge_AppointBook.validFlg  = 1;
+				PP_rmtCharge_AppointBook.informtspflag = 1; //需要通知TSP
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.id = %d\n",PP_rmtCharge_AppointBook.id);
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.hour = %d\n",PP_rmtCharge_AppointBook.hour);
 				log_i(LOG_HOZON, "PP_rmtCharge_AppointBook.min = %d\n",PP_rmtCharge_AppointBook.min);
@@ -684,24 +688,14 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				//保存记录
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
 
-				//inform TSP the Reservation instruction issued status
-				rmtCtrl_Stpara.rvcReqType 		= PP_rmtCharge_AppointBook.rvcReqType;
-				rmtCtrl_Stpara.huBookingTime 	= PP_rmtCharge_AppointBook.huBookingTime;
-				rmtCtrl_Stpara.rvcReqHours  	= PP_rmtCharge_AppointBook.hour;
-				rmtCtrl_Stpara.rvcReqMin		= PP_rmtCharge_AppointBook.min;
-				rmtCtrl_Stpara.rvcReqEq			= PP_rmtCharge_AppointBook.targetSOC	/* OPTIONAL */;
-				rmtCtrl_Stpara.rvcReqCycle		= PP_rmtCharge_AppointBook.period	/* OPTIONAL */;
-				rmtCtrl_Stpara.HUbookingId		= PP_rmtCharge_AppointBook.id;
-				rmtCtrl_Stpara.eventid 			= PP_rmtCharge_AppointBook.eventId;
-				rmtCtrl_Stpara.Resptype 		= PP_RMTCTRL_HUBOOKINGRESP;
-				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);//同步状态到TSP
-				PP_rmtChargeCtrl.state.bookSyncflag = 1;
+				PP_rmtChargeCtrl.state.bookSyncflag = 1; //保存
+
 				PP_can_send_data(PP_CAN_CHAGER,CAN_SETAPPOINT,0);
 			}
 			else if(ivi_chargeAppointSt_ptr->cmd == PP_COMAND_CANCELAPPOINTCHARGE)
 			{//取消预约充电
 				log_i(LOG_HOZON, "HU cancel appointment\n");
-				PP_rmtCharge_AppointBook.eventId = 0;
+
 				PP_rmtCharge_AppointBook.appointType = RMTCTRL_HU;
 				PP_rmtCharge_AppointBook.validFlg = 0;
 
@@ -712,21 +706,10 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				PP_rmtCharge_AppointBook.targetSOC = ivi_chargeAppointSt_ptr->targetpower;
 				PP_rmtCharge_AppointBook.period = 0xff;
 				PP_rmtCharge_AppointBook.huBookingTime = ivi_chargeAppointSt_ptr->timestamp;
-
+				PP_rmtCharge_AppointBook.informtspflag = 1; //需要通知TSP
 				//保存记录
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
 
-				//inform TSP the Reservation instruction issued status
-				rmtCtrl_Stpara.rvcReqType 		= PP_COMAND_CANCELAPPOINTCHARGE;
-				rmtCtrl_Stpara.huBookingTime 	= PP_rmtCharge_AppointBook.huBookingTime;
-				rmtCtrl_Stpara.rvcReqHours  	= PP_rmtCharge_AppointBook.hour;
-				rmtCtrl_Stpara.rvcReqMin		= PP_rmtCharge_AppointBook.min;
-				rmtCtrl_Stpara.rvcReqEq			= PP_rmtCharge_AppointBook.targetSOC	/* OPTIONAL */;
-				rmtCtrl_Stpara.rvcReqCycle		= PP_rmtCharge_AppointBook.period	/* OPTIONAL */;
-				rmtCtrl_Stpara.HUbookingId		= PP_rmtCharge_AppointBook.id;
-				rmtCtrl_Stpara.eventid 			= PP_rmtCharge_AppointBook.eventId;
-				rmtCtrl_Stpara.Resptype 		= PP_RMTCTRL_HUBOOKINGRESP;
-				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);//同步状态到TSP
 				PP_rmtChargeCtrl.state.bookSyncflag = 1;
 				PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);
 			}
@@ -1055,6 +1038,7 @@ static void PP_ChargeCtrl_EndHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge)
 */
 void PP_ChargeCtrl_show(void)
 {
+	log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.appointType = %d",PP_rmtCharge_AppointBook.appointType);	
 	log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.validFlg = %d",PP_rmtCharge_AppointBook.validFlg);	
 	log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.id = %d",PP_rmtCharge_AppointBook.id);
 	log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.hour = %d",PP_rmtCharge_AppointBook.hour);

@@ -10,15 +10,15 @@
 #define ONEPATH                         "/ursdata/pem/TerminalCA.cer"
 
 
-//#define TBOX_PKI_IHU                     1
+#define TBOX_PKI_IHU                     1
 
 #define MAX_IVI_NUM                      1
 
-#ifndef TBOX_PKI_IHU
+
 #define IVI_SERVER_PORT                  5757
-#else 
-#define IVI_SERVER_PORT                  23000
-#endif
+
+#define IVI_SERVER_PORT_PKI                  23000
+
 
 #define IVI_GPS_TIME                     1000
 #define IVI_MSG_SIZE                     2048
@@ -54,6 +54,9 @@ typedef struct
     uint64_t lasthearttime;  //记录心跳时间
 	uint8_t stage;           //车机通信阶段
 	uint8_t states;          //车机是否连接
+	uint32_t accept_flag;    //accept连接成功标志
+	uint8_t re_create_ssl_sock_flag; //重新连接标志
+	uint8_t close_syscall_count;
 } pki_client;
 
 
@@ -137,5 +140,8 @@ extern long tbox_ivi_getTimestamp(void);
 extern void tbox_ivi_pki_renew_pthread();
 
 extern uint8_t tbox_ivi_ecall_trigger(void);
+
+extern void tbox_ivi_closesocket();
+
 #endif
 

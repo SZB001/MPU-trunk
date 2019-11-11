@@ -12,6 +12,7 @@
 #include <sys/socket.h> 
 #include <pthread.h>
 #include "shell_api.h"
+#include "cfg_api.h"
 #include "tbox_ivi_api.h"
 #include "tbox_ivi_pb.h"
 #include "log.h"
@@ -108,6 +109,24 @@ int tbox_ivi_test(void)
 	return 0;
 	
 }
+
+static int tbox_ivi_shell_setHUPKIenable(int argc, const char **argv)
+{  
+	unsigned int pkien;
+    if (argc != 1)
+    {
+        shellprintf(" usage:set pki en error\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &pkien);
+	cfg_set_para(CFG_ITEM_EN_HUPKI, (unsigned char *)&pkien, 1);
+	shellprintf(" set pki ok\r\n");
+	sleep(1);
+	system("reboot");
+    return 0;
+}
+
 void tbox_shell_init(void)
 {
 	shell_cmd_register("HuChargeCtrl", tbox_ivi_hu_charge_ctrl, "HU charge CTRL");	
@@ -115,5 +134,6 @@ void tbox_shell_init(void)
 	shell_cmd_register("hozon_tsp_active_to_hu", tbox_ivi_active, "HU charge CTRL");	
 	shell_cmd_register("hozon_tsp_charge_to_hu", tbox_ivi_chargeappoint, "TSP CHARGE TO HU");	
 	shell_cmd_register("hozon_test", tbox_ivi_test, "hozon_test");	
+	shell_cmd_register("setHUPKIenable", tbox_ivi_shell_setHUPKIenable, "setHUPKIenable");	
 }
 
