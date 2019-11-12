@@ -60,6 +60,7 @@ description： include the header file
 #include "PP_StartForbid.h"
 #include "PP_SeatHeating.h"
 #include "PP_CameraCtrl.h"
+#include "PP_SendWakeUptime.h"
 #include "../PrvtProt_SigParse.h"
 #include "../PrvtProt_remoteConfig.h"
 #include "PP_bluetoothStart.h"
@@ -367,7 +368,8 @@ int PP_rmtCtrl_mainfunction(void *task)
 	
 	PP_rmtCtrl.sleepflag = GetPP_ChargeCtrl_Sleep()&& \
 						   GetPP_ACtrl_Sleep()     && \
-						   GetPP_SeatCtrl_Sleep();
+						   GetPP_SeatCtrl_Sleep()  && \
+						   GetPP_Wake_Sleep();
 
 	return res;
 }
@@ -1545,27 +1547,29 @@ unsigned char GetPP_rmtCtrl_fotaUpgrade(void)
 ******************************************************/
 int SetPP_rmtCtrl_FOTA_startInform(void)
 {
-	int res = 0;
-
 	PP_COMMON_LOCK();
 
-	if((RMTCTRL_IDLE == PP_rmtCtrl.rmtCtrlSt) && \
-	 	GetPP_ChargeCtrl_Sleep() && GetPP_ACtrl_Sleep() && GetPP_SeatCtrl_Sleep() && \
-	 	(1 == getPP_rmtDiag_Idle()))//远程车控、诊断空闲
+	if((RMTCTRL_IDLE != PP_rmtCtrl.rmtCtrlSt) || !GetPP_ChargeCtrl_Sleep() || \
+			!GetPP_ACtrl_Sleep() || !GetPP_SeatCtrl_Sleep())//远程车控非空闲
 	{
-		SetPP_ChargeCtrl_appointPara();
-		PP_rmtCtrl.fotaAuthReq = 1;
-		PP_rmtCtrl.fotaUpgradeSt = 1;
-		PP_rmtCtrl.fotaAuthResult = 0;
+		PP_COMMON_UNLOCK();
+		return -1;
 	}
-	else
+
+	if(1 != getPP_rmtDiag_Idle())//远程诊断非空闲
 	{
-		res = -1;
+		PP_COMMON_UNLOCK();
+		return -2;
 	}
+
+	SetPP_ChargeCtrl_appointPara();
+	PP_rmtCtrl.fotaAuthReq = 1;
+	PP_rmtCtrl.fotaUpgradeSt = 1;
+	PP_rmtCtrl.fotaAuthResult = 0;
 	
 	PP_COMMON_UNLOCK();
 	
-	return res;
+	return 0;
 }
 
 /******************************************************

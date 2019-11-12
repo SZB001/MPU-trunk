@@ -576,7 +576,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				rmtCtrl_Stpara.rvcFailureType = 0;
 				rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 				rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
-				//rmtCtrl_Stpara.eventid = disptrBody_ptr->expTime;
+				rmtCtrl_Stpara.expTime = disptrBody_ptr->expTime;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 
@@ -597,7 +597,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				PP_rmtCharge_AppointBook.validFlg  = 0;
 				rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//ִ�����
 				rmtCtrl_Stpara.rvcFailureType = 0;
-				rmtCtrl_Stpara.eventid = disptrBody_ptr->expTime;
+				rmtCtrl_Stpara.expTime = disptrBody_ptr->expTime;
 				//inform HU appointment status
 				ivi_chargeSt.id = PP_rmtCharge_AppointBook.id;
 				ivi_chargeSt.hour = PP_rmtCharge_AppointBook.hour;

@@ -48,7 +48,7 @@ int tbox_ivi_hu_charge_ctrl(int argc, const char **argv)
 	chargectrl.effectivestate = 1;
 	chargectrl.hour = hour;
 	chargectrl.min = min;
-	chargectrl.id = 1111;
+	chargectrl.id = 0;
 	chargectrl.targetpower = 90;
 	PP_rmtCtrl_HuCtrlReq(PP_RMTCTRL_CHARGE,(void *)&chargectrl);
 

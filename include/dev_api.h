@@ -163,6 +163,20 @@ static __inline uint8_t  dev_get_KL15_signal(void)
     return 0;
 }
 
+static __inline uint8_t  dev_get_SRS_signal(void)
+{
+    uint8_t sign;
+    int len = sizeof(sign);
+
+    if (st_get(ST_ITEM_SRS_SIG, (void *)&sign, (void *)&len) == 0)
+    {
+        return sign;
+    }
+
+    return 0;
+}
+
+
 static __inline uint8_t  dev_get_KL75_signal(void)
 {
     uint8_t sign;

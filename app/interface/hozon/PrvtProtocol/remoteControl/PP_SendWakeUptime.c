@@ -156,7 +156,12 @@ int pp_get_low_waketime(void)
 	return low_time;
 }
 
-
+uint8_t  GetPP_Wake_Sleep()
+{
+	if(pp_get_low_waketime() <= 2)
+		return 0;
+	return 1;
+}
 void PP_Send_WakeUpTime_to_Mcu(void)
 {
 	int low_min = 0;

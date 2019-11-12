@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <time.h>
+#include <math.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -20,6 +21,7 @@
 #include "gb32960_api.h"
 #include "hozon_PP_api.h"
 #include "pwdg.h"
+#include "dev_api.h"
 #include "cfg_api.h"
 #include "fault_sync.h"
 #include "tboxsock.h"
@@ -32,7 +34,7 @@
 static pthread_t ivi_rxtid;    /* thread id */
 static pthread_t ivi_txtid;    /* thread id */
 static pthread_t ivi_chtid;    /* thread id */
-static pthread_t ivi_closeid;    /* thread id */
+//static pthread_t ivi_closeid;    /* thread id */
 
 
 static uint8_t hu_pki_en;
@@ -45,6 +47,7 @@ pki_client ihu_client;
 ivi_callrequest callrequest;
 int gps_onoff = 0;
 int network_onoff = 0;
+RTCTIME localdatetime1;
 
 static unsigned char ivi_msgbuf[1024];
 static int test = 0;
@@ -1941,6 +1944,10 @@ void *ivi_main(void)
 					ret = test;
 					if(ret != 1230)
 					{
+						tm_get_abstime(&localdatetime1);
+						log_o(LOG_IVI,"%d:%d:%d\n",  \
+								localdatetime1.hour, localdatetime1.min, localdatetime1.sec);
+						HzTboxSvrClose();
 						while(1)
 						{
 							if(HzTboxSrvCloseCtrlState() == 1111)
@@ -1978,6 +1985,9 @@ void *ivi_main(void)
 					{
 						log_o(LOG_IVI,"HzTboxSvrDataRecv error+++++++++++++++iRet[%d] \n", ret);
 						pthread_mutex_lock(&send_mutex);
+						tm_get_abstime(&localdatetime1);
+						log_o(LOG_IVI,"%d:%d:%d\n",  \
+								localdatetime1.hour, localdatetime1.min, localdatetime1.sec);
 						ihu_client.close_syscall_count = 1;
 						tbox_ivi_closesocket();
 						memset(&ihu_client,0,sizeof(ihu_client));
@@ -1998,8 +2008,11 @@ void *ivi_main(void)
 			            }
 						else if(num == 0)
 						{
-							log_e(LOG_IVI, "ihu Client exit\n");
+							log_o(LOG_IVI, "ihu Client exit\n");
 							pthread_mutex_lock(&send_mutex);
+							tm_get_abstime(&localdatetime1);
+							log_o(LOG_IVI,"%d:%d:%d\n",  \
+								localdatetime1.hour, localdatetime1.min, localdatetime1.sec);
 							ihu_client.close_syscall_count = 1;
 							tbox_ivi_closesocket();
 							memset(&ihu_client,0,sizeof(ihu_client));
@@ -2062,40 +2075,53 @@ void *ivi_txmain(void)
 	}
 	return NULL;
 }
+#if 0
 void *ivi_closesocket(void)
 {
 	prctl(PR_SET_NAME, "IVI_CLOSESOCKET");
+	tm_get_abstime(&localdatetime1);
+	log_o(LOG_IVI,"%d:%d:%d\n",  \
+								localdatetime1.hour, localdatetime1.min, localdatetime1.sec);
+	log_i(LOG_IVI,"ivi_closesocket pthread......");
 	while(1)
 	{			
-		log_i(LOG_IVI,"ivi_closesocket pthread......");
+		
 		//等待方法2: select 设置每次循环等待20s
 		if(PKI_ACCEPT == ihu_client.stage)
 		{
-			sleep(120);
-			if(HzTboxSrvListenCtrlState() == 2222)
+			tm_get_abstime(&localdatetime2);
+			if((abs(localdatetime2.min - localdatetime1.min) == 1) && (localdatetime2.sec == localdatetime1.sec))
 			{
-				log_o(LOG_IVI,"HzTboxSrvListenCtrlState 1 ++++++++++++++++ [%d] \n", HzTboxSrvListenCtrlState());
-				continue;
-			}
-			log_o(LOG_IVI,"HzTboxSrvListenCtrlState 2 ++++++++++++++++ [%d] \n", HzTboxSrvListenCtrlState());
-			if(ihu_client.accept_flag != 1230)
-			{
-				if(ihu_client.close_syscall_count == 0)
+				log_o(LOG_IVI,"%d:%d:%d\n",  \
+								localdatetime2.hour, localdatetime2.min, localdatetime2.sec);
+				memcpy(&localdatetime1,&localdatetime2,sizeof(localdatetime1));
+				log_o(LOG_IVI,"%d:%d:%d\n",  \
+								localdatetime1.hour, localdatetime1.min, localdatetime1.sec);
+				if(HzTboxSrvListenCtrlState() == 2222)
 				{
-					log_o(LOG_IVI,"5 minute arrived,close socket");
-					pthread_mutex_lock(&send_mutex);
-					HzTboxSvrClose(); 
-					pthread_mutex_unlock(&send_mutex);
+					log_o(LOG_IVI,"HzTboxSrvListenCtrlState 1 ++++++++++++++++ [%d] \n", HzTboxSrvListenCtrlState());
+					continue;
 				}
-				else
+				log_o(LOG_IVI,"HzTboxSrvListenCtrlState 2 ++++++++++++++++ [%d] \n", HzTboxSrvListenCtrlState());
+				if(ihu_client.accept_flag != 1230)
 				{
+					if(ihu_client.close_syscall_count == 0)
+					{
+						log_o(LOG_IVI,"5 minute arrived,close socket");
+						pthread_mutex_lock(&send_mutex);
+						HzTboxSvrClose(); 
+						pthread_mutex_unlock(&send_mutex);
+					}
+					else
+					{
+					}
 				}
 			}
 		}
 	}
 	return NULL;
 }
-
+#endif
 
 void *ivi_check(void)
 {
@@ -2157,7 +2183,8 @@ void *ivi_check(void)
 		else  //带PKI
 		{
 			if(ihu_client.states == 1)   //车机连上来，判断是否超时
-			{
+			{	
+				#if 0
 				uint64_t temp = 0;
 				uint64_t t_time = 0;
 				t_time = tm_get_time();
@@ -2183,7 +2210,7 @@ void *ivi_check(void)
 				{
 					log_o(LOG_IVI," tm_get_time() <=  ihu_client.lasthearttime");
 				}
-				
+				#endif
 
 				if( 1 == tbox_ivi_get_network_onoff() ) //已经请求网络制式
 				{
@@ -2275,12 +2302,14 @@ int ivi_run(void)
 	        log_e(LOG_IVI, "pthread_create failed, error:%s", strerror(errno));
 	        return ret;
 	    }
+		#if 0
 		ret = pthread_create(&ivi_closeid, &ta, (void *)ivi_closesocket, NULL);
 		if (ret != 0)
 	    {
 	        log_e(LOG_IVI, "pthread_create failed, error:%s", strerror(errno));
 	        return ret;
 	    }
+		#endif
 	}
     return 0;
 }
@@ -2294,7 +2323,7 @@ void tbox_ivi_set_tspInformHU(ivi_remotediagnos *tsp)
 	tspdiagnos.effectivetime = tsp->effectivetime;
 	tspdiagnos.sizelimit =tsp->sizelimit;
 	tspdiagnos_flag = 1;
-	log_o(LOG_IVI,"dignos\n");
+	log_o(LOG_IVI,"dignos is synchronized to the HU.");
 }
 void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp)
 {
@@ -2316,16 +2345,23 @@ void tbox_ivi_set_tspchager_InformHU(ivi_chargeAppointSt *tsp)
 	tspchager.timestamp = tsp->timestamp;
 	tspchager.effectivestate = tsp->effectivestate;
 	tspchager_flag = 1;
+	log_o(LOG_IVI,"The charging reservation issued by the TSP is synchronized to the HU.");
 }
 
+
+/**
+     * @brief    ECALL触发管理.
+     * @param[in] void.
+     * @return    uint8_t.
+*/
 uint8_t tbox_ivi_ecall_trigger(void)
 {
 	uint8_t flag = 0;
-	if((PP_rmtCtrl_cfg_CrashOutputSt() == 0)&&( flt_get_by_id(SOSBTN) != 2))
+	if((dev_get_SRS_signal() != 2)&&( flt_get_by_id(SOSBTN) != 2))
 	{
 		flag = 0;  //ECALL触发标志位清除
 	}
-	else if((2 == flt_get_by_id(SOSBTN)) ||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
+	else if((dev_get_SRS_signal() == 2)||(2 == flt_get_by_id(SOSBTN)))
 	{
 		flag = 1;//ECALL触发
 	}
