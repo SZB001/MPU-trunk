@@ -4678,6 +4678,7 @@ uint8_t gb_data_ACMode(void)
 	{
 		if(1 == dbc_get_signal_from_id(gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_AUTOST])->value)
 		{
+			DAT_UNLOCK();
 			return GB_AC_AUTO;
 		}
 	}
