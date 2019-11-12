@@ -535,6 +535,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_MODEIN))
     {
+        int s32ret = 0;
         //(0:runing 1:listen 2:sleep 3:auto)
         //mode = 0;
     
@@ -542,7 +543,8 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
         log_i(LOG_WSRV, "Get Cmd Gmobi MODEIN");
 
-        if(0 == SetPP_rmtCtrl_FOTA_startInform())
+        s32ret = SetPP_rmtCtrl_FOTA_startInform();
+        if(0 == s32ret)
         {
             s_u8BDCMAuthResult = 0;
             log_i(LOG_WSRV, "Mode In Wait BDCM Auth");
@@ -550,7 +552,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         else
         {
             s_u8BDCMAuthResult = 2;
-            log_i(LOG_WSRV, "Other Task Doing Can Not Upgrade ECU");
+            log_e(LOG_WSRV, "Other Task Doing Can Not Upgrade ECU: %d", s32ret);
         }
 
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
