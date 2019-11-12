@@ -175,16 +175,28 @@ int PP_rmtDiag_mainfunction(void *task)
 {
 	int res;
 
-	if(!dev_get_KL15_signal())
+	static char IGNnewSt,IGNoldSt = 0;
+
+	IGNnewSt = dev_get_KL15_signal();
+	if(IGNoldSt != IGNnewSt)
+	{
+		IGNoldSt = IGNnewSt;
+		if(1 == IGNnewSt)//IGN ON
+		{
+			PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
+		}
+	}
+
+	if(!IGNnewSt)//IGN OFF
 	{
 		PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
 		PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
-		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
 		PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
+		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_END;
+		PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_IDLE;
 		PP_rmtDiag.state.diagReq = 0;
 		PP_rmtDiag.state.ImageAcquisitionReq = 0;
 		PP_rmtDiag.state.LogAcquisitionReq = 0;
-		
 		return 0;
 	}
 
