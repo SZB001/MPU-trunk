@@ -104,6 +104,7 @@ typedef struct
 	uint8_t		checkSt;
 	uint8_t		verifyFlag;
 	uint8_t		certAvailableFlag;
+	uint8_t		renewfailflag;
 }__attribute__((packed))  PP_CertDownloadSt_t;
 
 typedef struct

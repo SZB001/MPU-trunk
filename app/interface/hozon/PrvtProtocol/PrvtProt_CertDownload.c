@@ -170,7 +170,7 @@ static int 	PP_CertDL_base64_decode( unsigned char *dst, unsigned int *dlen, \
 static int PP_CertDL_getIdleNode(void);
 static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task);
 static int PP_CertDL_CertStatus(PrvtProt_task_t *task,PP_CertificateSt_t *CertificateSt);
-static int PP_CertDL_getCertSn(char Certpath);
+static int PP_CertDL_getCertSn(char* Certpath);
 static int PP_CertDL_do_checkRevocationList(PrvtProt_task_t *task);
 static int PP_CertDL_RevoListRenewReq(PrvtProt_task_t *task,PP_CertRevoList_t *CertRevoList);
 static int PP_CertDL_do_checkCertStatus(void);
@@ -185,8 +185,8 @@ static int PP_CertDL_checkCipherExist(void);
 extern char * mbTrimStr( char *pStrSrc );
 static int PP_CertDL_generateCipher(void);
 static int PP_CertDL_generateCsrKey(void);
-static int PP_CertDL_checkCertOutofdate(void);
-static int PP_CertDL_checkCertrevoked(void);
+static int PP_CertDL_checkCertOutofdate(char* path);
+static int PP_CertDL_checkCertrevoked(char* path);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -260,6 +260,7 @@ int PP_CertDownload_mainfunction(void *task)
 		{
 			PP_CertUpdata.Cnt 	= 0;
 			PP_CertSt.CertEnCnt = 0;
+			PP_CertDL.state.renewfailflag = 0;
 		}
 	}
 
@@ -665,7 +666,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 				{
 					log_i(LOG_HOZON,"verify userAuth.cer success\n");
 					PrvtPro_SettboxId(1,PP_CertDownloadPara.tboxid);
-					if(0 == PP_CertDL_getCertSn(0))
+					if(0 == PP_CertDL_getCertSn(PP_CERTDL_CERTPATH))
 					{
 						(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT,PP_CertSt.para.certSn,32);
 					}
@@ -675,7 +676,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 				else
 				{
 					log_e(LOG_HOZON,"verify userAuth.cer fail,inform tsp\n");
-					if(0 == PP_CertDL_getCertSn(1))
+					if(0 == PP_CertDL_getCertSn(PP_CERTDL_CERTPATH_UPDATE))
 					{
 						PP_CertSt.para.mid = PP_CERTDL_MID_CERT_STATUS;
 						PP_CertSt.para.eventid = 0;//主动上行数据，eventid为0
@@ -698,7 +699,13 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 			break;
 		}
 
-		if((PP_CertDL.state.verifyFlag == 1) || (1 == PP_CertDL.state.certAvailableFlag))
+		if((PP_CertUpdata.Cnt == PP_CERTUPDATE_TIMES) && (PP_CertDL.state.verifyFlag != 1))
+		{
+			PP_CertDL.state.renewfailflag = 1;
+		}
+
+		if((PP_CertDL.state.verifyFlag == 1) || (1 == PP_CertDL.state.certAvailableFlag) \
+				|| (1 == PP_CertDL.state.renewfailflag))
 		{
 			PP_CertDL.state.verifyFlag = 0;
 			PP_CertDL.state.certAvailableFlag = 0;
@@ -719,13 +726,18 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 		if(1 == PP_CertRevoList.checkRevoFlag)
 		{
 			PP_CertRevoList.checkRevoFlag = 0;
-			certRevoOutofdateflag |= PP_CertDL_checkCertrevoked();//检查吊销
+			certRevoOutofdateflag |= PP_CertDL_checkCertrevoked(PP_CERTDL_CERTPATH);//检查吊销
 		}
 
+		int outofdataRet;
 		if(1 == PP_checkCertSt.checkoutofdateflag)
 		{
 			PP_checkCertSt.checkoutofdateflag = 0;
-			certRevoOutofdateflag |= PP_CertDL_checkCertOutofdate();//检查过期
+			outofdataRet = PP_CertDL_checkCertOutofdate(PP_CERTDL_CERTPATH);//检查过期
+			if((3 == outofdataRet) || ((2 == outofdataRet) && (0 == PP_CertDL.state.renewfailflag)))
+			{
+				certRevoOutofdateflag = 1;
+			}
 		}
 
 		if(1 == certRevoOutofdateflag)//cert need renew
@@ -947,7 +959,7 @@ static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 		break;
 		case PP_CERTEN_REQ:
 		{
-			if(0 == PP_CertDL_getCertSn(0))
+			if(0 == PP_CertDL_getCertSn(PP_CERTDL_CERTPATH))
 			{
 				PP_CertSt.waitEnSt = 0;
 				PP_CertSt.enSt = 0;
@@ -1113,13 +1125,13 @@ static int PP_CertDL_do_checkCertStatus(void)
 {
 	int iRet;
 
-	iRet = PP_CertDL_checkCertOutofdate();
-	if(0 != iRet)
+	iRet = PP_CertDL_checkCertOutofdate(PP_CERTDL_CERTPATH);
+	if((3 == iRet) || ((2 == iRet) && (0 == PP_CertDL.state.renewfailflag)))
 	{
-		return iRet;
+		return 1;
 	}
 
-	iRet = PP_CertDL_checkCertrevoked();
+	iRet = PP_CertDL_checkCertrevoked(PP_CERTDL_CERTPATH);
 	if(0 != iRet)
 	{
 		return iRet;
@@ -1926,6 +1938,19 @@ static int  MatchCertVerify(void)
 		return -1;
 	}
 
+	iRet = PP_CertDL_checkCertOutofdate(PP_CERTDL_CERTPATH_UPDATE);
+	if(1 != iRet)
+	{
+		log_e(LOG_HOZON,"PP_CertDL_checkCertOutofdate error+++++++++++++++iRet[%d]\n", iRet);
+		return -1;
+	}
+
+	if(0 != PP_CertDL_checkCertrevoked(PP_CERTDL_CERTPATH_UPDATE))
+	{
+		log_e(LOG_HOZON,"PP_CertDL_checkCertrevoked error+++++++++++++++\n");
+		return -1;
+	}
+
 	file_copy(PP_CERTDL_CERTPATH_UPDATE,PP_CERTDL_CERTPATH);//替换旧证书
 	file_copy(PP_CERTDL_TWOCERTRKEYPATH_UPDATE,PP_CERTDL_TWOCERTKEYPATH);//替换旧userAuth.key
 	file_copy(PP_CERTDL_TWOCERTRCSRPATH_UPDATE,PP_CERTDL_TWOCERTCSRPATH);//替换旧userAuth.csr
@@ -1956,19 +1981,12 @@ static int PP_CertDL_getIdleNode(void)
 /*
 * 读取证书内容：0--pki路径下的证书（使用的证书）；1 -- pki/update下证书（下载更新和验证的证书）
 */
-static int PP_CertDL_getCertSn(char Certpath)
+static int PP_CertDL_getCertSn(char* Certpath)
 {
 	int iRet;
+	
 	memset(PP_CertSt.para.certSn,0,sizeof(PP_CertSt.para.certSn));
-	if(0 == Certpath)
-	{
-		iRet = HzTboxGetserialNumber(PP_CERTDL_CERTPATH,"DER",PP_CertSt.para.certSn);//DER
-	}
-	else
-	{
-		iRet = HzTboxGetserialNumber(PP_CERTDL_CERTPATH_UPDATE,"DER",PP_CertSt.para.certSn);//DER
-	}
-
+	iRet = HzTboxGetserialNumber(Certpath,"DER",PP_CertSt.para.certSn);//DER
 	if(iRet != 6107)
 	{
 		log_e(LOG_HOZON,"HzTboxGetserialNumber error+++++++++++++++iRet[%d] \n", iRet);
@@ -2080,7 +2098,7 @@ static int PP_CertDL_generateCsrKey(void)
 /*
 * 检查证书过期
 */
-static int PP_CertDL_checkCertOutofdate(void)
+static int PP_CertDL_checkCertOutofdate(char* path)
 {
 	int iRet;
 	int statecert;
@@ -2088,30 +2106,24 @@ static int PP_CertDL_checkCertOutofdate(void)
 	time_t tm = time(NULL) + PP_checkCertSt.ExpTime;//其值表示从UTC（Coordinated Universal Time）时间1970年1月1日00:00:00（称为UNIX系统的Epoch时间）到当前时刻的>秒数
 	log_i(LOG_HOZON,"tm = [%d]\n", tm);
 
-	iRet = HzTboxCertUpdCheck(PP_CERTDL_CERTPATH,"DER",tm,&statecert);
+	iRet = HzTboxCertUpdCheck(path,"DER",tm,&statecert);
 	if(iRet!=6010)
 	{
 		log_e(LOG_HOZON,"HzTboxCertUpdCheck error+++++++++++++++iRet[%d] \n", iRet);
 		return -1;
 	}
 
-	if(1 != statecert)
-	{
-		log_o(LOG_HOZON,"cert out of date ,need Update\n");
-		return 1;
-	}
-
-	return 0;
+	return statecert;
 }
 
 /*
 * 检查证书吊销
 */
-static int PP_CertDL_checkCertrevoked(void)
+static int PP_CertDL_checkCertrevoked(char* path)
 {
 	int iRet;
 	int crlstatus;
-	if(0 != PP_CertDL_getCertSn(0))
+	if(0 != PP_CertDL_getCertSn(path))
 	{
 		log_e(LOG_HOZON,"PP_CertDL_getCertSn error+++++++++++++++iRet[%d] \n");
 		return -1;
@@ -2122,7 +2134,7 @@ static int PP_CertDL_checkCertrevoked(void)
 		int fd = file_create(PP_CERTDL_TBOXCRL, 0644);
 		if(fd < 0)
 		{
-			//log_e(LOG_SOCK_PROXY,"creat file /usrdata/pem/tbox.crl fail\n");
+			log_e(LOG_SOCK_PROXY,"creat file /usrdata/pem/tbox.crl fail\n");
 			return -1;
 		}
 
