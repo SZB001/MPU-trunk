@@ -845,6 +845,9 @@ void PrvtPro_ShowPara(void)
 	log_o(LOG_HOZON, "GetPP_rmtCtrl_Sleep = %d",GetPP_rmtCtrl_Sleep());
 	PP_rmtCtrl_showSleepPara();
 	log_o(LOG_HOZON, "/*****************data over*****************/");
+	log_o(LOG_HOZON, "/*************show cert download*************/");
+	PP_CertDL_showPara();
+	log_o(LOG_HOZON, "/*****************data over*****************/");
 	log_o(LOG_HOZON, "/****************show version***************/");
 	log_o(LOG_HOZON, "hozon software version : %s\n",DID_F1B0_SW_FIXED_VER);
 	log_o(LOG_HOZON, "hozon hardware version : %s\n",DID_F191_HW_VERSION);

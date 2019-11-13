@@ -1549,8 +1549,7 @@ int SetPP_rmtCtrl_FOTA_startInform(void)
 {
 	PP_COMMON_LOCK();
 
-	if((RMTCTRL_IDLE != PP_rmtCtrl.rmtCtrlSt) || !GetPP_ChargeCtrl_Sleep() \
-		(PP_rmtCtrl_cfg_RmtStartSt() ==1))//远程车控非空闲
+	if((RMTCTRL_IDLE != PP_rmtCtrl.rmtCtrlSt) || (PP_rmtCtrl_cfg_RmtStartSt() ==1))//远程车控非空闲
 	{
 		PP_COMMON_UNLOCK();
 		return -1;

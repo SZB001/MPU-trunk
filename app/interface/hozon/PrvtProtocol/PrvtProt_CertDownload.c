@@ -1625,10 +1625,10 @@ void PP_CertDL_SetCertDLReq(unsigned char req)
 
 *��  ע��
 ******************************************************/
-void PP_CertDL_SetCertDLUpdata(unsigned char req)
+void PP_CertDL_SetCertDLUpdata(unsigned char req,unsigned int expTime)
 {
 	PP_checkCertSt.CertUpdataReq = req;
-	PP_checkCertSt.ExpTime = 60*2628000;
+	PP_checkCertSt.ExpTime = expTime;
 }
 
 /******************************************************
@@ -2203,4 +2203,12 @@ int PP_CertDL_getCipher(char* cipher,int* len)
 	free(filedata_ptr);
 
 	return 0;
+}
+
+/*
+* 显示参数
+*/
+void PP_CertDL_showPara(void)
+{
+	log_o(LOG_HOZON, "PP_checkCertSt.ExpTime = %d\n",PP_checkCertSt.ExpTime);
 }

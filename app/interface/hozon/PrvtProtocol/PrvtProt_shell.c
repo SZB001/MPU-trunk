@@ -656,15 +656,17 @@ static int PP_shell_SetCertDLReq(int argc, const char **argv)
 static int PP_shell_SetCertDLUpdata(int argc, const char **argv)
 {
 	unsigned int CupdataReq;
-    if (argc != 1)
+    unsigned int expTime;
+    if (argc != 2)
     {
         shellprintf(" usage: hozon_setcertdlReq <set cert download updata req>\r\n");
         return -1;
     }
 
 	sscanf(argv[0], "%u", &CupdataReq);
+    sscanf(argv[1], "%d", &expTime);
 
-	PP_CertDL_SetCertDLUpdata((uint8_t)CupdataReq);
+	PP_CertDL_SetCertDLUpdata((uint8_t)CupdataReq,expTime);
     sleep(1);
     return 0;
 }
