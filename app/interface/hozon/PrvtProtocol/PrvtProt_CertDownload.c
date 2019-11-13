@@ -1297,8 +1297,7 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task)
 		{
 			PP_checkCertSt.updataSt = PP_CERTUPDATA_IDLE;
 
-			if(((1 == PP_CertUpdata.allowupdata) && (PP_CERTDL_SUCCESS == PP_CertDL.state.dlsuccess)) || \
-					(2 == PP_CertUpdata.allowupdata))
+			if((1 == PP_CertUpdata.allowupdata) && (PP_CERTDL_SUCCESS == PP_CertDL.state.dlsuccess))
 			{
 				log_i(LOG_HOZON,"Cert update success\n");
 				return 1;
