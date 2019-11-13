@@ -1734,6 +1734,13 @@ static int PP_CertDL_checkCertExist(void)
 			file_copy(COM_SDCARD_DIR_PKI_CERT,PP_CERTDL_CERTPATH);//从备份文件还原
 			cert_exist_flag = 1;
 		}
+		else
+		{
+			PP_CertDL.state.CertValid = 0;
+			(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
+			PP_CertDL.state.CertEnflag = 0;
+			(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
+		}
 	}
 	
 	pthread_mutex_unlock(&checkcertmtx);//解锁
