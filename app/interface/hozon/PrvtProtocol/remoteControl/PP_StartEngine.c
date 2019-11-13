@@ -313,7 +313,7 @@ void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			}
 			else
 			{
-				enginecation = PP_POWERON; //下高压电
+				enginecation = PP_POWEROFF/下高压电
 				log_o(LOG_HOZON,"TSP request to shut down the engine\n");
 			}
 			PP_rmtengineCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
