@@ -736,6 +736,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 			outofdataRet = PP_CertDL_checkCertOutofdate(PP_CERTDL_CERTPATH);//检查过期
 			if((3 == outofdataRet) || ((2 == outofdataRet) && (0 == PP_CertDL.state.renewfailflag)))
 			{
+				log_i(LOG_HOZON,"cert out of date\n");
 				certRevoOutofdateflag = 1;
 			}
 		}
@@ -2211,4 +2212,5 @@ int PP_CertDL_getCipher(char* cipher,int* len)
 void PP_CertDL_showPara(void)
 {
 	log_o(LOG_HOZON, "PP_checkCertSt.ExpTime = %d\n",PP_checkCertSt.ExpTime);
+	log_o(LOG_HOZON, "PP_CertDL.state.renewfailflag = %d\n",PP_CertDL.state.renewfailflag);
 }
