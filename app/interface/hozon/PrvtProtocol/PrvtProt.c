@@ -843,6 +843,7 @@ void PrvtPro_ShowPara(void)
 	log_o(LOG_SOCK_PROXY, "PrvtProt sleep = %d\n",GetPrvtProt_Sleep());
 	log_o(LOG_HOZON, "PP_heartbeat.hbtasksleepflag = %d",PP_heartbeat.hbtasksleepflag);
 	log_o(LOG_HOZON, "GetPP_rmtCtrl_Sleep = %d",GetPP_rmtCtrl_Sleep());
+	log_o(LOG_HOZON, "GetPP_Wake_Sleep = %d",GetPP_Wake_Sleep());
 	PP_rmtCtrl_showSleepPara();
 	log_o(LOG_HOZON, "/*****************data over*****************/");
 	log_o(LOG_HOZON, "/*************show cert download*************/");

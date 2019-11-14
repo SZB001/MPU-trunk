@@ -22,7 +22,6 @@ typedef struct
 
 extern void PP_Send_WakeUpTime_to_Mcu(void);
 extern int PP_waketime_to_min(waketime * pt);
-extern uint8_t  GetPP_Wake_Sleep();
 
 #endif
 

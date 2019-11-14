@@ -38,6 +38,8 @@
         "diag.h": "c",
         "dsu_api.h": "c",
         "prvtprot.h": "c",
-        "list.h": "c"
+        "list.h": "c",
+        "scom_api.h": "c",
+        "pprmtctrl_cfg.h": "c"
     }
 }

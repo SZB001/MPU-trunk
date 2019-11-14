@@ -12,6 +12,7 @@
 #include "../../../../base/scom/scom_tl.h"
 #include "log.h"
 #include "PPrmtCtrl_cfg.h"
+#include "scom_api.h"
 #include "PP_canSend.h"
 
 static PP_can_msg_info_t canmsg_3D2;
@@ -111,11 +112,8 @@ int PP_send_cycle_ID440_to_mcu(uint8_t *dt)
 	unsigned char buf[64];
 	memcpy(buf + len, dt, 8*sizeof(uint8_t));
     len += 8*sizeof(uint8_t);
-	if (scom_tl_send_frame(SCOM_MPU_MCU_0x440, SCOM_TL_SINGLE_FRAME, 0, buf, len))
-	{
-	   log_e(LOG_HOZON, "Fail to send msg to MCU");
-	   return -2;
-	}
+	scom_tl_send_frame(SCOM_MPU_MCU_0x440, SCOM_TL_SINGLE_FRAME, 0, buf, len);
+
     return 0;
 }
 
@@ -128,11 +126,8 @@ int PP_send_cycle_ID445_to_mcu(uint8_t *dt)
 	unsigned char buf[64];
 	memcpy(buf + len, dt, 8*sizeof(uint8_t));
     len += 8*sizeof(uint8_t);
-	if (scom_tl_send_frame(SCOM_MPU_MCU_0x445, SCOM_TL_SINGLE_FRAME, 0, buf, len))
-	{
-	   log_e(LOG_HOZON, "Fail to send msg to MCU");
-	   return -2;
-	}
+	scom_tl_send_frame(SCOM_MPU_MCU_0x445, SCOM_TL_SINGLE_FRAME, 0, buf, len);
+
     return 0;
 }
 /********************************************************
@@ -220,23 +215,26 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 ****************************************************/
 void PP_can_send_cycle(void)
 {
-	if(tm_get_time() - lastsendtime > 50)    //50ms
+	if(1 == scom_dev_openSt())
 	{
-		if(PP_rmtCtrl_cfg_RmtStartSt() == 0)  //防止空调开启之后，高压电不是TBOX下的，导致一些状态不能恢复
+		if(tm_get_time() - lastsendtime > 50)    //50ms
 		{
-			PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//无效
-			PP_canSend_setbit(CAN_ID_445,17,1,0,NULL);//autocmd 清零
-		}
-		if(GetPP_CertDL_CertValid() == 1) //TBOX与HU之间的证书有效
-		{
-			PP_canSend_setbit(CAN_ID_440,23,1,1,NULL);//证书有效
-		}
-		PP_can_unpack(ID440_data,can_data);
-		PP_send_cycle_ID440_to_mcu(can_data);
-		PP_can_unpack(ID445_data,can_data);
-		PP_send_cycle_ID445_to_mcu(can_data);
-		lastsendtime = tm_get_time();
-	}	
+			if(PP_rmtCtrl_cfg_RmtStartSt() == 0)  //防止空调开启之后，高压电不是TBOX下的，导致一些状态不能恢复
+			{
+				PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//无效
+				PP_canSend_setbit(CAN_ID_445,17,1,0,NULL);//autocmd 清零
+			}
+			if(GetPP_CertDL_CertValid() == 1) //TBOX与HU之间的证书有效
+			{
+				PP_canSend_setbit(CAN_ID_440,23,1,1,NULL);//证书有效
+			}
+			PP_can_unpack(ID440_data,can_data);
+			PP_send_cycle_ID440_to_mcu(can_data);
+			PP_can_unpack(ID445_data,can_data);
+			PP_send_cycle_ID445_to_mcu(can_data);
+			lastsendtime = tm_get_time();
+		}	
+	}
 }
 /**************************************
 			唤醒MCU

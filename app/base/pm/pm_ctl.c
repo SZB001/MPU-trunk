@@ -114,7 +114,7 @@ int pm_is_sleep_ready(PM_EVT_ID id)
 
     for (i = 0; i < pm_regtbl.used_num; i++)
     {
-		if(pm_regtbl.pmtbl[i].handler != NULL)//by liujian ,µ÷ÓÃº¯ÊýÖ¸ÕëÒ»¶¨ÅÐ¶ÏÊÇ·ñÎªNULL
+		if(pm_regtbl.pmtbl[i].handler != NULL)//by liujian ,ï¿½ï¿½ï¿½Ãºï¿½ï¿½ï¿½Ö¸ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½Ç·ï¿½ÎªNULL
 		{
 			if (1 == pm_regtbl.pmtbl[i].handler(id))
 			{
@@ -122,7 +122,7 @@ int pm_is_sleep_ready(PM_EVT_ID id)
 			}
 			else
 			{
-				log_i(LOG_PM, "moudle %u is not ready for sleep", pm_regtbl.pmtbl[i].mid);
+				log_e(LOG_PM, "moudle %u is not ready for sleep", pm_regtbl.pmtbl[i].mid);
 			}
 		}
     }

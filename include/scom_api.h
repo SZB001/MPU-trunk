@@ -56,6 +56,6 @@ int scom_tl_send_frame(unsigned char msg_type, unsigned char frame_type,
 
 int scom_forward_msg(unsigned short receiver, unsigned int msg_id, unsigned char *msg,
                      unsigned int len);
-
+int scom_dev_openSt(void);
 
 #endif

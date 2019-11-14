@@ -147,3 +147,15 @@ int scom_dev_send(unsigned char *buf, unsigned int len)
     return ret;
 }
 
+/*
+*   获取scom开启状态
+*/
+int scom_dev_openSt(void)
+{
+    if(scom_dev_fd > 0)
+    {
+        return 1;
+    }
+    return 0;
+}
+

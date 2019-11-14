@@ -54,7 +54,7 @@ int pm_mode_proc(ST_DEF_ITEM_ID id, unsigned char *old_mode,
 
     mode = *new_mode;
     pm_mode = mode;
-    log_i(LOG_PM, "current mode:%d, old mode:%d", mode, *old_mode);
+    log_o(LOG_PM, "current mode:%d, old mode:%d", mode, *old_mode);
 
     switch (mode)
     {

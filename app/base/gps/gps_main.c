@@ -16,6 +16,7 @@
 #include "timer.h"
 #include "pwdg.h"
 #include "pm_api.h"
+#include "dev_api.h"
 
 #define GPS_MAX_CALLBACK    4
 static gps_cb_t gps_cb_lst[GPS_MAX_CALLBACK];
@@ -255,7 +256,10 @@ static void *gps_main(void)
                 {
                     if (MPU_MID_TIMER == msgheader.sender)
                     {
-                        gps_dev_timeout(msgheader.msgid);
+                        if(dev_get_KL15_signal())
+                        {
+                            gps_dev_timeout(msgheader.msgid);
+                        }
                     }
                     else if (MPU_MID_MID_PWDG == msgheader.msgid)
                     {

@@ -148,13 +148,17 @@ int scom_tl_send_frame(unsigned char msg_type, unsigned char frame_type,
     SCOM_TL_MSG_HDR msg_hdr;
     unsigned char omsg[512];
 
+    if(0 == scom_dev_openSt())
+    {
+         return -1;
+    }
+
     msg_hdr.msg_type  = msg_type;
     msg_hdr.ftype     = frame_type;
     msg_hdr.fno       = frame_no;
     msg_hdr.flen      = len;
 
     ret = msg_encode((unsigned char *)&msg_hdr, sizeof(msg_hdr), omsg, sizeof(omsg), FIRST_SEG, &cs);
-
     if (ret <= 0)
     {
         log_e(LOG_SCOM, "msg_encode hdr failed");
@@ -175,7 +179,7 @@ int scom_tl_send_frame(unsigned char msg_type, unsigned char frame_type,
         msg_len += ret;
     }
 
-    if (NULL != scom_tl_tx_fun)
+    if(NULL != scom_tl_tx_fun)
     {
         pthread_mutex_lock(&scom_tx_mutex);
         scom_tl_tx_fun(omsg, msg_len);
