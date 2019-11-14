@@ -421,7 +421,7 @@ int clbt_cfg_dump_para(void )
 
     char cipherbuff[1024] = {0};
     bufftp = cipherbuff;
-    int len;
+    int len = 0;
     PP_CertDL_getCipher(cipherbuff,&len);
     shellprintf(" %-32s :","cipher");
     for(k = 0; k < len; k++)

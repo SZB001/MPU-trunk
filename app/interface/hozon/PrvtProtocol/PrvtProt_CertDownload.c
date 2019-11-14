@@ -2201,7 +2201,7 @@ int PP_CertDL_getCipher(char* cipher,int* len)
 	//求得文件的大小
 	fseek(fp, 0, SEEK_END);
 	size = ftell(fp);
-	if(size>sizeof(cipher))
+	if(size>1024)
 	{
 		fclose(fp);
 		return -1;
