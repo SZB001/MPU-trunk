@@ -1736,10 +1736,17 @@ static int PP_CertDL_checkCertExist(void)
 		}
 		else
 		{
-			PP_CertDL.state.CertValid = 0;
-			(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
-			PP_CertDL.state.CertEnflag = 0;
-			(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
+			if(PP_CertDL.state.CertValid)
+			{
+				PP_CertDL.state.CertValid = 0;
+				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
+			}
+
+			if(PP_CertDL.state.CertEnflag)
+			{
+				PP_CertDL.state.CertEnflag = 0;
+				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
+			}
 		}
 	}
 	
