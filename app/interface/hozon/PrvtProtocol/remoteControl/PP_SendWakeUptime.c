@@ -158,8 +158,12 @@ int pp_get_low_waketime(void)
 
 uint8_t  GetPP_Wake_Sleep()
 {
-	if(pp_get_low_waketime() <= 2)
+	if((pp_get_low_waketime() == 1) || \
+				(pp_get_low_waketime()==2))
+	{
 		return 0;
+	}
+	
 	return 1;
 }
 void PP_Send_WakeUpTime_to_Mcu(void)
