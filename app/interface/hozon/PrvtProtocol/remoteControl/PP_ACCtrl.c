@@ -112,28 +112,10 @@ int AC_Shell_setctrl(int argc, const char **argv)
 	SetPP_ACCtrl_Request(RMTCTRL_SHELL,(void *)&acctrl,NULL);
 	return 0;
 }
-int AC_Shell_showctrl(int argc, const char **argv)
-{
-	int i;
-	
-	for(i=0;i<ACC_APPOINT_NUM;i++)
-	{
-		if(PP_rmtac_AppointBook[i].validFlg == 1)
-		{
-		
-			log_o(LOG_HOZON, "PP_rmtac_AppointBook[%d].id = %d",i,PP_rmtac_AppointBook[i].id);
-			log_o(LOG_HOZON, "PP_rmtac_AppointBook[%d].hour = %d",i,PP_rmtac_AppointBook[i].hour);
-			log_o(LOG_HOZON, "PP_rmtac_AppointBook[%d].min = %d",i,PP_rmtac_AppointBook[i].min);
-			log_o(LOG_HOZON, "PP_rmtac_AppointBook[%d].period = %d\n",i,PP_rmtac_AppointBook[i].period);
-		}
-	} 
-	return 0;
-}
 
 void remote_acc_shell_init(void)
 {
-	shell_cmd_register("hozon_actrl_setappoint", AC_Shell_setctrl, "TSP AC CTRL");
-	shell_cmd_register("hozon_actrl_showappoint", AC_Shell_showctrl, "TSP AC CTRL");
+	shell_cmd_register("hozon_actrl_setappoint", AC_Shell_setctrl, "TSP AC CTRL"); 
 }
 /**********************空调shell******************************/
 void PP_ACCtrl_init(void)
@@ -894,4 +876,20 @@ uint8_t PP_ACCtrl_cmdoff(void)
 		return 1;
 	}
 	return 0;
+}
+void PP_ACCtrl_show(void)
+{
+	int i;
+	
+	for(i=0;i<ACC_APPOINT_NUM;i++)
+	{
+		if(PP_rmtac_AppointBook[i].validFlg == 1)
+		{
+		
+			log_o(LOG_HOZON, "PP_rmtac_AppointBook[%d].id = %d",i,PP_rmtac_AppointBook[i].id);
+			log_o(LOG_HOZON, "PP_rmtac_AppointBook[%d].hour = %d",i,PP_rmtac_AppointBook[i].hour);
+			log_o(LOG_HOZON, "PP_rmtac_AppointBook[%d].min = %d",i,PP_rmtac_AppointBook[i].min);
+			log_o(LOG_HOZON, "PP_rmtac_AppointBook[%d].period = %d\n",i,PP_rmtac_AppointBook[i].period);
+		}
+	}  
 }

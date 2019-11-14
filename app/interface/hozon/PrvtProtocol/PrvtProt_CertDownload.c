@@ -2212,7 +2212,17 @@ int PP_CertDL_getCipher(char* cipher,int* len)
 	fread(filedata_ptr,1,size,fp);//每次读一个，共读size次
 	memcpy(cipher,filedata_ptr,size);
 	*len = size;
-
+#if 0
+	int i;
+	for(i=0;i<size;i++)
+	{
+		printf( "%02X ", (unsigned char)cipher[i]);
+		if((i+1)%16==0) 
+		{
+			printf("\n");
+		}
+	}
+#endif
 	fclose(fp);
 	free(filedata_ptr);
 

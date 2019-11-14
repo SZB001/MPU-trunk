@@ -128,5 +128,7 @@ extern void PP_can_send_identificat(uint8_t type,uint8_t *dt);
 
 extern void PP_can_send_mileage(uint8_t *dt);
 
+extern uint8_t PP_get_virtual_flag();
+
 #endif
 

@@ -1624,6 +1624,8 @@ void PP_rmtCtrl_showSleepPara(void)
 	log_o(LOG_HOZON, "GetPP_ChargeCtrl_Sleep = %d",GetPP_ChargeCtrl_Sleep());
 	log_o(LOG_HOZON, "GetPP_ACtrl_Sleep = %d",GetPP_ACtrl_Sleep());
 	log_o(LOG_HOZON, "GetPP_SeatCtrl_Sleep = %d",GetPP_SeatCtrl_Sleep());
+	log_o(LOG_HOZON, "GetPP_Wake_Sleep = %d",GetPP_Wake_Sleep());
+	log_o(LOG_HOZON, "PP_get_virtual_flag = %d",PP_get_virtual_flag());
 }
 void PP_rmtCtrl_settestflag(uint8_t flag)
 {

@@ -23,6 +23,8 @@ static uint8_t can_data[8];
 
 static uint64_t lastsendtime;
 
+static uint8_t virtual_on_flag;
+
 extern unsigned char GetPP_CertDL_CertValid(void);
 int PP_canSend_init(void)
 {
@@ -53,7 +55,7 @@ int PP_send_virtual_on_to_mcu(unsigned char on)
     }
 
     buf[len++] = on;
-
+	virtual_on_flag = on;
     if (scom_tl_send_frame(SCOM_MPU_MCU_VIRTUAL_ON, SCOM_TL_SINGLE_FRAME, 0, buf, len))
     {
         log_e(LOG_HOZON, "Fail to send msg to MCU");
@@ -385,4 +387,13 @@ void PP_can_send_identificat(uint8_t type,uint8_t *dt)
 void PP_can_send_mileage(uint8_t *dt)
 {
 	PP_canSend_setbit(CAN_ID_526,0,0,0,dt);	
+}
+uint8_t PP_get_virtual_flag()
+{
+	uint8_t st;
+	if(virtual_on_flag == 0)
+		st = 1;
+	else
+		st = 0;
+	return st;
 }

@@ -770,7 +770,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 
 			rvcReqCycle.buf						= &rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqCycle;
 			rvcReqCycle.size 					= rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqCyclelen;
-			log_i(LOG_UPER_ECDC, "rvcReqCycle.buf = %x\n",*rvcReqCycle.buf);
+			log_i(LOG_UPER_ECDC, "rvcReqCycle.buf = %d",*rvcReqCycle.buf);
 			log_i(LOG_UPER_ECDC, "rvcReqCycle.size = %d\n",rvcReqCycle.size);
 			ctrlHUBookingResp.rvcReqCycle 		= &rvcReqCycle;
 

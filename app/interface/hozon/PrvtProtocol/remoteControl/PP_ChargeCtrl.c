@@ -448,8 +448,7 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 		/*
 		 * IGN ON上电检查是否预约记录同步到tsp
 		 * */
-		if((1 == sockproxy_socketState()) && \
-			(PP_rmtChargeCtrl.state.bookSyncflag == 1) && (1 == PP_rmtCharge_AppointBook.validFlg))
+		if((1 == sockproxy_socketState()) && (PP_rmtChargeCtrl.state.bookSyncflag == 1))
 		{
 			if((PP_rmtCharge_AppointBook.appointType == RMTCTRL_HU)&&(PP_rmtCharge_AppointBook.informtspflag == 1))
 			{
@@ -461,7 +460,7 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 				rmtCtrl_chargeStpara.rvcReqEq		= PP_rmtCharge_AppointBook.targetSOC	/* OPTIONAL */;
 				rmtCtrl_chargeStpara.rvcReqCycle	= PP_rmtCharge_AppointBook.period	/* OPTIONAL */;
 				rmtCtrl_chargeStpara.HUbookingId	= PP_rmtCharge_AppointBook.id;
-				rmtCtrl_chargeStpara.eventid 		= PP_rmtCharge_AppointBook.eventId;
+				rmtCtrl_chargeStpara.eventid 		= 0;
 				rmtCtrl_chargeStpara.Resptype 		= PP_RMTCTRL_HUBOOKINGRESP;
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_chargeStpara);
 				PP_rmtCharge_AppointBook.informtspflag = 0;
@@ -673,7 +672,14 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				PP_rmtCharge_AppointBook.hour = ivi_chargeAppointSt_ptr->hour;
 				PP_rmtCharge_AppointBook.min = ivi_chargeAppointSt_ptr->min;
 				PP_rmtCharge_AppointBook.targetSOC = ivi_chargeAppointSt_ptr->targetpower;
-				PP_rmtCharge_AppointBook.period = 0xff;
+				if(ivi_chargeAppointSt_ptr->effectivestate == 1)
+				{
+					PP_rmtCharge_AppointBook.period = 0xff;
+				}
+				else
+				{
+					PP_rmtCharge_AppointBook.period = 0;
+				}
 				PP_rmtCharge_AppointBook.huBookingTime = ivi_chargeAppointSt_ptr->timestamp;
 				PP_rmtCharge_AppointBook.eventId = 0;
 				PP_rmtCharge_AppointBook.validFlg  = 1;
@@ -712,6 +718,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 
 				PP_rmtChargeCtrl.state.bookSyncflag = 1;
 				PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);
+				 
 			}
 			else
 			{}

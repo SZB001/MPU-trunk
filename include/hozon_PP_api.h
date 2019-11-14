@@ -99,6 +99,7 @@ extern int SetPP_rmtCtrl_FOTA_startInform(void);
 extern int SetPP_rmtCtrl_FOTA_endInform(void);
 extern void PP_rmtCtrl_SetFotaUpdateReq(unsigned char req);
 extern void PP_ChargeCtrl_show(void);
+extern void PP_ACCtrl_show(void);
 extern void PP_ntp_Init(void);
 extern void PP_ntp_calibrationTime(void);
 extern void PP_SetNTPTime(unsigned char ntpreq);

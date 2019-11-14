@@ -1154,7 +1154,8 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 			char vin[18] = {0};
 			char iccid[21] = {0};
 			char imei[16] = {0};
-		
+			char tboxsn[19] = {0};
+			unsigned int len;
 			Tbox__Net__TboxInfo tboxinfo;
 			tbox__net__tbox_info__init(&tboxinfo);
 
@@ -1176,8 +1177,10 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 			//获取整车VIN
 			gb32960_getvin(vin);
 			tboxinfo.vin = vin ;
-			//获取TBOX SN
-			tboxinfo.pdid = "1234567890";
+			//获取TBOX SN 
+			len = sizeof(tboxsn);
+			cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN,tboxsn,&len);
+			tboxinfo.pdid = tboxsn;
 			
 			TopMsg.tbox_info = &tboxinfo;
 			log_o(LOG_IVI, "tbox info");
@@ -1481,11 +1484,20 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 	   case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGEAPPOINTMENTSET:
 	   {
 			ivi_chargeAppointSt HuChargeAppoint;
-			HuChargeAppoint.cmd = PP_RMTCTRL_APPOINTCHARGE;
 			if(TopMsg->ihu_charge_appoointmentsts == NULL)
 			{
 				log_o(LOG_IVI,"TopMsg->ihu_charge_appoointmentsts == NULL");
 				return ;
+			}
+			log_o(LOG_IVI,"HuChargeAppoint.effectivestate = %d",TopMsg->ihu_charge_appoointmentsts->effectivestate);
+			
+			if(TopMsg->ihu_charge_appoointmentsts->effectivestate == 1)
+			{
+				HuChargeAppoint.cmd = PP_RMTCTRL_APPOINTCHARGE;
+			}
+			else
+			{
+				HuChargeAppoint.cmd = PP_RMTCTRL_CHRGCANCELAPPOINT;
 			}
 			HuChargeAppoint.timestamp = TopMsg->ihu_charge_appoointmentsts->timestamp;
 			
