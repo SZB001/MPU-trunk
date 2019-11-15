@@ -808,10 +808,12 @@ static int PP_CertDL_do_CertDownload(PrvtProt_task_t *task)
 			{
 				char vin[18] = {0};
 				gb32960_getvin(vin);
-				PP_CertDL.para.CertDLReq.infoListLength = 19 + gcoutlen;//19 == vin + "&&"
+				PP_CertDL.para.CertDLReq.infoListLength = 19 + 20 + gcoutlen;//19 == vin + "&&" + SN + "&&"
 				memcpy(PP_CertDL.para.CertDLReq.infoList,vin,17);
 				memcpy(PP_CertDL.para.CertDLReq.infoList+17,"&&",2);
-				memcpy(PP_CertDL.para.CertDLReq.infoList+19,gcsroutdata,gcoutlen);
+				memcpy(PP_CertDL.para.CertDLReq.infoList+19,PP_CertDL_SN,18);
+				memcpy(PP_CertDL.para.CertDLReq.infoList+37,"&&",2);
+				memcpy(PP_CertDL.para.CertDLReq.infoList+39,gcsroutdata,gcoutlen);
 				PP_CertDL_CertDLReq(task,&PP_CertDL.para);
 				PP_CertDL.state.waittime = tm_get_time();
 				PP_CertDL.state.dlSt = PP_CERTDL_DLREQWAIT;
@@ -1249,10 +1251,14 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task)
 
 					log_i(LOG_HOZON,"userAuth.csr =  %s",filedata_ptr);
 					gb32960_getvin(vin);
-					PP_CertDL.para.CertDLReq.infoListLength = size + strlen(vin) + strlen("&&0&&0&&");
+					PrvtProt_gettboxsn(PP_CertDL_SN);
+					PP_CertDL.para.CertDLReq.infoListLength = size + strlen(vin) + strlen("&&") + \
+															strlen(PP_CertDL_SN) + strlen("&&0&&0&&");
 					memcpy(PP_CertDL.para.CertDLReq.infoList,vin,strlen(vin));
-					memcpy(PP_CertDL.para.CertDLReq.infoList+17,"&&0&&0&&",strlen("&&0&&0&&"));
-					memcpy(PP_CertDL.para.CertDLReq.infoList+17+8,filedata_ptr,size);
+					memcpy(PP_CertDL.para.CertDLReq.infoList+17,"&&",strlen("&&"));
+					memcpy(PP_CertDL.para.CertDLReq.infoList+19,PP_CertDL_SN,strlen(PP_CertDL_SN));
+					memcpy(PP_CertDL.para.CertDLReq.infoList+37,"&&0&&0&&",strlen("&&0&&0&&"));
+					memcpy(PP_CertDL.para.CertDLReq.infoList+37+8,filedata_ptr,size);
 
 					fclose(fp);
 					free(filedata_ptr);
