@@ -15,7 +15,7 @@ description�� macro definitions
 *******************************************************/
 /**********�꿪�ض���*********/
 #define SOCKPROXY_SHELL_PROTOCOL  	0//
-
+//#define SOCKPROXY_TEST
 /**********�곣������*********/
 #define SOCK_SERVR_TIMEOUT    	(1000 * 5)
 #define SOCK_TXPAKG_OUTOFTIME    (1000 * 2)
@@ -66,7 +66,7 @@ description�� macro definitions
 
 /***********�꺯��***********/
 #define sockproxy_getURL(x)			gb32960_getURL(x)
-#define sockproxy_SkipSockCheck() 	(!gb32960_getNetworkSt() )//|| gb32960_getAllowSleepSt())
+#define sockproxy_SkipSockCheck() 	(!gb32960_networkSt())
 #define sockproxy_getsuspendSt() 	0//gb32960_getsuspendSt()
 
 /*******************************************************

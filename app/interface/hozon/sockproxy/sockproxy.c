@@ -75,7 +75,9 @@ static void *sockproxy_socketmain(void);
 static int sockproxy_sgLink(sockproxy_stat_t *state);
 static int sockproxy_BDLink(sockproxy_stat_t *state);
 static void sockproxy_nm_dial_recall(void);
+#ifdef SOCKPROXY_TEST
 static void sockproxy_testTask(void);
+#endif
 static int PP_shell_setPKIenable(int argc, const char **argv);
 /******************************************************
 description�� function code
@@ -546,7 +548,9 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	}
 
 	sockproxy_nm_dial_recall();//重新拨号
-	//sockproxy_testTask();
+#ifdef SOCKPROXY_TEST
+	sockproxy_testTask();
+#endif
     return 0;
 }
 
@@ -1528,9 +1532,9 @@ static void sockproxy_nm_dial_recall(void)
 
 	if(1 == IGNnewSt)//IGN ON
 	{
-		if(sockSt.state == PP_CLOSED)
+		if(sockproxy_SkipSockCheck())
 		{
-			if((tm_get_time() - sockSt.recalltimer) >= 30000)
+			if((tm_get_time() - sockSt.recalltimer) >= 5000)
 			{
 				nm_dial_restart();
 				sockSt.recalltimer = tm_get_time();
@@ -1562,6 +1566,7 @@ void sockproxy_showParameters(void)
 	log_o(LOG_SOCK_PROXY, "sockSt.pkiEnFlag = %d\n",sockSt.pkiEnFlag);
 }
 
+#ifdef SOCKPROXY_TEST
 /*
 *	3G/4G制式切换测试
 */
@@ -1610,6 +1615,7 @@ static void sockproxy_testTask(void)
 	  	//socketclosetimer = tm_get_time();
 	}
 }
+#endif
 
 /*
 * 设置双向连接域名地址
