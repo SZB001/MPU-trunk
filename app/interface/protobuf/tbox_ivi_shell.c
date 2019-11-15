@@ -123,7 +123,7 @@ static int tbox_ivi_shell_setHUPKIenable(int argc, const char **argv)
 	cfg_set_para(CFG_ITEM_EN_HUPKI, (unsigned char *)&pkien, 1);
 	shellprintf(" set pki ok\r\n");
 	sleep(1);
-	system("reboot");
+	//system("reboot");
     return 0;
 }
 

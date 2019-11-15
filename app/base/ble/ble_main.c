@@ -415,7 +415,7 @@ static int BleShellBleEn(int argc, const char **argv)
 
 	shellprintf(" set ble ok\r\n");
 	shellprintf(" please restart terminal!\r\n");
-	system("reboot");
+	//system("reboot");
     return 0;
 }
 

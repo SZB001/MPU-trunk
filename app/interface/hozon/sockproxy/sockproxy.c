@@ -1655,7 +1655,7 @@ static int PP_shell_setPKIenable(int argc, const char **argv)
 	sscanf(argv[0], "%u", &pkien);
 	cfg_set_para(CFG_ITEM_EN_PKI, (unsigned char *)&pkien, 1);
 	shellprintf(" set pki ok\r\n");
-	system("reboot");
+	//system("reboot");
 
     return 0;
 }
