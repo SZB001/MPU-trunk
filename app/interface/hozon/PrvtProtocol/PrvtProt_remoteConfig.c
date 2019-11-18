@@ -1711,7 +1711,7 @@ int PP_rmtCfg_ultoa(unsigned long value, char *string, int radix)
 */
 void getPP_rmtCfg_cfgVersion(char* ver)
 {
-	char i,j;
+	int i,j;
 	uint32_t tempVal;
 	char stringVal[33] = {0};
 	char *ver_tp = ver;

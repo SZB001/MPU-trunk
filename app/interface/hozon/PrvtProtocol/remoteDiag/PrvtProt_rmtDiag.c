@@ -1232,7 +1232,7 @@ static void PP_rmtDiag_send_cb(void * para)
 ******************************************************/
 void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 {
-	char i;
+	int i;
 	if(0 == reqtype)
 	{
 		log_i(LOG_HOZON, "receive remote diag request\n");
