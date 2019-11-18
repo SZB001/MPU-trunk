@@ -397,19 +397,14 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 			{
 				if(0 == sockSt.sleepFlag)
 				{
-					//int retval;
 					if(sockSt.cancelRcvphreadFlag)
 					{
-						//retval = pthread_kill(rcvtid,0);
-						//if(ESRCH == retval)//线程不存在
-						{
-							sockSt.cancelRcvphreadFlag = 0;
-							log_i(LOG_HOZON, "thread sockproxy_rcvmain not exist\n");
-							pthread_attr_init(&rcvta);
-							pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_JOINABLE);
-							pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
-							log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
-						}
+						sockSt.cancelRcvphreadFlag = 0;
+						log_i(LOG_HOZON, "thread sockproxy_rcvmain not exist\n");
+						pthread_attr_init(&rcvta);
+						pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_JOINABLE);
+						pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
+						log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
 					}
 
 					if(GetPP_CertDL_allowBDLink() == 0)//
@@ -467,11 +462,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					int retcancel;
 					log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
 					retcancel = pthread_cancel(rcvtid);
-					pthread_join(rcvtid, &ret);
-					//if(ESRCH != pthread_kill(rcvtid,0))//线程存在
-					//{
-					//	log_i(LOG_HOZON, "thread sockproxy_rcvmain exist\n");
-					//}
+					pthread_join(rcvtid, &ret);					
 					log_i(LOG_HOZON, "thread sockproxy_rcvmain cancel = %d\n",retcancel);
 					sockSt.cancelRcvphreadFlag = 1;
 					sockSt.asynCloseFlg = 0;
@@ -520,7 +511,6 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				{
 					if((tm_get_time() - sockSt.sleepwaittime) > 15000)
 					{
-						//log_i(LOG_HOZON, "wait sleep timeout,start to sleep\n");
 						sockSt.sleepwaittimeoutcnt++;
 						sockSt.sleepFlag = 1;
 					}
@@ -1059,6 +1049,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 								rpt->SendInform_cb(rpt->Inform_cb_para);
 							}
 							sockproxy_socketclose((int)(PP_SP_COLSE_SP + 4));//by liujian 20190510
+							sleep(1);
 						}
 						else if(res == 0)
 						{
@@ -1101,6 +1092,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 							rpt->SendInform_cb(rpt->Inform_cb_para);
 						}
 						sockproxy_socketclose((int)(PP_SP_COLSE_SP + 5));//by liujian 20190510
+						sleep(1);
 					}
 					else if(res == 0)
 					{
@@ -1140,6 +1132,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 						}
 						SP_data_put_back(rpt);
 						sockproxy_socketclose((int)(PP_SP_COLSE_SP + 6));//by liujian 20190510
+						sleep(1);
 					}
 					else if(res == 0)
 					{
@@ -1173,6 +1166,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 					rpt->SendInform_cb(rpt->Inform_cb_para);
 				}
 				sockproxy_socketclose((int)(PP_SP_COLSE_SP + 7));//by liujian 20190510
+				sleep(1);
 			}
 			else if(res == 0)
 			{
@@ -1498,7 +1492,6 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 					}
 					sockSt.rcvstep = PP_RCV_IDLE;
 					sockSt.rcvType = PP_RCV_UNRCV;
-					//protocol_dump(LOG_SOCK_PROXY, "SOCK_PROXY_PRIV_RCV",sockSt.rcvbuf, sockSt.rcvlen, 0);
 				}
 			}
 			break;
