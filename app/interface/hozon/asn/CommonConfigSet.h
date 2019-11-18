@@ -40,6 +40,8 @@ typedef struct CommonConfigSet {
 	BOOLEAN_t	 carAlarmEnabled;
 	long	 heartbeatTimeout;
 	long	 dormancyHeartbeatTimeout;
+	long	 infoCollectCycle;
+	long	 regularUpCycle;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

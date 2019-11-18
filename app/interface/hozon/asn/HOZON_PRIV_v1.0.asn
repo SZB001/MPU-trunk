@@ -126,9 +126,11 @@ CommonConfigSettings ::= SEQUENCE
 	btKeyEntryEnabled	BOOLEAN,  -- Default false
 	carEmpowerEnabled 	BOOLEAN, -- Default false
 	eventReportEnabled 	BOOLEAN, -- Default false
-	carAlarmEnabled 	BOOLEAN,  -- Default false	
-	heartbeatTimeout 	INTEGER(0..65535), --
-	dormancyHeartbeatTimeout 	INTEGER(0..65535) --	
+	carAlarmEnabled 	BOOLEAN,  -- Default false
+	heartbeatTimeout 	INTEGER(0..65535), --	
+	dormancyHeartbeatTimeout 	INTEGER(0..65535), --
+	infoCollectCycle 	INTEGER(0..65535), --
+	regularUpCycle 		INTEGER(0..65535) --	
 }
 
 ExtendConfigSettings ::= SEQUENCE
@@ -215,7 +217,9 @@ CommonConfigSet ::= SEQUENCE
 	eventReportEnabled 	BOOLEAN, -- Default false
 	carAlarmEnabled 	BOOLEAN, -- Default false
 	heartbeatTimeout 	INTEGER(0..65535), --
-	dormancyHeartbeatTimeout 	INTEGER(0..65535) --
+	dormancyHeartbeatTimeout 	INTEGER(0..65535), --
+	infoCollectCycle 	INTEGER(0..65535), --
+	regularUpCycle 		INTEGER(0..65535) --
 }
 
 ExtendConfigSet ::= SEQUENCE

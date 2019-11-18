@@ -573,7 +573,10 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					log_i(LOG_UPER_ECDC, "CommonConfigSet.heartbeatTimeout  = %d\n",CommonConfigSet.heartbeatTimeout );
 					CommonConfigSet.dormancyHeartbeatTimeout  = rmtCfgReadResp_ptr->ReadResp.COMMON.dormancyHeartbeatTimeout ;
 					log_i(LOG_UPER_ECDC, "CommonConfigSet.dormancyHeartbeatTimeout  = %d\n",CommonConfigSet.dormancyHeartbeatTimeout );
-					
+					CommonConfigSet.infoCollectCycle  = rmtCfgReadResp_ptr->ReadResp.COMMON.infoCollectCycle;
+					log_i(LOG_UPER_ECDC, "CommonConfigSet.infoCollectCycle  = %d\n",CommonConfigSet.infoCollectCycle);
+					CommonConfigSet.regularUpCycle  = rmtCfgReadResp_ptr->ReadResp.COMMON.regularUpCycle;
+					log_i(LOG_UPER_ECDC, "CommonConfigSet.regularUpCycle  = %d\n",CommonConfigSet.regularUpCycle);
 
 					commonConfig.list.array = &CommonConfigSet_ptr;
 					commonConfig.list.count =1;
@@ -1536,6 +1539,8 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						app_rmtCfg_ptr->getResp.COMMON.carAlarmEnabled  = (**(cfggetResp.commonCfg->list.array)).carAlarmEnabled;
 						app_rmtCfg_ptr->getResp.COMMON.heartbeatTimeout  = (**(cfggetResp.commonCfg->list.array)).heartbeatTimeout;
 						app_rmtCfg_ptr->getResp.COMMON.dormancyHeartbeatTimeout  = (**(cfggetResp.commonCfg->list.array)).dormancyHeartbeatTimeout;
+						app_rmtCfg_ptr->getResp.COMMON.infoCollectCycle  = (**(cfggetResp.commonCfg->list.array)).infoCollectCycle;
+						app_rmtCfg_ptr->getResp.COMMON.regularUpCycle  = (**(cfggetResp.commonCfg->list.array)).regularUpCycle;
 
 						log_i(LOG_UPER_ECDC, "getCfgResp.actived = %d\n",app_rmtCfg_ptr->getResp.COMMON.actived);
 						log_i(LOG_UPER_ECDC, "getCfgResp.bCallEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.bCallEnabled);
@@ -1555,6 +1560,8 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						log_i(LOG_UPER_ECDC, "getCfgResp.carAlarmEnabled = %d\n",app_rmtCfg_ptr->getResp.COMMON.carAlarmEnabled);
 						log_i(LOG_UPER_ECDC, "getCfgResp.heartbeatTimeout = %d\n",app_rmtCfg_ptr->getResp.COMMON.heartbeatTimeout);
 						log_i(LOG_UPER_ECDC, "getCfgResp.dormancyHeartbeatTimeout = %d\n",app_rmtCfg_ptr->getResp.COMMON.dormancyHeartbeatTimeout);
+						log_i(LOG_UPER_ECDC, "getCfgResp.infoCollectCycle = %d\n",app_rmtCfg_ptr->getResp.COMMON.infoCollectCycle);
+						log_i(LOG_UPER_ECDC, "getCfgResp.regularUpCycle = %d\n",app_rmtCfg_ptr->getResp.COMMON.regularUpCycle);
 					}
 
 					if(cfggetResp.extendCfg != NULL)

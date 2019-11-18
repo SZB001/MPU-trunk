@@ -183,6 +183,8 @@ typedef struct
 	char carAlarmEnabled;
 	int heartbeatTimeout;
 	int dormancyHeartbeatTimeout;
+	int infoCollectCycle;
+	int regularUpCycle;
 	uint8_t commonConfigValid;
 }__attribute__((packed)) App_rmtCfg_COMMON_t;
 

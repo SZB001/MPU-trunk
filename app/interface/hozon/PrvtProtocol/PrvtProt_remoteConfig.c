@@ -1043,6 +1043,16 @@ void PP_rmtCfg_setCfgEnable(unsigned char obj,unsigned char enable)
 			AppData_rmtCfg.ReadResp.COMMON.dormancyHeartbeatTimeout = enable;
 		}
 		break;
+		case 19://国标报文采集打 包周期(s)
+		{
+			AppData_rmtCfg.ReadResp.COMMON.infoCollectCycle = enable;
+		}
+		break;
+		case 20://国标报文定时上 报周期(s)
+		{
+			AppData_rmtCfg.ReadResp.COMMON.regularUpCycle = enable;
+		}
+		break;
 		default:
 		break;
 	}
@@ -1275,6 +1285,8 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_o(LOG_HOZON, "COMMON.carAlarmEnabled  = %d",AppData_rmtCfg.ReadResp.COMMON.carAlarmEnabled);
 	log_o(LOG_HOZON, "COMMON.heartbeatTimeout  = %d",AppData_rmtCfg.ReadResp.COMMON.heartbeatTimeout);
 	log_o(LOG_HOZON, "COMMON.dormancyHeartbeatTimeout  = %d",AppData_rmtCfg.ReadResp.COMMON.dormancyHeartbeatTimeout);
+	log_o(LOG_HOZON, "COMMON.infoCollectCycle  = %d",AppData_rmtCfg.ReadResp.COMMON.infoCollectCycle);
+	log_o(LOG_HOZON, "COMMON.regularUpCycle  = %d",AppData_rmtCfg.ReadResp.COMMON.regularUpCycle);
 	log_o(LOG_HOZON, "COMMON info length = %d\n",sizeof(App_rmtCfg_COMMON_t));
 
 	log_o(LOG_HOZON, "\n/* EXTEND info */");
