@@ -95,6 +95,7 @@ static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,Pr
 
 static void PP_rmtCfg_send_cb(void * para);
 static void PP_rmtCfg_HexToStr(uint8_t *pbDest, uint8_t *pbSrc, int nLen);
+static void getPP_rmtCfg_localConfig(void);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -111,13 +112,12 @@ description�� function code
 ******************************************************/
 void PP_rmtCfg_init(void)
 {
-	int res;
 	unsigned int len;
 	memset(&PP_rmtCfg,0 , sizeof(PrvtProt_rmtCfg_t));
 	memset(&AppData_rmtCfg,0 , sizeof(PrvtProt_App_rmtCfg_t));
 
 	len = 11;
-	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_MCUSW,AppData_rmtCfg.checkReq.mcuSw,&len);//
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_MCUSW,AppData_rmtCfg.checkReq.mcuSw,&len);//
 	if(AppData_rmtCfg.checkReq.mcuSw[0])
 	{
 		AppData_rmtCfg.checkReq.mcuSwlen = strlen((char*)AppData_rmtCfg.checkReq.mcuSw);
@@ -128,7 +128,7 @@ void PP_rmtCfg_init(void)
 	}
 
 	len = 11;
-	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_MPUSW,AppData_rmtCfg.checkReq.mpuSw,&len);//
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_MPUSW,AppData_rmtCfg.checkReq.mpuSw,&len);//
 	if(AppData_rmtCfg.checkReq.mpuSw[0])
 	{
 		AppData_rmtCfg.checkReq.mpuSwlen = strlen((char*)AppData_rmtCfg.checkReq.mpuSw);
@@ -139,10 +139,10 @@ void PP_rmtCfg_init(void)
 	}
 
 	len = 18;
-	res = cfg_get_user_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);//vin
+	cfg_get_user_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);//vin
 	AppData_rmtCfg.checkReq.vehicleVinlen = 17;
 
-	res = PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//iccid
+	PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//iccid
 	AppData_rmtCfg.checkReq.iccIDlen = 20;
 
 	memcpy(AppData_rmtCfg.checkReq.btMacAddr,"000000000000",strlen("000000000000"));
@@ -152,25 +152,8 @@ void PP_rmtCfg_init(void)
 	memcpy(AppData_rmtCfg.checkReq.cfgVersion,"00000000000000000000000000000000",strlen("00000000000000000000000000000000"));
 	AppData_rmtCfg.checkReq.cfgVersionlen = strlen("00000000000000000000000000000000");
 
-	//��ȡ����
-	len = 512;
-	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,&len);
-	if((res==0) && (AppData_rmtCfg.ReadResp.cfgsuccess == 1))
-	{
-		memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.ReadResp.cfgVersion,32);
-		AppData_rmtCfg.checkReq.cfgVersionlen = 32;
-	}
-	else
-	{
-		memcpy(AppData_rmtCfg.ReadResp.cfgVersion,AppData_rmtCfg.checkReq.cfgVersion,32);
-		log_o(LOG_HOZON,"AppData_rmtCfg.ReadResp.cfgsuccess = %d",AppData_rmtCfg.ReadResp.cfgsuccess);
-		AppData_rmtCfg.ReadResp.cfgVersionlen = 32;
-		AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = 0;
-		AppData_rmtCfg.ReadResp.APN2.apn2ConfigValid = 0;
-		AppData_rmtCfg.ReadResp.COMMON.commonConfigValid = 0;
-		AppData_rmtCfg.ReadResp.EXTEND.extendConfigValid= 0;
-		AppData_rmtCfg.ReadResp.FICM.ficmConfigValid = 0;
-	}
+	//读取本地配置
+	getPP_rmtCfg_localConfig();
 
 	PP_rmtCfg.state.avtivecheckflag = 0;
 	PP_rmtCfg.state.iccidValid = 0;
@@ -197,6 +180,42 @@ void PP_rmtCfg_init(void)
 	cfg_set_para(CFG_ITEM_WIFI_SET,&wifienable,1);
 	#endif
 
+}
+
+/*
+* 读取本地配置信息
+*/
+static void getPP_rmtCfg_localConfig(void)
+{
+	unsigned int len;
+	int res;
+	len = 1;
+	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&AppData_rmtCfg.ReadResp.cfgsuccess,&len);
+	if((res==0) && (AppData_rmtCfg.ReadResp.cfgsuccess == 1))
+	{
+		len = 33;
+		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_VER,AppData_rmtCfg.ReadResp.cfgVersion,&len);
+		memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.ReadResp.cfgVersion,33);
+		AppData_rmtCfg.ReadResp.cfgVersionlen = 32;
+		AppData_rmtCfg.checkReq.cfgVersionlen = 32;
+		len = 256;
+		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&AppData_rmtCfg.ReadResp.APN1,&len);
+		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN2,&AppData_rmtCfg.ReadResp.APN2,&len);
+		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_FICM,&AppData_rmtCfg.ReadResp.FICM,&len);
+		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&AppData_rmtCfg.ReadResp.COMMON,&len);
+		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_EXT,&AppData_rmtCfg.ReadResp.EXTEND,&len);
+	}
+	else
+	{
+		memcpy(AppData_rmtCfg.ReadResp.cfgVersion,AppData_rmtCfg.checkReq.cfgVersion,32);
+		log_o(LOG_HOZON,"AppData_rmtCfg.ReadResp.cfgsuccess = %d",AppData_rmtCfg.ReadResp.cfgsuccess);
+		AppData_rmtCfg.ReadResp.cfgVersionlen = 32;
+		AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = 0;
+		AppData_rmtCfg.ReadResp.APN2.apn2ConfigValid = 0;
+		AppData_rmtCfg.ReadResp.COMMON.commonConfigValid = 0;
+		AppData_rmtCfg.ReadResp.EXTEND.extendConfigValid= 0;
+		AppData_rmtCfg.ReadResp.FICM.ficmConfigValid = 0;
+	}
 }
 
 /******************************************************
@@ -329,7 +348,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 	{
 		case PP_MID_CHECK_CFG_RESP://check remote config response
 		{
-			if(PP_rmtCfg.state.waitSt == PP_RMTCFG_CHECK_WAIT_RESP)
+			if(rmtCfg->state.waitSt == PP_RMTCFG_CHECK_WAIT_RESP)
 			{
 				if(1 == AppData_rmtCfg.checkResp.needUpdate)
 				{
@@ -353,12 +372,12 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 		break;
 		case PP_MID_CONN_CFG_REQ:
 		{
-			PP_rmtCfg.state.req 	= 0;
-			PP_rmtCfg.state.reqCnt 	= 0;
-			PP_rmtCfg.state.waitSt  = PP_RMTCFG_WAIT_IDLE;
-			PP_rmtCfg.state.CfgSt 	= PP_RMTCFG_CFG_IDLE;
+			rmtCfg->state.req 	= 0;
+			rmtCfg->state.reqCnt 	= 0;
+			rmtCfg->state.waitSt  = PP_RMTCFG_WAIT_IDLE;
+			rmtCfg->state.CfgSt 	= PP_RMTCFG_CFG_IDLE;
 			rmtCfg->state.cfgAccept = 1;
-			PP_rmtCfg.state.eventid = MsgDataBody.eventId;
+			rmtCfg->state.eventid = MsgDataBody.eventId;
 			if(0 == PP_rmtCfg_ConnResp(task,rmtCfg,&MsgDataBody))
 			{
 				idlenode = PP_getIdleNode();
@@ -375,12 +394,14 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 		break;
 		case PP_MID_READ_CFG_REQ:
 		{
+			//读取本地配置
+			getPP_rmtCfg_localConfig();
 			memset(AppData_rmtCfg.ReadResp.readreq,0,PP_RMTCFG_SETID_MAX);
 			for(i = 0; i < AppData_rmtCfg.ReadReq.SettingIdlen;i++)
 			{
 				AppData_rmtCfg.ReadResp.readreq[AppData_rmtCfg.ReadReq.SettingId[i] -1] = 1;
 			}
-			PP_rmtCfg.state.eventid = MsgDataBody.eventId;
+			rmtCfg->state.eventid = MsgDataBody.eventId;
 			if(0 == PP_rmtCfg_ReadCfgResp(task,rmtCfg,&MsgDataBody))
 			{
 				idlenode = PP_getIdleNode();
@@ -592,6 +613,14 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		{
 			if(AppData_rmtCfg.getResp.result == 1)
 			{
+				unsigned int len;
+				len = 256;
+				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&AppData_rmtCfg.ReadResp.APN1,&len);
+				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN2,&AppData_rmtCfg.ReadResp.APN2,&len);
+				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_FICM,&AppData_rmtCfg.ReadResp.FICM,&len);
+				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&AppData_rmtCfg.ReadResp.COMMON,&len);
+				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_EXT,&AppData_rmtCfg.ReadResp.EXTEND,&len);
+
 				AppData_rmtCfg.getResp.result = 0;
 				memcpy(AppData_rmtCfg.ReadResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion, \
 														  AppData_rmtCfg.checkResp.cfgVersionlen);
@@ -1056,7 +1085,10 @@ void PP_rmtCfg_setCfgEnable(unsigned char obj,unsigned char enable)
 		default:
 		break;
 	}
-
+	AppData_rmtCfg.ReadResp.cfgsuccess = 1;
+	AppData_rmtCfg.ReadResp.COMMON.commonConfigValid = 1;
+	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&AppData_rmtCfg.ReadResp.cfgsuccess,1);
+	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&AppData_rmtCfg.ReadResp.COMMON,256);
 }
 
 void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *data1,const void *data2)
@@ -1110,34 +1142,35 @@ void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *data1,const void *data2)
 	}
 	AppData_rmtCfg.ReadResp.cfgsuccess = 1;
 	AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = 1;
-	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
+	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&AppData_rmtCfg.ReadResp.cfgsuccess,1);
+	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&AppData_rmtCfg.ReadResp.APN1,256);
 }
 
 void PP_rmtCfg_setCfgficm(unsigned char obj,const void *data)
 {
 	switch(obj)
 	{
-	  	case 1:  //TSP APN Address
+	  	case 1:
 	  	{
 	  		strcpy((char *)AppData_rmtCfg.ReadResp.FICM.token,(const char*)data);
 	  	}
 	  	break;
-	  	case 2:  //TSP APN Address
+	  	case 2:
 	  	{
 	  		strcpy((char *)AppData_rmtCfg.ReadResp.FICM.userID,(const char*)data);
 	  	}
 	  	break;
-	  	case 3:  //TSP APN Address
+	  	case 3:
 	  	{
 	  		AppData_rmtCfg.ReadResp.FICM.directConnEnable = atoi(data);
 	  	}
 	  	break;
-	  	case 4:  //TSP APN Address
+	  	case 4:
 	  	{
 	  		strcpy((char *)AppData_rmtCfg.ReadResp.FICM.address,(const char*)data);
 	  	}
 	  	break;
-	  	case 5:  //TSP APN Address
+	  	case 5:
 	  	{
 	  		strcpy((char *)AppData_rmtCfg.ReadResp.FICM.port,(const char*)data);
 	  	}
@@ -1145,7 +1178,7 @@ void PP_rmtCfg_setCfgficm(unsigned char obj,const void *data)
 		default:
 		break;
 	}
-	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
+	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_FICM,&AppData_rmtCfg.ReadResp.FICM,256);
 }
 
 /******************************************************
@@ -1419,8 +1452,14 @@ static void PP_rmtCfg_send_cb(void * para)
 				{
 					PP_rmtCfg.state.cfgsuccess = 0;
 					AppData_rmtCfg.ReadResp.cfgsuccess = 1;
-					//�������ã�ʹ���µ�����
-					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG,&AppData_rmtCfg.ReadResp,512);
+					//配置参数写入flash
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&AppData_rmtCfg.ReadResp.cfgsuccess,1);
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_VER,AppData_rmtCfg.ReadResp.cfgVersion,33);
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&AppData_rmtCfg.ReadResp.APN1,256);
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN2,&AppData_rmtCfg.ReadResp.APN2,256);
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_FICM,&AppData_rmtCfg.ReadResp.FICM,256);
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&AppData_rmtCfg.ReadResp.COMMON,256);
+					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_EXT,&AppData_rmtCfg.ReadResp.EXTEND,256);
 					memcpy(AppData_rmtCfg.checkReq.cfgVersion,AppData_rmtCfg.checkResp.cfgVersion,AppData_rmtCfg.checkResp.cfgVersionlen);
 					AppData_rmtCfg.checkReq.cfgVersionlen = AppData_rmtCfg.checkResp.cfgVersionlen;
 					PP_rmtCfg_settbox();
@@ -1658,12 +1697,19 @@ int getPP_rmtCfg_heartbeatTimeout(void)
 */
 void getPP_rmtCfg_tspAddrPort(char* addr,int* port)
 {
+	unsigned int len;
+	len = 256;
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&AppData_rmtCfg.ReadResp.APN1,&len);
 	if(1 == AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid)
 	{
 		memcpy(addr,(char*)AppData_rmtCfg.ReadResp.APN1.tspAddr, \
 								AppData_rmtCfg.ReadResp.APN1.tspAddrlen);
 		*port = atoi((const char*)AppData_rmtCfg.ReadResp.APN1.tspPort);
 	}
+	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = %d",AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid);
+	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.tspAddr = %s",AppData_rmtCfg.ReadResp.APN1.tspAddr);
+	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.tspAddrlen = %d",AppData_rmtCfg.ReadResp.APN1.tspAddrlen);
+	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.tspPort = %s",AppData_rmtCfg.ReadResp.APN1.tspPort);
 }
 
 /*
@@ -1671,12 +1717,19 @@ void getPP_rmtCfg_tspAddrPort(char* addr,int* port)
 */
 void getPP_rmtCfg_certAddrPort(char* addr,int* port)
 {
+	unsigned int len;
+	len = 256;
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&AppData_rmtCfg.ReadResp.APN1,&len);
 	if(1 == AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid)
 	{
 		memcpy(addr,(char*)AppData_rmtCfg.ReadResp.APN1.certAddress, \
 							AppData_rmtCfg.ReadResp.APN1.certAddresslen);
 		*port = atoi((const char*)AppData_rmtCfg.ReadResp.APN1.certPort);
 	}
+	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = %d",AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid);
+	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.certAddress = %s",AppData_rmtCfg.ReadResp.APN1.certAddress);
+	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.certAddresslen = %d",AppData_rmtCfg.ReadResp.APN1.certAddresslen);
+	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.certPort = %s",AppData_rmtCfg.ReadResp.APN1.certPort);
 }
 
 /*无符号长整形转字符型*/

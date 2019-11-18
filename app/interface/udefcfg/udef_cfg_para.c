@@ -17,7 +17,7 @@
 #include "dev_api.h"
 #include "ble.h"
 #include "at.h"
-#define USER_CFG_PARA_BUF_LEN     2*1024
+#define USER_CFG_PARA_BUF_LEN     5*1024
 
 typedef enum 
 {

@@ -236,15 +236,16 @@ typedef struct
 typedef struct
 {
 	char result;
+	uint8_t cfgsuccess;
 	uint8_t cfgVersion[33];
 	uint8_t cfgVersionlen;
+	uint8_t readreq[PP_RMTCFG_SETID_MAX];
+
 	App_rmtCfg_FICM_t 	FICM;
 	App_rmtCfg_APN1_t 	APN1;
 	App_rmtCfg_APN2_t 	APN2;
 	App_rmtCfg_COMMON_t COMMON;
 	App_rmtCfg_EXTEND_t EXTEND;
-	uint8_t readreq[PP_RMTCFG_SETID_MAX];
-	uint8_t cfgsuccess;
 }__attribute__((packed)) App_rmtCfg_CfgReadResp_t;
 
 typedef struct

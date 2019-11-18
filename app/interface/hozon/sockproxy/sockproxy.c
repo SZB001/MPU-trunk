@@ -578,7 +578,8 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 				getPP_rmtCfg_certAddrPort(sockSt.sgLinkAddr,&sockSt.sgPort);
 				if((sockSt.sgLinkAddr[0] == 0) || (sockSt.sgPort == 0))
 				{
-					log_e(LOG_SOCK_PROXY,"invalid addr or port +++++++\n");
+					log_e(LOG_SOCK_PROXY,"invalid addr %s or port %d+++++++\n", \
+											sockSt.sgLinkAddr,sockSt.sgPort);
 					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 					sockSt.waittime = tm_get_time();
 					sleep(1);
@@ -748,7 +749,8 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 				getPP_rmtCfg_tspAddrPort(sockSt.BDLLinkAddr,&sockSt.BDLPort);
 				if((sockSt.BDLLinkAddr[0] == 0) || (sockSt.BDLPort == 0))
 				{
-					log_e(LOG_SOCK_PROXY,"invalid addr or port +++++++\n");
+					log_e(LOG_SOCK_PROXY,"invalid addr %s or port %d +++++++\n",\
+										sockSt.BDLLinkAddr,sockSt.BDLPort);
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 					sockSt.waittime = tm_get_time();
 					sleep(1);
@@ -1605,7 +1607,6 @@ static void sockproxy_testTask(void)
 	else
 	{
 		socketopentimer = tm_get_time();
-	  	//socketclosetimer = tm_get_time();
 	}
 }
 #endif
