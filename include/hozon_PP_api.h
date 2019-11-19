@@ -97,7 +97,7 @@ extern void SetPP_rmtCtrl_AuthRequest(void);
 extern unsigned char GetPP_rmtCtrl_AuthResult(void);
 extern int SetPP_rmtCtrl_FOTA_startInform(void);
 extern int SetPP_rmtCtrl_FOTA_endInform(void);
-extern void PP_rmtCtrl_SetFotaUpdateReq(unsigned char req);
+extern void PP_rmtCtrl_ShellFotaUpdateReq(unsigned char req);
 extern void PP_ChargeCtrl_show(void);
 extern void PP_ACCtrl_show(void);
 extern void PP_ntp_Init(void);

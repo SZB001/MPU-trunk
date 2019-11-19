@@ -722,7 +722,7 @@ static int PP_shell_SetRmtFotaUpdate(int argc, const char **argv)
 
 	sscanf(argv[0], "%u", &rmtfotaUpdateReq);
 
-	PP_rmtCtrl_SetFotaUpdateReq((uint8_t)rmtfotaUpdateReq);
+	PP_rmtCtrl_ShellFotaUpdateReq((uint8_t)rmtfotaUpdateReq);
     sleep(1);
     return 0;
 }

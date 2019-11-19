@@ -128,12 +128,11 @@ description： function declaration
 static int PP_rmtCtrl_do_checksock(PrvtProt_task_t *task);
 static int PP_rmtCtrl_do_rcvMsg(PrvtProt_task_t *task);
 static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len);
-//static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task);
-//static int PP_rmtCtrl_StatusResp(long bookingId,unsigned int reqtype);
-
 static void PP_rmtCtrl_send_cb(void * para);
 static int PP_rmtCtrl_getIdleNode(void);
-
+static uint8_t PP_rmtCtrl_request(void);
+static uint8_t PP_rmtCtrl_end(void);
+static void PP_rmtCtrl_clear(void);
 /******************************************************
 description： function code
 ******************************************************/
@@ -169,56 +168,6 @@ void PP_rmtCtrl_init(void)
 		memset(&rmtCtrl_TxInform[i],0,sizeof(PrvtProt_TxInform_t));
 	}
 }
-
-uint8_t PP_rmtCtrl_request(void)
-{
-	uint8_t ret = 0;
-	ret  = PP_doorLockCtrl_start() ||
-		   PP_autodoorCtrl_start() ||
-		   PP_searchvehicle_start()||
-		   PP_sunroofctrl_start()  ||
-		   PP_startengine_start()  ||
-		   PP_seatheating_start()  ||
-		   //PP_ChargeCtrl_start()   ||
-		   PP_ACCtrl_start()	   ||
-		   PP_startforbid_start()  ||
-		   PP_CameraCtrl_start()   ||
-		   PP_bluetoothstart_start(); 
-	return ret;
-}
-
-uint8_t PP_rmtCtrl_end(void)
-{
-	uint8_t ret = 0;
-	ret = PP_doorLockCtrl_end() &&	\
-		  PP_autodoorCtrl_end()   &&	\
-		  PP_searchvehicle_end()  &&	\
-		  PP_sunroofctrl_end()    &&	\
-		  PP_startengine_end()    &&	\
-		  PP_seatheating_end()    &&	\
-		  //PP_ChargeCtrl_end()	  &&	
-		  PP_ACCtrl_end()	      &&	\
-		  PP_startforbid_end()    &&    \
-		  PP_CameraCtrl_end()     &&    \
-		  PP_bluetoothstart_end();
-	return ret;
-}
-
-void PP_rmtCtrl_clear(void)
-{
-	PP_autodoorCtrl_ClearStatus();
-	PP_doorLockCtrl_ClearStatus();
-	PP_searchvehicle_ClearStatus();
-	PP_seatheating_ClearStatus();
-	PP_startengine_ClearStatus();
-	PP_startforbid_ClearStatus();
-	PP_sunroofctrl_ClearStatus();
-	//PP_ChargeCtrl_ClearStatus();
-	PP_ACCtrl_ClearStatus();
-	PP_CameraCtrl_ClearStatus();
-	PP_bluetoothstart_ClearStatus();
-}
-
 
 /******************************************************
 *函数名：PP_rmtCtrl_mainfunction
@@ -330,7 +279,6 @@ int PP_rmtCtrl_mainfunction(void *task)
 		break;
 		case RMTCTRL_COMMAND_LAUNCH://远程控制
 		{
-			//log_o(LOG_HOZON,"-------command---------");
 			int ifend;
 			for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
 			{
@@ -398,13 +346,13 @@ static int PP_rmtCtrl_do_checksock(PrvtProt_task_t *task)
 	return -1;
 }
 /******************************************************
-*函数名：PP_rmtCtrl_do_checksock
+*函数名：PP_rmtCtrl_getTimestamp
 
 *形  参：void
 
 *返回值：void
 
-*描  述：检查socket连接
+*描  述：获取时间戳
 
 *备  注：
 ******************************************************/
@@ -415,6 +363,7 @@ long PP_rmtCtrl_getTimestamp(void)
 	
 	return (long)(timestamp.tv_sec);
 }
+
 /******************************************************
 *函数名：PP_rmtCtrl_do_rcvMsg
 
@@ -1493,6 +1442,60 @@ static int PP_rmtCtrl_getIdleNode(void)
 	return res;
 }
 
+/*
+* 获取远程控制请求状态
+*/
+static uint8_t PP_rmtCtrl_request(void)
+{
+	uint8_t ret = 0;
+	ret  = PP_doorLockCtrl_start() ||	\
+		   PP_autodoorCtrl_start() ||	\
+		   PP_searchvehicle_start()||	\
+		   PP_sunroofctrl_start()  ||	\
+		   PP_startengine_start()  ||	\
+		   PP_seatheating_start()  ||	\
+		   PP_ACCtrl_start()	   ||	\
+		   PP_startforbid_start()  ||	\
+		   PP_CameraCtrl_start()   ||	\
+		   PP_bluetoothstart_start(); 
+	return ret;
+}
+
+/*
+* 获取远程控制执行结束状态
+*/
+static uint8_t PP_rmtCtrl_end(void)
+{
+	uint8_t ret = 0;
+	ret = PP_doorLockCtrl_end()   &&	\
+		  PP_autodoorCtrl_end()   &&	\
+		  PP_searchvehicle_end()  &&	\
+		  PP_sunroofctrl_end()    &&	\
+		  PP_startengine_end()    &&	\
+		  PP_seatheating_end()    &&	\
+		  PP_ACCtrl_end()	      &&	\
+		  PP_startforbid_end()    &&    \
+		  PP_CameraCtrl_end()     &&    \
+		  PP_bluetoothstart_end();
+	return ret;
+}
+
+/*
+* 清远程控制状态
+*/
+static void PP_rmtCtrl_clear(void)
+{
+	PP_autodoorCtrl_ClearStatus();
+	PP_doorLockCtrl_ClearStatus();
+	PP_searchvehicle_ClearStatus();
+	PP_seatheating_ClearStatus();
+	PP_startengine_ClearStatus();
+	PP_startforbid_ClearStatus();
+	PP_sunroofctrl_ClearStatus();
+	PP_ACCtrl_ClearStatus();
+	PP_CameraCtrl_ClearStatus();
+	PP_bluetoothstart_ClearStatus();
+}
 
 /******************************************************
 *������:SetPP_rmtCtrl_Awaken
@@ -1601,17 +1604,17 @@ int SetPP_rmtCtrl_FOTA_endInform(void)
 }
 
 /******************************************************
-*函数名：PP_rmtCtrl_SetFotaUpdateReq
+*函数名：PP_rmtCtrl_ShellFotaUpdateReq
 
 *形  参：
 
 *返回值：
 
-*描  述：设置 请求
+*描  述：shell设置 请求
 
 *备  注：
 ******************************************************/
-void PP_rmtCtrl_SetFotaUpdateReq(unsigned char req)
+void PP_rmtCtrl_ShellFotaUpdateReq(unsigned char req)
 {
 	PP_rmtCtrl.fotaUpgradeSt = req;
 	PP_rmtCtrl.fotaAuthReq = 1;
