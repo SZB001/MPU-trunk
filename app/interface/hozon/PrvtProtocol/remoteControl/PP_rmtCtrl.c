@@ -609,6 +609,10 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 		}
 	}
+	else if(PP_MID_RMTCTRL_HUBOOKBACKRESP == MsgDataBody.mID)//HU booking sync response
+	{
+		PP_ChargeCtrl_HUBookingBackResp(&Appdata.CtrlHUbookingBackResp);
+	}
 }
 
 #if 0

@@ -339,10 +339,19 @@ typedef struct
 
 typedef struct
 {
+	/* remote control HU booking sync resp */
+	long	rvcReqType;
+	int		rvcResult;
+	long	bookingId	/* OPTIONAL */;
+}__attribute__((packed))  App_rmtCtrlHUbookingBackResp_t;
+
+typedef struct
+{
 	App_rmtCtrlReq_t 	CtrlReq;
 	App_rmtCtrlResp_t 	CtrlResp;
 	App_rmtCtrlbookingResp_t 	CtrlbookingResp;
 	App_rmtCtrlHUbookingResp_t 	CtrlHUbookingResp;
+	App_rmtCtrlHUbookingBackResp_t	CtrlHUbookingBackResp;
 }__attribute__((packed))  PrvtProt_App_rmtCtrl_t;
 
 

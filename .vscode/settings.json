@@ -40,6 +40,7 @@
         "prvtprot.h": "c",
         "list.h": "c",
         "scom_api.h": "c",
-        "pprmtctrl_cfg.h": "c"
+        "pprmtctrl_cfg.h": "c",
+        "hubookingbackresp.h": "c"
     }
 }

@@ -66,6 +66,7 @@ description�� macro definitions
 #define PP_MID_RMTCTRL_RESP 		2//remote ctrl response
 #define PP_MID_RMTCTRL_BOOKINGRESP 	3//remote ctrl booking response
 #define PP_MID_RMTCTRL_HUBOOKINGRESP 	4//remote ctrl HU booking response
+#define PP_MID_RMTCTRL_HUBOOKBACKRESP 	5//remote ctrl HU booking back response
 
 #define PP_AID_VS	 		130//����״̬
 //MID

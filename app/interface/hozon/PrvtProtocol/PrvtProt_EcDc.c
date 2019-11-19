@@ -39,6 +39,7 @@ description�� include the header file
 #include "RmtCtrlStRespInfo.h"
 #include "BookingResp.h"
 #include "HUBookingResp.h"
+#include "HUBookingBackResp.h"
 #include "VehicleStReqInfo.h"
 #include "VehicleStRespInfo.h"
 #include "VSgpspos.h"
@@ -98,6 +99,7 @@ static asn_TYPE_descriptor_t *pduType_Ctrl_Req = &asn_DEF_RmtCtrlReqInfo;
 static asn_TYPE_descriptor_t *pduType_Rmt_Ctrl_resp = &asn_DEF_RmtCtrlStRespInfo;
 static asn_TYPE_descriptor_t *pduType_Rmt_Ctrl_Bookingresp = &asn_DEF_BookingResp;
 static asn_TYPE_descriptor_t *pduType_Rmt_Ctrl_HUBookingresp = &asn_DEF_HUBookingResp;
+static asn_TYPE_descriptor_t *pduType_Rmt_Ctrl_HUBookBackresp = &asn_DEF_HUBookingBackResp;
 static asn_TYPE_descriptor_t *pduType_VS_req = &asn_DEF_VehicleStReqInfo;
 static asn_TYPE_descriptor_t *pduType_VS_resp = &asn_DEF_VehicleStRespInfo;
 
@@ -1646,6 +1648,33 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						log_i(LOG_UPER_ECDC, "RmtCtrlReq.rvcReqParamslen = %d\n",app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen);
 					}
 				}
+				else if(PP_MID_RMTCTRL_HUBOOKBACKRESP == MID)
+				{
+					log_i(LOG_UPER_ECDC, "remote control HUBooking sync response\n");
+					HUBookingBackResp_t HUBookingBackResp;
+					HUBookingBackResp_t *HUBookingBackResp_ptr = &HUBookingBackResp;
+					memset(&HUBookingBackResp,0 , sizeof(HUBookingBackResp_t));
+					dc = uper_decode(asn_codec_ctx,pduType_Rmt_Ctrl_HUBookBackresp,(void *) &HUBookingBackResp_ptr, \
+									 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_e(LOG_UPER_ECDC,  "Could not decode remote control hu booking sync application data Frame\n");
+						return -1;
+					}
+
+					app_rmtCtrl_ptr->CtrlHUbookingBackResp.rvcReqType = HUBookingBackResp.rvcReqType;
+					log_i(LOG_UPER_ECDC, "HUBookingBackResp.rvcReqType = %d\n",app_rmtCtrl_ptr->CtrlHUbookingBackResp.rvcReqType);
+					app_rmtCtrl_ptr->CtrlHUbookingBackResp.rvcResult = HUBookingBackResp.rvcResult;
+					log_i(LOG_UPER_ECDC, "HUBookingBackResp.rvcResult = %d\n",app_rmtCtrl_ptr->CtrlHUbookingBackResp.rvcResult);
+					app_rmtCtrl_ptr->CtrlHUbookingBackResp.bookingId = -1;
+					if(NULL != HUBookingBackResp.bookingId)
+					{
+						app_rmtCtrl_ptr->CtrlHUbookingBackResp.bookingId = *HUBookingBackResp.bookingId;
+					}
+					log_i(LOG_UPER_ECDC, "HUBookingBackResp.bookingId = %d\n",app_rmtCtrl_ptr->CtrlHUbookingBackResp.bookingId);
+				}
+				else
+				{}
 			}
 			break;
 			case PP_AID_VS:

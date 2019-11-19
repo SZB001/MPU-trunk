@@ -349,6 +349,13 @@ HUBookingResp ::= SEQUENCE
 	bookingId 			INTEGER(0..2147483647) OPTIONAL -- 
 }
 
+HUBookingBackResp ::= SEQUENCE
+{
+	rvcReqType 			INTEGER(0..65535), --
+	rvcResult  			BOOLEAN, --
+	bookingId 			INTEGER(0..2147483647) OPTIONAL -- 
+}
+
 VehicleStReqInfo ::= SEQUENCE
 {
 	vehStatusReqType	INTEGER(0..255) -- 

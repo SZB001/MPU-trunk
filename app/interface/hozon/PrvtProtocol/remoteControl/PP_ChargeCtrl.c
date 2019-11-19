@@ -1041,6 +1041,14 @@ static void PP_ChargeCtrl_EndHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge)
 }
 
 /*
+*	预约同步响应回调
+*/
+void PP_ChargeCtrl_HUBookingBackResp(void* HUbookingBackResp)
+{
+	App_rmtCtrlHUbookingBackResp_t* HUbookingBackResp_ptr = (App_rmtCtrlHUbookingBackResp_t*)HUbookingBackResp;
+}
+
+/*
 *	显示充电参数
 */
 void PP_ChargeCtrl_show(void)
