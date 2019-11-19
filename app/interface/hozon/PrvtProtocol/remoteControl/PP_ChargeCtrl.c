@@ -1046,6 +1046,9 @@ static void PP_ChargeCtrl_EndHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge)
 void PP_ChargeCtrl_HUBookingBackResp(void* HUbookingBackResp)
 {
 	App_rmtCtrlHUbookingBackResp_t* HUbookingBackResp_ptr = (App_rmtCtrlHUbookingBackResp_t*)HUbookingBackResp;
+	log_i(LOG_HOZON, "HUbookingBackResp.rvcReqType = %d",HUbookingBackResp_ptr->rvcReqType);
+	log_i(LOG_HOZON, "HUbookingBackResp.rvcResult = %d",HUbookingBackResp_ptr->rvcResult);
+	log_i(LOG_HOZON, "HUbookingBackResp.bookingId = %d",HUbookingBackResp_ptr->bookingId);
 }
 
 /*

@@ -37,6 +37,7 @@ description�� include the header file
 #include "log.h"
 #include "list.h"
 #include "../../support/protocol.h"
+#include "../../../base/uds/server/uds_did.h"
 #include "../sockproxy/sockproxy_txdata.h"
 #include "cfg_api.h"
 #include "hozon_SP_api.h"
@@ -116,27 +117,10 @@ void PP_rmtCfg_init(void)
 	memset(&PP_rmtCfg,0 , sizeof(PrvtProt_rmtCfg_t));
 	memset(&AppData_rmtCfg,0 , sizeof(PrvtProt_App_rmtCfg_t));
 
-	len = 11;
-	cfg_get_user_para(CFG_ITEM_HOZON_TSP_MCUSW,AppData_rmtCfg.checkReq.mcuSw,&len);//
-	if(AppData_rmtCfg.checkReq.mcuSw[0])
-	{
-		AppData_rmtCfg.checkReq.mcuSwlen = strlen((char*)AppData_rmtCfg.checkReq.mcuSw);
-	}
-	else
-	{
-		AppData_rmtCfg.checkReq.mcuSwlen = 10;
-	}
-
-	len = 11;
-	cfg_get_user_para(CFG_ITEM_HOZON_TSP_MPUSW,AppData_rmtCfg.checkReq.mpuSw,&len);//
-	if(AppData_rmtCfg.checkReq.mpuSw[0])
-	{
-		AppData_rmtCfg.checkReq.mpuSwlen = strlen((char*)AppData_rmtCfg.checkReq.mpuSw);
-	}
-	else
-	{
-		AppData_rmtCfg.checkReq.mpuSwlen = 10;
-	}
+	memcpy(AppData_rmtCfg.checkReq.mcuSw,DID_F1B0_SW_UPGRADE_VER,strlen(DID_F1B0_SW_UPGRADE_VER));
+	AppData_rmtCfg.checkReq.mcuSwlen = strlen(DID_F1B0_SW_UPGRADE_VER);
+	memcpy(AppData_rmtCfg.checkReq.mpuSw,DID_F1B0_SW_UPGRADE_VER,strlen(DID_F1B0_SW_UPGRADE_VER));
+	AppData_rmtCfg.checkReq.mpuSwlen = strlen(DID_F1B0_SW_UPGRADE_VER);
 
 	len = 18;
 	cfg_get_user_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);//vin
