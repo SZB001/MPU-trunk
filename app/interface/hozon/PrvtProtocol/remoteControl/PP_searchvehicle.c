@@ -97,7 +97,7 @@ int PP_searchvehicle_mainfunction(void *task)
 		{
 			if(PP_rmtsearchvehicle.state.req == 1)
 			{
-				if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
+				if((PP_rmtCtrl_cfg_vehicleState() == 0)||(PP_rmtCtrl_gettestflag()))
 				{
 					
 					serachvehicle_success_flag = 0;
@@ -260,7 +260,7 @@ void SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *dispt
 			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
 			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
 
-			log_i(LOG_HOZON, "remote door lock control req");
+			log_i(LOG_HOZON, "remote searchvehicle control req");
 			PP_rmtsearchvehicle.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtsearchvehicle.state.req = 1;
 			PP_rmtsearchvehicle.state.expTime = disptrBody_ptr->expTime;

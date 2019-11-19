@@ -1165,7 +1165,8 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftLock 	= PP_rmtCtrl_cfg_doorlockSt();
 			App_rmtCtrl.CtrlResp.basicSt.rearRightDoor 	= 0	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.rearRightLock 	= PP_rmtCtrl_cfg_doorlockSt();
-			App_rmtCtrl.CtrlResp.basicSt.bootStatus 	= gb_data_reardoorSt()	/* OPTIONAL */;
+			 
+			App_rmtCtrl.CtrlResp.basicSt.bootStatus 	= PrvtProtCfg_reardoorSt();
 			App_rmtCtrl.CtrlResp.basicSt.bootStatusLock = gb_data_reardoorlockSt();
 			App_rmtCtrl.CtrlResp.basicSt.driverWindow 	= 0	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.passengerWindow = 0	/* OPTIONAL */;
@@ -1350,6 +1351,10 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.vehicleAlarmSt		= getgb_data_warnSt();
 			App_rmtCtrl.CtrlResp.basicSt.currentJourneyID	= gb_data_trip();
 			App_rmtCtrl.CtrlResp.basicSt.journeyOdom		= PP_rmtCtrl_cfg_vehicleOdograph();
+			if(App_rmtCtrl.CtrlResp.basicSt.journeyOdom> 65535)
+			{
+				App_rmtCtrl.CtrlResp.basicSt.journeyOdom = 65535;
+			}
 			App_rmtCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel	= PP_rmtCtrl_cfg_DrivHeatingSt()	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.frtRightSeatHeatLel= PP_rmtCtrl_cfg_PassHeatingSt()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.airCleanerSt		= PrvtProt_SignParse_pm25valid()/* OPTIONAL */;

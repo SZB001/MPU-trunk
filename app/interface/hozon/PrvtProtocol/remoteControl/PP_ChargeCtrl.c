@@ -53,6 +53,7 @@ description�� include the header file
 #include "PP_SendWakeUptime.h"
 #include "PP_ChargeCtrl.h"
 
+extern ivi_client ivi_clients[MAX_IVI_NUM];
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
@@ -96,9 +97,11 @@ static PP_rmtCharge_Appointperiod_t PP_rmtCharge_Appointperiod[7] =
 
 static uint8_t PP_ChargeCtrl_Sleepflag = 0;
 extern void pm_ring_wakeup(void);
+extern void ivi_chagerappointment_request_send( int fd,ivi_chargeAppointSt tspchager);
 static void PP_ChargeCtrl_chargeStMonitor(void);
 static int PP_ChargeCtrl_startHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge);
 static void PP_ChargeCtrl_EndHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge);
+
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -463,7 +466,7 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 				rmtCtrl_chargeStpara.eventid 		= 0;
 				rmtCtrl_chargeStpara.Resptype 		= PP_RMTCTRL_HUBOOKINGRESP;
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_chargeStpara);
-				PP_rmtCharge_AppointBook.informtspflag = 0;
+				//PP_rmtCharge_AppointBook.informtspflag = 0;
 				PP_rmtChargeCtrl.state.bookSyncflag = 2;
 			}
 		}
@@ -567,7 +570,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				ivi_chargeSt.timestamp = PrvtPro_getTimestamp();
 				ivi_chargeSt.targetpower = PP_rmtCharge_AppointBook.targetSOC;
 				ivi_chargeSt.effectivestate = 1;
-				tbox_ivi_set_tspchager_InformHU(&ivi_chargeSt);//同步状态到HU
+				ivi_chagerappointment_request_send(ivi_clients[0].fd,ivi_chargeSt);
 
 				//inform TSP the Reservation instruction issued status
 				//PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
@@ -604,7 +607,7 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				ivi_chargeSt.timestamp = PrvtPro_getTimestamp();
 				ivi_chargeSt.targetpower = PP_rmtCharge_AppointBook.targetSOC;
 				ivi_chargeSt.effectivestate = 0;
-				tbox_ivi_set_tspchager_InformHU(&ivi_chargeSt);//同步状态到HU
+				ivi_chagerappointment_request_send(ivi_clients[0].fd,ivi_chargeSt);
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
 
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
@@ -1049,6 +1052,7 @@ void PP_ChargeCtrl_HUBookingBackResp(void* HUbookingBackResp)
 	log_i(LOG_HOZON, "HUbookingBackResp.rvcReqType = %d",HUbookingBackResp_ptr->rvcReqType);
 	log_i(LOG_HOZON, "HUbookingBackResp.rvcResult = %d",HUbookingBackResp_ptr->rvcResult);
 	log_i(LOG_HOZON, "HUbookingBackResp.bookingId = %d",HUbookingBackResp_ptr->bookingId);
+	PP_rmtCharge_AppointBook.informtspflag = 0;
 }
 
 /*

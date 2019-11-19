@@ -85,7 +85,7 @@ int PP_startforbid_mainfunction(void *task)
 		{
 			if(PP_rmtstartforbid.state.req == 1)
 			{
-				if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
+				if((PP_rmtCtrl_cfg_vehicleState() == 0)||(PP_rmtCtrl_gettestflag()))
 				{
 					startforbid_success_flag = 0;
 					start_forbid_stage = PP_STARTFORBID_REQSTART;
@@ -255,7 +255,7 @@ void SetPP_startforbid_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
 			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
 
-			log_i(LOG_HOZON, "remote door lock control req");
+			log_i(LOG_HOZON, "remote startforbid control req");
 			PP_rmtstartforbid.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtstartforbid.state.req = 1;
 			if(PP_rmtstartforbid.state.reqType == PP_RMTCTRL_BANSTART)
@@ -288,7 +288,7 @@ void PP_startforbid_acStMonitor(void *task)
 		
 	//满足远程控制的条件，检查是否禁止启动或者取消禁止启动
 
-	if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
+	if((PP_rmtCtrl_cfg_vehicleState() == 0)||(PP_rmtCtrl_gettestflag()))
 	{
 		res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_FORBIDEN,(void *)(&cmd),&len);
 		if(res == 0)

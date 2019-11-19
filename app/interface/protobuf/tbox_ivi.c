@@ -55,7 +55,6 @@ static uint64_t test_time = 0;
 
 static ivi_remotediagnos tspdiagnos;
 static ivi_logfile tsplogfile;
-static ivi_chargeAppointSt tspchager;
 static int tspdiagnos_flag = 0;
 static int tsplogfile_flag = 0;
 static int tspchager_flag = 0;
@@ -400,7 +399,7 @@ void ivi_logfile_request_send( int fd)
 
 }
 
-void ivi_chagerappointment_request_send( int fd)
+void ivi_chagerappointment_request_send( int fd,ivi_chargeAppointSt tspchager)
 {
 
     int i = 0;
@@ -420,16 +419,15 @@ void ivi_chagerappointment_request_send( int fd)
     
     Tbox__Net__TopMessage TopMsg;
 	
-	Tbox__Net__IhuChargeAppoointmentSts chager;
+	Tbox__Net__TboxChargeAppoointmentSet chager;
 	
     tbox__net__top_message__init( &TopMsg );
 	
-	tbox__net__ihu_charge_appoointment_sts__init(&chager);
+	tbox__net__tbox_charge_appoointment_set__init(&chager);
 	
     TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS;
 
-
-	chager.timestamp = tbox_ivi_getTimestamp();
+	chager.timestamp = tspchager.timestamp;
 
 	chager.id = tspchager.id;
 
@@ -442,7 +440,7 @@ void ivi_chagerappointment_request_send( int fd)
 	chager.effectivestate = tspchager.effectivestate;
 
 
-	TopMsg.ihu_charge_appoointmentsts = &chager;
+	TopMsg.tbox_charge_appoointmentset = &chager;
 	
     szlen = tbox__net__top_message__get_packed_size( &TopMsg );
 
@@ -660,7 +658,7 @@ void ivi_signalpower_response_send(int fd  )
 	else
 	{
 		level = nm_get_signal();
-		log_o(LOG_IVI,"signal power %d",nm_get_signal());
+		//log_o(LOG_IVI,"signal power %d",nm_get_signal());
 	}
 	
 	temp = ((double) nm_get_signal())/31*100;
@@ -698,7 +696,7 @@ void ivi_signalpower_response_send(int fd  )
 	{
 	    if( fd < 0 )
 	    {
-	       log_e(LOG_IVI,"ivi_signalpower_response_send fd = %d.",fd);
+	       //log_e(LOG_IVI,"ivi_signalpower_response_send fd = %d.",fd);
 	       return ; 
 	    }
 	}
@@ -1749,40 +1747,36 @@ void *ivi_main(void)
     {
         msg_init_rx(&rx_msg[i], recv_buf[i], sizeof(recv_buf[i]));
     } 
-	//if(hu_pki_en == 0)
-	//{
-		int max_fd, tcom_fd;
-	    TCOM_MSG_HEADER msghdr;
-	    fd_set read_set;
-	    struct sockaddr_in cli_addr;
-	    int new_conn_fd = -1;
-		FD_ZERO(&read_set);
-		memset(&cli_addr, 0, sizeof(cli_addr));
-		tcom_fd = tcom_get_read_fd(MPU_MID_IVI);
+	int max_fd, tcom_fd;
+	TCOM_MSG_HEADER msghdr;
+	fd_set read_set;
+	struct sockaddr_in cli_addr;
+	int new_conn_fd = -1;
+	struct timeval timeout;
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+	FD_ZERO(&read_set);
+	memset(&cli_addr, 0, sizeof(cli_addr));
+	tcom_fd = tcom_get_read_fd(MPU_MID_IVI);
 
-	   	if (tcom_fd  < 0)
-	   	{
-	        log_e(LOG_IVI, "tcom_get_read_fd failed");
-	        return NULL;
-	    }
-		ret = tbox_ivi_create_tcp_socket();
-		if( ret != 0 )
+	if (tcom_fd  < 0)
+	{
+	    log_e(LOG_IVI, "tcom_get_read_fd failed");
+	    return NULL;
+	}
+	ret = tbox_ivi_create_tcp_socket();
+	if( ret != 0 )
+	{
+		if (tcp_fd < 0)
 		{
-		    if (tcp_fd < 0)
-		    {
-		        close(tcp_fd);
-		        tcp_fd = -1;
+		    close(tcp_fd);
+		    tcp_fd = -1;
 
-		        log_e(LOG_IVI,"tbox_ivi_create_tcp_socket failed!!!");
+		    log_e(LOG_IVI,"tbox_ivi_create_tcp_socket failed!!!");
 
-		        return NULL;
-		     }
+		    return NULL;
 		 }
-	//}
-	//else
-	//{
-		//uint64_t wait = 0;
-	//}
+	}
 
     while (1)
     {
@@ -1809,9 +1803,9 @@ void *ivi_main(void)
 	            log_i(LOG_IVI, "client_fd[%d]=%d", i, ivi_clients[i].fd);
 	        }
 	        /* monitor the incoming data */
-	        ret = select(max_fd + 1, &read_set, NULL, NULL, NULL);
+	        ret = select(max_fd + 1, &read_set, NULL, NULL, &timeout);
 	        /* the file deccriptor is readable */
-	        if (ret > 0)
+	        if (ret >= 0)
 	        {
 	            if(FD_ISSET(tcom_fd, &read_set))
 	            {
@@ -1832,8 +1826,7 @@ void *ivi_main(void)
 	                    pwdg_feed(MPU_MID_IVI);
 	                }
 	            }
-
-	            if (FD_ISSET(tcp_fd, &read_set))
+				if (FD_ISSET(tcp_fd, &read_set))
 	            {
 	                socklen_t len = sizeof(cli_addr);
 	                new_conn_fd = accept(tcp_fd, (struct sockaddr *)&cli_addr, &len);
@@ -1870,11 +1863,14 @@ void *ivi_main(void)
 	                    {
 	                        continue;
 	                    }
-	                    if (tm_get_time() - ivi_clients[i].lasthearttime > 30000)
+						
+	                    if (tm_get_time() - ivi_clients[i].lasthearttime > 3000)
 	                    {
+	                    	log_o(LOG_IVI,"Heartbeat timeout!!!!!!!");
 	                        close(ivi_clients[i].fd);
 	                        ivi_clients[i].fd = -1;
 	                    }
+	                    
 	                    if (FD_ISSET(ivi_clients[i].fd, &read_set))
 	                    {
 	                        log_i(LOG_IVI, "start read Client(%d) :%d\n", i, ivi_clients[i].fd);
@@ -1903,6 +1899,7 @@ void *ivi_main(void)
 	                    }
 	                }
 	            }
+				
 	        }	
 	        else if (0 == ret)   /* timeout */
 	        {
@@ -2020,7 +2017,7 @@ void *ivi_main(void)
 			            }
 						else if(num == 0)
 						{
-							log_o(LOG_IVI, "ihu Client exit\n");
+							log_e(LOG_IVI, "TCP client disconnect!!!!");
 							pthread_mutex_lock(&send_mutex);
 							tm_get_abstime(&localdatetime1);
 							log_o(LOG_IVI,"%d:%d:%d\n",  \
@@ -2185,11 +2182,6 @@ void *ivi_check(void)
 					ivi_logfile_request_send( ivi_clients[0].fd);
 					tsplogfile_flag = 0;
 				}
-				if(tspchager_flag == 1)
-				{
-					ivi_chagerappointment_request_send( ivi_clients[0].fd);
-					tspchager_flag = 0;
-				}
 			}
 		}
 		else  //带PKI
@@ -2244,11 +2236,6 @@ void *ivi_check(void)
 				{
 					ivi_logfile_request_send( ivi_clients[0].fd);
 					tsplogfile_flag = 0;
-				}
-				if(tspchager_flag == 1)
-				{
-					ivi_chagerappointment_request_send( ivi_clients[0].fd);
-					tspchager_flag = 0;
 				}
 			}
 		}
@@ -2347,17 +2334,6 @@ void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp)
 	tsplogfile.level = tsp->level;
 	tsplogfile.durationtime = tsp->durationtime;
 	tsplogfile_flag = 1;
-}
-void tbox_ivi_set_tspchager_InformHU(ivi_chargeAppointSt *tsp)
-{
-	tspchager.id = tsp->id;
-	tspchager.hour = tsp->hour;
-	tspchager.min = tsp->min;
-	tspchager.targetpower = tsp->targetpower;
-	tspchager.timestamp = tsp->timestamp;
-	tspchager.effectivestate = tsp->effectivestate;
-	tspchager_flag = 1;
-	log_o(LOG_IVI,"The charging reservation issued by the TSP is synchronized to the HU.");
 }
 
 

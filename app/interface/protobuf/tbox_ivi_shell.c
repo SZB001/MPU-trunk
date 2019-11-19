@@ -26,7 +26,7 @@ extern void ivi_activestate_response_send( int fd );
 
 extern void ivi_logfile_request_send( int fd);
 
-extern void ivi_chagerappointment_request_send( int fd);
+extern void ivi_chagerappointment_request_send( int fd,ivi_chargeAppointSt tspchager);
 
 int tbox_ivi_hu_charge_ctrl(int argc, const char **argv)
 {
@@ -67,7 +67,14 @@ int tbox_ivi_active(void)
 }
 int tbox_ivi_chargeappoint(void)
 {
-	ivi_chagerappointment_request_send(ivi_clients[0].fd);
+	ivi_chargeAppointSt		ivi_chargeSt;
+	ivi_chargeSt.id  = 100;
+	ivi_chargeSt.effectivestate = 1;
+	ivi_chargeSt.hour = 12;
+	ivi_chargeSt.min = 12;
+	ivi_chargeSt.targetpower = 100;
+	ivi_chargeSt.timestamp = tbox_ivi_getTimestamp();
+	ivi_chagerappointment_request_send(ivi_clients[0].fd,ivi_chargeSt);
 	return 0;
 }
 int tbox_ivi_test(void)
@@ -77,18 +84,18 @@ int tbox_ivi_test(void)
 	unsigned char sendbuf[4096] = {0};
 	unsigned char buf[2048] = {0};
 	Tbox__Net__TopMessage TopMsg;
-	Tbox__Net__IhuChargeAppoointmentSts charge;
+	Tbox__Net__TboxChargeAppoointmentSet charge;
 	tbox__net__top_message__init( &TopMsg );
-	tbox__net__ihu_charge_appoointment_sts__init(&charge);
+	tbox__net__tbox_charge_appoointment_set__init(&charge);
 	
-	TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGEAPPOINTMENTSET;
-	charge.timestamp = 0;
-	charge.hour = 8;
-	charge.min = 8;
-	charge.id = 8;
-	charge.targetpower = 8;
+	TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS;
+	charge.id = 182;
+	charge.timestamp = tbox_ivi_getTimestamp();
+	charge.hour = 12;
+	charge.min = 10;
+	charge.targetpower = 100;
 	charge.effectivestate = 1;
-	TopMsg.ihu_charge_appoointmentsts = &charge;
+	TopMsg.tbox_charge_appoointmentset = &charge;
 	
 	szlen = tbox__net__top_message__get_packed_size( &TopMsg );
 

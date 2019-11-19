@@ -299,7 +299,20 @@ long PP_rmtCtrl_cfg_vehicleOdograph(void)
 */
 unsigned char PP_rmtCtrl_cfg_DrivHeatingSt(void)
 {
-	return PrvtProt_SignParse_DrivHeatingSt();
+	unsigned char st = 0;
+	if(PrvtProt_SignParse_DrivHeatingSt() == 1)
+	{
+		st = 3;
+	}
+	else if(PrvtProt_SignParse_DrivHeatingSt() == 3)
+	{
+		st = 1;
+	}
+	else
+	{
+		st = PrvtProt_SignParse_DrivHeatingSt();
+	}
+	return st;
 }
 /*
  	副座椅加热档位
@@ -307,6 +320,19 @@ unsigned char PP_rmtCtrl_cfg_DrivHeatingSt(void)
 
 unsigned char PP_rmtCtrl_cfg_PassHeatingSt(void)
 {
-	return PrvtProt_SignParse_PassHeatingSt();
+	unsigned char st = 0;
+	if(PrvtProt_SignParse_PassHeatingSt() == 1)
+	{
+		st = 3;
+	}
+	else if(PrvtProt_SignParse_PassHeatingSt() == 3)
+	{
+		st = 1;
+	}
+	else
+	{
+		st = PrvtProt_SignParse_PassHeatingSt();
+	}
+	return st; 
 }
 

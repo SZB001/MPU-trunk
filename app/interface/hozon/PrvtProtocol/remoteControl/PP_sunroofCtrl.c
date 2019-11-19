@@ -103,7 +103,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 		{
 			if(PP_rmtsunroofCtrl.state.req == 1)
 			{
-				if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
+				if( (PP_rmtCtrl_cfg_vehicleState() == 0)||(PP_rmtCtrl_gettestflag()))
 				{
 					
 					sunroof_success_flag = 0;
@@ -160,8 +160,10 @@ int PP_sunroofctrl_mainfunction(void *task)
 		break;
 		case PP_SUNROOFCTRL_RESPWAIT://执行等待车控响应
 		{
-			if((tm_get_time() - PP_Respwaittime) > 200)
+			if((tm_get_time() - PP_Respwaittime) > 320)
 			{
+				PP_can_send_data(PP_CAN_SUNSHADE,CAN_SUNSHADECLEAN,0);
+				PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
 				if(sunroof_type == PP_SUNROOFOPEN) //天窗打开结果
 				{
 					if((tm_get_time() - PP_Respwaittime) < 35000)
@@ -169,7 +171,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 						if(PP_rmtCtrl_cfg_sunroofSt() == 4) //状态为4，天窗打开ok
 						{
 							log_o(LOG_HOZON,"PP_SUNROOFCTRL_OPEN SUCCESS");
-							PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
+							//PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
 							sunroof_success_flag = 1;
 							sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 						}
@@ -189,7 +191,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 						if(PP_rmtCtrl_cfg_sunroofSt() == 2) //
 						{
 							log_o(LOG_HOZON,"PP_SUNROOFCTRL_CLOSE SUCCESS");
-							PP_can_send_data(PP_CAN_SUNSHADE,CAN_SUNSHADECLEAN,0);  //遮阳帘
+							//PP_can_send_data(PP_CAN_SUNSHADE,CAN_SUNSHADECLEAN,0);  //遮阳帘
 							sunroof_success_flag = 1;
 							sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 						}
@@ -209,7 +211,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 						if(PP_rmtCtrl_cfg_sunroofSt() == 0) //
 						{
 							log_o(LOG_HOZON,"PP_SUNROOFCTRL_UPWARP SUCCESS");
-							PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
+							//PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
 							sunroof_success_flag = 1;
 							sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
 						}
@@ -330,7 +332,7 @@ void SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 		{
 			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
 			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
-			log_i(LOG_HOZON, "remote door lock control req");
+			log_i(LOG_HOZON, "remote sunroof control req");
 			PP_rmtsunroofCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 			PP_rmtsunroofCtrl.state.expTime = disptrBody_ptr->expTime;
 			if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFOPEN) //天窗打开

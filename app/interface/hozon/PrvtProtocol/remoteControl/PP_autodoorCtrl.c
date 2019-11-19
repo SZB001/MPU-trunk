@@ -100,7 +100,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 		{			
 			if(PP_rmtautodoorCtrl.state.req == 1)  //是否有请求
 			{
-				if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
+				if((PP_rmtCtrl_cfg_vehicleState() == 0)||(PP_rmtCtrl_gettestflag()))
 				{   //有请求判断是否满足远控条件
 					
 					autodoor_success_flag = 0;
