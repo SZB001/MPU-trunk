@@ -408,7 +408,7 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	PP_VS_appdata.VSResp.basicSt.rearLeftLock 		= PP_rmtCtrl_cfg_doorlockSt();
 	PP_VS_appdata.VSResp.basicSt.rearRightDoor 		= 0	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.rearRightLock 		= PP_rmtCtrl_cfg_doorlockSt();
-	PP_VS_appdata.VSResp.basicSt.bootStatus 		= gb_data_reardoorSt()	/* OPTIONAL */;
+	PP_VS_appdata.VSResp.basicSt.bootStatus 		= PrvtProtCfg_reardoorSt()	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.bootStatusLock 	= gb_data_reardoorlockSt();
 	PP_VS_appdata.VSResp.basicSt.driverWindow 		= 0	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.passengerWindow 	= 0	/* OPTIONAL */;
