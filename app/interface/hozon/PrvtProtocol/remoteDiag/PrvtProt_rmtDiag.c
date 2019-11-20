@@ -53,7 +53,7 @@ description锛� include the header file
 #include "tbox_ivi_api.h"
 
 #include "PP_rmtDiag_cfg.h"
-
+#include "../PrvtProt_lock.h"
 #include "PrvtProt_rmtDiag.h"
 /*******************************************************
 description锛� global variable definitions
@@ -149,7 +149,8 @@ void PP_rmtDiag_init(void)
 
 	PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
 	PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
-	PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
+	PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
+	PP_rmtDiag.state.activeDiagFlag = 1;
 	PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
 
 	cfglen = 4;
@@ -183,7 +184,7 @@ int PP_rmtDiag_mainfunction(void *task)
 		IGNoldSt = IGNnewSt;
 		if(1 == IGNnewSt)//IGN ON
 		{
-			PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
+			PP_rmtDiag.state.activeDiagFlag = 1;
 		}
 	}
 
@@ -192,7 +193,7 @@ int PP_rmtDiag_mainfunction(void *task)
 		PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
 		PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
 		PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
-		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_END;
+		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
 		PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_IDLE;
 		PP_rmtDiag.state.diagReq = 0;
 		PP_rmtDiag.state.ImageAcquisitionReq = 0;
@@ -433,21 +434,31 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 				memset(&PP_rmtDiag_Fault,0 , sizeof(PP_rmtDiag_Fault_t));
 				PP_rmtDiag.state.diagReq = 0;
 
-				PP_COMMON_LOCK();
-
-				if(1 == GetPP_rmtCtrl_fotaUpgrade())
+				if(0 == setPP_lock_otadiagmtxlock(PP_DIAGLOCK_RMTDIAG))
 				{
-					log_e(LOG_HOZON, "In the fota upgrade/h");
+					log_e(LOG_HOZON, "In the fota ecu diag\n");
 					PP_rmtDiag.state.result = 0;
-					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_FOTAING;
+					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_FOTAECUDIAG;
 					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
 				}
 				else
 				{
-					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYFAILREQ;
-				}
+					PP_COMMON_LOCK();
 
-				PP_COMMON_UNLOCK();
+					if(1 == GetPP_rmtCtrl_fotaUpgrade())
+					{
+						log_e(LOG_HOZON, "In the fota upgrade\n");
+						PP_rmtDiag.state.result = 0;
+						PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_FOTAING;
+						PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
+					}
+					else
+					{
+						PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYFAILREQ;
+					}
+
+					PP_COMMON_UNLOCK();
+				}
 			}
 		}
 		break;
@@ -520,6 +531,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 		break;
 		case PP_DIAGRESP_END:
 		{
+			claerPP_lock_otadiagmtxlock(PP_DIAGLOCK_RMTDIAG);
 			PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
 		}
 		break;
@@ -736,26 +748,14 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 
 	switch(PP_rmtDiag.state.activeDiagSt)
 	{
-		case PP_ACTIVEDIAG_PWRON:
+		case PP_ACTIVEDIAG_IDLE:
 		{
-			PP_COMMON_LOCK();
-
-			memset(&PP_rmtDiag_allFault,0 , sizeof(PP_rmtDiag_allFault_t));
-			if(1 == GetPP_rmtCtrl_fotaUpgrade())
+			if(1 == PP_rmtDiag.state.activeDiagFlag)
 			{
-				log_e(LOG_HOZON, "In the fota upgrade\n");
-				PP_rmtDiag.state.result = 0;
-				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_FOTAING;
-				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
-				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
-			}
-			else
-			{
+				memset(&PP_rmtDiag_allFault,0 , sizeof(PP_rmtDiag_allFault_t));
 				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKREPORTST;
-				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+				PP_rmtDiag.state.activeDiagFlag = 0;
 			}
-
-			PP_COMMON_UNLOCK();
 		}
 		break;
 		case PP_ACTIVEDIAG_CHECKREPORTST:
@@ -782,7 +782,39 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 			else
 			{
 				log_i(LOG_HOZON,"start to daig report\n");
-				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKVEHICOND;
+				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKOTACOND;
+			}
+		}
+		break;
+		case PP_ACTIVEDIAG_CHECKOTACOND:
+		{
+			if(0 == setPP_lock_otadiagmtxlock(PP_DIAGLOCK_RMTDIAG))
+			{
+				log_e(LOG_HOZON, "In the fota ecu diag\n");
+				PP_rmtDiag.state.result = 0;
+				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_FOTAECUDIAG;
+				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
+			}
+			else
+			{
+				PP_COMMON_LOCK();
+
+				if(1 == GetPP_rmtCtrl_fotaUpgrade())
+				{
+					log_e(LOG_HOZON, "In the fota upgrade\n");
+					PP_rmtDiag.state.result = 0;
+					PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_FOTAING;
+					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
+				}
+				else
+				{
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKVEHICOND;
+					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+				}
+
+				PP_COMMON_UNLOCK();
 			}
 		}
 		break;
@@ -800,8 +832,11 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 				}
 				else
 				{
-					log_e(LOG_HOZON,"vehicle speed > 5km/h,exit acyive diag\n");
-					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_END;
+					log_e(LOG_HOZON,"vehicle speed > 5km/h,exit active diag\n");
+					PP_rmtDiag.state.result = 0;
+					PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_VEHISPEED;
+					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
 				}
 			}
 		}
@@ -883,7 +918,8 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 		break;
 		case PP_ACTIVEDIAG_END:
 		{
-
+			claerPP_lock_otadiagmtxlock(PP_DIAGLOCK_RMTDIAG);
+			PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
 		}
 		break;
 		default:
@@ -1246,7 +1282,8 @@ void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 	else if(1 == reqtype)//主动上报所有故障码
 	{
 		log_i(LOG_HOZON, " diag fault code active report request\n");
-		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_PWRON;
+		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
+		PP_rmtDiag.state.activeDiagFlag = 1;
 		rmtDiag_datetime.diagflag = 0;
 		if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
 		{
@@ -1362,7 +1399,7 @@ char getPP_rmtDiag_Idle(void)
 {
 	if((PP_rmtDiag.state.diagrespSt == PP_DIAGRESP_IDLE) && \
 		(PP_rmtDiag.state.cleanfaultSt == PP_FAULTCODECLEAN_IDLE)	&&	\
-		(PP_rmtDiag.state.activeDiagSt == PP_ACTIVEDIAG_END))
+		(PP_rmtDiag.state.activeDiagSt == PP_ACTIVEDIAG_IDLE) && (0 == PP_rmtDiag.state.activeDiagFlag))
 	{
 		return 1;
 	}

@@ -60,6 +60,7 @@ description�� include the header file
 #include "remoteDiag/PrvtProt_rmtDiag.h"
 #include "PrvtProt_CertDownload.h"
 #include "PrvtProt_VehiInfo.h"
+#include "PrvtProt_lock.h"
 #include "../../base/uds/server/uds_did.h"
 #include "PrvtProt.h"
 
@@ -201,6 +202,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			if(0 != hbtimeout)
 			PP_heartbeat.period = hbtimeout;
 			InitPP_VehiInfo_Parameter();
+		  	InitPP_lock_parameter();
 		}
         break;
     }
@@ -829,7 +831,7 @@ void PrvtPro_ShowPara(void)
 	log_o(LOG_HOZON, "tboxid = %d\n",pp_task.tboxid);
 	log_o(LOG_HOZON, "tboxsn = %s\n",pp_tboxsn);
 	log_o(LOG_HOZON, "PP_heartbeat.period = %d\n",PP_heartbeat.period);
-
+	showPP_lock_mutexlockstatus();
 	log_o(LOG_HOZON, "/**********show remote config para**********/");
 	PP_rmtCfg_ShowCfgPara();
 	log_o(LOG_HOZON, "/*****************data over*****************/");

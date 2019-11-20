@@ -470,21 +470,21 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 				PP_rmtChargeCtrl.state.bookSyncflag = 2;
 			}
 		}
+
+		/*
+		 * 检查是否有数据更新
+		 * */
+		if(PP_rmtChargeCtrl.state.dataUpdata == 1)
+		{
+			//保存记录
+			log_i(LOG_HOZON,"save charge para when power off\n");
+			(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
+			PP_rmtChargeCtrl.state.dataUpdata = 0;
+		}
 	}
 	else
 	{
 		PP_rmtChargeCtrl.state.bookSyncflag = 1;
-	}
-	
-	/*
-	* 检查是否有数据更新
-	* */
-	if(PP_rmtChargeCtrl.state.dataUpdata == 1)
-	{
-		//保存记录
-		log_i(LOG_HOZON,"save charge para when power off\n");
-		(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
-		PP_rmtChargeCtrl.state.dataUpdata = 0;
 	}
 }
 

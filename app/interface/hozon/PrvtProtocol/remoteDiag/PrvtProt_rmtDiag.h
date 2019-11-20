@@ -74,8 +74,9 @@ typedef enum
 
 typedef enum
 {
-	PP_ACTIVEDIAG_PWRON = 0,//�ϵ�
+	PP_ACTIVEDIAG_IDLE = 0,//�ϵ�
 	PP_ACTIVEDIAG_CHECKREPORTST,//����ϱ����
+	PP_ACTIVEDIAG_CHECKOTACOND,
 	PP_ACTIVEDIAG_CHECKVEHICOND,//��鳵��
 	PP_ACTIVEDIAG_QUREYWAIT,//
 	PP_ACTIVEDIAG_QUERYUPLOAD,//
@@ -88,6 +89,7 @@ typedef enum
 	PP_RMTDIAG_ERROR_VEHISPEED,//vehicle speed > 5km/h
 	PP_RMTDIAG_ERROR_TIMEOUT,//time out
 	PP_RMTDIAG_ERROR_FOTAING,
+	PP_RMTDIAG_ERROR_FOTAECUDIAG,
 }PP_RMTDIAG_QUERYWRONGTYPE;
 
 typedef enum
@@ -121,6 +123,7 @@ typedef struct
 	uint64_t waittime;
 
 	uint8_t  activeDiagSt;
+	uint8_t  activeDiagFlag;
 	uint64_t activeDiagdelaytime;
 	uint8_t	 activeDiagWeek;
 
