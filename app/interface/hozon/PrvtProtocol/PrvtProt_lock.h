@@ -43,7 +43,8 @@ typedef enum
 {
 	PP_DIAGLOCK_INIT = 0,//
 	PP_DIAGLOCK_RMTDIAG,//
-	PP_DIAGLOCK_OTA//
+	PP_DIAGLOCK_OTA,//
+    PP_DIAGLOCK_RMTCTRL//
 } PP_LOCK_DIAG_OBJ;
 
 /******enum definitions******/
@@ -58,7 +59,9 @@ description�� variable External declaration
 description�� function External declaration
 *******************************************************/
 extern unsigned char setPP_lock_otadiagmtxlock(unsigned char obj);
-extern void claerPP_lock_otadiagmtxlock(unsigned char obj);
+extern void clearPP_lock_otadiagmtxlock(unsigned char obj);
 extern void InitPP_lock_parameter(void);
 extern void showPP_lock_mutexlockstatus(void);
+extern unsigned char setPP_lock_diagrmtctrlotamtxlock(unsigned char obj);
+extern void clrPP_lock_diagrmtctrlotamtxlock(unsigned char obj);
 #endif 

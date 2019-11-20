@@ -23,8 +23,10 @@ description�� function declaration
 
 
 /*Static variable definitions*/
-static pthread_mutex_t diagmtx = PTHREAD_MUTEX_INITIALIZER;
-static PrvtProt_lock_t PP_diaglock;
+static pthread_mutex_t od_mtx = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t odc_mtx = PTHREAD_MUTEX_INITIALIZER;
+static PrvtProt_lock_t PP_od_lock;
+static PrvtProt_lock_t PP_odc_lock;
 
 /*******************************************************
 description�� global variable definitions
@@ -50,7 +52,8 @@ description�� function code
 ******************************************************/
 void InitPP_lock_parameter(void)
 {
-	memset(&PP_diaglock,0,sizeof(PrvtProt_lock_t));
+	memset(&PP_od_lock,0,sizeof(PrvtProt_lock_t));
+	memset(&PP_odc_lock,0,sizeof(PrvtProt_lock_t));
 }
 
 /******************************************************
@@ -60,51 +63,104 @@ void InitPP_lock_parameter(void)
 
 *����ֵ��
 
-*设置诊断互斥锁
+*设置ota/诊断互斥锁
 
 *��  ע��
 ******************************************************/
 unsigned char setPP_lock_otadiagmtxlock(unsigned char obj)
 {
 	unsigned char ret = 0;
-	pthread_mutex_lock(&diagmtx);
+	pthread_mutex_lock(&od_mtx);
 
-	if(0 == PP_diaglock.flag)
+	if(0 == PP_od_lock.flag)
 	{
-		PP_diaglock.flag = 1;
-		PP_diaglock.obj  = obj;
+		PP_od_lock.flag = 1;
+		PP_od_lock.obj  = obj;
 		ret = 1;
 	}
 
-	pthread_mutex_unlock(&diagmtx);
+	pthread_mutex_unlock(&od_mtx);
 
 	return ret;
 }
 
 
 /******************************************************
-*claerPP_lock_otadiagmtxlock
+*clearPP_lock_otadiagmtxlock
 
 *��  �Σ�
 
 *����ֵ��
 
-*清诊断互斥锁
+*清ota/诊断互斥锁
 
 *
 ******************************************************/
-void claerPP_lock_otadiagmtxlock(unsigned char obj)
+void clearPP_lock_otadiagmtxlock(unsigned char obj)
 {
-	pthread_mutex_lock(&diagmtx);
+	pthread_mutex_lock(&od_mtx);
 
-	if((1 == PP_diaglock.flag) && \
-		(PP_diaglock.obj  == obj))
+	if((1 == PP_od_lock.flag) && \
+		(PP_od_lock.obj  == obj))
 	{
-		PP_diaglock.flag = 0;
-		PP_diaglock.obj  = 0;
+		PP_od_lock.flag = 0;
+		PP_od_lock.obj  = 0;
 	}
 
-	pthread_mutex_unlock(&diagmtx);	
+	pthread_mutex_unlock(&od_mtx);	
+}
+
+/******************************************************
+*setPP_lock_diagrmtctrlotamtxlock
+
+*��  �Σ�
+
+*����ֵ��
+
+*设置ota/诊断、远程控制互斥锁
+
+*��  ע��
+******************************************************/
+unsigned char setPP_lock_diagrmtctrlotamtxlock(unsigned char obj)
+{
+	unsigned char ret = 0;
+	pthread_mutex_lock(&odc_mtx);
+
+	if(0 == PP_odc_lock.flag)
+	{
+		PP_odc_lock.flag = 1;
+		PP_odc_lock.obj  = obj;
+		ret = 1;
+	}
+
+	pthread_mutex_unlock(&odc_mtx);
+
+	return ret;
+}
+
+/******************************************************
+*clrPP_lock_diagrmtctrlotamtxlock
+
+*��  �Σ�
+
+*����ֵ��
+
+*清ota/诊断、远程控制互斥锁
+
+*
+******************************************************/
+void clrPP_lock_diagrmtctrlotamtxlock(unsigned char obj)
+{
+	pthread_mutex_lock(&odc_mtx);
+
+	if((1 == PP_odc_lock.flag) && \
+		(PP_odc_lock.obj  == obj))
+	{
+		PP_odc_lock.flag = 0;
+		PP_odc_lock.obj  = 0;
+	}
+
+	pthread_mutex_unlock(&odc_mtx);	
 }
 
 /******************************************************
@@ -120,10 +176,14 @@ void claerPP_lock_otadiagmtxlock(unsigned char obj)
 ******************************************************/
 void showPP_lock_mutexlockstatus(void)
 {
-	pthread_mutex_lock(&diagmtx);
+	pthread_mutex_lock(&od_mtx);
+	pthread_mutex_lock(&odc_mtx);
 
-	log_o(LOG_HOZON, "PP_diaglock.flag = %d\n",PP_diaglock.flag);
-	log_o(LOG_HOZON, "PP_diaglock.obj = %d\n",PP_diaglock.obj);
+	log_o(LOG_HOZON, "PP_od_lock.flag = %d\n",PP_od_lock.flag);
+	log_o(LOG_HOZON, "PP_od_lock.obj = %d\n",PP_od_lock.obj);
+	log_o(LOG_HOZON, "PP_odc_lock.flag = %d\n",PP_odc_lock.flag);
+	log_o(LOG_HOZON, "PP_odc_lock.obj = %d\n",PP_odc_lock.obj);
 
-	pthread_mutex_unlock(&diagmtx);
+	pthread_mutex_unlock(&odc_mtx);
+	pthread_mutex_unlock(&od_mtx);
 }

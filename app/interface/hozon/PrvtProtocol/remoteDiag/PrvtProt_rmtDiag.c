@@ -531,7 +531,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 		break;
 		case PP_DIAGRESP_END:
 		{
-			claerPP_lock_otadiagmtxlock(PP_DIAGLOCK_RMTDIAG);
+			clearPP_lock_otadiagmtxlock(PP_DIAGLOCK_RMTDIAG);
 			PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
 		}
 		break;
@@ -918,7 +918,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 		break;
 		case PP_ACTIVEDIAG_END:
 		{
-			claerPP_lock_otadiagmtxlock(PP_DIAGLOCK_RMTDIAG);
+			clearPP_lock_otadiagmtxlock(PP_DIAGLOCK_RMTDIAG);
 			PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
 		}
 		break;
