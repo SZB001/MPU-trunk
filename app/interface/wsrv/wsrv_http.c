@@ -25,6 +25,7 @@ author        chenyin
 #include "gb32960_api.h"
 #include "uds_did.h"
 #include "../hozon/PrvtProtocol/PrvtProt.h"
+#include "../hozon/PrvtProtocol/PrvtProt_lock.h"
 
 extern timer_t restart_da_timer;
 static unsigned int g_u32WsrvWakeTime = 0;
@@ -366,17 +367,26 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         else
         {
             log_o(LOG_WSRV, "OTA Get %s Version", dev_buf);
-        
-            ret = fota_ecu_get_ver((unsigned char *)dev_buf, s_ver,    &s_len, 
-                                                             h_ver,    &h_len, 
-                                                             sn,       &sn_len, 
-                                                             partnum,  &partnum_len, 
-                                                             supplier, &supplier_len);
-            sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, 
-                                                 dev_buf, h_ver, 
-                                                 dev_buf, sn,
-                                                 dev_buf, partnum,
-                                                 dev_buf, supplier);
+
+            if(setPP_lock_otadiagmtxlock(PP_DIAGLOCK_OTA))
+            {
+                ret = fota_ecu_get_ver((unsigned char *)dev_buf, s_ver,    &s_len, 
+                                                                 h_ver,    &h_len, 
+                                                                 sn,       &sn_len, 
+                                                                 partnum,  &partnum_len, 
+                                                                 supplier, &supplier_len);
+                sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, 
+                                                     dev_buf, h_ver, 
+                                                     dev_buf, sn,
+                                                     dev_buf, partnum,
+                                                     dev_buf, supplier);
+            }
+            else
+            {
+                ret = -1;
+            }
+
+            clearPP_lock_otadiagmtxlock(PP_DIAGLOCK_OTA);
         }
 
         if (ret < 0)
@@ -586,6 +596,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             }
             else
             {
+                SetPP_rmtCtrl_FOTA_endInform();
                 PP_send_virtual_on_to_mcu(0);
                 sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
                 
@@ -603,6 +614,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
                 if(tm_get_time() - s_u64OTAModeStartTime > 5000)
                 {
+                    SetPP_rmtCtrl_FOTA_endInform();
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     PP_send_virtual_on_to_mcu(0);
                     log_o(LOG_WSRV, "Mode In Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
@@ -612,6 +624,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
                 if(u8OtaFailSts != 0)
                 {
+                    SetPP_rmtCtrl_FOTA_endInform();
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     PP_send_virtual_on_to_mcu(0);
                     log_o(LOG_WSRV, "Mode In Get Ota Fail Status %d", u8OtaFailSts);
@@ -636,6 +649,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         }
         else
         {
+            SetPP_rmtCtrl_FOTA_endInform();
             sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
         }
 
@@ -644,6 +658,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     else if (0 == strcmp(cmd_buf, WSRV_CMD_MODEOUT))
     {
         SetPP_rmtCtrl_AuthRequest();
+        SetPP_rmtCtrl_FOTA_endInform();
 
         s_u8BDCMAuthResult = 0;
 
