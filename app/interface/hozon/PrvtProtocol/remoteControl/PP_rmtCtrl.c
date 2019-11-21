@@ -64,6 +64,7 @@ description： include the header file
 #include "../PrvtProt_SigParse.h"
 #include "../PrvtProt_remoteConfig.h"
 #include "PP_bluetoothStart.h"
+#include "../PrvtProt_lock.h"
 #include "PP_rmtCtrl.h"
 
 #define PP_TXINFORMNODE_NUM 100
@@ -190,7 +191,6 @@ int PP_rmtCtrl_mainfunction(void *task)
 	PP_rmtCtrl_task.nonce = task_ptr->nonce;
 	PP_rmtCtrl_task.tboxid = task_ptr->tboxid;
 	PP_rmtCtrl_task.version = task_ptr->version;
-	PP_COMMON_LOCK();
 
 	res = 	PP_rmtCtrl_do_checksock(task_ptr) ||
 			PP_rmtCtrl_do_rcvMsg(task_ptr);
@@ -309,8 +309,6 @@ int PP_rmtCtrl_mainfunction(void *task)
 	}
 
 	PP_ChargeCtrl_mainfunction(task_ptr);//充电功能，不需要BDCM认证
-
-	PP_COMMON_UNLOCK();
 
 	PP_can_send_cycle();//广播440 445报文
 	
@@ -597,8 +595,6 @@ static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 {
-	PP_COMMON_LOCK();
-
 	if(PP_rmtCtrl.fotaUpgradeSt == 1)
 	{
 		TCOM_MSG_HEADER msghdr;
@@ -642,8 +638,6 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 		msghdr.msgid     = BLE_MSG_CONTROL;
 		msghdr.msglen    = sizeof(PrvtProt_respbt_t);
 		tcom_send_msg(&msghdr, &respbt);
-
-		PP_COMMON_UNLOCK();
 
 		return;
 	}
@@ -695,8 +689,6 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 		default:
 		break;
 	}
-
-	PP_COMMON_UNLOCK();
 }
  
 #if 1
@@ -793,8 +785,6 @@ void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
 ******************************************************/
 void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara)
 {
-	PP_COMMON_LOCK();
-
 	switch(obj)
 	{
 		case PP_RMTCTRL_CHARGE://充电
@@ -806,8 +796,6 @@ void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara)
 		default:
 		break;
 	}
-
-	PP_COMMON_UNLOCK();
 }
 
 /******************************************************
@@ -1559,26 +1547,26 @@ unsigned char GetPP_rmtCtrl_fotaUpgrade(void)
 ******************************************************/
 int SetPP_rmtCtrl_FOTA_startInform(void)
 {
-	PP_COMMON_LOCK();
-
-	if((RMTCTRL_IDLE != PP_rmtCtrl.rmtCtrlSt) || (PP_rmtCtrl_cfg_RmtStartSt() ==1))//远程车控非空闲
+	int mtxlockst = 0;
+	mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_OTA_FOTAUPDATE);
+	if(PP_LOCK_OK == mtxlockst)
 	{
-		PP_COMMON_UNLOCK();
-		return -1;
+		SetPP_ChargeCtrl_appointPara();
+		PP_rmtCtrl.fotaAuthReq = 1;
+		PP_rmtCtrl.fotaUpgradeSt = 1;
+		PP_rmtCtrl.fotaAuthResult = 0;
 	}
-
-	if(1 != getPP_rmtDiag_Idle())//远程诊断非空闲
+	else
 	{
-		PP_COMMON_UNLOCK();
-		return -2;
+		if(PP_LOCK_ERR_VEHICTRLING == mtxlockst)
+		{
+			return -1;
+		}
+		else
+		{
+			return -2;
+		}
 	}
-
-	SetPP_ChargeCtrl_appointPara();
-	PP_rmtCtrl.fotaAuthReq = 1;
-	PP_rmtCtrl.fotaUpgradeSt = 1;
-	PP_rmtCtrl.fotaAuthResult = 0;
-	
-	PP_COMMON_UNLOCK();
 	
 	return 0;
 }
@@ -1597,9 +1585,7 @@ int SetPP_rmtCtrl_FOTA_startInform(void)
 int SetPP_rmtCtrl_FOTA_endInform(void)
 {
 	int res = 0;
-	PP_COMMON_LOCK();
 	PP_rmtCtrl.fotaUpgradeSt = 0;
-	PP_COMMON_UNLOCK();
 	return res;
 }
 

@@ -43,6 +43,7 @@
         "pprmtctrl_cfg.h": "c",
         "hubookingbackresp.h": "c",
         "prvtprot_lock.h": "c",
-        "prvtprot_rmtdiag.h": "c"
+        "prvtprot_rmtdiag.h": "c",
+        "pp_bluetoothstart.h": "c"
     }
 }

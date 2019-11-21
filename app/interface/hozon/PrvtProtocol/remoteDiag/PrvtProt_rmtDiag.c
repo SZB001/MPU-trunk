@@ -424,6 +424,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 {
 	int ret = 0;
 	int idlenode;
+	int mtxlockst = 0;
 	switch(PP_rmtDiag.state.diagrespSt)
 	{
 		case PP_DIAGRESP_IDLE:
@@ -432,33 +433,30 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 			{
 				log_i(LOG_HOZON, "start remote diag\n");
 				memset(&PP_rmtDiag_Fault,0 , sizeof(PP_rmtDiag_Fault_t));
-				PP_rmtDiag.state.diagReq = 0;
-
-				if(0 == setPP_lock_otadiagmtxlock(PP_DIAGLOCK_RMTDIAG))
+				mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_DIAG_TSPDIAG);
+				if(PP_LOCK_OK == mtxlockst)
 				{
-					log_e(LOG_HOZON, "In the fota ecu diag\n");
-					PP_rmtDiag.state.result = 0;
-					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_FOTAECUDIAG;
-					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
+					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYFAILREQ;
 				}
 				else
 				{
-					PP_COMMON_LOCK();
-
-					if(1 == GetPP_rmtCtrl_fotaUpgrade())
+					log_e(LOG_HOZON, "mtxlockst = %d\n",mtxlockst);
+					if(PP_LOCK_ERR_FOTAREADVER == mtxlockst)
+					{
+						log_e(LOG_HOZON, "In the fota ecu diag\n");
+						PP_rmtDiag.state.result = 0;
+						PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_FOTAECUDIAG;
+						PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
+					}
+					else
 					{
 						log_e(LOG_HOZON, "In the fota upgrade\n");
 						PP_rmtDiag.state.result = 0;
 						PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_FOTAING;
 						PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
 					}
-					else
-					{
-						PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYFAILREQ;
-					}
-
-					PP_COMMON_UNLOCK();
 				}
+				PP_rmtDiag.state.diagReq = 0;
 			}
 		}
 		break;
@@ -531,7 +529,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 		break;
 		case PP_DIAGRESP_END:
 		{
-			clearPP_lock_otadiagmtxlock(PP_DIAGLOCK_RMTDIAG);
+			clearPP_lock_odcmtxlock(PP_LOCK_DIAG_TSPDIAG);
 			PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
 		}
 		break;
@@ -555,29 +553,37 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 {
+	int mtxlockst = 0;
 	switch(PP_rmtDiag.state.cleanfaultSt)
 	{
 		case PP_FAULTCODECLEAN_IDLE:
 		{
 			if(1 == PP_rmtDiag.state.cleanfaultReq)
 			{
-				PP_rmtDiag.state.cleanfaultReq = 0;
-
-				PP_COMMON_LOCK();
-
-				if(1 == GetPP_rmtCtrl_fotaUpgrade())
-				{
-					log_e(LOG_HOZON, "In the fota upgrade\n");
-					PP_rmtDiag.state.faultCleanResult	= 0;
-					PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_FOTAING;
-					PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
-				}
-				else
+				mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_DIAG_CLEAN);
+				if(PP_LOCK_OK == mtxlockst)
 				{
 					PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_REQ;
 				}
-
-				PP_COMMON_UNLOCK();
+				else
+				{
+					log_e(LOG_HOZON, "mtxlockst = %d\n",mtxlockst);
+					if(PP_LOCK_ERR_FOTAREADVER == mtxlockst)
+					{
+						log_e(LOG_HOZON, "In the fota ecu diag\n");
+						PP_rmtDiag.state.faultCleanResult = 0;
+						PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_FOTAECUDIAG;
+						PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
+					}
+					else
+					{
+						log_e(LOG_HOZON, "In the fota upgrade\n");
+						PP_rmtDiag.state.faultCleanResult	= 0;
+						PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_FOTAING;
+						PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
+					}
+				}
+				PP_rmtDiag.state.cleanfaultReq = 0;
 			}
 		}
 		break;
@@ -613,6 +619,7 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 		case PP_FAULTCODECLEAN_END:
 		{
 			PP_rmtDiag_FaultCodeCleanResp(task,&PP_rmtDiag);
+			clearPP_lock_odcmtxlock(PP_LOCK_DIAG_CLEAN);
 			PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_IDLE;
 		}
 		break;
@@ -745,6 +752,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 	int i;
 	int ret;
 	int idlenode;
+	int mtxlockst = 0;
 
 	switch(PP_rmtDiag.state.activeDiagSt)
 	{
@@ -788,19 +796,24 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 		break;
 		case PP_ACTIVEDIAG_CHECKOTACOND:
 		{
-			if(0 == setPP_lock_otadiagmtxlock(PP_DIAGLOCK_RMTDIAG))
+			mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_DIAG_ACTIVE);
+			if(PP_LOCK_OK == mtxlockst)
 			{
-				log_e(LOG_HOZON, "In the fota ecu diag\n");
-				PP_rmtDiag.state.result = 0;
-				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_FOTAECUDIAG;
+				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKVEHICOND;
 				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
-				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
 			}
 			else
 			{
-				PP_COMMON_LOCK();
-
-				if(1 == GetPP_rmtCtrl_fotaUpgrade())
+				log_e(LOG_HOZON, "mtxlockst = %d\n",mtxlockst);
+				if(PP_LOCK_ERR_FOTAREADVER == mtxlockst)
+				{
+					log_e(LOG_HOZON, "In the fota ecu diag\n");
+					PP_rmtDiag.state.result = 0;
+					PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_FOTAECUDIAG;
+					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
+				}
+				else
 				{
 					log_e(LOG_HOZON, "In the fota upgrade\n");
 					PP_rmtDiag.state.result = 0;
@@ -808,13 +821,6 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
 				}
-				else
-				{
-					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKVEHICOND;
-					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
-				}
-
-				PP_COMMON_UNLOCK();
 			}
 		}
 		break;
@@ -918,7 +924,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 		break;
 		case PP_ACTIVEDIAG_END:
 		{
-			clearPP_lock_otadiagmtxlock(PP_DIAGLOCK_RMTDIAG);
+			clearPP_lock_odcmtxlock(PP_LOCK_DIAG_ACTIVE);
 			PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
 		}
 		break;

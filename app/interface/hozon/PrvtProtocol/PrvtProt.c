@@ -106,7 +106,6 @@ static uint8_t PP_sleepflag = 0;
 static uint16_t PP_hbtaskmpurtcwakeuptestflag = 0;
 static PP_heartbeatrateswitch_t PP_HBRateSwitch;
 PrvtProt_TxInform_t 	PP_TxInform[PP_TXINFORM_NUM];
-static pthread_mutex_t pp_fota_mtx = 	PTHREAD_MUTEX_INITIALIZER;
 
 /*******************************************************
 description�� function declaration
@@ -1119,20 +1118,4 @@ int PP_getIdleNode(void)
 		}
 	}
 	return res;
-}
-
-/*
-* 加锁
-*/
-void PP_COMMON_LOCK(void)
-{
-	pthread_mutex_lock(&pp_fota_mtx);
-}
-
-/*
-* 解锁
-*/
-void PP_COMMON_UNLOCK(void)
-{
-	pthread_mutex_unlock(&pp_fota_mtx);
 }

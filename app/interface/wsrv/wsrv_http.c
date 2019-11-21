@@ -368,7 +368,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         {
             log_o(LOG_WSRV, "OTA Get %s Version", dev_buf);
 
-            if(setPP_lock_otadiagmtxlock(PP_DIAGLOCK_OTA))
+            if(PP_LOCK_OK == setPP_lock_odcmtxlock(PP_LOCK_OTA_READECUVER))
             {
                 ret = fota_ecu_get_ver((unsigned char *)dev_buf, s_ver,    &s_len, 
                                                                  h_ver,    &h_len, 
@@ -386,7 +386,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 ret = -1;
             }
 
-            clearPP_lock_otadiagmtxlock(PP_DIAGLOCK_OTA);
+            clearPP_lock_odcmtxlock(PP_LOCK_OTA_READECUVER);
         }
 
         if (ret < 0)

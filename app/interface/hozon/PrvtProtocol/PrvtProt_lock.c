@@ -23,10 +23,27 @@ description�� function declaration
 
 
 /*Static variable definitions*/
-static pthread_mutex_t od_mtx = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t odc_mtx = PTHREAD_MUTEX_INITIALIZER;
-static PrvtProt_lock_t PP_od_lock;
-static PrvtProt_lock_t PP_odc_lock;
+static uint64_t PP_odc_lockflag;
+const PrvtProt_lock_mask_t	PP_lock_mask[PP_LOCK_OBJ_MAX] =
+{ 
+	{PP_LOCK_DIAG_TSPDIAG,PP_LOCK_MASK_TSPDIAG},
+	{PP_LOCK_DIAG_ACTIVE,PP_LOCK_MASK_ACTIVE},
+    {PP_LOCK_DIAG_CLEAN,PP_LOCK_MASK_CLEAN},
+	{PP_LOCK_OTA_READECUVER,PP_LOCK_MASK_READECUVER},
+	{PP_LOCK_OTA_FOTAUPDATE,PP_LOCK_MASK_FOTAUPDATE},
+	{PP_LOCK_VEHICTRL_AC,PP_LOCK_MASK_AC},
+	{PP_LOCK_VEHICTRL_AUTODOOR,PP_LOCK_MASK_AUTODOOR},
+	{PP_LOCK_VEHICTRL_BLEKEYSTART,PP_LOCK_MASK_BLEKEYSTART},
+	{PP_LOCK_VEHICTRL_CAMERA,PP_LOCK_MASK_CAMERA},
+	{PP_LOCK_VEHICTRL_CHRG,PP_LOCK_MASK_CHRG},
+	{PP_LOCK_VEHICTRL_DOORLOCK,PP_LOCK_MASK_DOORLOCK},
+	{PP_LOCK_VEHICTRL_SEARCHVEHI,PP_LOCK_MASK_SEARCHVEHI},
+	{PP_LOCK_VEHICTRL_ENGINE,PP_LOCK_MASK_ENGINE},
+	{PP_LOCK_VEHICTRL_FORBIDSTART,PP_LOCK_MASK_FORBIDSTART},
+	{PP_LOCK_VEHICTRL_SUNROOF,PP_LOCK_MASK_SUNROOF},
+	{PP_LOCK_VEHICTRL_RMTSTART,PP_LOCK_MASK_RMTSTART}
+};
 
 /*******************************************************
 description�� global variable definitions
@@ -52,66 +69,11 @@ description�� function code
 ******************************************************/
 void InitPP_lock_parameter(void)
 {
-	memset(&PP_od_lock,0,sizeof(PrvtProt_lock_t));
-	memset(&PP_odc_lock,0,sizeof(PrvtProt_lock_t));
+	PP_odc_lockflag = 0;
 }
 
 /******************************************************
-*setPP_lock_otadiagmtxlock
-
-*��  �Σ�
-
-*����ֵ��
-
-*设置ota/诊断互斥锁
-
-*��  ע��
-******************************************************/
-unsigned char setPP_lock_otadiagmtxlock(unsigned char obj)
-{
-	unsigned char ret = 0;
-	pthread_mutex_lock(&od_mtx);
-
-	if(0 == PP_od_lock.flag)
-	{
-		PP_od_lock.flag = 1;
-		PP_od_lock.obj  = obj;
-		ret = 1;
-	}
-
-	pthread_mutex_unlock(&od_mtx);
-
-	return ret;
-}
-
-
-/******************************************************
-*clearPP_lock_otadiagmtxlock
-
-*��  �Σ�
-
-*����ֵ��
-
-*清ota/诊断互斥锁
-
-*
-******************************************************/
-void clearPP_lock_otadiagmtxlock(unsigned char obj)
-{
-	pthread_mutex_lock(&od_mtx);
-
-	if((1 == PP_od_lock.flag) && \
-		(PP_od_lock.obj  == obj))
-	{
-		PP_od_lock.flag = 0;
-		PP_od_lock.obj  = 0;
-	}
-
-	pthread_mutex_unlock(&od_mtx);	
-}
-
-/******************************************************
-*setPP_lock_diagrmtctrlotamtxlock
+*setPP_lock_odcmtxlock
 
 *��  �Σ�
 
@@ -121,25 +83,145 @@ void clearPP_lock_otadiagmtxlock(unsigned char obj)
 
 *��  ע��
 ******************************************************/
-unsigned char setPP_lock_diagrmtctrlotamtxlock(unsigned char obj)
+int setPP_lock_odcmtxlock(unsigned char obj)
 {
-	unsigned char ret = 0;
+	unsigned char ret = PP_LOCK_OK;
 	pthread_mutex_lock(&odc_mtx);
 
-	if(0 == PP_odc_lock.flag)
+	if(0 == PP_odc_lockflag)
 	{
-		PP_odc_lock.flag = 1;
-		PP_odc_lock.obj  = obj;
-		ret = 1;
+		PP_odc_lockflag |= PP_lock_mask[obj].mask;
 	}
-
+	else
+	{
+		switch(obj)
+		{
+			case PP_LOCK_DIAG_TSPDIAG:
+			{
+				if(0 == (PP_odc_lockflag & PP_LOCK_MASK_OTA_ALL))
+				{
+					PP_odc_lockflag |= PP_lock_mask[obj].mask;
+				}
+				else
+				{
+					if(PP_odc_lockflag & PP_LOCK_MASK_READECUVER)
+					{
+						ret = PP_LOCK_ERR_FOTAREADVER;
+					}
+					else
+					{
+						ret = PP_LOCK_ERR_FOTAUPDATE;
+					}
+				}
+			}
+			break;
+			case PP_LOCK_DIAG_ACTIVE:
+			{
+				if(0 == (PP_odc_lockflag & PP_LOCK_MASK_OTA_ALL))
+				{
+					PP_odc_lockflag |= PP_lock_mask[obj].mask;
+				}	
+				else
+				{
+					if(PP_odc_lockflag & PP_LOCK_MASK_READECUVER)
+					{
+						ret = PP_LOCK_ERR_FOTAREADVER;
+					}
+					else
+					{
+						ret = PP_LOCK_ERR_FOTAUPDATE;
+					}
+				}
+			}
+			break;
+			case PP_LOCK_DIAG_CLEAN:
+			{
+				if(0 == (PP_odc_lockflag & PP_LOCK_MASK_OTA_ALL))
+				{
+					PP_odc_lockflag |= PP_lock_mask[obj].mask;
+				}
+				else
+				{
+					if(PP_odc_lockflag & PP_LOCK_OTA_READECUVER)
+					{
+						ret = PP_LOCK_ERR_FOTAREADVER;
+					}
+					else
+					{
+						ret = PP_LOCK_ERR_FOTAUPDATE;
+					}
+				}
+			}
+			break;
+			case PP_LOCK_OTA_READECUVER:
+			{
+				if(0 == (PP_odc_lockflag & PP_LOCK_MASK_DIAG_ALL))
+				{
+					PP_odc_lockflag |= PP_lock_mask[obj].mask;
+				}
+				else
+				{
+					ret = PP_LOCK_ERR_DIAGING;
+				}
+			}
+			break;
+			case PP_LOCK_OTA_FOTAUPDATE:
+			{
+				if((0 == (PP_odc_lockflag & PP_LOCK_MASK_DIAG_ALL)) && \
+					(0 == (PP_odc_lockflag & PP_LOCK_MASK_CTRL_ALL)))
+				{
+					PP_odc_lockflag |= PP_lock_mask[obj].mask;
+				}
+				else
+				{
+					if(PP_odc_lockflag & PP_LOCK_MASK_DIAG_ALL)
+					{
+						ret = PP_LOCK_ERR_DIAGING;
+					}
+					else
+					{
+						ret = PP_LOCK_ERR_VEHICTRLING;
+					}
+				}
+			}
+			break;
+			case PP_LOCK_VEHICTRL_AC:
+			case PP_LOCK_VEHICTRL_AUTODOOR:
+			case PP_LOCK_VEHICTRL_BLEKEYSTART:
+			case PP_LOCK_VEHICTRL_CAMERA:
+			case PP_LOCK_VEHICTRL_CHRG:
+			case PP_LOCK_VEHICTRL_DOORLOCK:
+			case PP_LOCK_VEHICTRL_SEARCHVEHI:
+			case PP_LOCK_VEHICTRL_ENGINE:
+			case PP_LOCK_VEHICTRL_FORBIDSTART:
+			case PP_LOCK_VEHICTRL_SUNROOF:
+			{
+				if(0 == (PP_odc_lockflag & PP_LOCK_MASK_FOTAUPDATE))
+				{
+					PP_odc_lockflag |= PP_lock_mask[obj].mask;
+				}
+				else
+				{
+					ret = PP_LOCK_ERR_FOTAUPDATE;
+				}
+			}
+			break;
+			case PP_LOCK_VEHICTRL_RMTSTART:
+			{
+				PP_odc_lockflag |= PP_lock_mask[obj].mask;
+			}
+			break;
+			default:
+			break;
+		}
+	}
 	pthread_mutex_unlock(&odc_mtx);
 
 	return ret;
 }
 
 /******************************************************
-*clrPP_lock_diagrmtctrlotamtxlock
+*clearrPP_lock_odcmtxlock
 
 *��  �Σ�
 
@@ -149,16 +231,11 @@ unsigned char setPP_lock_diagrmtctrlotamtxlock(unsigned char obj)
 
 *
 ******************************************************/
-void clrPP_lock_diagrmtctrlotamtxlock(unsigned char obj)
+void clearPP_lock_odcmtxlock(unsigned char obj)
 {
 	pthread_mutex_lock(&odc_mtx);
 
-	if((1 == PP_odc_lock.flag) && \
-		(PP_odc_lock.obj  == obj))
-	{
-		PP_odc_lock.flag = 0;
-		PP_odc_lock.obj  = 0;
-	}
+	PP_odc_lockflag &= (~PP_lock_mask[obj].mask);
 
 	pthread_mutex_unlock(&odc_mtx);	
 }
@@ -176,14 +253,9 @@ void clrPP_lock_diagrmtctrlotamtxlock(unsigned char obj)
 ******************************************************/
 void showPP_lock_mutexlockstatus(void)
 {
-	pthread_mutex_lock(&od_mtx);
 	pthread_mutex_lock(&odc_mtx);
 
-	log_o(LOG_HOZON, "PP_od_lock.flag = %d\n",PP_od_lock.flag);
-	log_o(LOG_HOZON, "PP_od_lock.obj = %d\n",PP_od_lock.obj);
-	log_o(LOG_HOZON, "PP_odc_lock.flag = %d\n",PP_odc_lock.flag);
-	log_o(LOG_HOZON, "PP_odc_lock.obj = %d\n",PP_odc_lock.obj);
+	log_o(LOG_HOZON, "PP_odc_lockflag = %d\n",PP_odc_lockflag);
 
 	pthread_mutex_unlock(&odc_mtx);
-	pthread_mutex_unlock(&od_mtx);
 }
