@@ -40,6 +40,20 @@
 #define PKI_RECV      3
 #define PKI_END       4
 
+typedef enum
+{
+	UNKNOWN_YTPE = 0,
+	ECALL_YTPE,
+	BCALL_TYPE,
+	ICALL_TYPE,
+}TBOX_IVI_CALLTYPE;//控制方式
+
+typedef enum
+{
+	unknown_action = 0,
+	START_YTPE,
+	END_TYPE,
+}TBOX_IVI_CALLACTION;//控制方式
 
 
 typedef struct
@@ -61,10 +75,8 @@ typedef struct
 
 
 typedef struct{
-	int ecall;
-	int bcall;
-	int icall;
-	int action;
+	uint8_t call_type;
+	uint8_t call_action;
 }ivi_callrequest;
 
 typedef struct{
@@ -120,9 +132,9 @@ int ivi_init(INIT_PHASE phase);
 /* startup thread communciation module */
 int ivi_run(void);
 
-int tbox_ivi_get_call_action(void);
+uint8_t tbox_ivi_get_call_action(void);
 
-int tbox_ivi_get_call_type(void);
+uint8_t tbox_ivi_get_call_type(void);
 
 void tbox_ivi_clear_call_flag(void);
 void tbox_ivi_clear_bcall_flag(void);

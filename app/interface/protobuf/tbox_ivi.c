@@ -39,14 +39,18 @@ static pthread_t ivi_chtid;    /* thread id */
 
 static uint8_t hu_pki_en;
 static timer_t ivi_timer;
-static int signalpower;
 static int call_flag = 5; //电话默认是空闲状态
 int tcp_fd = -1;
 ivi_client ivi_clients[MAX_IVI_NUM];
 pki_client ihu_client;
 ivi_callrequest callrequest;
 int gps_onoff = 0;
-int network_onoff = 0;
+
+/*  信号强度      */
+static int signal_power = 0;
+static int signal_type = 0;
+/*  信号强度      */
+
 RTCTIME localdatetime1;
 
 static unsigned char ivi_msgbuf[1024];
@@ -178,12 +182,6 @@ int tbox_ivi_get_gps_onoff(void)
 {
     return gps_onoff;
 }
-
-int tbox_ivi_get_network_onoff(void)
-{
-    return network_onoff;
-}
-
 
 void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
 {
@@ -439,7 +437,6 @@ void ivi_chagerappointment_request_send( int fd,ivi_chargeAppointSt tspchager)
 
 	chager.effectivestate = tspchager.effectivestate;
 
-
 	TopMsg.tbox_charge_appoointmentset = &chager;
 	
     szlen = tbox__net__top_message__get_packed_size( &TopMsg );
@@ -639,7 +636,11 @@ void ivi_activestate_response_send( int fd )
     return;
 
 }
-
+void tbox_ivi_signalpower_init(void)
+{
+	signal_power = 0;   //HU每次连接上来，调用一次
+	signal_type = 0;
+}
 void ivi_signalpower_response_send(int fd  )
 {
     int i = 0;
@@ -649,22 +650,18 @@ void ivi_signalpower_response_send(int fd  )
     unsigned char pro_buf[2048] = {0};
 	int temp_grade = 0 ;
 	int temp;
-	static int level = 0;
-	static int system = 0;
-	if(level == nm_get_signal())
+	int temp_power = 0;
+	if(nm_get_signal() < 0)
 	{
-
+		temp_power = 0;
 	}
 	else
 	{
-		level = nm_get_signal();
-		//log_o(LOG_IVI,"signal power %d",nm_get_signal());
+		temp_power = nm_get_signal();
 	}
-	
-	temp = ((double) nm_get_signal())/31*100;
+	temp = ((double) temp_power)/31*100;
 	if((temp >= 0) && (temp < 20))
 	{
-		
 		temp_grade = 0;
 	}
 	else if((temp >= 20) && (temp < 40))
@@ -683,32 +680,26 @@ void ivi_signalpower_response_send(int fd  )
 	{
 		temp_grade = 4;
 	}
-	if((signalpower == temp_grade)&&(system == nm_get_net_type()))
+	if((signal_power == temp_grade)&&(signal_type == nm_get_net_type()))
 	{
 		return ;
 	}
 	else
 	{
-		signalpower = temp_grade;
-		system = nm_get_net_type();
+		signal_power = temp_grade;
+		signal_type = nm_get_net_type();
 	}
 	if(hu_pki_en == 0)
 	{
 	    if( fd < 0 )
 	    {
-	       //log_e(LOG_IVI,"ivi_signalpower_response_send fd = %d.",fd);
 	       return ; 
 	    }
 	}
-	
     Tbox__Net__TopMessage TopMsg ;
     Tbox__Net__MsgResult result;
     tbox__net__top_message__init( &TopMsg );
     tbox__net__msg_result__init( &result );
-
-	unsigned char nettype;
-            
-    nettype = nm_get_net_type();
 
     if( at_get_sim_status() == 2 )
     {
@@ -716,17 +707,17 @@ void ivi_signalpower_response_send(int fd  )
     }
     else
     {
-         if(nettype == 0)
+         if(signal_type == 0)
          {
              TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__GSM;
 			 log_o(LOG_IVI,"TYPE 2G\n");
          }
-         else if(nettype == 2)
+         else if(signal_type == 2)
          {
              TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__UMTS;
 			 log_o(LOG_IVI,"TYPE 3G\n");
           }
-          else if(nettype == 7)
+          else if(signal_type == 7)
           {
               TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__LTE;
 			  log_o(LOG_IVI,"TYPE 4G\n");
@@ -738,7 +729,7 @@ void ivi_signalpower_response_send(int fd  )
      }		
     TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_NETWORK_SIGNAL_STRENGTH;
     result.result = true;
-	TopMsg.signal_power = temp_grade;
+	TopMsg.signal_power = signal_power;
     TopMsg.msg_result = &result;
 	log_o(LOG_IVI,"power = %d",TopMsg.signal_power);
     szlen = tbox__net__top_message__get_packed_size( &TopMsg );
@@ -798,7 +789,16 @@ void ivi_callstate_response_send(int fd  )
 	       return ;
 	    }
 	}
-
+    Tbox__Net__TopMessage TopMsg ;
+    Tbox__Net__CallStatus callstate;
+    tbox__net__top_message__init( &TopMsg );
+	tbox__net__call_status__init( &callstate );
+    
+	TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_CALL_STATUS;
+	if( 3 == Get_call_tpye())
+	{
+		return ;
+	}
 	temp = assist_get_call_status();
 	if( temp == call_flag)
 	{
@@ -808,12 +808,6 @@ void ivi_callstate_response_send(int fd  )
 	{
 		call_flag = temp;	
 	}		
-    Tbox__Net__TopMessage TopMsg ;
-    Tbox__Net__CallStatus callstate;
-    tbox__net__top_message__init( &TopMsg );
-	tbox__net__call_status__init( &callstate );
-    
-	TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_CALL_STATUS;
 	if( 1 == Get_call_tpye())
 	{
 		callstate.type = TBOX__NET__CALL_TYPE__BCALL;
@@ -832,21 +826,18 @@ void ivi_callstate_response_send(int fd  )
 		
 		log_o(LOG_IVI,"Ecall dail");
 	}
-	else
-	{
-		
-	}
-	if(temp == 1)        //来电
+	if(call_flag == 1)        //来电
 	{
 		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_IN;
+		callstate.type = TBOX__NET__CALL_TYPE__ECALL;  //来电的时候默认是ECALL
 		log_o(LOG_IVI,"incoming call");
 	}
-	else if(temp == 3)   //去电
+	else if(call_flag == 3)   //去电
 	{
 		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_OUT;
 		log_o(LOG_IVI,"outgoing call");
 	}
-	else if(temp == 4)   //已接通
+	else if(call_flag == 4)   //已接通
 	{
 		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_CONNECTED;
 		log_o(LOG_IVI,"connected call");
@@ -863,13 +854,9 @@ void ivi_callstate_response_send(int fd  )
 		if(Get_call_tpye() == 1)
 		{
 			bcall_flag = 0;
-			//audio_reset_ICall();
-			//log_o(LOG_IVI,"reset ICAll");
 		}
 		if(Get_call_tpye() == 2)
 		{
-			//audio_reset_ICall();
-			//log_o(LOG_IVI,"reset ICAll");
 			icall_flag = 0;
 		}
 		audio_setup_aic3104();
@@ -1056,7 +1043,7 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
             if( at_get_sim_status() == 2 )
             {
                 TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__NONE_SIGNAL;
-				signalpower = 0;
+				TopMsg.signal_power = 0;
             }
             else
             {
@@ -1081,27 +1068,27 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 				{
 					log_o(LOG_IVI,"power = %d",nm_get_signal());
 					log_o(LOG_IVI,"power = %d",(double)nm_get_signal()/31*100);
-					signalpower = 0;
+					TopMsg.signal_power = 0;
 				}
 				else if((temp >= 20) && (temp < 40))
 				{
-					signalpower = 1;
+					TopMsg.signal_power = 1;
 				}
 				else if((temp >= 40) && (temp < 60))
 				{
-					signalpower = 2;
+					TopMsg.signal_power = 2;
 				}
 				else if((temp >= 60) && (temp < 80))
 				{
-					signalpower = 3;
+					TopMsg.signal_power = 3;
 				}
 				else
 				{
-					signalpower = 4;
+					TopMsg.signal_power = 4;
 				}
             }
 
-			TopMsg.signal_power = signalpower ;
+			//TopMsg.signal_power = signalpower ;
 			log_o(LOG_IVI,"power = %d",TopMsg.signal_power);
             result.result = true;
             
@@ -1116,23 +1103,20 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 
             tbox__net__call_action_result__init( &call_request );
 
-      		if(1 == callrequest.ecall)
+      		if(ECALL_YTPE == callrequest.call_type)
       		{
       			call_request.type = TBOX__NET__CALL_TYPE__ECALL;	
       		}
-			else if( 1 == callrequest.bcall)
+			else if(BCALL_TYPE == callrequest.call_type)
 			{
 				call_request.type = TBOX__NET__CALL_TYPE__BCALL;
 			}
-			else if(1 == callrequest.bcall)
+			else if(ICALL_TYPE == callrequest.call_type)
 			{
 				call_request.type = TBOX__NET__CALL_TYPE__ICALL;
 			}
-			else
-			{
-			}
 
-			if( 1 == callrequest.action)
+			if( START_YTPE == callrequest.call_action)
 			{
 				call_request.action = TBOX__NET__CALL_ACTION_ENUM__START_CALL;	
 			}
@@ -1310,7 +1294,6 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 		
         case TBOX__NET__MESSAGETYPE__REQUEST_NETWORK_SIGNAL_STRENGTH:
         {
-        	network_onoff = 1;
             ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_NETWORK_SIGNAL_STRENGTH);
             break;
         }
@@ -1328,30 +1311,31 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
             {
                 case TBOX__NET__CALL_TYPE__ECALL:  //车机语音触发ECALL
                 {
-                	callrequest.ecall = 1;
+                	callrequest.call_type = ECALL_YTPE;
                     if( TBOX__NET__CALL_ACTION_ENUM__START_CALL == TopMsg->call_action->action )
                     {
-                   		callrequest.action = 1;  
+                   		callrequest.call_action = START_YTPE;
                     }
                     else if( TBOX__NET__CALL_ACTION_ENUM__END_CALL == TopMsg->call_action->action )
                     {
-                     	callrequest.action = 2;
+                     	callrequest.call_action = END_TYPE;
                     }
                     ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION);
 					ivi_remotediagnos_request_send( fd,0); //ECALL触发，下发远程诊断
                     break;
                 }
 
-                case TBOX__NET__CALL_TYPE__BCALL:
+                case TBOX__NET__CALL_TYPE__BCALL:  //车机道路救援
                 {
-                	callrequest.bcall = 1;
+                	callrequest.call_type = BCALL_TYPE;
+					log_o(LOG_IVI,"bcall dail");
                     if( TBOX__NET__CALL_ACTION_ENUM__START_CALL == TopMsg->call_action->action )
                     {
-                    	callrequest.action = 1;
+                    	callrequest.call_action = START_YTPE;
                     }
                     else if( TBOX__NET__CALL_ACTION_ENUM__END_CALL == TopMsg->call_action->action )
                     {
-                        callrequest.action = 2;
+                        callrequest.call_action = END_TYPE;
                     }
                     ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION);
                     break;
@@ -1359,16 +1343,15 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 
                 case TBOX__NET__CALL_TYPE__ICALL:
                 {
-                	callrequest.icall = 1;
+                	callrequest.call_type = BCALL_TYPE;
                     if( TBOX__NET__CALL_ACTION_ENUM__START_CALL == TopMsg->call_action->action )
                     {
-                        callrequest.action = 1;
+                        callrequest.call_action = START_YTPE;
                     }
                     else if( TBOX__NET__CALL_ACTION_ENUM__END_CALL == TopMsg->call_action->action )
                     {
-                        callrequest.action = 2;
+                         callrequest.call_action = END_TYPE;
                     }
-
                     ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION);
                     break;
                 }
@@ -1497,7 +1480,16 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 			{
 				HuChargeAppoint.cmd = PP_RMTCTRL_CHRGCANCELAPPOINT;
 			}
-			HuChargeAppoint.timestamp = TopMsg->ihu_charge_appoointmentsts->timestamp;
+			if(TopMsg->ihu_charge_appoointmentsts->timestamp > 2147483647)
+			{
+				HuChargeAppoint.timestamp = 2147483647;
+			}
+			else
+			{
+				HuChargeAppoint.timestamp = TopMsg->ihu_charge_appoointmentsts->timestamp;
+			}
+
+			log_o(LOG_IVI,"TopMsg->ihu_charge_appoointmentsts->timestamp = %x",HuChargeAppoint.timestamp);
 			
 			HuChargeAppoint.hour = TopMsg->ihu_charge_appoointmentsts->hour;
 			
@@ -1800,7 +1792,7 @@ void *ivi_main(void)
 	            {
 	               	max_fd = ivi_clients[i].fd;
 	            }	
-	            log_i(LOG_IVI, "client_fd[%d]=%d", i, ivi_clients[i].fd);
+	            //log_i(LOG_IVI, "client_fd[%d]=%d", i, ivi_clients[i].fd);
 	        }
 	        /* monitor the incoming data */
 	        ret = select(max_fd + 1, &read_set, NULL, NULL, &timeout);
@@ -1846,6 +1838,7 @@ void *ivi_main(void)
 	                            ivi_clients[i].addr = cli_addr;
 	                            ivi_clients[i].lasthearttime = tm_get_time();
 	                            log_o(LOG_IVI, "add client_fd[%d] = %d", i, ivi_clients[i].fd);
+								tbox_ivi_signalpower_init();
 	                            break;
 	                        }
 	                    }
@@ -1976,6 +1969,7 @@ void *ivi_main(void)
 					{
 						log_o(LOG_IVI,"HzTboxSvrAccept +++++++++++++++iRet[%d] \n", ret);
 						ihu_client.lasthearttime = tm_get_time();
+						tbox_ivi_signalpower_init();
 						ihu_client.states = 1;    //车机客户端已经连接上来
 						ihu_client.accept_flag = 1230;//accept成功
 						ihu_client.stage = PKI_RECV;
@@ -2147,8 +2141,8 @@ void *ivi_check(void)
 			if(sos_newflag == 1)
 			{
 				memset(&callrequest,0 ,sizeof(ivi_callrequest));
-				callrequest.ecall = 1;
-				callrequest.action =1;
+				callrequest.call_type = ECALL_YTPE;
+				callrequest.call_action = START_YTPE;
 				if(ivi_clients[0].fd > 0)
 				{
 					//下发远程诊断命令
@@ -2161,10 +2155,8 @@ void *ivi_check(void)
 		{
 			if(ivi_clients[0].fd > 0)  //轮询任务：信号强度、电话状态、绑车激活、远程诊断、
 			{
-				if( 1 == tbox_ivi_get_network_onoff() ) //已经请求网络制式
-				{
-					ivi_signalpower_response_send( ivi_clients[0].fd ); //如果信号强度变化，传给车机
-				}
+
+				ivi_signalpower_response_send( ivi_clients[0].fd ); //如果信号强度变化，传给车机
 				ivi_callstate_response_send(ivi_clients[0].fd );  //电话状态变化，传给车机
 
 				if((PP_rmtCfg_enable_actived() == 1)&&(active_flag == 0))  //判断TSP是否下发激活信息
@@ -2188,38 +2180,8 @@ void *ivi_check(void)
 		{
 			if(ihu_client.states == 1)   //车机连上来，判断是否超时
 			{	
-				#if 0
-				uint64_t temp = 0;
-				uint64_t t_time = 0;
-				t_time = tm_get_time();
-				if(t_time > ihu_client.lasthearttime)
-				{
-					temp = t_time - ihu_client.lasthearttime;
-					if( temp > 30000)
-					{
-						if(ihu_client.close_syscall_count == 0)
-						{
-							pthread_mutex_lock(&send_mutex);
-							tbox_ivi_closesocket();
-							memset(&ihu_client,0,sizeof(ihu_client));
-							pthread_mutex_unlock(&send_mutex);
-							log_o(LOG_IVI,"HzTboxSvrClose+++++++++++++++ \n");
-						}
-						else
-						{
-						}
-					}
-				}
-				else
-				{
-					log_o(LOG_IVI," tm_get_time() <=  ihu_client.lasthearttime");
-				}
-				#endif
 
-				if( 1 == tbox_ivi_get_network_onoff() ) //已经请求网络制式
-				{
-					ivi_signalpower_response_send( ivi_clients[0].fd ); //如果信号强度变化，传给车机
-				}
+				ivi_signalpower_response_send( ivi_clients[0].fd ); //如果信号强度变化，传给车机
 				ivi_callstate_response_send(ivi_clients[0].fd );  //电话状态变化，传给车机
 
 				if((PP_rmtCfg_enable_actived() == 1)&&(active_flag == 0))  //判断TSP是否下发激活信息

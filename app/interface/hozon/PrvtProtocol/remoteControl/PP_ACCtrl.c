@@ -873,6 +873,7 @@ uint8_t PP_ACCtrl_cmdoff(void)
 	}
 	else
 	{
+		log_o(LOG_HOZON,"PP_ACCtrl_cmdoff");
 		return 1;
 	}
 	return 0;

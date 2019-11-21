@@ -114,6 +114,12 @@ typedef struct
 } PP_rmtCharge_Appointperiod_t; /*�ṹ��*/
 /******union definitions*****/
 
+typedef enum
+{
+	CHARGE_SYNC_START = 0,
+	CHARGE_SYNC_END ,
+}PP_CHARGE_SYNC;//控制方式
+
 /*******************************************************
 description�� variable External declaration
 *******************************************************/
@@ -135,4 +141,5 @@ extern unsigned char GetPP_ChargeCtrl_Sleep(void);
 extern void SetPP_ChargeCtrl_appointPara(void);
 extern int PP_ChargeCtrl_waketime(void);
 extern void PP_ChargeCtrl_HUBookingBackResp(void* HUbookingBackResp);
+extern void PP_ChargeCtrl_informTsp(void);
 #endif 

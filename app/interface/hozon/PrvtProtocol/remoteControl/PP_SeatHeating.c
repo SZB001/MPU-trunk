@@ -421,6 +421,7 @@ uint8_t PP_seatheating_cmdoff(void)
 {
 	if((PP_rmtCtrl_cfg_HeatingSt(0) == 0)&&(PP_rmtCtrl_cfg_HeatingSt(1) == 0))
 	{
+		log_o(LOG_HOZON,"PP_seatheating_cmdoff");
 		return 1;
 	}
 	if(PP_rmtCtrl_cfg_HeatingSt(0) != 0)

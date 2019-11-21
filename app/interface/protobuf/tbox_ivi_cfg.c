@@ -6,39 +6,14 @@
 
 extern ivi_callrequest callrequest; 
 
-int tbox_ivi_get_call_type(void) //获取通话的类型
+uint8_t tbox_ivi_get_call_type(void) //获取通话的类型
 {
-
-	if(callrequest.ecall == 1)
-	{
-		return 0;  // ecall
-	}
-	else if (callrequest.bcall == 1)
-	{
-		return 1;  // bcall
-	}
-	else if (callrequest.icall == 1)
-	{
-		return 2;  //icall
-	}
-	else
-	{
-		return 3;
-	}
-	
+	return callrequest.call_type;
 }
-int tbox_ivi_get_call_action(void) //获取通话的类型
+uint8_t tbox_ivi_get_call_action(void) //获取通话的类型
 {
 
-	if(callrequest.action == 1)
-	{
-		return 1;  // 打电话
-	}
-	else if (callrequest.action == 2)
-	{
-		return 2;  // 挂电话
-	}
-	return 0;
+	return callrequest.call_action;
 }
 
 void tbox_ivi_clear_call_flag(void)
@@ -47,12 +22,12 @@ void tbox_ivi_clear_call_flag(void)
 }
 void tbox_ivi_clear_bcall_flag(void)
 {
-	callrequest.bcall = 0;
+	//callrequest.bcall = 0;
 }
 
 void tbox_ivi_clear_icall_flag(void)
 {
-	callrequest.icall = 0;
+	//callrequest.icall = 0;
 }
 
 long tbox_ivi_getTimestamp(void)
