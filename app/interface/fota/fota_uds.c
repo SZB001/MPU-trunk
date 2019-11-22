@@ -452,7 +452,7 @@ int fota_uds_write_data_by_identifier(uint8_t *identifier, uint8_t *data, int le
     return fota_uds_request(0, 0x2E, 0, buf, len + 2, 5);
 }
 
-//This Function Use To Start GW Upgrade VCU, It Needs 88s To Upgrade, So We Wait 3min For It
+//This Function Use To Start GW Upgrade Other ECU, It Needs ?? To Upgrade, So We Wait 1 Hour For It
 int fota_uds_write_data_by_identifier_ex(uint8_t *identifier, uint8_t *data, int len)
 {
     uint8_t buf[256];
@@ -467,7 +467,7 @@ int fota_uds_write_data_by_identifier_ex(uint8_t *identifier, uint8_t *data, int
     memcpy(buf, identifier, 2);
     memcpy(buf + 2, data, len);
 
-    return fota_uds_request(0, 0x2E, 0, buf, len + 2, 180);
+    return fota_uds_request(0, 0x2E, 0, buf, len + 2, 60 * 60);
 }
 
 int fota_uds_enter_diag(void)

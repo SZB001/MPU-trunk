@@ -330,6 +330,8 @@ static int fota_ecu_upgrade_GW(fota_ecu_t *ecu, fota_ver_t *ver)
     if (0x62 == ecu->gw_sa)
     {
         fota_uds_write_data_by_identifier((uint8_t *)"\x74\x02", (uint8_t *)&ecu->gw_sa, 1);
+
+        fota_uds_reset();
     }
 
     //if (fota_uds_write_data_by_identifier((uint8_t *)"\x74\x03", (uint8_t *)&ecu->gw_sa, 1) != 0)
