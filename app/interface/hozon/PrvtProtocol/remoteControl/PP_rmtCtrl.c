@@ -457,17 +457,8 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 			return;
 		}
-		if(PP_rmtCtrl.fotaUpgradeSt == 1)
-		{
-			log_e(LOG_HOZON,"fota updating");
-			rmtCtrl_Stpara.reqType = PP_rmtCtrl.reqType;
-			rmtCtrl_Stpara.eventid = PP_rmtCtrl.eventid;
-			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-			rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
-			rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_FOTA_UPGRADE;
-			PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);	
-			return ;
-		}
+
+		int ret = 0;
 		switch((uint8_t)(Appdata.CtrlReq.rvcReqType >> 8))
 		{
 			case PP_RMTCTRL_DOORLOCK://控制车门锁
@@ -534,7 +525,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 			case PP_RMTCTRL_CHARGE://充电
 			{
-				SetPP_ChargeCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+				ret = SetPP_ChargeCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote RMTCTRL_CHARGE control req");
 			}
 			break;
@@ -552,6 +543,18 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 			default:
 			break;
+		}
+
+		if(PP_LOCK_ERR_FOTAUPDATE == ret)
+		{
+			log_e(LOG_HOZON,"fota updating");
+			rmtCtrl_Stpara.reqType = PP_rmtCtrl.reqType;
+			rmtCtrl_Stpara.eventid = PP_rmtCtrl.eventid;
+			rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+			rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
+			rmtCtrl_Stpara.rvcFailureType = PP_RMTCTRL_FOTA_UPGRADE;
+			PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);	
+			return;
 		}
 	}
 	else if(PP_MID_RMTCTRL_HUBOOKBACKRESP == MsgDataBody.mID)//HU booking sync response
