@@ -29,6 +29,7 @@ description�� include the header file
 #include "PrvtProt_CertDownload.h"
 #include "udef_cfg_api.h"
 #include "PrvtProt_shell.h"
+#include "PrvtProt_fotaInfoPush.h"
 
 /*******************************************************
 description�� global variable definitions
@@ -56,10 +57,7 @@ static int PP_shell_SetTboxid(int argc, const char **argv);
 static int PP_shell_SetTmcuSw(int argc, const char **argv);
 static int PP_shell_SetTmpuSw(int argc, const char **argv);
 static int PP_shell_Seticcid(int argc, const char **argv);
-
 static int PP_shell_showpara(int argc, const char **argv);
-
-
 static int PP_shell_SetdiagReq(int argc, const char **argv);
 static int PP_shell_SetTboxSN(int argc, const char **argv);
 static int PP_shell_SetCertDLReq(int argc, const char **argv);
@@ -74,6 +72,7 @@ static int PP_shell_SetRmtCfgficm(int argc, const char **argv);
 static int PP_shell_SetTestflag(int argc, const char **argv);
 static int PP_shell_showpldata(int argc, const char **argv);
 static int PP_shell_deleteCipher(int argc, const char **argv);
+static int PP_shell_setFIPReq(int argc, const char **argv);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -94,6 +93,7 @@ void PrvtProt_shell_init(void)
                                             "set HOZON PrvtProt HeartBeat Period");
 	shell_cmd_register("hozon_setSuspend", PP_shell_setSuspend, "set HOZON PrvtProt suspend");
 	shell_cmd_register("hozon_setXcallReq", PP_shell_setXcallReq, "set HOZON PrvtProt ecall request");
+    shell_cmd_register("hozon_setFIPReq", PP_shell_setFIPReq, "set HOZON PrvtProt fota info push request");
 	shell_cmd_register("hozon_setEcallResp", PP_shell_setEcallResp, "set HOZON PrvtProt ecall response");
 	shell_cmd_register("hozon_setRmtCfgReq", PP_shell_SetRmtCfgReq, \
                                         "set HOZON PrvtProt remote config request");
@@ -228,6 +228,24 @@ static int PP_shell_setXcallReq(int argc, const char **argv)
     return 0;
 }
 
+/******************************************************
+*PP_shell_setFIPReq
+
+*
+
+
+*����ֵ��void
+
+*��  ����
+
+*��  ע��
+******************************************************/
+static int PP_shell_setFIPReq(int argc, const char **argv)
+{
+	PP_FIP_shellReq();
+    sleep(1);
+    return 0;
+}
 
 /******************************************************
 *��������PP_shell_setEcallResp

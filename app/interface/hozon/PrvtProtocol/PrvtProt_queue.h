@@ -39,6 +39,7 @@ typedef enum
 	PP_REMOTE_VS,
 	PP_REMOTE_DIAG,
 	PP_CERT_DL,
+	PP_OTA_INFOPUSH,
 	PP_MAX
 }PP_RX_OBJ;
 

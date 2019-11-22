@@ -84,6 +84,12 @@ description�� macro definitions
 #define PP_MID_DIAG_FAULTCODECLEANRESP		7
 #define PP_MID_DIAG_CANBUSMSGCOLLREQ		8
 
+#define PP_AID_OTAINFOPUSH	 		180//
+//MID
+#define PP_MID_OTA_INFOPUSHREQ 		1//request
+#define PP_MID_OTA_INFOPUSHRESP 	2//response
+
+
 #define PP_TXPAKG_FAIL 	(-1)//���ķ���ʧ��
 #define PP_TXPAKG_SUCCESS 	  1//���ķ��ͳɹ�
 

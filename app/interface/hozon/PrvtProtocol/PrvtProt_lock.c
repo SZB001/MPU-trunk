@@ -213,6 +213,7 @@ int setPP_lock_odcmtxlock(unsigned char obj)
 			case PP_LOCK_VEHICTRL_ENGINE:
 			case PP_LOCK_VEHICTRL_FORBIDSTART:
 			case PP_LOCK_VEHICTRL_SUNROOF:
+			case PP_LOCK_VEHICTRL_SEAT:
 			{
 				if(0 == (PP_odc_lockflag & PP_LOCK_MASK_FOTAUPDATE))
 				{

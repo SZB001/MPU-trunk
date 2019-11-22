@@ -36,13 +36,14 @@ description�� macro definitions
 #define PP_LOCK_MASK_FORBIDSTART    0x00002000
 #define PP_LOCK_MASK_SUNROOF        0x00004000
 #define PP_LOCK_MASK_RMTSTART       0x00008000
+#define PP_LOCK_MASK_SEATHEAT       0x00010000
 
 #define PP_LOCK_MASK_DIAG_ALL       (PP_LOCK_MASK_TSPDIAG | PP_LOCK_MASK_ACTIVE | PP_LOCK_MASK_CLEAN)
 #define PP_LOCK_MASK_OTA_ALL        (PP_LOCK_MASK_READECUVER | PP_LOCK_MASK_FOTAUPDATE)
 #define PP_LOCK_MASK_CTRL_ALL       (PP_LOCK_MASK_AC | PP_LOCK_MASK_AUTODOOR | PP_LOCK_MASK_BLEKEYSTART | \
                                      PP_LOCK_MASK_CAMERA | PP_LOCK_MASK_CHRG | PP_LOCK_MASK_DOORLOCK    | \
                                      PP_LOCK_MASK_SEARCHVEHI | PP_LOCK_MASK_ENGINE | PP_LOCK_MASK_FORBIDSTART | \
-                                     PP_LOCK_MASK_SUNROOF | PP_LOCK_MASK_RMTSTART)
+                                     PP_LOCK_MASK_SUNROOF | PP_LOCK_MASK_RMTSTART | PP_LOCK_MASK_SEATHEAT)
                                     
 
 /*******************************************************
@@ -79,6 +80,7 @@ typedef enum
     PP_LOCK_VEHICTRL_FORBIDSTART,//
     PP_LOCK_VEHICTRL_SUNROOF,//
     PP_LOCK_VEHICTRL_RMTSTART,//
+    PP_LOCK_VEHICTRL_SEAT,//
     PP_LOCK_OBJ_MAX//
 } PP_LOCK_OBJ;
 

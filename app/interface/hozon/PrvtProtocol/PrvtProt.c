@@ -555,6 +555,11 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 					WrPP_queue(PP_REMOTE_DIAG,rxPack->Header.sign,len);
 				}
 				break;
+				case PP_AID_OTAINFOPUSH:
+				{
+					WrPP_queue(PP_OTA_INFOPUSH,rxPack->Header.sign,len);
+				}
+				break;
 				default:
 				{
 					log_e(LOG_HOZON, "rcv unknow ngtp package\r\n");
