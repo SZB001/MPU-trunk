@@ -51,6 +51,7 @@ description�� include the header file
 #include "PP_rmtCtrl.h"
 #include "PP_canSend.h"
 #include "PP_SendWakeUptime.h"
+#include "../PrvtProt_lock.h"
 #include "PP_ChargeCtrl.h"
 
 extern ivi_client ivi_clients[MAX_IVI_NUM];
@@ -267,6 +268,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 			log_o(LOG_HOZON,"charge control end\n");
 			PP_ChargeCtrl_EndHandle(&PP_rmtChargeCtrl);
 			PP_can_mcu_sleep();//清除虚拟on线
+			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_CHRG);
 			PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_IDLE;
 		}
 		break;
@@ -324,8 +326,26 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_READY;
 						uint8_t cmd = PP_CHARGECTRL_OPEN;
 						PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);//预约充电使能去掉
-						SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,&cmd,NULL);
-						log_i(LOG_HOZON,"Appointment time is up. Execute the charge appointment!\n");
+						int ret;
+						ret = SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,&cmd,NULL);
+						if(PP_LOCK_OK == ret)
+						{
+							log_i(LOG_HOZON,"Appointment time is up. Execute the charge appointment!\n");
+						}
+						else
+						{
+							if(PP_LOCK_ERR_FOTAUPDATE == ret)
+							{
+								PP_rmtChargeCtrl.failtype = PP_RMTCTRL_FOTA_UPGRADE;
+								//inform TSP
+								rmtCtrl_chargeStpara.rvcReqCode = 0x711;
+								rmtCtrl_chargeStpara.bookingId  = PP_rmtCharge_AppointBook.id;
+								rmtCtrl_chargeStpara.eventid  = PP_rmtCharge_AppointBook.eventId;
+								rmtCtrl_chargeStpara.expTime = -1;
+								rmtCtrl_chargeStpara.Resptype = PP_RMTCTRL_RVCBOOKINGRESP;//预约
+								PP_rmtCtrl_StInformTsp(&rmtCtrl_chargeStpara);
+							}
+						}
 					}
 					delaytime = tm_get_time();
 				}
@@ -380,7 +400,9 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 /*
  * 	检查充电完成状况״̬
  *  */
-	if(PP_rmtChargeCtrl.state.chargeSt == PP_CHARGESTATE_ONGOING)
+	if(((PP_rmtChargeCtrl.state.chargeSt == PP_CHARGESTATE_ONGOING) || \
+		(PP_RMTCTRL_CFG_CHARGEING == PP_rmtCtrl_cfg_chargeSt())) && \
+		(0 == GetPP_rmtCtrl_fotaUpgrade()))
 	{
 		PP_rmtChargeCtrl.state.appointcharge = 0;
 		
@@ -446,16 +468,17 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 	if(dev_get_KL15_signal())
 	{
 		PP_ChargeCtrl_informTsp();
-		/*
-		* 检查是否有数据更新
-		* */
-		if(PP_rmtChargeCtrl.state.dataUpdata == 1)
-		{
-			//保存记录
-			log_i(LOG_HOZON,"save charge para when power off\n");
-			(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
-			PP_rmtChargeCtrl.state.dataUpdata = 0;
-		}
+	}
+
+	/*
+	* 检查是否有数据更新,emmc若未挂载，则只保存到文件系统
+	* */
+	if(PP_rmtChargeCtrl.state.dataUpdata == 1)
+	{
+		//保存记录
+		log_i(LOG_HOZON,"save charge para when power off\n");
+		(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
+		PP_rmtChargeCtrl.state.dataUpdata = 0;
 	}
 }
 
@@ -471,11 +494,18 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 
 *��  ע��
 ******************************************************/
-void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
+int SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
 	uint32_t appointId = 0;
 	ivi_chargeAppointSt		ivi_chargeSt;
 	PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
+
+	int mtxlockst = 0;
+	mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_CHRG);
+	if(PP_LOCK_OK != mtxlockst)
+	{
+		return mtxlockst;
+	}
 
 	switch(ctrlstyle)
 	{
@@ -709,6 +739,13 @@ void SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 		default:
 		break;
 	}
+
+	if(!PP_rmtChargeCtrl.state.req)
+	{
+		clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_CHRG);
+	}
+
+	return 0;
 }
 
 /******************************************************

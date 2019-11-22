@@ -207,22 +207,20 @@ int PP_rmtCtrl_mainfunction(void *task)
 			PP_SeatCtrl_SeatStMonitor(task_ptr);    //查询座椅加热是否满足睡眠条件
 			PP_startforbid_acStMonitor(task_ptr);   //满足车控条件的时候是否有禁止启动的请求
 			ret = PP_rmtCtrl_request();
-			if(ret == 1)
-			{	
-				log_o(LOG_HOZON,"REMOTE CONTROL REQUEST\n");
+			if((ret == 1) || (1 == PP_rmtCtrl.fotaAuthReq))
+			{
 				pm_ring_wakeup();   //ring脚唤醒MCU
 				PP_can_mcu_awaken();//唤醒
-				PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDENTIFICAT_QUERY;
-			}
-			else
-			{
 				if(1 == PP_rmtCtrl.fotaAuthReq)
 				{
 					log_o(LOG_HOZON,"fota auth request\n");
 					PP_rmtCtrl.fotaAuthReq = 0;
-					pm_ring_wakeup();   //ring脚唤醒MCU
-					PP_can_mcu_awaken();//唤醒
 					PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDENTIFICAT_LAUNCH;
+				}
+				else
+				{
+					log_o(LOG_HOZON,"REMOTE CONTROL REQUEST\n");
+					PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDENTIFICAT_QUERY;
 				}
 			}
 		}
@@ -1586,6 +1584,7 @@ int SetPP_rmtCtrl_FOTA_endInform(void)
 {
 	int res = 0;
 	PP_rmtCtrl.fotaUpgradeSt = 0;
+	clearPP_lock_odcmtxlock(PP_LOCK_OTA_FOTAUPDATE);
 	return res;
 }
 
@@ -1602,8 +1601,17 @@ int SetPP_rmtCtrl_FOTA_endInform(void)
 ******************************************************/
 void PP_rmtCtrl_ShellFotaUpdateReq(unsigned char req)
 {
-	PP_rmtCtrl.fotaUpgradeSt = req;
-	PP_rmtCtrl.fotaAuthReq = 1;
+	int ret;
+	if(req == 1)
+	{
+		ret = SetPP_rmtCtrl_FOTA_startInform();
+		log_o(LOG_HOZON, "start fota ret = %d\n",ret);
+	}
+	else
+	{
+		SetPP_rmtCtrl_FOTA_endInform();
+		log_o(LOG_HOZON, "end fota\n");
+	}	
 }
 
 /******************************************************
