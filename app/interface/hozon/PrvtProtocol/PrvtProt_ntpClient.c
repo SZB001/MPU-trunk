@@ -11,6 +11,8 @@ Data			Vasion			author
 #include <unistd.h>
 #include  <errno.h>
 #include <sys/times.h>
+#include <pthread.h>
+#include <sys/prctl.h>
 #include "init.h"
 #include "timer.h"
 #include "log.h"
@@ -25,6 +27,8 @@ static unsigned char ntp_test_flag;
 static int ntp_srv_cnt;
 static int PP_ntp_service(char * serviceURL);
 static int PP_ntp_shell_setntpaddr(int argc , const const char **argv);
+static void PP_ntp_calibrationTime(void);
+static void *PP_ntp_main(void);
 
 /*
 * ntp校时初始化
@@ -36,10 +40,36 @@ void PP_ntp_Init(void)
     shell_cmd_register("hozon_setntpaddr", PP_ntp_shell_setntpaddr, "set ntp addr");
 }
 
+void PP_ntp_run(void)
+{
+    int ret;
+    pthread_t ntptid;
+    pthread_attr_t ntpta;
+
+    pthread_attr_init(&ntpta);
+    pthread_attr_setdetachstate(&ntpta, PTHREAD_CREATE_DETACHED);
+    ret = pthread_create(&ntptid, &ntpta, (void *)PP_ntp_main, NULL);
+    if (ret != 0)
+    {
+        log_e(LOG_HOZON, "ntp calibrationTime pthread create failed, error: %s", strerror(errno));
+    }
+}
+
+static void *PP_ntp_main(void)
+{
+    log_o(LOG_HOZON, "ntp calibrationTime thread running");
+    prctl(PR_SET_NAME, "NTP_CALI");
+    while(1)
+    {
+        PP_ntp_calibrationTime();
+    }
+    return NULL;
+}
+
 /*
 *   ntp校准时间
 */
-void PP_ntp_calibrationTime(void)
+static void PP_ntp_calibrationTime(void)
 {
     static uint64_t caltm_time = 0;
     

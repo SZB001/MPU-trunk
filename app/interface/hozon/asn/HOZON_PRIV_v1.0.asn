@@ -476,5 +476,15 @@ CanBusMessageCollectReqInfo ::= SEQUENCE --mid = 8
 	durationTime 			INTEGER(0..65535) -- 
 }
 
+FotaNoticeReqInfo ::= SEQUENCE --mid = 1
+{
+	fotaNotice 			INTEGER(0..255) -- 
+}
+
+FotaNoticeRespInfo ::= SEQUENCE --mid = 2
+{
+	sid 				INTEGER(0..2147483647), -- 
+	noticeStatus 		INTEGER(0..255) -- 
+}
 
 END

@@ -231,14 +231,14 @@ int PrvtProt_run(void)
 
     pthread_attr_init(&ta);
     pthread_attr_setdetachstate(&ta, PTHREAD_CREATE_DETACHED);
-
     ret = pthread_create(&tid, &ta, (void *)PrvtProt_main, NULL);
-
     if (ret != 0)
     {
         log_e(LOG_HOZON, "pthread_create failed, error: %s", strerror(errno));
         return ret;
     }
+
+	PP_ntp_run();
 #else
 	res = 	PrvtPro_do_rcvMsg(&pp_task) ||
 			PrvtPro_do_wait(&pp_task) || 
@@ -285,7 +285,6 @@ static void *PrvtProt_main(void)
 
 		//TskPPsignFltr_MainFunction();
 		TskPP_VehiInfo_MainFunction();
-		PP_ntp_calibrationTime();
 		PP_CertDownload_mainfunction(&pp_task);
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||

@@ -101,7 +101,7 @@ extern void PP_rmtCtrl_ShellFotaUpdateReq(unsigned char req);
 extern void PP_ChargeCtrl_show(void);
 extern void PP_ACCtrl_show(void);
 extern void PP_ntp_Init(void);
-extern void PP_ntp_calibrationTime(void);
+extern void PP_ntp_run(void);
 extern void PP_SetNTPTime(unsigned char ntpreq);
 extern void getPP_rmtCfg_tspAddrPort(char* addr,int* port);
 extern void getPP_rmtCfg_certAddrPort(char* addr,int* port);
