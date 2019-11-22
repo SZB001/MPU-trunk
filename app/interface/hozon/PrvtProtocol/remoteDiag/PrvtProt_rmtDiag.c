@@ -448,11 +448,18 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 						PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_FOTAECUDIAG;
 						PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
 					}
-					else
+					else if(PP_LOCK_ERR_FOTAUPDATE == mtxlockst)
 					{
 						log_e(LOG_HOZON, "In the fota upgrade\n");
 						PP_rmtDiag.state.result = 0;
 						PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_FOTAING;
+						PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
+					}
+					else
+					{
+						log_e(LOG_HOZON, "other diag ing\n");
+						PP_rmtDiag.state.result = 0;
+						PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_DIAGEVTCONFLICT;
 						PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
 					}
 				}
@@ -575,11 +582,18 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 						PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_FOTAECUDIAG;
 						PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
 					}
-					else
+					else if(PP_LOCK_ERR_FOTAUPDATE == mtxlockst)
 					{
 						log_e(LOG_HOZON, "In the fota upgrade\n");
 						PP_rmtDiag.state.faultCleanResult	= 0;
 						PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_FOTAING;
+						PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
+					}
+					else
+					{
+						log_e(LOG_HOZON, "other diag ing\n");
+						PP_rmtDiag.state.faultCleanResult	= 0;
+						PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_DIAGEVTCONFLICT;
 						PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
 					}
 				}
@@ -813,11 +827,19 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
 				}
-				else
+				else if(PP_LOCK_ERR_FOTAUPDATE == mtxlockst)
 				{
 					log_e(LOG_HOZON, "In the fota upgrade\n");
 					PP_rmtDiag.state.result = 0;
 					PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_FOTAING;
+					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
+				}
+				else
+				{
+					log_e(LOG_HOZON, "other diag ing\n");
+					PP_rmtDiag.state.result = 0;
+					PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_DIAGEVTCONFLICT;
 					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
 				}

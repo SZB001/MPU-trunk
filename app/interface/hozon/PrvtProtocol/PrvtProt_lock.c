@@ -98,7 +98,9 @@ int setPP_lock_odcmtxlock(unsigned char obj)
 		{
 			case PP_LOCK_DIAG_TSPDIAG:
 			{
-				if(0 == (PP_odc_lockflag & PP_LOCK_MASK_OTA_ALL))
+				if((0 == (PP_odc_lockflag & PP_LOCK_MASK_OTA_ALL)) && \
+				   (0 == (PP_odc_lockflag & PP_LOCK_MASK_ACTIVE))  && \
+				   (0 == (PP_odc_lockflag & PP_LOCK_MASK_CLEAN)))
 				{
 					PP_odc_lockflag |= PP_lock_mask[obj].mask;
 				}
@@ -108,16 +110,22 @@ int setPP_lock_odcmtxlock(unsigned char obj)
 					{
 						ret = PP_LOCK_ERR_FOTAREADVER;
 					}
-					else
+					else if(PP_odc_lockflag & PP_LOCK_MASK_FOTAUPDATE)
 					{
 						ret = PP_LOCK_ERR_FOTAUPDATE;
+					}
+					else
+					{
+						ret = PP_LOCK_ERR_DIAGING;
 					}
 				}
 			}
 			break;
 			case PP_LOCK_DIAG_ACTIVE:
 			{
-				if(0 == (PP_odc_lockflag & PP_LOCK_MASK_OTA_ALL))
+				if((0 == (PP_odc_lockflag & PP_LOCK_MASK_OTA_ALL)) && \
+				   (0 == (PP_odc_lockflag & PP_LOCK_MASK_TSPDIAG)) && \
+				   (0 == (PP_odc_lockflag & PP_LOCK_MASK_CLEAN)))
 				{
 					PP_odc_lockflag |= PP_lock_mask[obj].mask;
 				}	
@@ -127,16 +135,22 @@ int setPP_lock_odcmtxlock(unsigned char obj)
 					{
 						ret = PP_LOCK_ERR_FOTAREADVER;
 					}
-					else
+					else if(PP_odc_lockflag & PP_LOCK_MASK_FOTAUPDATE)
 					{
 						ret = PP_LOCK_ERR_FOTAUPDATE;
+					}
+					else
+					{
+						ret = PP_LOCK_ERR_DIAGING;
 					}
 				}
 			}
 			break;
 			case PP_LOCK_DIAG_CLEAN:
 			{
-				if(0 == (PP_odc_lockflag & PP_LOCK_MASK_OTA_ALL))
+				if((0 == (PP_odc_lockflag & PP_LOCK_MASK_OTA_ALL)) && \
+				   (0 == (PP_odc_lockflag & PP_LOCK_MASK_TSPDIAG)) && \
+				   (0 == (PP_odc_lockflag & PP_LOCK_MASK_ACTIVE)))
 				{
 					PP_odc_lockflag |= PP_lock_mask[obj].mask;
 				}
@@ -146,9 +160,13 @@ int setPP_lock_odcmtxlock(unsigned char obj)
 					{
 						ret = PP_LOCK_ERR_FOTAREADVER;
 					}
-					else
+					else if(PP_odc_lockflag & PP_LOCK_MASK_FOTAUPDATE)
 					{
 						ret = PP_LOCK_ERR_FOTAUPDATE;
+					}
+					else
+					{
+						ret = PP_LOCK_ERR_DIAGING;
 					}
 				}
 			}
