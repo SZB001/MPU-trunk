@@ -50,6 +50,7 @@ description： include the header file
 #include "PP_canSend.h"
 #include "PPrmtCtrl_cfg.h"
 #include "../PrvtProt_SigParse.h"
+#include "../PrvtProt_lock.h"
 
 #include "PP_doorLockCtrl.h"
 
@@ -157,6 +158,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 				{
 					log_o(LOG_HOZON," low power or power state on");
 					PP_rmtdoorCtrl.state.req = 0;
+					PP_rmtdoorCtrl.state.failtype = PP_RMTCTRL_ACCNOOFF;
 					doorLock_success_flag = 0;
 					door_lock_stage = PP_DOORLOCKCTRL_END;
 				}
@@ -210,6 +212,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 			    else//BDM超时
 			    {
 				     log_o(LOG_HOZON,"BDM timeout");
+					 PP_rmtdoorCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 				     PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0);
 				     doorLock_success_flag = 0;
 				     door_lock_stage = PP_DOORLOCKCTRL_END;
@@ -225,10 +228,12 @@ int PP_doorLockCtrl_mainfunction(void *task)
 			memset(&rmtCtrl_Stpara,0,sizeof(PP_rmtCtrl_Stpara_t));
 			if(PP_rmtdoorCtrl.state.style == RMTCTRL_TSP)//tsp
 			{
+				rmtCtrl_Stpara.rvcFailureType =  PP_rmtdoorCtrl.state.failtype;
 				rmtCtrl_Stpara.reqType =PP_rmtdoorCtrl.state.reqType;
 				rmtCtrl_Stpara.eventid = PP_rmtdoorCtrl.pack.DisBody.eventId;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				rmtCtrl_Stpara.expTime = PP_rmtdoorCtrl.state.expTime;
+				
 				if(1 == doorLock_success_flag)
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 2;  //ִ执行完成
@@ -238,7 +243,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 				else
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 3;  //ִ执行失败
-					rmtCtrl_Stpara.rvcFailureType = 0xff;
+					//rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
@@ -269,6 +274,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 				tcom_send_msg(&msghdr, &respbt);
 				#endif
 			}
+			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_DOORLOCK);//释放锁
 			door_lock_stage = PP_DOORLOCKCTRL_IDLE;
 		}
 		break;
@@ -288,60 +294,67 @@ output ：void
 
 ******************************************************/
 
-void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
+int SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
-	switch(ctrlstyle)
+	int mtxlockst = 0;
+	mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_DOORLOCK);
+	if(PP_LOCK_OK == mtxlockst)
 	{
-		case RMTCTRL_TSP:
+		switch(ctrlstyle)
 		{
-			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
-			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
+			case RMTCTRL_TSP:
+			{
+				PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
+				PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
 
-			log_i(LOG_HOZON, "remote door lock control req");
-			PP_rmtdoorCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-			PP_rmtdoorCtrl.state.req = 1;
-			PP_rmtdoorCtrl.state.expTime = disptrBody_ptr->expTime;
-			if(PP_rmtdoorCtrl.state.reqType == PP_RMTCTRL_DOORLOCKOPEN)
-			{
-				doorctrl_type = PP_OPENDOOR;
-				log_o(LOG_HOZON,"PP_OPENDOOR");
+				log_i(LOG_HOZON, "remote door lock control req");
+				PP_rmtdoorCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+				PP_rmtdoorCtrl.state.req = 1;
+				PP_rmtdoorCtrl.state.expTime = disptrBody_ptr->expTime;
+				if(PP_rmtdoorCtrl.state.reqType == PP_RMTCTRL_DOORLOCKOPEN)
+				{
+					doorctrl_type = PP_OPENDOOR;
+					log_o(LOG_HOZON,"PP_OPENDOOR");
+				}
+				else
+				{
+					doorctrl_type = PP_CLOSEDOOR;
+					log_o(LOG_HOZON,"PP_CLOSEDOOR");
+				}
+				PP_rmtdoorCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+				PP_rmtdoorCtrl.state.style = RMTCTRL_TSP;
 			}
-			else
+			break;
+			case RMTCTRL_BLUETOOTH:
 			{
-				doorctrl_type = PP_CLOSEDOOR;
-				log_o(LOG_HOZON,"PP_CLOSEDOOR");
+				 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
+				 if(cmd == 1 )//蓝牙锁门
+				 {
+				 	doorctrl_type = PP_CLOSEDOOR;
+				 }
+				 else if (cmd == 2) //蓝牙开门
+				 {
+				 	doorctrl_type = PP_OPENDOOR;
+				 }
+				 else
+				 {
+				 }
+				 PP_rmtdoorCtrl.state.req = 1;
+				 PP_rmtdoorCtrl.state.style = RMTCTRL_BLUETOOTH;
+				 
 			}
-			PP_rmtdoorCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
-			PP_rmtdoorCtrl.state.style = RMTCTRL_TSP;
+			break;
+			default:
+			break;
 		}
-		break;
-		case RMTCTRL_BLUETOOTH:
-		{
-			 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
-			 if(cmd == 1 )//蓝牙锁门
-			 {
-			 	doorctrl_type = PP_CLOSEDOOR;
-			 }
-			 else if (cmd == 2) //蓝牙开门
-			 {
-			 	doorctrl_type = PP_OPENDOOR;
-			 }
-			 else
-			 {
-			 }
-			 PP_rmtdoorCtrl.state.req = 1;
-			 PP_rmtdoorCtrl.state.style = RMTCTRL_BLUETOOTH;
-			 
-		}
-		break;
-		default:
-		break;
-	}
+	
+}
+	return mtxlockst;
 }
 
 int PP_doorLockCtrl_start(void)
 {
-	if((PP_rmtdoorCtrl.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
+	if(PP_rmtdoorCtrl.state.req == 1)
 	{
 		return 1;
 	}
@@ -368,6 +381,7 @@ int PP_doorLockCtrl_end(void)
 
 void PP_doorLockCtrl_ClearStatus(void)
 {
+	clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_DOORLOCK);//释放锁
 	PP_rmtdoorCtrl.state.req = 0;
 }
 /************************shell命令测试使用**************************/

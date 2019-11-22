@@ -42,6 +42,8 @@
 #include "PPrmtCtrl_cfg.h"
 #include "PP_SeatHeating.h"
 #include "PP_ACCtrl.h"
+#include "../PrvtProt_lock.h"
+
 #include "PP_StartEngine.h"
 
 #define PP_POWERON  2
@@ -110,6 +112,7 @@ int PP_startengine_mainfunction(void *task)
 					else
 					{
 						log_o(LOG_HOZON," low power or power state on");
+						PP_rmtengineCtrl.state.failtype = PP_RMTCTRL_ACCNOOFF;
 						PP_set_seat_requestpower_flag();
 						PP_set_ac_requestpower_flag();
 						start_engine_stage = PP_STARTENGINE_END;
@@ -216,6 +219,7 @@ int PP_startengine_mainfunction(void *task)
 				else   //BDM 应答超时
 				{
 					log_o(LOG_HOZON,"timeout......");
+					PP_rmtengineCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 					PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);  
 					PP_set_seat_requestpower_flag();  
 					PP_seatheating_ClearStatus();
@@ -243,19 +247,20 @@ int PP_startengine_mainfunction(void *task)
 				
 				rmtCtrl_Stpara.eventid = PP_rmtengineCtrl.pack.DisBody.eventId;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+				rmtCtrl_Stpara.rvcFailureType = PP_rmtengineCtrl.state.failtype;
 				if((1 == startengine_success_flag)||(2 == startengine_success_flag))
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 2; 
 					rmtCtrl_Stpara.rvcFailureType = 0;
-					//log_o(LOG_HOZON,"success");
 				}
 				else
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 3;  
-					rmtCtrl_Stpara.rvcFailureType = 0xff;
+					//rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 			}
+			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_ENGINE);//释放锁
 			start_engine_stage = PP_STARTENGINE_IDLE;
 		}
 		break;
@@ -274,7 +279,7 @@ uint8_t PP_get_powerst()
 
 uint8_t PP_startengine_start(void) 
 {
-	if((PP_rmtengineCtrl.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
+	if(PP_rmtengineCtrl.state.req == 1)
 	{
 		return 1;
 	}
@@ -296,48 +301,55 @@ uint8_t PP_startengine_end(void)
 		return 0;
 	}
 }
-void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
+int SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
-	switch(ctrlstyle)
+	int mtxlockst = 0;
+	mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_ENGINE);
+	if(PP_LOCK_OK == mtxlockst)
 	{
-		case RMTCTRL_TSP:
+		switch(ctrlstyle)
 		{
-			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
-			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
-			PP_rmtengineCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-			PP_rmtengineCtrl.state.req = 1;
-			if(PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_POWERON)
+			case RMTCTRL_TSP:
 			{
-				enginecation = PP_POWERON;  //上高压电
-				log_o(LOG_HOZON, "TSP request power on\n");
+				PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
+				PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
+				PP_rmtengineCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+				PP_rmtengineCtrl.state.req = 1;
+				if(PP_rmtengineCtrl.state.reqType == PP_RMTCTRL_POWERON)
+				{
+					enginecation = PP_POWERON;  //上高压电
+					log_o(LOG_HOZON, "TSP request power on\n");
+				}
+				else
+				{
+					enginecation = PP_POWEROFF;//下高压电
+					log_o(LOG_HOZON,"TSP request to shut down the engine\n");
+				}
+				PP_rmtengineCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+				PP_rmtengineCtrl.state.style = RMTCTRL_TSP;
 			}
-			else
+			break;
+			case RMTCTRL_BLUETOOTH:	
 			{
-				enginecation = PP_POWEROFF;//下高压电
-				log_o(LOG_HOZON,"TSP request to shut down the engine\n");
+				 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
+				 if(cmd == 1 )//上高压电
+				 {
+				 	enginecation = PP_POWERON;
+				 }
+				 PP_rmtengineCtrl.state.req = 1;
+				 PP_rmtengineCtrl.state.style = RMTCTRL_BLUETOOTH;
 			}
-			PP_rmtengineCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
-			PP_rmtengineCtrl.state.style = RMTCTRL_TSP;
+			break;
+			default:
+			break;
 		}
-		break;
-		case RMTCTRL_BLUETOOTH:	
-		{
-			 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
-			 if(cmd == 1 )//上高压电
-			 {
-			 	enginecation = PP_POWERON;
-			 }
-			 PP_rmtengineCtrl.state.req = 1;
-			 PP_rmtengineCtrl.state.style = RMTCTRL_BLUETOOTH;
-		}
-		break;
-		default:
-		break;
 	}
+	return mtxlockst;
 }
 
 void PP_startengine_ClearStatus(void)
 {
+	clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_ENGINE);//释放锁
 	PP_rmtengineCtrl.state.req = 0;
 	PP_set_seat_requestpower_flag();  
 	PP_set_ac_requestpower_flag();

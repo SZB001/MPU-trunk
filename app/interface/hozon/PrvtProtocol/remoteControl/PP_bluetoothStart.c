@@ -51,6 +51,7 @@ description： include the header file
 #include "PP_canSend.h"
 #include "PPrmtCtrl_cfg.h"
 #include "../PrvtProt_SigParse.h"
+#include "../PrvtProt_lock.h"
 
 #include "PP_bluetoothStart.h"
 
@@ -171,6 +172,7 @@ int PP_bluetoothstart_mainfunction(void *task)
 			msghdr.msglen    = sizeof(PrvtProt_respbt_t);
 			tcom_send_msg(&msghdr, &respbt);
 			#endif
+			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_RMTSTART);//释放锁
 			blue_start_stage = PP_BLUETOOTHSTART_IDLE;
 		}
 		break;
@@ -179,37 +181,43 @@ int PP_bluetoothstart_mainfunction(void *task)
 	}
 	return res;
 }
-void SetPP_bluetoothstart_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
+int SetPP_bluetoothstart_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
-	switch(ctrlstyle)
+	int mtxlockst = 0;
+	mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_RMTSTART);
+	if(PP_LOCK_OK == mtxlockst)
 	{
-		case RMTCTRL_TSP:
+		switch(ctrlstyle)
 		{
-			//TSP没有一键启动
-		}
-		break;
-		case RMTCTRL_BLUETOOTH:
-		{
-			unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
-			if(cmd == 2 )//蓝牙一键启动
+			case RMTCTRL_TSP:
 			{
-				PP_bluetoothstart.state.cmd = 2;
+				//TSP没有一键启动
 			}
-			else
+			break;
+			case RMTCTRL_BLUETOOTH:
 			{
+				unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
+				if(cmd == 2 )//蓝牙一键启动
+				{
+					PP_bluetoothstart.state.cmd = 2;
+				}
+				else
+				{
+				}
+				PP_bluetoothstart.state.req = 1;
+				PP_bluetoothstart.state.style = RMTCTRL_BLUETOOTH;		 
 			}
-			PP_bluetoothstart.state.req = 1;
-			PP_bluetoothstart.state.style = RMTCTRL_BLUETOOTH;		 
+			break;
+			default:
+			break;
 		}
-		break;
-		default:
-		break;
 	}
+	return mtxlockst;
 }
 
 int PP_bluetoothstart_start(void)
 {
-	if((PP_bluetoothstart.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
+	if(PP_bluetoothstart.state.req == 1)
 	{
 		return 1;
 	}
@@ -234,6 +242,8 @@ int PP_bluetoothstart_end(void)
 
 void PP_bluetoothstart_ClearStatus(void)
 {
+	clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_RMTSTART);//释放锁
+
 	PP_bluetoothstart.state.req = 0;
 }
 

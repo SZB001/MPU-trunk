@@ -40,6 +40,7 @@
 #include "../PrvtProt_SigParse.h"
 #include "tbox_ivi_api.h"
 #include "../../../../base/uds/server/uds_did.h"
+#include "../PrvtProt_lock.h"
 
 #include "PP_CameraCtrl.h"
 
@@ -94,37 +95,43 @@ int PP_CameraCtr_mainfunction(void *task)
 		rmtCtrl_Stpara.eventid = PP_rmtCameraCtrl.pack.DisBody.eventId;
 		rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 		PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-		
+		clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_CAMERA);//释放锁
 	}
 	PP_rmtCameraCtrl.state.req = 0 ;
 	return 0;
 }
 
 
-void SetPP_CameraCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
+int SetPP_CameraCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
-	switch(ctrlstyle)
+	int mtxlockst = 0;
+	mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_CAMERA);
+	if(PP_LOCK_OK == mtxlockst)
 	{
-		case RMTCTRL_TSP:
+		switch(ctrlstyle)
 		{
-			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
-			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
-			log_i(LOG_HOZON, "remote Camera control req");
-			PP_rmtCameraCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-			PP_rmtCameraCtrl.state.expTime = disptrBody_ptr->expTime;
-			PP_rmtCameraCtrl.state.req = 1;
-			PP_rmtCameraCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
-			PP_rmtCameraCtrl.state.style = RMTCTRL_TSP;	
+			case RMTCTRL_TSP:
+			{
+				PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
+				PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
+				log_i(LOG_HOZON, "remote Camera control req");
+				PP_rmtCameraCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+				PP_rmtCameraCtrl.state.expTime = disptrBody_ptr->expTime;
+				PP_rmtCameraCtrl.state.req = 1;
+				PP_rmtCameraCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+				PP_rmtCameraCtrl.state.style = RMTCTRL_TSP;	
+			}
+			break;
+			default:
+			break;
 		}
-		break;
-		default:
-		break;
 	}
+	return mtxlockst;
 }
 
 int PP_CameraCtrl_start(void)
 {	
-	if((PP_rmtCameraCtrl.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
+	if(PP_rmtCameraCtrl.state.req == 1)
 	{
 		return 1;
 	}
@@ -148,6 +155,7 @@ int PP_CameraCtrl_end(void)
 
 void PP_CameraCtrl_ClearStatus(void)
 {
+	clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_CAMERA);//释放锁
 	PP_rmtCameraCtrl.state.req = 0;
 }
 

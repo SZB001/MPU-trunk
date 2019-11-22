@@ -20,7 +20,7 @@ extern void  PP_CameraCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 extern void PP_CameraCtrl_ClearStatus(void);
 extern int PP_CameraCtrl_end(void);
 extern int PP_CameraCtrl_start(void);
-extern void SetPP_CameraCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
+extern int SetPP_CameraCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 #endif
 
 

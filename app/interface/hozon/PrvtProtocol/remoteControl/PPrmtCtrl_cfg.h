@@ -68,4 +68,10 @@ extern long PP_rmtCtrl_cfg_vehicleOdograph(void);
 extern unsigned char PP_rmtCtrl_cfg_DrivHeatingSt(void);
 extern unsigned char PP_rmtCtrl_cfg_PassHeatingSt(void);
 extern unsigned char PP_rmtCtrl_cfg_bluestartSt(void);
+extern uint8_t PP_rmtCtrl_cfg_bt_doorst(void);
+extern uint8_t PP_rmtCtrl_cfg_bt_sunroofst(void);
+extern uint8_t PP_rmtCtrl_cfg_bt_autodoorst(void);
+extern uint8_t PP_rmtCtrl_cfg_bt_chargest(void);
+extern uint8_t PP_rmtCtrl_cfg_bt_highpowerst(void);
+
 #endif 

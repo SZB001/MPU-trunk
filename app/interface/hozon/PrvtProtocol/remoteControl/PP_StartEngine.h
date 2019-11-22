@@ -34,6 +34,7 @@ typedef struct
 	uint64_t period;
 	uint8_t waitSt;
 	uint64_t waittime;
+	uint8_t failtype;
 	char style;
 }__attribute__((packed))  PP_rmtstartengineSt_t;
 
@@ -50,7 +51,7 @@ extern uint8_t PP_startengine_start(void) ;
 extern uint8_t PP_startengine_end(void);
 
 
-extern void SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
+extern int SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 
 
 extern void PP_startengine_SetCtrlReq(unsigned char req,uint16_t reqType);

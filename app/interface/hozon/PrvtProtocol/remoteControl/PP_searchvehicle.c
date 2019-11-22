@@ -52,6 +52,7 @@ description： include the header file
 #include "PPrmtCtrl_cfg.h"
 
 #include "PP_searchvehicle.h"
+#include "../PrvtProt_lock.h"
 
 #define PP_SEARCH 2
 
@@ -123,6 +124,7 @@ int PP_searchvehicle_mainfunction(void *task)
 				{
 					log_o(LOG_HOZON," low power or power state on");
 					PP_rmtsearchvehicle.state.req = 0;
+					PP_rmtsearchvehicle.state.failtype = PP_RMTCTRL_ACCNOOFF;
 					serachvehicle_success_flag = 0;
 					search_vehicle_stage = PP_SEARCHVEHICLE_END;
 				}
@@ -159,6 +161,7 @@ int PP_searchvehicle_mainfunction(void *task)
 					else//响应超时
 					{
 						PP_can_send_data(PP_CAN_SEARCH,CAN_CLEANSEARCH,0);
+						PP_rmtsearchvehicle.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 						serachvehicle_success_flag = 0;
 						search_vehicle_stage = PP_SEARCHVEHICLE_END;
 					}
@@ -176,6 +179,7 @@ int PP_searchvehicle_mainfunction(void *task)
 				rmtCtrl_Stpara.eventid = PP_rmtsearchvehicle.pack.DisBody.eventId;
 				rmtCtrl_Stpara.expTime =  PP_rmtsearchvehicle.state.expTime;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+				rmtCtrl_Stpara.rvcFailureType = PP_rmtsearchvehicle.state.failtype;
 				if(1 == serachvehicle_success_flag)
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 2;  //执行完成
@@ -184,7 +188,7 @@ int PP_searchvehicle_mainfunction(void *task)
 				else
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
-					rmtCtrl_Stpara.rvcFailureType = 0xff;
+					//rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
@@ -216,6 +220,7 @@ int PP_searchvehicle_mainfunction(void *task)
 				tcom_send_msg(&msghdr, &respbt);
 				#endif
 			}
+			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_SEARCHVEHI);//释放锁
 			search_vehicle_stage = PP_SEARCHVEHICLE_IDLE;
 		}
 		break;
@@ -227,7 +232,7 @@ int PP_searchvehicle_mainfunction(void *task)
 
 uint8_t PP_searchvehicle_start(void) 
 {
-	if((PP_rmtsearchvehicle.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
+	if(PP_rmtsearchvehicle.state.req == 1)
 	{
 		return 1;
 	}
@@ -251,46 +256,53 @@ uint8_t PP_searchvehicle_end(void)
 	}
 }
 
-void SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
+int SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
-	switch(ctrlstyle)
+	int mtxlockst = 0;
+	mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_SEARCHVEHI);
+	if(PP_LOCK_OK == mtxlockst)
 	{
-		case RMTCTRL_TSP:
+		switch(ctrlstyle)
 		{
-			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
-			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
-
-			log_i(LOG_HOZON, "remote searchvehicle control req");
-			PP_rmtsearchvehicle.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-			PP_rmtsearchvehicle.state.req = 1;
-			PP_rmtsearchvehicle.state.expTime = disptrBody_ptr->expTime;
-			if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN)
+			case RMTCTRL_TSP:
 			{
-				search_type = PP_SEARCH;
+				PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
+				PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
+
+				log_i(LOG_HOZON, "remote searchvehicle control req");
+				PP_rmtsearchvehicle.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+				PP_rmtsearchvehicle.state.req = 1;
+				PP_rmtsearchvehicle.state.expTime = disptrBody_ptr->expTime;
+				if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN)
+				{
+					search_type = PP_SEARCH;
+				}
+				PP_rmtsearchvehicle.pack.DisBody.eventId = disptrBody_ptr->eventId;
+				PP_rmtsearchvehicle.state.style = RMTCTRL_TSP;
 			}
-			PP_rmtsearchvehicle.pack.DisBody.eventId = disptrBody_ptr->eventId;
-			PP_rmtsearchvehicle.state.style = RMTCTRL_TSP;
+			break;
+			case RMTCTRL_BLUETOOTH:
+			{
+				log_o(LOG_HOZON,"BT REQuest");
+				 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
+				 if(cmd == 1)
+				 {
+				 	search_type = PP_SEARCH;
+				 }
+				 PP_rmtsearchvehicle.state.req = 1;
+				 PP_rmtsearchvehicle.state.style = RMTCTRL_BLUETOOTH;
+			}
+			break;
+			default:
+			break;
 		}
-		break;
-		case RMTCTRL_BLUETOOTH:
-		{
-			log_o(LOG_HOZON,"BT REQuest");
-			 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
-			 if(cmd == 1)
-			 {
-			 	search_type = PP_SEARCH;
-			 }
-			 PP_rmtsearchvehicle.state.req = 1;
-			 PP_rmtsearchvehicle.state.style = RMTCTRL_BLUETOOTH;
-		}
-		break;
-		default:
-		break;
 	}
+	return mtxlockst;
 }
 
 void PP_searchvehicle_ClearStatus(void)
 {
+	clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_SEARCHVEHI);//释放锁
 	PP_rmtsearchvehicle.state.req = 0;
 }
 /************************shell命令测试使用**************************/

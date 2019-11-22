@@ -463,37 +463,37 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		{
 			case PP_RMTCTRL_DOORLOCK://控制车门锁
 			{
-				SetPP_doorLockCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+				ret = SetPP_doorLockCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote DOOR control req");
 			}
 			break;
 			case PP_RMTCTRL_PNRSUNROOF://控制全景天窗
 			{
-				SetPP_sunroofctrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+				ret = SetPP_sunroofctrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote PANORSUNROOF control req");
 			}
 			break;
 			case PP_RMTCTRL_AUTODOOR://控制自动门
 			{
-				SetPP_autodoorCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+				ret = SetPP_autodoorCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote AUTODOOR control req");
 			}
 			break;
 			case PP_RMTCTRL_RMTSRCHVEHICLE://远程搜索车辆
 			{
-				SetPP_searchvehicle_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+				ret = SetPP_searchvehicle_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote RMTSRCHVEHICLE control req");
 			}
 			break;
 			case PP_RMTCTRL_DETECTCAMERA://驾驶员检测摄像头
 			{
-				SetPP_CameraCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+				ret = SetPP_CameraCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote DETECTCAMERA control req");
 			}
 			break;
 			case PP_RMTCTRL_DATARECORDER://行车记录仪
 			{
-				SetPP_CameraCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+				ret = SetPP_CameraCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote DATARECORDER control req");
 			}
 			break;
@@ -507,7 +507,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 					case PP_RMTCTRL_ACCANCELAPPOINT:
 					case PP_RMTCTRL_SETTEMP:
 					{
-						SetPP_ACCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+						ret = SetPP_ACCtrl_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 					}
 					break;
 					case PP_RMTCTRL_MAINHEATOPEN:
@@ -515,7 +515,7 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 					case PP_RMTCTRL_PASSENGERHEATOPEN:
 					case PP_RMTCTRL_PASSENGERHEATCLOSE:
 					{
-						SetPP_seatheating_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+						ret = SetPP_seatheating_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 					}
 					break;
 					default:
@@ -531,14 +531,14 @@ static void PP_rmtCtrl_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			break;
 			case PP_RMTCTRL_HIGHTENSIONCTRL://高电压控制
 			{
-				SetPP_startengine_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+				ret = SetPP_startengine_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 				log_i(LOG_HOZON, "remote RMTCTRL_HIGHTENSIONCTRL control req");
 			}
 			break;
 			case PP_RMTCTRL_ENGINECTRL://发动机控制
 			{
 				log_i(LOG_HOZON, "remote RMTCTRL_ENGINECTRL control req");
-				SetPP_startforbid_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
+				ret = SetPP_startforbid_Request(RMTCTRL_TSP,&Appdata,&MsgDataBody);
 			}
 			break;
 			default:
@@ -596,7 +596,55 @@ static int PP_rmtCtrl_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 {
-	if(PP_rmtCtrl.fotaUpgradeSt == 1)
+	int mutex = 0;
+	switch(obj)
+	{
+		case BT_VEhICLE_DOOR_REQ://控制车门锁
+		{
+			mutex = SetPP_doorLockCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
+		}
+		break;
+		case BT_PANORAMIC_SUNROOF_REQ://控制全景天窗
+		{
+			mutex = SetPP_sunroofctrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
+			log_i(LOG_HOZON, "BT PANORSUNROOF control req");
+		}
+		break;
+		case BT_ELECTRIC_DOOR_REQ://控制自动门
+		{
+			mutex = SetPP_autodoorCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
+			log_i(LOG_HOZON, "BT AUTODOOR control req");
+		}
+		break;
+		case BT_REMOTE_FIND_CAR_REQ://远程搜索车辆
+		{
+			mutex = SetPP_searchvehicle_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
+			log_i(LOG_HOZON, "BT RMTSRCHVEHICLE control req");
+		}
+		break;
+		case BT_CHARGE_REQ://充电
+		{
+			mutex = SetPP_ChargeCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
+			log_i(LOG_HOZON, "BT RMTCTRL_CHARGE control req");
+		}
+		break;
+		case BT_POWER_CONTROL_REQ://高电压控制
+		{
+			mutex = SetPP_bluetoothstart_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
+			//SetPP_startengine_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
+			log_i(LOG_HOZON, "BT RMTCTRL_HIGHTENSIONCTRL control req");
+		}
+		break;
+		case BT_VEHILCLE_STATUS_REQ:
+		{
+			log_i(LOG_HOZON, "BT RMTCTRL_VEHILCE STATUS  req");
+			PP_rmtCtrl_vehicle_status_InformBt(obj,cmd);
+		}
+		break;
+		default:
+		break;
+	}
+	if(mutex == PP_LOCK_ERR_FOTAUPDATE)  //fota升级
 	{
 		TCOM_MSG_HEADER msghdr;
 		PrvtProt_respbt_t respbt;
@@ -639,60 +687,10 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 		msghdr.msgid     = BLE_MSG_CONTROL;
 		msghdr.msglen    = sizeof(PrvtProt_respbt_t);
 		tcom_send_msg(&msghdr, &respbt);
-
-		return;
-	}
-
-	switch(obj)
-	{
-		case BT_VEhICLE_DOOR_REQ://控制车门锁
-		{
-			SetPP_doorLockCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
-		}
-		break;
-		case BT_PANORAMIC_SUNROOF_REQ://控制全景天窗
-		{
-			SetPP_sunroofctrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
-			log_i(LOG_HOZON, "BT PANORSUNROOF control req");
-		}
-		break;
-		case BT_ELECTRIC_DOOR_REQ://控制自动门
-		{
-			SetPP_autodoorCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
-			log_i(LOG_HOZON, "BT AUTODOOR control req");
-		}
-		break;
-		case BT_REMOTE_FIND_CAR_REQ://远程搜索车辆
-		{
-			SetPP_searchvehicle_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
-			log_i(LOG_HOZON, "BT RMTSRCHVEHICLE control req");
-		}
-		break;
-		case BT_CHARGE_REQ://充电
-		{
-			SetPP_ChargeCtrl_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
-			log_i(LOG_HOZON, "BT RMTCTRL_CHARGE control req");
-		}
-		break;
-		case BT_POWER_CONTROL_REQ://高电压控制
-		{
-			SetPP_bluetoothstart_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
-			//SetPP_startengine_Request(RMTCTRL_BLUETOOTH,(void *)&cmd,NULL);
-			log_i(LOG_HOZON, "BT RMTCTRL_HIGHTENSIONCTRL control req");
-		}
-		break;
-		case BT_VEHILCLE_STATUS_REQ:
-		{
-			log_i(LOG_HOZON, "BT RMTCTRL_VEHILCE STATUS  req");
-			PP_rmtCtrl_StInformBt(obj,cmd);
-		}
-		break;
-		default:
-		break;
 	}
 }
  
-#if 1
+
 //type  :回复蓝牙的消息类型
 //cmd   :回复蓝牙的命令
 //result:回复TBOX执行的结果
@@ -702,69 +700,49 @@ void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
 	PrvtProt_respbt_t respbt;
 	respbt.msg_type = type;
 	respbt.cmd = cmd;
-	if(result == 1)//门控执行成功
+	if(result == 1)//蓝牙执行成功
 	{
 		respbt.cmd_state.execution_result = BT_SUCCESS;
 		respbt.cmd_state.state = cmd;  
 	}
-	switch(type)
+	else           //蓝牙执行失败
 	{
-		case BT_VEhICLE_DOOR_RESP:
+		respbt.cmd_state.execution_result = BT_FAIL;
+		switch(type)
 		{
-			if(result == 0)
+			case BT_VEhICLE_DOOR_RESP:
 			{
-				respbt.cmd_state.execution_result = BT_FAIL;
-				respbt.cmd_state.state = 2;
-			} 
-		}
-		break;
-		case BT_PANORAMIC_SUNROOF_RESP:
-		{
-	 		if(result == 0)
+				respbt.cmd_state.state = PP_rmtCtrl_cfg_bt_doorst(); 
+			}
+			break;
+			case BT_PANORAMIC_SUNROOF_RESP:
 			{
-				respbt.cmd_state.execution_result = BT_FAIL;
-				respbt.cmd_state.state = 2;
+				respbt.cmd_state.state = PP_rmtCtrl_cfg_bt_sunroofst();
 			} 
-		}
-		break;
-		case BT_ELECTRIC_DOOR_RESP:
-		{
-			if(result == 0)
+			break;
+			case BT_ELECTRIC_DOOR_RESP:
 			{
-				respbt.cmd_state.execution_result = BT_FAIL;
-				respbt.cmd_state.state = 2;
+				respbt.cmd_state.state = PP_rmtCtrl_cfg_bt_autodoorst();
 			} 
-		}
-		break;
-		case BT_REMOTE_FIND_CAR_RESP:
-		{
-			if(result == 0)
+			break;
+			case BT_REMOTE_FIND_CAR_RESP:
 			{
-				respbt.cmd_state.execution_result = BT_FAIL;
-				respbt.cmd_state.state = 2;
-			} 
-		}
-		break;
-		case BT_CHARGE_RESP:  
-		{
-			if(result == 0)
+				respbt.cmd_state.state = 1;   //保留
+			}	 
+			break;
+			case BT_CHARGE_RESP:  
 			{
-				respbt.cmd_state.execution_result = BT_FAIL;
-				respbt.cmd_state.state = 2;
+				respbt.cmd_state.state = PP_rmtCtrl_cfg_bt_chargest();
 			} 
-		}
-		break;
-		case BT_POWER_CONTROL_RESP:
-		{ 
-			if(result == 0)
+			break;
+			case BT_POWER_CONTROL_RESP:
 			{
-				respbt.cmd_state.execution_result = BT_FAIL;
-				respbt.cmd_state.state = 1;    //已下高压电
+				respbt.cmd_state.state = PP_rmtCtrl_cfg_bt_highpowerst();
 			} 
+			break;
+			default:
+			break;
 		}
-		break;
-		default:
-		break;
 	}
 	msghdr.sender    = MPU_MID_HOZON_PP;
 	msghdr.receiver  = MPU_MID_BLE;
@@ -772,7 +750,7 @@ void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
 	msghdr.msglen    = sizeof(PrvtProt_respbt_t);
 	tcom_send_msg(&msghdr, &respbt);
 }
-#endif
+
 /******************************************************
 *函数名：PP_rmtCtrl_HuCtrlReq
 
@@ -912,18 +890,18 @@ void PP_rmtCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 }
 
 /******************************************************
-*函数名：PP_rmtCtrl_StInformBt
+*函数名：PP_rmtCtrl_vehicle_status_InformBt
 
 *形  参：
 
 *返回值：
 
-*描  述：
+*描  述：蓝牙查询车辆状态回复
 
 *备  注：
 ******************************************************/
 
-int PP_rmtCtrl_StInformBt(unsigned char obj, unsigned char cmd)
+int PP_rmtCtrl_vehicle_status_InformBt(unsigned char obj, unsigned char cmd)
 {
 	TCOM_MSG_HEADER msghdr;
 	PrvtProt_respbt_t respbt;
@@ -931,71 +909,19 @@ int PP_rmtCtrl_StInformBt(unsigned char obj, unsigned char cmd)
 	respbt.failtype = 0;
 	respbt.msg_type = BT_VEHILCLE_STATUS_RESP;
 	respbt.cmd_state.execution_result = 0;
-	if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1)
-	{
-		respbt.state.charge_state = 2;
-	}
-	else if(PP_rmtCtrl_cfg_chargeOnOffSt() == 0)
-	{
-		respbt.state.charge_state = 1;
-	}
-	else
-	{
-	}
 	
-	if(gb_data_reardoorSt() == 1 )
-	{
-		respbt.state.electric_door_state = 1;  //尾门已开
-	}
-	else if(gb_data_reardoorSt() == 0 )
-	{
-		respbt.state.electric_door_state = 2;  //尾门已关
-	}
-	else
-	{
-		respbt.state.electric_door_state = 2;
-	}
+	respbt.state.charge_state = PP_rmtCtrl_cfg_bt_chargest();
+	
+	respbt.state.electric_door_state = PP_rmtCtrl_cfg_bt_autodoorst(); 
 	
 	respbt.state.fine_car_state = 1;  //保留
-	if(PP_rmtCtrl_cfg_RmtStartSt() == 1)
-	{
-		respbt.state.power_state = 2;
-	}
-	else if(PP_rmtCtrl_cfg_RmtStartSt() == 0)
-	{
-		respbt.state.power_state = 2;
-	}
-	else
-	{
-	}
 	
-	if(PP_rmtCtrl_cfg_sunroofSt() == 4)
-	{
-		respbt.state.sunroof_state = 1;
-	}
-	else if(PP_rmtCtrl_cfg_sunroofSt() == 2)
-	{
-		respbt.state.sunroof_state = 2;
-	}
-	else if(PP_rmtCtrl_cfg_sunroofSt() == 0)
-	{
-		respbt.state.sunroof_state = 3;
-	}
-	else
-	{
-	}
-	
-	if(PP_rmtCtrl_cfg_doorlockSt() == 0)
-	{
-		respbt.state.vehiclie_door_state = 1;  //门已锁
-	}else if(PP_rmtCtrl_cfg_doorlockSt() == 1)
-	{
-		respbt.state.vehiclie_door_state = 2;  //门已关
-	}
-	else
-	{
-	}
-	
+	respbt.state.power_state = PP_rmtCtrl_cfg_bt_highpowerst();
+
+	respbt.state.sunroof_state = PP_rmtCtrl_cfg_bt_sunroofst();
+
+	respbt.state.vehiclie_door_state = PP_rmtCtrl_cfg_bt_doorst(); 
+
 	msghdr.sender    = MPU_MID_HOZON_PP;
 	msghdr.receiver  = MPU_MID_BLE;
 	msghdr.msgid     = BLE_MSG_CONTROL;
@@ -1372,7 +1298,15 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 	rmtCtrl_TxInform[i].aid = PP_AID_RMTCTRL;
 	rmtCtrl_TxInform[i].mid = PP_rmtCtrl.pack.DisBody.mID;
 	rmtCtrl_TxInform[i].eventtime = tm_get_time();
-	rmtCtrl_TxInform[i].pakgtype = PP_TXPAKG_CONTINUE;
+	if(CtrlSt_para->Resptype == PP_RMTCTRL_HUBOOKINGRESP)
+	{
+		rmtCtrl_TxInform[i].pakgtype = PP_TXPAKG_SIGTIME;
+	
+}
+	else
+	{
+		rmtCtrl_TxInform[i].pakgtype = PP_TXPAKG_CONTINUE;
+	}
 	rmtCtrl_TxInform[i].idleflag = 1;
 	rmtCtrl_TxInform[i].description = "remote vehi control response";
 	SP_data_write(PP_rmtCtrl_Pack.Header.sign,PP_rmtCtrl_Pack.totallen,PP_rmtCtrl_send_cb,&rmtCtrl_TxInform[i]);

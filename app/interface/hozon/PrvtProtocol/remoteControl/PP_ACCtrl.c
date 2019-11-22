@@ -44,7 +44,7 @@
 #include "PP_canSend.h"
 #include "PPrmtCtrl_cfg.h"
 #include "PP_SendWakeUptime.h"
-
+#include "../PrvtProt_lock.h"
 #include "PP_ACCtrl.h"
 
 #define PP_OPEN_ACC      1
@@ -67,7 +67,6 @@ typedef struct
 	PP_rmtACCtrlPara_t      CtrlPara;
 	PP_rmtACCtrlSt_t		state;
 	uint8_t fail;//
-	uint8_t failtype;//
 }__attribute__((packed))  PrvtProt_rmtACCtrl_t; /*结构体*/
 
 
@@ -194,7 +193,7 @@ int PP_ACCtrl_mainfunction(void *task)
 					log_i(LOG_HOZON,"Power failure failed to end the air conditioning control");
 					PP_rmtACCtrl.fail = 0;
 					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
-					PP_rmtACCtrl.failtype = PP_RMTCTRL_UPPOWERFAIL;
+					PP_rmtACCtrl.state.failtype = PP_RMTCTRL_UPPOWERFAIL;
 					PP_rmtACCtrl.state.req = 0;
 				}
 				else
@@ -261,7 +260,7 @@ int PP_ACCtrl_mainfunction(void *task)
 						PP_can_send_data(PP_CAN_ACCTRL,CAN_OPNEACCFIAL,0);  
 						acc_requestpower_flag = 2; //空调开启失败请求下电
 						PP_rmtACCtrl.fail     = 1;
-						PP_rmtACCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
+						PP_rmtACCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 					}
 				}
@@ -287,7 +286,7 @@ int PP_ACCtrl_mainfunction(void *task)
 						PP_can_send_data(PP_CAN_ACCTRL,CAN_CLOSEACCCLEAN,0);
 						acc_requestpower_flag = 2; //空调开启失败请求下电
 						PP_rmtACCtrl.fail     = 1;
-						PP_rmtACCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
+						PP_rmtACCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 					}
 				}
@@ -307,7 +306,7 @@ int PP_ACCtrl_mainfunction(void *task)
 					{
 						log_e(LOG_HOZON,"Instruction execution timeout\n");
 						PP_rmtACCtrl.fail     = 1;
-						PP_rmtACCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
+						PP_rmtACCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 					}
 				}
@@ -326,6 +325,7 @@ int PP_ACCtrl_mainfunction(void *task)
 				rmtCtrl_Stpara.reqType =PP_rmtACCtrl.CtrlPara.reqType;
 				rmtCtrl_Stpara.eventid = PP_rmtACCtrl.pack.DisBody.eventId;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;//
+				rmtCtrl_Stpara.rvcFailureType = PP_rmtACCtrl.state.failtype ;
 				if(0 == PP_rmtACCtrl.fail)
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 2;  
@@ -334,7 +334,7 @@ int PP_ACCtrl_mainfunction(void *task)
 				else
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 3;  
-					rmtCtrl_Stpara.rvcFailureType = 0xff;
+					//rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
@@ -361,6 +361,7 @@ int PP_ACCtrl_mainfunction(void *task)
 				rmtCtrl_Stpara.eventid  = PP_rmtACCtrl.pack.DisBody.eventId;
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 			}
+			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_AC);//释放锁
 			PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_IDLE;
 		}
 		break;
@@ -371,7 +372,7 @@ int PP_ACCtrl_mainfunction(void *task)
 }
 uint8_t PP_ACCtrl_start(void)  
 {
-	if((PP_rmtACCtrl.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
+	if(PP_rmtACCtrl.state.req == 1)
 	{
 		return 1;
 	}
@@ -427,272 +428,278 @@ int PP_ACC_Id_invalid(uint32_t id)
 	return 0;
 }
 
-void SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
+int SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
 	uint32_t appointId = 0;
 	PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
-	switch(ctrlstyle)
+	int mtxlockst = 0;
+	mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_AC);
+	if(PP_LOCK_OK == mtxlockst)
 	{
-		case RMTCTRL_TSP:
+		switch(ctrlstyle)
 		{
-			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
-			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
-			PP_rmtACCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
-			PP_rmtACCtrl.state.expTime = disptrBody_ptr->expTime;
-			if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACOPEN) || (appdatarmtCtrl_ptr->CtrlReq.rvcReqType== PP_RMTCTRL_ACCLOSE)\
-				||(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_SETTEMP))
+			case RMTCTRL_TSP:
 			{
-				if((PP_ACCTRL_IDLE == PP_rmtACCtrl.state.CtrlSt) && \
-						(PP_rmtACCtrl.state.req == 0))      //空闲
+				PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
+				PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
+				PP_rmtACCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+				PP_rmtACCtrl.state.expTime = disptrBody_ptr->expTime;
+				if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACOPEN) || (appdatarmtCtrl_ptr->CtrlReq.rvcReqType== PP_RMTCTRL_ACCLOSE)\
+					||(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_SETTEMP))
 				{
-					PP_rmtACCtrl.state.req = 1;
-					PP_rmtACCtrl.state.bookingSt = 0;      //非预约
-					PP_rmtACCtrl.CtrlPara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-					if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACOPEN)
+					if((PP_ACCTRL_IDLE == PP_rmtACCtrl.state.CtrlSt) && \
+							(PP_rmtACCtrl.state.req == 0))      //空闲
 					{
-						PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
-					}
-					else if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACCLOSE)
-					{
-						PP_rmtACCtrl.state.accmd = PP_CLOSE_ACC;
-						
-					}
-					else   //设置温度
-					{
-						PP_rmtACCtrl.state.accmd = PP_SETH_ACC;
-						temp = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] ;
-						
-					}
-					PP_rmtACCtrl.state.style   = RMTCTRL_TSP;
-					if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACOPEN)
-					{
-						acc_requestpower_flag = 1;  //请求上电
-					}
-				}
-				else
-				{
-					log_i(LOG_HOZON, "remote ac control req is excuting\n");
-				}
-			}
-			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACAPPOINTOPEN)
-			{
-				int index;
-				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] << 24;
-				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[1] << 16;
-				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[2] << 8;
-				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[3];
-				if(PP_ACC_Id_invalid(appointId) == 1) // id重复
-				{
-					rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFAIL;//失败
-					rmtCtrl_Stpara.rvcFailureType = 0x08;     //id重复
-					log_o(LOG_HOZON,"Reservation ID repeat\n");
-				}
-				else
-				{
-					index = PP_ACC_Appoint_invalid();
-					if(index == -1)
-					{
-						log_o(LOG_HOZON,"Air conditioning reservation more than 10");
+						PP_rmtACCtrl.state.req = 1;
+						PP_rmtACCtrl.state.bookingSt = 0;      //非预约
+						PP_rmtACCtrl.CtrlPara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+						if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACOPEN)
+						{
+							PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
+						}
+						else if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACCLOSE)
+						{
+							PP_rmtACCtrl.state.accmd = PP_CLOSE_ACC;
+							
+						}
+						else   //设置温度
+						{
+							PP_rmtACCtrl.state.accmd = PP_SETH_ACC;
+							temp = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] ;
+							
+						}
+						PP_rmtACCtrl.state.style   = RMTCTRL_TSP;
+						if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACOPEN)
+						{
+							acc_requestpower_flag = 1;  //请求上电
+						}
 					}
 					else
 					{
-						PP_rmtac_AppointBook[index].id = appointId;
-						PP_rmtac_AppointBook[index].hour = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[4];
-						PP_rmtac_AppointBook[index].min = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[5];
-						PP_rmtac_AppointBook[index].period = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[6];
-						PP_rmtac_AppointBook[index].eventId = disptrBody_ptr->eventId;
-						PP_rmtac_AppointBook[index].validFlg  = 1;	
-						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].id = %d\n",index,PP_rmtac_AppointBook[index].id);
-						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].hour = %d\n",index,PP_rmtac_AppointBook[index].hour);
-						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].min = %d\n",index,PP_rmtac_AppointBook[index].min);
-						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].period = %d\n",index,PP_rmtac_AppointBook[index].period);
-						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].eventId = %d\n",index,PP_rmtac_AppointBook[index].eventId);
-					}
-					PP_rmtACCtrl.state.dataUpdata = 1;
-					//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t));
-					rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
-					rmtCtrl_Stpara.rvcFailureType = 0;
-				}
-				rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-				rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
-				rmtCtrl_Stpara.expTime = disptrBody_ptr->expTime;
-				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-			}
-			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACCANCELAPPOINT)
-			{
-				int i;
-				int cancel_flag = 0;
-				appointId = 0;
-				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] << 24;
-				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[1] << 16;
-				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[2] << 8;
-				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[3];
-				for(i=0;i<ACC_APPOINT_NUM;i++)
-				{
-					if(PP_rmtac_AppointBook[i].validFlg  == 1)
-					{
-						if(PP_rmtac_AppointBook[i].id == appointId)  //
-						{
-							PP_rmtac_AppointBook[i].validFlg  = 0;
-							log_i(LOG_HOZON, "cancel appointment success , ID = %d\n",PP_rmtac_AppointBook[i].id);
-							PP_rmtACCtrl.state.dataUpdata = 1;
-							rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
-							rmtCtrl_Stpara.rvcFailureType = 0;
-							rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-							rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
-							rmtCtrl_Stpara.expTime = disptrBody_ptr->expTime;
-							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-							cancel_flag = 1;
-							PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-						}
+						log_i(LOG_HOZON, "remote ac control req is excuting\n");
 					}
 				}
-				if(cancel_flag == 0)
+				else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACAPPOINTOPEN)
 				{
-					log_o(LOG_HOZON,"No such ID = %d",appointId);
-					log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
-				}
-			}
-			else
-			{
-			
-			}
-		}
-		break;
-		case RMTCTRL_TBOX:
-		{
-			int i = *(int *)appdatarmtCtrl;
-			PP_rmtACCtrl.state.req = 1;
-			PP_rmtACCtrl.state.bookingSt = 1;//预约
-			PP_rmtACCtrl.CtrlPara.bookingId = PP_rmtac_AppointBook[i].id; //ID
-			PP_rmtACCtrl.pack.DisBody.eventId = PP_rmtac_AppointBook[i].eventId; //eventid
-			PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
-			PP_rmtACCtrl.state.style   = RMTCTRL_TBOX;
-			acc_requestpower_flag = 1;  //预约开空调时间到，请求上高压电
-		}
-		break;
-		case RMTCTRL_BLUETOOTH:
-		{
-			
-		
-		}
-		break;
-		case RMTCTRL_SHELL:
-		{
-			ACCAppointSt *shell_actrl = (ACCAppointSt*)appdatarmtCtrl;
-			if((shell_actrl->cmd == PP_RMTCTRL_ACOPEN) || (shell_actrl->cmd== PP_RMTCTRL_ACCLOSE)\
-				||(shell_actrl->cmd == PP_RMTCTRL_SETTEMP))
-			{
-				PP_rmtACCtrl.state.style = RMTCTRL_TSP;
-				if((PP_ACCTRL_IDLE == PP_rmtACCtrl.state.CtrlSt) && \
-						(PP_rmtACCtrl.state.req == 0))      //空闲
-				{
-					PP_rmtACCtrl.state.req = 1;
-					PP_rmtACCtrl.state.bookingSt = 0;      //非预约
-					PP_rmtACCtrl.CtrlPara.reqType = shell_actrl->cmd;
-					if(shell_actrl->cmd == PP_RMTCTRL_ACOPEN)
+					int index;
+					appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] << 24;
+					appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[1] << 16;
+					appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[2] << 8;
+					appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[3];
+					if(PP_ACC_Id_invalid(appointId) == 1) // id重复
 					{
-						PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
-						log_o(LOG_HOZON,"PP_OPEN_ACC");
-						acc_requestpower_flag = 1;  //预约开空调时间到，请求上高压电
-					}
-					else if(shell_actrl->cmd == PP_RMTCTRL_ACCLOSE)
-					{
-						PP_rmtACCtrl.state.accmd = PP_CLOSE_ACC;
-					}
-					else   //设置温度
-					{
-						PP_rmtACCtrl.state.accmd = PP_SETH_ACC;
-						temp = shell_actrl->id;
-						
-					}
-					PP_rmtACCtrl.state.style   = RMTCTRL_TBOX;
-				}
-				else
-				{
-					log_i(LOG_HOZON, "remote ac control req is excuting\n");
-				}
-			}
-			else if(shell_actrl->cmd == PP_RMTCTRL_ACAPPOINTOPEN)
-			{
-				int index;
-				if(PP_ACC_Id_invalid(shell_actrl->id) == 1) // id重复
-				{
-					rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFAIL;//失败
-					rmtCtrl_Stpara.rvcFailureType = 0x08;     //id重复
-					log_o(LOG_HOZON,"Reservation ID repeat\n");
-				}
-				else
-				{
-					index = PP_ACC_Appoint_invalid();
-					if(index == -1)
-					{
-						log_o(LOG_HOZON,"Air conditioning reservation more than 10");
+						rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFAIL;//失败
+						rmtCtrl_Stpara.rvcFailureType = 0x08;     //id重复
+						log_o(LOG_HOZON,"Reservation ID repeat\n");
 					}
 					else
 					{
-						PP_rmtac_AppointBook[index].id = shell_actrl->id;
-						PP_rmtac_AppointBook[index].hour = shell_actrl->hour;
-						PP_rmtac_AppointBook[index].min = shell_actrl->min;
-						PP_rmtac_AppointBook[index].period = 0xff;
-						PP_rmtac_AppointBook[index].eventId = 0;
-						PP_rmtac_AppointBook[index].validFlg  = 1;	
-						
-						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].id = %d\n",index,PP_rmtac_AppointBook[index].id);
-						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].hour = %d\n",index,PP_rmtac_AppointBook[index].hour);
-						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].min = %d\n",index,PP_rmtac_AppointBook[index].min);
-						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].period = %d\n",index,PP_rmtac_AppointBook[index].period);
-						log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].eventId = %d\n",index,PP_rmtac_AppointBook[index].eventId);
-					}
-					PP_rmtACCtrl.state.dataUpdata = 1;
-					//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t));
-					rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
-					rmtCtrl_Stpara.rvcFailureType = 0;
-				}
-				rmtCtrl_Stpara.reqType = shell_actrl->cmd;
-				rmtCtrl_Stpara.eventid = 00;
-				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-			}
-			else if (shell_actrl->cmd == PP_RMTCTRL_ACCANCELAPPOINT)
-			{
-				int i;
-				int cancel_flag = 0;
-				for(i=0;i<ACC_APPOINT_NUM;i++)
-				{
-					if(PP_rmtac_AppointBook[i].validFlg == 1)
-					{
-						if(PP_rmtac_AppointBook[i].id == shell_actrl->id )
+						index = PP_ACC_Appoint_invalid();
+						if(index == -1)
 						{
-							PP_rmtac_AppointBook[i].validFlg = 0 ;
-							PP_rmtACCtrl.state.dataUpdata = 1;
-							rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
-							rmtCtrl_Stpara.rvcFailureType = 0;
-							rmtCtrl_Stpara.rvcReqType = shell_actrl->cmd;
-							rmtCtrl_Stpara.eventid = 00;
-							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
-							cancel_flag = 1;
-							PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-							log_o(LOG_HOZON,"Cancel the air conditioning appointment successfully");
-							break;
+							log_o(LOG_HOZON,"Air conditioning reservation more than 10");
 						}
-					}	
-				}	
-				if(cancel_flag == 0)
-				{
-					log_o(LOG_HOZON,"No such ID :%d",shell_actrl->id);
-					log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
+						else
+						{
+							PP_rmtac_AppointBook[index].id = appointId;
+							PP_rmtac_AppointBook[index].hour = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[4];
+							PP_rmtac_AppointBook[index].min = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[5];
+							PP_rmtac_AppointBook[index].period = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[6];
+							PP_rmtac_AppointBook[index].eventId = disptrBody_ptr->eventId;
+							PP_rmtac_AppointBook[index].validFlg  = 1;	
+							log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].id = %d\n",index,PP_rmtac_AppointBook[index].id);
+							log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].hour = %d\n",index,PP_rmtac_AppointBook[index].hour);
+							log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].min = %d\n",index,PP_rmtac_AppointBook[index].min);
+							log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].period = %d\n",index,PP_rmtac_AppointBook[index].period);
+							log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].eventId = %d\n",index,PP_rmtac_AppointBook[index].eventId);
+						}
+						PP_rmtACCtrl.state.dataUpdata = 1;
+						//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t));
+						rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
+						rmtCtrl_Stpara.rvcFailureType = 0;
+					}
+					rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+					rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
+					rmtCtrl_Stpara.expTime = disptrBody_ptr->expTime;
+					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+					PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				}
+				else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACCANCELAPPOINT)
+				{
+					int i;
+					int cancel_flag = 0;
+					appointId = 0;
+					appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] << 24;
+					appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[1] << 16;
+					appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[2] << 8;
+					appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[3];
+					for(i=0;i<ACC_APPOINT_NUM;i++)
+					{
+						if(PP_rmtac_AppointBook[i].validFlg  == 1)
+						{
+							if(PP_rmtac_AppointBook[i].id == appointId)  //
+							{
+								PP_rmtac_AppointBook[i].validFlg  = 0;
+								log_i(LOG_HOZON, "cancel appointment success , ID = %d\n",PP_rmtac_AppointBook[i].id);
+								PP_rmtACCtrl.state.dataUpdata = 1;
+								rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
+								rmtCtrl_Stpara.rvcFailureType = 0;
+								rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+								rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
+								rmtCtrl_Stpara.expTime = disptrBody_ptr->expTime;
+								rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+								cancel_flag = 1;
+								PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+							}
+						}
+					}
+					if(cancel_flag == 0)
+					{
+						log_o(LOG_HOZON,"No such ID = %d",appointId);
+						log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
+					}
+				}
+				else
+				{
 				
+				}
+			}
+			break;
+			case RMTCTRL_TBOX:
+			{
+				int i = *(int *)appdatarmtCtrl;
+				PP_rmtACCtrl.state.req = 1;
+				PP_rmtACCtrl.state.bookingSt = 1;//预约
+				PP_rmtACCtrl.CtrlPara.bookingId = PP_rmtac_AppointBook[i].id; //ID
+				PP_rmtACCtrl.pack.DisBody.eventId = PP_rmtac_AppointBook[i].eventId; //eventid
+				PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
+				PP_rmtACCtrl.state.style   = RMTCTRL_TBOX;
+				acc_requestpower_flag = 1;  //预约开空调时间到，请求上高压电
+			}
+			break;
+			case RMTCTRL_BLUETOOTH:
+			{
+				
+			
+			}
+			break;
+			case RMTCTRL_SHELL:
+			{
+				ACCAppointSt *shell_actrl = (ACCAppointSt*)appdatarmtCtrl;
+				if((shell_actrl->cmd == PP_RMTCTRL_ACOPEN) || (shell_actrl->cmd== PP_RMTCTRL_ACCLOSE)\
+					||(shell_actrl->cmd == PP_RMTCTRL_SETTEMP))
+				{
+					PP_rmtACCtrl.state.style = RMTCTRL_TSP;
+					if((PP_ACCTRL_IDLE == PP_rmtACCtrl.state.CtrlSt) && \
+							(PP_rmtACCtrl.state.req == 0))      //空闲
+					{
+						PP_rmtACCtrl.state.req = 1;
+						PP_rmtACCtrl.state.bookingSt = 0;      //非预约
+						PP_rmtACCtrl.CtrlPara.reqType = shell_actrl->cmd;
+						if(shell_actrl->cmd == PP_RMTCTRL_ACOPEN)
+						{
+							PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
+							log_o(LOG_HOZON,"PP_OPEN_ACC");
+							acc_requestpower_flag = 1;  //预约开空调时间到，请求上高压电
+						}
+						else if(shell_actrl->cmd == PP_RMTCTRL_ACCLOSE)
+						{
+							PP_rmtACCtrl.state.accmd = PP_CLOSE_ACC;
+						}
+						else   //设置温度
+						{
+							PP_rmtACCtrl.state.accmd = PP_SETH_ACC;
+							temp = shell_actrl->id;
+							
+						}
+						PP_rmtACCtrl.state.style   = RMTCTRL_TBOX;
+					}
+					else
+					{
+						log_i(LOG_HOZON, "remote ac control req is excuting\n");
+					}
+				}
+				else if(shell_actrl->cmd == PP_RMTCTRL_ACAPPOINTOPEN)
+				{
+					int index;
+					if(PP_ACC_Id_invalid(shell_actrl->id) == 1) // id重复
+					{
+						rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFAIL;//失败
+						rmtCtrl_Stpara.rvcFailureType = 0x08;     //id重复
+						log_o(LOG_HOZON,"Reservation ID repeat\n");
+					}
+					else
+					{
+						index = PP_ACC_Appoint_invalid();
+						if(index == -1)
+						{
+							log_o(LOG_HOZON,"Air conditioning reservation more than 10");
+						}
+						else
+						{
+							PP_rmtac_AppointBook[index].id = shell_actrl->id;
+							PP_rmtac_AppointBook[index].hour = shell_actrl->hour;
+							PP_rmtac_AppointBook[index].min = shell_actrl->min;
+							PP_rmtac_AppointBook[index].period = 0xff;
+							PP_rmtac_AppointBook[index].eventId = 0;
+							PP_rmtac_AppointBook[index].validFlg  = 1;	
+							
+							log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].id = %d\n",index,PP_rmtac_AppointBook[index].id);
+							log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].hour = %d\n",index,PP_rmtac_AppointBook[index].hour);
+							log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].min = %d\n",index,PP_rmtac_AppointBook[index].min);
+							log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].period = %d\n",index,PP_rmtac_AppointBook[index].period);
+							log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].eventId = %d\n",index,PP_rmtac_AppointBook[index].eventId);
+						}
+						PP_rmtACCtrl.state.dataUpdata = 1;
+						//(void)cfg_set_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t));
+						rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
+						rmtCtrl_Stpara.rvcFailureType = 0;
+					}
+					rmtCtrl_Stpara.reqType = shell_actrl->cmd;
+					rmtCtrl_Stpara.eventid = 00;
+					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+					PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+				}
+				else if (shell_actrl->cmd == PP_RMTCTRL_ACCANCELAPPOINT)
+				{
+					int i;
+					int cancel_flag = 0;
+					for(i=0;i<ACC_APPOINT_NUM;i++)
+					{
+						if(PP_rmtac_AppointBook[i].validFlg == 1)
+						{
+							if(PP_rmtac_AppointBook[i].id == shell_actrl->id )
+							{
+								PP_rmtac_AppointBook[i].validFlg = 0 ;
+								PP_rmtACCtrl.state.dataUpdata = 1;
+								rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//执行完成
+								rmtCtrl_Stpara.rvcFailureType = 0;
+								rmtCtrl_Stpara.rvcReqType = shell_actrl->cmd;
+								rmtCtrl_Stpara.eventid = 00;
+								rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+								cancel_flag = 1;
+								PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+								log_o(LOG_HOZON,"Cancel the air conditioning appointment successfully");
+								break;
+							}
+						}	
+					}	
+					if(cancel_flag == 0)
+					{
+						log_o(LOG_HOZON,"No such ID :%d",shell_actrl->id);
+						log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
+					}
+					
+
+				}
+
 
 			}
-
-
+			default:
+			break;
 		}
-		default:
-		break;
 	}
+	return mtxlockst;
 }
 /******************************************************
 *函数名：PP_AcCtrl_chargeStMonitor
@@ -820,6 +827,7 @@ void PP_set_ac_requestpower_flag()
 
 void PP_ACCtrl_ClearStatus(void)
 {
+	clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_AC);//释放锁
 	PP_rmtACCtrl.state.req = 0;
 }
 

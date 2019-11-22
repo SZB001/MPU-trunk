@@ -19,7 +19,7 @@ typedef struct
 }__attribute__((packed))  PP_bluetoothStart_t; 
 extern void PP_bluetoothstart_init(void);
 extern int PP_bluetoothstart_mainfunction(void *task);
-extern void SetPP_bluetoothstart_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
+extern int SetPP_bluetoothstart_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 extern int PP_bluetoothstart_start(void);
 extern int PP_bluetoothstart_end(void);
 extern void PP_bluetoothstart_ClearStatus(void);

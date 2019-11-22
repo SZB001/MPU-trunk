@@ -50,6 +50,8 @@ description： include the header file
 #include "PP_canSend.h"
 #include "../PrvtProt_SigParse.h"
 #include "PPrmtCtrl_cfg.h"
+#include "../PrvtProt_lock.h"
+
 #include "PP_autodoorCtrl.h"
 
 #define PP_OPENDOOR  2
@@ -125,6 +127,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				{
 					log_o(LOG_HOZON," low power or power state on");
 					PP_rmtautodoorCtrl.state.req = 0;
+					PP_rmtautodoorCtrl.state.failtype = PP_RMTCTRL_ACCNOOFF;
 					autodoor_success_flag = 0;
 					auto_door_stage = PP_AUTODOORCTR_END;
 				}
@@ -179,6 +182,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				}
 				else//响应超时
 				{
+					PP_rmtautodoorCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 					PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
 					autodoor_success_flag = 0;
 					auto_door_stage = PP_AUTODOORCTR_END;
@@ -197,6 +201,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				rmtCtrl_Stpara.eventid = PP_rmtautodoorCtrl.pack.DisBody.eventId;
 				rmtCtrl_Stpara.expTime = PP_rmtautodoorCtrl.state.expTime;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
+				rmtCtrl_Stpara.rvcFailureType = PP_rmtautodoorCtrl.state.failtype;
 				if(1 == autodoor_success_flag)
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 2;  //执行完成
@@ -205,7 +210,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				else
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
-					rmtCtrl_Stpara.rvcFailureType = 0xff;
+					//rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
@@ -236,6 +241,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				tcom_send_msg(&msghdr, &respbt);
 				#endif
 			}
+			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_AUTODOOR);//释放锁
 			auto_door_stage = PP_AUTODOORCTRL_IDLE;
 		}
 		break;
@@ -248,7 +254,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 
 uint8_t PP_autodoorCtrl_start(void)  
 {
-	if((PP_rmtautodoorCtrl.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
+	if(PP_rmtautodoorCtrl.state.req == 1)
 	{
 		return 1;
 	}
@@ -272,56 +278,63 @@ uint8_t PP_autodoorCtrl_end(void)
 	}
 }
 
-void SetPP_autodoorCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
+int SetPP_autodoorCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
-	switch(ctrlstyle)
+	int mtxlockst = 0;
+	mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_AUTODOOR);
+	if(PP_LOCK_OK == mtxlockst)
 	{
-		case RMTCTRL_TSP:
+		switch(ctrlstyle)
 		{
-			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
-			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
+			case RMTCTRL_TSP:
+			{
+				PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
+				PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
 
-			log_i(LOG_HOZON, "remote auto door control req");
-			PP_rmtautodoorCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-			PP_rmtautodoorCtrl.state.req = 1;
-			PP_rmtautodoorCtrl.state.expTime = disptrBody_ptr->expTime;
-			if(PP_rmtautodoorCtrl.state.reqType ==PP_RMTCTRL_AUTODOOROPEN)
-			{
-				autodoor_type = PP_OPENDOOR;
+				log_i(LOG_HOZON, "remote auto door control req");
+				PP_rmtautodoorCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+				PP_rmtautodoorCtrl.state.req = 1;
+				PP_rmtautodoorCtrl.state.expTime = disptrBody_ptr->expTime;
+				if(PP_rmtautodoorCtrl.state.reqType ==PP_RMTCTRL_AUTODOOROPEN)
+				{
+					autodoor_type = PP_OPENDOOR;
+				}
+				else
+				{
+					autodoor_type = PP_CLOSEDOOR;
+				}
+				PP_rmtautodoorCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
+				PP_rmtautodoorCtrl.state.style = RMTCTRL_TSP;
 			}
-			else
+			break;
+			case RMTCTRL_BLUETOOTH:
 			{
-				autodoor_type = PP_CLOSEDOOR;
+				 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
+				 if(cmd == 1 )//蓝牙关尾门
+				 {
+				 	autodoor_type = PP_CLOSEDOOR;
+				 }
+				 else if (cmd == 2) //蓝牙开尾门
+				 {
+				 	autodoor_type = PP_OPENDOOR;
+				 }
+				 else
+				 {
+				 }
+				 PP_rmtautodoorCtrl.state.req = 1;
+				 PP_rmtautodoorCtrl.state.style = RMTCTRL_BLUETOOTH;
+				 
 			}
-			PP_rmtautodoorCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
-			PP_rmtautodoorCtrl.state.style = RMTCTRL_TSP;
+			default:
+			break;
 		}
-		break;
-		case RMTCTRL_BLUETOOTH:
-		{
-			 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
-			 if(cmd == 1 )//蓝牙关尾门
-			 {
-			 	autodoor_type = PP_CLOSEDOOR;
-			 }
-			 else if (cmd == 2) //蓝牙开尾门
-			 {
-			 	autodoor_type = PP_OPENDOOR;
-			 }
-			 else
-			 {
-			 }
-			 PP_rmtautodoorCtrl.state.req = 1;
-			 PP_rmtautodoorCtrl.state.style = RMTCTRL_BLUETOOTH;
-			 
-		}
-		default:
-		break;
 	}
+	return mtxlockst;
 }
 
 void PP_autodoorCtrl_ClearStatus(void)
 {
+	clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_AUTODOOR);//释放锁
 	PP_rmtautodoorCtrl.state.req = 0;
 }
 

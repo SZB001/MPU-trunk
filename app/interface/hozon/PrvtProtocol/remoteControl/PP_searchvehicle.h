@@ -15,6 +15,7 @@ typedef struct
 	uint8_t waitSt;
 	uint64_t waittime;
 	long expTime;
+	uint8_t failtype;
 	char style;
 }__attribute__((packed))  PP_rmtsearchvehicleSt_t;
 
@@ -31,7 +32,7 @@ extern uint8_t PP_searchvehicle_start(void) ;
 extern uint8_t PP_searchvehicle_end(void);
 
 
-extern void SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
+extern int SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 
 
 extern void PP_searchvehicle_SetCtrlReq(unsigned char req,uint16_t reqType);

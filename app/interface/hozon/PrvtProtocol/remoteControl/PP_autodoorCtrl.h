@@ -16,6 +16,7 @@ typedef struct
 	uint8_t waitSt;
 	uint64_t waittime;
 	long expTime;
+	uint8_t failtype;
 	char style;
 }__attribute__((packed))  PP_rmtautodoorCtrlSt_t;
 
@@ -27,7 +28,7 @@ extern uint8_t PP_autodoorCtrl_start(void) ;
 
 extern uint8_t PP_autodoorCtrl_end(void);
 
-extern void SetPP_autodoorCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
+extern int SetPP_autodoorCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 
 extern void PP_autodoorCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 

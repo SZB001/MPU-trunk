@@ -39,6 +39,7 @@
 #include "PPrmtCtrl_cfg.h"
 #include "../PrvtProt_SigParse.h"
 #include "PPrmtCtrl_cfg.h"
+#include "../PrvtProt_lock.h"
 
 #include "PP_StartForbid.h"
 
@@ -208,6 +209,7 @@ int PP_startforbid_mainfunction(void *task)
 			{
 				
 			}
+			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_FORBIDSTART);//释放锁
 			start_forbid_stage = PP_STARTFORBID_IDLE;
 		}
 		break;
@@ -221,7 +223,7 @@ int PP_startforbid_mainfunction(void *task)
 uint8_t PP_startforbid_start(void) 
 {
 
-	if((PP_rmtstartforbid.state.req == 1)&&(GetPP_rmtCtrl_fotaUpgrade() == 0))
+	if(PP_rmtstartforbid.state.req == 1)
 	{
 		return 1;
 	}
@@ -246,39 +248,44 @@ uint8_t PP_startforbid_end(void)
 }
 
 
-void SetPP_startforbid_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
+int SetPP_startforbid_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
-	switch(ctrlstyle)
+	int mtxlockst = 0;
+	mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_FORBIDSTART);
+	if(PP_LOCK_OK == mtxlockst)
 	{
-		case RMTCTRL_TSP:
+		switch(ctrlstyle)
 		{
-			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
-			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
-
-			log_i(LOG_HOZON, "remote startforbid control req");
-			PP_rmtstartforbid.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-			PP_rmtstartforbid.state.req = 1;
-			if(PP_rmtstartforbid.state.reqType == PP_RMTCTRL_BANSTART)
+			case RMTCTRL_TSP:
 			{
-				PP_rmtstartforbid.state.cmd = PP_STARTFORBID_OPEN;	 //禁止启动
-			}
-			else
-			{
-				PP_rmtstartforbid.state.cmd = PP_STARTFORBID_CLOSE;	 //取消禁止启动
-			}
-			PP_rmtstartforbid.pack.DisBody.eventId = disptrBody_ptr->eventId;
-			PP_rmtstartforbid.state.style = RMTCTRL_TSP;
-		}
-		break;
-		case RMTCTRL_BLUETOOTH:
-		{
+				PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
+				PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
 
+				log_i(LOG_HOZON, "remote startforbid control req");
+				PP_rmtstartforbid.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+				PP_rmtstartforbid.state.req = 1;
+				if(PP_rmtstartforbid.state.reqType == PP_RMTCTRL_BANSTART)
+				{
+					PP_rmtstartforbid.state.cmd = PP_STARTFORBID_OPEN;	 //禁止启动
+				}
+				else
+				{
+					PP_rmtstartforbid.state.cmd = PP_STARTFORBID_CLOSE;	 //取消禁止启动
+				}
+				PP_rmtstartforbid.pack.DisBody.eventId = disptrBody_ptr->eventId;
+				PP_rmtstartforbid.state.style = RMTCTRL_TSP;
+			}
+			break;
+			case RMTCTRL_BLUETOOTH:
+			{
+
+			}
+			break;
+			default:
+			break;
 		}
-		break;
-		default:
-		break;
 	}
-
+	return mtxlockst;
 }
 void PP_startforbid_acStMonitor(void *task)
 {
@@ -315,6 +322,7 @@ void PP_startforbid_acStMonitor(void *task)
 
 void PP_startforbid_ClearStatus(void)
 {
+	clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_FORBIDSTART);//释放锁
 	PP_rmtstartforbid.state.req = 0;
 }
 

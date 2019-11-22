@@ -41,6 +41,7 @@ typedef struct
 	uint8_t waitSt;
 	uint64_t waittime;
 	long expTime;
+	uint8_t failtype;
 	char style;//方式：tsp-1；2-蓝牙
 }__attribute__((packed))  PP_rmtdoorCtrlSt_t; /*remote control结构体*/
 
@@ -55,7 +56,7 @@ description： function External declaration
 *******************************************************/
 extern void PP_doorLockCtrl_init(void);
 extern int 	PP_doorLockCtrl_mainfunction(void *task);
-extern void SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
+extern int SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 extern void PP_doorLockCtrl_SetCtrlReq(unsigned char req,uint16_t reqType);
 extern  int PP_doorLockCtrl_start(void);
 extern void PP_doorLockCtrl_ClearStatus(void);

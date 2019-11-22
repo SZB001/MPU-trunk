@@ -335,4 +335,73 @@ unsigned char PP_rmtCtrl_cfg_PassHeatingSt(void)
 	}
 	return st; 
 }
-
+/*     蓝牙门锁状态        */
+uint8_t PP_rmtCtrl_cfg_bt_doorst(void)
+{
+	uint8_t st = 1;
+	if(PP_rmtCtrl_cfg_doorlockSt() == 0)
+	{
+		st = 1;  //门已锁
+	}
+	else if(PP_rmtCtrl_cfg_doorlockSt() == 1)
+	{
+		st = 2;  //门已关
+	}
+	return st;
+}
+/*     蓝牙天窗状态        */
+uint8_t PP_rmtCtrl_cfg_bt_sunroofst(void)
+{
+	uint8_t st = 1;
+	if(PP_rmtCtrl_cfg_sunroofSt() == 4)
+	{
+		st = 1;
+	}
+	else if(PP_rmtCtrl_cfg_sunroofSt() == 2)
+	{
+		st = 2;
+	}
+	else if(PP_rmtCtrl_cfg_sunroofSt() == 0)
+	{
+		st = 3;
+	}
+	return st;
+}
+/*     蓝牙尾门状态        */
+uint8_t PP_rmtCtrl_cfg_bt_autodoorst(void)
+{
+	uint8_t st = 1;
+	if(gb_data_reardoorSt() == 1 )
+	{
+		st = 1;  //尾门已开
+	}
+	else if(gb_data_reardoorSt() == 0 )
+	{
+		st = 2;  //尾门已关
+	}
+	return st;
+}
+/*     蓝牙充电状态        */
+uint8_t PP_rmtCtrl_cfg_bt_chargest(void)
+{
+	uint8_t st = 1;
+	if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1)
+	{
+		st  = 2;
+	}
+	else if(PP_rmtCtrl_cfg_chargeOnOffSt() == 0)
+	{
+		st  = 1;
+	}
+	return st;
+}
+/*     蓝牙高压电状态        */
+uint8_t PP_rmtCtrl_cfg_bt_highpowerst(void)
+{
+	uint8_t st = 1;
+	if(PP_rmtCtrl_cfg_RmtStartSt() == 1)
+	{
+		st = 2;
+	}
+	return st;
+}

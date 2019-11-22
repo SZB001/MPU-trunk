@@ -15,23 +15,19 @@ typedef struct
 	uint8_t waitSt;
 	uint64_t waittime;
 	long expTime;
+	uint8_t failtype;
 	char style;
 }__attribute__((packed))  PP_rmtsunroofCtrlSt_t;
 
-
 extern void PP_sunroofctrl_init(void);
-
 
 extern int PP_sunroofctrl_mainfunction(void *task);
 
-
 extern uint8_t PP_sunroofctrl_start(void) ;
-
 
 extern uint8_t PP_sunroofctrl_end(void);
 
-
-extern void SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
+extern int SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 
 extern void PP_sunroofctrl_ClearStatus(void);
 

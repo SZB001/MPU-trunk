@@ -39,6 +39,7 @@
 #include "PP_canSend.h"
 #include "PPrmtCtrl_cfg.h"
 #include "../PrvtProt_SigParse.h"
+#include "../PrvtProt_lock.h"
 
 #include "PP_SeatHeating.h"
 
@@ -144,6 +145,7 @@ int PP_seatheating_mainfunction(void *task)
 					else if(PP_get_powerst() == 3) //上高压电操作失败
 					{
 						log_i(LOG_HOZON,"Power failure failed to end the seat control");
+						PP_rmtseatheatCtrl[i].state.failtype = PP_RMTCTRL_UPPOWERFAIL;
 						PP_rmtseatheatCtrl[i].state.req = 0;
 						PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
 						PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END;	
@@ -242,6 +244,7 @@ int PP_seatheating_mainfunction(void *task)
 						{
 							PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATPASS);//
 						}
+						PP_rmtseatheatCtrl[i].state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 				       log_o(LOG_HOZON,"timeout\n");
 				       PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
 				       PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
@@ -258,6 +261,7 @@ int PP_seatheating_mainfunction(void *task)
 					rmtCtrl_Stpara.reqType =PP_rmtseatheatCtrl[i].state.reqType;
 					rmtCtrl_Stpara.eventid = PP_rmtseatheatCtrl[i].pack.DisBody.eventId;
 					rmtCtrl_Stpara.expTime = PP_rmtseatheatCtrl[i].state.expTime;
+					rmtCtrl_Stpara.rvcFailureType = PP_rmtseatheatCtrl[i].state.failtype;
 					rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 					if(1 == PP_rmtseatheatCtrl[i].seatheat_success_flag)
 					{
@@ -267,9 +271,10 @@ int PP_seatheating_mainfunction(void *task)
 					else
 					{
 						rmtCtrl_Stpara.rvcReqStatus = 3;  
-						rmtCtrl_Stpara.rvcFailureType = 0xff;
+						//rmtCtrl_Stpara.rvcFailureType = 0xff;
 					}
 					res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
+					clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_SEAT);//释放锁
 					PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_IDLE;
 				}
 				else
@@ -307,8 +312,8 @@ void PP_SeatCtrl_SeatStMonitor(void *task)
 
 uint8_t PP_seatheating_start(void) 
 {
-	if(((PP_rmtseatheatCtrl[0].state.req == 1)||(PP_rmtseatheatCtrl[1].state.req == 1)) && \
-	   (GetPP_rmtCtrl_fotaUpgrade() == 0))
+	if((PP_rmtseatheatCtrl[0].state.req == 1)||(PP_rmtseatheatCtrl[1].state.req == 1)) 
+	  
 	{
 		//log_o(LOG_HOZON,"seatheat start\n");
 		return 1;
@@ -338,49 +343,57 @@ uint8_t PP_seatheating_end(void)
 }
 
 
-void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
+int SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
-	switch(ctrlstyle)
+	int mtxlockst = 0;
+	mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_SEAT);
+	if(PP_LOCK_OK == mtxlockst)
 	{
-		case RMTCTRL_TSP:
+		switch(ctrlstyle)
 		{
-			PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
-			PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
+			case RMTCTRL_TSP:
+			{
+				PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
+				PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
 
-			log_i(LOG_HOZON, "remote seatheating control req");
-			if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_MAINHEATOPEN) || \
-				(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_MAINHEATCLOSE))
-			{
-				PP_rmtseatheatCtrl[PP_seatheating_drviver].state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-				PP_rmtseatheatCtrl[PP_seatheating_drviver].state.req = 1;
-				PP_rmtseatheatCtrl[PP_seatheating_drviver].state.expTime = disptrBody_ptr->expTime;
-				PP_rmtseatheatCtrl[PP_seatheating_drviver].pack.DisBody.eventId = disptrBody_ptr->eventId;
-				PP_rmtseatheatCtrl[PP_seatheating_drviver].state.style = RMTCTRL_TSP;
-				PP_rmtseatheatCtrl[PP_seatheating_drviver].level = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
+				log_i(LOG_HOZON, "remote seatheating control req");
+				if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_MAINHEATOPEN) || \
+					(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_MAINHEATCLOSE))
+				{
+					PP_rmtseatheatCtrl[PP_seatheating_drviver].state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+					PP_rmtseatheatCtrl[PP_seatheating_drviver].state.req = 1;
+					PP_rmtseatheatCtrl[PP_seatheating_drviver].state.expTime = disptrBody_ptr->expTime;
+					PP_rmtseatheatCtrl[PP_seatheating_drviver].pack.DisBody.eventId = disptrBody_ptr->eventId;
+					PP_rmtseatheatCtrl[PP_seatheating_drviver].state.style = RMTCTRL_TSP;
+					PP_rmtseatheatCtrl[PP_seatheating_drviver].level = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
+				}
+				else
+				{
+					PP_rmtseatheatCtrl[PP_seatheating_passenger].state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+					PP_rmtseatheatCtrl[PP_seatheating_passenger].state.req = 1;
+					PP_rmtseatheatCtrl[PP_seatheating_passenger].state.expTime = disptrBody_ptr->expTime;
+					PP_rmtseatheatCtrl[PP_seatheating_passenger].pack.DisBody.eventId = disptrBody_ptr->eventId;
+					PP_rmtseatheatCtrl[PP_seatheating_passenger].state.style = RMTCTRL_TSP;
+					PP_rmtseatheatCtrl[PP_seatheating_passenger].level = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
+				}
+				if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_MAINHEATOPEN)||\
+					(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_PASSENGERHEATOPEN))
+				{
+					seat_requestpower_flag = 1;  //请求上电
+				}
 			}
-			else
-			{
-				PP_rmtseatheatCtrl[PP_seatheating_passenger].state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
-				PP_rmtseatheatCtrl[PP_seatheating_passenger].state.req = 1;
-				PP_rmtseatheatCtrl[PP_seatheating_passenger].state.expTime = disptrBody_ptr->expTime;
-				PP_rmtseatheatCtrl[PP_seatheating_passenger].pack.DisBody.eventId = disptrBody_ptr->eventId;
-				PP_rmtseatheatCtrl[PP_seatheating_passenger].state.style = RMTCTRL_TSP;
-				PP_rmtseatheatCtrl[PP_seatheating_passenger].level = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0];
-			}
-			if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_MAINHEATOPEN)||\
-				(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_PASSENGERHEATOPEN))
-			{
-				seat_requestpower_flag = 1;  //请求上电
-			}
+			break;
+			default:
+			break;
 		}
-		break;
-		default:
-		break;
 	}
+	return mtxlockst;
 }
 
 void PP_seatheating_ClearStatus(void)
 {
+	clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_SEAT);//释放锁
+	
 	PP_rmtseatheatCtrl[0].state.req = 0;
 	
 	PP_rmtseatheatCtrl[1].state.req = 0;

@@ -44,7 +44,7 @@ extern int PP_startforbid_mainfunction(void *task);
 extern void PP_startforbid_acStMonitor(void *task);
 extern uint8_t PP_startforbid_start(void) ;
 extern uint8_t PP_startforbid_end(void);
-extern void SetPP_startforbid_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
+extern int SetPP_startforbid_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 extern void PP_startforbid_ClearStatus(void);
 extern void PP_startforbid_SetCtrlReq(unsigned char req,uint16_t reqType);
 #endif

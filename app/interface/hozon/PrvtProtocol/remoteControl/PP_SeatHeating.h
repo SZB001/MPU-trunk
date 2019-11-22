@@ -35,6 +35,7 @@ typedef struct
 	uint8_t waitSt;
 	uint64_t waittime;
 	long expTime;
+	uint8_t failtype;
 	char style;
 }__attribute__((packed))  PP_rmtseatheatingSt_t;
 
@@ -53,7 +54,7 @@ extern uint8_t PP_seatheating_start(void) ;
 
 extern uint8_t PP_seatheating_end(void);
 
-extern void SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
+extern int SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
 
 extern void  PP_seatheating_SetCtrlReq(uint32_t reqType,unsigned char level);
 
