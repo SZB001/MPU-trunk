@@ -58,6 +58,8 @@ description�� include the header file
 #include "FaultCodeClearanceReqInfo.h"
 #include "FaultCodeClearanceRespInfo.h"
 #include "CanBusMessageCollectReqInfo.h"
+#include "FotaNoticeReqInfo.h"
+#include "FotaNoticeRespInfo.h"
 
 #include "per_encoder.h"
 #include "per_decoder.h"
@@ -72,6 +74,7 @@ description�� include the header file
 #include "PrvtProt.h"
 #include "remoteControl/PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
+#include "PrvtProt_fotaInfoPush.h"
 
 #include "remoteDiag/PrvtProt_rmtDiag.h"
 
@@ -115,6 +118,8 @@ static asn_TYPE_descriptor_t *pduType_GIAG_LogAcqResp = &asn_DEF_LogAcquisitionR
 static asn_TYPE_descriptor_t *pduType_GIAG_FaultCodeCleanReq = &asn_DEF_FaultCodeClearanceReqInfo;
 static asn_TYPE_descriptor_t *pduType_GIAG_FaultCodeCleanResp = &asn_DEF_FaultCodeClearanceRespInfo;
 static asn_TYPE_descriptor_t *pduType_GIAG_CanBusMsgCollReq = &asn_DEF_CanBusMessageCollectReqInfo;
+static asn_TYPE_descriptor_t *pduType_OTA_FotaNoticeReq = &asn_DEF_FotaNoticeReqInfo;
+static asn_TYPE_descriptor_t *pduType_OTA_FotaNoticeResp = &asn_DEF_FotaNoticeRespInfo;
 
 static uint8_t tboxAppdata[PP_ECDC_DATA_LEN];
 static int tboxAppdataLen;
@@ -1138,6 +1143,26 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			}
 		}
 		break;
+		case ECDC_FIP_RESP:
+		{
+			log_i(LOG_UPER_ECDC, "encode:appdata fota info push response\n");
+			PrvtProt_App_FIP_t *FIPResp_ptr = (PrvtProt_App_FIP_t*)appchoice;
+			PrvtProt_App_FIP_t FIPResp;
+
+			memset(&FIPResp,0 , sizeof(PrvtProt_App_FIP_t));
+			FIPResp.sid = FIPResp_ptr->sid;
+			FIPResp.noticeStatus   = FIPResp_ptr->noticeStatus;
+			log_i(LOG_UPER_ECDC, "FIPResp.sid = %d\n",FIPResp.sid);
+			log_i(LOG_UPER_ECDC, "FIPResp.noticeStatus = %d\n",FIPResp.noticeStatus);
+
+			ec = uper_encode(pduType_OTA_FotaNoticeResp,(void *) &FIPResp,PrvtPro_writeout,&key);
+			if(ec.encoded  == -1)
+			{
+				log_e(LOG_UPER_ECDC, "encode:appdata fota info push response fail\n");
+				return -1;
+			}
+		}
+		break;
 		default:
 		{
 			log_e(LOG_UPER_ECDC, "unknow application request");
@@ -1803,6 +1828,28 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 				}
 				else
 				{}
+			}
+			break;
+			case PP_AID_OTAINFOPUSH:
+			{
+				PrvtProt_App_FIP_t *app_FIP_ptr = (PrvtProt_App_FIP_t*)appData;
+				if(PP_MID_OTA_INFOPUSHREQ == MID)
+				{
+					FotaNoticeReqInfo_t	FotaNoticeReq;
+					FotaNoticeReqInfo_t *FotaNoticeReq_ptr = &FotaNoticeReq;
+
+					memset(&FotaNoticeReq,0 , sizeof(FotaNoticeReqInfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_OTA_FotaNoticeReq,(void *) &FotaNoticeReq_ptr, \
+							 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_e(LOG_UPER_ECDC,   "Could not decode fota info push Req data Frame\n");
+						return -1;
+					}
+
+					app_FIP_ptr->fotaNotice = FotaNoticeReq.fotaNotice;
+					log_i(LOG_UPER_ECDC, "app_FIP_ptr->fotaNotice = %ld\n",app_FIP_ptr->fotaNotice);
+				}
 			}
 			break;
 			default:

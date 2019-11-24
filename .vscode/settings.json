@@ -44,6 +44,10 @@
         "hubookingbackresp.h": "c",
         "prvtprot_lock.h": "c",
         "prvtprot_rmtdiag.h": "c",
-        "pp_bluetoothstart.h": "c"
+        "pp_bluetoothstart.h": "c",
+        "log.h": "c",
+        "per_encoder.h": "c",
+        "fotanoticereqinfo.h": "c",
+        "prvtprot_fotainfopush.h": "c"
     }
 }

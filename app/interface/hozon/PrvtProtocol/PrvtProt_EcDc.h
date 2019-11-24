@@ -60,7 +60,7 @@ typedef enum
 	ECDC_RMTDIAG_CLEANFAULTRESP,//remote diag image acq response
 
 	/*FOTA INFO PUSH*/
-	ECDC_FIP_REQ = 0,//request
+	ECDC_FIP_REQ,//request
     ECDC_FIP_RESP,//response
 	ECDC_APP_MID_MAX
 } ECDC_APP_MID_TYPE;//Ӧ������
