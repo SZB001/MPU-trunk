@@ -237,6 +237,7 @@ static void PP_FIP_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int
 			PP_FotaInfoPush.expTime = MsgDataBody.expTime;
 			PP_FotaInfoPush.req = 1;
 			log_o(LOG_HOZON, "recv fota info push request\n");
+			PP_FIP_Response(task);
 		}
 		break;
 		default:
@@ -314,7 +315,7 @@ static int PP_FIP_Response(PrvtProt_task_t *task)
 	PP_FotaInfoPush.packResp.DisBody.testFlag = 1;
 
 	/*appdata*/
-	Appdata_FIP.sid = 1;
+	Appdata_FIP.sid = 0;
 	Appdata_FIP.noticeStatus = 1;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_FIP_RESP,PP_FIP_Pack.msgdata,&msgdatalen,\

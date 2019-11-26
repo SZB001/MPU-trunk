@@ -55,6 +55,7 @@ description�� include the header file
 #include "PrvtProt_remoteConfig.h"
 #include "PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
+#include "PrvtProt_fotaInfoPush.h"
 #include "PrvtProt_signFltr.h"
 #include "PrvtProt_SigParse.h"
 #include "remoteDiag/PrvtProt_rmtDiag.h"
@@ -100,6 +101,7 @@ static PrvtProt_RmtFunc_t PP_RmtFunc[PP_RMTFUNC_MAX] =
 	{PP_RMTFUNC_VS,   PP_VS_init,		PP_VS_mainfunction},
 	{PP_RMTFUNC_DIAG, PP_rmtDiag_init,	PP_rmtDiag_mainfunction},
 	{PP_RMTFUNC_SYNC,PP_Mileagesync_init,PP_Mileagesync_mainfunction},
+	{PP_RMTFUNC_OTAPUSH,PP_FotaInfoPush_init,PP_FotaInfoPush_mainfunction}
 };
 
 static uint8_t PP_sleepflag = 0;

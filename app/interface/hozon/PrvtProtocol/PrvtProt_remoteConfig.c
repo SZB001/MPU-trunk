@@ -1690,10 +1690,12 @@ void getPP_rmtCfg_tspAddrPort(char* addr,int* port)
 								AppData_rmtCfg.ReadResp.APN1.tspAddrlen);
 		*port = atoi((const char*)AppData_rmtCfg.ReadResp.APN1.tspPort);
 	}
+#if 0
 	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = %d",AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid);
 	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.tspAddr = %s",AppData_rmtCfg.ReadResp.APN1.tspAddr);
 	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.tspAddrlen = %d",AppData_rmtCfg.ReadResp.APN1.tspAddrlen);
 	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.tspPort = %s",AppData_rmtCfg.ReadResp.APN1.tspPort);
+#endif
 }
 
 /*
@@ -1710,10 +1712,12 @@ void getPP_rmtCfg_certAddrPort(char* addr,int* port)
 							AppData_rmtCfg.ReadResp.APN1.certAddresslen);
 		*port = atoi((const char*)AppData_rmtCfg.ReadResp.APN1.certPort);
 	}
+#if 0
 	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid = %d",AppData_rmtCfg.ReadResp.APN1.apn1ConfigValid);
 	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.certAddress = %s",AppData_rmtCfg.ReadResp.APN1.certAddress);
 	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.certAddresslen = %d",AppData_rmtCfg.ReadResp.APN1.certAddresslen);
 	log_i(LOG_HOZON,"AppData_rmtCfg.ReadResp.APN1.certPort = %s",AppData_rmtCfg.ReadResp.APN1.certPort);
+#endif
 }
 
 /*无符号长整形转字符型*/

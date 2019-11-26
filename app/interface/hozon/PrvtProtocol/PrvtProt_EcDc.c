@@ -1147,9 +1147,9 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 		{
 			log_i(LOG_UPER_ECDC, "encode:appdata fota info push response\n");
 			PrvtProt_App_FIP_t *FIPResp_ptr = (PrvtProt_App_FIP_t*)appchoice;
-			PrvtProt_App_FIP_t FIPResp;
+			FotaNoticeRespInfo_t FIPResp;
 
-			memset(&FIPResp,0 , sizeof(PrvtProt_App_FIP_t));
+			memset(&FIPResp,0 , sizeof(FotaNoticeRespInfo_t));
 			FIPResp.sid = FIPResp_ptr->sid;
 			FIPResp.noticeStatus   = FIPResp_ptr->noticeStatus;
 			log_i(LOG_UPER_ECDC, "FIPResp.sid = %d\n",FIPResp.sid);
