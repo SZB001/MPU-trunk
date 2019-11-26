@@ -66,6 +66,8 @@ typedef struct
 	long					eventId;
 	long					expTime;
 	uint8_t 				req;
+	uint8_t					resptspflag;
+	uint8_t					pushst;
 	uint8_t 				waitSt;
 	uint64_t 				waittime;
 }__attribute__((packed))  PP_FotaInfoPush_t;
@@ -236,8 +238,10 @@ static void PP_FIP_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int
 			PP_FotaInfoPush.eventId = MsgDataBody.eventId;
 			PP_FotaInfoPush.expTime = MsgDataBody.expTime;
 			PP_FotaInfoPush.req = 1;
+			PP_FotaInfoPush.resptspflag = 0;
 			log_o(LOG_HOZON, "recv fota info push request\n");
-			PP_FIP_Response(task);
+			//tbox_ivi_push_fota_informHU(Appdata.fotaNotice);
+			//PP_FIP_Response(task);
 		}
 		break;
 		default:
@@ -274,7 +278,12 @@ static int PP_FIP_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_FIP_do_checkInfoPush(PrvtProt_task_t *task)
 {
-	int idlenode;
+	if(1 == PP_FotaInfoPush.resptspflag)
+	{
+		PP_FotaInfoPush.resptspflag = 0;
+		PP_FIP_Response(task);
+	}
+
 	return 0;
 }
 
@@ -316,7 +325,7 @@ static int PP_FIP_Response(PrvtProt_task_t *task)
 
 	/*appdata*/
 	Appdata_FIP.sid = 0;
-	Appdata_FIP.noticeStatus = 1;
+	Appdata_FIP.noticeStatus = PP_FotaInfoPush.pushst;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_FIP_RESP,PP_FIP_Pack.msgdata,&msgdatalen,\
 									   &PP_FotaInfoPush.packResp.DisBody,&Appdata_FIP))
@@ -379,4 +388,21 @@ static void PP_FIP_send_cb(void * para)
 void PP_FIP_shellReq(void)
 {
 	PP_FotaInfoPush.req = 1;
+}
+
+/******************************************************
+*PP_FIP_InfoPush_cb
+
+*��  �Σ�
+
+*����ֵ��
+
+*
+
+*��  ע��
+******************************************************/
+static void PP_FIP_InfoPush_cb(uint8_t st)
+{
+	PP_FotaInfoPush.resptspflag = 1;
+	PP_FotaInfoPush.pushst	= st;
 }
