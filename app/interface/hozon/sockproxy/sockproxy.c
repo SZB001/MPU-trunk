@@ -193,8 +193,6 @@ static void *sockproxy_socketmain(void)
 	log_o(LOG_SOCK_PROXY, "socket proxy  of sockrtmain thread running");
     prctl(PR_SET_NAME, "SOCK_PROXY");
 
-	log_set_level(LOG_SOCK_PROXY, LOG_DEBUG);
-
 	if(!sockSt.pkiEnFlag)
 	{
 		if ((sockSt.socket = sock_create("sockproxy", SOCK_TYPE_SYNCTCP)) < 0)
@@ -1204,7 +1202,7 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 	{
 		if((sockSt.state == PP_OPENED) || (sockSt.state == PP_CLOSE_WAIT))
 		{
-			protocol_dump(LOG_HOZON, "sending data", msg, len, 1);
+			protocol_dump(LOG_SOCK_PROXY, "sending data", msg, len, 1);
 			if(!sockSt.pkiEnFlag)
 			{
 				res = sock_send(sockSt.socket, msg, len, sync);

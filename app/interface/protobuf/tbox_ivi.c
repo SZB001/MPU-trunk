@@ -1313,7 +1313,7 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 	{
 		msg_len = 2048;
 	}
-    log_o(LOG_IVI,"msg_len = %d.",msg_len);
+    log_i(LOG_IVI,"msg_len = %d.",msg_len);
 
     for(i = 0; i < msg_len; i ++ )
     {
@@ -1330,7 +1330,7 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
         return;
     }
 
-    log_o(LOG_IVI,"TopMsg->message_type = %d.",TopMsg->message_type);
+    log_i(LOG_IVI,"TopMsg->message_type = %d.",TopMsg->message_type);
 
     switch( TopMsg->message_type )
     {

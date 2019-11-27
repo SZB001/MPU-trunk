@@ -274,7 +274,6 @@ static void *PrvtProt_main(void)
 		{
 			continue;
 		}
-		log_set_level(LOG_HOZON, LOG_DEBUG);
 
 		PP_HBRateSwitch.IGNnewst = dev_get_KL15_signal();
 		if(PP_HBRateSwitch.IGNoldst != PP_HBRateSwitch.IGNnewst)
