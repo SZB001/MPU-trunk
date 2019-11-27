@@ -112,4 +112,5 @@ extern int PP_rmtCfg_ultoa(unsigned long value, char *string, int radix);
 extern int PP_CertDL_getCipher(char* cipher,int* len);
 extern uint8_t PP_rmtCfg_getIccid(uint8_t* iccid);
 extern uint8_t  GetPP_Wake_Sleep();
+extern void PP_FIP_InfoPush_cb(uint8_t st);
 #endif

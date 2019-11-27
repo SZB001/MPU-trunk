@@ -150,8 +150,7 @@ void PP_ACCtrl_init(void)
 				log_e(LOG_HOZON, "PP_rmtac_AppointBook[%d].period = %d\n",i,PP_rmtac_AppointBook[i].period);
 			}
 		}
-	}
-	
+	}	
 }
 
 
@@ -392,7 +391,6 @@ uint8_t PP_ACCtrl_end(void)
 	}
 	else
 	{
-		//log_o(LOG_HOZON,"ACC");
 		return 0;
 	}
 }

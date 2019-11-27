@@ -60,6 +60,7 @@ static uint64_t test_time = 0;
 static ivi_remotediagnos tspdiagnos;
 static ivi_logfile tsplogfile;
 static int tspdiagnos_flag = 0;
+static int update_flag = 0;
 static int tsplogfile_flag = 0;
 static int tspchager_flag = 0;
 unsigned char recv_buf[MAX_IVI_NUM][IVI_MSG_SIZE];
@@ -313,7 +314,7 @@ void ivi_msg_error_response_send( int fd ,Tbox__Net__Messagetype id,char *error_
     }
 
     memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
-//#ifndef TBOX_PKI_IHU
+
 	if(hu_pki_en == 0)
 	{
 	    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
@@ -328,14 +329,59 @@ void ivi_msg_error_response_send( int fd ,Tbox__Net__Messagetype id,char *error_
 	}
 	else
 	{
-//#else
+
 		HU_data_write((uint8_t *)send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), NULL ,NULL);
-//#endif
+
 	}
     return;
 
 }
+void ivi_fota_update_request_send( int fd)
+{
+	 int i = 0;
+    int ret = 0;
+    size_t szlen = 0;
+    char send_buf[4096] = {0};
+    unsigned char pro_buf[2048] = {0};
+	if(hu_pki_en == 0)
+	{
+	    if( fd < 0 )
+	    {
+	        return ;
+	    }
+	}
+	Tbox__Net__TopMessage TopMsg;
+	tbox__net__top_message__init( &TopMsg );
+	TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK;
+	szlen = tbox__net__top_message__get_packed_size( &TopMsg );
+	tbox__net__top_message__pack(&TopMsg,pro_buf);
+    
+    memcpy(send_buf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
 
+    send_buf[IVI_PKG_S_MARKER_SIZE] = szlen >> 8;
+    send_buf[IVI_PKG_S_MARKER_SIZE + 1] = szlen;
+
+    for( i = 0; i < szlen; i ++ )
+    {
+        send_buf[ i + IVI_PKG_S_MARKER_SIZE + 2 ] = pro_buf[i];
+    }
+
+    memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
+
+    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
+	
+    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
+    {
+        log_e(LOG_IVI, "ivi fota send response failed!!!");
+    }
+    else
+    {
+        log_i(LOG_IVI, "ivi fota send response success");
+    }
+
+    return;
+	
+}
 void ivi_logfile_request_send( int fd)
 {
 
@@ -344,7 +390,6 @@ void ivi_logfile_request_send( int fd)
     size_t szlen = 0;
     char send_buf[4096] = {0};
     unsigned char pro_buf[2048] = {0};
-//#ifndef TBOX_PKI_IHU
 	if(hu_pki_en == 0)
 	{
 	    if( fd < 0 )
@@ -353,7 +398,7 @@ void ivi_logfile_request_send( int fd)
 	        return ;
 	    }
 	}
-//#endif   
+ 
     Tbox__Net__TopMessage TopMsg;
 	Tbox__Net__IhuLogfile logfile;
 	
@@ -381,17 +426,25 @@ void ivi_logfile_request_send( int fd)
 
     memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
 
-    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
-	log_o(LOG_HOZON,"log log log.......\n");
-	
-    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
-    {
-        log_e(LOG_IVI, "ivi remotediagnos send response failed!!!");
-    }
-    else
-    {
-        log_i(LOG_IVI, "ivi remotediagnos send response success");
-    }
+    if(hu_pki_en == 0)
+	{
+	    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
+
+	    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
+	    {
+	        log_e(LOG_IVI, "ivi fotaupdate send response failed!!!");
+	    }
+	    else
+	    {
+	        log_i(LOG_IVI, "ivi fotaupdate send response success");
+	    }
+	}
+
+	else
+	{
+		HU_data_write((uint8_t *)send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), NULL ,NULL);
+
+	}
 
     return;
 
@@ -1528,6 +1581,20 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 			ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_TBOX_CHARGECTRL);
 			break;
 	   	}
+	    case TBOX__NET__MESSAGETYPE__RESPONSE_OTAUPDATE_TASK_RESULT:
+	    {
+	    	if( NULL == TopMsg->msg_result )
+			{
+				log_e(LOG_IVI,"TopMsg->msg_result == NULL !!!");
+				return;
+			}
+			if(TopMsg->msg_result->result == true)
+			{
+				log_o(LOG_IVI,"TSP FOTA UODATing INFORM HU success......");
+				PP_FIP_InfoPush_cb(IVI_FOTA_PUSH_SUCCESS);
+			}
+			break;	
+	    }
         default:
         {
             log_e(LOG_IVI,"recv ivi unknown message type!!!");
@@ -1625,8 +1692,6 @@ int tbox_ivi_create_pki_socket(void)
 		log_e(LOG_IVI,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", ret);
 		return -1;
 	}
-	//log_o(LOG_IVI,"HzPortAddrCft +++++++++++++++iRet[%d] \n", ret);
-	
 	sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
 	sprintf(ScdPath, "%s","/usrdata/pem/TerminalCA.cer");
 	sprintf(UsCertPath, "%s",PP_CERTDL_CERTPATH);
@@ -1638,8 +1703,6 @@ int tbox_ivi_create_pki_socket(void)
 		log_e(LOG_IVI,"HzTboxCertchainCfg error+++++++++++++++iRet[%d] \n", ret);
 		return -1;
 	}
-	//log_o(LOG_IVI,"HzTboxCertchainCfg +++++++++++++++iRet[%d] \n", ret);
-
     if((access(PP_CERTDL_TBOXCRL,F_OK)) != 0)//文件不存在
     {
         int fd = file_create(PP_CERTDL_TBOXCRL, 0644);
@@ -1667,7 +1730,6 @@ int tbox_ivi_create_pki_socket(void)
         sleep(1);
 		return -1;
 	}
-	//log_o(LOG_IVI,"HzTboxSrvInit +++++++++++++++Ret[%d] \n", ret);
 	return 0;
 	
 }
@@ -2174,6 +2236,11 @@ void *ivi_check(void)
 					ivi_logfile_request_send( ivi_clients[0].fd);
 					tsplogfile_flag = 0;
 				}
+				if(update_flag == 1)
+				{
+					ivi_fota_update_request_send( ivi_clients[0].fd);
+					update_flag = 0;
+				}
 			}
 		}
 		else  //带PKI
@@ -2198,6 +2265,11 @@ void *ivi_check(void)
 				{
 					ivi_logfile_request_send( ivi_clients[0].fd);
 					tsplogfile_flag = 0;
+				}
+				if(update_flag == 1)
+				{
+					ivi_fota_update_request_send( ivi_clients[0].fd);
+					update_flag = 0;
 				}
 			}
 		}
@@ -2298,7 +2370,10 @@ void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp)
 	tsplogfile_flag = 1;
 }
 
-
+void tbox_ivi_push_fota_informHU(uint8_t flag)
+{
+	update_flag = 1;
+}
 /**
      * @brief    ECALL触发管理.
      * @param[in] void.

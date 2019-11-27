@@ -38,6 +38,7 @@ description�� include the header file
 #include "../sockproxy/sockproxy_txdata.h"
 #include "../../support/protocol.h"
 #include "hozon_SP_api.h"
+#include "tbox_ivi_api.h"
 #include "shell_api.h"
 #include "PrvtProt_shell.h"
 #include "PrvtProt_queue.h"
@@ -240,8 +241,7 @@ static void PP_FIP_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int
 			PP_FotaInfoPush.req = 1;
 			PP_FotaInfoPush.resptspflag = 0;
 			log_o(LOG_HOZON, "recv fota info push request\n");
-			//tbox_ivi_push_fota_informHU(Appdata.fotaNotice);
-			//PP_FIP_Response(task);
+			tbox_ivi_push_fota_informHU(Appdata.fotaNotice);
 		}
 		break;
 		default:
@@ -343,7 +343,7 @@ static int PP_FIP_Response(PrvtProt_task_t *task)
 	PP_TxInform[idlenode].mid = PP_MID_OTA_INFOPUSHRESP;
 	PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 	PP_TxInform[idlenode].idleflag = 1;
-	PP_TxInform[idlenode].description = "the result of fota info push inform to tsp";
+	PP_TxInform[idlenode].description = "the result of fota info push inform";
 	SP_data_write(PP_FIP_Pack.Header.sign,PP_FIP_Pack.totallen,PP_FIP_send_cb,&PP_TxInform[idlenode]);
 
 	return res;
@@ -401,7 +401,7 @@ void PP_FIP_shellReq(void)
 
 *��  ע��
 ******************************************************/
-static void PP_FIP_InfoPush_cb(uint8_t st)
+void PP_FIP_InfoPush_cb(uint8_t st)
 {
 	PP_FotaInfoPush.resptspflag = 1;
 	PP_FotaInfoPush.pushst	= st;

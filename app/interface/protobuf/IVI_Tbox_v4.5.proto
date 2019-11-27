@@ -29,7 +29,12 @@ enum Messagetype
 	RESPONSE_TBOX_CHARGEAPPOINTMENTSET_RESULT = 21;    //tbox response ihu result
 	REQUEST_TBOX_CHARGECTRL = 22;               //ihu request tbox to charge
 	RESPONSE_TBOX_CHARGECTRL_RESULT = 23;       //tbox response ihu result
-	
+	IHU_CALL_STATUS_RESULT = 24;                 //ihu response tbox call action status (FOR: RESPONSE_CALL_STATUS)
+	IHU_ACTIVESTATE_RESULT = 25;                 //ihu response tbox active status (FOR: RESPONSE_TBOX_ACTIVESTATE_RESULT)
+	REQUEST_QUERY_CHARGE_RECORD = 26;            //ihu request tbox to get charge record
+	RESPONSE_CHARGE_RECORD_RESULT = 27;          //tbox response ihu charge record
+	REQUEST_OTAUPDATE_TASK = 28;                 //tbox told ihu have a OTA task
+	RESPONSE_OTAUPDATE_TASK_RESULT = 29;          //ihu response tbox result
 }
 
 enum NETWORK_SEND_OnOff
@@ -203,6 +208,16 @@ message TboxChargeCtrl
 	uint32 targetpower = 3;
 }
 
+message TboxChargeRecord
+{
+	uint32 timestamp = 1;
+	uint32 hour = 2;
+	uint32 min = 3;
+	uint32 id = 4;
+	uint32 targetpower = 5;
+	bool effectivestate  = 6;  //true:effective, false:Invalid
+}
+
 message MsgResult
 {
 	bool result =1;  //true:success    flase:failed
@@ -228,6 +243,7 @@ message TopMessage
 	IhuChargeAppoointmentSts ihu_charge_appoointmentSts = 15;
 	TboxChargeAppoointmentSet tbox_charge_appoointmentSet = 16;
 	TboxChargeCtrl tbox_chargectrl = 17;
+	TboxChargeRecord tbox_charge_record =18;
 }
 
 

@@ -40,6 +40,8 @@
 #define PKI_RECV      3
 #define PKI_END       4
 
+#define IVI_FOTA_PUSH_SUCCESS 1
+#define IVI_FOTA_PUSH_FAIL    2
 typedef enum
 {
 	UNKNOWN_YTPE = 0,
@@ -154,6 +156,8 @@ extern void tbox_ivi_pki_renew_pthread();
 extern uint8_t tbox_ivi_ecall_trigger(void);
 
 extern void tbox_ivi_closesocket();
+
+extern void tbox_ivi_push_fota_informHU(uint8_t flag);
 
 #endif
 

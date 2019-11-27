@@ -49,6 +49,7 @@
         "per_encoder.h": "c",
         "fotanoticereqinfo.h": "c",
         "prvtprot_fotainfopush.h": "c",
-        "fotanoticerespinfo.h": "c"
+        "fotanoticerespinfo.h": "c",
+        "pwdg.h": "c"
     }
 }
