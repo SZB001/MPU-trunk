@@ -5356,10 +5356,15 @@ long getgb_data_bdmsystemfailure(void)
 long getgb_data_backDoorAjarSt(void)
 {
 	long st = 0;
+
+	DAT_LOCK();
+
 	if(gb_inf->event.info[GB_EVT_TAILDOOR_OPEN])
 	{
 		st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_TAILDOOR_OPEN])->value;
 	}
+
+	DAT_UNLOCK();
 
 	return st;
 }
