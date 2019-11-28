@@ -567,6 +567,7 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 		{
 			if(1 == PP_rmtDiag.state.cleanfaultReq)
 			{
+				log_i(LOG_HOZON, "rmt clean fault request\n");
 				mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_DIAG_CLEAN);
 				if(PP_LOCK_OK == mtxlockst)
 				{
@@ -580,21 +581,21 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 						log_e(LOG_HOZON, "In the fota ecu diag\n");
 						PP_rmtDiag.state.faultCleanResult = 0;
 						PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_FOTAECUDIAG;
-						PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
+						PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_END;
 					}
 					else if(PP_LOCK_ERR_FOTAUPDATE == mtxlockst)
 					{
 						log_e(LOG_HOZON, "In the fota upgrade\n");
 						PP_rmtDiag.state.faultCleanResult	= 0;
 						PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_FOTAING;
-						PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
+						PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_END;
 					}
 					else
 					{
 						log_e(LOG_HOZON, "other diag ing\n");
 						PP_rmtDiag.state.faultCleanResult	= 0;
 						PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_DIAGEVTCONFLICT;
-						PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
+						PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_END;
 					}
 				}
 				PP_rmtDiag.state.cleanfaultReq = 0;
@@ -618,7 +619,7 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 					PP_rmtDiag.state.faultCleanResult = \
 								getPPrmtDiagCfg_clearDTCresult(PP_rmtDiag.state.cleanfaultType);
 					PP_rmtDiag.state.faultCleanfailureType = 0;
-					PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
+					PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_END;
 				}
 			}
 			else
@@ -626,7 +627,7 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 				log_e(LOG_HOZON, "clean faultcode timeout\n");
 				PP_rmtDiag.state.faultCleanResult	= 0;
 				PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_TIMEOUT;
-				PP_rmtDiag.state.cleanfaultSt = PP_DIAGRESP_END;
+				PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_END;
 			}
 		}
 		break;
@@ -1002,7 +1003,7 @@ static int PP_rmtDiag_FaultCodeCleanResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_
 	AppData_rmtDiag.FaultCodeClearanceResp.failureType = rmtDiag->state.faultCleanfailureType;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_CLEANFAULTRESP,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
-									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag.DiagnosticResp))//鏁版嵁缂栫爜鎵撳寘鏄惁瀹屾垚
+									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag.FaultCodeClearanceResp))//鏁版嵁缂栫爜鎵撳寘鏄惁瀹屾垚
 	{
 		log_e(LOG_HOZON, "encode error\n");
 		return -1;
