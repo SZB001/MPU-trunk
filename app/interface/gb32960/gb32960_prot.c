@@ -69,6 +69,9 @@ typedef struct
     int can;
     int network;
     int errtrig;
+
+    int caltimewait;
+    uint64_t caltimewaittime;
 } gb_stat_t;
 
 typedef struct
@@ -246,6 +249,20 @@ static int gb_pack_logout(uint8_t *buf)
     buf[len++] = time.sec;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
+    buf[len]   = gb_checksum(buf + 2, len - 2);
+
+    return len + 1;
+}
+
+static int gb_pack_tspcailtime(uint8_t *buf)
+{
+    int len = 0;
+
+    len = gb_pack_head(PROT_CALTIME, 0xfe, buf);
+    /* length */
+    buf[len++] = 0;
+    buf[len++] = 0;
+
     buf[len]   = gb_checksum(buf + 2, len - 2);
 
     return len + 1;
@@ -721,6 +738,34 @@ static int gb_do_suspend(gb_stat_t *state)
         log_e(LOG_GB32960, "communication is suspended");
         //gb_reset(state);
         return -1;
+    }
+
+    return 0;
+}
+
+static int gb_do_caltime(gb_stat_t *state)
+{
+    int len,res;
+    uint8_t buf[256];
+
+    log_o(LOG_GB32960, "start to caltime\n");
+    len = gb_pack_tspcailtime(buf);
+    res = gb32960_MsgSend(buf, len, NULL);
+    protocol_dump(LOG_GB32960, "GB32960", buf, len, 1);
+    if(res < 0)
+    {
+        log_e(LOG_GB32960, "socket send error, reset protocol");
+        sockproxy_socketclose((int)(PP_SP_COLSE_GB + 8));
+        gb_reset(state);
+    }
+    else if (res == 0)
+    {
+        log_e(LOG_GB32960, "unack list is full, send is canceled");
+    }
+    else
+    {
+        state->caltimewait = 1;
+        state->caltimewaittime = tm_get_time();
     }
 
     return 0;
@@ -1477,6 +1522,8 @@ static void *gb_main(void)
               gb_do_suspend(&state) ||		//暂停
               gb_do_report(&state) ||		//发实时数据
               gb_do_logout(&state);			//登出
+
+        gb_do_caltime(&state);
 
     }
 
