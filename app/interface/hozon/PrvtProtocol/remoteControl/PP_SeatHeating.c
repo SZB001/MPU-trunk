@@ -246,6 +246,7 @@ int PP_seatheating_mainfunction(void *task)
 						}
 						PP_rmtseatheatCtrl[i].state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 				       log_o(LOG_HOZON,"timeout\n");
+					   seat_requestpower_flag = 2;  //座椅加热关闭成功请求下电
 				       PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
 				       PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
 				    }
