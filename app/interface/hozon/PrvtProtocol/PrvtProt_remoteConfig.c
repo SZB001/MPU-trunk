@@ -113,7 +113,6 @@ description�� function code
 ******************************************************/
 void PP_rmtCfg_init(void)
 {
-	unsigned int len;
 	memset(&PP_rmtCfg,0 , sizeof(PrvtProt_rmtCfg_t));
 	memset(&AppData_rmtCfg,0 , sizeof(PrvtProt_App_rmtCfg_t));
 
@@ -121,13 +120,6 @@ void PP_rmtCfg_init(void)
 	AppData_rmtCfg.checkReq.mcuSwlen = strlen(DID_F1B0_SW_UPGRADE_VER);
 	memcpy(AppData_rmtCfg.checkReq.mpuSw,DID_F1B0_SW_UPGRADE_VER,strlen(DID_F1B0_SW_UPGRADE_VER));
 	AppData_rmtCfg.checkReq.mpuSwlen = strlen(DID_F1B0_SW_UPGRADE_VER);
-
-	len = 18;
-	cfg_get_user_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);//vin
-	AppData_rmtCfg.checkReq.vehicleVinlen = 17;
-
-	PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));//iccid
-	AppData_rmtCfg.checkReq.iccIDlen = 20;
 
 	memcpy(AppData_rmtCfg.checkReq.btMacAddr,"000000000000",strlen("000000000000"));
 	AppData_rmtCfg.checkReq.btMacAddrlen = strlen("000000000000");
@@ -144,22 +136,6 @@ void PP_rmtCfg_init(void)
 	PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
 
 	#if 1
-	AppData_rmtCfg.ReadResp.COMMON.actived = 1;
-	AppData_rmtCfg.ReadResp.COMMON.rcEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.svtEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.vsEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.iCallEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.bCallEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.eCallEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.dcEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.dtcEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.journeysEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.onlineInfEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.rChargeEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.btKeyEntryEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.carEmpowerEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.eventReportEnabled = 1;
-	AppData_rmtCfg.ReadResp.COMMON.carAlarmEnabled = 1;
 	unsigned char wifienable = 1;
 	cfg_set_para(CFG_ITEM_WIFI_SET,&wifienable,1);
 	#endif
@@ -476,6 +452,7 @@ static int PP_rmtCfg_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
+	unsigned int len;
 	int idlenode;
 
 	if(0 == PP_rmtCfg.state.avtivecheckflag)
@@ -487,6 +464,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		PP_rmtCfg.state.avtivecheckflag = 1;
 	}
 
+	AppData_rmtCfg.checkReq.iccIDlen = 20;
 	if(!AppData_rmtCfg.checkReq.iccID[0])
 	{//get iccid
 		(void)PrvtProtCfg_get_iccid((char *)(AppData_rmtCfg.checkReq.iccID));
@@ -494,14 +472,6 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 	else
 	{
 		PP_rmtCfg.state.iccidValid = 1;
-	}
-
-	unsigned char Mac[32];
-	if(0 == strcmp((char*)AppData_rmtCfg.checkReq.btMacAddr,"000000000000"))
-	{
-		BleGetMac(Mac);
-		PP_rmtCfg_HexToStr(AppData_rmtCfg.checkReq.btMacAddr,Mac,6);
-		log_o(LOG_HOZON, "bluetooth mac = %s\n",AppData_rmtCfg.checkReq.btMacAddr);
 	}
 
 	switch(rmtCfg->state.CfgSt)
@@ -531,6 +501,18 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		break;
 		case PP_CHECK_CFG_REQ:
 		{
+			len = 18;
+			cfg_get_user_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);//vin
+			AppData_rmtCfg.checkReq.vehicleVinlen = 17;
+
+			len = 33;
+			cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_VER,AppData_rmtCfg.checkReq.cfgVersion,&len);
+			AppData_rmtCfg.checkReq.cfgVersionlen = 32;
+
+			unsigned char Mac[32];
+			BleGetMac(Mac);
+			PP_rmtCfg_HexToStr(AppData_rmtCfg.checkReq.btMacAddr,Mac,6);
+			AppData_rmtCfg.checkReq.btMacAddrlen = 12;
 			if(0 == PP_rmtCfg_checkRequest(task,rmtCfg))
 			{
 				idlenode = PP_getIdleNode();
@@ -1239,6 +1221,11 @@ void PP_rmtCfg_Seticcid(const char *iccid)
 ******************************************************/
 void PP_rmtCfg_ShowCfgPara(void)
 {
+	unsigned int len;
+	len =18;
+	cfg_get_user_para(CFG_ITEM_GB32960_VIN,AppData_rmtCfg.checkReq.vehicleVin,&len);
+	len = 33;
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_VER,AppData_rmtCfg.checkReq.cfgVersion,&len);
 	log_o(LOG_HOZON, "/******************************/");
 	log_o(LOG_HOZON, "       remote  cfg parameter    ");
 	log_o(LOG_HOZON, "/******************************/");
@@ -1251,6 +1238,9 @@ void PP_rmtCfg_ShowCfgPara(void)
 	getPP_rmtCfg_cfgVersion(cfgversion);
 	log_o(LOG_HOZON, "cfgVersion = %s",cfgversion);
 	log_o(LOG_HOZON, "configSw = %s",AppData_rmtCfg.checkReq.configSw);
+	unsigned char Mac[32];
+	BleGetMac(Mac);
+	PP_rmtCfg_HexToStr(AppData_rmtCfg.checkReq.btMacAddr,Mac,6);
 	log_o(LOG_HOZON, "btMacAddr = %s",AppData_rmtCfg.checkReq.btMacAddr);
 
 	log_o(LOG_HOZON, "AppData_rmtCfg.ReadResp.cfgsuccess = %d",AppData_rmtCfg.ReadResp.cfgsuccess);
