@@ -753,7 +753,7 @@ static int gb_do_caltime(gb_stat_t *state)
     if(1 == state->calflag)
     {
         state->calflag = 0;
-        log_o(LOG_GB32960, "start to caltime\n");
+        log_o(LOG_GB32960, "start to tsp caltime\n");
         len = gb_pack_tspcailtime(buf);
         res = gb32960_MsgSend(buf, len, NULL);
         protocol_dump(LOG_GB32960, "GB32960", buf, len, 1);
@@ -1219,6 +1219,13 @@ static int gb_shell_nosend(int argc, const char **argv)
     return 0;
 }
 
+static int gb_shell_setcaltime(int argc, const char **argv)
+{
+    state.calflag = 1;
+    sleep(1);
+
+    return 0;
+}
 
 static int gb_shell_settmout(int argc, const const char **argv)
 {
@@ -1706,6 +1713,7 @@ int gb_init(INIT_PHASE phase)
             gb_regdate   = 0;
             gb_regseq    = 0;
             gb_allow_sleep     = 1;
+            state.calflag = 1;
             break;
 
         case INIT_PHASE_RESTORE:
@@ -1757,6 +1765,7 @@ int gb_init(INIT_PHASE phase)
             ret |= nm_register_status_changed(gb_nm_callback);
 			
 			ret |= shell_cmd_register("gbnosend", gb_shell_nosend, "GB32960 don't send data");
+            ret |= shell_cmd_register("gbcaltime", gb_shell_setcaltime, "GB32960 cal time");
             break;
     }
 
