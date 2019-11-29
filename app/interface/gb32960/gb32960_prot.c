@@ -20,6 +20,7 @@
 #include "../support/protocol.h"
 #include "pm_api.h"
 #include "at.h"
+#include "dev_time.h"
 #include "hozon_SP_api.h"
 #include "hozon_PP_api.h"
 
@@ -72,6 +73,7 @@ typedef struct
 
     int caltimewait;
     uint64_t caltimewaittime;
+    uint8_t calflag;
 } gb_stat_t;
 
 typedef struct
@@ -748,24 +750,28 @@ static int gb_do_caltime(gb_stat_t *state)
     int len,res;
     uint8_t buf[256];
 
-    log_o(LOG_GB32960, "start to caltime\n");
-    len = gb_pack_tspcailtime(buf);
-    res = gb32960_MsgSend(buf, len, NULL);
-    protocol_dump(LOG_GB32960, "GB32960", buf, len, 1);
-    if(res < 0)
+    if(1 == state->calflag)
     {
-        log_e(LOG_GB32960, "socket send error, reset protocol");
-        sockproxy_socketclose((int)(PP_SP_COLSE_GB + 8));
-        gb_reset(state);
-    }
-    else if (res == 0)
-    {
-        log_e(LOG_GB32960, "unack list is full, send is canceled");
-    }
-    else
-    {
-        state->caltimewait = 1;
-        state->caltimewaittime = tm_get_time();
+        state->calflag = 0;
+        log_o(LOG_GB32960, "start to caltime\n");
+        len = gb_pack_tspcailtime(buf);
+        res = gb32960_MsgSend(buf, len, NULL);
+        protocol_dump(LOG_GB32960, "GB32960", buf, len, 1);
+        if(res < 0)
+        {
+            log_e(LOG_GB32960, "socket send error, reset protocol");
+            sockproxy_socketclose((int)(PP_SP_COLSE_GB + 8));
+            gb_reset(state);
+        }
+        else if (res == 0)
+        {
+            log_e(LOG_GB32960, "unack list is full, send is canceled");
+        }
+        else
+        {
+            state->caltimewait = 1;
+            state->caltimewaittime = tm_get_time();
+        }
     }
 
     return 0;
@@ -1015,21 +1021,39 @@ static int gb_do_receive(gb_stat_t *state)
                 break;
 
             case PROT_CALTIME:
+            #if 0
                 if (state->wait != PROT_CALTIME)
                 {
                     log_e(LOG_GB32960, "unexpected time-calibration acknowlage");
                     break;
                 }
-
+            #endif
                 if (ack != 0x01)
                 {
                     log_e(LOG_GB32960, "time-calibration is rejected!");
                     break ;
                 }
 
-                state->wait    = 0;
+                state->caltimewait    = 0;
                 state->caltime = 0;
-                log_i(LOG_GB32960, "time-calibration succeed");
+
+                RTCTIME time;
+                if(6 == dlen)
+                {
+                    time.year = data[0] + 1900;
+                    time.mon  = data[1] + 1;
+                    time.mday = data[2];
+                    time.hour = data[3];
+                    time.min  = data[4];
+                    time.sec  = data[5];
+                    dev_syn_time(&time , TSP_TIME_SOURCE);
+                    log_i(LOG_GB32960, "time-calibration succeed");
+                }
+                else
+                {
+                    log_e(LOG_GB32960, "time-calibration size error");
+                } 
+
                 break;
 
             case PROT_QUREY:
@@ -1468,11 +1492,13 @@ static void *gb_main(void)
                 SetPrvtProt_Awaken((int)GB_MSG_CANON);
                 state.can = 1;
                 gb_allow_sleep = 0;
+                state.calflag = 1;
                 break;
 
             case GB_MSG_CANOFF:
                 log_i(LOG_GB32960, "get CANOFF message");
                 state.can = 0;
+                state.calflag = 0;
                 gb_allow_sleep = !state.online;
                 break;
 
@@ -1516,15 +1542,13 @@ static void *gb_main(void)
 		if(gbnosend != 0) continue;
 		
         res = gb_do_checksock(&state) ||	//检查连接
-              gb_do_receive(&state) ||		//socket 接收
-              gb_do_wait(&state) ||			//等待
-              gb_do_login(&state) ||		//登入
-              gb_do_suspend(&state) ||		//暂停
-              gb_do_report(&state) ||		//发实时数据
+              gb_do_receive(&state)   ||	//socket 接收
+              gb_do_wait(&state)      ||	//等待
+              gb_do_login(&state)     ||	//登入
+              gb_do_suspend(&state)   ||	//暂停
+              gb_do_report(&state)    ||	//发实时数据
+              gb_do_caltime(&state)   ||    //校时
               gb_do_logout(&state);			//登出
-
-        gb_do_caltime(&state);
-
     }
 
     sock_delete(state.socket);
