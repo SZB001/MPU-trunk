@@ -1749,9 +1749,13 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     {
     	buf[len++] = 0x0;//天窗关闭״̬
     }
-    else if((tmp == 0x0) || (tmp == 0x1) || (tmp == 0x3) || (tmp == 0x4))
+    else if((tmp == 0x3) || (tmp == 0x4))
     {
     	buf[len++] = 0x01;//天窗开启
+    }
+	else if((tmp == 0x0) || (tmp == 0x1))
+	{
+    	buf[len++] = 0x02;//天窗翘起
     }
     else if(tmp == 0x5)
     {
