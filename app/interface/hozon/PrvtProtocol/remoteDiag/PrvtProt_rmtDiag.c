@@ -371,6 +371,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		{
 			if(PP_FAULTCODECLEAN_IDLE == PP_rmtDiag.state.cleanfaultSt)
 			{
+				log_o(LOG_HOZON, "rcv clean fault request\n");
 				PP_rmtDiag.state.cleanfaultReq = 1;
 				PP_rmtDiag.state.cleanfaultType = Appdata.FaultCodeClearanceReq.diagType;
 				PP_rmtDiag.state.cleanfaulteventId = MsgDataBody.eventId;

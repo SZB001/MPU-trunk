@@ -1038,16 +1038,20 @@ static int gb_do_receive(gb_stat_t *state)
                 state->caltime = 0;
 
                 RTCTIME time;
+                int ret;
                 if(6 == dlen)
                 {
-                    time.year = data[0] + 1900;
-                    time.mon  = data[1] + 1;
+                    time.year = data[0] + 2000;
+                    time.mon  = data[1];
                     time.mday = data[2];
                     time.hour = data[3];
                     time.min  = data[4];
                     time.sec  = data[5];
-                    dev_syn_time(&time , TSP_TIME_SOURCE);
-                    log_i(LOG_GB32960, "time-calibration succeed");
+                    ret = dev_syn_time(&time , TSP_TIME_SOURCE);
+                    if(0 == ret)
+                    {
+                        log_i(LOG_GB32960, "time-calibration succeed");
+                    }
                 }
                 else
                 {
