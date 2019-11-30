@@ -5363,7 +5363,7 @@ long getgb_data_backDoorAjarSt(void)
 
 	DAT_LOCK();
 
-	if(gb_inf->event.info[GB_EVT_TAILDOOR_OPEN])
+	if(gb_inf && gb_inf->event.info[GB_EVT_TAILDOOR_OPEN])
 	{
 		st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_TAILDOOR_OPEN])->value;
 	}
@@ -5382,7 +5382,7 @@ long getgb_data_LFDoorOpenSt(void)
 
 	DAT_LOCK();
 
-	if(gb_inf->event.info[GB_EVT_LEFTDRVDOOR_OPEN])
+	if(gb_inf && gb_inf->event.info[GB_EVT_LEFTDRVDOOR_OPEN])
 	{
 		st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_LEFTDRVDOOR_OPEN])->value;
 	}
@@ -5401,7 +5401,7 @@ long getgb_data_RFDoorOpenSt(void)
 
 	DAT_LOCK();
 
-	if(gb_inf->event.info[GB_EVT_RIGHTDRVDOOR_OPEN])
+	if(gb_inf && gb_inf->event.info[GB_EVT_RIGHTDRVDOOR_OPEN])
 	{
 		st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_RIGHTDRVDOOR_OPEN])->value;
 	}
@@ -5420,7 +5420,7 @@ long getgb_data_LRDoorOpenSt(void)
 
 	DAT_LOCK();
 
-	if(gb_inf->event.info[GB_EVT_LEFTREARDRVDOOR_OPEN])
+	if(gb_inf && gb_inf->event.info[GB_EVT_LEFTREARDRVDOOR_OPEN])
 	{
 		st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_LEFTREARDRVDOOR_OPEN])->value;
 	}
@@ -5431,7 +5431,7 @@ long getgb_data_LRDoorOpenSt(void)
 }
 
 /*
-* 获取左后门打开状态
+* 获取右后门打开状态
 */
 long getgb_data_RRDoorOpenSt(void)
 {
@@ -5439,7 +5439,7 @@ long getgb_data_RRDoorOpenSt(void)
 
 	DAT_LOCK();
 
-	if(gb_inf->event.info[GB_EVT_RIGHTREARDRVDOOR_OPEN])
+	if(gb_inf && gb_inf->event.info[GB_EVT_RIGHTREARDRVDOOR_OPEN])
 	{
 		st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_RIGHTREARDRVDOOR_OPEN])->value;
 	}
@@ -5447,4 +5447,23 @@ long getgb_data_RRDoorOpenSt(void)
 	DAT_UNLOCK();
 
 	return st;
+}
+
+/*
+* 主驾设置温度
+*/
+long getgb_data_CLMLHTemp(void)
+{
+	long tmp = 16;
+
+	DAT_LOCK();
+
+	if(gb_inf && gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])//
+	{
+		tmp = dbc_get_signal_from_id(gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])->value;
+	}
+
+	DAT_UNLOCK();
+
+	return tmp;
 }

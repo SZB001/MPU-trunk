@@ -455,13 +455,13 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 	unsigned int len;
 	int idlenode;
 
-	if(0 == PP_rmtCfg.state.avtivecheckflag)
+	if(0 == rmtCfg->state.avtivecheckflag)
 	{//上电主动查询配置
-		PP_rmtCfg.state.req  = 1;
-		PP_rmtCfg.state.reqCnt = 0;
-		PP_rmtCfg.state.period = tm_get_time();
-		PP_rmtCfg.state.delaytime = tm_get_time();
-		PP_rmtCfg.state.avtivecheckflag = 1;
+		rmtCfg->state.req  = 1;
+		rmtCfg->state.reqCnt = 0;
+		rmtCfg->state.period = tm_get_time();
+		rmtCfg->state.delaytime = tm_get_time();
+		rmtCfg->state.avtivecheckflag = 1;
 	}
 
 	AppData_rmtCfg.checkReq.iccIDlen = 20;
@@ -471,7 +471,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 	}
 	else
 	{
-		PP_rmtCfg.state.iccidValid = 1;
+		rmtCfg->state.iccidValid = 1;
 	}
 
 	switch(rmtCfg->state.CfgSt)
@@ -1272,6 +1272,8 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_o(LOG_HOZON, "APN2.apn2Pass = %s",AppData_rmtCfg.ReadResp.APN2.apn2Pass);
 	log_o(LOG_HOZON, "APN2 info length = %d\n",sizeof(App_rmtCfg_APN2_t));
 
+	len = 256;
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&AppData_rmtCfg.ReadResp.COMMON,&len);
 	log_o(LOG_HOZON, "\n/* COMMON info */");
 	log_o(LOG_HOZON, "commonConfigValid = %d",AppData_rmtCfg.ReadResp.COMMON.commonConfigValid);
 	log_o(LOG_HOZON, "COMMON.actived = %d",AppData_rmtCfg.ReadResp.COMMON.actived);

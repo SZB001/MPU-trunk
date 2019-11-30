@@ -276,4 +276,5 @@ extern long getgb_data_LFDoorOpenSt(void);
 extern long getgb_data_RFDoorOpenSt(void);
 extern long getgb_data_LRDoorOpenSt(void);
 extern long getgb_data_RRDoorOpenSt(void);
+extern long getgb_data_CLMLHTemp(void);
 #endif

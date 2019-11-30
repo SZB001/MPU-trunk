@@ -424,7 +424,7 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 		PP_VS_appdata.VSResp.basicSt.engineStatus = 1;
 	}
 	PP_VS_appdata.VSResp.basicSt.accStatus 			= PP_rmtCtrl_cfg_ACOnOffSt();
-	PP_VS_appdata.VSResp.basicSt.accTemp 			= gb_data_ACTemperature()	/* OPTIONAL */;//16-32
+	PP_VS_appdata.VSResp.basicSt.accTemp 			= getgb_data_CLMLHTemp()	/* OPTIONAL */;//16-32
 	if(PP_VS_appdata.VSResp.basicSt.accTemp < PP_VS_LOW_TEMP)
 	{
 		PP_VS_appdata.VSResp.basicSt.accTemp = PP_VS_LOW_TEMP;
