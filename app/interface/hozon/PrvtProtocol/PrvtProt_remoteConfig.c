@@ -121,8 +121,6 @@ void PP_rmtCfg_init(void)
 	memcpy(AppData_rmtCfg.checkReq.mpuSw,DID_F1B0_SW_UPGRADE_VER,strlen(DID_F1B0_SW_UPGRADE_VER));
 	AppData_rmtCfg.checkReq.mpuSwlen = strlen(DID_F1B0_SW_UPGRADE_VER);
 
-	memcpy(AppData_rmtCfg.checkReq.btMacAddr,"000000000000",strlen("000000000000"));
-	AppData_rmtCfg.checkReq.btMacAddrlen = strlen("000000000000");
 	memcpy(AppData_rmtCfg.checkReq.configSw,"00000",strlen("00000"));
 	AppData_rmtCfg.checkReq.configSwlen = strlen("00000");
 	memcpy(AppData_rmtCfg.checkReq.cfgVersion,"00000000000000000000000000000000",strlen("00000000000000000000000000000000"));

@@ -1793,21 +1793,21 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         }
     }
 
-    if(gbinf->gb_VSExt.info[GB_VS_BACKDOORST])//后备箱门状态״̬
-    {
-        if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_BACKDOORST])->value)
-        {
-            buf[len++] = 1;//����
+	if(gbinf->event.info[GB_EVT_TAILDOOR_OPEN])
+	{
+		if(dbc_get_signal_from_id(gbinf->event.info[GB_EVT_TAILDOOR_OPEN])->value)
+		{
+            buf[len++] = 1;
         }
         else
         {
         	 buf[len++] = 0;//
         }
-    }
-    else
-    {
-        buf[len++] = 0xff;
-    }
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
 
     /* 空调信息 */
     if(gbinf->gb_VSExt.info[GB_VS_ACST])//
@@ -4573,23 +4573,6 @@ uint8_t gb_data_doorlockSt(void)
 	return st;
 }
 
-/*
- 	 后备箱状态״̬
-*/
-uint8_t gb_data_reardoorSt(void)
-{
-	uint8_t st = 0;
-
-	DAT_LOCK();
-	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_BACKDOORST])
-	{
-		st = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_BACKDOORST])->value;
-	}
-	DAT_UNLOCK();
-
-	return st;
-}
-
 
 /*
  	 空调开启/关闭状态״̬
@@ -5357,7 +5340,7 @@ long getgb_data_bdmsystemfailure(void)
 /*
 * 获取尾门打开状态
 */
-long getgb_data_backDoorAjarSt(void)
+long gb_data_reardoorSt(void)
 {
 	long st = 0;
 

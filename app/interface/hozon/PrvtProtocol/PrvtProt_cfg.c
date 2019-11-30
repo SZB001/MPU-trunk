@@ -274,18 +274,16 @@ uint8_t PrvtProtCfg_sunroofSt(void)
 
 	 return 0;
 }
+
 uint8_t PrvtProtCfg_reardoorSt(void)
 {
 	unsigned char st;
 	st = gb_data_reardoorSt();
-	if(( st == 2) || (st == 3))
+	if(st)
 	{
 		return 1;
 	}
-	else
-	{
-		return 0;
-	}
+
 	return 0;
 }
 
