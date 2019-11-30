@@ -73,5 +73,7 @@ extern uint8_t PP_rmtCtrl_cfg_bt_sunroofst(void);
 extern uint8_t PP_rmtCtrl_cfg_bt_autodoorst(void);
 extern uint8_t PP_rmtCtrl_cfg_bt_chargest(void);
 extern uint8_t PP_rmtCtrl_cfg_bt_highpowerst(void);
+extern unsigned char PP_rmtCtrl_cfg_bdmreardoorSt(void);
+
 
 #endif 

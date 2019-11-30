@@ -409,6 +409,8 @@ extern int PP_get_seat_requestpower_flag();
 extern void PP_set_seat_requestpower_flag();
 extern void PP_powermanagement_request(long cmd);
 extern void PP_set_ac_requestpower_flag();
+extern int PP_get_ac_remote_flag();
+extern void PP_set_ac_remote_flag();
 extern int PP_get_ac_requestpower_flag();
 extern void PP_seatheating_ClearStatus(void);
 extern void PP_ACCtrl_ClearStatus(void);

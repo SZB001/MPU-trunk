@@ -113,7 +113,7 @@ int PP_bluetoothstart_mainfunction(void *task)
 		break;
 		case PP_BLUETOOTHSTART_REQSTART:
 		{
-			if(PP_bluetoothstart.state.cmd == 1) //下发蓝牙一键启动
+			if(PP_bluetoothstart.state.cmd == 2) //下发蓝牙一键启动
 			{
 				PP_can_send_data(PP_CAN_BLUESTART,CAN_BLUESTART,0);
 			}

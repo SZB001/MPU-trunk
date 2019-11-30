@@ -219,11 +219,11 @@ static void rsp_csq_fn(const char *response, AT_CMD_ID cmd_id)
  ****************************************************************/
 static void rsp_clcc_fn(const char *response, AT_CMD_ID cmd_id)
 {
-    unsigned int whitelist_len = 0;
-    unsigned int n;
-    unsigned int start = 0;
-    char whitelist_buf[32];
-    static unsigned int whitelist_flag;
+    //unsigned int whitelist_len = 0;
+    //unsigned int n;
+    //unsigned int start = 0;
+    //char whitelist_buf[32];
+    //static unsigned int whitelist_flag;
     unsigned int type, status;
     char incoming_num[CALL_NUM_SIZE];
 
@@ -242,7 +242,7 @@ static void rsp_clcc_fn(const char *response, AT_CMD_ID cmd_id)
             memcpy(at_call.incoming_num, incoming_num, sizeof(at_call.incoming_num));
             log_i(LOG_AT, "Get $CLCCstatNum=%d INCOMENUM=%s", at_call.temp_status,
                   at_call.incoming_num);
-
+			#if 0
             if ((at_call.temp_status == 4) || (at_call.temp_status == 5))
             {
                 whitelist_len = strlen(at_para.whitelist);
@@ -281,6 +281,7 @@ static void rsp_clcc_fn(const char *response, AT_CMD_ID cmd_id)
                 log_i(LOG_AT, "LAST $CLCCstatNum=%d INCOMENUM=%s", at_call.temp_status,
                       at_call.incoming_num);
             }
+			#endif
         }
     }
     else

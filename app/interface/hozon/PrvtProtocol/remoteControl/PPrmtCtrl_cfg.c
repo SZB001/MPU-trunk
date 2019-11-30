@@ -22,6 +22,7 @@ description�� include the header file
 #include "PPrmtCtrl_cfg.h"
 
 
+//extern long getgb_data_backDoorAjarSt(void);
 
 /*******************************************************
 description�� global variable definitions
@@ -80,10 +81,27 @@ unsigned char PP_rmtCtrl_cfg_reardoorSt(void)
 {
 	return gb_data_reardoorSt();
 }
+
+/*
+ 	 读取BDM尾门状态
+*/
+unsigned char PP_rmtCtrl_cfg_bdmreardoorSt(void)
+{
+	uint8_t st = 0;
+	if(getgb_data_backDoorAjarSt() == 0)
+	{
+		st = 0;
+	}
+	else
+	{
+		st = 1;
+	}
+	return st;
+}
+
 /*
  	 读取蓝牙启动有效性状态
 */
-
 unsigned char PP_rmtCtrl_cfg_bluestartSt(void)
 {
 	return PrvtProt_SignParse_BleStartSt();

@@ -63,6 +63,7 @@ static int tspdiagnos_flag = 0;
 static int update_flag = 0;
 static int tsplogfile_flag = 0;
 static int tspchager_flag = 0;
+static int appointment_sync = 1;  //连上之后充电预约同步一次
 unsigned char recv_buf[MAX_IVI_NUM][IVI_MSG_SIZE];
 extern int ecall_flag ;  //正在通话的标志
 extern int bcall_flag ;
@@ -89,6 +90,7 @@ extern unsigned char PP_rmtCtrl_cfg_CrashOutputSt(void);
 extern void audio_setup_aic3104(void);
 extern uint8_t PP_rmtCfg_enable_actived(void);
 extern unsigned char gb32960_vinValidity(void);
+extern ivi_chargeAppointSt PP_ChargeCtrl_get_appointmenttime(void);
 int Get_call_tpye(void);
 
 int pb_bytes_set(ProtobufCBinaryData * des, uint8_t *buf, int len)
@@ -184,6 +186,13 @@ int tbox_ivi_get_gps_onoff(void)
     return gps_onoff;
 }
 
+void tbox_ivi_link_init(void)
+{
+	signal_power = 0;   //HU每次连接上来，调用一次
+	signal_type = 0;
+	appointment_sync = 1;
+}
+
 void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
 {
     int ret, len, i;
@@ -275,7 +284,6 @@ void ivi_msg_error_response_send( int fd ,Tbox__Net__Messagetype id,char *error_
     char send_buf[4096] = {0};
     unsigned char pro_buf[2048] = {0};
 	
-//#ifndef TBOX_PKI_IHU
 	if(hu_pki_en == 0)   //不带pki
 	{
 	    if( fd < 0 )
@@ -283,8 +291,7 @@ void ivi_msg_error_response_send( int fd ,Tbox__Net__Messagetype id,char *error_
 	        log_e(LOG_IVI,"ivi_msg_error_response_send fd = %d.",fd);
 	        return ;
 	    }
-	}
-//#endif    
+	}  
 
     Tbox__Net__TopMessage TopMsg ;
     Tbox__Net__MsgResult result;
@@ -304,17 +311,13 @@ void ivi_msg_error_response_send( int fd ,Tbox__Net__Messagetype id,char *error_
     tbox__net__top_message__pack(&TopMsg,pro_buf);
     
     memcpy(send_buf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
-
     send_buf[IVI_PKG_S_MARKER_SIZE] = szlen >> 8;
     send_buf[IVI_PKG_S_MARKER_SIZE + 1] = szlen;
-
     for( i = 0; i < szlen; i ++ )
     {
         send_buf[ i + IVI_PKG_S_MARKER_SIZE + 2 ] = pro_buf[i];
     }
-
     memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
-
 	if(hu_pki_en == 0)
 	{
 	    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
@@ -329,90 +332,85 @@ void ivi_msg_error_response_send( int fd ,Tbox__Net__Messagetype id,char *error_
 	}
 	else
 	{
-
 		HU_data_write((uint8_t *)send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), NULL ,NULL);
-
 	}
     return;
 
 }
-void ivi_fota_update_request_send( int fd)
+void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 {
-	 int i = 0;
-    int ret = 0;
+	int i = 0;
+	int ret;
     size_t szlen = 0;
-    char send_buf[4096] = {0};
+    unsigned char send_buf[4096] = {0};
     unsigned char pro_buf[2048] = {0};
 	if(hu_pki_en == 0)
 	{
 	    if( fd < 0 )
-	    {
+	   	{
+	        log_e(LOG_IVI,"ivi_msg_response_send fd = %d.",fd);
 	        return ;
 	    }
 	}
-	Tbox__Net__TopMessage TopMsg;
-	tbox__net__top_message__init( &TopMsg );
-	TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK;
+    Tbox__Net__TopMessage TopMsg;
+    tbox__net__top_message__init( &TopMsg );
+	switch( id )
+	{
+		case TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK:
+		{	//	fota升级推送
+			TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK;
+		}
+		break;
+		case TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE:
+		{
+			Tbox__Net__IhuLogfile logfile;
+			tbox__net__ihu_logfile__init(&logfile);
+			TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE;
+			TopMsg.ihu_logfile = &logfile;
+		}
+		break;
+		case TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_ACTIVESTATE_RESULT:
+		{
+			Tbox__Net__TboxActiveState state;
+			tbox__net__tbox_active_state__init( &state );
+			TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_ACTIVESTATE_RESULT;
+			state.active_state = 1; //已激活
+			TopMsg.tbox_activestate = &state ;	
+		}
+		break;
+		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO:
+		{
+			
+		}
+		break;
+		case TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS:
+		{
+			log_o(LOG_IVI,"dsfadsfdf");
+			Tbox__Net__TboxChargeAppoointmentSet chager;
+			tbox__net__tbox_charge_appoointment_set__init(&chager);
+			ivi_chargeAppointSt appoint_time;
+			appoint_time = PP_ChargeCtrl_get_appointmenttime();
+			TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS;
+			chager.timestamp = appoint_time.timestamp;
+
+			chager.id = appoint_time.id;
+
+			chager.hour = appoint_time.hour;
+
+			chager.min = appoint_time.min;
+
+			chager.targetpower = appoint_time.targetpower;
+
+			chager.effectivestate = appoint_time.effectivestate;
+
+			TopMsg.tbox_charge_appoointmentset = &chager;
+		}
+		break;
+		default:
+		break;
+	}
 	szlen = tbox__net__top_message__get_packed_size( &TopMsg );
 	tbox__net__top_message__pack(&TopMsg,pro_buf);
-    
-    memcpy(send_buf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
-
-    send_buf[IVI_PKG_S_MARKER_SIZE] = szlen >> 8;
-    send_buf[IVI_PKG_S_MARKER_SIZE + 1] = szlen;
-
-    for( i = 0; i < szlen; i ++ )
-    {
-        send_buf[ i + IVI_PKG_S_MARKER_SIZE + 2 ] = pro_buf[i];
-    }
-
-    memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
-
-    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
-	
-    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
-    {
-        log_e(LOG_IVI, "ivi fota send response failed!!!");
-    }
-    else
-    {
-        log_i(LOG_IVI, "ivi fota send response success");
-    }
-
-    return;
-	
-}
-void ivi_logfile_request_send( int fd)
-{
-
-    int i = 0;
-    int ret = 0;
-    size_t szlen = 0;
-    char send_buf[4096] = {0};
-    unsigned char pro_buf[2048] = {0};
-	if(hu_pki_en == 0)
-	{
-	    if( fd < 0 )
-	    {
-	        log_e(LOG_IVI,"ivi_logfile_response_send fd = %d.",fd);
-	        return ;
-	    }
-	}
- 
-    Tbox__Net__TopMessage TopMsg;
-	Tbox__Net__IhuLogfile logfile;
-	
-    tbox__net__top_message__init( &TopMsg );
-	
-	tbox__net__ihu_logfile__init(&logfile);
-	
-    TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE;
-
-	TopMsg.ihu_logfile = &logfile;
-	
-    szlen = tbox__net__top_message__get_packed_size( &TopMsg );
-
-    tbox__net__top_message__pack(&TopMsg,pro_buf);
     
     memcpy(send_buf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
 
@@ -432,22 +430,19 @@ void ivi_logfile_request_send( int fd)
 
 	    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
 	    {
-	        log_e(LOG_IVI, "ivi fotaupdate send response failed!!!");
+	        //log_e(LOG_IVI, "ivi remotediagnos send response failed!!!");
 	    }
 	    else
 	    {
-	        log_i(LOG_IVI, "ivi fotaupdate send response success");
+	        //log_i(LOG_IVI, "ivi remotediagnos send response success");
 	    }
 	}
-
 	else
 	{
 		HU_data_write((uint8_t *)send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), NULL ,NULL);
-
 	}
-
     return;
-
+	
 }
 
 void ivi_chagerappointment_request_send( int fd,ivi_chargeAppointSt tspchager)
@@ -522,11 +517,9 @@ void ivi_chagerappointment_request_send( int fd,ivi_chargeAppointSt tspchager)
 	        log_i(LOG_IVI, "ivi remotediagnos send response success");
 	    }
 	}
-
 	else
 	{
 		HU_data_write((uint8_t *)send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), NULL ,NULL);
-
 	}
     return;
 
@@ -549,8 +542,6 @@ void ivi_remotediagnos_request_send( int fd, int type)
 	        return ;
 	    }
 	}
-
-
     Tbox__Net__TopMessage TopMsg;
 	Tbox__Net__TboxRemoteDiagnose diagnos;
 	char vin[18] = {0};
@@ -621,79 +612,6 @@ void ivi_remotediagnos_request_send( int fd, int type)
 
 }
 
-void ivi_activestate_response_send( int fd )
-{
-    int i = 0;
-    int ret = 0;
-    size_t szlen = 0;
-
-    char send_buf[4096] = {0};
-    unsigned char pro_buf[2048] = {0};
-	
-	if(hu_pki_en == 0)
-	{
-	    if( fd < 0 )
-	    {
-	        log_e(LOG_IVI,"ivi_activestate_response_send fd = %d.",fd);
-	        return ;
-	    }
-	}
- 
-    Tbox__Net__TopMessage TopMsg ;
-	Tbox__Net__TboxActiveState state;
-	
-    tbox__net__top_message__init( &TopMsg );
-	tbox__net__tbox_active_state__init( &state );
-	
-    TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_ACTIVESTATE_RESULT;
-	state.active_state = 1; //已激活
-	
-	TopMsg.tbox_activestate = &state ;
-    szlen = tbox__net__top_message__get_packed_size( &TopMsg );
-
-    tbox__net__top_message__pack(&TopMsg,pro_buf);
-    
-    memcpy(send_buf,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
-
-    send_buf[IVI_PKG_S_MARKER_SIZE] = szlen >> 8;
-    send_buf[IVI_PKG_S_MARKER_SIZE + 1] = szlen;
-
-    for( i = 0; i < szlen; i ++ )
-    {
-        send_buf[ i + IVI_PKG_S_MARKER_SIZE + 2 ] = pro_buf[i];
-    }
-
-    memcpy(( send_buf + IVI_PKG_S_MARKER_SIZE + szlen + 2),IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
-
-	if(hu_pki_en == 0)
-	{
-	    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
-
-	    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
-	    {
-	        log_e(LOG_IVI, "ivi activestate send response failed!!!");
-	    }
-	    else
-	    {
-	        log_i(LOG_IVI, "ivi activestate send response success");
-	    }
-	}
-	else
-	{
-		if(ihu_client.states == 1)
-		{
-			HU_data_write((uint8_t *)send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), NULL ,NULL);
-		}
-	}
-
-    return;
-
-}
-void tbox_ivi_signalpower_init(void)
-{
-	signal_power = 0;   //HU每次连接上来，调用一次
-	signal_type = 0;
-}
 void ivi_signalpower_response_send(int fd  )
 {
     int i = 0;
@@ -1252,7 +1170,29 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
             result.result = true;
 			break;
 		}
-		
+		case TBOX__NET__MESSAGETYPE__REQUEST_QUERY_CHARGE_RECORD:
+		{
+			Tbox__Net__TboxChargeAppoointmentSet chager;
+			tbox__net__tbox_charge_appoointment_set__init(&chager);
+			ivi_chargeAppointSt appoint_time;
+			appoint_time = PP_ChargeCtrl_get_appointmenttime();
+			TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_CHARGE_RECORD_RESULT;
+
+			chager.timestamp = appoint_time.timestamp;
+
+			chager.id = appoint_time.id;
+
+			chager.hour = appoint_time.hour;
+
+			chager.min = appoint_time.min;
+
+			chager.targetpower = appoint_time.targetpower;
+
+			chager.effectivestate = appoint_time.effectivestate;
+
+			TopMsg.tbox_charge_appoointmentset = &chager;
+			break;
+		}
         default:
         {
 			break;
@@ -1595,6 +1535,10 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 			}
 			break;	
 	    }
+		case TBOX__NET__MESSAGETYPE__REQUEST_QUERY_CHARGE_RECORD:
+		{	//HU查询充电记录
+			ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_QUERY_CHARGE_RECORD);
+		}
         default:
         {
             log_e(LOG_IVI,"recv ivi unknown message type!!!");
@@ -1900,7 +1844,7 @@ void *ivi_main(void)
 	                            ivi_clients[i].addr = cli_addr;
 	                            ivi_clients[i].lasthearttime = tm_get_time();
 	                            log_o(LOG_IVI, "add client_fd[%d] = %d", i, ivi_clients[i].fd);
-								tbox_ivi_signalpower_init();
+								tbox_ivi_link_init();
 	                            break;
 	                        }
 	                    }
@@ -2031,7 +1975,7 @@ void *ivi_main(void)
 					{
 						log_o(LOG_IVI,"HzTboxSvrAccept +++++++++++++++iRet[%d] \n", ret);
 						ihu_client.lasthearttime = tm_get_time();
-						tbox_ivi_signalpower_init();
+						tbox_ivi_link_init();
 						ihu_client.states = 1;    //车机客户端已经连接上来
 						ihu_client.accept_flag = 1230;//accept成功
 						ihu_client.stage = PKI_RECV;
@@ -2130,9 +2074,9 @@ void *ivi_txmain(void)
 			}
 			else
 			{
-				log_o(LOG_IVI, ">>>>> HzTboxDataSend >>>>>");
+				//log_o(LOG_IVI, ">>>>> HzTboxDataSend >>>>>");
 				log_buf_dump(LOG_IVI, "tcp send", rpt->msgdata, rpt->msglen);
-				log_o(LOG_IVI,">>>>> HzTboxDataSend end >>>>>");
+				log_i(LOG_IVI,">>>>> HzTboxDataSend end >>>>>");
 				HU_data_put_send(rpt);
 			}	
 		}
@@ -2220,26 +2164,30 @@ void *ivi_check(void)
 
 				ivi_signalpower_response_send( ivi_clients[0].fd ); //如果信号强度变化，传给车机
 				ivi_callstate_response_send(ivi_clients[0].fd );  //电话状态变化，传给车机
-
+				if(appointment_sync == 1)
+				{
+					ivi_message_request(ivi_clients[0].fd ,TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS,NULL);
+					appointment_sync = 0;
+				}
 				if((PP_rmtCfg_enable_actived() == 1)&&(active_flag == 0))  //判断TSP是否下发激活信息
 				{
 					active_flag = 1; //上电起来之后发一次绑车激活
-					ivi_activestate_response_send( ivi_clients[0].fd ); //通知车机激活成功
+					ivi_message_request( ivi_clients[0].fd ,TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_ACTIVESTATE_RESULT,NULL); //通知车机激活成功
+				}
+				if(tsplogfile_flag == 1)
+				{
+					ivi_message_request( ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE,NULL);
+					tsplogfile_flag = 0;
+				}
+				if(update_flag == 1)
+				{
+					ivi_message_request( ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK,NULL);
+					update_flag = 0;
 				}
 				if(tspdiagnos_flag == 1) //TSP是否下发远程命令
 				{
 					tspdiagnos_flag = 0;
 					ivi_remotediagnos_request_send( ivi_clients[0].fd ,1);
-				}
-				if(tsplogfile_flag == 1)
-				{
-					ivi_logfile_request_send( ivi_clients[0].fd);
-					tsplogfile_flag = 0;
-				}
-				if(update_flag == 1)
-				{
-					ivi_fota_update_request_send( ivi_clients[0].fd);
-					update_flag = 0;
 				}
 			}
 		}
@@ -2250,26 +2198,31 @@ void *ivi_check(void)
 
 				ivi_signalpower_response_send( ivi_clients[0].fd ); //如果信号强度变化，传给车机
 				ivi_callstate_response_send(ivi_clients[0].fd );  //电话状态变化，传给车机
-
+				if(appointment_sync == 1)
+				{
+					log_o(LOG_IVI,"sync.......");
+					ivi_message_request(ivi_clients[0].fd ,TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS,NULL);
+					appointment_sync = 0;
+				}
 				if((PP_rmtCfg_enable_actived() == 1)&&(active_flag == 0))  //判断TSP是否下发激活信息
 				{
 					active_flag = 1; //上电起来之后发一次绑车激活
-					ivi_activestate_response_send( ivi_clients[0].fd ); //通知车机激活成功
+					ivi_message_request( ivi_clients[0].fd ,TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_ACTIVESTATE_RESULT,NULL); //通知车机激活成功
+				}
+				if(tsplogfile_flag == 1)
+				{
+					ivi_message_request( ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE,NULL);
+					tsplogfile_flag = 0;
+				}
+				if(update_flag == 1)
+				{
+					ivi_message_request( ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK,NULL);
+					update_flag = 0;
 				}
 				if(tspdiagnos_flag == 1) //TSP是否下发远程命令
 				{
 					tspdiagnos_flag = 0;
 					ivi_remotediagnos_request_send( ivi_clients[0].fd ,1);
-				}
-				if(tsplogfile_flag == 1)
-				{
-					ivi_logfile_request_send( ivi_clients[0].fd);
-					tsplogfile_flag = 0;
-				}
-				if(update_flag == 1)
-				{
-					ivi_fota_update_request_send( ivi_clients[0].fd);
-					update_flag = 0;
 				}
 			}
 		}
