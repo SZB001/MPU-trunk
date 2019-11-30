@@ -272,4 +272,8 @@ extern uint16_t gb_data_trip(void);
 extern char getgb_data_warnSt(void);
 extern long getgb_data_bdmsystemfailure(void);
 extern long getgb_data_backDoorAjarSt(void);
+extern long getgb_data_LFDoorOpenSt(void);
+extern long getgb_data_RFDoorOpenSt(void);
+extern long getgb_data_LRDoorOpenSt(void);
+extern long getgb_data_RRDoorOpenSt(void);
 #endif

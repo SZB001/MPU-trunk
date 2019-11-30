@@ -5372,3 +5372,79 @@ long getgb_data_backDoorAjarSt(void)
 
 	return st;
 }
+
+/*
+* 获取左前门打开状态
+*/
+long getgb_data_LFDoorOpenSt(void)
+{
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf->event.info[GB_EVT_LEFTDRVDOOR_OPEN])
+	{
+		st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_LEFTDRVDOOR_OPEN])->value;
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取右前门打开状态
+*/
+long getgb_data_RFDoorOpenSt(void)
+{
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf->event.info[GB_EVT_RIGHTDRVDOOR_OPEN])
+	{
+		st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_RIGHTDRVDOOR_OPEN])->value;
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取左后门打开状态
+*/
+long getgb_data_LRDoorOpenSt(void)
+{
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf->event.info[GB_EVT_LEFTREARDRVDOOR_OPEN])
+	{
+		st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_LEFTREARDRVDOOR_OPEN])->value;
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取左后门打开状态
+*/
+long getgb_data_RRDoorOpenSt(void)
+{
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf->event.info[GB_EVT_RIGHTREARDRVDOOR_OPEN])
+	{
+		st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_RIGHTREARDRVDOOR_OPEN])->value;
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
