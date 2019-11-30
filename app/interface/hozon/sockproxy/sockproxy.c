@@ -193,7 +193,7 @@ static void *sockproxy_socketmain(void)
 	log_o(LOG_SOCK_PROXY, "socket proxy  of sockrtmain thread running");
     prctl(PR_SET_NAME, "SOCK_PROXY");
 
-	log_set_level(LOG_SOCK_PROXY, LOG_DEBUG);
+	//log_set_level(LOG_SOCK_PROXY, LOG_DEBUG);
 
 	if(!sockSt.pkiEnFlag)
 	{

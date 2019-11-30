@@ -1,0 +1,9 @@
+---- log_set_level Matches (8 in 6 files) ----
+log.c (mid\log) line 62 : function:     log_set_level
+log.c (mid\log) line 69 : int log_set_level(LOG_ID id, int level)
+log.h (include) line 193 : extern int log_set_level(LOG_ID id, int level);
+PrvtProt_main in PrvtProt.c (app\interface\hozon\PrvtProtocol) : 		log_set_level(LOG_HOZON, LOG_DEBUG);
+shell_cmd_setlvl in shell_cmd.c (app\base\shell) :     return log_set_level(mid, level);
+sock_test in sock.c (app\base\sock) :     log_set_level(LOG_SOCK, LOG_DEBUG);
+sock_test in sock.c (app\base\sock) :     log_set_level(LOG_SOCK, level);
+sockproxy_socketmain in sockproxy.c (app\interface\hozon\sockproxy) : 	log_set_level(LOG_SOCK_PROXY, LOG_DEBUG);

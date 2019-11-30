@@ -271,4 +271,5 @@ extern uint8_t gb_data_dcdcstatus(void);
 extern uint16_t gb_data_trip(void);
 extern char getgb_data_warnSt(void);
 extern long getgb_data_bdmsystemfailure(void);
+extern long getgb_data_backDoorAjarSt(void);
 #endif

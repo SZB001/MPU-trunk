@@ -156,11 +156,11 @@ int PP_autodoorCtrl_mainfunction(void *task)
 		{
 			if((tm_get_time() - PP_Respwaittime) > 200)
 			{
-				if((tm_get_time() - PP_Respwaittime) < 10000)
+				if((tm_get_time() - PP_Respwaittime) < 15000)
 				{
 					if(autodoor_type == PP_OPENDOOR) // 等待打开尾门结果
 					{
-						if(PP_rmtCtrl_cfg_reardoorSt() == 2) //尾门状态2，尾门开启成功
+						if(PP_rmtCtrl_cfg_bdmreardoorSt() == 1) //尾门状态2，尾门开启成功
 						{
 							log_o(LOG_HOZON,"autodoor open successed!");
 							PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
@@ -170,7 +170,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 					}
 					else
 					{
-						if(PP_rmtCtrl_cfg_reardoorSt() == 0) //尾门状态1，尾门关闭成功
+						if(PP_rmtCtrl_cfg_bdmreardoorSt() == 0) //尾门状态1，尾门关闭成功
 						{
 							log_o(LOG_HOZON,"autodoor close successed!");
 							PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);

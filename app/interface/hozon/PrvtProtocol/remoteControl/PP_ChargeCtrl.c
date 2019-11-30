@@ -244,6 +244,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 						log_o(LOG_HOZON,"close charge success\n");
 						PP_rmtChargeCtrl.chargeOnOffFlag = 2;//
 						PP_rmtChargeCtrl.appointCharging = 0;
+						PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);//如果充电超时
 						PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); //
 						PP_rmtChargeCtrl.fail     = 0;
 						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_IDLE;
@@ -1152,4 +1153,25 @@ int PP_ChargeCtrl_waketime(void)
 	}
 	
 	return low_time;
+}
+ivi_chargeAppointSt PP_ChargeCtrl_get_appointmenttime(void)
+{
+	ivi_chargeAppointSt appoint_time;
+	memset(&appoint_time,0,sizeof(ivi_chargeAppointSt));
+	if(PP_rmtCharge_AppointBook.validFlg == 1)
+	{
+		appoint_time.effectivestate = 1;
+		appoint_time.hour = PP_rmtCharge_AppointBook.hour;
+		appoint_time.min = PP_rmtCharge_AppointBook.min;
+		appoint_time.timestamp = PP_rmtCharge_AppointBook.huBookingTime;
+		appoint_time.targetpower = PP_rmtCharge_AppointBook.targetSOC;
+		appoint_time.id = PP_rmtCharge_AppointBook.id;
+	}
+	return appoint_time;
+}
+void PP_ChargeCtrl_appoint_enable(void)
+{
+	if(PP_rmtCharge_AppointBook.validFlg == 1)
+	{
+	}
 }

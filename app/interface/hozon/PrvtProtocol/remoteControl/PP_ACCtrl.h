@@ -24,6 +24,7 @@ typedef struct
 	long	expTime;
 	uint8_t  dataUpdata;
 	uint8_t failtype;
+	uint8_t remote_on;
 }__attribute__((packed))  PP_rmtACCtrlSt_t; /*remote control�ṹ��*/
 
 typedef struct

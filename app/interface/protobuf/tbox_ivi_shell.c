@@ -22,10 +22,6 @@ extern ivi_client ivi_clients[MAX_IVI_NUM];
 
 extern void PP_rmtCtrl_HuCtrlReq(unsigned char obj, void *cmdpara);
 
-extern void ivi_activestate_response_send( int fd );
-
-extern void ivi_logfile_request_send( int fd);
-
 extern void ivi_chagerappointment_request_send( int fd,ivi_chargeAppointSt tspchager);
 
 int tbox_ivi_hu_charge_ctrl(int argc, const char **argv)
@@ -56,13 +52,11 @@ int tbox_ivi_hu_charge_ctrl(int argc, const char **argv)
 }
 int tbox_ivi_logctrl(void)
 {
-	ivi_logfile_request_send(ivi_clients[0].fd);
 	log_o(LOG_HOZON,"shangchuang rizhi success\n");
 	return 0;
 }
 int tbox_ivi_active(void)
 {
-	ivi_activestate_response_send(ivi_clients[0].fd);
 	return 0;
 }
 int tbox_ivi_chargeappoint(void)

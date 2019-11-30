@@ -210,6 +210,7 @@ int PP_startengine_mainfunction(void *task)
 							PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0); //将下高压电报文清零
 							PP_set_seat_requestpower_flag(); //清除下电标志
 							PP_set_ac_requestpower_flag();   //清除下电标志
+							PP_set_ac_remote_flag();//清除空调开标志
 							startengine_success_flag = 2;   //下电成功
 							log_o(LOG_HOZON,"Successful under high voltage\n");
 							start_engine_stage = PP_STARTENGINE_END;
@@ -412,7 +413,10 @@ void PP_rmtCtrl_checkenginetime(void)
 		}
 		if(PP_get_seat_requestpower_flag() == 2)  //座椅加热关闭请求下电
 		{
-			if(PP_rmtCtrl_cfg_ACOnOffSt() == 0)   //空调也未开启，下电
+			if((PP_rmtCtrl_cfg_ACOnOffSt() == 1)&&(PP_get_ac_remote_flag() == 1) )
+			{
+			}
+			else
 			{
 				log_o(LOG_HOZON,"The seat is heated off and the request is powered off\n");
 				enginecation = PP_POWEROFF;

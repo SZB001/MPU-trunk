@@ -249,6 +249,7 @@ int PP_ACCtrl_mainfunction(void *task)
 						if(PP_rmtCtrl_cfg_ACOnOffSt() == 1)    //打开成功
 						{
 							log_o(LOG_HOZON,"open air success\n");
+							PP_rmtACCtrl.state.remote_on = 1;
 							PP_rmtACCtrl.fail     = 0;
 							PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 						}
@@ -781,8 +782,7 @@ void PP_AcCtrl_acStMonitor(void *task)
 		/*
 		 * 检查睡眠条件
 		 * */
-		if((PP_rmtCtrl_cfg_ACOnOffSt() != 1)&&(PP_rmtACCtrl.state.req != 1) && \
-				(PP_rmtACCtrl.state.CtrlSt == PP_ACCTRL_IDLE))
+		if((PP_rmtACCtrl.state.req != 1) && (PP_rmtACCtrl.state.CtrlSt == PP_ACCTRL_IDLE))
 		{
 			PP_ACtrl_Sleepflag = 1;
 		}
@@ -822,7 +822,14 @@ void PP_set_ac_requestpower_flag()
 {
 	acc_requestpower_flag = 0;
 }
-
+int PP_get_ac_remote_flag()
+{
+	return PP_rmtACCtrl.state.remote_on;
+}
+void PP_set_ac_remote_flag()
+{
+	PP_rmtACCtrl.state.remote_on = 0;
+}
 void PP_ACCtrl_ClearStatus(void)
 {
 	clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_AC);//释放锁

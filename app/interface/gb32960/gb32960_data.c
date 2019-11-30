@@ -5349,3 +5349,17 @@ long getgb_data_bdmsystemfailure(void)
 
 	return sysfailureSt;
 }
+
+/*
+* 获取尾门打开状态
+*/
+long getgb_data_backDoorAjarSt(void)
+{
+        long st = 0;
+        if(gb_inf->event.info[GB_EVT_TAILDOOR_OPEN])
+        {
+                st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_TAILDOOR_OPEN])->value;
+        }
+
+        return st;
+}
