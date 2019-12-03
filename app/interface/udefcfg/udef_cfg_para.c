@@ -156,13 +156,13 @@ int cfg_get_user_para(USER_CFG_PARA_ITEM_ID id, void *data, unsigned int *len)
         return CFG_INVALID_PARAMETER;
     }
 
-    if (*len < clbt_cfg_table[id].len)
+    if (*len > clbt_cfg_table[id].len)
     {
         log_e(LOG_CFG, "invalid length:%u,%u,id=%u", *len, clbt_cfg_table[id].len, id);
         return CFG_INVALID_PARAMETER;
     }
 
-    *len = clbt_cfg_table[id].len;
+    //*len = clbt_cfg_table[id].len;
 
     CFG_PARA_CLBT_LOCK();
     memcpy(data, clbt_cfg_para_buf + clbt_cfg_table[id].offset, *len);
@@ -188,7 +188,7 @@ int cfg_set_clbt_para_im(USER_CFG_PARA_ITEM_ID id, unsigned char *data, unsigned
         return CFG_INVALID_PARAMETER;
     }
 
-    if (len != clbt_cfg_table[id].len)
+    if (len > clbt_cfg_table[id].len)
     {
         log_e(LOG_CFG, "invalid length,id:%u,%u,%u", id, len, clbt_cfg_table[id].len);
         return CFG_INVALID_PARAMETER;
@@ -248,8 +248,8 @@ int udef_cfg_save_para(udef_cfg_foton_item item)
 int clbt_cfg_set_by_id(USER_CFG_PARA_ITEM_ID id, void *data, unsigned int len, unsigned char silent)
 {
     int ret;
-    unsigned int paralen;
-    static unsigned char oldpara[CFG_MAX_PARA_LEN];
+    //unsigned int paralen;
+    //static unsigned char oldpara[CFG_MAX_PARA_LEN];
 
     if (id >= USER_CFG_ITEM_ID_MAX)
     {
@@ -260,6 +260,7 @@ int clbt_cfg_set_by_id(USER_CFG_PARA_ITEM_ID id, void *data, unsigned int len, u
     CFG_SET_CLBT_LOCK();
     
     /* update configuration */
+#if 0
     memset(oldpara, 0, sizeof(oldpara));
     paralen = CFG_MAX_PARA_LEN;
     ret = cfg_get_user_para(id, oldpara, &paralen);
@@ -270,7 +271,7 @@ int clbt_cfg_set_by_id(USER_CFG_PARA_ITEM_ID id, void *data, unsigned int len, u
         log_e(LOG_CFG, "req len is invalid, reqlen:%u, paralen:%u", len, paralen);
         return CFG_INVALID_PARAMETER;
     }
-
+#endif
     ret = cfg_set_clbt_para_im(id, data, len);
 
     if (ret != 0)

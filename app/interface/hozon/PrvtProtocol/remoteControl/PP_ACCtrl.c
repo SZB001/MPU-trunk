@@ -805,7 +805,8 @@ void PP_AcCtrl_acStMonitor(void *task)
 
 				//保存预约记录
 				log_o(LOG_HOZON,"save ac para when power off\n");
-				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT,&PP_rmtac_AppointBook,10*sizeof(PP_rmtAC_AppointBook_t));
+				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTACAPPOINT, \
+						&PP_rmtac_AppointBook,ACC_APPOINT_NUM*sizeof(PP_rmtAC_AppointBook_t));
 				PP_rmtACCtrl.state.dataUpdata = 0;
 			}
 		}

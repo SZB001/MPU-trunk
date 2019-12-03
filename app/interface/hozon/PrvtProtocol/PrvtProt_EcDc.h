@@ -47,7 +47,7 @@ typedef enum
 	ECDC_RMTCFG_END_REQ,//remote config req end
 	ECDC_RMTCFG_READ_REQ,//remote config read req
 	ECDC_RMTCFG_CONN_RESP,//remote config conn resp
-	ECDC_RMTCFG_READ_RESP,//remote config read req
+	ECDC_RMTCFG_READ_RESP,//remote config read resp
 	ECDC_RMTCTRL_RESP,//remote control resp
 	ECDC_RMTCTRL_BOOKINGRESP,//remote control booking resp
 	ECDC_RMTCTRL_HUBOOKINGRESP,//remote control HU booking resp

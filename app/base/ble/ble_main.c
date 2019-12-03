@@ -314,10 +314,18 @@ static int BleShellGetMac(int argc, const char **argv)
  output:       none
  return:       0 indicates success,others indicates failed
  *****************************************************************/
-void BleGetMac(unsigned char *Mac)
+int BleGetMac(unsigned char *Mac)
 {
 	unsigned char ucLen = 0;
 	stBtApi.GetMac(Mac, &ucLen);
+	if(6 == ucLen)
+	{
+		return YT_OK;
+	}
+	else
+	{
+		return YT_ERR;
+	}
 }
 
 /****************************************************************

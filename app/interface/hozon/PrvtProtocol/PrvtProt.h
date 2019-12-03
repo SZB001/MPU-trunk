@@ -93,6 +93,10 @@ description�� macro definitions
 #define PP_TXPAKG_FAIL 	(-1)//���ķ���ʧ��
 #define PP_TXPAKG_SUCCESS 	  1//���ķ��ͳɹ�
 
+#define	PP_APPDATA_ENCODING_UPER	0
+#define	PP_APPDATA_ENCODING_DER		1
+#define	PP_APPDATA_ENCODING_BER		2
+
 /***********�꺯��***********/
 typedef void (*PrvtProt_InitObj)(void);//��ʼ��
 typedef int (*PrvtProt_mainFuncObj)(void* x);//

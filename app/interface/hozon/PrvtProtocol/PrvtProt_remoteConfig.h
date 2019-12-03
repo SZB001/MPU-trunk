@@ -76,8 +76,11 @@ typedef struct
 
 	/* remote config */
 	uint8_t needUpdata;//�����Ƿ���Ҫ����
+	uint8_t newCfgVersion[33];
 	uint8_t cfgAccept;//�����Ƿ����
 	uint8_t cfgsuccess;//�����Ƿ�ɹ�
+	uint8_t getRespResult;
+	uint8_t readreq[PP_RMTCFG_SETID_MAX];
 	long 	eventid;
 	long	expTime;
 	char	apn1tspaddrchangedflag;
@@ -240,7 +243,6 @@ typedef struct
 	uint8_t cfgVersion[33];
 	uint8_t cfgVersionlen;
 	uint8_t readreq[PP_RMTCFG_SETID_MAX];
-
 	App_rmtCfg_FICM_t 	FICM;
 	App_rmtCfg_APN1_t 	APN1;
 	App_rmtCfg_APN2_t 	APN2;
@@ -286,8 +288,6 @@ extern void PP_rmtCfg_init(void);
 extern int PP_rmtCfg_mainfunction(void *task);
 extern void PP_rmtCfg_SetCfgReq(unsigned char req);
 extern void PP_rmtCfg_ShowCfgPara(void);
-extern void PP_rmtCfg_settbox(void);
-extern uint8_t PP_rmtCfg_is_empty(uint8_t *dt,int len);
 extern uint8_t PP_rmtCfg_enable_remotecontorl(void);
 extern uint8_t PP_rmtCfg_enable_icall(void);
 extern uint8_t PP_rmtCfg_enable_bcall(void);

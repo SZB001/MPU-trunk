@@ -56,7 +56,6 @@ static int PP_shell_SetRmtVSReq(int argc, const char **argv);
 static int PP_shell_SetTboxid(int argc, const char **argv);
 static int PP_shell_SetTmcuSw(int argc, const char **argv);
 static int PP_shell_SetTmpuSw(int argc, const char **argv);
-static int PP_shell_Seticcid(int argc, const char **argv);
 static int PP_shell_showpara(int argc, const char **argv);
 static int PP_shell_SetdiagReq(int argc, const char **argv);
 static int PP_shell_SetTboxSN(int argc, const char **argv);
@@ -104,7 +103,6 @@ void PrvtProt_shell_init(void)
 	shell_cmd_register("hozon_settboxid", PP_shell_SetTboxid, "set HOZON tboxid");
 	shell_cmd_register("hozon_setmcuSw", PP_shell_SetTmcuSw, "set HOZON mcuSw");
 	shell_cmd_register("hozon_setmpuSw", PP_shell_SetTmpuSw, "set HOZON mpuSw");
-	shell_cmd_register("hozon_seticcid", PP_shell_Seticcid, "set HOZON iccid");
 	shell_cmd_register("hozon_settboxsn", PP_shell_SetTboxSN, "set tbox sn");
 
 	/* show */
@@ -498,31 +496,6 @@ static int PP_shell_SetTmpuSw(int argc, const char **argv)
     }
 
     PP_rmtCfg_SetmpuSw(argv[0]);
-    sleep(1);
-    return 0;
-}
-
-/******************************************************
-*��������PP_shell_Seticcid
-
-*��  �Σ�����
-
-
-*����ֵ��void
-
-*��  ����
-
-*��  ע��
-******************************************************/
-static int PP_shell_Seticcid(int argc, const char **argv)
-{
-    if (argc != 1)
-    {
-        shellprintf(" usage: HOZON_PP_Seticcid <set iccid>\r\n");
-        return -1;
-    }
-
-    PP_rmtCfg_Seticcid(argv[0]);
     sleep(1);
     return 0;
 }
