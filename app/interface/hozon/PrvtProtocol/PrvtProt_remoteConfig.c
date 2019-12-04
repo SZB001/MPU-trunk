@@ -74,6 +74,7 @@ typedef struct
 static PrvtProt_rmtCfg_t		PP_rmtCfg;
 static App_rmtCfg_getResp_t 	AppDt_getResp;
 
+static pthread_mutex_t cfgdtmtx = 	PTHREAD_MUTEX_INITIALIZER;
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -135,9 +136,13 @@ static void getPP_rmtCfg_localConfig(PrvtProt_App_rmtCfg_t* appDt_rmtCfg)
 	int res;
 	uint8_t cfgsuccess;
 	len = 1;
+
+	pthread_mutex_lock(&cfgdtmtx);
 	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&cfgsuccess,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	if((res==0) && (cfgsuccess == 1))
 	{
+		pthread_mutex_lock(&cfgdtmtx);
 		len = 33;
 		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_VER,appDt_rmtCfg->ReadResp.cfgVersion,&len);
 
@@ -151,6 +156,7 @@ static void getPP_rmtCfg_localConfig(PrvtProt_App_rmtCfg_t* appDt_rmtCfg)
 		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&appDt_rmtCfg->ReadResp.COMMON,&len);
 		len = sizeof(App_rmtCfg_EXTEND_t);
 		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_EXT,&appDt_rmtCfg->ReadResp.EXTEND,&len);
+		pthread_mutex_unlock(&cfgdtmtx);
 	}
 	else
 	{
@@ -523,6 +529,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 			if(rmtCfg->state.getRespResult == 1)
 			{
 				rmtCfg->state.getRespResult = 0;
+				pthread_mutex_lock(&cfgdtmtx);
 				len = sizeof(App_rmtCfg_APN1_t);
 				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&app_ReadResp.APN1,&len);
 				len = sizeof(App_rmtCfg_APN2_t);
@@ -533,7 +540,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&app_ReadResp.COMMON,&len);
 				len = sizeof(App_rmtCfg_EXTEND_t);
 				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_EXT,&app_ReadResp.EXTEND,&len);
-
+				pthread_mutex_unlock(&cfgdtmtx);
 				//if(1 == AppDt_getResp.FICM.ficmConfigValid)
 				{
 				//	memcpy(&(AppData_rmtCfg.ReadResp.FICM),&AppDt_getResp.FICM,sizeof(App_rmtCfg_FICM_t));
@@ -646,9 +653,11 @@ static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 	memcpy(App_rmtCfg.checkReq.mpuSw,DID_F1B0_SW_UPGRADE_VER,strlen(DID_F1B0_SW_UPGRADE_VER));
 	App_rmtCfg.checkReq.mpuSwlen = strlen(DID_F1B0_SW_UPGRADE_VER);
 
+	pthread_mutex_lock(&cfgdtmtx);
 	len = 18;
 	cfg_get_user_para(CFG_ITEM_GB32960_VIN,App_rmtCfg.checkReq.vehicleVin,&len);//vin
 	App_rmtCfg.checkReq.vehicleVinlen = 17;
+	pthread_mutex_unlock(&cfgdtmtx);
 
 	(void)PrvtProtCfg_get_iccid((char *)(App_rmtCfg.checkReq.iccID));
 	App_rmtCfg.checkReq.iccIDlen = 20;
@@ -661,9 +670,11 @@ static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 	memcpy(App_rmtCfg.checkReq.configSw,"00000",strlen("00000"));
 	App_rmtCfg.checkReq.configSwlen = strlen("00000");
 
+	pthread_mutex_lock(&cfgdtmtx);
 	len = 33;
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_VER,App_rmtCfg.checkReq.cfgVersion,&len);
 	App_rmtCfg.checkReq.cfgVersionlen = 32;
+	pthread_mutex_unlock(&cfgdtmtx);
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_CHECK_REQ,rmtCfg_Pack.msgdata,&msgdatalen,\
 									   &DisBody,&App_rmtCfg))
@@ -1024,7 +1035,10 @@ void PP_rmtCfg_setCfgEnable(unsigned char obj,unsigned char enable)
 	App_rmtCfg_COMMON_t rmtCfg_COMMON;
 
 	len = sizeof(App_rmtCfg_COMMON_t);
+
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmtCfg_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 
 	switch(obj)
 	{
@@ -1134,8 +1148,11 @@ void PP_rmtCfg_setCfgEnable(unsigned char obj,unsigned char enable)
 
 	cfgsuccess = 1;
 	rmtCfg_COMMON.commonConfigValid = 1;
+
+	pthread_mutex_lock(&cfgdtmtx);
 	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&cfgsuccess,1);
 	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmtCfg_COMMON,sizeof(App_rmtCfg_COMMON_t));
+	pthread_mutex_unlock(&cfgdtmtx);
 }
 
 void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *data1,const void *data2)
@@ -1145,7 +1162,9 @@ void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *data1,const void *data2)
 	App_rmtCfg_APN1_t rmtCfg_APN1;
 
 	len = sizeof(App_rmtCfg_APN1_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&rmtCfg_APN1,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 
 	switch(obj)
 	{
@@ -1194,8 +1213,10 @@ void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *data1,const void *data2)
 
 	cfgsuccess = 1;
 	rmtCfg_APN1.apn1ConfigValid = 1;
+	pthread_mutex_lock(&cfgdtmtx);
 	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&cfgsuccess,1);
 	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&rmtCfg_APN1,sizeof(App_rmtCfg_APN1_t));
+	pthread_mutex_unlock(&cfgdtmtx);
 }
 
 void PP_rmtCfg_setCfgficm(unsigned char obj,const void *data)
@@ -1205,7 +1226,9 @@ void PP_rmtCfg_setCfgficm(unsigned char obj,const void *data)
 	App_rmtCfg_FICM_t rmtCfg_FICM;
 
 	len = sizeof(App_rmtCfg_FICM_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_FICM,&rmtCfg_FICM,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 
 	switch(obj)
 	{
@@ -1240,8 +1263,10 @@ void PP_rmtCfg_setCfgficm(unsigned char obj,const void *data)
 
 	cfgsuccess = 1;
 	rmtCfg_FICM.ficmConfigValid = 1;
+	pthread_mutex_lock(&cfgdtmtx);
 	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&cfgsuccess,1);
 	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_FICM,&rmtCfg_FICM,sizeof(App_rmtCfg_FICM_t));
+	pthread_mutex_unlock(&cfgdtmtx);
 }
 
 /******************************************************
@@ -1260,10 +1285,12 @@ void PP_rmtCfg_SetmcuSw(const char *mcuSw)
 	uint8_t rmt_mcuSw[11];
 	memset(rmt_mcuSw,0 , 11);
 	memcpy(rmt_mcuSw,mcuSw,strlen(mcuSw));
+	pthread_mutex_lock(&cfgdtmtx);
 	if (cfg_set_user_para(CFG_ITEM_HOZON_TSP_MCUSW, rmt_mcuSw, sizeof(rmt_mcuSw)))
 	{
 		log_e(LOG_HOZON, "save mcuSw failed");
 	}
+	pthread_mutex_unlock(&cfgdtmtx);
 }
 
 /******************************************************
@@ -1282,10 +1309,12 @@ void PP_rmtCfg_SetmpuSw(const char *mpuSw)
 	uint8_t rmt_mpuSw[11];
 	memset(rmt_mpuSw,0 , 11);
 	memcpy(rmt_mpuSw,mpuSw,strlen(mpuSw));
+	pthread_mutex_lock(&cfgdtmtx);
 	if (cfg_set_user_para(CFG_ITEM_HOZON_TSP_MPUSW, rmt_mpuSw, sizeof(rmt_mpuSw)))
 	{
 		log_e(LOG_HOZON, "save mpuSw failed");
 	}
+	pthread_mutex_unlock(&cfgdtmtx);
 }
 
 /******************************************************
@@ -1311,6 +1340,7 @@ void PP_rmtCfg_ShowCfgPara(void)
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	App_rmtCfg_EXTEND_t rmt_EXTEND;
 
+	pthread_mutex_lock(&cfgdtmtx);
 	len =18;
 	cfg_get_user_para(CFG_ITEM_GB32960_VIN,vehiclevin,&len);
 	len = 1;
@@ -1325,6 +1355,7 @@ void PP_rmtCfg_ShowCfgPara(void)
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
 	len = sizeof(App_rmtCfg_EXTEND_t);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_EXT,&rmt_EXTEND,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 
 	log_o(LOG_HOZON, "/******************************/");
 	log_o(LOG_HOZON, "       remote  cfg parameter    ");
@@ -1528,6 +1559,7 @@ static void PP_rmtCfg_send_cb(void * para)
 				if(PP_rmtCfg.state.cfgsuccess == 1)
 				{
 					//配置参数写入flash
+					pthread_mutex_lock(&cfgdtmtx);
 					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&PP_rmtCfg.state.cfgsuccess,1);
 					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_VER,PP_rmtCfg.state.newCfgVersion,33);
 					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&AppDt_getResp.APN1,sizeof(App_rmtCfg_APN1_t));
@@ -1535,6 +1567,7 @@ static void PP_rmtCfg_send_cb(void * para)
 					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_FICM,&AppDt_getResp.FICM,sizeof(App_rmtCfg_FICM_t));
 					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&AppDt_getResp.COMMON,sizeof(App_rmtCfg_COMMON_t));
 					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_EXT,&AppDt_getResp.EXTEND,sizeof(App_rmtCfg_EXTEND_t));
+					pthread_mutex_unlock(&cfgdtmtx);
 					PP_rmtCfg.state.cfgsuccess = 0;
 					PP_rmtCfg_settbox(&AppDt_getResp);
 				}
@@ -1693,7 +1726,9 @@ uint8_t PP_rmtCfg_enable_directConnEnable(void)
 	unsigned int len;
 	App_rmtCfg_FICM_t rmt_FICM;
 	len = sizeof(App_rmtCfg_FICM_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_FICM,&rmt_FICM,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 
 	return rmt_FICM.directConnEnable;
 }
@@ -1704,7 +1739,9 @@ uint8_t PP_rmtCfg_enable_remotecontorl(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 
 	return rmt_COMMON.rcEnabled;
 }
@@ -1714,7 +1751,9 @@ uint8_t PP_rmtCfg_enable_icall(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	
 	return rmt_COMMON.iCallEnabled;
 }
@@ -1724,7 +1763,9 @@ uint8_t PP_rmtCfg_enable_bcall(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	
 	return rmt_COMMON.bCallEnabled;
 }
@@ -1734,7 +1775,9 @@ uint8_t PP_rmtCfg_enable_ecall(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	
 	return rmt_COMMON.eCallEnabled;
 }
@@ -1744,7 +1787,9 @@ uint8_t PP_rmtCfg_enable_actived(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	
 	return rmt_COMMON.actived;
 }
@@ -1753,7 +1798,9 @@ uint8_t PP_rmtCfg_enable_dtcEnabled(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	
 	return rmt_COMMON.dtcEnabled;
 }
@@ -1763,7 +1810,9 @@ uint8_t PP_rmtCfg_enable_dcEnabled(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	
 	return rmt_COMMON.dcEnabled;
 }
@@ -1773,7 +1822,9 @@ uint8_t PP_rmtCfg_enable_rChargeEnabled(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	
 	return rmt_COMMON.rChargeEnabled;
 }
@@ -1782,7 +1833,9 @@ uint8_t PP_rmtCfg_enable_svtEnabled(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	
 	return rmt_COMMON.svtEnabled;
 }
@@ -1791,7 +1844,9 @@ uint8_t PP_rmtCfg_enable_vsEnabled(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	
 	return rmt_COMMON.vsEnabled;
 }
@@ -1800,7 +1855,9 @@ uint8_t PP_rmtCfg_enable_btKeyEntryEnabled(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	
 	return rmt_COMMON.btKeyEntryEnabled;
 }
@@ -1809,7 +1866,9 @@ uint8_t PP_rmtCfg_enable_journeysEnabled(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	
 	return rmt_COMMON.journeysEnabled;
 }
@@ -1823,7 +1882,9 @@ int getPP_rmtCfg_heartbeatTimeout(void)
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
 	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	
 	if(1 == rmt_COMMON.commonConfigValid)
 	{
@@ -1841,7 +1902,9 @@ void getPP_rmtCfg_tspAddrPort(char* addr,int* port)
 	unsigned int len;
 	App_rmtCfg_APN1_t rmt_APN1;
 	len = sizeof(App_rmtCfg_APN1_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&rmt_APN1,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	if(1 == rmt_APN1.apn1ConfigValid)
 	{
 		memcpy(addr,(char*)rmt_APN1.tspAddr,rmt_APN1.tspAddrlen);
@@ -1857,7 +1920,9 @@ void getPP_rmtCfg_certAddrPort(char* addr,int* port)
 	unsigned int len;
 	App_rmtCfg_APN1_t rmt_APN1;
 	len = sizeof(App_rmtCfg_APN1_t);
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&rmt_APN1,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	if(1 == rmt_APN1.apn1ConfigValid)
 	{
 		memcpy(addr,(char*)rmt_APN1.certAddress,rmt_APN1.certAddresslen);
@@ -1917,7 +1982,9 @@ void getPP_rmtCfg_cfgVersion(char* ver)
 	char *ver_tp = ver;
 
 	len = 33;
+	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_VER,cfgVersion,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
 	for(i = 0;i < sizeof(cfgVersion)/4;i++)
 	{
 		tempVal = 0;
