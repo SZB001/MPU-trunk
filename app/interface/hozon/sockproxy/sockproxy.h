@@ -144,6 +144,7 @@ typedef struct
 	char	BDLLinkAddr[33];
 	int		BDLPort;
 	uint8_t	pkiEnFlag;//pki使能标志
+	uint8_t	dnserrcnt;//
 }__attribute__ ((packed)) sockproxy_stat_t;
 
 

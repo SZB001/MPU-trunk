@@ -761,10 +761,15 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					log_e(LOG_SOCK_PROXY,"gethostbyname %s error\n",sockSt.BDLLinkAddr);
 					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 					sockSt.waittime = tm_get_time();
+					sockSt.dnserrcnt++;
+					if(sockSt.dnserrcnt >= 3)
+					{
+						system("reboot");
+					}
 					sleep(1);
 					return -1;
 				}
-
+				sockSt.dnserrcnt = 0;
 				for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
 				{
 					 inet_ntop(he->h_addrtype,*phe,destIP,sizeof(destIP));
