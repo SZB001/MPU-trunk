@@ -1394,29 +1394,23 @@ int dev_shell_intest_hw_set(int argc, const char **argv)
 {
     int ret = 0;
     char intest_hw[32];
-    unsigned int length = 0;
 
-    if (argc != 2)
+    if (argc != 1)
     {
         shellprintf(" usage: set intset hw ver. format: shell_cli.bin sethw XXXXX XXXXX\r\n");
         return -1;
     }
 
-    if (strlen(argv[0] + strlen(argv[1])) > 32)
+    if (strlen(argv[0]) > 32)
     {
         shellprintf(" error: set intset hw ver more than 32\r\n");
         return -1;
     }
 
     memset(intest_hw, 0, 32);
+    memcpy(intest_hw, "H", 1);
 
-    length = strlen(argv[0]);
-    
-    memcpy(intest_hw, (void *)argv[0], strlen(argv[0]));
-    
-    intest_hw[length -1] = ' ';
-
-    memcpy(intest_hw + length, (void *)argv[1], strlen(argv[1]));
+    memcpy(intest_hw + 1, (void *)argv[0], strlen(argv[0]));
      
     ret =  cfg_set_para(CFG_ITEM_INTEST_HW, intest_hw, 32);
 
