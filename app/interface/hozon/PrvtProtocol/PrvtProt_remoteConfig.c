@@ -307,7 +307,7 @@ static void PP_rmtCfg_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 					rmtCfg->state.needUpdata = 1;
 					memset(rmtCfg->state.newCfgVersion,0,33);
 					memcpy(rmtCfg->state.newCfgVersion,App_rmtCfg.checkResp.cfgVersion, \
-														  App_rmtCfg.checkResp.cfgVersionlen);
+														  App_rmtCfg.checkResp.cfgVersionlen);								  
 				}
 				App_rmtCfg.checkResp.needUpdate = 0;
 				rmtCfg->state.waitSt = 0;
@@ -644,7 +644,6 @@ static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 	DisBody.ulMsgCnt++;	/* OPTIONAL */
 	DisBody.appDataProVer = 256;
 	DisBody.testFlag = 1;
-	DisBody.ackReq = 1;
 	DisBody.appDataEncode = PP_APPDATA_ENCODING_UPER;
 	/*appdata*/
 	unsigned int len;
@@ -739,11 +738,9 @@ static int PP_rmtCfg_getRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 	DisBody.ulMsgCnt++;	/* OPTIONAL */
 	DisBody.appDataProVer = 256;
 	DisBody.testFlag = 1;
-	DisBody.ackReq = 1;
 	DisBody.appDataEncode = PP_APPDATA_ENCODING_UPER;
 	/*appdata*/
-	memcpy(App_rmtCfg.getReq.cfgVersion,rmtCfg->state.newCfgVersion,\
-							strlen((const char*)rmtCfg->state.newCfgVersion));
+	memcpy(App_rmtCfg.getReq.cfgVersion,rmtCfg->state.newCfgVersion,32);
 	App_rmtCfg.getReq.cfgVersionlen = 32;
 
 	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCFG_GET_REQ,rmtCfg_Pack.msgdata,&msgdatalen,\
@@ -809,7 +806,6 @@ static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtC
 	DisBody.ulMsgCnt++;	/* OPTIONAL */
 	DisBody.appDataProVer = 256;
 	DisBody.testFlag = 1;
-	DisBody.ackReq = 1;
 	DisBody.appDataEncode = PP_APPDATA_ENCODING_UPER;
 	/*appdata*/
 	App_rmtCfg.EndReq.configSuccess = rmtCfg->state.cfgsuccess;
@@ -887,7 +883,6 @@ static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,Pr
 	DisBody.ulMsgCnt++;	/* OPTIONAL */
 	DisBody.appDataProVer = 256;
 	DisBody.testFlag = 1;
-	DisBody.ackReq = 1;
 	DisBody.appDataEncode = PP_APPDATA_ENCODING_UPER;
 
 	/*appdata*/
@@ -962,7 +957,6 @@ static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg
 	DisBody.ulMsgCnt++;	/* OPTIONAL */
 	DisBody.appDataProVer = 256;
 	DisBody.testFlag = 1;
-	DisBody.ackReq = 1;
 	DisBody.appDataEncode = PP_APPDATA_ENCODING_UPER;
 	/*appdata*/
 	App_rmtCfg.ReadResp.result = 1;

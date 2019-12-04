@@ -438,7 +438,15 @@ int app_shell_drcfg(int argc, const char **argv)
     shellprintf("INTEST MCU BOOTLOADER VERSION = %s\r\n", version);
 
     shellprintf("HOZON SOFTWARE VERSION  = %s\r\n", DID_F1B0_SW_FIXED_VER);
-    shellprintf("HOZON HARDWARE VERSION  = %s\r\n", DID_F191_HW_VERSION);
+
+    char hw[32] = {0};
+    len = sizeof(hw);
+    ret |= cfg_get_para(CFG_ITEM_INTEST_HW,hw,&len);
+    if(hw[0] == 0)
+    {
+        memcpy(hw,"00.00.00",8);
+    }
+    shellprintf("HOZON HARDWARE VERSION = %s\r\n", hw);
 
     memset(version, 0, sizeof(version));
     upg_get_fw_ver(version, sizeof(version));

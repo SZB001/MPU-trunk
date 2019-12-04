@@ -858,7 +858,15 @@ void PrvtPro_ShowPara(void)
 	log_o(LOG_HOZON, "/*****************data over*****************/");
 	log_o(LOG_HOZON, "/****************show version***************/");
 	log_o(LOG_HOZON, "hozon software version : %s\n",DID_F1B0_SW_FIXED_VER);
-	log_o(LOG_HOZON, "hozon hardware version : %s\n",DID_F191_HW_VERSION);
+	char hw[32] = {0};
+	unsigned int len;
+    len = sizeof(hw);
+    cfg_get_para(CFG_ITEM_INTEST_HW,hw,&len);
+    if(hw[0] == 0)
+    {
+		memcpy(hw,"00.00.00",8);
+    }
+	log_o(LOG_HOZON, "hozon hardware version : %s\n",hw);
 	log_o(LOG_HOZON, "/*****************data over*****************/");
 }
 
