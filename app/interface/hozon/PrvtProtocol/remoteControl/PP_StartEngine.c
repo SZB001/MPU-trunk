@@ -68,6 +68,7 @@ static unsigned long long PP_Respwaittime = 0;
 static int startengine_success_flag = 0;  //0默认状态，1上电成功，2，下电成功，3操作失败
 static unsigned long long PP_Engine_time = 0;
 static int enginecation = 0;
+
 void PP_startengine_init(void)
 {
 	memset(&PP_rmtengineCtrl,0,sizeof(PrvtProt_rmtstartengine_t));
@@ -89,11 +90,12 @@ int PP_startengine_mainfunction(void *task)
 	{
 		case PP_STARTENGINE_IDLE:
 		{
-			if(((PP_rmtengineCtrl.state.req == 1)&&(enginecation == PP_POWERON))|| (PP_get_seat_requestpower_flag() == 1 )||(PP_get_ac_requestpower_flag() == 1))
+			if(((PP_rmtengineCtrl.state.req == 1)&&(enginecation == PP_POWERON))   \
+				|| (PP_get_seat_requestpower_flag() == 1 )||(PP_get_ac_requestpower_flag() == 1))
 			{
 				if(PP_rmtCtrl_cfg_RmtStartSt() == 0)   //上电走此流程
 				{
-					if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
+					if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 					{	
 						start_engine_stage = PP_STARTENGINE_REQSTART;
 						enginecation = PP_POWERON;
@@ -111,7 +113,7 @@ int PP_startengine_mainfunction(void *task)
 					}
 					else
 					{
-						log_o(LOG_HOZON," low power or power state on");
+						log_o(LOG_HOZON," Vehicle status is on or the battery is below 15%");
 						PP_rmtengineCtrl.state.failtype = PP_RMTCTRL_ACCNOOFF;
 						PP_set_seat_requestpower_flag();
 						PP_set_ac_requestpower_flag();
@@ -119,7 +121,7 @@ int PP_startengine_mainfunction(void *task)
 						startengine_success_flag = 3;  //不满足条件，失败标志位置起来
 					}
 				}
-				else if(PP_rmtCtrl_cfg_RmtStartSt() == 1) //已经上电了
+				else  //已经上电了
 				{
 					startengine_success_flag = 1;  //上电成功
 					PP_Engine_time = tm_get_time();
@@ -127,10 +129,6 @@ int PP_startengine_mainfunction(void *task)
 					PP_set_seat_requestpower_flag();
 					PP_set_ac_requestpower_flag();
 					start_engine_stage = PP_STARTENGINE_END;
-				}
-				else
-				{
-					log_o(LOG_HOZON,"UP:PP_rmtCtrl_cfg_RmtStartSt() = %d\n",PP_rmtCtrl_cfg_RmtStartSt());
 				}
 			}
 			if((PP_rmtengineCtrl.state.req == 1)&&(enginecation == PP_POWEROFF)) //下电流程
@@ -150,17 +148,13 @@ int PP_startengine_mainfunction(void *task)
 						res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 					}
 				}
-				else if(PP_rmtCtrl_cfg_RmtStartSt() == 0) //已经下电了
+				else  //已经下电了
 				{
 					start_engine_stage = PP_STARTENGINE_END;
 					log_o(LOG_HOZON,"Successfully powered off\n");
 					PP_set_seat_requestpower_flag();
 					PP_set_ac_requestpower_flag();
 					startengine_success_flag = 1;
-				}
-				else
-				{
-					log_o(LOG_HOZON,"DOWN:PP_rmtCtrl_cfg_RmtStartSt() = %d\n",PP_rmtCtrl_cfg_RmtStartSt());
 				}
 			}
 			PP_rmtengineCtrl.state.req = 0;
@@ -257,7 +251,6 @@ int PP_startengine_mainfunction(void *task)
 				else
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 3;  
-					//rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 			}
@@ -274,7 +267,7 @@ int PP_startengine_mainfunction(void *task)
 uint8_t PP_get_powerst()
 {
 	if((startengine_success_flag == 1)||(PP_rmtCtrl_cfg_RmtStartSt() == 1))
-		return 1;     //返回1表示上电成功
+		return 1;                       //返回1表示上电成功
 	return startengine_success_flag;    //高压电操作失败操作失败
 }
 
@@ -328,17 +321,6 @@ int SetPP_startengine_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				}
 				PP_rmtengineCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
 				PP_rmtengineCtrl.state.style = RMTCTRL_TSP;
-			}
-			break;
-			case RMTCTRL_BLUETOOTH:	
-			{
-				 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
-				 if(cmd == 1 )//上高压电
-				 {
-				 	enginecation = PP_POWERON;
-				 }
-				 PP_rmtengineCtrl.state.req = 1;
-				 PP_rmtengineCtrl.state.style = RMTCTRL_BLUETOOTH;
 			}
 			break;
 			default:

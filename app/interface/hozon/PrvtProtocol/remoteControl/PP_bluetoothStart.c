@@ -65,11 +65,10 @@ typedef struct
 {
 	PP_bluetoothStart_pack_t 	pack;
 	PP_bluetoothStart_t		state;
+	uint8_t          success_flag;
 }__attribute__((packed))  PrvtProt_bluetoothStart_t; 
 
 static PrvtProt_bluetoothStart_t PP_bluetoothstart;
-static int blue_start_stage = PP_BLUETOOTHSTART_IDLE;
-static int bluestart_success_flag = 0;
 static unsigned long long PP_Respwaittime = 0;
 
 void PP_bluetoothstart_init(void)
@@ -89,24 +88,24 @@ void PP_bluetoothstart_init(void)
 int PP_bluetoothstart_mainfunction(void *task)
 {
 	int res = 0;
-	switch(blue_start_stage)
+	switch(PP_bluetoothstart.state.CtrlSt)
 	{
 		case PP_BLUETOOTHSTART_IDLE:
 		{			
 			if(PP_bluetoothstart.state.req == 1)  //是否有请求
 			{
-				if(((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))||(PP_rmtCtrl_gettestflag()))
+				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{   //有请求判断是否满足远控条件
-					bluestart_success_flag = 0;
-					blue_start_stage = PP_BLUETOOTHSTART_REQSTART;
+					PP_bluetoothstart.success_flag = 0;
+					PP_bluetoothstart.state.CtrlSt = PP_BLUETOOTHSTART_REQSTART;
 					PP_bluetoothstart.state.req = 0;
 				}
 				else
 				{
-					log_o(LOG_HOZON," low power or power state on");
+					log_o(LOG_HOZON," Vehicle status is on.........!");
 					PP_bluetoothstart.state.req = 0;
-					bluestart_success_flag = 0;
-					blue_start_stage = PP_BLUETOOTHSTARTL_END;
+					PP_bluetoothstart.success_flag = 0;
+					PP_bluetoothstart.state.CtrlSt = PP_BLUETOOTHSTARTL_END;
 				}	
 			}
 		}
@@ -117,7 +116,7 @@ int PP_bluetoothstart_mainfunction(void *task)
 			{
 				PP_can_send_data(PP_CAN_BLUESTART,CAN_BLUESTART,0);
 			}
-			blue_start_stage = PP_BLUETOOTHSTART_RESPWAIT;
+			PP_bluetoothstart.state.CtrlSt = PP_BLUETOOTHSTART_RESPWAIT;
 			PP_Respwaittime = tm_get_time();
 		}
 		break;
@@ -133,47 +132,26 @@ int PP_bluetoothstart_mainfunction(void *task)
 						{
 							log_o(LOG_HOZON,"bluestart open successed!");
 							PP_can_send_data(PP_CAN_BLUESTART,CAN_BLUECLEAN,0);
-							bluestart_success_flag = 1;
-							blue_start_stage = PP_BLUETOOTHSTARTL_END;
+							PP_bluetoothstart.success_flag = 1;
+							PP_bluetoothstart.state.CtrlSt = PP_BLUETOOTHSTARTL_END;
 						}
 					}
 				}
 				else//响应超时
 				{
-					log_o(LOG_HOZON,"timeout");
+					log_o(LOG_HOZON,"BDM response timed out");
 					PP_can_send_data(PP_CAN_BLUESTART,CAN_BLUECLEAN,0);
-					bluestart_success_flag = 0;
-					blue_start_stage = PP_BLUETOOTHSTARTL_END;
+					PP_bluetoothstart.success_flag = 0;
+					PP_bluetoothstart.state.CtrlSt = PP_BLUETOOTHSTARTL_END;
 				}
 			}
 		}
 		break;
 		case PP_BLUETOOTHSTARTL_END:
 		{
-			PP_rmtCtrl_inform_tb(BT_POWER_CONTROL_RESP,PP_bluetoothstart.state.cmd,bluestart_success_flag);
-			#if 0
-			TCOM_MSG_HEADER msghdr;
-			PrvtProt_respbt_t respbt;
-			respbt.msg_type = BT_POWER_CONTROL_RESP;
-			respbt.cmd = PP_bluetoothstart.state.cmd; 
-			if(1 == bluestart_success_flag)
-			{
-				respbt.cmd_state.execution_result = bluestart_success_flag;  //ִ执行成功
-				respbt.failtype = 0;	
-			}
-			else
-			{
-				respbt.cmd_state.execution_result = BT_FAIL;  //ִ执行失败
-				respbt.failtype = 0;
-			}
-			msghdr.sender    = MPU_MID_HOZON_PP;
-			msghdr.receiver  = MPU_MID_BLE;
-			msghdr.msgid     = BLE_MSG_CONTROL;
-			msghdr.msglen    = sizeof(PrvtProt_respbt_t);
-			tcom_send_msg(&msghdr, &respbt);
-			#endif
+			PP_rmtCtrl_inform_tb(BT_POWER_CONTROL_RESP,PP_bluetoothstart.state.cmd,PP_bluetoothstart.success_flag);
 			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_RMTSTART);//释放锁
-			blue_start_stage = PP_BLUETOOTHSTART_IDLE;
+			PP_bluetoothstart.state.CtrlSt = PP_BLUETOOTHSTART_IDLE;
 		}
 		break;
 		default:
@@ -191,7 +169,6 @@ int SetPP_bluetoothstart_Request(char ctrlstyle,void *appdatarmtCtrl,void *dispt
 		{
 			case RMTCTRL_TSP:
 			{
-				//TSP没有一键启动
 			}
 			break;
 			case RMTCTRL_BLUETOOTH:
@@ -229,7 +206,7 @@ int PP_bluetoothstart_start(void)
 
 int PP_bluetoothstart_end(void)
 {
-	if((blue_start_stage == PP_BLUETOOTHSTART_IDLE) &&(PP_bluetoothstart.state.req == 0))
+	if((PP_bluetoothstart.state.CtrlSt == PP_BLUETOOTHSTART_IDLE) &&(PP_bluetoothstart.state.req == 0))
 	{
 		return 1;
 	}
@@ -243,7 +220,6 @@ int PP_bluetoothstart_end(void)
 void PP_bluetoothstart_ClearStatus(void)
 {
 	clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_RMTSTART);//释放锁
-
 	PP_bluetoothstart.state.req = 0;
 }
 
@@ -256,10 +232,4 @@ void PP_bluetoothstart_SetCtrlReq(unsigned char req,uint16_t reqType)
 }
 
 /************************shell命令测试使用**************************/
-
-
-
-
-
-
 

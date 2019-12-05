@@ -56,8 +56,8 @@ description： include the header file
 
 #define PP_SUNROOFOPEN  1
 #define PP_SUNROOFCLOSE 2
-#define SUNROOFUPWARP   3
-#define SUNROOFSTOP     4
+#define PP_SUNROOFUPWARP   3
+#define PP_SUNROOFSTOP     4
 typedef struct
 {
 	PrvtProt_pack_Header_t	Header;
@@ -68,14 +68,11 @@ typedef struct
 {
 	PP_rmtsunroofCtrl_pack_t 	pack;
 	PP_rmtsunroofCtrlSt_t		state;
-	int action;
+	uint8_t              success_flag;
 }__attribute__((packed))  PrvtProt_rmtsunroofCtrl_t; /*结构体*/
 
 static PrvtProt_rmtsunroofCtrl_t PP_rmtsunroofCtrl;
-static int sunroof_ctrl_stage = PP_SUNROOFCTRL_IDLE;
-static int sunroof_success_flag = 0;
 static unsigned long long PP_Respwaittime = 0;
-static int sunroof_type = 0;
 
 void PP_sunroofctrl_init(void)
 {
@@ -89,23 +86,18 @@ void PP_sunroofctrl_init(void)
 	PP_rmtsunroofCtrl.pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
 	PP_rmtsunroofCtrl.pack.DisBody.appDataProVer = 256;
 	PP_rmtsunroofCtrl.pack.DisBody.testFlag = 1;
-
-
 }
-
-
 int PP_sunroofctrl_mainfunction(void *task)
 {
-
 	int res = 0;
-	switch(sunroof_ctrl_stage)
+	switch(PP_rmtsunroofCtrl.state.CtrlSt)
 	{
 		case PP_SUNROOFCTRL_IDLE:
 		{
 			if(PP_rmtsunroofCtrl.state.req == 1)
 			{
-				sunroof_success_flag = 0;
-				sunroof_ctrl_stage = PP_SUNROOFCTRL_REQSTART;
+				PP_rmtsunroofCtrl.success_flag = 0;
+				PP_rmtsunroofCtrl.state.CtrlSt = PP_SUNROOFCTRL_REQSTART;
 				if(PP_rmtsunroofCtrl.state.style == RMTCTRL_TSP)//tsp
 				{
 					PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
@@ -119,7 +111,6 @@ int PP_sunroofctrl_mainfunction(void *task)
 				}
 				else//蓝牙
 				{
-
 				}
 				PP_rmtsunroofCtrl.state.req = 0;	
 			}
@@ -127,16 +118,15 @@ int PP_sunroofctrl_mainfunction(void *task)
 		break;
 		case PP_SUNROOFCTRL_REQSTART:
 		{
-			//log_o(LOG_HOZON,"PP_SUNROOFCTRL_REQSTART");
-			if(sunroof_type == PP_SUNROOFOPEN) //天窗打开
+			if(PP_rmtsunroofCtrl.state.sunroofcmd == PP_SUNROOFOPEN) //天窗打开
 			{
 				PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFOPEN,0);
 			}
-			else if(sunroof_type == PP_SUNROOFCLOSE)//天窗关闭
+			else if(PP_rmtsunroofCtrl.state.sunroofcmd == PP_SUNROOFCLOSE)//天窗关闭
 			{
 				PP_can_send_data(PP_CAN_SUNSHADE,CAN_SUNSHADECLOSE,0);  //遮阳帘关闭
 			}
-			else if(sunroof_type == SUNROOFUPWARP)//天窗翘起
+			else if(PP_rmtsunroofCtrl.state.sunroofcmd == PP_SUNROOFUPWARP)//天窗翘起
 			{
 				PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFUP,0);
 			}
@@ -144,7 +134,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 			{
 				PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFSTOP,0);
 			}
-			sunroof_ctrl_stage = PP_SUNROOFCTRL_RESPWAIT;
+			PP_rmtsunroofCtrl.state.CtrlSt = PP_SUNROOFCTRL_RESPWAIT;
 			PP_Respwaittime = tm_get_time();
 		}
 		break;
@@ -154,7 +144,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 			{
 				PP_can_send_data(PP_CAN_SUNSHADE,CAN_SUNSHADECLEAN,0);
 				PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
-				if(sunroof_type == PP_SUNROOFOPEN) //天窗打开结果
+				if(PP_rmtsunroofCtrl.state.sunroofcmd == PP_SUNROOFOPEN) //天窗打开结果
 				{
 					if((tm_get_time() - PP_Respwaittime) < 35000)
 					{
@@ -162,20 +152,20 @@ int PP_sunroofctrl_mainfunction(void *task)
 						{
 							log_o(LOG_HOZON,"PP_SUNROOFCTRL_OPEN SUCCESS");
 							//PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
-							sunroof_success_flag = 1;
-							sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
+							PP_rmtsunroofCtrl.success_flag = 1;
+							PP_rmtsunroofCtrl.state.CtrlSt = PP_SUNROOFCTRL_END;
 						}
 					}
 					else//响应超时
 					{
-						log_o(LOG_HOZON,"timeout");
+						log_o(LOG_HOZON,"BDM response timed out");
 						PP_rmtsunroofCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 						PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
-						sunroof_success_flag = 0;
-						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
+						PP_rmtsunroofCtrl.success_flag = 0;
+						PP_rmtsunroofCtrl.state.CtrlSt = PP_SUNROOFCTRL_END;
 					}
 				}
-				else if(sunroof_type == PP_SUNROOFCLOSE)//天窗关闭结果
+				else if(PP_rmtsunroofCtrl.state.sunroofcmd == PP_SUNROOFCLOSE)//天窗关闭结果
 				{
 					if((tm_get_time() - PP_Respwaittime) < 35000)
 					{
@@ -183,20 +173,20 @@ int PP_sunroofctrl_mainfunction(void *task)
 						{
 							log_o(LOG_HOZON,"PP_SUNROOFCTRL_CLOSE SUCCESS");
 							//PP_can_send_data(PP_CAN_SUNSHADE,CAN_SUNSHADECLEAN,0);  //遮阳帘
-							sunroof_success_flag = 1;
-							sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
+							PP_rmtsunroofCtrl.success_flag = 1;
+							PP_rmtsunroofCtrl.state.CtrlSt = PP_SUNROOFCTRL_END;
 						}
 					}
 					else//响应超时
 					{
-						log_o(LOG_HOZON,"timeout");
+						log_o(LOG_HOZON,"BDM response timed out");
 						PP_rmtsunroofCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 						PP_can_send_data(PP_CAN_SUNSHADE,CAN_SUNSHADECLEAN,0);  //遮阳帘
-						sunroof_success_flag = 0;
-						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
+						PP_rmtsunroofCtrl.success_flag = 0;
+						PP_rmtsunroofCtrl.state.CtrlSt = PP_SUNROOFCTRL_END;
 					}
 				}
-				else if(sunroof_type == SUNROOFUPWARP)//天窗翘起结果
+				else if(PP_rmtsunroofCtrl.state.sunroofcmd == PP_SUNROOFUPWARP)//天窗翘起结果
 				{
 					if((tm_get_time() - PP_Respwaittime) < 35000)
 					{
@@ -204,17 +194,17 @@ int PP_sunroofctrl_mainfunction(void *task)
 						{
 							log_o(LOG_HOZON,"PP_SUNROOFCTRL_UPWARP SUCCESS");
 							//PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
-							sunroof_success_flag = 1;
-							sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
+							PP_rmtsunroofCtrl.success_flag = 1;
+							PP_rmtsunroofCtrl.state.CtrlSt = PP_SUNROOFCTRL_END;
 						}
 					}
 					else//响应超时
 					{
-						log_o(LOG_HOZON,"timeout");
+						log_o(LOG_HOZON,"BDM response timed out");
 						PP_rmtsunroofCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 						PP_can_send_data(PP_CAN_SUNROOF,CAN_SUNROOFCLEAN,0);
-						sunroof_success_flag = 0;
-						sunroof_ctrl_stage = PP_SUNROOFCTRL_END;
+						PP_rmtsunroofCtrl.success_flag = 0;
+						PP_rmtsunroofCtrl.state.CtrlSt = PP_SUNROOFCTRL_END;
 					}
 				}
 				else
@@ -234,7 +224,7 @@ int PP_sunroofctrl_mainfunction(void *task)
 				rmtCtrl_Stpara.expTime = PP_rmtsunroofCtrl.state.expTime;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				rmtCtrl_Stpara.rvcFailureType  = PP_rmtsunroofCtrl.state.failtype;
-				if(1 == sunroof_success_flag)
+				if(1 == PP_rmtsunroofCtrl.success_flag)
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 2;  //执行完成
 					rmtCtrl_Stpara.rvcFailureType = 0;
@@ -242,54 +232,26 @@ int PP_sunroofctrl_mainfunction(void *task)
 				else
 				{
 					rmtCtrl_Stpara.rvcReqStatus = 3;  //执行失败
-					//rmtCtrl_Stpara.rvcFailureType = 0xff;
 				}
 				res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 				
 			}
 			else if(PP_rmtsunroofCtrl.state.style ==  RMTCTRL_BLUETOOTH) //蓝牙
 			{
-				PP_rmtCtrl_inform_tb(BT_PANORAMIC_SUNROOF_RESP,sunroof_type,sunroof_success_flag);
-				#if 0
-				TCOM_MSG_HEADER msghdr;
-				PrvtProt_respbt_t respbt;
-				respbt.msg_type = BT_PANORAMIC_SUNROOF_RESP;
-		 		respbt.cmd = sunroof_type;
-				if(1 == sunroof_success_flag)
-				{
-					respbt.cmd_state.execution_result= sunroof_type;  //ִ执行成功
-					respbt.failtype = 0;
-				}
-				else
-				{
-					respbt.cmd_state.execution_result = BT_FAIL;  //ִ执行失败
-					respbt.failtype = 0;
-				}
-				msghdr.sender    = MPU_MID_HOZON_PP;
-				msghdr.receiver  = MPU_MID_BLE;
-				msghdr.msgid     = BLE_MSG_CONTROL;
-				msghdr.msglen    = sizeof(PrvtProt_respbt_t);
-				tcom_send_msg(&msghdr, &respbt);
-				#endif
-			}
-			else
-			{
+				PP_rmtCtrl_inform_tb(BT_PANORAMIC_SUNROOF_RESP,PP_rmtsunroofCtrl.state.sunroofcmd,PP_rmtsunroofCtrl.success_flag);
 			}
 			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_SUNROOF);//释放锁
-			sunroof_ctrl_stage = PP_SUNROOFCTRL_IDLE;
+			PP_rmtsunroofCtrl.state.CtrlSt = PP_SUNROOFCTRL_IDLE;
 		}
 		break;
 		default:
 		break;
 	}
 	return res;
-
 }
-
 
 uint8_t PP_sunroofctrl_start(void) 
 {
-
 	if(PP_rmtsunroofCtrl.state.req == 1)
 	{
 		return 1;
@@ -300,11 +262,9 @@ uint8_t PP_sunroofctrl_start(void)
 	}
 }
 
-
 uint8_t PP_sunroofctrl_end(void)
 {
-
-	if((sunroof_ctrl_stage == PP_SUNROOFCTRL_IDLE) && \
+	if((PP_rmtsunroofCtrl.state.CtrlSt == PP_SUNROOFCTRL_IDLE) && \
 			(PP_rmtsunroofCtrl.state.req == 0))
 	{
 		
@@ -312,11 +272,9 @@ uint8_t PP_sunroofctrl_end(void)
 	}
 	else
 	{
-		//log_o(LOG_HOZON,"ROOF");
 		return 0;
 	}
 }
-
 
 int SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
@@ -330,24 +288,27 @@ int SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 			{
 				PrvtProt_App_rmtCtrl_t *appdatarmtCtrl_ptr = (PrvtProt_App_rmtCtrl_t *)appdatarmtCtrl;
 				PrvtProt_DisptrBody_t *  disptrBody_ptr= (PrvtProt_DisptrBody_t *)disptrBody;
-				log_i(LOG_HOZON, "remote sunroof control req");
 				PP_rmtsunroofCtrl.state.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 				PP_rmtsunroofCtrl.state.expTime = disptrBody_ptr->expTime;
 				if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFOPEN) //天窗打开
 				{
-					sunroof_type = PP_SUNROOFOPEN;
+					PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFOPEN;
+					log_i(LOG_HOZON,"TSP remote sunroof open control");
 				}
 				else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFCLOSE)//天窗关闭
 				{
-					sunroof_type = PP_SUNROOFCLOSE;
+					PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFCLOSE;
+					log_i(LOG_HOZON,"TSP remote sunroof close control");
 				}
 				else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFUPWARP)//天窗翘起
 				{
-					sunroof_type = SUNROOFUPWARP;
+					PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFUPWARP;
+					log_i(LOG_HOZON,"TSP remote sunroof upwarp control");
 				}
 				else  //天窗停止
 				{
-					sunroof_type = SUNROOFSTOP;
+					PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFSTOP;
+					log_i(LOG_HOZON,"TSP remote sunroof stop control");
 				}
 				PP_rmtsunroofCtrl.state.req = 1;
 				PP_rmtsunroofCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
@@ -359,23 +320,26 @@ int SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
 				 if(cmd == 1 )//蓝牙开天窗
 				 {
-				 	sunroof_type = PP_SUNROOFOPEN;
+				 	PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFOPEN;
+					log_i(LOG_HOZON,"bluetooth sunroof open control");
 				 }
 				 else if (cmd == 2) //蓝牙关天窗
 				 {
-				 	sunroof_type = PP_SUNROOFCLOSE;
+				 	PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFCLOSE;
+					log_i(LOG_HOZON,"bluetooth sunroof close control");
 				 }
 				 else if(cmd == 3) //天窗翘起
 				 {
-				 	sunroof_type = SUNROOFUPWARP;
+				 	PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFUPWARP;
+					log_i(LOG_HOZON,"bluetooth sunroof upwarp control");
 				 }
 				 else    //天窗停止
 				 {
-				 	sunroof_type = SUNROOFSTOP;
+				 	PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFSTOP;
+					log_i(LOG_HOZON,"bluetooth sunroof stop control");
 				 }
 				 PP_rmtsunroofCtrl.state.req = 1;
-				 PP_rmtsunroofCtrl.state.style = RMTCTRL_BLUETOOTH;
-				 
+				 PP_rmtsunroofCtrl.state.style = RMTCTRL_BLUETOOTH;	 
 			}
 			break;
 			default:
@@ -396,19 +360,19 @@ void PP_sunroofctrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 	PP_rmtsunroofCtrl.state.reqType = (long)reqType;
 	if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFOPEN) //天窗打开
 	{
-		sunroof_type = PP_SUNROOFOPEN;
+		PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFOPEN;
 	}
 	else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFCLOSE)//天窗关闭
 	{
-		sunroof_type = PP_SUNROOFCLOSE;
+		PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFCLOSE;
 	}
 	else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFUPWARP)//天窗翘起
 	{
-		sunroof_type = SUNROOFUPWARP;
+		PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFUPWARP;
 	}
 	else  //天窗停止
 	{
-		sunroof_type = SUNROOFSTOP;
+		PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFSTOP;
 	}
 	PP_rmtsunroofCtrl.state.req = 1;
 	PP_rmtsunroofCtrl.state.style = RMTCTRL_TSP;

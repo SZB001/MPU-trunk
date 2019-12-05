@@ -18,7 +18,7 @@ description�� macro definitions
 /**********�꿪�ض���*********/
 
 /**********�곣������*********/
-#define PP_CHARGECTRL_APPOINTHOLDTIME   (6*60*60*1000)
+#define PP_CHARGECTRL_APPOINTHOLDTIME   (6*60*60)
 
 #define PP_CHARGECTRL_IDLE   		0
 #define PP_CHARGECTRL_REQSTART  	1
@@ -102,7 +102,7 @@ typedef struct
 	uint32_t HUbookingId;
 
 	uint8_t	informtspflag;// 通知平台是否成功标志位
-	//uint8_t appointChargeFlag;
+	uint8_t newappoint;
 	//uint32_t appointStartTime;
 }__attribute__((packed))  PP_rmtCharge_AppointBook_t; /*�ṹ��*/
 

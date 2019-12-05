@@ -35,6 +35,7 @@ typedef struct
 	uint8_t CtrlSt;
 	uint64_t period;
 	uint8_t waitSt;
+	uint8_t failtype;
 	uint64_t waittime;
 	char style;
 }__attribute__((packed))  PP_rmtstartforbidSt_t;

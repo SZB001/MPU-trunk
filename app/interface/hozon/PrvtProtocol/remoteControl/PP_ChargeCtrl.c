@@ -48,6 +48,7 @@ description�� include the header file
 #include "../PrvtProt_EcDc.h"
 #include "../PrvtProt.h"
 #include "../PrvtProt_cfg.h"
+#include "../../../protobuf/tbox_ivi_pb.h"
 #include "PP_rmtCtrl.h"
 #include "PP_canSend.h"
 #include "PP_SendWakeUptime.h"
@@ -98,7 +99,7 @@ static PP_rmtCharge_Appointperiod_t PP_rmtCharge_Appointperiod[7] =
 
 static uint8_t PP_ChargeCtrl_Sleepflag = 0;
 extern void pm_ring_wakeup(void);
-extern void ivi_chagerappointment_request_send( int fd,ivi_chargeAppointSt tspchager);
+extern void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para);
 static void PP_ChargeCtrl_chargeStMonitor(void);
 static int PP_ChargeCtrl_startHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge);
 static void PP_ChargeCtrl_EndHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge);
@@ -193,6 +194,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				}
 				else
 				{
+					PP_rmtChargeCtrl.state.chargecmd = 0;
 					PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_END;
 				}
 				
@@ -235,6 +237,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_ONGOING;
 						PP_rmtChargeCtrl.chargeFinishCloseFlag = 0;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
+						PP_rmtChargeCtrl.state.chargecmd = 0;
 					}
 				}
 				else
@@ -261,6 +264,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				PP_rmtChargeCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 				PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_IDLE;
 				PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
+				PP_rmtChargeCtrl.state.chargecmd = 0;
 			}
 		}
 		break;
@@ -294,51 +298,97 @@ int PP_ChargeCtrl_mainfunction(void *task)
 static void PP_ChargeCtrl_chargeStMonitor(void)
 {
 	PP_rmtCtrl_Stpara_t rmtCtrl_chargeStpara;
-	static uint8_t appointPerformFlg = 0;
-	static uint64_t delaytime;
-/*
+	static uint64_t listentime;
+	long currTimestamp;
+	static uint64_t waittime;
+	static uint8_t level;
+/* *
  *	检查预约充电
  * */
+    currTimestamp = PrvtPro_getTimestamp();
 	if(PP_rmtCharge_AppointBook.validFlg == 1)
 	{
-		char *wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
-
 		RTCTIME localdatetime;
     	tm_get_abstime(&localdatetime);
-		
 		if(PP_rmtCharge_AppointBook.period & 0x80)
 		{//重复预约
 			if(PP_rmtCharge_Appointperiod[localdatetime.week].mask & PP_rmtCharge_AppointBook.period)
 			{
-				if((localdatetime.hour == PP_rmtCharge_AppointBook.hour) && \
-									(localdatetime.min == PP_rmtCharge_AppointBook.min))
+				struct tm time;
+				time.tm_sec = 0;
+				time.tm_min = PP_rmtCharge_AppointBook.min;
+				time.tm_hour = 	PP_rmtCharge_AppointBook.hour;
+				time.tm_mday = localdatetime.mday;
+				time.tm_mon = localdatetime.mon - 1;
+				time.tm_year = localdatetime.year - 1900;
+				PP_rmtChargeCtrl.state.appointchargeTime = mktime(&time);
+			}
+		}
+		/********************************控制使能信号*************************************/
+		if((currTimestamp <= (PP_rmtChargeCtrl.state.appointchargeTime + PP_CHARGECTRL_APPOINTHOLDTIME))&& \
+			(currTimestamp >= PP_rmtChargeCtrl.state.appointchargeTime))
+		{
+			PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);  //去使能
+			listentime = 0;
+		}
+		else  //没有预约或有预约但不在6个小时之后
+		{
+			switch(level)
+			{
+				case 0:
 				{
-					if((PP_rmtChargeCtrl.state.chargeSt != PP_CHARGESTATE_ONGOING) && \
-						(appointPerformFlg == 0))
+					if(PP_rmtChargeCtrl.state.chargecmd == PP_CHARGECTRL_OPEN)
 					{
-						log_i(LOG_HOZON,"%d-%d-%d ",(localdatetime.year - 2000), \
-								(localdatetime.mon), localdatetime.mday);
-						log_i(LOG_HOZON,"%s %d:%d:%d\n", wday[localdatetime.week], \
-								localdatetime.hour, localdatetime.min, localdatetime.sec);
-						appointPerformFlg = 1;
-						PP_rmtChargeCtrl.state.appointcharge = 1;
-						PP_rmtChargeCtrl.state.appointchargeTime = PrvtPro_getTimestamp();
-						PP_rmtChargeCtrl.state.appointchargeCheckDelayTime = tm_get_time();
+						PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);
+						//PP_rmtChargeCtrl.state.req = 1;
+						//PP_rmtChargeCtrl.state.chargecmd = 0;	
+						listentime = tm_get_time();
+						level = 1;
+					}
+				}
+				break;
+				case 1:
+				{
+					if(tm_get_time() - listentime > 3000) //延时3秒，在判断充电的情况
+					{
+						if(PP_RMTCTRL_CFG_CHARGEING != PP_rmtCtrl_cfg_chargeSt())
+						{
+							PP_can_send_data(PP_CAN_CHAGER,CAN_SETAPPOINT,0);
+						}
+						listentime = 0;
+						level = 0;
+					}
+				}
+				break;
+				default:
+				break;	
+			}
+		}
+		/********************************6个小时监测****************************/
+		if(PP_RMTCTRL_CFG_CHARGEING != PP_rmtCtrl_cfg_chargeSt())  
+		{
+			if(currTimestamp <= (PP_rmtChargeCtrl.state.appointchargeTime + PP_CHARGECTRL_APPOINTHOLDTIME) && \
+				currTimestamp >= PP_rmtChargeCtrl.state.appointchargeTime)
+			{
+				if(tm_get_time() - waittime > 10000)
+				{
+					if(PP_rmtCtrl_cfg_chargeGunCnctSt() == 1) 	//充电枪一插上，就是非ready状态
+					{
 						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_READY;
 						uint8_t cmd = PP_CHARGECTRL_OPEN;
-						PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);//预约充电使能去掉
 						int ret;
 						ret = SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,&cmd,NULL);
 						if(PP_LOCK_OK == ret)
 						{
-							log_i(LOG_HOZON,"Appointment time is up. Execute the charge appointment!\n");
+							PP_rmtChargeCtrl.appointCharging = 1;  //预约充电
+							log_i(LOG_HOZON,"Appointment The charging conditions are met. Execute the charge appointment!!\n");
 						}
 						else
 						{
 							if(PP_LOCK_ERR_FOTAUPDATE == ret)
 							{
+								log_e(LOG_HOZON,"fota upgrade, charging later....");
 								PP_rmtChargeCtrl.failtype = PP_RMTCTRL_FOTA_UPGRADE;
-								//inform TSP
 								rmtCtrl_chargeStpara.rvcReqCode = 0x711;
 								rmtCtrl_chargeStpara.bookingId  = PP_rmtCharge_AppointBook.id;
 								rmtCtrl_chargeStpara.eventid  = PP_rmtCharge_AppointBook.eventId;
@@ -348,57 +398,21 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 							}
 						}
 					}
-					delaytime = tm_get_time();
-				}
-				else
-				{
-					if((tm_get_time() - delaytime) > 3000)//延迟3s滤波
-					{
-						appointPerformFlg = 0;
-					}
+					waittime = tm_get_time();
 				}
 			}
 		}
-	}
-
-/* 
- * 	预约充电触发后，若执行条件不满足导致执行失败，则持续检测6h。
- *  6h内检测到执行预约充电条件满足，则执行预约充电；
- *  持续检测时间超出6h，则不再执行。
- *  */
-	long currTimestamp;
-	if((tm_get_time() - PP_rmtChargeCtrl.state.appointchargeCheckDelayTime) > 5000)
-	{
-		if((1 == PP_rmtChargeCtrl.state.appointcharge) && \
-			(PP_RMTCTRL_CFG_CHARGEING != PP_rmtCtrl_cfg_chargeSt()))
+		else
 		{
-			currTimestamp = PrvtPro_getTimestamp();
-			if(currTimestamp <= (PP_rmtChargeCtrl.state.appointchargeTime + PP_CHARGECTRL_APPOINTHOLDTIME))
-			{
-				if((PP_rmtChargeCtrl.failtype == PP_RMTCTRL_CHRGGUNUNCONNT)	  || \
-					(PP_rmtChargeCtrl.failtype == PP_RMTCTRL_READYLIGHTON)	  || \
-					(PP_rmtChargeCtrl.failtype == PP_RMTCTRL_FOTA_UPGRADE))
-				{
-					if((PP_rmtCtrl_cfg_chargeGunCnctSt() == 1) && \
-						(PP_rmtCtrl_cfg_readyLightSt() == 0)   && \
-						(0 == GetPP_rmtCtrl_fotaUpgrade()))//充电枪连接 && 车辆非运动模式 && 非fota升级中
-					{
-						log_i(LOG_HOZON,"Appointment time is up. Execute the charge appointment!!\n");
-						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_READY;
-						uint8_t cmd = PP_CHARGECTRL_OPEN;
-						SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,&cmd,NULL);
-					}
-				}
-			}
-			else
-			{
-				PP_can_send_data(PP_CAN_CHAGER,CAN_SETAPPOINT,0);//预约充电使能置起
-				PP_rmtChargeCtrl.state.appointcharge = 0;
-			}
+			waittime = 0;
 		}
 	}
-
-/*
+	else
+	{
+		PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);
+	}
+	
+/*  *
  * 	检查充电完成状况״̬
  *  */
 	if(((PP_rmtChargeCtrl.state.chargeSt == PP_CHARGESTATE_ONGOING) || \
@@ -406,7 +420,6 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 		(0 == GetPP_rmtCtrl_fotaUpgrade()))
 	{
 		PP_rmtChargeCtrl.state.appointcharge = 0;
-		
 		if(PP_rmtChargeCtrl.appointCharging == 1)//预约充电中
 		{
 			if(gb_data_vehicleSOC() >= PP_rmtCharge_AppointBook.targetSOC)//预约充电完成判断
@@ -461,8 +474,6 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 	{
 		PP_ChargeCtrl_Sleepflag = 0;
 	}
-
-
 	/*
 	* IGN ON，检查预约同步和保存数据
 	* */
@@ -470,7 +481,6 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 	{
 		PP_ChargeCtrl_informTsp();
 	}
-
 	/*
 	* 检查是否有数据更新,emmc若未挂载，则只保存到文件系统
 	* */
@@ -478,12 +488,10 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 	{
 		//保存记录
 		log_i(LOG_HOZON,"save charge para when power off\n");
-		(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT, \
-										&PP_rmtCharge_AppointBook,32);
+		(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
 		PP_rmtChargeCtrl.state.dataUpdata = 0;
 	}
 }
-
 
 /******************************************************
 *��������SetPP_ChargeCtrl_Request
@@ -499,7 +507,6 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 int SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
 	uint32_t appointId = 0;
-	ivi_chargeAppointSt		ivi_chargeSt;
 	PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 
 	int mtxlockst = 0;
@@ -526,8 +533,9 @@ int SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBod
 				if((PP_CHARGECTRL_IDLE == PP_rmtChargeCtrl.state.CtrlSt) && \
 						(PP_rmtChargeCtrl.state.req == 0))
 				{
-					PP_rmtChargeCtrl.state.req = 1;
+					
 					PP_rmtChargeCtrl.CtrlPara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
+					PP_rmtChargeCtrl.state.req = 1;
 					if(PP_rmtChargeCtrl.CtrlPara.reqType == PP_COMAND_STARTCHARGE)
 					{
 						PP_rmtChargeCtrl.state.chargecmd = PP_CHARGECTRL_OPEN;
@@ -566,15 +574,8 @@ int SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBod
 
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
 
-				//inform HU appointment status
-				ivi_chargeSt.id = PP_rmtCharge_AppointBook.id;
-				ivi_chargeSt.hour = PP_rmtCharge_AppointBook.hour;
-				ivi_chargeSt.min = PP_rmtCharge_AppointBook.min;
-				ivi_chargeSt.timestamp = PrvtPro_getTimestamp();
-				ivi_chargeSt.targetpower = PP_rmtCharge_AppointBook.targetSOC;
-				ivi_chargeSt.effectivestate = 1;
-				ivi_chagerappointment_request_send(ivi_clients[0].fd,ivi_chargeSt);
-
+				ivi_message_request(ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS,NULL);
+			
 				//inform TSP the Reservation instruction issued status
 				//PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 				rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//ִ�����
@@ -584,7 +585,7 @@ int SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBod
 				rmtCtrl_Stpara.expTime = disptrBody_ptr->expTime;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
-
+			
 				PP_can_send_data(PP_CAN_CHAGER,CAN_SETAPPOINT,0);
 			}
 			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_COMAND_CANCELAPPOINTCHARGE)
@@ -603,14 +604,8 @@ int SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBod
 				rmtCtrl_Stpara.rvcReqStatus = PP_RMTCTRL_EXECUTEDFINISH;//ִ�����
 				rmtCtrl_Stpara.rvcFailureType = 0;
 				rmtCtrl_Stpara.expTime = disptrBody_ptr->expTime;
-				//inform HU appointment status
-				ivi_chargeSt.id = PP_rmtCharge_AppointBook.id;
-				ivi_chargeSt.hour = PP_rmtCharge_AppointBook.hour;
-				ivi_chargeSt.min = PP_rmtCharge_AppointBook.min;
-				ivi_chargeSt.timestamp = PrvtPro_getTimestamp();
-				ivi_chargeSt.targetpower = PP_rmtCharge_AppointBook.targetSOC;
-				ivi_chargeSt.effectivestate = 0;
-				ivi_chagerappointment_request_send(ivi_clients[0].fd,ivi_chargeSt);
+				
+				ivi_message_request(ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS,NULL);
 				PP_rmtChargeCtrl.state.dataUpdata = 1;
 
 				PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
@@ -624,18 +619,16 @@ int SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBod
 		case RMTCTRL_BLUETOOTH:
 		{
 			 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
+			 PP_rmtChargeCtrl.state.req = 1;
 			 if(cmd == 1 )//停止充电
 			 {
 			 	PP_rmtChargeCtrl.state.chargecmd = PP_CHARGECTRL_CLOSE;
+				
 			 }
 			 else if (cmd == 2) //开始充电
 			 {
 			 	PP_rmtChargeCtrl.state.chargecmd = PP_CHARGECTRL_OPEN;
 			 }
-			 else
-			 {
-			 }
-			 PP_rmtChargeCtrl.state.req = 1;
 			 PP_rmtChargeCtrl.state.style = RMTCTRL_BLUETOOTH;
 		}
 		break;
@@ -660,6 +653,7 @@ int SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBod
 					else
 					{
 						log_i(LOG_HOZON, "HU charge close request\n");
+						
 						PP_rmtChargeCtrl.state.chargecmd = PP_CHARGECTRL_CLOSE;
 						PP_rmtChargeCtrl.CtrlPara.reqType = PP_COMAND_STOPCHARGE;
 					}
@@ -732,7 +726,6 @@ int SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBod
 			uint8_t *cmd = (uint8_t*)appdatarmtCtrl;
 			PP_rmtChargeCtrl.state.req = 1;
 			PP_rmtChargeCtrl.CtrlPara.bookingId = PP_rmtCharge_AppointBook.id;
-			//PP_rmtChargeCtrl.pack.DisBody.eventId = PP_rmtCharge_AppointBook.eventId;
 			PP_rmtChargeCtrl.pack.DisBody.eventId = 0;
 			PP_rmtChargeCtrl.state.chargecmd = *cmd;
 			PP_rmtChargeCtrl.state.style   = RMTCTRL_TBOX;
@@ -859,8 +852,7 @@ void SetPP_ChargeCtrl_appointPara(void)
 	{
 		//保存记录
 		log_o(LOG_HOZON,"save charge para\n");
-		(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT, \
-										&PP_rmtCharge_AppointBook,32);
+		(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
 		PP_rmtChargeCtrl.state.dataUpdata = 0;
 	}
 	else
@@ -947,8 +939,6 @@ static int PP_ChargeCtrl_startHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge)
 
 	return res;	
 }
-
-
 /*
  * 充电控制end处理
  */
@@ -1054,11 +1044,8 @@ void PP_ChargeCtrl_informTsp(void)
 {
 
 	static int level = 0;
-
 	PP_rmtCtrl_Stpara_t rmtCtrl_chargeStpara;
-
 	static uint64_t lastsendtime;
-	
 	switch(level)
 	{
 		case CHARGE_SYNC_START:
@@ -1075,6 +1062,7 @@ void PP_ChargeCtrl_informTsp(void)
 					rmtCtrl_chargeStpara.rvcReqEq		= PP_rmtCharge_AppointBook.targetSOC	/* OPTIONAL */;
 					rmtCtrl_chargeStpara.rvcReqCycle	= PP_rmtCharge_AppointBook.period	/* OPTIONAL */;
 					rmtCtrl_chargeStpara.HUbookingId	= PP_rmtCharge_AppointBook.id;
+					log_o(LOG_HOZON,"PP_rmtCharge_AppointBook.id = %d",PP_rmtCharge_AppointBook.id);
 					rmtCtrl_chargeStpara.eventid 		= 0;
 					rmtCtrl_chargeStpara.Resptype 		= PP_RMTCTRL_HUBOOKINGRESP;
 					PP_rmtCtrl_StInformTsp(&rmtCtrl_chargeStpara);
@@ -1089,10 +1077,10 @@ void PP_ChargeCtrl_informTsp(void)
 
 			if(PP_rmtCharge_AppointBook.informtspflag == 1)
 			{
-				if(tm_get_time() -lastsendtime > 5000)
+				if(tm_get_time() -lastsendtime > 10000)
 				{
 					level = CHARGE_SYNC_START;  //同步失败
-					log_o(LOG_HOZON,"IVI chargeappointments inform tsp failed.");
+					log_o(LOG_HOZON,"HU charge appointment sync did not receive TSP ack.");
 				}
 			}
 			else
@@ -1113,7 +1101,10 @@ void PP_ChargeCtrl_HUBookingBackResp(void* HUbookingBackResp)
 	log_i(LOG_HOZON, "HUbookingBackResp.rvcReqType = %d",HUbookingBackResp_ptr->rvcReqType);
 	log_i(LOG_HOZON, "HUbookingBackResp.rvcResult = %d",HUbookingBackResp_ptr->rvcResult);
 	log_i(LOG_HOZON, "HUbookingBackResp.bookingId = %d",HUbookingBackResp_ptr->bookingId);
-	PP_rmtCharge_AppointBook.informtspflag = 0;
+	if(HUbookingBackResp_ptr->rvcResult == 1)
+	{
+		PP_rmtCharge_AppointBook.informtspflag = 0;
+	}
 	log_i(LOG_HOZON,"IVI chargeappointments inform tsp success.");	
 }
 
@@ -1163,17 +1154,15 @@ ivi_chargeAppointSt PP_ChargeCtrl_get_appointmenttime(void)
 	if(PP_rmtCharge_AppointBook.validFlg == 1)
 	{
 		appoint_time.effectivestate = 1;
-		appoint_time.hour = PP_rmtCharge_AppointBook.hour;
-		appoint_time.min = PP_rmtCharge_AppointBook.min;
-		appoint_time.timestamp = PP_rmtCharge_AppointBook.huBookingTime;
-		appoint_time.targetpower = PP_rmtCharge_AppointBook.targetSOC;
-		appoint_time.id = PP_rmtCharge_AppointBook.id;
 	}
-	return appoint_time;
-}
-void PP_ChargeCtrl_appoint_enable(void)
-{
-	if(PP_rmtCharge_AppointBook.validFlg == 1)
+	else
 	{
+		appoint_time.effectivestate = 0;
 	}
+	appoint_time.hour = PP_rmtCharge_AppointBook.hour;
+	appoint_time.min = PP_rmtCharge_AppointBook.min;
+	appoint_time.timestamp = PP_rmtCharge_AppointBook.huBookingTime;
+	appoint_time.targetpower = PP_rmtCharge_AppointBook.targetSOC;
+	appoint_time.id = PP_rmtCharge_AppointBook.id;
+	return appoint_time;
 }

@@ -10,6 +10,7 @@ typedef struct
 {
 	uint8_t req;
 	long reqType;
+	uint8_t sunroofcmd;
 	uint8_t CtrlSt;
 	uint64_t period;
 	uint8_t waitSt;

@@ -54,7 +54,6 @@ typedef struct
 {
 	PP_rmtseatheating_pack_t 	pack;
 	PP_rmtseatheatingSt_t		state;
-	int         start_seatheat_stage ;
 	unsigned long long PP_Respwaittime;
 	int         seatheat_success_flag;
 	int seatheat_type ;
@@ -104,10 +103,12 @@ void PP_seatheating_init(void)
 		PP_rmtseatheatCtrl[i].pack.DisBody.testFlag = 1;
 		PP_rmtseatheatCtrl[i].PP_Respwaittime = 0;
 		PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
-		PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_IDLE;
+		PP_rmtseatheatCtrl[i].state.CtrlSt = PP_SEATHEATING_IDLE;
 		PP_rmtseatheatCtrl[i].state.req = 0;
 	}
 }
+
+
 
 int PP_seatheating_mainfunction(void *task)
 {
@@ -115,7 +116,7 @@ int PP_seatheating_mainfunction(void *task)
 	int i ;
 	for(i=0;i<PP_seatheating_max;i++)
 	{
-		switch(PP_rmtseatheatCtrl[i].start_seatheat_stage)
+		switch(PP_rmtseatheatCtrl[i].state.CtrlSt)
 		{
 			case PP_SEATHEATING_IDLE:
 			{
@@ -137,10 +138,7 @@ int PP_seatheating_mainfunction(void *task)
 							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 							res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 						}
-						else
-						{
-						}
-						PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_REQSTART;
+						PP_rmtseatheatCtrl[i].state.CtrlSt = PP_SEATHEATING_REQSTART;
 					}
 					else if(PP_get_powerst() == 3) //上高压电操作失败
 					{
@@ -148,15 +146,15 @@ int PP_seatheating_mainfunction(void *task)
 						PP_rmtseatheatCtrl[i].state.failtype = PP_RMTCTRL_UPPOWERFAIL;
 						PP_rmtseatheatCtrl[i].state.req = 0;
 						PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
-						PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END;	
+						PP_rmtseatheatCtrl[i].state.CtrlSt = PP_SEATHEATING_END;	
 					}
 					else
 					{
 						if((PP_rmtseatheatCtrl[i].state.reqType == 0x0606)||(PP_rmtseatheatCtrl[i].state.reqType == 0x0608))
-						{
+						{	//防止座椅加热关闭多次下发
 							log_i(LOG_HOZON,"Power failure");
 							PP_rmtseatheatCtrl[i].state.req = 0;
-							PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END;	
+							PP_rmtseatheatCtrl[i].state.CtrlSt = PP_SEATHEATING_END;	
 						}
 					}
 				}
@@ -174,7 +172,7 @@ int PP_seatheating_mainfunction(void *task)
 					{
 						PP_can_send_data(PP_CAN_SEATHEAT,PP_rmtseatheatCtrl[i].level + 1,CAN_SEATHEATPASS);
 					}
-				   	PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_RESPWAIT;
+				   	PP_rmtseatheatCtrl[i].state.CtrlSt = PP_SEATHEATING_RESPWAIT;
 				    PP_rmtseatheatCtrl[i].PP_Respwaittime = tm_get_time();
 				}
 				else           //座椅加热关闭
@@ -187,7 +185,7 @@ int PP_seatheating_mainfunction(void *task)
 					{
 						PP_can_send_data(PP_CAN_SEATHEAT, 1,CAN_SEATHEATPASS);
 					}
-					PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_RESPWAIT;
+					PP_rmtseatheatCtrl[i].state.CtrlSt = PP_SEATHEATING_RESPWAIT;
 				    PP_rmtseatheatCtrl[i].PP_Respwaittime = tm_get_time();
 				}
 			}
@@ -211,7 +209,7 @@ int PP_seatheating_mainfunction(void *task)
 							 	 PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATPASS);//
 							  }
 				               PP_rmtseatheatCtrl[i].seatheat_success_flag = 1;
-				               PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
+				               PP_rmtseatheatCtrl[i].state.CtrlSt = PP_SEATHEATING_END ;
 							   log_o(LOG_HOZON,"Open seat heating successfully\n");
 				            }
 				        }
@@ -229,7 +227,7 @@ int PP_seatheating_mainfunction(void *task)
 							     }
 				             	PP_rmtseatheatCtrl[i].seatheat_success_flag = 1;
 							 	seat_requestpower_flag = 2;  //座椅加热关闭成功请求下电
-				             	PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
+				             	PP_rmtseatheatCtrl[i].state.CtrlSt = PP_SEATHEATING_END ;
 						     	log_o(LOG_HOZON,"Close seat heating successfully\n");
 				        	}
 				    	 }	
@@ -245,11 +243,11 @@ int PP_seatheating_mainfunction(void *task)
 							PP_can_send_data(PP_CAN_SEATHEAT,CAN_NOREQSEAT,CAN_SEATHEATPASS);//
 						}
 						PP_rmtseatheatCtrl[i].state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
-				       log_o(LOG_HOZON,"timeout\n");
-					   seat_requestpower_flag = 2;  //座椅加热关闭成功请求下电
-				       PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
-				       PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_END ;
-				    }
+				        log_o(LOG_HOZON,"BDM response timed out");
+					    seat_requestpower_flag = 2;  //座椅加热关闭失败请求下电
+				        PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
+				        PP_rmtseatheatCtrl[i].state.CtrlSt = PP_SEATHEATING_END ;
+				   }
 		    	}
 			}
 			break;
@@ -257,7 +255,7 @@ int PP_seatheating_mainfunction(void *task)
 			{
 				PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
 				memset(&rmtCtrl_Stpara,0,sizeof(PP_rmtCtrl_Stpara_t));
-				if(PP_rmtseatheatCtrl[i].state.style == RMTCTRL_TSP)//tsp
+				if(PP_rmtseatheatCtrl[i].state.style == RMTCTRL_TSP)
 				{
 					rmtCtrl_Stpara.reqType =PP_rmtseatheatCtrl[i].state.reqType;
 					rmtCtrl_Stpara.eventid = PP_rmtseatheatCtrl[i].pack.DisBody.eventId;
@@ -272,15 +270,10 @@ int PP_seatheating_mainfunction(void *task)
 					else
 					{
 						rmtCtrl_Stpara.rvcReqStatus = 3;  
-						//rmtCtrl_Stpara.rvcFailureType = 0xff;
 					}
 					res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 					clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_SEAT);//释放锁
-					PP_rmtseatheatCtrl[i].start_seatheat_stage = PP_SEATHEATING_IDLE;
-				}
-				else
-				{
-
+					PP_rmtseatheatCtrl[i].state.CtrlSt = PP_SEATHEATING_IDLE;
 				}
 			}
 			break;
@@ -296,12 +289,11 @@ void PP_SeatCtrl_SeatStMonitor(void *task)
 	/*
 		 * 检查睡眠条件
 		 * */
-	if((PP_rmtseatheatCtrl[0].start_seatheat_stage == PP_SEATHEATING_IDLE) && \
+	if((PP_rmtseatheatCtrl[0].state.CtrlSt == PP_SEATHEATING_IDLE) && \
 			(PP_rmtseatheatCtrl[0].state.req == 0) &&  \
-			(PP_rmtCtrl_cfg_HeatingSt(0) == 0)&&\
-			(PP_rmtseatheatCtrl[1].start_seatheat_stage == PP_SEATHEATING_IDLE) && \
-			(PP_rmtseatheatCtrl[1].state.req == 0) &&\
-			(PP_rmtCtrl_cfg_HeatingSt(0) == 0))
+			(PP_rmtseatheatCtrl[1].state.CtrlSt == PP_SEATHEATING_IDLE) && \
+			(PP_rmtseatheatCtrl[1].state.req == 0))
+
 	{
 		PP_Seat_Sleepflag = 1;
 	}
@@ -316,9 +308,7 @@ uint8_t PP_seatheating_start(void)
 	if((PP_rmtseatheatCtrl[0].state.req == 1)||(PP_rmtseatheatCtrl[1].state.req == 1)) 
 	  
 	{
-		//log_o(LOG_HOZON,"seatheat start\n");
-		return 1;
-		
+		return 1;	
 	}
 	else
 	{
@@ -326,23 +316,20 @@ uint8_t PP_seatheating_start(void)
 	}
 }
 
-
 uint8_t PP_seatheating_end(void)
 {
-	if((PP_rmtseatheatCtrl[0].start_seatheat_stage == PP_SEATHEATING_IDLE) && \
+	if((PP_rmtseatheatCtrl[0].state.CtrlSt == PP_SEATHEATING_IDLE) && \
 			(PP_rmtseatheatCtrl[0].state.req == 0) &&  \
-			(PP_rmtseatheatCtrl[1].start_seatheat_stage == PP_SEATHEATING_IDLE) &&
+			(PP_rmtseatheatCtrl[1].state.CtrlSt == PP_SEATHEATING_IDLE) &&
 			(PP_rmtseatheatCtrl[1].state.req == 0))
 	{
 		return 1;
 	}
 	else
 	{
-		//log_o(LOG_HOZON,"seat");
 		return 0;
 	}
 }
-
 
 int SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 {
@@ -394,11 +381,8 @@ int SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 void PP_seatheating_ClearStatus(void)
 {
 	clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_SEAT);//释放锁
-	
 	PP_rmtseatheatCtrl[0].state.req = 0;
-	
-	PP_rmtseatheatCtrl[1].state.req = 0;
-	
+	PP_rmtseatheatCtrl[1].state.req = 0;	
 }
 int PP_get_seat_requestpower_flag()
 {
@@ -414,11 +398,30 @@ unsigned char GetPP_SeatCtrl_Sleep(void)
 	return PP_Seat_Sleepflag;
 }
 
+uint8_t PP_seatheating_cmdoff(void)
+{
+	if((PP_rmtCtrl_cfg_HeatingSt(0) == 0)&&(PP_rmtCtrl_cfg_HeatingSt(1) == 0))
+	{
+		log_o(LOG_HOZON,"PP_seatheating_cmdoff");
+		return 1;
+	}
+	if(PP_rmtCtrl_cfg_HeatingSt(0) != 0)
+	{
+		PP_rmtseatheatCtrl[0].state.req = 1;
+		PP_rmtseatheatCtrl[0].state.reqType = PP_RMTCTRL_MAINHEATCLOSE;
+	}
+	if(PP_rmtCtrl_cfg_HeatingSt(1) != 0)
+	{
+		PP_rmtseatheatCtrl[1].state.req = 1;
+		PP_rmtseatheatCtrl[1].state.reqType = PP_RMTCTRL_PASSENGERHEATCLOSE;	
+	}
+	return 0;
+}
+
 
 /************************shell命令测试使用**************************/
 void PP_seatheating_SetCtrlReq(uint32_t reqType,unsigned char level)
 {
-	
 	PP_rmtseatheatCtrl[0].state.reqType = (long)reqType;
 	PP_rmtseatheatCtrl[0].state.req = 1;
 	PP_rmtseatheatCtrl[0].state.style = RMTCTRL_TSP;
@@ -431,27 +434,6 @@ void PP_seatheating_SetCtrlReq(uint32_t reqType,unsigned char level)
 }
 /************************shell命令测试使用**************************/
 
-uint8_t PP_seatheating_cmdoff(void)
-{
-	if((PP_rmtCtrl_cfg_HeatingSt(0) == 0)&&(PP_rmtCtrl_cfg_HeatingSt(1) == 0))
-	{
-		log_o(LOG_HOZON,"PP_seatheating_cmdoff");
-		return 1;
-	}
-	if(PP_rmtCtrl_cfg_HeatingSt(0) != 0)
-	{
-		PP_rmtseatheatCtrl[0].state.req = 1;
-		PP_rmtseatheatCtrl[0].state.reqType = PP_RMTCTRL_MAINHEATCLOSE;
-		
-	}
-	if(PP_rmtCtrl_cfg_HeatingSt(1) != 0)
-	{
-		PP_rmtseatheatCtrl[1].state.req = 1;
-		PP_rmtseatheatCtrl[1].state.reqType = PP_RMTCTRL_PASSENGERHEATCLOSE;
-		
-	}
-	return 0;
-}
 
 
 

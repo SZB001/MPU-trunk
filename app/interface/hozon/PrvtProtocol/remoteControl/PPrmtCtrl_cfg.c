@@ -71,8 +71,9 @@ unsigned char PP_rmtCtrl_cfg_doorlockSt(void)
 	return gb_data_doorlockSt();
 }
 
+
 /*
- 	 读取BDM尾门状态
+ 	 读取尾门状态
 */
 unsigned char PP_rmtCtrl_cfg_bdmreardoorSt(void)
 {
@@ -88,6 +89,7 @@ unsigned char PP_rmtCtrl_cfg_bdmreardoorSt(void)
 /*
  	 读取蓝牙启动有效性状态
 */
+
 unsigned char PP_rmtCtrl_cfg_bluestartSt(void)
 {
 	return PrvtProt_SignParse_BleStartSt();
@@ -339,21 +341,6 @@ unsigned char PP_rmtCtrl_cfg_PassHeatingSt(void)
 	}
 	return st; 
 }
-/*     蓝牙门锁状态        */
-uint8_t PP_rmtCtrl_cfg_bt_doorst(void)
-{
-	uint8_t st = 1;
-	if(PP_rmtCtrl_cfg_doorlockSt() == 0)
-	{
-		st = 1;  //门已锁
-	}
-	else if(PP_rmtCtrl_cfg_doorlockSt() == 1)
-	{
-		st = 2;  //门已关
-	}
-	return st;
-}
-/*     蓝牙天窗状态        */
 uint8_t PP_rmtCtrl_cfg_bt_sunroofst(void)
 {
 	uint8_t st = 1;
@@ -372,27 +359,3 @@ uint8_t PP_rmtCtrl_cfg_bt_sunroofst(void)
 	return st;
 }
 
-/*     蓝牙充电状态        */
-uint8_t PP_rmtCtrl_cfg_bt_chargest(void)
-{
-	uint8_t st = 1;
-	if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1)
-	{
-		st  = 2;
-	}
-	else if(PP_rmtCtrl_cfg_chargeOnOffSt() == 0)
-	{
-		st  = 1;
-	}
-	return st;
-}
-/*     蓝牙高压电状态        */
-uint8_t PP_rmtCtrl_cfg_bt_highpowerst(void)
-{
-	uint8_t st = 1;
-	if(PP_rmtCtrl_cfg_RmtStartSt() == 1)
-	{
-		st = 2;
-	}
-	return st;
-}
