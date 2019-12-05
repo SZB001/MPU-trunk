@@ -864,7 +864,7 @@ void PrvtPro_ShowPara(void)
     cfg_get_para(CFG_ITEM_INTEST_HW,hw,&len);
     if(hw[0] == 0)
     {
-		memcpy(hw,"00.00.00",8);
+		memcpy(hw,"00.00",5);
     }
 	log_o(LOG_HOZON, "hozon hardware version : %s\n",hw);
 	log_o(LOG_HOZON, "/*****************data over*****************/");

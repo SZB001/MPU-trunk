@@ -444,7 +444,7 @@ int app_shell_drcfg(int argc, const char **argv)
     ret |= cfg_get_para(CFG_ITEM_INTEST_HW,hw,&len);
     if(hw[0] == 0)
     {
-        memcpy(hw,"00.00.00",8);
+        memcpy(hw,"00.00",5);
     }
     shellprintf("HOZON HARDWARE VERSION = %s\r\n", hw);
 
