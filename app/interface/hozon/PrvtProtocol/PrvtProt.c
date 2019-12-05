@@ -857,7 +857,7 @@ void PrvtPro_ShowPara(void)
 	PP_CertDL_showPara();
 	log_o(LOG_HOZON, "/*****************data over*****************/");
 	log_o(LOG_HOZON, "/****************show version***************/");
-	log_o(LOG_HOZON, "hozon software version : %s\n",DID_F1B0_SW_FIXED_VER);
+	log_o(LOG_HOZON, "hozon software version : %s\n",DID_F1B0_SW_UPGRADE_VER);
 	char hw[32] = {0};
 	unsigned int len;
     len = sizeof(hw);

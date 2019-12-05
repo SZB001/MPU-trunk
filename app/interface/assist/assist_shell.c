@@ -437,7 +437,7 @@ int app_shell_drcfg(int argc, const char **argv)
     upg_get_mcu_blt_ver(version, sizeof(version));
     shellprintf("INTEST MCU BOOTLOADER VERSION = %s\r\n", version);
 
-    shellprintf("HOZON SOFTWARE VERSION  = %s\r\n", DID_F1B0_SW_FIXED_VER);
+    shellprintf("HOZON SOFTWARE VERSION  = %s\r\n", DID_F1B0_SW_UPGRADE_VER);
 
     char hw[32] = {0};
     len = sizeof(hw);
