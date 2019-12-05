@@ -1192,8 +1192,19 @@ int uds_did_get_hw_version(unsigned char *did, unsigned int len)
         log_e(LOG_UDS, "get hw version len error, len:%d", len);
         return UDS_INVALID_PARA;
     }
-    memcpy(did, DID_F191_HW_VERSION, DID_LEN_HW_VERSION);
+    memset(did, 0x00, DID_LEN_HARD_NO);
     
+    char cfgHW[32]= {0};
+    unsigned int cfgHWLen = sizeof(cfgHW);
+    int getCfgRet = cfg_get_para(CFG_ITEM_INTEST_HW, cfgHW, &cfgHWLen);
+    if(getCfgRet == 0)
+    {
+        memcpy(did, cfgHW, DID_LEN_HARD_NO);
+    }
+    else
+    {
+        log_e(LOG_UDS, "get INTEST HW error ret:%d!", getCfgRet);
+    }
     return 0;
 }
 int uds_did_get_tester_sn(unsigned char *did, unsigned int len)
@@ -1358,8 +1369,19 @@ int uds_did_get_hard_no(unsigned char *did, unsigned int len)
         log_e(LOG_UDS, "get Vehicle Manufacturer ECU Hardware Number Data Identifier len error, len:%d", len);
         return UDS_INVALID_PARA;
     }
-    memcpy(did, DID_F191_HW_VERSION, DID_LEN_HARD_NO);
+    memset(did, 0x00, DID_LEN_HARD_NO);
     
+    char cfgHW[32]= {0};
+    unsigned int cfgHWLen = sizeof(cfgHW);
+    int getCfgRet = cfg_get_para(CFG_ITEM_INTEST_HW, cfgHW, &cfgHWLen);
+    if(getCfgRet == 0)
+    {
+        memcpy(did, cfgHW, DID_LEN_HARD_NO);
+    }
+    else
+    {
+        log_e(LOG_UDS, "get INTEST HW error ret:%d!", getCfgRet);
+    }
     return 0;
 }
 
