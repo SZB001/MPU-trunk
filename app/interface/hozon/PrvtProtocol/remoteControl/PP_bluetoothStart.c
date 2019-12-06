@@ -167,22 +167,15 @@ int SetPP_bluetoothstart_Request(char ctrlstyle,void *appdatarmtCtrl,void *dispt
 	{
 		switch(ctrlstyle)
 		{
-			case RMTCTRL_TSP:
-			{
-			}
-			break;
 			case RMTCTRL_BLUETOOTH:
 			{
 				unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
 				if(cmd == 2 )//蓝牙一键启动
 				{
 					PP_bluetoothstart.state.cmd = 2;
-				}
-				else
-				{
-				}
-				PP_bluetoothstart.state.req = 1;
-				PP_bluetoothstart.state.style = RMTCTRL_BLUETOOTH;		 
+					PP_bluetoothstart.state.req = 1;
+					PP_bluetoothstart.state.style = RMTCTRL_BLUETOOTH;		
+				} 
 			}
 			break;
 			default:
@@ -206,7 +199,8 @@ int PP_bluetoothstart_start(void)
 
 int PP_bluetoothstart_end(void)
 {
-	if((PP_bluetoothstart.state.CtrlSt == PP_BLUETOOTHSTART_IDLE) &&(PP_bluetoothstart.state.req == 0))
+	if((PP_bluetoothstart.state.CtrlSt == PP_BLUETOOTHSTART_IDLE) &&  \
+		(PP_bluetoothstart.state.req == 0))
 	{
 		return 1;
 	}

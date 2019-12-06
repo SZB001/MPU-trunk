@@ -355,7 +355,7 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 		}
 		break;
 		case TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE:
-		{
+		{	//  通知IHU上传日志
 			Tbox__Net__IhuLogfile logfile;
 			tbox__net__ihu_logfile__init(&logfile);
 			TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE;
@@ -363,20 +363,20 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 		}
 		break;
 		case TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_ACTIVESTATE_RESULT:
-		{
+		{	//  通知IHU已激活
 			Tbox__Net__TboxActiveState state;
 			tbox__net__tbox_active_state__init( &state );
 			TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_ACTIVESTATE_RESULT;
-			state.active_state = 1; //已激活
+			state.active_state = 1; 
 			TopMsg.tbox_activestate = &state ;	
 		}
 		break;
 		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO:
-		{
+		{   //  TBOX信息同步	
 		}
 		break;
 		case TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS:
-		{
+		{	//	充电预约同步
 			appointment_sync = 1;  //同步标志
 			Tbox__Net__TboxChargeAppoointmentSet chager;
 			tbox__net__tbox_charge_appoointment_set__init(&chager);
@@ -384,11 +384,17 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 			appoint_time = PP_ChargeCtrl_get_appointmenttime();
 			TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS;
 			chager.timestamp = appoint_time.timestamp;
+			log_i(LOG_IVI,"chager.timestamp = %d",chager.timestamp);
 			chager.id = appoint_time.id;
+			log_i(LOG_IVI,"chager.id = %d",chager.id);
 			chager.hour = appoint_time.hour;
+			log_i(LOG_IVI,"chager.hour = %d",chager.hour);
 			chager.min = appoint_time.min;
+			log_i(LOG_IVI,"chager.min = %d",chager.min);
 			chager.targetpower = appoint_time.targetpower;
+			log_i(LOG_IVI,"chager.targetpower = %d",chager.targetpower);
 			chager.effectivestate = appoint_time.effectivestate;
+			log_i(LOG_IVI,"chager.effectivestate = %d",chager.effectivestate);
 			TopMsg.tbox_charge_appoointmentset = &chager;
 		}
 		break;
@@ -411,7 +417,6 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
     if(hu_pki_en == 0)
 	{
 	    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
-
 	    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
 	    {
 	        log_e(LOG_IVI, "ivi_message_request send response failed!!!");
@@ -485,7 +490,6 @@ void ivi_remotediagnos_request_send( int fd, int type)
 	if(hu_pki_en == 0)
 	{
 	    ret = send(fd, send_buf, (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen), 0);
-
 	    if (ret < (IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE + IVI_PKG_MSG_LEN + szlen))
 	    {
 	        log_e(LOG_IVI, "ivi remotediagnos send response failed!!!");
@@ -574,17 +578,17 @@ void ivi_signalpower_response_send(int fd  )
          if(signal_type == 0)
          {
              TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__GSM;
-			 log_o(LOG_IVI,"TYPE 2G\n");
+			 log_o(LOG_IVI,"TYPE 2G");
          }
          else if(signal_type == 2)
          {
              TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__UMTS;
-			 log_o(LOG_IVI,"TYPE 3G\n");
+			 log_o(LOG_IVI,"TYPE 3G");
           }
           else if(signal_type == 7)
           {
               TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__LTE;
-			  log_o(LOG_IVI,"TYPE 4G\n");
+			  log_o(LOG_IVI,"TYPE 4G");
           }
           else
           {
@@ -1004,12 +1008,12 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 			//获取TBOX 软件版本和硬件版本
 			tboxinfo.software_version = DID_F1B0_SW_FIXED_VER;
 			char hw[32] = {0};
-			len = sizeof(hw);
-			cfg_get_para(CFG_ITEM_INTEST_HW,hw,&len);
-			if(hw[0] == 0)
-			{
-				memcpy(hw,"00.00",5);
-			}
+    		len = sizeof(hw);
+    		cfg_get_para(CFG_ITEM_INTEST_HW,hw,&len);
+    		if(hw[0] == 0)
+    		{
+                memcpy(hw,"00.00",5);
+    		}
 			tboxinfo.hardware_version = hw;
 			//获取SIM卡ICCID
 			if(PP_rmtCfg_getIccid((uint8_t *)iccid) == 1)
@@ -2122,11 +2126,11 @@ void tbox_ivi_push_fota_informHU(uint8_t flag)
 uint8_t tbox_ivi_ecall_trigger(void)
 {
 	uint8_t flag = 0;
-	if((dev_get_SRS_signal() != 2)&&( flt_get_by_id(SOSBTN) != 2))
+	if((dev_get_SRS_signal() != 2)&&( flt_get_by_id(SOSBTN) != 2)&&(PP_rmtCtrl_cfg_CrashOutputSt() != 1))
 	{
 		flag = 0;  //ECALL触发标志位清除
 	}
-	else if((dev_get_SRS_signal() == 2)||(2 == flt_get_by_id(SOSBTN)))
+	else if((dev_get_SRS_signal() == 2)||(2 == flt_get_by_id(SOSBTN))||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
 	{
 		flag = 1;//ECALL触发
 	}

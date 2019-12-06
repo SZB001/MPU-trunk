@@ -252,6 +252,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 						PP_rmtChargeCtrl.fail     = 0;
 						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_IDLE;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
+						PP_rmtChargeCtrl.state.chargecmd = 0;
 					}
 				}
 			}
@@ -298,10 +299,10 @@ int PP_ChargeCtrl_mainfunction(void *task)
 static void PP_ChargeCtrl_chargeStMonitor(void)
 {
 	PP_rmtCtrl_Stpara_t rmtCtrl_chargeStpara;
-	static uint64_t listentime;
+	//static uint64_t listentime;
 	long currTimestamp;
 	static uint64_t waittime;
-	static uint8_t level;
+	//static uint8_t level;
 /* *
  *	检查预约充电
  * */
@@ -329,39 +330,20 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 			(currTimestamp >= PP_rmtChargeCtrl.state.appointchargeTime))
 		{
 			PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);  //去使能
-			listentime = 0;
+			//listentime = 0;
 		}
 		else  //没有预约或有预约但不在6个小时之后
 		{
-			switch(level)
+			if(PP_rmtChargeCtrl.state.chargecmd == PP_CHARGECTRL_OPEN)  //有预约，且在6个小时之外，此时预约使能应该已经置起
 			{
-				case 0:
+				PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);  //有开启立即充电，先把预约使能抑制
+			}
+			else
+			{
+				if(PP_RMTCTRL_CFG_CHARGEING != PP_rmtCtrl_cfg_chargeSt()) //不在充电中
 				{
-					if(PP_rmtChargeCtrl.state.chargecmd == PP_CHARGECTRL_OPEN)
-					{
-						PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);
-						//PP_rmtChargeCtrl.state.req = 1;
-						//PP_rmtChargeCtrl.state.chargecmd = 0;	
-						listentime = tm_get_time();
-						level = 1;
-					}
+					PP_can_send_data(PP_CAN_CHAGER,CAN_SETAPPOINT,0);
 				}
-				break;
-				case 1:
-				{
-					if(tm_get_time() - listentime > 3000) //延时3秒，在判断充电的情况
-					{
-						if(PP_RMTCTRL_CFG_CHARGEING != PP_rmtCtrl_cfg_chargeSt())
-						{
-							PP_can_send_data(PP_CAN_CHAGER,CAN_SETAPPOINT,0);
-						}
-						listentime = 0;
-						level = 0;
-					}
-				}
-				break;
-				default:
-				break;	
 			}
 		}
 		/********************************6个小时监测****************************/
