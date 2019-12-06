@@ -2,7 +2,7 @@
 #define __GPIO_H__
 #include "gpio_def.h"
 
-#define GPIO_EN5_CTRL          PINNAME_NET_STATUS       // Purpose:Power Supply uart 1.8V and audio
+//#define GPIO_EN5_CTRL          PINNAME_NET_STATUS       // Purpose:Power Supply uart 1.8V and audio
 #define GPIO_PM_ENABLE         PINNAME_PM_ENABLE_WIFI   // Purpose:WIFI Power 
 #define GPIO_GPS_RESET         PINNAME_WLAN_EN          // Purpose:extern GPS reset
 #define GPIO_SUB_ANT_CTRL      PINNAME_GPIO5            // PIN:RF_CTL2

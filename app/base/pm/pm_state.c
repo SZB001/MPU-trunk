@@ -126,7 +126,7 @@ void pm_mcu_wakeup(void)
     st_set(ST_ITEM_APP_SLEEP, &app_status, sizeof(app_status));
 
     /*power on 1.8V*/
-    gpio_set_level(GPIO_EN5_CTRL, PINLEVEL_HIGH);
+    //gpio_set_level(GPIO_EN5_CTRL, PINLEVEL_HIGH);
 }
 
 /****************************************************************
@@ -145,7 +145,7 @@ void pm_ring_wakeup(void)
 	    pm_notify_moudle(PM_MSG_RUNNING);
 
 	    /*power on 1.8V*/
-	    gpio_set_level(GPIO_EN5_CTRL, PINLEVEL_HIGH);
+	    //gpio_set_level(GPIO_EN5_CTRL, PINLEVEL_HIGH);
 	    pm_wakeup_high();
 
 	}
