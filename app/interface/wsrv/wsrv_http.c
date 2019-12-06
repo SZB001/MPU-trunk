@@ -349,8 +349,12 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
         if (0 == strcmp(dev_buf, "tbox"))
         {
+            memcpy(h_ver, "00.00", 5);
+        
             memcpy(s_ver, DID_F1B0_SW_UPGRADE_VER, sizeof(DID_F1B0_SW_UPGRADE_VER));
-            memcpy(h_ver, DID_F191_HW_VERSION, sizeof(DID_F191_HW_VERSION));
+            //memcpy(h_ver, DID_F191_HW_VERSION, sizeof(DID_F191_HW_VERSION));
+            cfg_len = 32;
+            cfg_get_para(CFG_ITEM_INTEST_HW, h_ver, &cfg_len);
             PrvtProt_gettboxsn((char *)sn);
             memcpy(partnum, DID_F187_SPARE_PART_NO, sizeof(DID_F187_SPARE_PART_NO));
             memcpy(supplier, DID_F18A_SUPPLIER_IDENTIFIER, sizeof(DID_F18A_SUPPLIER_IDENTIFIER));
@@ -561,16 +565,24 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
         log_o(LOG_WSRV, "Get Cmd Gmobi MODEIN");
 
-        s32ret = SetPP_rmtCtrl_FOTA_startInform();
-        if(0 == s32ret)
+        if(!dev_get_KL15_signal())
         {
-            s_u8BDCMAuthResult = 0;
-            log_o(LOG_WSRV, "Mode In Wait BDCM Auth");
+            s32ret = SetPP_rmtCtrl_FOTA_startInform();
+            if(0 == s32ret)
+            {
+                s_u8BDCMAuthResult = 0;
+                log_o(LOG_WSRV, "Mode In Wait BDCM Auth");
+            }
+            else
+            {
+                s_u8BDCMAuthResult = 2;
+                log_e(LOG_WSRV, "Mode In Other Task Doing Can Not Upgrade ECU: %d", s32ret);
+            }
         }
         else
         {
-            s_u8BDCMAuthResult = 2;
-            log_e(LOG_WSRV, "Mode In Other Task Doing Can Not Upgrade ECU: %d", s32ret);
+            s_u8BDCMAuthResult = 3;
+            log_o(LOG_WSRV, "It Is Not In Off, So Can Not Enter OTA mode");
         }
 
         set_normal_information(rsp_buf, body_buf, MIME_JSON);

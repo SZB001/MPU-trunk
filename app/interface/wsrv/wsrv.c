@@ -15,6 +15,7 @@ author        chenyin
 #include "scom_msg_def.h"
 #include "scom_tl.h"
 #include "../../base/dev/dev_mcu_cfg.h"
+#include "pm_api.h"
 
 static pthread_t wsrv_tid;
 static unsigned char msgbuf[TCOM_MAX_MSG_LEN];
@@ -299,6 +300,17 @@ void *wsrv_main(void)
                     else if (MPU_MID_MID_PWDG == msgheader.msgid)
                     {
                         pwdg_feed(MPU_MID_WSRV);
+                    }
+                    else if(PM_MSG_RUNNING == msgheader.msgid)
+                    {
+                        system("goml.bin");
+                    }
+                    else if((PM_MSG_SLEEP == msgheader.msgid) ||
+                            (PM_MSG_EMERGENCY == msgheader.msgid) ||
+                            (PM_MSG_OFF == msgheader.msgid))
+                    {
+                        system("killall -9 goml.bin");
+                        system("killall -9 otamaster");
                     }
                 }
             }
