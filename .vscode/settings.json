@@ -50,6 +50,7 @@
         "fotanoticereqinfo.h": "c",
         "prvtprot_fotainfopush.h": "c",
         "fotanoticerespinfo.h": "c",
-        "pwdg.h": "c"
+        "pwdg.h": "c",
+        "prvtprot_callcenter.h": "c"
     }
 }

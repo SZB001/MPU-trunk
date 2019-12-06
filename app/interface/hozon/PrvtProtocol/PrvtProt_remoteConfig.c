@@ -1727,6 +1727,17 @@ uint8_t PP_rmtCfg_enable_directConnEnable(void)
 	return rmt_FICM.directConnEnable;
 }
 
+uint8_t PP_rmtCfg_enable_actived(void)
+{
+	unsigned int len;
+	App_rmtCfg_COMMON_t rmt_COMMON;
+	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
+
+	return rmt_COMMON.actived;
+}
 
 uint8_t PP_rmtCfg_enable_remotecontorl(void)
 {
@@ -1776,7 +1787,7 @@ uint8_t PP_rmtCfg_enable_ecall(void)
 	return rmt_COMMON.eCallEnabled;
 }
 
-uint8_t PP_rmtCfg_enable_actived(void)
+uint8_t PP_rmtCfg_enable_datacollect(void)
 {
 	unsigned int len;
 	App_rmtCfg_COMMON_t rmt_COMMON;
@@ -1785,7 +1796,7 @@ uint8_t PP_rmtCfg_enable_actived(void)
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
 	pthread_mutex_unlock(&cfgdtmtx);
 	
-	return rmt_COMMON.actived;
+	return rmt_COMMON.dcEnabled;
 }
 uint8_t PP_rmtCfg_enable_dtcEnabled(void)
 {
@@ -1865,6 +1876,54 @@ uint8_t PP_rmtCfg_enable_journeysEnabled(void)
 	pthread_mutex_unlock(&cfgdtmtx);
 	
 	return rmt_COMMON.journeysEnabled;
+}
+
+uint8_t PP_rmtCfg_enable_online(void)
+{
+	unsigned int len;
+	App_rmtCfg_COMMON_t rmt_COMMON;
+	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
+	
+	return rmt_COMMON.onlineInfEnabled;
+}
+
+uint8_t PP_rmtCfg_enable_carEmpower(void)
+{
+	unsigned int len;
+	App_rmtCfg_COMMON_t rmt_COMMON;
+	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
+	
+	return rmt_COMMON.carEmpowerEnabled;
+}
+
+uint8_t PP_rmtCfg_enable_evtReport(void)
+{
+	unsigned int len;
+	App_rmtCfg_COMMON_t rmt_COMMON;
+	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
+	
+	return rmt_COMMON.eventReportEnabled;
+}
+
+uint8_t PP_rmtCfg_enable_carAlarm(void)
+{
+	unsigned int len;
+	App_rmtCfg_COMMON_t rmt_COMMON;
+	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
+	
+	return rmt_COMMON.carAlarmEnabled;
 }
 
 /*

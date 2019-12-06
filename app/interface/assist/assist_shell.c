@@ -273,6 +273,54 @@ int app_shell_drcfg(int argc, const char **argv)
 	ret |= cfg_get_para(CFG_ITEM_EN_PKI,&EnFlag,&len);
     shellprintf("PKI ENABLE = %u\r\n", EnFlag);
 
+    EnFlag = PP_rmtCfg_enable_actived();
+    shellprintf("ACTIVED ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_remotecontorl();
+    shellprintf("RMT CTRL ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_icall();
+    shellprintf("ICALL ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_bcall();
+    shellprintf("BCALL ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_ecall();
+    shellprintf("ECALL ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_dtcEnabled();
+    shellprintf("RMT DIAG ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_dcEnabled();
+    shellprintf("DATA COLLECT ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_rChargeEnabled();
+    shellprintf("RMT CHARGE ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_svtEnabled();
+    shellprintf("ANTITHEFT ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_vsEnabled();
+    shellprintf("VEHI STATUS ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_btKeyEntryEnabled();
+    shellprintf("BLE KEY ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_journeysEnabled();
+    shellprintf("JOURNEY ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_online();
+    shellprintf("ONLINE ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_carEmpower();
+    shellprintf("CAR EMPOWER ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_carAlarm();
+    shellprintf("CAR ALARM ENABLE = %u\r\n", EnFlag);
+
+    EnFlag = PP_rmtCfg_enable_evtReport();
+    shellprintf("EVT REPORT ENABLE = %u\r\n", EnFlag);
+
     len = sizeof(commpara.data_val);
     ret |= cfg_get_para(CFG_ITEM_FOTON_INTERVAL, &commpara.data_val, (uint32_t *)&len);
     shellprintf("Data reporting interval = %ds\r\n", commpara.data_val);
