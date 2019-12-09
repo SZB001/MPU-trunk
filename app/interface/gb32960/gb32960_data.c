@@ -1771,25 +1771,18 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     {
         if(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN+i])
         {
-            if(2 == dbc_get_signal_from_id(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN+i])->value)//��
+            if(dbc_get_signal_from_id(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN+i])->value)//��
             {
                 buf[len++] = 1;
-                gbinf->gb_VSExt.oldst[GB_VS_DRIDOORST+i]  = 1;
-            }
-            else if(0 == dbc_get_signal_from_id(gbinf->event.info[GB_EVT_LEFTDRVDOOR_OPEN])->value)//��
-            {
-            	 buf[len++] = 0;
-            	 gbinf->gb_VSExt.oldst[GB_VS_DRIDOORST+i]  = 0;
             }
             else
             {
-            	buf[len++] = gbinf->gb_VSExt.oldst[GB_VS_DRIDOORST+i];
+            	buf[len++] = 0;
             }
         }
         else
         {
             buf[len++] = 0xff;
-            gbinf->gb_VSExt.oldst[GB_VS_DRIDOORST+i]  = 0xff;
         }
     }
 
