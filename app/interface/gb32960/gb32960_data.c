@@ -809,11 +809,11 @@ static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
 				if(gbinf->event.oldst[i] == 0)
 				{
 					gbinf->event.triflg = 1;
+					gbinf->event.oldst[i] = gbinf->event.newst[i];
+					(*eventcnt_ptr) += 1;
+					buf[len++] = gb_eventCode[i].code >> 8;
+					buf[len++] = gb_eventCode[i].code;
 				}
-				gbinf->event.oldst[i] = gbinf->event.newst[i];
-				(*eventcnt_ptr) += 1;
-				buf[len++] = gb_eventCode[i].code >> 8;
-				buf[len++] = gb_eventCode[i].code;
 			}
 			else 
 			{
