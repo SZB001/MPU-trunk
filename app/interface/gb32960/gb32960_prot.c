@@ -1983,3 +1983,26 @@ int gb32960_gbLogoutSt(void)
 
 	return 0;
 }
+
+/*
+* 读取国标每秒实时数据（整包数据：包含协议头和数据、校验位）
+*/
+uint8_t gb_data_perReportPack(uint8_t *data,int *len)
+{
+    int length;
+    if(1 == gb_data_perPackValid())
+    {
+        *len = gb_pack_head(0x02, 0xfe, data);
+        /* report data */
+        gb_data_perPack(data + (*len) + 2,&length);
+        /* data length */
+        data[(*len)++] = length >> 8;
+        data[(*len)++] = length;
+        *len = *len + length;
+        /* check sum */
+        data[*len] = gb_checksum(data + 2, *len - 2);
+        return 1;
+    }
+
+    return 0;
+}

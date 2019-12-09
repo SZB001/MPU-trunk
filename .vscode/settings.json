@@ -51,6 +51,7 @@
         "prvtprot_fotainfopush.h": "c",
         "fotanoticerespinfo.h": "c",
         "pwdg.h": "c",
-        "prvtprot_callcenter.h": "c"
+        "prvtprot_callcenter.h": "c",
+        "gb32960.h": "c"
     }
 }

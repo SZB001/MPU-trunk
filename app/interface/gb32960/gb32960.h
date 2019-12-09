@@ -32,6 +32,13 @@ typedef struct
     list_t  link;
 } gb_pack_t;
 
+typedef struct
+{
+    uint8_t  flag;
+    uint8_t  data[1024];
+    uint32_t len;
+} gb_PackPerSecond_t;
+
 extern void gb_data_put_back(gb_pack_t *rpt);
 extern void gb_data_put_send(gb_pack_t *rpt);
 extern void gb_data_ack_pack(void);
@@ -47,6 +54,6 @@ extern int gb_data_noreport(void);
 extern void gb_data_set_intv(uint16_t intv);
 extern int gb_data_get_intv(void);
 extern void gb_data_set_pendflag(int flag);
-
-
+extern uint8_t gb_data_perPack(uint8_t *data,int *len);
+extern uint8_t gb_data_perPackValid(void);
 #endif

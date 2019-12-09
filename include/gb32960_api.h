@@ -276,4 +276,5 @@ extern long getgb_data_RFDoorOpenSt(void);
 extern long getgb_data_LRDoorOpenSt(void);
 extern long getgb_data_RRDoorOpenSt(void);
 extern long getgb_data_CLMLHTemp(void);
+extern uint8_t gb_data_perReportPack(uint8_t *data,int *len);
 #endif
