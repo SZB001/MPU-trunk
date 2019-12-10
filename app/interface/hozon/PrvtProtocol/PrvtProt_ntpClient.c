@@ -29,7 +29,7 @@ static int PP_ntp_service(char * serviceURL);
 static int PP_ntp_shell_setntpaddr(int argc , const const char **argv);
 static void PP_ntp_calibrationTime(void);
 static void *PP_ntp_main(void);
-
+static uint64_t caltm_time;
 /*
 * ntp校时初始化
 */
@@ -38,6 +38,7 @@ void PP_ntp_Init(void)
     ntp_test_flag = 0;
     ntp_srv_cnt = 0;
     shell_cmd_register("hozon_setntpaddr", PP_ntp_shell_setntpaddr, "set ntp addr");
+    caltm_time = tm_get_time();
 }
 
 void PP_ntp_run(void)
@@ -71,16 +72,13 @@ static void *PP_ntp_main(void)
 */
 static void PP_ntp_calibrationTime(void)
 {
-    static uint64_t caltm_time = 0;
-    
     if((!gb32960_networkSt() 
         || (dev_is_time_syn())) && (!ntp_test_flag))
     {
         return;
     }
 
-    if ((0 == caltm_time) || \
-            (tm_get_time() - caltm_time > 20000))
+    if(tm_get_time() - caltm_time > 20000)
     {
         ntp_srv_cnt = (ntp_srv_cnt < NTP_SERVICE_CNT)? ntp_srv_cnt : 0;
         if(PP_ntp_service(ntp_serverURL[ntp_srv_cnt]))
