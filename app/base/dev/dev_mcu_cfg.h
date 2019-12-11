@@ -20,13 +20,13 @@ typedef struct MCU_PARA_T
     unsigned short acc_vecm_ths;
     unsigned char  reserved[21];
     unsigned char  cs;
-} MCU_PARA_T;
+} __attribute__((packed)) MCU_PARA_T;
 
 typedef struct MCU_CFG_T
 {
     MCU_PARA_T   para;
     unsigned int sn;
-} MCU_CFG_T;
+} __attribute__((packed)) MCU_CFG_T;
 
 typedef enum MCU_CFG_ID
 {
