@@ -80,7 +80,7 @@ void UDS_SRV_SecrityAcess(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_DL
     }
 
 
-    uint8_t sub_func_tmp = p_u8PDU_Data[1] & suppressPosRspMsgIndicationBitMask;
+    uint8_t sub_func_tmp = p_u8PDU_Data[1];
 
     /* sub-functionNotSupported */
     if (get_request_security_level(sub_func_tmp) == 0)
