@@ -63,6 +63,7 @@ description�� include the header file
 #include "PrvtProt_VehiInfo.h"
 #include "PrvtProt_lock.h"
 #include "../../base/uds/server/uds_did.h"
+#include "FileUpload/PrvtProt_FileUpload.h"
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -204,6 +205,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			PP_heartbeat.period = hbtimeout;
 			InitPP_VehiInfo_Parameter();
 		  	InitPP_lock_parameter();
+			InitPP_FileUpload_Parameter();
 		}
         break;
     }
@@ -241,6 +243,7 @@ int PrvtProt_run(void)
     }
 
 	PP_ntp_run();
+	//PP_FileUpload_run();
 #else
 	res = 	PrvtPro_do_rcvMsg(&pp_task) ||
 			PrvtPro_do_wait(&pp_task) || 
