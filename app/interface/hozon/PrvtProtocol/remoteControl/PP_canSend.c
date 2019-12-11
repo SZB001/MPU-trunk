@@ -269,22 +269,22 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 {
 	switch(type)
 	{
-		case PP_CAN_DOORLOCK:
+		case PP_CAN_DOORLOCK:  //门锁
 			PP_canSend_setbit(CAN_ID_440,17,2,data,NULL);
 			break;
-		case PP_CAN_SUNROOF:
+		case PP_CAN_SUNROOF:   //天窗
 			PP_canSend_setbit(CAN_ID_440,47,3,data,NULL);  //天窗
 			break;
-		case PP_CAN_SUNSHADE:
+		case PP_CAN_SUNSHADE:   //遮阳帘
 			PP_canSend_setbit(CAN_ID_440,33,2,data,NULL); //遮阳帘
 			break;
-		case PP_CAN_AUTODOOR:
+		case PP_CAN_AUTODOOR:  //尾门
 			PP_canSend_setbit(CAN_ID_440,19,2,data,NULL);
 			break;
-		case PP_CAN_SEARCH:
+		case PP_CAN_SEARCH:   //寻车
 			PP_canSend_setbit(CAN_ID_440,17,2,data,NULL);
 			break;
-		case PP_CAN_ENGINE:
+		case PP_CAN_ENGINE:  //高压电控制
 			PP_canSend_setbit(CAN_ID_440,1,2,data,NULL);
 			break;
 		case PP_CAN_ACCTRL://空调控制
@@ -319,7 +319,7 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 				}	
 			}
 			break;
-		case PP_CAN_CHAGER:
+		case PP_CAN_CHAGER:  //充电控制
 			switch(data)
 			{
 				case CAN_STARTCHAGER:
@@ -342,20 +342,26 @@ void PP_can_send_data(int type,uint8_t data,uint8_t para)
 					break;	
 			}
 			break;
-		case PP_CAN_FORBID:
+		case PP_CAN_FORBID:   //禁止启动
 			PP_canSend_setbit(CAN_ID_440,31,2,data,NULL);
 			break;
-		case PP_CAN_SEATHEAT:
+		case PP_CAN_SEATHEAT: //座椅加热
 			PP_canSend_setbit(CAN_ID_445,para,3,data,NULL);
 			break;
-		case PP_CAN_OTAREQ:
+		case PP_CAN_OTAREQ:   //OTA请求
 			PP_canSend_setbit(CAN_ID_440,39,2,data,NULL);
 			break;
-		case PP_CAN_CERTIFICATE:
+		case PP_CAN_CERTIFICATE: //证书有效性
 			PP_canSend_setbit(CAN_ID_440,23,1,data,NULL);
 			break;
 		case PP_CAN_BLUESTART:  //蓝牙一键启动
 			PP_canSend_setbit(CAN_ID_440,40,1,data,NULL);	
+			break;
+		case PP_CAN_SOS:       //SOS触发信号
+			PP_canSend_setbit(CAN_ID_440,41,1,data,NULL);	
+			break;
+		case PP_CAN_HV:       //OTA下高压电请求
+			PP_canSend_setbit(CAN_ID_440,42,1,data,NULL);	
 			break;
 		default:
 			break;

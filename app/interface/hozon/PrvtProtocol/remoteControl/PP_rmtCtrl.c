@@ -1279,7 +1279,8 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlHUbookingResp.rvcReqEq 		= CtrlSt_para->rvcReqEq;
 			App_rmtCtrl.CtrlHUbookingResp.rvcReqCycle = CtrlSt_para->rvcReqCycle;
 			App_rmtCtrl.CtrlHUbookingResp.rvcReqCyclelen = 1;
-			App_rmtCtrl.CtrlHUbookingResp.bookingId = CtrlSt_para->bookingId;
+			App_rmtCtrl.CtrlHUbookingResp.bookingId = CtrlSt_para->HUbookingId;
+			//log_o(LOG_HOZON,"App_rmtCtrl.CtrlHUbookingResp.bookingId = %d",App_rmtCtrl.CtrlHUbookingResp.bookingId);
 
 			if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTCTRL_HUBOOKINGRESP,PP_rmtCtrl_Pack.msgdata,&msgdatalen,\
 											   &PP_rmtCtrl.pack.DisBody,&App_rmtCtrl))//数据编码打包是否完成

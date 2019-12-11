@@ -16,7 +16,7 @@
 #define _INC_H_
 
 #define HOZON_TBOX_VERSION         0
-#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.14 - 2019-11-11"
+#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.15 - 2019-11-15"
 
 
 extern char *hurootcertstr;
@@ -105,6 +105,8 @@ int HzTboxSrvListenCtrlState();
 int HzTboxKsGenCertCsr(char *contPath, char *cfgPath, char *vin, char *sLable, char *p10file);
 
 int HzTboxMatchCertVerify (char *ucertfile);
+
+int HzTboxOtaSignCertVerify (char *ucertfile); 
 
 
 /********************************* tbox cert update *********************************************/

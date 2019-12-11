@@ -26,6 +26,7 @@ description�� include the header file
 #include "log.h"
 #include "file.h"
 #include "gb32960_api.h"
+#include "hozon_PP_api.h"
 #include "../PrvtProt.h"
 #include "PrvtProt_FileUpload.h"
 
@@ -165,10 +166,10 @@ static void PP_FileUpload_datacollection(void)
 ******************************************************/
 static void PP_FileUpload_pkgzip(void)
 {
-	char i,j;
-	uint8_t filename[64] = {0};
-	uint8_t stringVal[32] = {0};
-	uint8_t vin[18] = {0};
+	uint8_t i,j;
+	char filename[64] = {0};
+	char stringVal[32] = {0};
+	char vin[18] = {0};
 	uint64_t timestamp;
 
 	if(dir_exists(PP_FILEUPLOAD_PATH) == 0 &&

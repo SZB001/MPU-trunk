@@ -153,7 +153,14 @@ extern long tbox_ivi_getTimestamp(void);
 
 extern void tbox_ivi_pki_renew_pthread();
 
-extern uint8_t tbox_ivi_ecall_trigger(void);
+extern uint8_t tbox_ivi_ecall_srs(void);
+
+extern uint8_t tbox_ivi_ecall_key(void);
+
+extern void tbox_ivi_ecall_srs_deal(uint8_t dt);
+
+extern void tbox_ivi_ecall_key_deal(uint8_t dt);
+
 
 extern void tbox_ivi_closesocket();
 

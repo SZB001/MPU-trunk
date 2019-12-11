@@ -238,8 +238,7 @@ uint8_t PrvtProtCfg_chargeSt(void)
 void PrvtProtCfg_ecallSt(uint8_t st)
 {
 	if(st == 1)
-	
-{
+	{
 		ecall_trigger = 1;
 	}
 }

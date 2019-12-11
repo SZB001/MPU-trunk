@@ -166,7 +166,6 @@ int PP_ACCtrl_mainfunction(void *task)
 					}
 					else if(PP_rmtACCtrl.state.style == RMTCTRL_TBOX)//tbox
 					{
-						//log_o(LOG_HOZON,"tbox platform\n");
 						PP_rmtACCtrl.state.req = 0;	
 					}
 					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_REQSTART;
@@ -183,12 +182,11 @@ int PP_ACCtrl_mainfunction(void *task)
 				{
 					if(PP_rmtACCtrl.state.accmd == PP_CLOSE_ACC)
 					{	//防止空调关闭指令多次下发
-						log_i(LOG_HOZON,"Power failure ");
+						log_i(LOG_HOZON,"Prevent the air conditioner from being turned off multiple times");
 						PP_rmtACCtrl.state.req = 0;
 						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 					}	
 				}
-				//PP_rmtACCtrl.state.req = 0;
 			}
 		}
 		break;

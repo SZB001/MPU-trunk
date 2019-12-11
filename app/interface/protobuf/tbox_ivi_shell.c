@@ -16,6 +16,7 @@
 #include "tbox_ivi_api.h"
 #include "tbox_ivi_pb.h"
 #include "log.h"
+#include "http.h"
 #include "../hozon/PrvtProtocol/remoteControl/PP_rmtCtrl.h"
 
 extern ivi_client ivi_clients[MAX_IVI_NUM];
@@ -26,6 +27,7 @@ extern void ivi_chagerappointment_request_send( int fd,ivi_chargeAppointSt tspch
 
 int tbox_ivi_hu_charge_ctrl(int argc, const char **argv)
 {
+	#if 0
 	unsigned int rmtCtrlReqtype;
 	unsigned int hour;
 	unsigned int min;
@@ -47,7 +49,16 @@ int tbox_ivi_hu_charge_ctrl(int argc, const char **argv)
 	chargectrl.id = 0;
 	chargectrl.targetpower = 90;
 	PP_rmtCtrl_HuCtrlReq(PP_RMTCTRL_CHARGE,(void *)&chargectrl);
-
+	//tbox_ivi_push_fota_informHU(0);
+	FILE *fd;
+	int len ;
+	char data[50 ] = {0};
+	fd = fopen("/usrapp/current/data/image/test.txt","rb");
+	len = fread(data,1,50,fd);
+	log_o(LOG_IVI,"%s",data);
+	http_post_msg("https://file-uat.chehezhi.cn/fileApi/1.0/pickData",data);
+	//http_post_msg("https://ptsv2.com/t/eastage/post",data);
+	#endif
 	return 0;
 }
 

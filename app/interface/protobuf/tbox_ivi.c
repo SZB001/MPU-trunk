@@ -56,6 +56,7 @@ unsigned char recv_buf[MAX_IVI_NUM][IVI_MSG_SIZE];
 static ivi_remotediagnos tspdiagnos;
 static ivi_logfile tsplogfile;
 
+static int tboxinfo_flag = 0;
 static int tspdiagnos_flag = 0;
 static int otaupdate_flag = 0;
 static int tsplogfile_flag = 0;
@@ -251,7 +252,7 @@ void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
                 else
 #endif                    
                 {
-                    log_buf_dump(LOG_IVI, "ivi send", rx->data + start_pos, len);
+                    //log_buf_dump(LOG_IVI, "ivi send", rx->data + start_pos, len);
                     ivi_msg_proc(rx->data + start_pos, len, para);
                     start_pos = -1;
                     end_pos = -1;
@@ -328,8 +329,8 @@ void ivi_msg_error_response_send( int fd ,Tbox__Net__Messagetype id,char *error_
 		}
 	}
     return;
-
 }
+
 void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 {
 	int i = 0;
@@ -352,6 +353,7 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 		case TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK:
 		{	//	fota升级推送
 			TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK;
+			log_o(LOG_HOZON,"fota push success.....");
 		}
 		break;
 		case TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE:
@@ -372,7 +374,40 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 		}
 		break;
 		case TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO:
-		{   //  TBOX信息同步	
+		{   //  TBOX信息同步	(如果第一次给车机同步iccid的时候全为0，在发一次)
+			char vin[18] = {0};
+			char iccid[21] = {0};
+			char imei[16] = {0};
+			char tboxsn[19] = {0};
+			unsigned int len;
+			Tbox__Net__TboxInfo tboxinfo;
+			tbox__net__tbox_info__init(&tboxinfo);
+			TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO;
+			tboxinfo.software_version = DID_F1B0_SW_FIXED_VER;
+			char hw[32] = {0};
+    		len = sizeof(hw);
+    		cfg_get_para(CFG_ITEM_INTEST_HW,hw,&len);
+    		if(hw[0] == 0)
+    		{
+                memcpy(hw,"00.00",5);
+    		}
+			tboxinfo.hardware_version = hw;
+			if(PP_rmtCfg_getIccid((uint8_t *)iccid) == 1)
+			{
+				tboxinfo.iccid = iccid;	
+			}
+			else
+			{
+				tboxinfo.iccid  = "00000000000000000000";
+			}
+			at_get_imei(imei);
+			tboxinfo.imei = imei;
+			gb32960_getvin(vin);
+			tboxinfo.vin = vin ;
+			len = sizeof(tboxsn);
+			cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN,tboxsn,&len);
+			tboxinfo.pdid = tboxsn;
+			TopMsg.tbox_info = &tboxinfo;
 		}
 		break;
 		case TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS:
@@ -569,6 +604,7 @@ void ivi_signalpower_response_send(int fd  )
     tbox__net__top_message__init( &TopMsg );
     tbox__net__msg_result__init( &result );
 
+	TopMsg.signal_power = signal_power;
     if( at_get_sim_status() == 2 )
     {
          TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__NONE_SIGNAL;
@@ -578,17 +614,17 @@ void ivi_signalpower_response_send(int fd  )
          if(signal_type == 0)
          {
              TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__GSM;
-			 log_o(LOG_IVI,"TYPE 2G");
+			 log_o(LOG_IVI,"net type: 2G ; signal power: %d",TopMsg.signal_power);
          }
          else if(signal_type == 2)
          {
              TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__UMTS;
-			 log_o(LOG_IVI,"TYPE 3G");
+			 log_o(LOG_IVI,"net type: 3G ; signal power: %d",TopMsg.signal_power);
           }
           else if(signal_type == 7)
           {
               TopMsg.signal_type = TBOX__NET__SIGNAL_TYPE__LTE;
-			  log_o(LOG_IVI,"TYPE 4G");
+			  log_o(LOG_IVI,"net type: 4G ; signal power: %d",TopMsg.signal_power);
           }
           else
           {
@@ -597,8 +633,6 @@ void ivi_signalpower_response_send(int fd  )
      }		
     TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_NETWORK_SIGNAL_STRENGTH;
     result.result = true;
-	TopMsg.signal_power = signal_power;
-	log_o(LOG_IVI,"TopMsg.signal_power = %d",TopMsg.signal_power);
     TopMsg.msg_result = &result;
     szlen = tbox__net__top_message__get_packed_size( &TopMsg );
 
@@ -930,8 +964,6 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 				temp = ((double) nm_get_signal())/31*100;
 				if((temp >= 0) && (temp < 20))
 				{
-					//log_o(LOG_IVI,"power = %d",nm_get_signal());
-					//log_o(LOG_IVI,"power = %d",(double)nm_get_signal()/31*100);
 					TopMsg.signal_power = 0;
 				}
 				else if((temp >= 20) && (temp < 40))
@@ -951,8 +983,6 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 					TopMsg.signal_power = 4;
 				}
             }
-
-			//TopMsg.signal_power = signalpower ;
 			log_o(LOG_IVI,"power = %d",TopMsg.signal_power);
             result.result = true;
             
@@ -1022,6 +1052,7 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 			}
 			else
 			{
+				tboxinfo_flag = 1;
 				tboxinfo.iccid  = "00000000000000000000";
 			}
 			//获取SIM卡IMEI
@@ -1086,6 +1117,7 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 			TopMsg.tbox_charge_appoointmentset = &chager;
 			break;
 		}
+
         default:
         {
 			break;
@@ -1133,7 +1165,7 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 
     Tbox__Net__TopMessage *TopMsg;
     
-    log_buf_dump(LOG_IVI, "IVI MSG", (const uint8_t *)data, len);
+    //log_buf_dump(LOG_IVI, "IVI MSG", (const uint8_t *)data, len);
 
     msg_len1 = data[ IVI_PKG_S_MARKER_SIZE ];
     msg_len2 = data[ IVI_PKG_S_MARKER_SIZE + 1 ];
@@ -1956,30 +1988,13 @@ void *ivi_txmain(void)
 
 void *ivi_check(void)
 {
-    static uint8_t sos_newflag ;
-	static uint8_t sos_oldflag ;
 	static uint64_t lastsynctime;
 	uint8_t active_flag = 0;
 	prctl(PR_SET_NAME, "IVI_CHECK");
 	while(1)
 	{	
-		sos_newflag = tbox_ivi_ecall_trigger();
-		if(sos_newflag != sos_oldflag)
-		{
-			sos_oldflag = sos_newflag;
-			if(sos_newflag == 1)
-			{
-				memset(&callrequest,0 ,sizeof(ivi_callrequest));
-				callrequest.call_type = ECALL_YTPE;
-				callrequest.call_action = START_YTPE;
-				if(ivi_clients[0].fd > 0)
-				{
-					//下发远程诊断命令
-					ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
-				}
-				log_o(LOG_IVI, "SOS trigger!!!!!");
-			}
-		}
+		tbox_ivi_ecall_srs_deal(tbox_ivi_ecall_srs());   //安全气囊拨打ecall处理
+		tbox_ivi_ecall_key_deal(tbox_ivi_ecall_key()); 	 //按键拨打ecall处理
 		if(hu_pki_en == 0)  //不带PKI
 		{
 			if(ivi_clients[0].fd > 0)  //轮询任务：信号强度、电话状态、绑车激活、远程诊断、
@@ -2014,6 +2029,15 @@ void *ivi_check(void)
 					tspdiagnos_flag = 0;
 					ivi_remotediagnos_request_send( ivi_clients[0].fd ,1);
 				}
+				if(tboxinfo_flag == 1)
+				{
+					char iccid[21] = {0};
+					if(PP_rmtCfg_getIccid((uint8_t *)iccid) == 1)
+					{
+						ivi_message_request( ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO,NULL);
+						tboxinfo_flag = 0;
+					}
+				}
 			}
 		}
 		else  //带PKI
@@ -2045,6 +2069,15 @@ void *ivi_check(void)
 				{
 					tspdiagnos_flag = 0;
 					ivi_remotediagnos_request_send( ivi_clients[0].fd ,1);
+				}
+				if(tboxinfo_flag == 1)
+				{
+					char iccid[21] = {0};
+					if(PP_rmtCfg_getIccid((uint8_t *)iccid) == 1)
+					{
+						ivi_message_request( ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO,NULL);
+						tboxinfo_flag = 0;
+					}
 				}
 			}
 		}
@@ -2117,23 +2150,89 @@ void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp)
 void tbox_ivi_push_fota_informHU(uint8_t flag)
 {
 	otaupdate_flag = 1;
+	log_o(LOG_HOZON,"fota push.....");
 }
 /**
-     * @brief    ECALL触发管理.
+     * @brief    安全气囊触发管理.
      * @param[in] void.
      * @return    uint8_t.
 */
-uint8_t tbox_ivi_ecall_trigger(void)
+uint8_t tbox_ivi_ecall_srs(void)
 {
 	uint8_t flag = 0;
-	if((dev_get_SRS_signal() != 2)&&( flt_get_by_id(SOSBTN) != 2)&&(PP_rmtCtrl_cfg_CrashOutputSt() != 1))
+	if((dev_get_SRS_signal() != 2)&&(PP_rmtCtrl_cfg_CrashOutputSt() != 1))
 	{
 		flag = 0;  //ECALL触发标志位清除
 	}
-	else if((dev_get_SRS_signal() == 2)||(2 == flt_get_by_id(SOSBTN))||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
+	else if((dev_get_SRS_signal() == 2)||(PP_rmtCtrl_cfg_CrashOutputSt() == 1))
 	{
 		flag = 1;//ECALL触发
 	}
 	return flag;
 }
+
+/**
+     * @brief    顶灯按键触发管理.
+     * @param[in] void.
+     * @return    uint8_t.
+*/
+uint8_t tbox_ivi_ecall_key(void)
+{
+	uint8_t flag = 0;
+	if( flt_get_by_id(SOSBTN) != 2)
+	{
+		flag = 0;
+	}
+	else
+	{
+		flag = 1;
+	}
+	return flag;
+}
+
+void tbox_ivi_ecall_srs_deal(uint8_t dt)
+{
+	static uint8_t srs_sos_newflag ;
+	static uint8_t srs_sos_oldflag ;
+	srs_sos_newflag = dt;
+	if(srs_sos_newflag != srs_sos_oldflag)
+	{
+		srs_sos_oldflag = srs_sos_newflag;
+		if(srs_sos_newflag == 1)
+		{
+			memset(&callrequest,0 ,sizeof(ivi_callrequest));
+			callrequest.call_type = ECALL_YTPE;
+			callrequest.call_action = START_YTPE;
+			if((ivi_clients[0].fd > 0) || (hu_pki_en == 1))
+			{
+				//下发远程诊断命令
+				ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
+			}
+			log_o(LOG_IVI, "SOS trigger!!!!!");
+		}
+	}
+}
+void tbox_ivi_ecall_key_deal(uint8_t dt)
+{
+	static uint8_t key_sos_newflag ;
+	static uint8_t key_sos_oldflag ;
+	key_sos_newflag = dt;
+	if(key_sos_newflag != key_sos_oldflag)
+	{
+		key_sos_oldflag = key_sos_newflag;
+		if(key_sos_newflag == 1)
+		{
+			memset(&callrequest,0 ,sizeof(ivi_callrequest));
+			callrequest.call_type = ECALL_YTPE;
+			callrequest.call_action = START_YTPE;
+			if((ivi_clients[0].fd > 0) || (hu_pki_en == 1))
+			{
+				//下发远程诊断命令
+				ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
+			}
+			log_o(LOG_IVI, "SOS trigger!!!!!");
+		}
+	}
+}
+
 

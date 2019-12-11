@@ -62,6 +62,13 @@
 #define CAN_BLUECLEAN 0
 #define CAN_BLUESTART 1
 
+/*********TBOX SosState************/
+#define CAN_SOSOFF   0
+#define CAN_SOSON    1
+
+/**********TBOX HVSHUT************/
+#define CAN_NOREQUEHV 0
+#define CAN_REQUEHV   1
 
 typedef enum
 {
@@ -78,6 +85,8 @@ typedef enum
     PP_CAN_OTAREQ,
     PP_CAN_CERTIFICATE,
     PP_CAN_BLUESTART,
+    PP_CAN_SOS,
+    PP_CAN_HV,
     PP_CAN_CTRL_TYP_MAX,
 } PP_can_ctrl_typ;
 
