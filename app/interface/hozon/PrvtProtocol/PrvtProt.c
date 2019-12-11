@@ -243,7 +243,7 @@ int PrvtProt_run(void)
     }
 
 	PP_ntp_run();
-	//PP_FileUpload_run();
+	PP_FileUpload_run();
 #else
 	res = 	PrvtPro_do_rcvMsg(&pp_task) ||
 			PrvtPro_do_wait(&pp_task) || 

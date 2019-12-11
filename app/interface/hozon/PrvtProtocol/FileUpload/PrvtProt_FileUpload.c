@@ -26,6 +26,7 @@ description�� include the header file
 #include "log.h"
 #include "file.h"
 #include "gb32960_api.h"
+#include "hozon_PP_api.h"
 #include "../PrvtProt.h"
 #include "PrvtProt_FileUpload.h"
 
@@ -110,8 +111,12 @@ static void *PP_FileUpload_main(void)
     prctl(PR_SET_NAME, "FILE_UPLOAD");
     while(1)
     {
-        PP_FileUpload_datacollection();
-		PP_FileUpload_pkgzip();
+		if((tm_get_time() - PP_FileUL.tasktime) >= 200)
+		{
+			PP_FileUpload_datacollection();
+			PP_FileUpload_pkgzip();
+			PP_FileUL.tasktime = tm_get_time();
+		}
     }
 
     return NULL;
@@ -134,6 +139,7 @@ static void PP_FileUpload_datacollection(void)
 	int len;
 	if(1 == gb_data_perReportPack(data,&len))
 	{
+		log_i(LOG_HOZON, "gb data pkg finish\n");
 		memcpy(PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].data, \
 				data,1024);
 		PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].len = len;
@@ -165,10 +171,10 @@ static void PP_FileUpload_datacollection(void)
 ******************************************************/
 static void PP_FileUpload_pkgzip(void)
 {
-	char i,j;
-	uint8_t filename[64] = {0};
-	uint8_t stringVal[32] = {0};
-	uint8_t vin[18] = {0};
+	uint8_t i,j;
+	char filename[64] = {0};
+	char stringVal[32] = {0};
+	char vin[18] = {0};
 	uint64_t timestamp;
 
 	if(dir_exists(PP_FILEUPLOAD_PATH) == 0 &&

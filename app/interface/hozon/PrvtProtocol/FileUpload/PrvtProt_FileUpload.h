@@ -49,6 +49,7 @@ typedef struct
 
 typedef struct
 {
+	uint64_t tasktime;
     uint8_t index;
 	PP_FileUpload_Buf_t buffer[PP_FILEUPLOAD_BUFNUM];
 }__attribute__((packed))  PP_FileUpload_t;
