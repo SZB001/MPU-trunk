@@ -1555,10 +1555,10 @@ static void *gb_main(void)
         res = gb_do_checksock(&state) ||	//检查连接
               gb_do_receive(&state)   ||	//socket 接收
               gb_do_wait(&state)      ||	//等待
+              gb_do_caltime(&state)   ||    //校时
               gb_do_login(&state)     ||	//登入
               gb_do_suspend(&state)   ||	//暂停
               gb_do_report(&state)    ||	//发实时数据
-              gb_do_caltime(&state)   ||    //校时
               gb_do_logout(&state);			//登出
     }
 
