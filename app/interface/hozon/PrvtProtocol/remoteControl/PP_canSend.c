@@ -172,15 +172,15 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 	{
 		ID440_data &= ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
 		ID440_data |= (uint64_t)data << (bit-bitl+1);      //置位
-		PP_can_unpack(ID440_data,can_data);
-		PP_send_cycle_ID440_to_mcu(can_data);
+		//PP_can_unpack(ID440_data,can_data);
+		//PP_send_cycle_ID440_to_mcu(can_data);
 	}
 	else if(id == CAN_ID_445)
 	{
 		ID445_data &=  ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
 		ID445_data |= (uint64_t)data << (bit-bitl+1);      //置位
-		PP_can_unpack(ID445_data,can_data);
-		PP_send_cycle_ID445_to_mcu(can_data);
+		//PP_can_unpack(ID445_data,can_data);
+		//PP_send_cycle_ID445_to_mcu(can_data);
 	}
 	else if(id == CAN_ID_526)
 	{
@@ -219,7 +219,7 @@ void PP_can_send_cycle(void)
 {
 	if(1 == scom_dev_openSt())
 	{
-		if(tm_get_time() - lastsendtime > 50)    //50ms
+		if(tm_get_time() - lastsendtime > 80)    //80ms
 		{
 			if(PP_rmtCtrl_cfg_RmtStartSt() == 0)  //防止空调开启之后，高压电不是TBOX下的，导致一些状态不能恢复
 			{

@@ -72,7 +72,7 @@ int PP_Mileagesync_mainfunction(void *task)
 		data[1] = (uint8_t)(mileage >> 8);
 		data[2] = (uint8_t)(mileage);
 		
-		if(tm_get_time() -  lastsendtime > 200)  //200ms同步一次
+		if(tm_get_time() -  lastsendtime > 500)  //500ms同步一次
 		{
 			PP_can_send_mileage(data);
 			lastsendtime = tm_get_time();
