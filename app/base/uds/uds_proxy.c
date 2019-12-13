@@ -446,7 +446,7 @@ void uds_proxy(uint8_t *msg, uint16_t len)
             break;
         case MSG_ID_UDS_IND:
             /* data receive indication */
-            if (len < 6 || len - 6 != msg[4] + msg[5] * 0xff)
+            if (len < 6 || len - 6 != msg[4] + (((uint16_t)msg[5]) << 8))
             {
                 log_e(LOG_UDS, "message length invalid");
                 break;
