@@ -273,6 +273,7 @@ static void *PrvtProt_main(void)
     prctl(PR_SET_NAME, "HZ_PRVT_PROT");
     while (1)
     {
+		usleep(5000);
 		if(pp_task.suspend != 0)
 		{
 			continue;

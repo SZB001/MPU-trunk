@@ -63,6 +63,7 @@ static void *PP_ntp_main(void)
     while(1)
     {
         PP_ntp_calibrationTime();
+        sleep(1);
     }
     return NULL;
 }

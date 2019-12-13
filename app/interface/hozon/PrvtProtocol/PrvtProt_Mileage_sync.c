@@ -39,51 +39,55 @@
 #include "PrvtProt_SigParse.h"
 #include "PrvtProt_Mileage_sync.h"
 
-static uint32_t mileage;
-static uint64_t lastsendtime;
+static uint32_t old_mileage;
+static uint32_t new_mileage;
+uint8_t data[8] = {0};
+
 
 void PP_Mileagesync_init(void)
 {
 	uint32_t len = 4;
 	int res;
-	res = cfg_get_user_para(CFG_ITEM_HOZON_MILEAGE,&mileage,&len);
-
+	res = cfg_get_user_para(CFG_ITEM_HOZON_MILEAGE,&new_mileage,&len);
 	if(res != 0)
 	{
 		log_e(LOG_HOZON,"Failed to get rom miles.........");
 	}
-	log_o(LOG_HOZON,"get mileage = %d from tbox",mileage);
+	log_o(LOG_HOZON,"get mileage = %d from tbox",new_mileage);
 }
 
 
 int PP_Mileagesync_mainfunction(void *task)
 {
-	uint8_t data[8] = {0};
+	
 	static uint8_t w_flag ;
+	int i;
 	if(1 == dev_get_KL15_signal())  //IGN on
 	{
 		if(1 == PrvtProt_SignParse_OdomtrUpdtSt())  //里程同步指令
 		{
-			mileage = gb_data_vehicleOdograph();
+			new_mileage = gb_data_vehicleOdograph();
 		}	
 		w_flag = 0;
-
-		data[0] = (uint8_t)(mileage >> 16);
-		data[1] = (uint8_t)(mileage >> 8);
-		data[2] = (uint8_t)(mileage);
-		
-		if(tm_get_time() -  lastsendtime > 500)  //500ms同步一次
+		if(new_mileage != old_mileage)   //里程同步，里程有变化才同步一次
 		{
-			PP_can_send_mileage(data);
-			lastsendtime = tm_get_time();
+			for(i = 0;i < 3 ;i++)
+			{
+				data[0] = (uint8_t)(new_mileage >> 16);
+				data[1] = (uint8_t)(new_mileage >> 8);
+				data[2] = (uint8_t)(new_mileage);
+				PP_can_send_mileage(data);
+				usleep(10);
+			}
+			old_mileage = new_mileage;
 		}
 	}
 	else
 	{
 		if(w_flag == 0)
 		{
-			log_o(LOG_HOZON,"IGN off write mileage = %d  to ROM",mileage);
-			cfg_set_user_para(CFG_ITEM_HOZON_MILEAGE,&mileage,sizeof(uint32_t));
+			log_o(LOG_HOZON,"IGN off write mileage = %d  to ROM",old_mileage);
+			cfg_set_user_para(CFG_ITEM_HOZON_MILEAGE,&old_mileage,sizeof(uint32_t));
 			w_flag = 1;
 		}
 	}

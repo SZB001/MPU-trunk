@@ -1659,8 +1659,6 @@ void *ivi_main(void)
 	struct sockaddr_in cli_addr;
 	int new_conn_fd = -1;
 	struct timeval timeout;
-	timeout.tv_sec = 1;
-	timeout.tv_usec = 0;
 	FD_ZERO(&read_set);
 	memset(&cli_addr, 0, sizeof(cli_addr));
 	tcom_fd = tcom_get_read_fd(MPU_MID_IVI);
@@ -1709,6 +1707,8 @@ void *ivi_main(void)
 	            //log_i(LOG_IVI, "client_fd[%d]=%d", i, ivi_clients[i].fd);
 	        }
 	        /* monitor the incoming data */
+			timeout.tv_sec = 1;
+			timeout.tv_usec = 0;
 	        ret = select(max_fd + 1, &read_set, NULL, NULL, &timeout);
 	        /* the file deccriptor is readable */
 	        if (ret >= 0)
@@ -1993,6 +1993,7 @@ void *ivi_check(void)
 	prctl(PR_SET_NAME, "IVI_CHECK");
 	while(1)
 	{	
+		usleep(5000);
 		tbox_ivi_ecall_srs_deal(tbox_ivi_ecall_srs());   //安全气囊拨打ecall处理
 		tbox_ivi_ecall_key_deal(tbox_ivi_ecall_key()); 	 //按键拨打ecall处理
 		if(hu_pki_en == 0)  //不带PKI

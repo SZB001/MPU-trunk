@@ -205,6 +205,7 @@ static void *sockproxy_socketmain(void)
     while (1)
     {
         res = sockproxy_do_checksock(&sockSt);
+		usleep(5000);
     }
 	(void)res;
 	if(!sockSt.pkiEnFlag)
@@ -267,6 +268,7 @@ static void *sockproxy_sendmain(void)
     while (1)
     {
     	res = sockproxy_do_send(&sockSt);
+		usleep(2500);
     }
 
 	(void)res;

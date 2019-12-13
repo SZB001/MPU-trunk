@@ -724,7 +724,8 @@ void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
 			break;
 			case BT_ELECTRIC_DOOR_RESP:
 			{
-				respbt.cmd_state.state = PP_rmtCtrl_cfg_bdmreardoorSt() ? 1 : 2;
+				respbt.cmd_state.state = PP_rmtCtrl_cfg_bdmreardoorSt() ? 2 : 1;
+				log_i(LOG_HOZON,"respbt.cmd_state.state = %d",respbt.cmd_state.state);	
 			} 
 			break;
 			case BT_REMOTE_FIND_CAR_RESP:
@@ -914,7 +915,8 @@ int PP_rmtCtrl_vehicle_status_InformBt(unsigned char obj, unsigned char cmd)
 	
 	respbt.state.charge_state = PP_rmtCtrl_cfg_chargeOnOffSt() ? 2 : 1;
 	
-	respbt.state.electric_door_state = PP_rmtCtrl_cfg_bdmreardoorSt() ? 1 : 2; 
+	respbt.state.electric_door_state = PP_rmtCtrl_cfg_bdmreardoorSt() ? 2 : 1; 
+	log_i(LOG_HOZON,"respbt.state.electric_door_state = %d",respbt.state.electric_door_state);
 	
 	respbt.state.fine_car_state = 1;  //保留
 	

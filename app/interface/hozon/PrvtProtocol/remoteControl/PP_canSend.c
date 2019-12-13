@@ -13,17 +13,26 @@
 #include "log.h"
 #include "PPrmtCtrl_cfg.h"
 #include "scom_api.h"
+#include <pthread.h>
 #include "PP_canSend.h"
 
 static PP_can_msg_info_t canmsg_3D2;
-static uint64_t ID440_data;
-static uint64_t ID445_data;
-//static uint64_t ID526_data;
-static uint8_t can_data[8];
+static uint64_t old_ID440_data = 0;
+static uint64_t new_ID440_data = 0;
 
-static uint64_t lastsendtime;
+static uint64_t old_ID445_data = 0;
+static uint64_t new_ID445_data = 0;
+
+//static uint64_t ID526_data;
+static uint8_t can_data[8] = {0};
 
 static uint8_t virtual_on_flag;
+
+static uint8_t sync_flag_440 = 1;  //上电起来同步一次
+static uint8_t sync_flag_445 = 1;  //上电起来同步一次
+
+static pthread_mutex_t sync_mutex_440 = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t sync_mutex_445 = PTHREAD_MUTEX_INITIALIZER;
 
 extern unsigned char GetPP_CertDL_CertValid(void);
 int PP_canSend_init(void)
@@ -36,8 +45,9 @@ int PP_canSend_init(void)
 	canmsg_3D2.period = 100;  //100ms
 	canmsg_3D2.times_event = 1;
 	//初始化445报文数据
-	ID445_data |= (uint64_t)1 << 46;
-	ID445_data |= (uint64_t)1 << 54;
+	old_ID445_data |= (uint64_t)1 << 46;
+	old_ID445_data |= (uint64_t)1 << 54;
+	new_ID445_data = old_ID445_data;
 	return 0;
 }
 
@@ -64,13 +74,9 @@ int PP_send_virtual_on_to_mcu(unsigned char on)
     return 0;
 }
 
-
 /***********************************************
-
 PP_send_event_info_to_mcu 用于发送事件性报文3D2
-
 ************************************************/
-
 int PP_send_event_info_to_mcu(PP_can_msg_info_t *caninfo)
 {
     int len = 0;
@@ -115,7 +121,6 @@ int PP_send_cycle_ID440_to_mcu(uint8_t *dt)
 	memcpy(buf + len, dt, 8*sizeof(uint8_t));
     len += 8*sizeof(uint8_t);
 	scom_tl_send_frame(SCOM_MPU_MCU_0x440, SCOM_TL_SINGLE_FRAME, 0, buf, len);
-
     return 0;
 }
 
@@ -170,25 +175,31 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 {
 	if(id == CAN_ID_440)
 	{
-		ID440_data &= ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
-		ID440_data |= (uint64_t)data << (bit-bitl+1);      //置位
-		//PP_can_unpack(ID440_data,can_data);
-		//PP_send_cycle_ID440_to_mcu(can_data);
+		new_ID440_data &= ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
+		new_ID440_data |= (uint64_t)data << (bit-bitl+1);      //置位
+		if(new_ID440_data != old_ID440_data)
+		{
+			pthread_mutex_lock(&sync_mutex_440);
+			sync_flag_440 = 1;
+			pthread_mutex_unlock(&sync_mutex_440);
+			old_ID440_data = new_ID440_data;
+		}
 	}
 	else if(id == CAN_ID_445)
 	{
-		ID445_data &=  ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
-		ID445_data |= (uint64_t)data << (bit-bitl+1);      //置位
-		//PP_can_unpack(ID445_data,can_data);
-		//PP_send_cycle_ID445_to_mcu(can_data);
+		new_ID445_data &=  ~((uint64_t)((1<<bitl)-1) << (bit-bitl+1)) ; //再移位
+		new_ID445_data |= (uint64_t)data << (bit-bitl+1);      //置位
+		if(new_ID445_data != old_ID445_data)
+		{
+			pthread_mutex_lock(&sync_mutex_445);
+			sync_flag_445 = 1;
+			pthread_mutex_unlock(&sync_mutex_445);
+			old_ID445_data = new_ID445_data;
+		}
 	}
 	else if(id == CAN_ID_526)
 	{
-		int i= 0;
-		for(i=0 ; i <8 ;i++)
-		{
-			can_data[i] = 0;
-		}
+		memset(can_data,0,8);
 		can_data[0] = dt[0];
 		can_data[1] = dt[1];
 		can_data[2] = dt[2];
@@ -217,25 +228,46 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 ****************************************************/
 void PP_can_send_cycle(void)
 {
+	int i = 0;
 	if(1 == scom_dev_openSt())
 	{
-		if(tm_get_time() - lastsendtime > 80)    //80ms
+		if(PP_rmtCtrl_cfg_RmtStartSt() == 0)  //防止空调开启之后，高压电不是TBOX下的，导致一些状态不能恢复
 		{
-			if(PP_rmtCtrl_cfg_RmtStartSt() == 0)  //防止空调开启之后，高压电不是TBOX下的，导致一些状态不能恢复
-			{
-				PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//无效
-				PP_canSend_setbit(CAN_ID_445,17,1,0,NULL);//autocmd 清零
-			}
-			if(GetPP_CertDL_CertValid() == 1) //TBOX与HU之间的证书有效
-			{
-				PP_canSend_setbit(CAN_ID_440,23,1,1,NULL);//证书有效
-			}
-			PP_can_unpack(ID440_data,can_data);
-			PP_send_cycle_ID440_to_mcu(can_data);
-			PP_can_unpack(ID445_data,can_data);
-			PP_send_cycle_ID445_to_mcu(can_data);
-			lastsendtime = tm_get_time();
+			PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//无效
+			PP_canSend_setbit(CAN_ID_445,17,1,0,NULL);//autocmd 清零
 		}
+		if(GetPP_CertDL_CertValid() == 1) //TBOX与HU之间的证书有效
+		{
+			PP_canSend_setbit(CAN_ID_440,23,1,1,NULL);//证书有效
+		}
+		
+		if(sync_flag_440 == 1)
+		{
+			pthread_mutex_lock(&sync_mutex_440);
+			for(i = 0; i< 3 ;i++)
+			{
+				PP_can_unpack(old_ID440_data,can_data);
+				PP_send_cycle_ID440_to_mcu(can_data);
+				usleep(10);
+	
+			}
+			sync_flag_440 = 0;
+			pthread_mutex_unlock(&sync_mutex_440);
+		}
+		
+		if(sync_flag_445 == 1)
+		{
+			pthread_mutex_lock(&sync_mutex_445);
+			for(i = 0; i< 3 ;i++)
+			{
+				PP_can_unpack(old_ID445_data,can_data);
+				PP_send_cycle_ID445_to_mcu(can_data);
+				usleep(10);
+			}
+			sync_flag_445 = 0;
+			pthread_mutex_unlock(&sync_mutex_445);
+		}
+		
 	}
 }
 /**************************************

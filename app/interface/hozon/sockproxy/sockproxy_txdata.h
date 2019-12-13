@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼þÃû£º	sockproxy_txdata.h
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	sockproxy_txdata.h
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 
 Data			  Vasion			author
 2019/05/18		   V1.0			    liujian
@@ -9,26 +9,26 @@ Data			  Vasion			author
 #ifndef		_PRVTPROT_TX_DATA_H
 #define		_PRVTPROT_TX_DATA_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
-#define SP_MAX_SENDQUEUE		120
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
+#define SP_MAX_SENDQUEUE		256
 
 #define SP_SENDBUFLNG			1456
-/***********ºêº¯Êý***********/
-typedef void (*SP_sendInform_cb)(void* x);//·¢ËÍÍ¨Öª»Øµ÷
+/***********ï¿½êº¯ï¿½ï¿½***********/
+typedef void (*SP_sendInform_cb)(void* x);//ï¿½ï¿½ï¿½ï¿½Í¨Öªï¿½Øµï¿½
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 
@@ -42,17 +42,17 @@ typedef struct
 	uint8_t					type;
     list_t 					*list;
     list_t  				link;
-}SP_Send_t; /*½á¹¹Ìå*/
+}SP_Send_t; /*ï¿½á¹¹ï¿½ï¿½*/
 
 /******union definitions*****/
 
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern void SP_data_init(void);
 extern void SP_data_write(uint8_t *data,int len,SP_sendInform_cb sendInform_cb,void * cb_para);

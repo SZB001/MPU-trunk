@@ -253,7 +253,7 @@ int SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 			case RMTCTRL_BLUETOOTH:
 			{
 				 unsigned char cmd = *(unsigned char *)appdatarmtCtrl;
-				 if(cmd == 1)
+				 if(cmd == 2)
 				 {
 				 	PP_rmtsearchvehicle.state.serachcmd = PP_SEARCH_cmd;
 					log_i(LOG_HOZON,"Bluetooth remote search control");
