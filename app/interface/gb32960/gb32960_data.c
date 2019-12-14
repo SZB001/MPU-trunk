@@ -4167,8 +4167,11 @@ static void gb_data_periodic(gb_info_t *gbinf, int intv, uint32_t uptime)
     }
 
 	DAT_LOCK();
-	gb_PPS.len = gb_data_save_all(gbinf, gb_PPS.data, uptime);
-	gb_PPS.flag = 1;
+	if(0 != ticks)
+	{
+		gb_PPS.len = gb_data_save_all(gbinf, gb_PPS.data, uptime);
+		gb_PPS.flag = 1;
+	}
 	DAT_UNLOCK();
 }
 
@@ -5446,9 +5449,7 @@ long getgb_data_CLMLHTemp(void)
 */
 uint8_t gb_data_perPackValid(void)
 {
-	DAT_LOCK();
 	return gb_PPS.flag;
-	DAT_UNLOCK();
 }
 
 /*
@@ -5458,7 +5459,6 @@ uint8_t gb_data_perPack(uint8_t *data,int *len)
 {
 	int i;
 
-	DAT_LOCK();
 
 	for(i = 0;i < gb_PPS.len;i++)
 	{
@@ -5467,7 +5467,6 @@ uint8_t gb_data_perPack(uint8_t *data,int *len)
 	*len = gb_PPS.len;
 	gb_PPS.flag = 0;
 
-	DAT_UNLOCK();
 
 	return 0;
 }
