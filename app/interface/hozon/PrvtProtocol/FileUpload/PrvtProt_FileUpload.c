@@ -25,6 +25,7 @@ description�� include the header file
 #include "init.h"
 #include "log.h"
 #include "file.h"
+#include "../../../../base/minizip/zip.h"
 #include "gb32960_api.h"
 #include "hozon_PP_api.h"
 #include "../PrvtProt.h"
@@ -170,9 +171,9 @@ static void PP_FileUpload_datacollection(void)
 static void PP_FileUpload_pkgzip(void)
 {
 	uint8_t i,j;
+	int ret;
 	char filename[64] = {0};
 	char filepathname[128] = {0};
-	char fileCompInstr[128] = {0};
 	char stringVal[32] = {0};
 	char vin[18] = {0};
 	uint64_t timestamp;
@@ -199,30 +200,55 @@ static void PP_FileUpload_pkgzip(void)
 			memcpy(filename + 17 + 1,stringVal,strlen(stringVal));
 			log_i(LOG_HOZON, "file name = %s\n",filename);
 
-			snprintf(filepathname, sizeof(filepathname), "%s%s%s", PP_FILEUPLOAD_PATH,filename, ".txt");
+			snprintf(filepathname, sizeof(filepathname), "%s%s%s", PP_FILEUPLOAD_PATH,filename, ".zip");
 			log_i(LOG_HOZON, "file path and name = %s\n",filepathname);
 
-			FILE *fp;
-			fp = fopen(filepathname,"a+");
-			if(fp==NULL)
+			zipFile zfile;
+			zfile = zipOpen64(filepathname, 0);
+			if (zfile == NULL) 
 			{
-				log_e(LOG_HOZON, "open file fail\n");
+				fprintf(stderr, "zipOpen64 error\n");
+				sleep(1);
+				return;
+			}
+
+			zip_fileinfo zinfo;
+			memset(&zinfo,0,sizeof(zip_fileinfo));
+			memcpy(filename + 17 + 1 + strlen(stringVal),".txt",strlen(".txt"));
+			ret = zipOpenNewFileInZip(zfile, filename, &zinfo, NULL,0,NULL,0,NULL, Z_DEFLATED, 1);
+			if (ret != ZIP_OK) 
+			{
+				fprintf(stderr, "zipOpenNewFileInZip error\n");
+				sleep(1);
+				return;
 			}
 
 			for(j = 0;j < PP_FILEUPLOAD_PACKNUM;j++)
 			{
-				fwrite(PP_FileUL.buffer[i].pack[j].data, 1, PP_FileUL.buffer[i].pack[j].len, fp); /* 写文件*/
-				fwrite("\r\n\r\n", 1, 4, fp);
+				ret = zipWriteInFileInZip(zfile, PP_FileUL.buffer[i].pack[j].data, PP_FileUL.buffer[i].pack[j].len);
+				if (ret != ZIP_OK) 
+				{
+					fprintf(stderr, "zipWriteInFileInZip error\n");
+					sleep(1);
+					return;
+				}
 			}
 
-			fclose(fp);
+			ret = zipCloseFileInZip(zfile);
+			if (ret != ZIP_OK) 
+			{
+				fprintf(stderr, "zipCloseFileInZip error\n");
+				sleep(1);
+				return;
+			}
 
-			snprintf(fileCompInstr, sizeof(fileCompInstr), "%s%s%s%s%s", "cd /media/sdcard/fileUL/ && tar -cvf ", \
-																						filename, ".tar ",filename,".txt");
-			log_i(LOG_HOZON, "file Comp Instr = %s\n",fileCompInstr);
-			system(fileCompInstr);
-			//system("cd /media/sdcard/fileUL/ && tar -cvf LUZAGAAA6JA000655_1576312873.tar LUZAGAAA6JA000655_1576312873.txt");
-			unlink(filepathname);
+			ret = zipClose(zfile, NULL);
+			if (ret != ZIP_OK) 
+			{
+				fprintf(stderr, "zipClose error\n");
+				sleep(1);
+				return;
+			}
 		}
 	}
 }
