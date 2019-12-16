@@ -5449,7 +5449,13 @@ long getgb_data_CLMLHTemp(void)
 */
 uint8_t gb_data_perPackValid(void)
 {
-	return gb_PPS.flag;
+	uint8_t st;
+
+	DAT_LOCK();
+	st = gb_PPS.flag;
+	DAT_UNLOCK();
+
+	return st;
 }
 
 /*
@@ -5459,7 +5465,8 @@ uint8_t gb_data_perPack(uint8_t *data,int *len)
 {
 	int i;
 
-
+	DAT_LOCK();
+	
 	for(i = 0;i < gb_PPS.len;i++)
 	{
 		data[i] = gb_PPS.data[i];
@@ -5467,6 +5474,7 @@ uint8_t gb_data_perPack(uint8_t *data,int *len)
 	*len = gb_PPS.len;
 	gb_PPS.flag = 0;
 
+	DAT_UNLOCK();
 
 	return 0;
 }

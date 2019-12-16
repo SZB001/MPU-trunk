@@ -207,7 +207,7 @@ static void PP_FileUpload_pkgzip(void)
 			zfile = zipOpen64(filepathname, 0);
 			if (zfile == NULL) 
 			{
-				fprintf(stderr, "zipOpen64 error\n");
+				log_e(LOG_HOZON, "zipOpen64 error\n");
 				sleep(1);
 				return;
 			}
@@ -218,7 +218,7 @@ static void PP_FileUpload_pkgzip(void)
 			ret = zipOpenNewFileInZip(zfile, filename, &zinfo, NULL,0,NULL,0,NULL, Z_DEFLATED, 1);
 			if (ret != ZIP_OK) 
 			{
-				fprintf(stderr, "zipOpenNewFileInZip error\n");
+				log_e(LOG_HOZON, "zipOpenNewFileInZip error\n");
 				sleep(1);
 				return;
 			}
@@ -228,7 +228,7 @@ static void PP_FileUpload_pkgzip(void)
 				ret = zipWriteInFileInZip(zfile, PP_FileUL.buffer[i].pack[j].data, PP_FileUL.buffer[i].pack[j].len);
 				if (ret != ZIP_OK) 
 				{
-					fprintf(stderr, "zipWriteInFileInZip error\n");
+					log_e(LOG_HOZON,"zipWriteInFileInZip error\n");
 					sleep(1);
 					return;
 				}
@@ -237,7 +237,7 @@ static void PP_FileUpload_pkgzip(void)
 			ret = zipCloseFileInZip(zfile);
 			if (ret != ZIP_OK) 
 			{
-				fprintf(stderr, "zipCloseFileInZip error\n");
+				log_e(LOG_HOZON, "zipCloseFileInZip error\n");
 				sleep(1);
 				return;
 			}
@@ -245,7 +245,7 @@ static void PP_FileUpload_pkgzip(void)
 			ret = zipClose(zfile, NULL);
 			if (ret != ZIP_OK) 
 			{
-				fprintf(stderr, "zipClose error\n");
+				log_e(LOG_HOZON, "zipClose error\n");
 				sleep(1);
 				return;
 			}
