@@ -1989,7 +1989,7 @@ int gb32960_gbLogoutSt(void)
 */
 uint8_t gb_data_perReportPack(uint8_t *data,int *len)
 {
-    int length;
+    int length = 0;
     if(1 == gb_data_perPackValid())
     {
         *len = gb_pack_head(0x02, 0xfe, data);

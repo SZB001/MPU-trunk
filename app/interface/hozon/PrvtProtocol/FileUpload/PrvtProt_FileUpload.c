@@ -25,6 +25,7 @@ description�� include the header file
 #include "init.h"
 #include "log.h"
 #include "file.h"
+#include "../../../../base/minizip/zip.h"
 #include "gb32960_api.h"
 #include "hozon_PP_api.h"
 #include "../PrvtProt.h"
@@ -111,8 +112,13 @@ static void *PP_FileUpload_main(void)
     prctl(PR_SET_NAME, "FILE_UPLOAD");
     while(1)
     {
-        PP_FileUpload_datacollection();
-		PP_FileUpload_pkgzip();
+		if(gb32960_networkSt())
+		{
+			PP_FileUpload_datacollection();
+			PP_FileUpload_pkgzip();
+		}
+
+		usleep(10*1000);
     }
 
     return NULL;
@@ -150,6 +156,8 @@ static void PP_FileUpload_datacollection(void)
 		{
 			PP_FileUL.index = 0;
 		}
+
+		log_i(LOG_HOZON, "index = %d,cnt = %d\n",PP_FileUL.index,PP_FileUL.buffer[PP_FileUL.index].cnt);
 	}
 }
 
@@ -167,7 +175,9 @@ static void PP_FileUpload_datacollection(void)
 static void PP_FileUpload_pkgzip(void)
 {
 	uint8_t i,j;
+	int ret;
 	char filename[64] = {0};
+	char filepathname[128] = {0};
 	char stringVal[32] = {0};
 	char vin[18] = {0};
 	uint64_t timestamp;
@@ -187,29 +197,62 @@ static void PP_FileUpload_pkgzip(void)
 			log_i(LOG_HOZON, "buffer %d is filled in,start build file\n",i);
 			PP_FileUL.buffer[i].successflag = 0;
 			gb32960_getvin(vin);
-			memcpy(filename,PP_FILEUPLOAD_PATH,strlen(PP_FILEUPLOAD_PATH));
-			memcpy(filename + strlen(PP_FILEUPLOAD_PATH),vin,17);
-			memcpy(filename + strlen(PP_FILEUPLOAD_PATH) + 17,"_",1);
+			memcpy(filename,vin,17);
+			memcpy(filename + 17,"_",1);
 			timestamp = PrvtPro_getTimestamp();
 			PP_rmtCfg_ultoa(timestamp,stringVal,10);
-			memcpy(filename + strlen(PP_FILEUPLOAD_PATH) + 17 + 1,stringVal,strlen(stringVal));
-			memcpy(filename + strlen(PP_FILEUPLOAD_PATH) + 17 + 1 + strlen(stringVal),".txt",strlen(".txt"));
-			log_i(LOG_HOZON, "file path and name = %s\n",filename);
+			memcpy(filename + 17 + 1,stringVal,strlen(stringVal));
+			log_i(LOG_HOZON, "file name = %s\n",filename);
 
-			FILE *fp;
-			fp = fopen(filename,"a+");
-			if(fp==NULL)
+			snprintf(filepathname, sizeof(filepathname), "%s%s%s", PP_FILEUPLOAD_PATH,filename, ".zip");
+			log_i(LOG_HOZON, "file path and name = %s\n",filepathname);
+
+			zipFile zfile;
+			zfile = zipOpen64(filepathname, 0);
+			if (zfile == NULL) 
 			{
-				log_e(LOG_HOZON, "open file fail\n");
+				log_e(LOG_HOZON, "zipOpen64 error\n");
+				sleep(1);
+				return;
+			}
+
+			zip_fileinfo zinfo;
+			memset(&zinfo,0,sizeof(zip_fileinfo));
+			memcpy(filename + 17 + 1 + strlen(stringVal),".txt",strlen(".txt"));
+			ret = zipOpenNewFileInZip(zfile, filename, &zinfo, NULL,0,NULL,0,NULL, Z_DEFLATED, 1);
+			if (ret != ZIP_OK) 
+			{
+				log_e(LOG_HOZON, "zipOpenNewFileInZip error\n");
+				sleep(1);
+				return;
 			}
 
 			for(j = 0;j < PP_FILEUPLOAD_PACKNUM;j++)
 			{
-				fwrite(PP_FileUL.buffer[i].pack[j].data, 1, PP_FileUL.buffer[i].pack[j].len, fp); /* 写文件*/
-				fwrite("\r\n\r\n", 1, 4, fp);
+				ret = zipWriteInFileInZip(zfile, PP_FileUL.buffer[i].pack[j].data, PP_FileUL.buffer[i].pack[j].len);
+				if (ret != ZIP_OK) 
+				{
+					log_e(LOG_HOZON,"zipWriteInFileInZip error\n");
+					sleep(1);
+					return;
+				}
 			}
 
-			fclose(fp);
+			ret = zipCloseFileInZip(zfile);
+			if (ret != ZIP_OK) 
+			{
+				log_e(LOG_HOZON, "zipCloseFileInZip error\n");
+				sleep(1);
+				return;
+			}
+
+			ret = zipClose(zfile, NULL);
+			if (ret != ZIP_OK) 
+			{
+				log_e(LOG_HOZON, "zipClose error\n");
+				sleep(1);
+				return;
+			}
 		}
 	}
 }
