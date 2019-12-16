@@ -25,6 +25,7 @@ description�� include the header file
 #include "init.h"
 #include "log.h"
 #include "file.h"
+#include "http.h"
 #include "../../../../base/minizip/zip.h"
 #include "gb32960_api.h"
 #include "hozon_PP_api.h"
@@ -116,6 +117,7 @@ static void *PP_FileUpload_main(void)
 		{
 			PP_FileUpload_datacollection();
 			PP_FileUpload_pkgzip();
+			//http_post_msg("https://file-uat.chehezhi.cn/fileApi/1.0/pickData","123456");
 		}
 
 		usleep(10*1000);

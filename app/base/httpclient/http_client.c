@@ -10,6 +10,8 @@ const int kSelectRead	= 1 << 0;
 const int kSelectWrite	= 1 << 1;
 const int kSelectError	= 1 << 2;
 
+static int http_init_flag = 0;
+
 #ifdef WINCE
 static char* strdup(const char* src)
 {
@@ -65,7 +67,7 @@ int ft_http_init()
 	{
 		return -1;
 	}
-
+	http_init_flag = 1;
 #endif
 
 #ifdef WIN32
@@ -469,7 +471,7 @@ static int on_body_cb(http_parser* parser, const char *at, size_t length)
 		
 		if(http->content_length > 0)
 		{
-			/* Ö±½ÓÒ»´Î·ÖÅä×ã¹»¿Õ¼ä£¬±ÜÃâ¶à´Î·ÖÅä */
+			/* Ö±ï¿½ï¿½Ò»ï¿½Î·ï¿½ï¿½ï¿½ï¿½ã¹»ï¿½Õ¼ä£¬ï¿½ï¿½ï¿½ï¿½ï¿½Î·ï¿½ï¿½ï¿½ */
 			http->body = (char*)calloc(1, http->content_length + 1);
 		}
 		else
@@ -714,7 +716,7 @@ static int http_connect_host(ft_http_client_t* http, const char* url, struct htt
 	{
 		struct linger linger;
 		linger.l_onoff = 1;
-		linger.l_linger = 0;  /* ¹Ø±Õclose wait */
+		linger.l_linger = 0;  /* ï¿½Ø±ï¿½close wait */
 
 		if(setsockopt(http->fd,SOL_SOCKET, SO_LINGER,(const char *) &linger,sizeof(linger)) != 0)
 		{
@@ -821,27 +823,35 @@ static int http_internal_sync_request(ft_http_client_t* http, const char* url,
 	else if(http->method == M_POST)
 	{
 		CHECK(http_read_write(http, "POST ", 5, 0));
+		printf("send===============>%s\n","POST ");
 	}
 
 	if(u.field_set & (1 << UF_PATH))
 	{
 		CHECK(http_read_write(http, url + u.field_data[UF_PATH].off, u.field_data[UF_PATH].len, 0));
+		printf("send===============>u.field_data[UF_PATH].off = %d\n",u.field_data[UF_PATH].off);
 	}
 	else
 	{
 		CHECK(http_read_write(http, "/", 1, 0));
+		printf("send===============>%s\n","/");
 	}
 
 	if(u.field_set & (1 << UF_QUERY))
 	{
 		CHECK(http_read_write(http, "?", 1, 0));
 		CHECK(http_read_write(http, url + u.field_data[UF_QUERY].off, u.field_data[UF_QUERY].len, 0));
+		printf("send===============>%s\n","?");
+		printf("send===============>u.field_data[UF_QUERY].off = %d\n",u.field_data[UF_QUERY].off);
 	}
     
 	CHECK(http_read_write(http, " HTTP/1.1\r\nHost: ", 17, 0));
 	CHECK(http_read_write(http, url + u.field_data[UF_HOST].off, u.field_data[UF_HOST].len, 0));
 	CHECK(http_read_write(http, CRLF  ACCEPT_STR  DEFAULT_USER_AGENT_STR  CONNECT_STR,
 		2 + strlen(CONNECT_STR) + strlen(ACCEPT_STR) + strlen(DEFAULT_USER_AGENT_STR), 0));
+	printf("send===============>%s\n"," HTTP/1.1\r\nHost: ");
+	printf("send===============>u.field_data[UF_HOST].off = %d\n",u.field_data[UF_HOST].off);
+	printf("send===============>%s\n",CRLF  ACCEPT_STR  DEFAULT_USER_AGENT_STR  CONNECT_STR);
 #if 0
     printf("SEND:\r\n----------------\r\nHTTP/1.1\r\nHost: %*s\r\n%s\r\n", u.field_data[UF_HOST].len,
         url + u.field_data[UF_HOST].off, ACCEPT_STR  DEFAULT_USER_AGENT_STR  CONNECT_STR);
@@ -857,13 +867,16 @@ static int http_internal_sync_request(ft_http_client_t* http, const char* url,
 		char len_data[256] = {0};
 		int n = sprintf(len_data, "%s:%d\r\n", CONTENT_TYPE_STR CONTENT_LENGTH_STR, post_data_len);
 		CHECK(http_read_write(http, len_data, n, 0));
+		printf("send===============>%s\n",len_data);
 	}
 
     CHECK(http_read_write(http, CRLF, 2, 0));
+	printf("send===============>%s\n",CRLF);
 
 	if(http->method == M_POST && post_data && post_data_len > 0)
 	{
 		CHECK(http_read_write(http, post_data, post_data_len, 0));
+		printf("send===============>%s\n",post_data);
 	}
 
 	memset(&parser_setting, 0, sizeof(parser_setting));
@@ -1112,6 +1125,12 @@ const char* ft_http_sync_post(ft_http_client_t *http, const char *url, const cha
     if(http == NULL)
 	{
 		return NULL;
+	}
+
+	if(!http_init_flag)
+	{
+		//ft_http_init();
+		http_init_flag = 1;
 	}
 
 	http->method = M_POST;
