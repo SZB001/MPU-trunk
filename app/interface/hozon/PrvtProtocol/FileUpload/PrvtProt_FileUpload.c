@@ -112,8 +112,12 @@ static void *PP_FileUpload_main(void)
     prctl(PR_SET_NAME, "FILE_UPLOAD");
     while(1)
     {
-		PP_FileUpload_datacollection();
-		PP_FileUpload_pkgzip();
+		if(gb32960_networkSt())
+		{
+			PP_FileUpload_datacollection();
+			PP_FileUpload_pkgzip();
+		}
+
 		usleep(10*1000);
     }
 
