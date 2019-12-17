@@ -93,7 +93,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 		{			
 			if(PP_rmtautodoorCtrl.state.req == 1)  //是否有请求
 			{
-				if(PP_rmtCtrl_cfg_vehicleState() == 0)
+				if((PP_rmtCtrl_cfg_vehicleState() == 0)||(PP_rmtCtrl_cfg_RmtStartSt() == 1))
 				{   //有请求判断是否满足远控条件
 					PP_rmtautodoorCtrl.success_flag = 0;
 					PP_rmtautodoorCtrl.state.CtrlSt = PP_AUTODOORCTR_REQSTART;
@@ -139,7 +139,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 		break;
 		case PP_AUTODOORCTR_RESPWAIT://执行等待车控响应
 		{
-			if((tm_get_time() - PP_Respwaittime) > 200)
+			if((tm_get_time() - PP_Respwaittime) > 300)
 			{
 				if((tm_get_time() - PP_Respwaittime) < 15000)
 				{

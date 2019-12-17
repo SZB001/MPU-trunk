@@ -125,7 +125,7 @@ int PP_startforbid_mainfunction(void *task)
 		break;
 		case PP_STARTFORBID_RESPWAIT:
 		{
-			if(tm_get_time() - PP_Respwaittime > 200)
+			if(tm_get_time() - PP_Respwaittime > 300)
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{

@@ -97,7 +97,7 @@ int PP_searchvehicle_mainfunction(void *task)
 		{
 			if(PP_rmtsearchvehicle.state.req == 1)
 			{
-				if(PP_rmtCtrl_cfg_vehicleState() == 0)
+				if((PP_rmtCtrl_cfg_vehicleState() == 0)||(PP_rmtCtrl_cfg_RmtStartSt() == 1))
 				{
 					PP_rmtsearchvehicle.success_flag = 0;
 					PP_rmtsearchvehicle.state.CtrlSt = PP_SEARCHVEHICLE_REQSTART;
@@ -141,7 +141,7 @@ int PP_searchvehicle_mainfunction(void *task)
 		{
 		if(PP_rmtsearchvehicle.state.serachcmd == PP_SEARCH_cmd) //寻车
 			{
-				if((tm_get_time() - PP_Respwaittime) > 200)
+				if((tm_get_time() - PP_Respwaittime) > 300)
 				{
 					if((tm_get_time() - PP_Respwaittime) < 2000)
 					{

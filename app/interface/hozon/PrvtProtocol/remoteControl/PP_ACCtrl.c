@@ -217,7 +217,7 @@ int PP_ACCtrl_mainfunction(void *task)
 		break;
 		case PP_ACCTRL_RESPWAIT:
 		{
-			if((tm_get_time() - PP_rmtACCtrl.state.waittime) > 200)
+			if((tm_get_time() - PP_rmtACCtrl.state.waittime) > 300)
 			{
 				if(PP_rmtACCtrl.state.accmd == PP_OPEN_ACC)    //打开空调结果
 				{

@@ -31,6 +31,10 @@ static uint8_t virtual_on_flag;
 static uint8_t sync_flag_440 = 1;  //上电起来同步一次
 static uint8_t sync_flag_445 = 1;  //上电起来同步一次
 
+static uint64_t lasttime_440;
+static uint64_t lasttime_445;
+
+
 static pthread_mutex_t sync_mutex_440 = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t sync_mutex_445 = PTHREAD_MUTEX_INITIALIZER;
 
@@ -181,8 +185,8 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 		{
 			pthread_mutex_lock(&sync_mutex_440);
 			sync_flag_440 = 1;
-			pthread_mutex_unlock(&sync_mutex_440);
 			old_ID440_data = new_ID440_data;
+			pthread_mutex_unlock(&sync_mutex_440);
 		}
 	}
 	else if(id == CAN_ID_445)
@@ -193,8 +197,8 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 		{
 			pthread_mutex_lock(&sync_mutex_445);
 			sync_flag_445 = 1;
-			pthread_mutex_unlock(&sync_mutex_445);
 			old_ID445_data = new_ID445_data;
+			pthread_mutex_unlock(&sync_mutex_445);
 		}
 	}
 	else if(id == CAN_ID_526)
@@ -244,12 +248,15 @@ void PP_can_send_cycle(void)
 		if(sync_flag_440 == 1)
 		{
 			pthread_mutex_lock(&sync_mutex_440);
+			
 			for(i = 0; i< 3 ;i++)
 			{
-				PP_can_unpack(old_ID440_data,can_data);
-				PP_send_cycle_ID440_to_mcu(can_data);
-				usleep(10);
-	
+				if(tm_get_time() - lasttime_440 > 50)
+				{
+					PP_can_unpack(old_ID440_data,can_data);
+					PP_send_cycle_ID440_to_mcu(can_data);
+					lasttime_440 = tm_get_time();
+				}	
 			}
 			sync_flag_440 = 0;
 			pthread_mutex_unlock(&sync_mutex_440);
@@ -260,9 +267,13 @@ void PP_can_send_cycle(void)
 			pthread_mutex_lock(&sync_mutex_445);
 			for(i = 0; i< 3 ;i++)
 			{
-				PP_can_unpack(old_ID445_data,can_data);
-				PP_send_cycle_ID445_to_mcu(can_data);
-				usleep(10);
+				if(tm_get_time() - lasttime_445 > 50)
+			  	{
+					PP_can_unpack(old_ID445_data,can_data);
+					PP_send_cycle_ID445_to_mcu(can_data);
+					lasttime_445 = tm_get_time();
+				}
+				
 			}
 			sync_flag_445 = 0;
 			pthread_mutex_unlock(&sync_mutex_445);

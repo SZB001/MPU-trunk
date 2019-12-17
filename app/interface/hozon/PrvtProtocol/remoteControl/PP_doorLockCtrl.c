@@ -135,7 +135,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 		{	
 			if(PP_rmtdoorCtrl.state.req == 1)	
 			{
-				if(PP_rmtCtrl_cfg_vehicleState() == 0)  //电源状态OFF
+				if((PP_rmtCtrl_cfg_vehicleState() == 0)||(PP_rmtCtrl_cfg_RmtStartSt() == 1))  //电源状态OFF
 				{	
 					PP_rmtdoorCtrl.success_flag = 0;
 					PP_rmtdoorCtrl.state.CtrlSt = PP_DOORLOCKCTRL_REQSTART;
@@ -184,7 +184,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 	
 		case PP_DOORLOCKCTRL_RESPWAIT://ִ等待BDM应答
 		{
-			if((tm_get_time() - PP_Respwaittime) > 200) //延时200毫秒在去检测结果
+			if((tm_get_time() - PP_Respwaittime) > 300) //延时200毫秒在去检测结果
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 			    {
@@ -338,7 +338,7 @@ int PP_doorLockCtrl_end(void)
 {
 	if((PP_rmtdoorCtrl.state.CtrlSt == PP_DOORLOCKCTRL_IDLE) && \
 			(PP_rmtdoorCtrl.state.req == 0))
-	{
+	{	
 		return 1;
 	}
 	else

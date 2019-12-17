@@ -459,7 +459,7 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 	/*
 	* IGN ON，检查预约同步和保存数据
 	* */
-	if(dev_get_KL15_signal())
+	//if(dev_get_KL15_signal())
 	{
 		PP_ChargeCtrl_informTsp();
 	}

@@ -122,7 +122,7 @@ int PP_bluetoothstart_mainfunction(void *task)
 		break;
 		case PP_BLUETOOTHSTART_RESPWAIT://执行等待车控响应
 		{
-			if((tm_get_time() - PP_Respwaittime) > 200)
+			if((tm_get_time() - PP_Respwaittime) > 300)
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 				{
