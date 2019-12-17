@@ -120,7 +120,10 @@ int gps_dev_open(void)
     }
     else if (GNSS_4G_MODULE == GNSS_TYPE)
     {
-        gps_dev.dev_fd = open(GPS_NMEA_PORT, O_RDWR | O_NONBLOCK | O_NOCTTY);
+        if(gps_dev.dev_fd <= 0)
+        {
+            gps_dev.dev_fd = open(GPS_NMEA_PORT, O_RDWR | O_NONBLOCK | O_NOCTTY);
+        }
     }
 
     if (gps_dev.dev_fd < 0)
