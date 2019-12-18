@@ -133,8 +133,14 @@ unsigned char PP_rmtCtrl_cfg_RmtStartSt(void)
 
 unsigned char PP_rmtCtrl_cfg_ACOnOffSt(void)
 {
-	return gb_data_ACOnOffSt();
-
+	if(1 == dev_get_KL15_signal())
+	{
+		return gb_data_ACOnOffSt();
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 /*

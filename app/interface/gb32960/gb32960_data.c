@@ -1803,21 +1803,28 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 	}
 
     /* 空调信息 */
-    if(gbinf->gb_VSExt.info[GB_VS_ACST])//
-    {
-        if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACST])->value)
-        {
-            buf[len++] = 1;//开启
-        }
-        else
-        {
-        	 buf[len++] = 0;//
-        }
-    }
-    else
-    {
-        buf[len++] = 0xff;
-    }
+	if(1 == dev_get_KL15_signal())
+	{
+		if(gbinf->gb_VSExt.info[GB_VS_ACST])//
+		{
+			if(dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACST])->value)
+			{
+				buf[len++] = 1;//开启
+			}
+			else
+			{
+				buf[len++] = 0;//关闭
+			}
+		}
+		else
+		{
+			buf[len++] = 0xff;
+		}
+	}
+	else
+	{
+		buf[len++] = 0;//关闭
+	}
 
 	if(gbinf->gb_ConpSt.info[GB_CMPT_LHTEMP])//
 	{
@@ -2933,21 +2940,28 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 	}
 
 	/* 空调控制器CLM */
-	if(gbinf->gb_VSExt.info[GB_VS_ACST])//
+	if(1 == dev_get_KL15_signal())
 	{
-		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACST])->value;
-		if((tmp>=0)&&(tmp<=1))
+		if(gbinf->gb_VSExt.info[GB_VS_ACST])//
 		{
-			buf[len++] = tmp;
+			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACST])->value;
+			if((tmp>=0)&&(tmp<=1))
+			{
+				buf[len++] = tmp;
+			}
+			else
+			{
+				buf[len++] = 0xfe;
+			}
 		}
 		else
 		{
-			buf[len++] = 0xfe;
+			buf[len++] = 0xff;
 		}
 	}
 	else
 	{
-		 buf[len++] = 0xff;
+		buf[len++] = 0;//关闭
 	}
 
 	if(gbinf->gb_ConpSt.info[GB_CMPT_CYCLEMODE])//
