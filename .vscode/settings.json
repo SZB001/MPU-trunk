@@ -55,6 +55,8 @@
         "gb32960.h": "c",
         "prvtprot_fileupload.h": "c",
         "prvtprot_remoteconfig.h": "c",
-        "http.h": "c"
+        "http.h": "c",
+        "init.h": "c",
+        "prvtprot_sigparse.h": "c"
     }
 }
