@@ -384,13 +384,14 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                                                      dev_buf, sn,
                                                      dev_buf, partnum,
                                                      dev_buf, supplier);
+
+                clearPP_lock_odcmtxlock(PP_LOCK_OTA_READECUVER);
             }
             else
             {
                 ret = -1;
+                log_e(LOG_WSRV, "Other Task Doing Can Not Read Version");
             }
-
-            clearPP_lock_odcmtxlock(PP_LOCK_OTA_READECUVER);
         }
 
         if (ret < 0)
@@ -436,19 +437,29 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     else if (0 == strcmp(cmd_buf, WSRV_CMD_ECUUPGRADE))
     {
         extern int fota_upgrade(unsigned char *file_path);
-        // TODO: analyse XML file and upgrade ecu
-        log_o(LOG_WSRV, " ######### cmd:%s arg:%s data:%s", cmd_buf, args_buf, data_buf);
 
-        sscanf(data_buf, "{\"config\":\"%s", file_path);
-
-        if (0 != file_path[0])
+        if(PP_LOCK_OK == setPP_lock_odcmtxlock(PP_LOCK_OTA_READECUVER))
         {
-            file_path[strlen((char *)file_path) - 2] = '/';
-            file_path[strlen((char *)file_path) - 1] = 0;
-            log_o(LOG_WSRV, " ######### file_path:%s", file_path);
+            // TODO: analyse XML file and upgrade ecu
+            log_o(LOG_WSRV, " ######### cmd:%s arg:%s data:%s", cmd_buf, args_buf, data_buf);
+            
+            sscanf(data_buf, "{\"config\":\"%s", file_path);
+            
+            if (0 != file_path[0])
+            {
+                file_path[strlen((char *)file_path) - 2] = '/';
+                file_path[strlen((char *)file_path) - 1] = 0;
+                log_o(LOG_WSRV, " ######### file_path:%s", file_path);
+            
+                //call upgrade function
+                fota_upgrade(file_path);
+            }
 
-            //call upgrade function
-            fota_upgrade(file_path);
+            clearPP_lock_odcmtxlock(PP_LOCK_OTA_READECUVER);
+        }
+        else
+        {
+            log_e(LOG_WSRV, "Other Task Doing Can Not Upgrade ECU");
         }
 
         set_normal_information(rsp_buf, body_buf, MIME_JSON);

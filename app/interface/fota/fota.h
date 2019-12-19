@@ -5,7 +5,7 @@
 #define FOTA_MAX_REL_VER    4
 #define FOTA_MAX_KEY_PAR    4
 #define IMAGE_MAX_SECT  32
-#define IMAGE_MAX_SIZE  1500
+#define IMAGE_MAX_SIZE  4000
 
 typedef struct
 {
