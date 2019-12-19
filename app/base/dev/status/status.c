@@ -318,8 +318,7 @@ int st_set(ST_DEF_ITEM_ID id, unsigned char *data, unsigned int len)
 
     pthread_mutex_unlock(&st_set_mutex);
 
-    if((ST_ITEM_BCALL == id) || (ST_ITEM_ICALL == id)       || \
-       (ST_ITEM_ECALL == id) || (ST_ITEM_UPG_STATUS == id)  || \
+    if((ST_ITEM_ECALL == id) || (ST_ITEM_UPG_STATUS == id)  || \
        (ST_ITEM_APP_SLEEP == id))
     {
         dev_sync_timeout();
