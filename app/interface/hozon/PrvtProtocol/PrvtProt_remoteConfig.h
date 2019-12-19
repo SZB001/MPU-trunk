@@ -22,6 +22,9 @@ description�� macro definitions
 //#define PP_XCALL_ACK_WAIT 	0x01//Ӧ��ɹ�
 //#define PP_XCALL_ACK_SUCCESS 	0x02//Ӧ��ɹ�
 
+#define RMTCFG_TSP_CONFIG 		0x01//tsp下发配置
+#define RMTCFG_MANUAL_CONFIG 	0x02//手动配置
+
 /***********�꺯��***********/
 
 /*******************************************************

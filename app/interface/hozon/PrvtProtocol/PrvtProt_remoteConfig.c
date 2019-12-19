@@ -135,16 +135,17 @@ static void getPP_rmtCfg_localConfig(PrvtProt_App_rmtCfg_t* appDt_rmtCfg)
 	unsigned int len;
 	int res;
 	uint8_t cfgsuccess;
-	len = 1;
 
 	pthread_mutex_lock(&cfgdtmtx);
+	len = 33;
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_VER,appDt_rmtCfg->ReadResp.cfgVersion,&len);
+	appDt_rmtCfg->ReadResp.cfgVersionlen = 32;
+	len = 1;
 	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&cfgsuccess,&len);
 	pthread_mutex_unlock(&cfgdtmtx);
-	if((res==0) && (cfgsuccess == 1))
+	if((res==0) && (cfgsuccess & RMTCFG_TSP_CONFIG))
 	{
 		pthread_mutex_lock(&cfgdtmtx);
-		len = 33;
-		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_VER,appDt_rmtCfg->ReadResp.cfgVersion,&len);
 
 		len = sizeof(App_rmtCfg_APN1_t);
 		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&appDt_rmtCfg->ReadResp.APN1,&len);
@@ -156,6 +157,7 @@ static void getPP_rmtCfg_localConfig(PrvtProt_App_rmtCfg_t* appDt_rmtCfg)
 		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&appDt_rmtCfg->ReadResp.COMMON,&len);
 		len = sizeof(App_rmtCfg_EXTEND_t);
 		cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_EXT,&appDt_rmtCfg->ReadResp.EXTEND,&len);
+
 		pthread_mutex_unlock(&cfgdtmtx);
 	}
 	else
@@ -1139,8 +1141,11 @@ void PP_rmtCfg_setCfgEnable(unsigned char obj,unsigned char enable)
 		default:
 		break;
 	}
-
-	cfgsuccess = 1;
+	pthread_mutex_lock(&cfgdtmtx);
+	len = 1;
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&cfgsuccess,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
+	cfgsuccess |= RMTCFG_MANUAL_CONFIG;
 	rmtCfg_COMMON.commonConfigValid = 1;
 
 	pthread_mutex_lock(&cfgdtmtx);
@@ -1204,8 +1209,11 @@ void PP_rmtCfg_setCfgapn1(unsigned char obj,const void *data1,const void *data2)
 		default:
 		break;	
 	}
-
-	cfgsuccess = 1;
+	pthread_mutex_lock(&cfgdtmtx);
+	len = 1;
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&cfgsuccess,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
+	cfgsuccess |= RMTCFG_MANUAL_CONFIG;
 	rmtCfg_APN1.apn1ConfigValid = 1;
 	pthread_mutex_lock(&cfgdtmtx);
 	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&cfgsuccess,1);
@@ -1255,7 +1263,11 @@ void PP_rmtCfg_setCfgficm(unsigned char obj,const void *data)
 		break;
 	}
 
-	cfgsuccess = 1;
+	pthread_mutex_lock(&cfgdtmtx);
+	len = 1;
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&cfgsuccess,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
+	cfgsuccess |= RMTCFG_MANUAL_CONFIG;
 	rmtCfg_FICM.ficmConfigValid = 1;
 	pthread_mutex_lock(&cfgdtmtx);
 	(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_ST,&cfgsuccess,1);
