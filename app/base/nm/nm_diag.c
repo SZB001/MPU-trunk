@@ -179,7 +179,7 @@ void nm_diag_network(void)
     else if( !nm_diag_chk_ota_link() )
     {
         /* network status changed to NM_NET_OTA_LINK_FAULT*/
-        if (NM_NET_OTA_LINK_FAULT != nm_diag_ctl.status)
+        if (NM_NET_NORMAL == nm_diag_ctl.status)
         {
             nm_diag_ctl.status     = NM_NET_OTA_LINK_FAULT;
             nm_diag_ctl.start_time = tm_get_time();
@@ -230,17 +230,23 @@ void nm_diag_network(void)
     }
     else if (NM_NET_OTA_LINK_FAULT == nm_diag_ctl.status)
     {
-         if( ((tm_get_time() - nm_diag_ctl.start_time) > NM_MAX_OTA_LINK_DIAG_INTERVAL )
-            && ( nm_diag_ctl.diag_times < NM_MAX_DIAG_TIMES) )
-         {
-            log_o(LOG_NM, "restart dial network, start time:%u, time:%u, diag times:%u", 
+        if (((tm_get_time() - nm_diag_ctl.start_time) > NM_MAX_OTA_LINK_DIAG_INTERVAL)
+            && (nm_diag_ctl.diag_times < NM_MAX_OTA_DIAG_TIMES))
+        {
+            log_o(LOG_NM, "restart dial network, start time:%u, time:%u, diag times:%u",
                   (unsigned int)nm_diag_ctl.start_time, (unsigned int)tm_get_time(),
                    nm_diag_ctl.diag_times);
             
             nm_dial_restart();
             nm_diag_ctl.start_time = tm_get_time();
             nm_diag_ctl.diag_times++;
-         }
+        }
+		else if(((tm_get_time() - nm_diag_ctl.start_time) > NM_MAX_OTA_LINK_DIAG_INTERVAL)
+            && (nm_diag_ctl.diag_times >= NM_MAX_OTA_DIAG_TIMES))
+		{
+			nm_diag_ctl.status = NM_NET_DIAL_LINK_FAULT;
+			nm_diag_ctl.diag_times = 0;
+		}
     }
 }
 

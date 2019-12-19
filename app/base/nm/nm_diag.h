@@ -12,7 +12,7 @@ author        liuzhongwen
 #include "tcom_api.h"
 #include "nm_api.h"
 
-
+#define NM_MAX_OTA_DIAG_TIMES              3
 
 
 

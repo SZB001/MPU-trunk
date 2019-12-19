@@ -79,6 +79,7 @@ static void sockproxy_nm_dial_recall(void);
 static void sockproxy_testTask(void);
 #endif
 static int PP_shell_setPKIenable(int argc, const char **argv);
+static int sockproxy_get_link_status(void);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -120,6 +121,7 @@ int sockproxy_init(INIT_PHASE phase)
 	  		socketclosetimer = tm_get_time();
 			cfglen = 1;
 			ret |= cfg_get_para(CFG_ITEM_EN_PKI, &sockSt.pkiEnFlag, &cfglen);
+			ret |= nm_register_get_ota_status(sockproxy_get_link_status);
 		}
         break;
     }
@@ -320,6 +322,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					log_i(LOG_SOCK_PROXY, "socket closed");
 					sock_close(sockSt.socket);
 					sockSt.state = PP_CLOSED;
+					sockSt.tsplinkstatus = 0;
 					time = tm_get_time();
 					pthread_mutex_unlock(&sendmtx);
 				}
@@ -358,6 +361,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 				{
 					log_i(LOG_SOCK_PROXY, "socket is open success");
 					state->state = PP_OPENED;
+					sockSt.tsplinkstatus = 1;
 					if (sock_error(state->socket) || sock_sync(state->socket))
 					{
 						log_e(LOG_SOCK_PROXY, "socket error, reset protocol");
@@ -566,6 +570,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 		{
 			if((tm_get_time() - sockSt.waittime) >= 1000)
 			{
+				sockSt.tsplinkstatus = 0;
 				sockSt.sglinkSt = SOCKPROXY_SGLINK_CREAT;
 				sockSt.waittime = tm_get_time();
 			}
@@ -664,6 +669,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 
 				log_i(LOG_HOZON, "set up sglink success\n");
 				sockSt.state = PP_OPENED;
+				sockSt.tsplinkstatus = 1;
 				setPrvtProt_sendHeartbeat();
 			}
 			else
@@ -735,6 +741,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 	{
 		case SOCKPROXY_BDLLINK_INIT:
 		{
+			sockSt.tsplinkstatus = 0;
 			sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_CREAT;
 			sockSt.waittime = tm_get_time();
 		}
@@ -766,7 +773,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					sockSt.dnserrcnt++;
 					if(sockSt.dnserrcnt >= 3)
 					{
-						system("reboot");
+						//system("reboot");
 					}
 					sleep(1);
 					return -1;
@@ -852,6 +859,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 				log_i(LOG_HOZON, "set up BDLlink success\n");
 				sockSt.state = PP_OPENED;
+				sockSt.tsplinkstatus = 1;
 				setPrvtProt_sendHeartbeat();
 				//sockSt.waittime = tm_get_time();
 			}
@@ -1534,7 +1542,7 @@ static void sockproxy_nm_dial_recall(void)
 	{
 		if(sockproxy_SkipSockCheck())
 		{
-			if((tm_get_time() - sockSt.recalltimer) >= 5000)
+			if((tm_get_time() - sockSt.recalltimer) >= 30000)
 			{
 				nm_dial_restart();
 				sockSt.recalltimer = tm_get_time();
@@ -1671,4 +1679,13 @@ static int PP_shell_setPKIenable(int argc, const char **argv)
 uint8_t getsockproxy_pkiEnStatus(void)
 {
 	return sockSt.pkiEnFlag;
+}
+
+/* 
+获取链路状态
+*/
+static int sockproxy_get_link_status(void)
+{
+	log_i(LOG_SOCK_PROXY, "tsp link status: %s\n",sockSt.tsplinkstatus?"normal":"fault");
+	return sockSt.tsplinkstatus;
 }
