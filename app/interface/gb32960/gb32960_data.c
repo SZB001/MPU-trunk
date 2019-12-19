@@ -1406,25 +1406,9 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 
    if(dev_get_KL15_signal())
    {
-		if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_MAJORLOOP])
-		{
-			if(0 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_MAJORLOOP])->value)
-			{
-				gb_warning[2][16] = 1;
-			}
-		}
-
-		if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_DCBUS])
-		{
-			if(0 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_DCBUS])->value)
-			{
-				gb_warning[2][16] = 1;
-			}
-		}
-
 	    for(i = 0; i < 3; i++)
 	    {
-			if(gbinf->warn[i][0x3F] && dbc_get_signal_from_id(gbinf->warn[i][0x3F])->value)
+			if(gbinf->warn[i][0x10] && dbc_get_signal_from_id(gbinf->warn[i][0x10])->value)
 			{
 				gb_warning[2][16] = 1;
 			}
