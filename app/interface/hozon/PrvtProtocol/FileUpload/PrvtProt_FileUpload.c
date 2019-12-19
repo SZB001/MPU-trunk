@@ -117,7 +117,6 @@ static void *PP_FileUpload_main(void)
 		{
 			PP_FileUpload_datacollection();
 			PP_FileUpload_pkgzip();
-			//http_post_msg("https://file-uat.chehezhi.cn/fileApi/1.0/pickData","123456");
 		}
 
 		usleep(10*1000);
@@ -255,6 +254,8 @@ static void PP_FileUpload_pkgzip(void)
 				sleep(1);
 				return;
 			}
+
+			http_post_msg("https://file-pre.chehezhi.cn/fileApi/1.0/pickData","123456");
 		}
 	}
 }

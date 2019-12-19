@@ -102,12 +102,14 @@ enum http_error_e
 
 #endif
 
-
+#define CONTENT_POST_STR "POST /fileApi/1.0/pickData HTTP/1.1\r\n"
+#define CONTENT_HOST_STR "Host: https://file-pre.chehezhi.cn\r\n"
 #define DEFAULT_USER_AGENT_STR "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:29.0) Gecko/20100101 Firefox/29.0\r\n"
-#define CONNECT_STR "Connection: close\r\n"
+#define CONNECT_STR "Connection: keep-alive\r\n"
 #define ACCEPT_STR "Accept: */*\r\n"
+#define CONTENT_ENCODE_STR "Accept-Encoding: gzip,deflate\r\n"
 #define CONTENT_LENGTH_STR "Content-Length"
-#define CONTENT_TYPE_STR "Content-Type: application/x-www-form-urlencoded\r\n"
+#define CONTENT_TYPE_STR "Content-Type: application/json;charset=UTF-8\r\n"
 #define CONTENT_DISPOSITION_STR "Content-Disposition"
 #define CRLF "\r\n"
 

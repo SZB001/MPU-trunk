@@ -822,10 +822,10 @@ static int http_internal_sync_request(ft_http_client_t* http, const char* url,
 	}
 	else if(http->method == M_POST)
 	{
-		CHECK(http_read_write(http, "POST ", 5, 0));
-		printf("send===============>%s\n","POST ");
+		CHECK(http_read_write(http, CONTENT_POST_STR, strlen(CONTENT_POST_STR), 0));
+		printf("send===============>%s\n",CONTENT_POST_STR);
 	}
-
+#if 0
 	if(u.field_set & (1 << UF_PATH))
 	{
 		CHECK(http_read_write(http, url + u.field_data[UF_PATH].off, u.field_data[UF_PATH].len, 0));
@@ -844,13 +844,14 @@ static int http_internal_sync_request(ft_http_client_t* http, const char* url,
 		printf("send===============>%s\n","?");
 		printf("send===============>u.field_data[UF_QUERY].off = %d\n",u.field_data[UF_QUERY].off);
 	}
-    
-	CHECK(http_read_write(http, " HTTP/1.1\r\nHost: ", 17, 0));
-	CHECK(http_read_write(http, url + u.field_data[UF_HOST].off, u.field_data[UF_HOST].len, 0));
+   #endif 
+	CHECK(http_read_write(http, CONTENT_HOST_STR, strlen(CONTENT_HOST_STR), 0));
+	//CHECK(http_read_write(http, url + u.field_data[UF_HOST].off, u.field_data[UF_HOST].len, 0));
+	CHECK(http_read_write(http, CONTENT_ENCODE_STR, strlen(CONTENT_ENCODE_STR), 0));
 	CHECK(http_read_write(http, CRLF  ACCEPT_STR  DEFAULT_USER_AGENT_STR  CONNECT_STR,
 		2 + strlen(CONNECT_STR) + strlen(ACCEPT_STR) + strlen(DEFAULT_USER_AGENT_STR), 0));
-	printf("send===============>%s\n"," HTTP/1.1\r\nHost: ");
-	printf("send===============>u.field_data[UF_HOST].off = %d\n",u.field_data[UF_HOST].off);
+	printf("send===============>%s\n",CONTENT_HOST_STR);
+	printf("send===============>%s\n",CONTENT_ENCODE_STR);
 	printf("send===============>%s\n",CRLF  ACCEPT_STR  DEFAULT_USER_AGENT_STR  CONNECT_STR);
 #if 0
     printf("SEND:\r\n----------------\r\nHTTP/1.1\r\nHost: %*s\r\n%s\r\n", u.field_data[UF_HOST].len,
@@ -865,7 +866,7 @@ static int http_internal_sync_request(ft_http_client_t* http, const char* url,
     if(http->method == M_POST && post_data && post_data_len > 0)
 	{
 		char len_data[256] = {0};
-		int n = sprintf(len_data, "%s:%d\r\n", CONTENT_TYPE_STR CONTENT_LENGTH_STR, post_data_len);
+		int n = sprintf(len_data, "%s:%d\r\n", CONTENT_LENGTH_STR, post_data_len);
 		CHECK(http_read_write(http, len_data, n, 0));
 		printf("send===============>%s\n",len_data);
 	}
@@ -900,7 +901,7 @@ static int http_internal_sync_request(ft_http_client_t* http, const char* url,
 			if(nread > 0)
 			{
 				http->body_len += nread;
-                //printf("BODY\r\n----------------\r\n%*s\r\n", http->body_len, http->body);
+                printf("BODY\r\n----------------\r\n%*s\r\n", http->body_len, http->body);
                 break;
 			}
 
@@ -911,13 +912,13 @@ static int http_internal_sync_request(ft_http_client_t* http, const char* url,
 			char buf[RECV_BUF_SIZE + 1] = {0};
 
 			nread = http_read_write(http, buf, RECV_BUF_SIZE, 1);
-            //printf("RECV(%d)\r\n----------------\r\n%.*s\r\n", nread, nread, buf);
+            printf("RECV(%d)\r\n----------------\r\n%.*s\r\n", nread, nread, buf);
 
 			if(nread > 0)
 			{
 				parsed = http_parser_execute(&parser, &parser_setting, buf, nread);
 
-                //printf("PARS(c=%d, l=%d)\r\n----------------\r\n", parser.status_code, parsed);
+                printf("PARS(c=%d, l=%d)\r\n----------------\r\n", parser.status_code, parsed);
 				if(http->redirect)
 				{
 					break;
@@ -925,7 +926,7 @@ static int http_internal_sync_request(ft_http_client_t* http, const char* url,
 
 				if(parsed != nread)
 				{
-                    //printf("read error, %d, %d\r\n", parsed, nread);
+                    printf("read error, %d, %d\r\n", parsed, nread);
 					return http->error_code = ERR_PARSE_REP;
 				}
 			}
