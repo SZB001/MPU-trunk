@@ -98,19 +98,13 @@ char PrvtProtCfg_detectionTriggerSt(void)
 ******************************************************/
 long PrvtProtCfg_engineSt(void)
 {
-	long st = 0xFF;
 	st = gb_data_vehicleState();
-	if(1 ==  st)//����1��Ӧ����
+	if(2 ==  st)//����1��Ӧ����
 	{
-		st = 2;
+		return 2;
 	}
-	else if(2 ==  st)//����1��ӦϨ��
-	{
-		st = 1;
-	}
-	else
-	{}
-	return st;
+
+	return 1;
 }
 
 /******************************************************
