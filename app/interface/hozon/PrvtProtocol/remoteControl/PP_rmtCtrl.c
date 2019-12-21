@@ -35,6 +35,7 @@ description： include the header file
 #include "log.h"
 #include "list.h"
 #include "cfg_api.h"
+#include "dev_api.h"
 #include "../../support/protocol.h"
 #include "../sockproxy/sockproxy_txdata.h"
 #include "gb32960_api.h"
@@ -916,7 +917,6 @@ int PP_rmtCtrl_vehicle_status_InformBt(unsigned char obj, unsigned char cmd)
 	respbt.state.charge_state = PP_rmtCtrl_cfg_chargeOnOffSt() ? 2 : 1;
 	
 	respbt.state.electric_door_state = PP_rmtCtrl_cfg_bdmreardoorSt() ? 2 : 1; 
-	log_i(LOG_HOZON,"respbt.state.electric_door_state = %d",respbt.state.electric_door_state);
 	
 	respbt.state.fine_car_state = 1;  //保留
 	

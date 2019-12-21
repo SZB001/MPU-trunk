@@ -1227,6 +1227,7 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
             {
                 case TBOX__NET__CALL_TYPE__ECALL:  //车机语音触发ECALL
                 {
+                	log_i(LOG_IVI,"SOS trigger by the ihu !!!!");
                 	callrequest.call_type = ECALL_YTPE;
                     if( TBOX__NET__CALL_ACTION_ENUM__START_CALL == TopMsg->call_action->action )
                     {
@@ -2209,7 +2210,7 @@ void tbox_ivi_ecall_srs_deal(uint8_t dt)
 				//下发远程诊断命令
 				ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
 			}
-			log_o(LOG_IVI, "SOS trigger!!!!!");
+			log_i(LOG_IVI, "SOS trigger by the srs!!!!!");
 		}
 	}
 }
@@ -2231,7 +2232,7 @@ void tbox_ivi_ecall_key_deal(uint8_t dt)
 				//下发远程诊断命令
 				ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
 			}
-			log_o(LOG_IVI, "SOS trigger!!!!!");
+			log_i(LOG_IVI, "SOS trigger by the key!!!!!");
 		}
 	}
 }

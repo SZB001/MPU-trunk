@@ -488,7 +488,7 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	{
 		Appdata_Xcall.gpsPos.hdop = 1000;
 	}
-	Appdata_Xcall.srsSt 		= PrvtProtCfg_CrashOutputSt();
+	Appdata_Xcall.srsSt 		= PrvtProtCfg_CrashOutputSt()? 2 : 1 ;
 	Appdata_Xcall.updataTime 	= PrvtPro_getTimestamp();
 	Appdata_Xcall.battSOCEx 	= PrvtProtCfg_vehicleSOC();
 	if (Appdata_Xcall.battSOCEx > 10000)
