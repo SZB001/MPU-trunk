@@ -10,17 +10,17 @@ extern timer_t remote_diag_request_timeout;
 const unsigned int remote_diag_state_timeout[REMOTE_DIAG_CMD_NUM] = 
 {
     0xffffffff,                                     //REMOTE_DIAG_CMD_NOT_START = 0,//未开始
-    UDS_P2_SERVER_T,                                //REMOTE_DIAG_CMD_OPENING,/* 已发送配置命令，等待响应*/
-    UDS_P2_SERVER_T,                                //REMOTE_DIAG_CMD_OPENED,/* 配置成功，尚未发送UDS诊断请求*/
-    UDS_P2_SERVER_T,                                //REMOTE_DIAG_CMD_SESSION_CONTROLLING,/* 会话控制 切换会话中*/
-    UDS_P2_SERVER_T,                                //REMOTE_DIAG_CMD_SESSION_CONTROLLED, /* 会话控制已满足 */
-    UDS_P2_SERVER_T,                                //REMOTE_DIAG_CMD_SECURITY_SEED_REQUESTING,/* 安全访问请求种子中*/
-    UDS_P2_SERVER_T,                                //REMOTE_DIAG_CMD_SECURITY_SEED_REQUESTED,/* 安全访问已请求种子，并接收到种子*/
-    UDS_P2_SERVER_T,                                //REMEOT_DIAG_CMD_SECURITY_KEY_SENDING,/* 安全访问，发送key中*/
-    UDS_P2_SERVER_T,                                //REMOTE_DIAG_CMD_SECURITY_KEY_SENDED,/* 安全访问已解锁 */
+    REMOTE_DIAG_BASE_TIMEOUT_INTERVAL,                                //REMOTE_DIAG_CMD_OPENING,/* 已发送配置命令，等待响应*/
+    REMOTE_DIAG_BASE_TIMEOUT_INTERVAL,                                //REMOTE_DIAG_CMD_OPENED,/* 配置成功，尚未发送UDS诊断请求*/
+    REMOTE_DIAG_BASE_TIMEOUT_INTERVAL,                                //REMOTE_DIAG_CMD_SESSION_CONTROLLING,/* 会话控制 切换会话中*/
+    REMOTE_DIAG_BASE_TIMEOUT_INTERVAL,                                //REMOTE_DIAG_CMD_SESSION_CONTROLLED, /* 会话控制已满足 */
+    REMOTE_DIAG_BASE_TIMEOUT_INTERVAL,                                //REMOTE_DIAG_CMD_SECURITY_SEED_REQUESTING,/* 安全访问请求种子中*/
+    REMOTE_DIAG_BASE_TIMEOUT_INTERVAL,                                //REMOTE_DIAG_CMD_SECURITY_SEED_REQUESTED,/* 安全访问已请求种子，并接收到种子*/
+    REMOTE_DIAG_BASE_TIMEOUT_INTERVAL,                                //REMEOT_DIAG_CMD_SECURITY_KEY_SENDING,/* 安全访问，发送key中*/
+    REMOTE_DIAG_BASE_TIMEOUT_INTERVAL,                                //REMOTE_DIAG_CMD_SECURITY_KEY_SENDED,/* 安全访问已解锁 */
     REMOTE_DIAG_MSG_TIMEOUT_INTERVAL,               //REMOTE_DIAG_CMD_DIAGNOSING,/* 已发送诊断请求，等待诊断响应*/
-    UDS_P2_SERVER_T,                                //REMOTE_DIAG_CMD_DIAGNOSED,/* 已接收诊断响应，诊断结束*/
-    UDS_P2_SERVER_T,                                //REMOTE_DIAG_CMD_ClOSING,/* 已发送关闭请求，等待响应*/
+    REMOTE_DIAG_BASE_TIMEOUT_INTERVAL,                                //REMOTE_DIAG_CMD_DIAGNOSED,/* 已接收诊断响应，诊断结束*/
+    REMOTE_DIAG_BASE_TIMEOUT_INTERVAL,                                //REMOTE_DIAG_CMD_ClOSING,/* 已发送关闭请求，等待响应*/
     0xffffffff                                      //REMOTE_DIAG_CMD_FINISHED,/* 已接收关闭，结束 */
 };
 

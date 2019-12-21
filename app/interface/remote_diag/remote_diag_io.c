@@ -27,7 +27,7 @@ const unsigned char dtc_to_str_arr[4] = {'P', 'C', 'B', 'U'};
 const unsigned char remote_diag_server_cmd[REMOTE_DIAG_SERVICE_NUM][10] =
 {
 
-    {"190A\0"},
+    {"1902\0"},
     {"14FFFFFF\0"},
     {"1904\0"},
     {"14FFFFFF\0"},
@@ -434,7 +434,7 @@ int PP_get_remote_result(uint8_t obj, PP_rmtDiag_Fault_t * pp_rmtdiag_fault)
                     memcpy(DTC_temp,response+byte_size,4);
                     byte_size = byte_size + 4;
                     
-                    if(DTC_temp[3] == 0x08)/* 历史故障 */
+                    if((DTC_temp[3] & 0x09) == 0x08)/* 历史故障 */
                     {
                         dtc_to_str(pp_rmtdiag_fault->faultcode[dtc_num].diagcode,DTC_temp);
                         pp_rmtdiag_fault->faultcode[dtc_num].diagTime = 0;
@@ -442,7 +442,7 @@ int PP_get_remote_result(uint8_t obj, PP_rmtDiag_Fault_t * pp_rmtdiag_fault)
                         pp_rmtdiag_fault->faultcode[dtc_num].lowByte = DTC_temp[2];
                         dtc_num++;
                     }
-                    else if(DTC_temp[3] == 0x09)/* 当前故障*/
+                    else if((DTC_temp[3] & 0x09) == 0x09)/* 当前故障*/
                     {
                         dtc_to_str(pp_rmtdiag_fault->faultcode[dtc_num].diagcode,DTC_temp);
                         
