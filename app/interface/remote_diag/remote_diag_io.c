@@ -27,7 +27,7 @@ const unsigned char dtc_to_str_arr[4] = {'P', 'C', 'B', 'U'};
 const unsigned char remote_diag_server_cmd[REMOTE_DIAG_SERVICE_NUM][10] =
 {
 
-    {"1902\0"},
+    {"190209\0"},
     {"14FFFFFF\0"},
     {"1904\0"},
     {"14FFFFFF\0"},

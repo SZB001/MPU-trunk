@@ -98,6 +98,7 @@ char PrvtProtCfg_detectionTriggerSt(void)
 ******************************************************/
 long PrvtProtCfg_engineSt(void)
 {
+	uint8_t st;
 	st = gb_data_vehicleState();
 	if(2 ==  st)//����1��Ӧ����
 	{
