@@ -1509,7 +1509,6 @@ static void *gb_main(void)
             case GB_MSG_CANOFF:
                 log_i(LOG_GB32960, "get CANOFF message");
                 state.can = 0;
-                state.calflag = 0;
                 gb_allow_sleep = !state.online;
                 break;
 
@@ -1567,11 +1566,15 @@ static void *gb_main(void)
         res = gb_do_checksock(&state) ||	//检查连接
               gb_do_receive(&state)   ||	//socket 接收
               gb_do_wait(&state)      ||	//等待
-              gb_do_caltime(&state)   ||    //校时
               gb_do_login(&state)     ||	//登入
               gb_do_suspend(&state)   ||	//暂停
               gb_do_report(&state)    ||	//发实时数据
               gb_do_logout(&state);			//登出
+
+        if(1 == sockproxy_socketState())
+        {
+            gb_do_caltime(&state);//校时
+        }
     }
 
     sock_delete(state.socket);
