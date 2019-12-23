@@ -1503,7 +1503,6 @@ static void *gb_main(void)
                 SetPrvtProt_Awaken((int)GB_MSG_CANON);
                 state.can = 1;
                 gb_allow_sleep = 0;
-                state.calflag = 1;
                 break;
 
             case GB_MSG_CANOFF:
@@ -1551,6 +1550,18 @@ static void *gb_main(void)
         }
 
 		if(gbnosend != 0) continue;
+
+        static char IGNnewSt,IGNoldSt = 0;
+
+        IGNnewSt = dev_get_KL15_signal();
+        if(IGNoldSt != IGNnewSt)
+        {
+            IGNoldSt = IGNnewSt;
+            if(1 == IGNnewSt)//IGN ON
+            {
+                state.calflag = 1;
+            }
+        }
 		
         res = gb_do_checksock(&state) ||	//检查连接
               gb_do_receive(&state)   ||	//socket 接收
