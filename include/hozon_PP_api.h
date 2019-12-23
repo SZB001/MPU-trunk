@@ -44,6 +44,7 @@ typedef struct
 {
 	uint8_t sueecss;
 	uint8_t faultNum;//������
+	uint8_t failureType;
 	PP_rmtDiag_faultcode_t faultcode[255];
 }PP_rmtDiag_Fault_t;
 
