@@ -470,6 +470,15 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 		break;
 		case PP_DIAGRESP_QUERYFAILREQ:
 		{
+			if(0 == PP_rmtCfg_enable_dtcEnabled())
+			{
+				log_e(LOG_HOZON, "remote diag func unenable\n");
+				PP_rmtDiag.state.result = 0;
+				PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_DIAGUNENABLE;
+				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
+				return 0;
+			}
+
 			if(gb_data_vehicleSpeed() <= 50)//判断车速<=5km/h,满足诊断条件
 			{
 				PP_rmtDiag.state.faultquerySt = 0;
@@ -572,7 +581,7 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 				mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_DIAG_CLEAN);
 				if(PP_LOCK_OK == mtxlockst)
 				{
-					PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_REQ;
+					PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_VEHICOND;
 				}
 				else
 				{
@@ -600,6 +609,31 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 					}
 				}
 				PP_rmtDiag.state.cleanfaultReq = 0;
+			}
+		}
+		break;
+		case PP_FAULTCODECLEAN_VEHICOND:
+		{
+			if(0 == PP_rmtCfg_enable_dtcEnabled())
+			{
+				log_e(LOG_HOZON, "remote diag func unenable\n");
+				PP_rmtDiag.state.faultCleanResult	= 0;
+				PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_DIAGUNENABLE;
+				PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_END;
+				return 0;
+			}
+
+			if(gb_data_vehicleSpeed() <= 50)//判断车速<=5km/h,满足诊断条件
+			{
+				log_i(LOG_HOZON, "vehi speed <= 5km,start clean fault code\n");
+				PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_REQ;
+			}
+			else
+			{
+				log_e(LOG_HOZON,"vehicle speed > 5km/h,exit clean fault code\n");
+				PP_rmtDiag.state.faultCleanResult	= 0;
+				PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_VEHISPEED;
+				PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_END;
 			}
 		}
 		break;
@@ -850,6 +884,16 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 		break;
 		case PP_ACTIVEDIAG_CHECKVEHICOND:
 		{
+			if(0 == PP_rmtCfg_enable_dtcEnabled())
+			{
+				log_e(LOG_HOZON, "remote diag func unenable\n");
+				PP_rmtDiag.state.result = 0;
+				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_DIAGUNENABLE;
+				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
+				return 0;
+			}
+
 			if((tm_get_time() - PP_rmtDiag.state.activeDiagdelaytime) >= PP_DIAGPWRON_WAITTIME)//延时5s
 			{
 				if(gb_data_vehicleSpeed() <= 50)//判断车速<=5km/h,满足诊断条件
