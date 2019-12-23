@@ -1951,7 +1951,7 @@ static int  MatchCertVerify(void)
 		return -1;
 	}
 
-	iRet = HzTboxMatchCertVerify(PP_CERTDL_CERTPATH_UPDATE);
+	iRet = HzTboxMatchCertVerify(PP_CERTDL_CERTPATH_UPDATE,PP_CERTDL_TWOCERTRKEYPATH_UPDATE);
 	if(iRet != 5110)
 	{
 		log_e(LOG_HOZON,"HzTboxMatchCertVerify error+++++++++++++++iRet[%d] \n", iRet);
@@ -1959,7 +1959,7 @@ static int  MatchCertVerify(void)
 	}
 
 	iRet = PP_CertDL_checkCertOutofdate(PP_CERTDL_CERTPATH_UPDATE);
-	if(1 != iRet)
+	if((1 != iRet) && (4 != iRet))
 	{
 		log_e(LOG_HOZON,"PP_CertDL_checkCertOutofdate error+++++++++++++++iRet[%d]\n", iRet);
 		return -1;

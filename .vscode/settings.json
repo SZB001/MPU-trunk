@@ -57,6 +57,7 @@
         "prvtprot_remoteconfig.h": "c",
         "http.h": "c",
         "init.h": "c",
-        "prvtprot_sigparse.h": "c"
+        "prvtprot_sigparse.h": "c",
+        "dev_time.h": "c"
     }
 }

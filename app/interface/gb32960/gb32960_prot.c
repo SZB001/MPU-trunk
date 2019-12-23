@@ -21,6 +21,7 @@
 #include "pm_api.h"
 #include "at.h"
 #include "dev_time.h"
+#include "dev_api.h"
 #include "hozon_SP_api.h"
 #include "hozon_PP_api.h"
 
