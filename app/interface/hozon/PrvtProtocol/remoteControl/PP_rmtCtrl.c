@@ -1166,9 +1166,9 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			}
 			
 			App_rmtCtrl.CtrlResp.basicSt.totalOdometer		= gb_data_vehicleOdograph();
-			if(App_rmtCtrl.CtrlResp.basicSt.totalOdometer > 1000000)
+			if(App_rmtCtrl.CtrlResp.basicSt.totalOdometer > 10000000)
 			{
-				App_rmtCtrl.CtrlResp.basicSt.totalOdometer = 1000000;
+				App_rmtCtrl.CtrlResp.basicSt.totalOdometer = 10000000;
 			}
 			
 			App_rmtCtrl.CtrlResp.basicSt.batteryVoltage		= gb_data_batteryVoltage();

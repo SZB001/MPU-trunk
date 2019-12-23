@@ -30,7 +30,7 @@ XcallRespinfo ::= SEQUENCE
 {
     xcallType          	INTEGER(0..255), -- 救援类型
 	engineSt			INTEGER(0..255), -- 启动状态
-	ttOdoMeter			INTEGER(0..1000000), --  里程
+	ttOdoMeter			INTEGER(0..10000000), --  里程
 	gpsPos				SEQUENCE(SIZE(1)) OF RvsposInfo, -- 车辆救援位置
 	srsSt				INTEGER(0..255), -- 安全气囊状态
 	updataTime			INTEGER(0..2147483647), -- timestamp时间戳
@@ -308,7 +308,7 @@ RvsBasicStatus ::= SEQUENCE
 	chargeStatus		INTEGER(0..255)	OPTIONAL, -- 
 	powerMode			INTEGER(0..255)	OPTIONAL, -- 
 	speed				INTEGER(0..2500), -- 
-	totalOdometer		INTEGER(0..1000000), -- 
+	totalOdometer		INTEGER(0..10000000), -- 
 	batteryVoltage		INTEGER(0..10000), -- 
 	batteryCurrent		INTEGER(0..10000), -- 
 	batterySOCPrc		INTEGER(0..100), -- 

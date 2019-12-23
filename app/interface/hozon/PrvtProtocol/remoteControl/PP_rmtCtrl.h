@@ -99,6 +99,7 @@ description： macro definitions
 #define PP_RMTCTRL_NOTENABLE            0x0B//远控没有使能 
 #define PP_RMTCTRL_FOTA_UPGRADE         0x0C//fota升级中  
 #define PP_RMTCTRL_INSTRTIMEOUT         0x0A//指令超时
+#define PP_RMTCTRL_VEHIUNLOCK           0x0D//整车未上锁
 
 //蓝牙请求消息类型
 #define BT_VEhICLE_DOOR_REQ       0x03 //车门锁

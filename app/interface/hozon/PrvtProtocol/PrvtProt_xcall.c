@@ -441,9 +441,9 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	Appdata_Xcall.xcallType = PP_xcall[XcallType].Type;//xcall type:ecall/icall/bcall
 	Appdata_Xcall.engineSt = PrvtProtCfg_engineSt();
 	Appdata_Xcall.totalOdoMr = PrvtProtCfg_totalOdoMr();
-	if(Appdata_Xcall.totalOdoMr > 1000000)
+	if(Appdata_Xcall.totalOdoMr > 10000000)
 	{
-		Appdata_Xcall.totalOdoMr = 1000000;
+		Appdata_Xcall.totalOdoMr = 10000000;
 	}
 
 	Appdata_Xcall.gpsPos.gpsSt = PrvtProtCfg_gpsStatus();

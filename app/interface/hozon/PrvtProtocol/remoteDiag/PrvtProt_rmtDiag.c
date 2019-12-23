@@ -150,7 +150,6 @@ void PP_rmtDiag_init(void)
 	PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
 	PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
 	PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
-	PP_rmtDiag.state.activeDiagFlag = 1;
 	PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
 
 	cfglen = 4;
@@ -186,19 +185,17 @@ int PP_rmtDiag_mainfunction(void *task)
 		{
 			PP_rmtDiag.state.activeDiagFlag = 1;
 		}
-	}
-
-	if(!IGNnewSt)//IGN OFF
-	{
-		PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
-		PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
-		PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
-		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
-		PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_IDLE;
-		PP_rmtDiag.state.diagReq = 0;
-		PP_rmtDiag.state.ImageAcquisitionReq = 0;
-		PP_rmtDiag.state.LogAcquisitionReq = 0;
-		return 0;
+		else
+		{
+			PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
+			PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
+			PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
+			PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
+			PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_IDLE;
+			PP_rmtDiag.state.diagReq = 0;
+			PP_rmtDiag.state.ImageAcquisitionReq = 0;
+			PP_rmtDiag.state.LogAcquisitionReq = 0;
+		}
 	}
 
 	res = 		PP_rmtDiag_do_checksock((PrvtProt_task_t*)task) 		||	\

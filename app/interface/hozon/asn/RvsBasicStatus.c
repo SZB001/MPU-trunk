@@ -621,7 +621,7 @@ memb_totalOdometer_constraint_1(asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	value = *(const long *)sptr;
 	
-	if((value >= 0 && value <= 1000000)) {
+	if((value >= 0 && value <= 10000000)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -1078,7 +1078,7 @@ static asn_per_constraints_t asn_PER_memb_speed_constr_46 GCC_NOTUSED = {
 	0, 0	/* No PER value map */
 };
 static asn_per_constraints_t asn_PER_memb_totalOdometer_constr_47 GCC_NOTUSED = {
-	{ APC_CONSTRAINED,	 20, -1,  0,  1000000 }	/* (0..1000000) */,
+	{ APC_CONSTRAINED,	 24, -1,  0,  10000000 }	/* (0..10000000) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };

@@ -572,9 +572,9 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.speed  = %ld",PP_VS_appdata.VSResp.basicSt.speed);
 
 	PP_VS_appdata.VSResp.basicSt.totalOdometer		= gb_data_vehicleOdograph();
-	if(PP_VS_appdata.VSResp.basicSt.totalOdometer > 1000000)
+	if(PP_VS_appdata.VSResp.basicSt.totalOdometer > 10000000)
 	{
-		PP_VS_appdata.VSResp.basicSt.totalOdometer = 1000000;
+		PP_VS_appdata.VSResp.basicSt.totalOdometer = 10000000;
 	}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.totalOdometer  = %ld",PP_VS_appdata.VSResp.basicSt.totalOdometer);
 
