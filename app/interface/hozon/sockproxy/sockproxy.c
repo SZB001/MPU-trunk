@@ -324,8 +324,8 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					sockSt.state = PP_CLOSED;
 					sockSt.tsplinkstatus = 0;
 					time = tm_get_time();
-					pthread_mutex_unlock(&sendmtx);
 				}
+				pthread_mutex_unlock(&sendmtx);
 				sockSt.asynCloseFlg = 0;
 			}
 
@@ -1213,7 +1213,7 @@ int sockproxy_MsgSend(uint8_t* msg,int len,void (*sync)(void))
 {
 	int res = 0;
 
-	if(pthread_mutex_trylock(&sendmtx) == 0)
+	if(pthread_mutex_lock(&sendmtx) == 0)
 	{
 		if((sockSt.state == PP_OPENED) || (sockSt.state == PP_CLOSE_WAIT))
 		{
