@@ -1709,7 +1709,8 @@ int gb_run(void)
 
 static int gb_allow_sleep_handler(PM_EVT_ID id)
 {
-    return (gb_allow_sleep && GetPrvtProt_Sleep() && (sockproxy_Sleep()));
+    return (gb_allow_sleep && GetPrvtProt_Sleep() && \
+            sockproxy_Sleep() && PP_rmtDiag_sleepflag());
 }
 
 int gb_init(INIT_PHASE phase)

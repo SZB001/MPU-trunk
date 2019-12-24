@@ -46,6 +46,7 @@ typedef enum
 typedef enum
 {
 	PP_DIAGRESP_IDLE = 0,//
+	PP_DIAGRESP_VEHICOND,
 	PP_DIAGRESP_QUERYFAILREQ,//�����ѯ����
 	PP_DIAGRESP_QUERYWAIT,//�ȴ���ѯ���Ӧ��
 	PP_DIAGRESP_QUERYUPLOAD,//��ѯ�ϱ�
@@ -150,6 +151,7 @@ typedef struct
 	uint64_t faultcleanwaittime;
 	uint8_t	 faultCleanResult;
 	uint8_t	 faultCleanfailureType;
+	uint8_t  sleepflag;
 }PrvtProt_rmtDiagSt_t; /*�ṹ��*/
 
 typedef struct
