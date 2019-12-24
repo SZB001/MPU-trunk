@@ -275,8 +275,8 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 	int idlenode;
 	if(1 != sockproxy_socketState())//socket not open
 	{
-		return 0;
 		PP_rmtVS.state.req = PP_VS_NOREQ;
+		return 0;
 	}
 
 	switch(PP_rmtVS.state.req)
