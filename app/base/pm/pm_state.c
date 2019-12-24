@@ -466,6 +466,11 @@ void pm_st_s4e3(void)
 
     if (is_allow_sleep >= 1)
     {
+        if(2 == is_allow_sleep)
+        {
+            PP_rmtDiag_mcuRTCweakup();
+        }
+
         pm_mcu_wakeup();
         pm_wakeup_low();
         return ;

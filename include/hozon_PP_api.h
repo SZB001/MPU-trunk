@@ -129,4 +129,6 @@ extern uint8_t PP_rmtCfg_enable_online(void);
 extern uint8_t PP_rmtCfg_enable_carEmpower(void);
 extern uint8_t PP_rmtCfg_enable_carAlarm(void);
 extern uint8_t PP_rmtCfg_enable_evtReport(void);
+extern void PP_rmtDiag_showPara(void);
+extern void PP_rmtDiag_mcuRTCweakup(void);
 #endif

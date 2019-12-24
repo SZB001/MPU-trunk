@@ -24,7 +24,7 @@ description�� macro definitions
 #define PP_DIAGPWRON_WAITTIME    	5000//5s
 #define PP_DIAGQUERY_WAITTIME    	5000//5s
 #define PP_FAULTCODECLEAN_WAITTIME    	5000//5s
-#define PP_DIAGQUERYALL_WAITTIME	90000//90s
+#define PP_DIAGQUERYALL_WAITTIME	150000//150s
 /***********�꺯��***********/
 
 /*******************************************************
@@ -127,6 +127,7 @@ typedef struct
 
 	uint8_t  activeDiagSt;
 	uint8_t  activeDiagFlag;
+	uint8_t  mcurtcflag;
 	uint64_t activeDiagdelaytime;
 	uint8_t	 activeDiagWeek;
 

@@ -837,6 +837,7 @@ void PrvtPro_ShowPara(void)
 	log_o(LOG_HOZON, "     	  public parameters 	  ");
 	log_o(LOG_HOZON, "/******************************/");
 	log_o(LOG_HOZON, "IGN status = %s\n",dev_get_KL15_signal()?"on":"off");
+	PP_rmtDiag_showPara();
 	log_o(LOG_HOZON, "tboxid = %d\n",pp_task.tboxid);
 	log_o(LOG_HOZON, "tboxsn = %s\n",pp_tboxsn);
 	log_o(LOG_HOZON, "PP_heartbeat.period = %d\n",PP_heartbeat.period);

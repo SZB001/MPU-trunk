@@ -195,6 +195,7 @@ int PP_rmtDiag_mainfunction(void *task)
 			PP_rmtDiag.state.diagReq = 0;
 			PP_rmtDiag.state.ImageAcquisitionReq = 0;
 			PP_rmtDiag.state.LogAcquisitionReq = 0;
+			PP_rmtDiag.state.mcurtcflag = 0;
 		}
 	}
 
@@ -805,10 +806,15 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 	{
 		case PP_ACTIVEDIAG_IDLE:
 		{
-			if(1 == PP_rmtDiag.state.activeDiagFlag)
+			if((1 == PP_rmtDiag.state.activeDiagFlag) && \
+								(0 == PP_rmtDiag.state.mcurtcflag))
 			{
 				memset(&PP_rmtDiag_allFault,0 , sizeof(PP_rmtDiag_allFault_t));
 				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKREPORTST;
+				PP_rmtDiag.state.activeDiagFlag = 0;
+			}
+			else
+			{
 				PP_rmtDiag.state.activeDiagFlag = 0;
 			}
 		}
@@ -1480,3 +1486,35 @@ char getPP_rmtDiag_Idle(void)
 	}
 }
 
+/******************************************************
+*PP_rmtDiag_mcuRTCweakup
+
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*鎻�  杩帮細
+
+*澶�  娉細
+******************************************************/
+void PP_rmtDiag_mcuRTCweakup(void)
+{
+	PP_rmtDiag.state.mcurtcflag = 1;
+	log_i(LOG_HOZON, "mcu rtc weakup\n");
+}
+
+/******************************************************
+*PP_rmtDiag_showPara
+
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*鎻�  杩帮細
+
+*澶�  娉細
+******************************************************/
+void PP_rmtDiag_showPara(void)
+{
+	log_i(LOG_HOZON, "mcu rtc weakup = %s\n",PP_rmtDiag.state.mcurtcflag?"ture":"false");
+}
