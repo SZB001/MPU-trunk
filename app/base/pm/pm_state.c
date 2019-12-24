@@ -336,6 +336,7 @@ void pm_st_s1e3(void)
             unsigned int time = 0, len;
             pm_set_state(PM_ST_SLEEP);
             log_o(LOG_PM, "-----------------going to sleep----------------");
+            clearPP_rmtDiag_para();
             fflush(stdout);
             len = sizeof(time);
             cfg_get_para(CFG_ITEM_RTC_WAKEUP_TIME, &time, &len);
@@ -345,7 +346,7 @@ void pm_st_s1e3(void)
                 tm_stop(pm_rtc_data_timer);
                 tm_start(pm_rtc_data_timer, time * 1000, TIMER_TIMEOUT_REL_ONCE);
             }
-
+            
             pm_vote_agree();
         }
     }
@@ -466,11 +467,6 @@ void pm_st_s4e3(void)
 
     if (is_allow_sleep >= 1)
     {
-        if(2 == is_allow_sleep)
-        {
-            PP_rmtDiag_mcuRTCweakup();
-        }
-
         pm_mcu_wakeup();
         pm_wakeup_low();
         return ;

@@ -1518,3 +1518,21 @@ void PP_rmtDiag_showPara(void)
 {
 	log_i(LOG_HOZON, "mcu rtc weakup = %s\n",PP_rmtDiag.state.mcurtcflag?"ture":"false");
 }
+
+
+/******************************************************
+*clearPP_rmtDiag_para
+
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*鎻�  杩帮細
+
+*澶�  娉細
+******************************************************/
+void clearPP_rmtDiag_para(void)
+{
+	PP_rmtDiag.state.mcurtcflag = 0;
+	log_i(LOG_HOZON, "clear mcu rtc weakup flag\n");
+}

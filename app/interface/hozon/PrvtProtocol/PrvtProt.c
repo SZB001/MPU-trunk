@@ -1032,7 +1032,9 @@ void PrvtProt_SaveCfgPara(unsigned char req)
 uint8_t PrvtProt_tboxsnValidity(void)
 {
 	if((strcmp(pp_tboxsn,"") == 0) || \
-			(strcmp(pp_tboxsn,"000000000000000000") == 0))
+	   (strcmp(pp_tboxsn,"000000000000000000") == 0) || \
+	   18 != strlen(pp_tboxsn)
+	   )
 	{
 		return 0;
 	}
