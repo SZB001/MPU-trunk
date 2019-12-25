@@ -211,6 +211,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 			if((ret == 1) || (1 == PP_rmtCtrl.fotaAuthReq))
 			{
 				pm_ring_wakeup();   //ring脚唤醒MCU
+				usleep(20000);
 				PP_can_mcu_awaken();//唤醒
 				if(1 == PP_rmtCtrl.fotaAuthReq)
 				{

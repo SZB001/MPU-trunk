@@ -186,6 +186,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				PP_rmtChargeCtrl.chargeOnOffFlag = 0;
 
 				pm_ring_wakeup();   //ring脚唤醒MCU
+				usleep(20000);
 				PP_can_mcu_awaken();//唤醒
 
 				if(0 == PP_ChargeCtrl_startHandle(&PP_rmtChargeCtrl))
