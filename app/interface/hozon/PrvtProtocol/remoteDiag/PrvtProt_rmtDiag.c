@@ -153,6 +153,7 @@ void PP_rmtDiag_init(void)
 	PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
 	PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
 	PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
+	PP_rmtDiag.state.sleepflag = 1;
 
 	cfglen = 4;
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_DIAGDATE,&rmtDiag_datetime.datetime,&cfglen);//读取诊断日期标志
@@ -325,7 +326,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 				PP_rmtDiag.state.diageventId = MsgDataBody.eventId;
 				PP_rmtDiag.state.diagexpTime = MsgDataBody.expTime;
 				PP_rmtDiag.state.waittime = tm_get_time();
-				PP_rmtDiag.state.sleepflag   = 1;
+				PP_rmtDiag.state.sleepflag   = 0;
 			}
 			else
 			{
@@ -379,7 +380,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 				PP_rmtDiag.state.cleanfaulteventId = MsgDataBody.eventId;
 				PP_rmtDiag.state.cleanfaultexpTime = MsgDataBody.expTime;
 				PP_rmtDiag.state.faultcleanwaittime = tm_get_time();
-				PP_rmtDiag.state.sleepflag   = 1;
+				PP_rmtDiag.state.sleepflag   = 0;
 			}
 			else
 			{
@@ -570,7 +571,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 			clearPP_lock_odcmtxlock(PP_LOCK_DIAG_TSPDIAG);
 			PP_can_mcu_sleep();//清除虚拟on线
 			PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
-			PP_rmtDiag.state.sleepflag = 0;
+			PP_rmtDiag.state.sleepflag = 1;
 		}
 		break;
 		default:
@@ -707,7 +708,7 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 			clearPP_lock_odcmtxlock(PP_LOCK_DIAG_CLEAN);
 			PP_can_mcu_sleep();//清除虚拟on线
 			PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_IDLE;
-			PP_rmtDiag.state.sleepflag = 0;
+			PP_rmtDiag.state.sleepflag = 1;
 		}
 		break;
 		default :

@@ -34,11 +34,15 @@ static uint8_t sync_flag_445 = 1;  //上电起来同步一次
 static uint64_t lasttime_440;
 static uint64_t lasttime_445;
 
-
+static uint8_t sync_cnt_440;
+static uint8_t sync_cnt_445;
 static pthread_mutex_t sync_mutex_440 = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t sync_mutex_445 = PTHREAD_MUTEX_INITIALIZER;
 
 extern unsigned char GetPP_CertDL_CertValid(void);
+
+void PP_hozon_set_virtual(void);
+
 int PP_canSend_init(void)
 {
 	memset(&canmsg_3D2,0,sizeof(PP_can_msg_info_t));
@@ -52,6 +56,7 @@ int PP_canSend_init(void)
 	old_ID445_data |= (uint64_t)1 << 46;
 	old_ID445_data |= (uint64_t)1 << 54;
 	new_ID445_data = old_ID445_data;
+	shell_cmd_register("hozon_set_virtual", PP_hozon_set_virtual, "HU charge CTRL");
 	return 0;
 }
 
@@ -76,6 +81,10 @@ int PP_send_virtual_on_to_mcu(unsigned char on)
         return -2;
     }
     return 0;
+}
+void PP_hozon_set_virtual(void)
+{
+	PP_send_virtual_on_to_mcu(0);
 }
 
 /***********************************************
@@ -232,7 +241,6 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 ****************************************************/
 void PP_can_send_cycle(void)
 {
-	int i = 0;
 	if(1 == scom_dev_openSt())
 	{
 		if(PP_rmtCtrl_cfg_RmtStartSt() == 0)  //防止空调开启之后，高压电不是TBOX下的，导致一些状态不能恢复
@@ -248,34 +256,43 @@ void PP_can_send_cycle(void)
 		if(sync_flag_440 == 1)
 		{
 			pthread_mutex_lock(&sync_mutex_440);
-			
-			for(i = 0; i< 3 ;i++)
+			if(sync_cnt_440 < 3)
 			{
 				if(tm_get_time() - lasttime_440 > 50)
 				{
 					PP_can_unpack(old_ID440_data,can_data);
 					PP_send_cycle_ID440_to_mcu(can_data);
 					lasttime_440 = tm_get_time();
+					sync_cnt_440 ++;
 				}	
 			}
-			sync_flag_440 = 0;
+			else
+			{
+				sync_cnt_440 = 0;
+				sync_flag_440 = 0;
+			}
 			pthread_mutex_unlock(&sync_mutex_440);
 		}
 		
 		if(sync_flag_445 == 1)
 		{
 			pthread_mutex_lock(&sync_mutex_445);
-			for(i = 0; i< 3 ;i++)
+			if(sync_cnt_445 < 3)
 			{
 				if(tm_get_time() - lasttime_445 > 50)
 			  	{
 					PP_can_unpack(old_ID445_data,can_data);
 					PP_send_cycle_ID445_to_mcu(can_data);
 					lasttime_445 = tm_get_time();
+					sync_cnt_445++;
 				}
-				
 			}
-			sync_flag_445 = 0;
+			else
+			{
+				sync_cnt_445 = 0;
+				sync_flag_445 = 0;
+			}
+			
 			pthread_mutex_unlock(&sync_mutex_445);
 		}
 		
@@ -286,11 +303,7 @@ void PP_can_send_cycle(void)
 ***************************************/
 void PP_can_mcu_awaken(void)
 {
-	int i;
-	for(i=0;i<10;i++)
-	{
-		PP_send_virtual_on_to_mcu(1);
-	}
+	PP_send_virtual_on_to_mcu(1);
 	 log_o(LOG_HOZON,
   			"############### send virtual on to mcu:1 #################");
 }
