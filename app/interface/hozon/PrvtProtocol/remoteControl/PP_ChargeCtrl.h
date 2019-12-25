@@ -53,6 +53,8 @@ description�� struct definitions
 description�� typedef definitions
 *******************************************************/
 /******enum definitions******/
+
+
 typedef struct
 {
 	uint8_t req;

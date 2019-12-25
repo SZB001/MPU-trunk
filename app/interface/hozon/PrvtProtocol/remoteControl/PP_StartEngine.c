@@ -214,8 +214,8 @@ int PP_startengine_mainfunction(void *task)
 				else   //BDM 应答超时
 				{
 					log_o(LOG_HOZON,"timeout......");
-					PP_rmtengineCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
-					PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);  
+					PP_rmtengineCtrl.state.failtype = PP_RMTCTRL_VEHIUNLOCK;  //整车在锁门的情况下才许上高压电，开空调、座椅加热
+					PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);   
 					PP_set_seat_requestpower_flag();  
 					PP_seatheating_ClearStatus();
 					PP_set_ac_requestpower_flag();

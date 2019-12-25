@@ -98,7 +98,7 @@ static PP_rmtCharge_Appointperiod_t PP_rmtCharge_Appointperiod[7] =
 };
 
 static uint8_t PP_ChargeCtrl_Sleepflag = 0;
-extern void pm_ring_wakeup(void);
+//extern void pm_ring_wakeup(void);
 extern void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para);
 static void PP_ChargeCtrl_chargeStMonitor(void);
 static int PP_ChargeCtrl_startHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge);
@@ -185,21 +185,21 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				PP_rmtChargeCtrl.failtype  = PP_RMTCTRL_NORMAL;
 				PP_rmtChargeCtrl.chargeOnOffFlag = 0;
 
-				pm_ring_wakeup();   //ring脚唤醒MCU
-				usleep(20000);
-				PP_can_mcu_awaken();//唤醒
-
-				if(0 == PP_ChargeCtrl_startHandle(&PP_rmtChargeCtrl))
+				if(PP_can_ring_virtual() == 1)
 				{
-					PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_REQSTART;
-				}
-				else
-				{
-					PP_rmtChargeCtrl.state.chargecmd = 0;
-					PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_END;
+					if(0 == PP_ChargeCtrl_startHandle(&PP_rmtChargeCtrl))
+					{
+						PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_REQSTART;
+					}
+					else
+					{
+						PP_rmtChargeCtrl.state.chargecmd = 0;
+						PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_END;
+					}
+				
+					PP_rmtChargeCtrl.state.req = 0;
 				}
 				
-				PP_rmtChargeCtrl.state.req = 0;
 			}
 		}
 		break;

@@ -168,6 +168,20 @@ int wrsv_mode_out(int argc, const char **argv)
     return 0;
 }
 
+/****************************************************************
+ * function:     wrsv_sleep_available
+ * description:  
+ * input:        none
+ * output:       none
+ * return:       0 indicates can not enter sleep status;
+ *               1 indicates can enter sleep status;
+ *****************************************************************/
+static int wrsv_sleep_available(PM_EVT_ID id)
+{
+    return 1;
+}
+
+
 int wsrv_init(INIT_PHASE phase)
 {
     int ret = 0;
@@ -187,6 +201,7 @@ int wsrv_init(INIT_PHASE phase)
             break;
 
         case INIT_PHASE_OUTSIDE:
+            ret |= pm_reg_handler(MPU_MID_WSRV, wrsv_sleep_available);
             ret |= shell_cmd_register("modein", wrsv_mode_in, "OTA Mode In");
             ret |= shell_cmd_register("moderesult", wrsv_mode_in_result, "OTA Mode In Resullt");
             ret |= shell_cmd_register("modeout", wrsv_mode_out, "OTA Mode Out");
@@ -303,14 +318,14 @@ void *wsrv_main(void)
                     }
                     else if(PM_MSG_RUNNING == msgheader.msgid)
                     {
-                        system("goml.bin");
+						log_o(LOG_WSRV, "kill otamaster");
+                        system("killall -9 otamaster");
                     }
                     else if((PM_MSG_SLEEP == msgheader.msgid) ||
                             (PM_MSG_EMERGENCY == msgheader.msgid) ||
                             (PM_MSG_OFF == msgheader.msgid))
                     {
-                        system("killall -9 goml.bin");
-                        system("killall -9 otamaster");
+                        ;
                     }
                 }
             }

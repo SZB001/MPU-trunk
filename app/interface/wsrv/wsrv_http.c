@@ -790,7 +790,10 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         
         for(u8Loop = 0; u8Loop < 10; u8Loop++)
         {
-            PP_send_virtual_on_to_mcu(1);
+            if(1 == PP_can_ring_virtual())
+            {
+                break;
+            }
         }
     
         sprintf(body_buf, WSRV_WAKE_BODY, 1);

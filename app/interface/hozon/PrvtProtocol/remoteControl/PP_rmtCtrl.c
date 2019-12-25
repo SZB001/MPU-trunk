@@ -69,7 +69,6 @@ description： include the header file
 #include "PP_rmtCtrl.h"
 
 #define PP_TXINFORMNODE_NUM 100
-extern void pm_ring_wakeup(void);
 /*******************************************************
 description： global variable definitions
 *******************************************************/
@@ -209,21 +208,22 @@ int PP_rmtCtrl_mainfunction(void *task)
 			PP_startforbid_acStMonitor(task_ptr);   //满足车控条件的时候是否有禁止启动的请求
 			ret = PP_rmtCtrl_request();
 			if((ret == 1) || (1 == PP_rmtCtrl.fotaAuthReq))
-			{
-				pm_ring_wakeup();   //ring脚唤醒MCU
-				usleep(20000);
-				PP_can_mcu_awaken();//唤醒
-				if(1 == PP_rmtCtrl.fotaAuthReq)
+			{			
+				if(PP_can_ring_virtual() == 1)	
 				{
-					log_o(LOG_HOZON,"fota auth request\n");
-					PP_rmtCtrl.fotaAuthReq = 0;
-					PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDENTIFICAT_LAUNCH;
+					if(1 == PP_rmtCtrl.fotaAuthReq)
+					{
+						log_o(LOG_HOZON,"fota auth request\n");
+						PP_rmtCtrl.fotaAuthReq = 0;
+						PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDENTIFICAT_LAUNCH;
+					}
+					else
+					{
+						log_o(LOG_HOZON,"REMOTE CONTROL REQUEST\n");
+						PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDENTIFICAT_QUERY;
+					}
 				}
-				else
-				{
-					log_o(LOG_HOZON,"REMOTE CONTROL REQUEST\n");
-					PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDENTIFICAT_QUERY;
-				}
+								
 			}
 		}
 		break;

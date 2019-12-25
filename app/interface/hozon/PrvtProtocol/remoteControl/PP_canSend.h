@@ -90,6 +90,11 @@ typedef enum
     PP_CAN_CTRL_TYP_MAX,
 } PP_can_ctrl_typ;
 
+typedef enum
+{
+	VIRTUAL_WAIT = 0,
+	VIRTUAL_SEND,
+}PP_CAN_VIRTUAL;
 
 typedef enum
 {
