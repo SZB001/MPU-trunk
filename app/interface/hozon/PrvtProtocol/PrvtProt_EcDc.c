@@ -1092,7 +1092,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			DiagnosticStInfo_t DiagnosticSt;
 			struct DiagnosticRespInfo DiagnosticResp[255];
 			struct diagCode diagcode[255];
-			DiagCode_t DiagCode[255];
+			DiagCode_t DiagCode[255][255];
 
 			memset(&DiagnosticSt,0 , sizeof(DiagnosticStInfo_t));
 			memset(diagcode,0 , sizeof(diagcode));
@@ -1109,18 +1109,18 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 					log_i(LOG_UPER_ECDC, "DiagnosticSt_ptr->diagStatus[%d].diagcodenum = %d",i,DiagnosticSt_ptr->diagStatus[i].diagcodenum);
 					for(j = 0;j < DiagnosticSt_ptr->diagStatus[i].diagcodenum;j++)
 					{
-						DiagCode[j].diagCode.buf = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagCode;
-						DiagCode[j].diagCode.size = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagCodelen;
-						DiagCode[j].faultCodeType = DiagnosticSt_ptr->diagStatus[i].diagCode[j].faultCodeType;
-						DiagCode[j].lowByte  = DiagnosticSt_ptr->diagStatus[i].diagCode[j].lowByte;
-						DiagCode[j].diagTime = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagTime;
-						asn_set_add(&diagcode[i], &DiagCode[j]);
+						DiagCode[i][j].diagCode.buf = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagCode;
+						DiagCode[i][j].diagCode.size = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagCodelen;
+						DiagCode[i][j].faultCodeType = DiagnosticSt_ptr->diagStatus[i].diagCode[j].faultCodeType;
+						DiagCode[i][j].lowByte  = DiagnosticSt_ptr->diagStatus[i].diagCode[j].lowByte;
+						DiagCode[i][j].diagTime = DiagnosticSt_ptr->diagStatus[i].diagCode[j].diagTime;
+						asn_set_add(&diagcode[i], &DiagCode[i][j]);
 
-						log_i(LOG_UPER_ECDC, "DiagCode[%d].diagCode.buf = %5.5s\n",j,DiagCode[j].diagCode.buf);
-						log_i(LOG_UPER_ECDC, "DiagCode[%d].diagCode.size = %d\n",j,DiagCode[j].diagCode.size);
-						log_i(LOG_UPER_ECDC, "DiagCode[%d].faultCodeType = %d\n",j,DiagCode[j].faultCodeType);
-						log_i(LOG_UPER_ECDC, "DiagCode[%d].lowByte = %d\n",j,DiagCode[j].lowByte);
-						log_i(LOG_UPER_ECDC, "DiagCode[%d].diagTime = %d\n",j,DiagCode[j].diagTime);
+						log_i(LOG_UPER_ECDC, "DiagCode[%d][%d].diagCode.buf = %5.5s\n",j,DiagCode[i][j].diagCode.buf);
+						log_i(LOG_UPER_ECDC, "DiagCode[%d][%d].diagCode.size = %d\n",j,DiagCode[i][j].diagCode.size);
+						log_i(LOG_UPER_ECDC, "DiagCode[%d][%d].faultCodeType = %d\n",j,DiagCode[i][j].faultCodeType);
+						log_i(LOG_UPER_ECDC, "DiagCode[%d][%d].lowByte = %d\n",j,DiagCode[i][j].lowByte);
+						log_i(LOG_UPER_ECDC, "DiagCode[%d][%d].diagTime = %d\n",j,DiagCode[i][j].diagTime);
 					}
 					DiagnosticResp[i].diagCode = &diagcode[i];
 				}
