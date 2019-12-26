@@ -1019,7 +1019,7 @@ int uds_did_get_spare_part_number(unsigned char *did, unsigned int len)
         log_e(LOG_UDS, "get spare part number len error, len:%d", len);
         return UDS_INVALID_PARA;
     }
-    memset(did,0x00,DID_LEN_SPARE_PART_NUMBER);
+    memset(did,0x20,DID_LEN_SPARE_PART_NUMBER);
     memcpy(did, DID_F187_SPARE_PART_NO, 11);
     
     return 0;
