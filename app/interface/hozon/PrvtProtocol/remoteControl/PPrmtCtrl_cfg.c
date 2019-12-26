@@ -96,19 +96,10 @@ unsigned char PP_rmtCtrl_cfg_bluestartSt(void)
 }
 
 /*
- 	 读取电量状态
-*/
-unsigned char PP_rmtCtrl_cfg_vehicleSOC(void)
-{
-	return gb_data_vehicleSOC();
-	//return 20;
-}
-/*
 	寻车状态
 */
 unsigned char PP_rmtCtrl_cfg_findcarSt(void)
 {
-
 	return PrvtProt_SignParse_findcarSt();
 }
 

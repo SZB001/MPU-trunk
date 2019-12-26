@@ -1134,11 +1134,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			}
 			
 			long VehicleSOC;
-			VehicleSOC = gb_data_vehicleSOC();
-			if(VehicleSOC > 100)
-			{
-				VehicleSOC = 0;
-			}
+			VehicleSOC = PrvtProtCfg_vehicleSOC();
 			App_rmtCtrl.CtrlResp.basicSt.batterySOCExact 	= VehicleSOC * 100;
 			App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim	= gb_data_ACChargeRemainTime()/* OPTIONAL */;
 			if(App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim > 2000)

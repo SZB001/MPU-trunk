@@ -522,11 +522,7 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp);
 	long VehicleSOC;
-	VehicleSOC = gb_data_vehicleSOC();
-	if(VehicleSOC > 100)
-	{
-		VehicleSOC = 0;
-	}
+	VehicleSOC = PrvtProtCfg_vehicleSOC();
 	PP_VS_appdata.VSResp.basicSt.batterySOCExact	= VehicleSOC * 100;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batterySOCExact  = %ld",PP_VS_appdata.VSResp.basicSt.batterySOCExact);
 	

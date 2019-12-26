@@ -405,7 +405,7 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 		PP_rmtChargeCtrl.state.appointcharge = 0;
 		if(PP_rmtChargeCtrl.appointCharging == 1)//预约充电中
 		{
-			if(gb_data_vehicleSOC() >= PP_rmtCharge_AppointBook.targetSOC)//预约充电完成判断
+			if(PrvtProtCfg_vehicleSOC() >= PP_rmtCharge_AppointBook.targetSOC)//预约充电完成判断
 			{
 				log_i(LOG_HOZON,"The appointment charge has reached the reserved target battery\n");
 				PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_FINISH;

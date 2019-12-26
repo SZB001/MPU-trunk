@@ -94,7 +94,7 @@ int PP_bluetoothstart_mainfunction(void *task)
 		{			
 			if(PP_bluetoothstart.state.req == 1)  //是否有请求
 			{
-				if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+				if((PrvtProtCfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 				{   //有请求判断是否满足远控条件
 					PP_bluetoothstart.success_flag = 0;
 					PP_bluetoothstart.state.CtrlSt = PP_BLUETOOTHSTART_REQSTART;

@@ -95,7 +95,7 @@ int PP_startengine_mainfunction(void *task)
 			{
 				if(PP_rmtCtrl_cfg_RmtStartSt() == 0)   //上电走此流程
 				{
-					if((PP_rmtCtrl_cfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
+					if((PrvtProtCfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 					{	
 						start_engine_stage = PP_STARTENGINE_REQSTART;
 						enginecation = PP_POWERON;

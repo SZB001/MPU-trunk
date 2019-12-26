@@ -137,9 +137,9 @@ long PrvtProtCfg_vehicleSOC(void)
 
 	if(soc > 100)
 	{
-		soc = 100;
+		soc = 0;
 	}
-	return (long)(soc*100);
+	return soc;
 }
 
 /******************************************************

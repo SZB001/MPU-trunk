@@ -5173,15 +5173,12 @@ uint16_t gb_data_batteryCurrent(void)
 */
 uint8_t gb_data_powermode(void)
 {
-	uint8_t temp;
-	uint8_t mode = 0;
+	uint8_t mode;
 
 	DAT_LOCK();
-	if (gb_inf && gb_inf->vehi.info[GB_VINF_VEHIMODE])
-	{
-		temp = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_VEHIMODE])->value;
-		 mode = gb_inf->vehi.mode_tbl[temp] ? gb_inf->vehi.mode_tbl[temp] : 0xff;
-	}
+
+	mode = gb_inf->vehi.vehi_type;
+
 	DAT_UNLOCK();
 
 	return mode;
