@@ -409,24 +409,6 @@ int clbt_cfg_dump_para(void )
 
     shellprintf(" %-32s : %.*s\r\n","tboxmodel", 4, (char *)"EP30");
 
-    memset(plbuff, 0, sizeof(plbuff));
-    bufftp = plbuff;
-    if(0 == BleGetMac((uint8_t*)plbuff))
-    {
-        shellprintf(" %-32s :","bluetooth mac");
-        for(k = 0; k < 6; k++)
-        {	
-            shellprintf("_%x",*bufftp);
-            bufftp++;
-        }
-        shellprintf("\r\n");
-    }
-    else
-    {
-        port = 0;
-        shellprintf(" %-32s : %u\r\n", "bluetooth mac", port);
-    }
-
     char cipherbuff[1024] = {0};
     bufftp = cipherbuff;
     int len = 0;
