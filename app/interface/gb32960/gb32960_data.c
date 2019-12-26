@@ -5213,7 +5213,7 @@ long gb_data_ResidualOdometer(void)
 	DAT_LOCK();
 	if(gb_inf  && gb_inf->gb_VSExt.info[GB_VS_ENDURANCEMILE])//续航里程
 	{
-		odometer = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ENDURANCEMILE])->value * 10;
+		odometer = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_ENDURANCEMILE])->value;
 	}
 	DAT_UNLOCK();
 

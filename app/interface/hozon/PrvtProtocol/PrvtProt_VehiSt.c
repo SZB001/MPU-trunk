@@ -539,11 +539,8 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	{}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.chargeRemainTim  = %ld",PP_VS_appdata.VSResp.basicSt.chargeRemainTim);
 
-	PP_VS_appdata.VSResp.basicSt.availableOdomtr	= gb_data_ResidualOdometer();//续航里程
-	if(PP_VS_appdata.VSResp.basicSt.availableOdomtr > 2000)
-	{
-		PP_VS_appdata.VSResp.basicSt.availableOdomtr = 20000;
-	}
+	PP_VS_appdata.VSResp.basicSt.availableOdomtr	= PrvtProtCfg_ResidualOdometer();//续航里程
+
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.availableOdomtr  = %ld",PP_VS_appdata.VSResp.basicSt.availableOdomtr);
 	PP_VS_appdata.VSResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.bookingChargeSt	= GetPP_ChargeCtrl_appointSt();

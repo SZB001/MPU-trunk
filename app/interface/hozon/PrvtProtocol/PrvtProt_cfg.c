@@ -281,3 +281,10 @@ uint8_t PrvtProtCfg_reardoorSt(void)
 	return 0;
 }
 
+/*续航里程*/
+long PrvtProtCfg_ResidualOdometer(void)
+{
+	long Odometer;
+	Odometer = gb_data_ResidualOdometer();
+	return (Odometer > 2000)?2000:Odometer;
+}

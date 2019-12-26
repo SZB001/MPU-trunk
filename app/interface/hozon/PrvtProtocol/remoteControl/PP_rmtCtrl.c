@@ -1142,11 +1142,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 				App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim = 20000;
 			}
 			
-			App_rmtCtrl.CtrlResp.basicSt.availableOdomtr	= gb_data_ResidualOdometer();//续航里程;
-			if(App_rmtCtrl.CtrlResp.basicSt.availableOdomtr > 2000)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.availableOdomtr = 20000;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.availableOdomtr	= PrvtProtCfg_ResidualOdometer();//续航里程;
 			
 			App_rmtCtrl.CtrlResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
 			
