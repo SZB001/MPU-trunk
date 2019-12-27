@@ -288,3 +288,80 @@ long PrvtProtCfg_ResidualOdometer(void)
 	Odometer = gb_data_ResidualOdometer();
 	return (Odometer > 2000)?2000:Odometer;
 }
+
+/*充电保持时间*/
+long PrvtProtCfg_ACChargeRemainTime(void)
+{
+	long ChargeRemainTime;
+
+	ChargeRemainTime = gb_data_ACChargeRemainTime();
+
+	return (ChargeRemainTime > 2000)?2000:ChargeRemainTime;
+}
+
+/*胎压*/
+long PrvtProtCfg_TyrePre(uint8_t obj)
+{
+	long TyrePre = 0;
+	switch(obj)
+	{
+		case 1:
+		{
+			TyrePre = gb_data_frontRightTyrePre();/* 右前胎压 */
+		}
+		break;
+		case 2:
+		{
+			TyrePre = gb_data_frontLeftTyrePre();/* 左前胎压 */
+		}
+		break;
+		case 3:
+		{
+			TyrePre = gb_data_rearRightTyrePre()/* 右后胎压 */;
+		}
+		break;
+		case 4:
+		{
+			TyrePre = gb_data_rearLeftTyrePre()/* 左后胎压 */;
+		}
+		break;
+		default:
+		break;
+	}
+
+	return (TyrePre > 45)?45:TyrePre;
+}
+
+/*胎温*/
+long PrvtProtCfg_TyreTemp(uint8_t obj)
+{
+	long TyreTemp = 0;
+	
+	switch(obj)
+	{
+		case 1:
+		{
+			TyreTemp = gb_data_frontRightTyreTemp();
+		}
+		break;
+		case 2:
+		{
+			TyreTemp = gb_data_frontLeftTyreTemp();
+		}
+		break;
+		case 3:
+		{
+			TyreTemp = gb_data_rearRightTyreTemp();
+		}
+		break;
+		case 4:
+		{
+			TyreTemp = gb_data_rearLeftTyreTemp()/* OPTIONAL */;
+		}
+		break;
+		default:
+		break;
+	}
+
+	return (TyreTemp > 165)?165:TyreTemp;
+}

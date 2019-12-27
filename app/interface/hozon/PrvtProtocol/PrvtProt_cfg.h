@@ -81,4 +81,7 @@ extern void PrvtProtCfg_bcallSt(uint8_t st);
 extern uint8_t PrvtProtCfg_sunroofSt(void);
 extern uint8_t PrvtProtCfg_reardoorSt(void);
 extern long PrvtProtCfg_ResidualOdometer(void);
+extern long PrvtProtCfg_ACChargeRemainTime(void);
+extern long PrvtProtCfg_TyrePre(uint8_t obj);
+extern long PrvtProtCfg_TyreTemp(uint8_t obj);
 #endif 

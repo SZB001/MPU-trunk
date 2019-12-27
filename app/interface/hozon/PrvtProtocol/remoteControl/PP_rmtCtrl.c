@@ -1085,62 +1085,26 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.dippedBeamStatus 	= gb_data_NearLampSt();//近光灯
 			App_rmtCtrl.CtrlResp.basicSt.mainBeamStatus 	= gb_data_HighbeamLampSt();//远光灯
 			App_rmtCtrl.CtrlResp.basicSt.hazardLightStus 	= gb_data_TwinFlashLampSt();//双闪灯
-			App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre	= gb_data_frontRightTyrePre();/* 右前胎压 */
-			if(App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre > 45)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre = 45;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre	= PrvtProtCfg_TyrePre(1);/* 右前胎压 */
 			
-			App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp	= gb_data_frontRightTyreTemp();/*右前温度*/
-			if(App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp > 165)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp = 165;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp	= PrvtProtCfg_TyreTemp(1);/*右前温度*/
 			
-			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre	= gb_data_frontLeftTyrePre();/* 左前胎压 */
-			if(App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre > 45)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre = 45;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre	= PrvtProtCfg_TyrePre(2);/* 左前胎压 */
 			
-			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp	= gb_data_frontLeftTyreTemp();	/* OPTIONAL */
-			if(App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp > 165)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp = 165;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp	= PrvtProtCfg_TyreTemp(2);	/* OPTIONAL */
 			
-			App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre	= gb_data_rearRightTyrePre()/* OPTIONAL */;
-			if(App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre > 45)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre = 45;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre	= PrvtProtCfg_TyrePre(3)/* OPTIONAL */;
 			
-			App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp	= gb_data_rearRightTyreTemp()	/* OPTIONAL */;
-			if(App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp > 165)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp = 165;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp	= PrvtProtCfg_TyreTemp(3)	/* OPTIONAL */;
 			
-			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre	= gb_data_rearLeftTyrePre()/* OPTIONAL */;
-			if(App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre > 45)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre = 45;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre	= PrvtProtCfg_TyrePre(4)/* OPTIONAL */;
 			
-			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp	= gb_data_rearLeftTyreTemp()/* OPTIONAL */;
-			if(App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp > 165)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp = 165;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp	= PrvtProtCfg_TyreTemp(4)/* OPTIONAL */;
 			
 			long VehicleSOC;
 			VehicleSOC = PrvtProtCfg_vehicleSOC();
 			App_rmtCtrl.CtrlResp.basicSt.batterySOCExact 	= VehicleSOC * 100;
-			App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim	= gb_data_ACChargeRemainTime()/* OPTIONAL */;
-			if(App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim > 2000)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim = 20000;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim	= PrvtProtCfg_ACChargeRemainTime()/* OPTIONAL */;
 			
 			App_rmtCtrl.CtrlResp.basicSt.availableOdomtr	= PrvtProtCfg_ResidualOdometer();//续航里程;
 			
