@@ -516,11 +516,7 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	PP_VS_appdata.VSResp.basicSt.powerMode			= gb_data_powermode();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.powerMode  = %ld",PP_VS_appdata.VSResp.basicSt.powerMode);
 
-	PP_VS_appdata.VSResp.basicSt.speed				= gb_data_vehicleSpeed();
-	if(PP_VS_appdata.VSResp.basicSt.speed	 > 2500)
-	{
-		PP_VS_appdata.VSResp.basicSt.speed	 = 2500;
-	}
+	PP_VS_appdata.VSResp.basicSt.speed				= PrvtProtCfg_vehicleSpeed();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.speed  = %ld",PP_VS_appdata.VSResp.basicSt.speed);
 
 	PP_VS_appdata.VSResp.basicSt.totalOdometer		= PrvtProtCfg_TotalOdometer();

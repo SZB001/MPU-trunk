@@ -318,6 +318,20 @@ long PrvtProtCfg_trip(void)
 	return trip;
 }
 
+/*车速*/
+long PrvtProtCfg_vehicleSpeed(void)
+{
+	long vehicleSpeed;
+
+	vehicleSpeed = gb_data_vehicleSpeed();
+	if(vehicleSpeed > 2500)
+	{
+		vehicleSpeed = 2500;
+	}
+
+	return vehicleSpeed;
+}
+
 /*总电压*/
 long PrvtProtCfg_TotalVoltage(void)
 {

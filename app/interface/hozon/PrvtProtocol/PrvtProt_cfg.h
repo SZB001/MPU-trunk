@@ -88,4 +88,5 @@ extern long PrvtProtCfg_TotalOdometer(void);
 extern long PrvtProtCfg_TotalVoltage(void);
 extern long PrvtProtCfg_TotalCurrent(void);
 extern long PrvtProtCfg_trip(void);
+extern long PrvtProtCfg_vehicleSpeed(void);
 #endif 

@@ -1116,11 +1116,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.chargeMode			= PrvtProtCfg_chargeSt()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.chargeStatus		= gb_data_chargestatus()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.powerMode			= gb_data_powermode()/* OPTIONAL */;//0x1--纯电;0x2--混动;0x3--燃油
-			App_rmtCtrl.CtrlResp.basicSt.speed				= gb_data_vehicleSpeed();
-			if(App_rmtCtrl.CtrlResp.basicSt.speed > 2500)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.speed = 2500;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.speed				= PrvtProtCfg_vehicleSpeed();
 			
 			App_rmtCtrl.CtrlResp.basicSt.totalOdometer		= PrvtProtCfg_TotalOdometer();
 			
