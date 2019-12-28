@@ -48,7 +48,6 @@ description�� function External declaration
 *******************************************************/
 extern unsigned char PP_rmtCtrl_cfg_AuthStatus(void);
 extern unsigned char PP_rmtCtrl_cfg_vehicleState(void);
-extern unsigned char PP_rmtCtrl_cfg_doorlockSt(void);
 extern unsigned char PP_rmtCtrl_cfg_findcarSt(void);
 extern unsigned char PP_rmtCtrl_cfg_sunroofSt(void);
 extern unsigned char PP_rmtCtrl_cfg_findcarSt(void);

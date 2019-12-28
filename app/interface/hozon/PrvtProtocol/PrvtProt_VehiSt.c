@@ -401,13 +401,13 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	}
 
 	PP_VS_appdata.VSResp.basicSt.driverDoor 		= getgb_data_LFDoorOpenSt()? 1:0/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.driverLock 		= PP_rmtCtrl_cfg_doorlockSt();
+	PP_VS_appdata.VSResp.basicSt.driverLock 		= PrvtProtCfg_doorlockSt()?0:1;
 	PP_VS_appdata.VSResp.basicSt.passengerDoor 		= getgb_data_RFDoorOpenSt()	? 1:0/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.passengerLock 		= PP_rmtCtrl_cfg_doorlockSt();
+	PP_VS_appdata.VSResp.basicSt.passengerLock 		= PrvtProtCfg_doorlockSt()?0:1;
 	PP_VS_appdata.VSResp.basicSt.rearLeftDoor 		= getgb_data_LRDoorOpenSt()? 1:0	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.rearLeftLock 		= PP_rmtCtrl_cfg_doorlockSt();
+	PP_VS_appdata.VSResp.basicSt.rearLeftLock 		= PrvtProtCfg_doorlockSt()?0:1;
 	PP_VS_appdata.VSResp.basicSt.rearRightDoor 		= getgb_data_RRDoorOpenSt()? 1:0	/* OPTIONAL */;
-	PP_VS_appdata.VSResp.basicSt.rearRightLock 		= PP_rmtCtrl_cfg_doorlockSt();
+	PP_VS_appdata.VSResp.basicSt.rearRightLock 		= PrvtProtCfg_doorlockSt()?0:1;
 	PP_VS_appdata.VSResp.basicSt.bootStatus 		= PrvtProtCfg_reardoorSt()	/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.bootStatusLock 	= gb_data_reardoorlockSt();
 	PP_VS_appdata.VSResp.basicSt.driverWindow 		= 0	/* OPTIONAL */;
@@ -554,7 +554,7 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.canBusActive  = %ld",PP_VS_appdata.VSResp.basicSt.canBusActive);
 	PP_VS_appdata.VSResp.basicSt.bonnetStatus		= 0;//引擎盖，默认关
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.bonnetStatus  = %ld",PP_VS_appdata.VSResp.basicSt.bonnetStatus);
-	PP_VS_appdata.VSResp.basicSt.lockStatus			= PP_rmtCtrl_cfg_doorlockSt();
+	PP_VS_appdata.VSResp.basicSt.lockStatus			= PrvtProtCfg_doorlockSt();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.lockStatus  = %ld",PP_VS_appdata.VSResp.basicSt.lockStatus);
 	PP_VS_appdata.VSResp.basicSt.gsmStatus			= gb32960_networkSt();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.gsmStatus  = %ld",PP_VS_appdata.VSResp.basicSt.gsmStatus);

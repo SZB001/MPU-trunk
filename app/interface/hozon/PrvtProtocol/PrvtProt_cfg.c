@@ -436,3 +436,11 @@ long PrvtProtCfg_TyreTemp(uint8_t obj)
 
 	return (TyreTemp > 165)?165:TyreTemp;
 }
+
+/*
+ 	读取车门锁状态
+*/
+uint8_t PrvtProtCfg_doorlockSt(void)
+{
+	return gb_data_doorlockSt();
+}

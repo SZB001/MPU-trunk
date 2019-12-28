@@ -63,14 +63,6 @@ unsigned char PP_rmtCtrl_cfg_vehicleState(void)
 	//return 0;
 }
 
-/*
- 	 读取车门锁状态
-*/
-unsigned char PP_rmtCtrl_cfg_doorlockSt(void)
-{
-	return gb_data_doorlockSt();
-}
-
 
 /*
  	 读取尾门状态

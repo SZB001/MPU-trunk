@@ -716,7 +716,7 @@ void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
 		{
 			case BT_VEhICLE_DOOR_RESP:
 			{
-				respbt.cmd_state.state = PP_rmtCtrl_cfg_doorlockSt() ? 1 :2;
+				respbt.cmd_state.state = PrvtProtCfg_doorlockSt() ? 1 :2;
 			}
 			break;
 			case BT_PANORAMIC_SUNROOF_RESP:
@@ -925,7 +925,7 @@ int PP_rmtCtrl_vehicle_status_InformBt(unsigned char obj, unsigned char cmd)
 
 	respbt.state.sunroof_state = PP_rmtCtrl_cfg_bt_sunroofst();
 
-	respbt.state.vehiclie_door_state = PP_rmtCtrl_cfg_doorlockSt() ? 1 :2;
+	respbt.state.vehiclie_door_state = PrvtProtCfg_doorlockSt() ? 1 :2;
 
 	msghdr.sender    = MPU_MID_HOZON_PP;
 	msghdr.receiver  = MPU_MID_BLE;
@@ -1027,13 +1027,13 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			}
 
 			App_rmtCtrl.CtrlResp.basicSt.driverDoor 	= getgb_data_LFDoorOpenSt()	? 1:0/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.driverLock 	= PP_rmtCtrl_cfg_doorlockSt();
+			App_rmtCtrl.CtrlResp.basicSt.driverLock 	= PrvtProtCfg_doorlockSt()?0:1;
 			App_rmtCtrl.CtrlResp.basicSt.passengerDoor 	= getgb_data_RFDoorOpenSt()	? 1:0/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.passengerLock 	= PP_rmtCtrl_cfg_doorlockSt();
+			App_rmtCtrl.CtrlResp.basicSt.passengerLock 	= PrvtProtCfg_doorlockSt()?0:1;
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftDoor 	= getgb_data_LRDoorOpenSt()	? 1:0/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearLeftLock 	= PP_rmtCtrl_cfg_doorlockSt();
+			App_rmtCtrl.CtrlResp.basicSt.rearLeftLock 	= PrvtProtCfg_doorlockSt()?0:1;
 			App_rmtCtrl.CtrlResp.basicSt.rearRightDoor 	= getgb_data_RRDoorOpenSt()	? 1:0/* OPTIONAL */;
-			App_rmtCtrl.CtrlResp.basicSt.rearRightLock 	= PP_rmtCtrl_cfg_doorlockSt();
+			App_rmtCtrl.CtrlResp.basicSt.rearRightLock 	= PrvtProtCfg_doorlockSt()?0:1;
 			 
 			App_rmtCtrl.CtrlResp.basicSt.bootStatus 	= PrvtProtCfg_reardoorSt();
 			App_rmtCtrl.CtrlResp.basicSt.bootStatusLock = gb_data_reardoorlockSt();
@@ -1142,7 +1142,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.deceleratePedalprc	= gb_data_deceleratePedalPrc();
 			App_rmtCtrl.CtrlResp.basicSt.canBusActive		= gb_data_CanbusActiveSt();
 			App_rmtCtrl.CtrlResp.basicSt.bonnetStatus		= 0;//引擎盖，默认关
-			App_rmtCtrl.CtrlResp.basicSt.lockStatus			= PP_rmtCtrl_cfg_doorlockSt();
+			App_rmtCtrl.CtrlResp.basicSt.lockStatus			= PrvtProtCfg_doorlockSt();
 			App_rmtCtrl.CtrlResp.basicSt.gsmStatus			= gb32960_networkSt();
 			App_rmtCtrl.CtrlResp.basicSt.wheelTyreMotrSt	= getgb_data_bdmsystemfailure();	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.vehicleAlarmSt		= getgb_data_warnSt();

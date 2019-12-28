@@ -190,7 +190,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 			    {
 			     	if(PP_rmtdoorCtrl.state.doorcmd == PP_DOORLOCK_OPEN) // 打开车门结果
 			    	 {
-			      		if(PP_rmtCtrl_cfg_doorlockSt() == 0) //  打开车门成功
+			      		if(PrvtProtCfg_doorlockSt() == 0) //  打开车门成功
 			     		{
 			       			log_o(LOG_HOZON,"open door success");
 			       			PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); //清除开门标志位
@@ -200,7 +200,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 			     	}
 			    	else
 			     	{
-			      		if(PP_rmtCtrl_cfg_doorlockSt() == 1) //锁门成功
+			      		if(PrvtProtCfg_doorlockSt() == 1) //锁门成功
 			      		{
 			      			 log_o(LOG_HOZON,"lock door success");
 			       			 PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); ////清除锁门标志位
