@@ -784,17 +784,11 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_WAKE))
     {
-        unsigned char u8Loop = 0;
+        //unsigned char u8Loop = 0;
 
         log_o(LOG_WSRV, "Keep TBOX Alive And Let Vehicle Alive");
         
-        for(u8Loop = 0; u8Loop < 10; u8Loop++)
-        {
-            if(1 == PP_can_ring_virtual())
-            {
-                break;
-            }
-        }
+        while(0 == PP_can_ring_virtual());
     
         sprintf(body_buf, WSRV_WAKE_BODY, 1);
         set_normal_information(rsp_buf, body_buf, MIME_JSON);

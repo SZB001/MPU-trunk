@@ -469,18 +469,18 @@ uint8_t PP_get_virtual_flag()
 uint8_t PP_can_ring_virtual(void)
 {
 	static uint64_t lasttime_on;
-	static uint8_t virutal_on_stage;
-	uint8_t ret = 0;;
+	static uint8_t virutal_on_stage = VIRTUAL_WAIT;
+	uint8_t ret = 0;
 	switch(virutal_on_stage)
 	{
 		case VIRTUAL_WAIT:
 		{
 			pm_ring_wakeup(); //ring脚唤醒
 			lasttime_on = tm_get_time();
-			virutal_on_stage =  VIRTUAL_SEND ;
+			virutal_on_stage =  VIRTUAL_SEND;
 			ret = 0;
-			break;
 		}
+		break;
 		case VIRTUAL_SEND:
 		{
 			if(tm_get_time() - lasttime_on > 20)
@@ -489,8 +489,8 @@ uint8_t PP_can_ring_virtual(void)
 				virutal_on_stage = VIRTUAL_WAIT;
 				ret = 1;
 			}
-			break;
 		}
+		break;
 		default:
 		break;
 	}

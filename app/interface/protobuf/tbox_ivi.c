@@ -252,7 +252,7 @@ void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
                 else
 #endif                    
                 {
-                    //log_buf_dump(LOG_IVI, "ivi send", rx->data + start_pos, len);
+                    log_buf_dump(LOG_IVI, "ivi send", rx->data + start_pos, len);
                     ivi_msg_proc(rx->data + start_pos, len, para);
                     start_pos = -1;
                     end_pos = -1;
@@ -1165,7 +1165,7 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 
     Tbox__Net__TopMessage *TopMsg;
     
-    //log_buf_dump(LOG_IVI, "IVI MSG", (const uint8_t *)data, len);
+    log_buf_dump(LOG_IVI, "IVI MSG", (const uint8_t *)data, len);
 
     msg_len1 = data[ IVI_PKG_S_MARKER_SIZE ];
     msg_len2 = data[ IVI_PKG_S_MARKER_SIZE + 1 ];
