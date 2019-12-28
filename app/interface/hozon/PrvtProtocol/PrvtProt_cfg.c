@@ -289,6 +289,63 @@ long PrvtProtCfg_ResidualOdometer(void)
 	return (Odometer > 2000)?2000:Odometer;
 }
 
+/*总里程*/
+long PrvtProtCfg_TotalOdometer(void)
+{
+	long odometwr;
+
+	odometwr = gb_data_vehicleOdograph();
+	if(odometwr > 10000000)
+	{
+		odometwr = 10000000;
+	}
+
+	return odometwr;
+}
+
+/*小计里程*/
+long PrvtProtCfg_trip(void)
+{
+	long trip;
+
+	trip = gb_data_trip();
+
+	if(trip > 65535)
+	{
+		trip = 65535;
+	}
+
+	return trip;
+}
+
+/*总电压*/
+long PrvtProtCfg_TotalVoltage(void)
+{
+	long voltage;
+
+	voltage = gb_data_batteryVoltage();
+	if(voltage > 10000)
+	{
+		voltage = 10000;
+	}
+
+	return voltage;
+}
+
+/*总电流*/
+long PrvtProtCfg_TotalCurrent(void)
+{
+	long current;
+
+	current = gb_data_batteryCurrent();
+	if(current > 10000)
+	{
+		current = 10000;
+	}
+
+	return current;
+}
+
 /*充电保持时间*/
 long PrvtProtCfg_ACChargeRemainTime(void)
 {

@@ -523,37 +523,13 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	}
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.speed  = %ld",PP_VS_appdata.VSResp.basicSt.speed);
 
-	PP_VS_appdata.VSResp.basicSt.totalOdometer		= gb_data_vehicleOdograph();
-	if(PP_VS_appdata.VSResp.basicSt.totalOdometer > 10000000)
-	{
-		PP_VS_appdata.VSResp.basicSt.totalOdometer = 10000000;
-	}
+	PP_VS_appdata.VSResp.basicSt.totalOdometer		= PrvtProtCfg_TotalOdometer();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.totalOdometer  = %ld",PP_VS_appdata.VSResp.basicSt.totalOdometer);
 
-	PP_VS_appdata.VSResp.basicSt.batteryVoltage		= gb_data_batteryVoltage();
-	if(PP_VS_appdata.VSResp.basicSt.batteryVoltage < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.batteryVoltage = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.batteryVoltage > 10000)
-	{
-		PP_VS_appdata.VSResp.basicSt.batteryVoltage = 10000;
-	}
-	else
-	{}
+	PP_VS_appdata.VSResp.basicSt.batteryVoltage		= PrvtProtCfg_TotalVoltage();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batteryVoltage  = %ld",PP_VS_appdata.VSResp.basicSt.batteryVoltage);
 
-	PP_VS_appdata.VSResp.basicSt.batteryCurrent		= gb_data_batteryCurrent();
-	if(PP_VS_appdata.VSResp.basicSt.batteryCurrent < 0)
-	{
-		PP_VS_appdata.VSResp.basicSt.batteryCurrent = 0;
-	}
-	else if(PP_VS_appdata.VSResp.basicSt.batteryCurrent > 10000)
-	{
-		PP_VS_appdata.VSResp.basicSt.batteryCurrent = 10000;
-	}
-	else
-	{}
+	PP_VS_appdata.VSResp.basicSt.batteryCurrent		= PrvtProtCfg_TotalCurrent();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batteryCurrent  = %ld",PP_VS_appdata.VSResp.basicSt.batteryCurrent);
 	PP_VS_appdata.VSResp.basicSt.batterySOCPrc		= VehicleSOC;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batterySOCPrc  = %ld",PP_VS_appdata.VSResp.basicSt.batterySOCPrc);
@@ -592,11 +568,7 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.vehicleAlarmSt  = %ld",PP_VS_appdata.VSResp.basicSt.vehicleAlarmSt);
 	PP_VS_appdata.VSResp.basicSt.currentJourneyID	= gb_data_trip();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.currentJourneyID  = %ld",PP_VS_appdata.VSResp.basicSt.currentJourneyID);
-	PP_VS_appdata.VSResp.basicSt.journeyOdom		= PP_rmtCtrl_cfg_vehicleOdograph(); /*里程*/
-	if(PP_VS_appdata.VSResp.basicSt.journeyOdom> 65535)
-	{
-		PP_VS_appdata.VSResp.basicSt.journeyOdom = 65535;
-	}
+	PP_VS_appdata.VSResp.basicSt.journeyOdom		= PrvtProtCfg_trip(); /*里程*/
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.journeyOdom  = %ld",PP_VS_appdata.VSResp.basicSt.journeyOdom);
 	PP_VS_appdata.VSResp.basicSt.frtLeftSeatHeatLel	= PP_rmtCtrl_cfg_DrivHeatingSt()	/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frtLeftSeatHeatLel  = %ld",PP_VS_appdata.VSResp.basicSt.frtLeftSeatHeatLel);

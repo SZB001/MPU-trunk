@@ -1122,35 +1122,11 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 				App_rmtCtrl.CtrlResp.basicSt.speed = 2500;
 			}
 			
-			App_rmtCtrl.CtrlResp.basicSt.totalOdometer		= gb_data_vehicleOdograph();
-			if(App_rmtCtrl.CtrlResp.basicSt.totalOdometer > 10000000)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.totalOdometer = 10000000;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.totalOdometer		= PrvtProtCfg_TotalOdometer();
 			
-			App_rmtCtrl.CtrlResp.basicSt.batteryVoltage		= gb_data_batteryVoltage();
-			if(App_rmtCtrl.CtrlResp.basicSt.batteryVoltage < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.batteryVoltage = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.batteryVoltage > 10000)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.batteryVoltage = 10000;
-			}
-			else
-			{}
+			App_rmtCtrl.CtrlResp.basicSt.batteryVoltage		= PrvtProtCfg_TotalVoltage();
 			
-			App_rmtCtrl.CtrlResp.basicSt.batteryCurrent		= gb_data_batteryCurrent();
-			if(App_rmtCtrl.CtrlResp.basicSt.batteryCurrent < 0)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.batteryCurrent = 0;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.batteryCurrent > 10000)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.batteryCurrent = 10000;
-			}
-			else
-			{}
+			App_rmtCtrl.CtrlResp.basicSt.batteryCurrent		= PrvtProtCfg_TotalCurrent();
 			
 			App_rmtCtrl.CtrlResp.basicSt.batterySOCPrc 		= VehicleSOC;
 			App_rmtCtrl.CtrlResp.basicSt.dcStatus			= gb_data_dcdcstatus();
@@ -1175,11 +1151,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.wheelTyreMotrSt	= getgb_data_bdmsystemfailure();	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.vehicleAlarmSt		= getgb_data_warnSt();
 			App_rmtCtrl.CtrlResp.basicSt.currentJourneyID	= gb_data_trip();
-			App_rmtCtrl.CtrlResp.basicSt.journeyOdom		= PP_rmtCtrl_cfg_vehicleOdograph();
-			if(App_rmtCtrl.CtrlResp.basicSt.journeyOdom> 65535)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.journeyOdom = 65535;
-			}
+			App_rmtCtrl.CtrlResp.basicSt.journeyOdom		= PrvtProtCfg_trip();
 			App_rmtCtrl.CtrlResp.basicSt.frtLeftSeatHeatLel	= PP_rmtCtrl_cfg_DrivHeatingSt()	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.frtRightSeatHeatLel= PP_rmtCtrl_cfg_PassHeatingSt()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.airCleanerSt		= PrvtProt_SignParse_pm25valid()/* OPTIONAL */;

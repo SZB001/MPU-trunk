@@ -84,4 +84,8 @@ extern long PrvtProtCfg_ResidualOdometer(void);
 extern long PrvtProtCfg_ACChargeRemainTime(void);
 extern long PrvtProtCfg_TyrePre(uint8_t obj);
 extern long PrvtProtCfg_TyreTemp(uint8_t obj);
+extern long PrvtProtCfg_TotalOdometer(void);
+extern long PrvtProtCfg_TotalVoltage(void);
+extern long PrvtProtCfg_TotalCurrent(void);
+extern long PrvtProtCfg_trip(void);
 #endif 

@@ -4514,7 +4514,7 @@ long gb_data_vehicleSOC(void)
 }
 
 /*
- 	 车辆里程
+ 	 车辆里程:0.1km
 */
 long gb_data_vehicleOdograph(void)
 {
@@ -5268,10 +5268,6 @@ uint16_t gb_data_trip(void)
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_TRIP])
 	{
 		tripval = dbc_get_signal_from_id(gb_inf->gb_VSExt.info[GB_VS_TRIP])->value * 10;
-		if(tripval > 20000)
-		{
-			tripval = 20000;
-		}
 	}
 	DAT_UNLOCK();
 
