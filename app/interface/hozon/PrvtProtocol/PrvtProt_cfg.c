@@ -444,3 +444,23 @@ uint8_t PrvtProtCfg_doorlockSt(void)
 {
 	return gb_data_doorlockSt();
 }
+
+/*主驾设置温度*/
+long PrvtProtCfg_LHTemp(void)
+{
+	long temp = 0;
+
+	temp = gb_data_LHTemp();
+	if(temp < 16)
+	{
+		temp = 16;
+	}
+	else if(temp > 32)
+	{
+		temp = 32;
+	}
+	else
+	{}
+
+	return temp;
+}

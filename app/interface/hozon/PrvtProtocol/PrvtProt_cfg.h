@@ -90,4 +90,5 @@ extern long PrvtProtCfg_TotalCurrent(void);
 extern long PrvtProtCfg_trip(void);
 extern long PrvtProtCfg_vehicleSpeed(void);
 extern uint8_t PrvtProtCfg_doorlockSt(void);
+extern long PrvtProtCfg_LHTemp(void);
 #endif 

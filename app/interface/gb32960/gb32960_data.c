@@ -4587,16 +4587,16 @@ uint8_t gb_data_ACOnOffSt(void)
 */
 int gb_data_LHTemp(void)
 {
-	int st = 0;
+	int temp = 0;
 
 	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])
 	{
-		st = dbc_get_signal_from_id(gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])->value;
+		temp = dbc_get_signal_from_id(gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])->value;
 	}
 	DAT_UNLOCK();
 
-	return st;
+	return temp;
 }
 
 /*
@@ -5414,25 +5414,6 @@ long getgb_data_RRDoorOpenSt(void)
 	DAT_UNLOCK();
 
 	return st;
-}
-
-/*
-* 主驾设置温度
-*/
-long getgb_data_CLMLHTemp(void)
-{
-	long tmp = 16;
-
-	DAT_LOCK();
-
-	if(gb_inf && gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])//
-	{
-		tmp = dbc_get_signal_from_id(gb_inf->gb_ConpSt.info[GB_CMPT_LHTEMP])->value;
-	}
-
-	DAT_UNLOCK();
-
-	return tmp;
 }
 
 /*

@@ -1051,17 +1051,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 				App_rmtCtrl.CtrlResp.basicSt.engineStatus = 1;
 			}
 			App_rmtCtrl.CtrlResp.basicSt.accStatus 			= PP_rmtCtrl_cfg_ACOnOffSt();
-			App_rmtCtrl.CtrlResp.basicSt.accTemp 			= getgb_data_CLMLHTemp()	/* OPTIONAL */;//16-32
-			if(App_rmtCtrl.CtrlResp.basicSt.accTemp < PP_RMTCTRL_LOW_TEMP)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.accTemp = PP_RMTCTRL_LOW_TEMP;
-			}
-			else if(App_rmtCtrl.CtrlResp.basicSt.accTemp > PP_RMTCTRL_HIGH_TEMP)
-			{
-				App_rmtCtrl.CtrlResp.basicSt.accTemp = PP_RMTCTRL_HIGH_TEMP;
-			}
-			else
-			{}
+			App_rmtCtrl.CtrlResp.basicSt.accTemp 			= PrvtProtCfg_LHTemp()	/* OPTIONAL */;//16-32
 			App_rmtCtrl.CtrlResp.basicSt.accMode 			= gb_data_ACMode()	/* OPTIONAL */;
 			if(App_rmtCtrl.CtrlResp.basicSt.accMode > 3)
 			{
