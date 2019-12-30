@@ -51,8 +51,11 @@ static unsigned int g_u32WsrvWakeTime = 0;
 #define WSRV_CMD_UPGRADEMODEIN      "upgrademodein"
 #define WSRV_CMD_UPGRADEMODEOUT     "upgrademodeout"
 #define WSRV_CMD_WAKE               "wake"
+#define WSRV_CMD_HVOIN              "hvoin"
+#define WSRV_CMD_HVOINRESULT        "hvoinresult"
+#define WSRV_CMD_HVOOUT             "hvoout"
 
-
+extern unsigned char PrvtProt_SignParse_HVReadySt(void);
 
 /* fill response body */
 #define WSRV_VERSION_BODY           "{\"%s_sv\":\"%s\",\"%s_hv\":\"%s\",\"%s_sn\":\"%s\",\"%s_partnum\":\"%s\",\"%s_supplier\":\"%s\"}"
@@ -66,6 +69,7 @@ static unsigned int g_u32WsrvWakeTime = 0;
 #define WSRV_UPGRADEMODEIN_BODY     "{\"r\":%d}"
 #define WSRV_UPGRADEMODEOUT_BODY    "{\"r\":%d}"
 #define WSRV_WAKE_BODY              "{\"r\":%d}"
+#define WSRV_HVOINRESULT_BODY       "{\"r\":%d}"
 
 
 /* web server http */
@@ -339,6 +343,8 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     unsigned char u8OtaFailSts = 0;
     //0x0=OFF, 0x1=ACC, 0x2=ON, 0x3=Crank
     unsigned char u8PowerMode = 0;
+    //0x0=High Voltage Down, 0x1=High Voltage
+    unsigned char u8HVready = 0;
 
     log_o(LOG_WSRV, "fd: %d, cmd: %s, args: %s, data: %s", *p_cli_fd, cmd_buf, args_buf, data_buf);
 
@@ -791,6 +797,53 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         while(0 == PP_can_ring_virtual());
     
         sprintf(body_buf, WSRV_WAKE_BODY, 1);
+        set_normal_information(rsp_buf, body_buf, MIME_JSON);
+    }
+    else if (0 == strcmp(cmd_buf, WSRV_CMD_HVOIN))
+    {
+        log_o(LOG_WSRV, "High Voltage In");
+
+        PP_can_send_data(PP_CAN_HV, 1, 0);
+
+        s_u64OTAModeStartTime = tm_get_time();
+
+        set_normal_information(rsp_buf, body_buf, MIME_JSON);
+    }
+    else if (0 == strcmp(cmd_buf, WSRV_CMD_HVOINRESULT))
+    {
+        do{
+            //Start Check VCU4_HVReady
+            //If VCU4_HVReady = 0x0 High Voltage Down
+            //And No Time Out, Means High Voltage Down OK
+            u8HVready = PrvtProt_SignParse_HVReadySt();
+
+            if(tm_get_time() - s_u64OTAModeStartTime > 5000)
+            {
+                log_o(LOG_WSRV, "High Voltage In Wait VCU4_HVReady Time Out");
+                sprintf(body_buf, WSRV_HVOINRESULT_BODY, -1);
+                break;
+            }
+
+            log_o(LOG_WSRV, "High Voltage In: %d", u8HVready);
+            if(0 == u8HVready)
+            {
+                log_o(LOG_WSRV, "High Voltage In Success");
+                sprintf(body_buf, WSRV_HVOINRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
+            }
+            else
+            {
+                sprintf(body_buf, WSRV_HVOINRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+            }
+        }while(0);
+
+        set_normal_information(rsp_buf, body_buf, MIME_JSON);
+    }
+    else if (0 == strcmp(cmd_buf, WSRV_CMD_HVOOUT))
+    {
+        log_o(LOG_WSRV, "High Voltage Out");
+
+        PP_can_send_data(PP_CAN_HV, 0, 0);
+
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }
     else
