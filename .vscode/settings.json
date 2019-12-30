@@ -59,6 +59,7 @@
         "init.h": "c",
         "prvtprot_sigparse.h": "c",
         "dev_time.h": "c",
-        "prvtprot_cfg.h": "c"
+        "prvtprot_cfg.h": "c",
+        "tbox_limit.h": "c"
     }
 }

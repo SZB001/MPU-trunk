@@ -11,6 +11,7 @@
 #include "status.h"
 #include "status_sync.h"
 #include "tbox_limit.h"
+#include "hozon_PP_api.h"
 
 static unsigned char st_item_buf[ST_ITEM_BUF_LEN];
 static pthread_mutex_t st_item_mutex;
@@ -312,6 +313,16 @@ int st_set(ST_DEF_ITEM_ID id, unsigned char *data, unsigned int len)
         memcpy(st_item_buf + st_table[id].offset, data, len);
         st_table[id].is_valid = 1;
         pthread_mutex_unlock(&st_item_mutex);
+
+        if(ST_ITEM_WAKEUP_SRC == id)
+        {
+             unsigned short wakesrc;
+            wakesrc = *(unsigned short *)data;
+            if( wakesrc & ( 1 << 6 ) )
+            {
+                PP_rmtDiag_mcuRTCweakup();
+            }
+        }
 
         st_notify_changed(id, oldpara, len);
     }
