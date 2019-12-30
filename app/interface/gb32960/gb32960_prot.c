@@ -1032,12 +1032,13 @@ static int gb_do_receive(gb_stat_t *state)
                 if (ack != 0x01)
                 {
                     log_e(LOG_GB32960, "time-calibration is rejected!");
-                    break ;
+                    break;
                 }
 
-                state->caltimewait    = 0;
+                state->caltimewait = 0;
                 state->caltime = 0;
-
+                
+                log_i(LOG_GB32960, "start tsp time-calibration,dlen = %d\n",dlen);
                 RTCTIME time;
                 int ret;
                 if(6 == dlen)
@@ -1571,7 +1572,8 @@ static void *gb_main(void)
               gb_do_report(&state)    ||	//发实时数据
               gb_do_logout(&state);			//登出
 
-        if(1 == sockproxy_socketState())
+        if((1 == sockproxy_socketState()) && \
+			!gb_allow_sleep)
         {
             gb_do_caltime(&state);//校时
         }

@@ -189,16 +189,21 @@ void tbox_ivi_link_init(void)
 void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
 {
     int ret, len, i;
-    int r_pos = 0, start_pos = -1, end_pos = -1;
+    int r_pos = 0, start_pos = -1, end_pos = -1,flag = 0,start_pos_first = 0;
 
     while ( r_pos < rx->used )
     { 
         if( start_pos < 0 )
         {
-            ret = str_find( (const char *)(rx->data + r_pos) ,rx->used - r_pos,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
-
+            //ret = str_find( (const char *)(rx->data + r_pos) ,rx->used - r_pos,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
+            ret = str_find( (const char *)(rx->data + r_pos) ,rx->used,IVI_PKG_MARKER,IVI_PKG_S_MARKER_SIZE);
+			flag++;
             if( ret >= 0 )
             {
+            	if(flag == 1)
+            	{
+            		start_pos_first = ret;
+            	}
                 start_pos = r_pos + ret;
                 r_pos = start_pos + IVI_PKG_S_MARKER_SIZE;
             }
@@ -221,8 +226,15 @@ void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
         /* start tag is found */
         else
         {
-            len = rx->used - start_pos;
-
+            if(flag == 1)
+            {
+            	len = rx->used - start_pos;
+            }
+			else
+			{
+				len = rx->used;
+			}
+            
             if (start_pos != 0)
             {
                 for (i = 0; i < len; i++)
@@ -230,17 +242,13 @@ void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
                     rx->data[i] = rx->data[i + start_pos];
                 }
             }
-
             rx->used = len;
-
-            ret = str_find( (const char *)(rx->data + r_pos) ,rx->used - r_pos,IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
-
+            ret = str_find( (const char *)(rx->data + r_pos) ,rx->used ,IVI_PKG_ESC,IVI_PKG_E_MARKER_SIZE);
             if( ret >= 0 )
             {
                 end_pos = r_pos + ret + IVI_PKG_E_MARKER_SIZE;
                 r_pos = end_pos;
                 len = end_pos - start_pos;
-
                 rx->used -= len;
 
 #if 0
@@ -252,8 +260,16 @@ void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
                 else
 #endif                    
                 {
-                    log_buf_dump(LOG_IVI, "ivi send", rx->data + start_pos, len);
-                    ivi_msg_proc(rx->data + start_pos, len, para);
+                	if(flag == 1)
+                	{
+                    	log_buf_dump(LOG_IVI, "ivi send", rx->data + start_pos - start_pos_first, len);
+                    	ivi_msg_proc(rx->data + start_pos - start_pos_first, len, para);
+                	}
+					else
+					{
+						log_buf_dump(LOG_IVI, "ivi send", rx->data + start_pos , len);
+                    	ivi_msg_proc(rx->data + start_pos, len, para);
+					}
                     start_pos = -1;
                     end_pos = -1;
                 }
@@ -263,6 +279,10 @@ void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
                 r_pos = rx->used;
             }
         }
+		if(rx->used < IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE)
+		{
+			rx->used = 0;
+		}
     }  
 }
 
