@@ -93,6 +93,19 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 }
 
 /*
+ *	HV Ready状态
+  */
+unsigned char PrvtProt_SignParse_HVReadySt(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_HVREADY] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_HVREADY])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
+
+/*
  *	空调auto状态
   */
 unsigned char PrvtProt_SignParse_ACAutoSt(void)
