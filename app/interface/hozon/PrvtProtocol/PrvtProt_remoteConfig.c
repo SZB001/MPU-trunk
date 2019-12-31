@@ -1614,21 +1614,7 @@ static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 	//FICMConfigSettings
 	if(rmtCfg->FICM.ficmConfigValid == 1)
 	{
-		if(PP_rmtCfg_is_empty(rmtCfg->FICM.token,33) == 1)  //国标Token
-		{
-			
-		}
-		if(PP_rmtCfg_is_empty(rmtCfg->FICM.userID,33) == 1) //国标用户
-		{
-			
-		}
-		if(PP_rmtCfg_is_empty(rmtCfg->FICM.address,33) == 1)   //国标地址
-		{
-			
-		}
-		if(PP_rmtCfg_is_empty(rmtCfg->FICM.port,7) == 1)      //国标端口
-		{
-		}
+		
 	}
 	
 	//APN1ConfigSettings APN1 
@@ -1659,15 +1645,7 @@ static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 	//APN2ConfigSettings APN2
 	if(rmtCfg->APN2.apn2ConfigValid == 1)
 	{
-		if(PP_rmtCfg_is_empty(rmtCfg->APN2.apn2Address,33) == 1) //配置APN2地址
-		{
-		}
-		if(PP_rmtCfg_is_empty(rmtCfg->APN2.apn2User,33) == 1) //配置APN2用户名
-		{
-		}
-		if(PP_rmtCfg_is_empty(rmtCfg->APN2.apn2Pass,17) == 1)//配置APN2密码
-		{
-		}
+		
 	}
 
 	//ExtendConfigSettings
@@ -1675,7 +1653,7 @@ static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 	{
 		unsigned char xcall[32];
 		uint32_t len = 32;
-		if(PP_rmtCfg_is_empty(rmtCfg->EXTEND.bcallNO,17) == 1)  //设置BCALL
+		if(PP_rmtCfg_is_empty(rmtCfg->EXTEND.bcallNO,17) == 0)  //设置BCALL
 		{
 			cfg_get_para(CFG_ITEM_BCALL,xcall,&len);
 			if(strncmp(( char *)rmtCfg->EXTEND.bcallNO,( char *)xcall,17) != 0)
@@ -1685,7 +1663,7 @@ static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 				(void)cfg_set_para(CFG_ITEM_BCALL,(void *)xcall,32);
 			}
 		}
-		if(PP_rmtCfg_is_empty(rmtCfg->EXTEND.ecallNO,17) == 1) //设置ECALL
+		if(PP_rmtCfg_is_empty(rmtCfg->EXTEND.ecallNO,17) == 0) //设置ECALL
 		{
 			cfg_get_para(CFG_ITEM_ECALL,xcall,&len);
 			if(strncmp(( char *)rmtCfg->EXTEND.ecallNO,(char *)xcall,17) != 0)
@@ -1695,7 +1673,7 @@ static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 				cfg_set_para(CFG_ITEM_ECALL,(void *)xcall,32);
 			}
 		}
-		if(PP_rmtCfg_is_empty(rmtCfg->EXTEND.ccNO,17) == 1) //设置ICALL
+		if(PP_rmtCfg_is_empty(rmtCfg->EXTEND.ccNO,17) == 0) //设置ICALL
 		{
 			cfg_get_para(CFG_ITEM_ICALL,xcall,&len);
 			if(strncmp((char *)rmtCfg->EXTEND.ccNO,( char *)xcall,17) != 0)

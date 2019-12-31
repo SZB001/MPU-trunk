@@ -343,7 +343,7 @@ void pm_st_s1e3(void)
 
             if (0 != time)
             {
-                tm_stop(pm_rtc_data_timer);
+                //tm_stop(pm_rtc_data_timer);
                 tm_start(pm_rtc_data_timer, time * 1000, TIMER_TIMEOUT_REL_ONCE);
             }
             

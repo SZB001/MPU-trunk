@@ -438,23 +438,33 @@ int app_shell_drcfg(int argc, const char **argv)
     cfg_get_para(CFG_ITEM_CAN_DEFAULT_BAUD_2, &canbaud, &len);
     shellprintf("LCAN DEFAULT RATE = %dK\r\n", canbaud);
 
-    len = sizeof(buff);
-    memset(buff, 0, sizeof(buff));
-    cfg_get_para(CFG_ITEM_ICALL, (unsigned char *)buff, &len);
-    if(buff[0] == 0)
+    unsigned char xcall[32];
+    len = 32;
+    memset(xcall, 0, sizeof(xcall));
+    cfg_get_para(CFG_ITEM_ICALL, (unsigned char *)xcall, &len);
+    if(xcall[0] == 0)
     {
-        buff[0] = '0';
+        xcall[0] = '0';
     }
-    shellprintf("ICALL = %s\r\n", buff);
+    shellprintf("ICALL = %s\r\n", xcall);
 
-    len = sizeof(buff);
-    memset(buff, 0, sizeof(buff));
-    cfg_get_para(CFG_ITEM_BCALL, (unsigned char *)buff, &len);
-    if(buff[0] == 0)
+    len = 32;
+    memset(xcall, 0, sizeof(xcall));
+    cfg_get_para(CFG_ITEM_BCALL, (unsigned char *)xcall, &len);
+    if(xcall[0] == 0)
     {
-        buff[0] = '0';
+        xcall[0] = '0';
     }
-    shellprintf("BCALL = %s\r\n", buff);
+    shellprintf("BCALL = %s\r\n", xcall);
+
+    len = 32;
+    memset(xcall, 0, sizeof(xcall));
+    cfg_get_para(CFG_ITEM_ECALL, (unsigned char *)xcall, &len);
+    if(xcall[0] == 0)
+    {
+        xcall[0] = '0';
+    }
+    shellprintf("ECALL = %s\r\n", xcall);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
