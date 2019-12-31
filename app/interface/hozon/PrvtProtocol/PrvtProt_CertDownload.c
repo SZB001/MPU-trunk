@@ -70,6 +70,7 @@ typedef struct
 	PP_CertificateDownload_t	para;
 	uint16_t 			Cnt;
 	uint8_t				BDLink;
+	uint64_t 			delaywaittime;
 }__attribute__((packed))  PP_CertDL_t;
 
 typedef struct
@@ -255,6 +256,7 @@ int PP_CertDownload_mainfunction(void *task)
 		{
 			PP_CertRevoList.checkRevoReq = 1;
 			PP_checkCertSt.checkoutofdateflag = 1;
+			PP_CertDL.delaywaittime = tm_get_time();
 		}
 		else
 		{
@@ -571,6 +573,10 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 		return 0;
 	}
 
+	if((tm_get_time() - PP_CertDL.delaywaittime) <= 5000)
+	{
+		return 0;
+	}
 
 	if((1 == sockproxy_sgsocketState()) && (!certDLRenewOkflag))
 	{

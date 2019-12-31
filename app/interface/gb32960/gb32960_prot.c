@@ -620,10 +620,9 @@ static int gb_do_checksock(gb_stat_t *state)
 	else
 	{}
 #else
-	if((1 == sockproxy_socketState()) && \
-			!gb_allow_sleep)//socket open && gb˯������������
+	if(((1 == sockproxy_socketState()) && !gb_allow_sleep) || \
+        (state->caltimewait))
 	{
-		
 		 return 0;
 	}
 
@@ -640,6 +639,16 @@ static int gb_do_checksock(gb_stat_t *state)
 
 static int gb_do_wait(gb_stat_t *state)
 {
+    if(state->caltimewait)//校时中
+    {
+        if (tm_get_time() - state->caltimewaittime >= 2500)
+        {
+            state->caltimewait = 0;
+            log_e(LOG_GB32960, "tsp caltime time out\n");
+        }
+        return -1;
+    }
+
     if (!state->wait)
     {
         return 0;
@@ -1038,9 +1047,8 @@ static int gb_do_receive(gb_stat_t *state)
                 state->caltimewait = 0;
                 state->caltime = 0;
                 
-                log_i(LOG_GB32960, "start tsp time-calibration,dlen = %d\n",dlen);
                 RTCTIME time;
-                int ret;
+                int res;
                 if(6 == dlen)
                 {
                     time.year = data[0] + 2000;
@@ -1049,8 +1057,8 @@ static int gb_do_receive(gb_stat_t *state)
                     time.hour = data[3];
                     time.min  = data[4];
                     time.sec  = data[5];
-                    ret = dev_syn_time(&time , TSP_TIME_SOURCE);
-                    if(0 == ret)
+                    res = dev_syn_time(&time , TSP_TIME_SOURCE);
+                    if(0 == res)
                     {
                         log_i(LOG_GB32960, "time-calibration succeed");
                     }
@@ -1059,7 +1067,7 @@ static int gb_do_receive(gb_stat_t *state)
                 {
                     log_e(LOG_GB32960, "time-calibration size error");
                 } 
-
+                ret = -1;
                 break;
 
             case PROT_QUREY:
@@ -1572,8 +1580,8 @@ static void *gb_main(void)
               gb_do_report(&state)    ||	//发实时数据
               gb_do_logout(&state);			//登出
 
-        if((1 == sockproxy_socketState()) && \
-			!gb_allow_sleep)
+        if((1 == sockproxy_socketState()) || \
+                    (1 == sockproxy_sgsocketState()))
         {
             gb_do_caltime(&state);//校时
         }
