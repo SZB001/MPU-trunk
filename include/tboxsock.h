@@ -16,7 +16,7 @@
 #define _INC_H_
 
 #define HOZON_TBOX_VERSION         0
-#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.17 - 2019-11-26"
+#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.18 - 2019-12-25"
 
 
 extern char *hurootcertstr;
@@ -64,7 +64,10 @@ int HzTboxCertchainCfg(char *RtcertPath, char *ScdCertPath, char *UsrCertPath, c
 
 int HzTboxInit(char *uc_crl);
 
-int HzTboxConnect();
+int HzTboxSocketFd(int *p_sockfd);
+
+//int HzTboxConnect();
+int HzTboxConnect(int conn_sockfd);
 
 int HzTboxDataSend(char *reqbuf , int sendlen);
 
@@ -124,6 +127,9 @@ int HzTboxdoSign(const unsigned char *indata, const char *keyfile, char *retsign
 
 int HzversionMain(char *vs);
 
+int HzTcpLinkStateMult(char *clientIp, char *stat_value, int *iCount, char *Tcpstatus);
+
+int HzTcpLinkStateSg(int tbox_sock_fd, int *Tcpstatus);
 
 
 /********************************* tbox cert transcode *********************************************/

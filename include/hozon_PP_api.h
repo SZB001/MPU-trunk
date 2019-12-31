@@ -134,4 +134,5 @@ extern void PP_rmtDiag_mcuRTCweakup(void);
 extern void clearPP_rmtDiag_para(void);
 extern uint8_t PP_rmtDiag_sleepflag(void);
 extern uint8_t PP_can_ring_virtual(void);
+extern unsigned int PP_hbTimeoutStatus(void);
 #endif

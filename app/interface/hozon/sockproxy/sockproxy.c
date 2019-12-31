@@ -58,6 +58,7 @@ static pthread_mutex_t rcvmtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ����
 
 static uint64_t socketopentimer = 0;
 static uint64_t socketclosetimer = 0;
+static int SP_sockFd;
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -847,7 +848,8 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 				log_e(LOG_SOCK_PROXY,"\n", iRet);
 				/*Initiate a connection server request*/
-				iRet = HzTboxConnect();
+				HzTboxSocketFd(&SP_sockFd);
+				iRet = HzTboxConnect(SP_sockFd);
 				if(iRet != 1230)
 				{
 					log_e(LOG_SOCK_PROXY,"HzTboxConnect error+++++++++++++++iRet[%d] \n", iRet);
@@ -1688,4 +1690,20 @@ static int sockproxy_get_link_status(void)
 {
 	log_i(LOG_SOCK_PROXY, "tsp link status: %s\n",sockSt.tsplinkstatus?"normal":"fault");
 	return sockSt.tsplinkstatus;
+}
+
+/*检查底层socket链路状态*/
+int sockproxy_check_link_status(void)
+{
+	int tcpst,res=0;
+	if(1 == sockproxy_socketState())
+	{
+		HzTcpLinkStateSg(SP_sockFd,&tcpst);
+		if(1 != tcpst)
+		{
+			res = -1;
+		}
+	}
+
+	return res;
 }

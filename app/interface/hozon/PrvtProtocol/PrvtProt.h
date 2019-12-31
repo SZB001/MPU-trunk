@@ -205,6 +205,7 @@ typedef struct
 	char timeoutCnt;
 	char hbtasksleepflag;
 	char hbtaskflag;
+	char hbtimeoutflag;
 	uint64_t resettimer;
 }__attribute__((packed))  PrvtProt_heartbeat_t; /*�����ṹ��*/
 

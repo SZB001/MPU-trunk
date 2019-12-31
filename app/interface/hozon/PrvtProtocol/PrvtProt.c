@@ -506,6 +506,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 			if(18 == len)
 			{
 				log_i(LOG_HOZON, "the heartbeat is ok");
+				PP_heartbeat.hbtimeoutflag = 0;
 				PP_heartbeat.timeoutCnt = 0;
 				PP_heartbeat.state = 1;
 				PP_heartbeat.waitSt = 0;
@@ -625,7 +626,12 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
         	PP_heartbeat.waitSt = 0;
         	PP_heartbeat.state = 0;//
         	PP_heartbeat.timeoutCnt++;
+			if(0 != sockproxy_check_link_status())
+			{
+				sockproxy_socketclose((int)(PP_SP_COLSE_PP));
+			}
 			PP_heartbeat.hbtasksleepflag = 1;
+			PP_heartbeat.hbtimeoutflag = 1;
             log_e(LOG_HOZON, "heartbeat timeout");
         }
         else
@@ -1103,6 +1109,7 @@ void setPrvtProt_sendHeartbeat(void)
 {
 	PP_heartbeat.hbtaskflag = 1;
 	PP_heartbeat.hbtasksleepflag = 0;
+	PP_heartbeat.hbtimeoutflag = 0;
 	//PP_heartbeat.resettimer = tm_get_time();
 }
 
@@ -1139,4 +1146,10 @@ int PP_getIdleNode(void)
 		}
 	}
 	return res;
+}
+
+/*获取心跳超时状态*/
+unsigned int PP_hbTimeoutStatus(void)
+{
+	return PP_heartbeat.hbtimeoutflag;
 }

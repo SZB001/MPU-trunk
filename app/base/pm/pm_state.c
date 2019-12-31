@@ -172,6 +172,7 @@ void pm_rtc_wakeup(void)
     pm_vote_oppose();
     pm_notify_moudle(PM_MSG_RTC_WAKEUP);
     SetPrvtProt_Awaken((int)PM_MSG_RTC_WAKEUP);
+    Setsocketproxy_Awaken();
 }
 
 /****************************************************************
