@@ -15,6 +15,7 @@ Data			  Vasion			author
 #include "cfg_api.h"
 #include "PP_identificat.h"
 
+#define IDENTIFICAT_FIRSTFRAM_NUM 10
 #define IDENTIFICAT_NUM 5
 #define IDENTIFICAT_CAN_PORT 2
 
@@ -140,7 +141,7 @@ int PP_identificat_mainfunction()
 		break;
 		case PP_stage_start://开始认证
 		{
-			if(PP_authcnt < IDENTIFICAT_NUM)
+			if(PP_authcnt <= IDENTIFICAT_FIRSTFRAM_NUM)
 			{
 				//PP_canSend_setbit(CAN_ID_3D2,0,0,0,NULL);
 				PP_can_send_identificat(PP_CAN_RANDOM,NULL);
