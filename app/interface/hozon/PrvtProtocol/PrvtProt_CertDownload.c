@@ -1957,6 +1957,9 @@ static int  MatchCertVerify(void)
 		return -1;
 	}
 
+	long  currTimestamp;
+	currTimestamp = PrvtPro_getTimestamp();
+	log_i(LOG_HOZON,"currTimestamp = %d \n", currTimestamp);
 	iRet = HzTboxMatchCertVerify(PP_CERTDL_CERTPATH_UPDATE,PP_CERTDL_TWOCERTRKEYPATH_UPDATE);
 	if(iRet != 5110)
 	{
