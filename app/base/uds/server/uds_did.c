@@ -666,7 +666,7 @@ int uds_did_set_vin(unsigned char *did, unsigned int len)
         log_e(LOG_UDS, "set vin len error, len:%d", len);
         return UDS_INVALID_PARA;
     }
-    memcpy(VIN, did, 18);
+    memcpy(VIN, did, len);
     ret = cfg_set_user_para(CFG_ITEM_GB32960_VIN, VIN, 18);
     if(ret)
     {
