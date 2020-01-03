@@ -144,7 +144,7 @@ static int PP_netstatus_pubilc_status(char* dstaddr,int cnt)
 /*
     网络故障状态
 */
-uint8_t PP_netstatus_pubilcstatus(void)
+uint8_t PP_netstatus_pubilcfaultsts(void)
 {
     return PP_net_st.faultflag;
 }

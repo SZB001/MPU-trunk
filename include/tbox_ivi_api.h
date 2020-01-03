@@ -42,6 +42,9 @@
 
 #define IVI_FOTA_PUSH_SUCCESS 1
 #define IVI_FOTA_PUSH_FAIL    2
+
+#define TBOX_HU_LINK_TIMEOUT  1  //HU与TBOX连接超时
+#define TBOX_HU_LINK_NORMAL   0  //HU与TBOX连接正常
 typedef enum
 {
 	UNKNOWN_YTPE = 0,
@@ -139,6 +142,7 @@ uint8_t tbox_ivi_get_call_action(void);
 uint8_t tbox_ivi_get_call_type(void);
 
 void tbox_ivi_clear_call_flag(void);
+
 void tbox_ivi_clear_bcall_flag(void);
 
 void tbox_ivi_clear_icall_flag(void);
@@ -161,10 +165,11 @@ extern void tbox_ivi_ecall_srs_deal(uint8_t dt);
 
 extern void tbox_ivi_ecall_key_deal(uint8_t dt);
 
-
 extern void tbox_ivi_closesocket();
 
 extern void tbox_ivi_push_fota_informHU(uint8_t flag);
+
+extern uint8_t tbox_ivi_get_link_fault(void);
 
 #endif
 

@@ -47,6 +47,7 @@ int gps_onoff = 0;
 /*  信号强度      */
 static int signal_power = 0;
 static int signal_type = 0;
+static uint8_t ihu_fault = 0;
 /*  信号强度      */
 
 RTCTIME localdatetime1;
@@ -65,6 +66,10 @@ static int appointment_sync = 1;  //连上之后充电预约同步一次
 extern int ecall_flag ;  //正在通话的标志
 extern int bcall_flag ;
 extern int icall_flag ;
+
+static uint8_t ihu_xcall_type = 0;
+static uint8_t ihu_xcall_action = 0;
+
 static pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
 typedef void (*ivi_msg_proc)(unsigned char *msg, unsigned int len);
 typedef void (*ivi_msg_handler)(unsigned char *msg, unsigned int len, void *para);
@@ -184,6 +189,7 @@ void tbox_ivi_link_init(void)
 	signal_power = 0;   //HU每次连接上来，调用一次
 	signal_type = 0;
 	appointment_sync = 1;
+	ihu_fault = TBOX_HU_LINK_NORMAL;
 }
 
 void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
@@ -403,7 +409,7 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 			Tbox__Net__TboxInfo tboxinfo;
 			tbox__net__tbox_info__init(&tboxinfo);
 			TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_TBOX_INFO;
-			tboxinfo.software_version = DID_F1B0_SW_FIXED_VER;
+			tboxinfo.software_version = DID_F1B0_SW_UPGRADE_VER;
 			char hw[32] = {0};
     		len = sizeof(hw);
     		cfg_get_para(CFG_ITEM_INTEST_HW,hw,&len);
@@ -1017,26 +1023,22 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 
             tbox__net__call_action_result__init( &call_request );
 
-      		if(ECALL_YTPE == callrequest.call_type)
+      		if(ECALL_YTPE == ihu_xcall_type)
       		{
-      			call_request.type = TBOX__NET__CALL_TYPE__ECALL;	
+      			call_request.type = TBOX__NET__CALL_TYPE__ECALL;
+				call_request.action = TBOX__NET__CALL_ACTION_ENUM__START_CALL;	
       		}
-			else if(BCALL_TYPE == callrequest.call_type)
+			else if(BCALL_TYPE == ihu_xcall_type)
 			{
 				call_request.type = TBOX__NET__CALL_TYPE__BCALL;
-			}
-			else if(ICALL_TYPE == callrequest.call_type)
-			{
-				call_request.type = TBOX__NET__CALL_TYPE__ICALL;
-			}
-
-			if( START_YTPE == callrequest.call_action)
-			{
-				call_request.action = TBOX__NET__CALL_ACTION_ENUM__START_CALL;	
-			}
-			else
-			{
-				call_request.action = TBOX__NET__CALL_ACTION_ENUM__END_CALL;	
+				if( START_YTPE == ihu_xcall_action)
+				{
+					call_request.action = TBOX__NET__CALL_ACTION_ENUM__START_CALL;	
+				}
+				else
+				{
+					call_request.action = TBOX__NET__CALL_ACTION_ENUM__END_CALL;	
+				}
 			}
 			call_request.result = TBOX__NET__CALL_ACTION_RESULT_ENUM__CALL_ACTION_SUCCESS; 
 			TopMsg.call_result = &call_request;
@@ -1056,7 +1058,7 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 			tbox__net__tbox_info__init(&tboxinfo);
 
 			//获取TBOX 软件版本和硬件版本
-			tboxinfo.software_version = DID_F1B0_SW_FIXED_VER;
+			tboxinfo.software_version = DID_F1B0_SW_UPGRADE_VER;
 			char hw[32] = {0};
     		len = sizeof(hw);
     		cfg_get_para(CFG_ITEM_INTEST_HW,hw,&len);
@@ -1247,16 +1249,18 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
             {
                 case TBOX__NET__CALL_TYPE__ECALL:  //车机语音触发ECALL
                 {
-                	log_i(LOG_IVI,"SOS trigger by the ihu !!!!");
+                	log_o(LOG_IVI,"SOS trigger by the ihu !!!!");
                 	callrequest.call_type = ECALL_YTPE;
+					ihu_xcall_type = ECALL_YTPE;
                     if( TBOX__NET__CALL_ACTION_ENUM__START_CALL == TopMsg->call_action->action )
                     {
                    		callrequest.call_action = START_YTPE;
+						ihu_xcall_action = START_YTPE;
                     }
-                    else if( TBOX__NET__CALL_ACTION_ENUM__END_CALL == TopMsg->call_action->action )
-                    {
-                     	callrequest.call_action = END_TYPE;
-                    }
+                    //else if( TBOX__NET__CALL_ACTION_ENUM__END_CALL == TopMsg->call_action->action )
+                    //{
+                    // 	callrequest.call_action = END_TYPE;
+                    //}
                     ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION);
 					ivi_remotediagnos_request_send( fd,0); //ECALL触发，下发远程诊断
                     break;
@@ -1265,13 +1269,16 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
                 case TBOX__NET__CALL_TYPE__BCALL:  //车机道路救援
                 {
                 	callrequest.call_type = BCALL_TYPE;
+					ihu_xcall_type = BCALL_TYPE;
                     if( TBOX__NET__CALL_ACTION_ENUM__START_CALL == TopMsg->call_action->action )
                     {
                     	callrequest.call_action = START_YTPE;
+						ihu_xcall_action = START_YTPE;
                     }
                     else if( TBOX__NET__CALL_ACTION_ENUM__END_CALL == TopMsg->call_action->action )
                     {
                         callrequest.call_action = END_TYPE;
+						ihu_xcall_action = END_TYPE;
                     }
                     ivi_msg_response_send( fd ,TBOX__NET__MESSAGETYPE__REQUEST_CALL_ACTION);
                     break;
@@ -1545,6 +1552,7 @@ int tbox_ivi_create_tcp_socket(void)
     }
     int flags = fcntl(tcp_fd, F_GETFL, 0);  
     fcntl(tcp_fd, F_SETFL, flags | O_NONBLOCK);
+	ihu_fault = TBOX_HU_LINK_TIMEOUT;
     log_o(LOG_IVI, "IVI module create server socket success");
     return 0;
 }
@@ -1797,6 +1805,7 @@ void *ivi_main(void)
 	                    	log_o(LOG_IVI,"Heartbeat timeout!!!!!!!");
 	                        close(ivi_clients[i].fd);
 	                        ivi_clients[i].fd = -1;
+							ihu_fault = TBOX_HU_LINK_TIMEOUT;
 	                    }
 	                    
 	                    if (FD_ISSET(ivi_clients[i].fd, &read_set))
@@ -1819,6 +1828,7 @@ void *ivi_main(void)
 	                            if (num == 0 && (EINTR != errno))
 	                            {
 	                                log_e(LOG_IVI, "TCP client disconnect!!!!");
+									ihu_fault = TBOX_HU_LINK_TIMEOUT;
 	                            }
 	                            log_e(LOG_IVI, "Client(%d) exit\n", ivi_clients[i].fd);
 	                            close(ivi_clients[i].fd);
@@ -1893,6 +1903,7 @@ void *ivi_main(void)
 						}
 						log_o(LOG_IVI,"HzTboxSvrAccept  error+++++++++++++++iRet[%d] \n", ret);
 						memset(&ihu_client,0,sizeof(ihu_client));
+						ihu_fault = TBOX_HU_LINK_TIMEOUT;
 					} 
 					else
 					{
@@ -2229,6 +2240,7 @@ void tbox_ivi_ecall_srs_deal(uint8_t dt)
 			{
 				//下发远程诊断命令
 				ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
+				log_o(LOG_IVI,"dev_get_SRS_signal() = %d,PP_rmtCtrl_cfg_CrashOutputSt() = %d",dev_get_SRS_signal(),PP_rmtCtrl_cfg_CrashOutputSt());
 			}
 			log_i(LOG_IVI, "SOS trigger by the srs!!!!!");
 		}
@@ -2257,4 +2269,7 @@ void tbox_ivi_ecall_key_deal(uint8_t dt)
 	}
 }
 
-
+uint8_t tbox_ivi_get_link_fault(void)
+{
+	return ihu_fault;
+}
