@@ -1684,6 +1684,11 @@ static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 			}
 		}
 	}
+
+	if(rmtCfg->COMMON.commonConfigValid == 1)
+	{
+		PrvtPro_SetHeartBeatPeriod((uint8_t)rmtCfg->COMMON.heartbeatTimeout);
+	}
 	
 }
 

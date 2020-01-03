@@ -199,10 +199,6 @@ int PrvtProt_init(INIT_PHASE phase)
 			InitPrvtProt_SignParse_Parameter();
 			PP_CertDownload_init();
 			//InitPPsignFltr_Parameter();
-			int hbtimeout;
-			hbtimeout = getPP_rmtCfg_heartbeatTimeout();
-			if(0 != hbtimeout)
-			PP_heartbeat.period = hbtimeout;
 			InitPP_netstatus_Parameter();
 		  	InitPP_lock_parameter();
 			InitPP_FileUpload_Parameter();
@@ -711,7 +707,12 @@ static int PrvtProt_do_HBRateSwitch(PrvtProt_task_t *task)
 		if(1 == PP_HBRateSwitch.IGNnewst)//IGN ON
 		{
 			log_i(LOG_HOZON, "Switch to normal heart rate\n");
-			PP_heartbeat.period = PP_HEART_BEAT_TIME;
+			int hbtimeout;
+			hbtimeout = getPP_rmtCfg_heartbeatTimeout();
+			if(0 != hbtimeout)
+			{
+				PP_heartbeat.period = hbtimeout;
+			}
 			PrvtProt_HBSPackage(task,1);//切换到正常通信心跳频率
 		}
 		else
@@ -827,7 +828,10 @@ static void PP_HBRS_send_cb(void * para)
 ******************************************************/
 void PrvtPro_SetHeartBeatPeriod(unsigned char period)
 {
-	PP_heartbeat.period = period;
+	if(period != 0)
+	{
+		PP_heartbeat.period = period;
+	}
 }
 
 /******************************************************
