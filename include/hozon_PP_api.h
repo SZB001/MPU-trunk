@@ -135,4 +135,7 @@ extern void clearPP_rmtDiag_para(void);
 extern uint8_t PP_rmtDiag_sleepflag(void);
 extern uint8_t PP_can_ring_virtual(void);
 extern unsigned int PP_hbTimeoutStatus(void);
+extern void InitPP_netstatus_Parameter(void);
+extern void PP_netstatus_run(void);
+extern uint8_t PP_netstatus_pubilcstatus(void);
 #endif

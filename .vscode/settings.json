@@ -60,6 +60,7 @@
         "prvtprot_sigparse.h": "c",
         "dev_time.h": "c",
         "prvtprot_cfg.h": "c",
-        "tbox_limit.h": "c"
+        "tbox_limit.h": "c",
+        "prvtprot_netstatus.h": "c"
     }
 }

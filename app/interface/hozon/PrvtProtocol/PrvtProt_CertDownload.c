@@ -1957,6 +1957,7 @@ static int  MatchCertVerify(void)
 		return -1;
 	}
 
+	sleep(10);
 	long  currTimestamp;
 	currTimestamp = PrvtPro_getTimestamp();
 	log_i(LOG_HOZON,"currTimestamp = %d \n", currTimestamp);

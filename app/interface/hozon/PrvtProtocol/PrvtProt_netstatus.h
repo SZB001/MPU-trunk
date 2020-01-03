@@ -1,19 +1,20 @@
 /******************************************************
-�ļ�����	PrvtProt_VehiInfo.h
+�ļ�����	PrvtProt_netstatus.h
 
 ������	��ҵ˽��Э�飨�㽭���ڣ�	
 
 Data			  Vasion			author
 2019/10/21		   V1.0			    liujian
 *******************************************************/
-#ifndef		_PRVTPROT_VEHIINFO_H
-#define		_PRVTPROT_VEHIINFO_H
+#ifndef		_PRVTPROT_NET_ST_H
+#define		_PRVTPROT_NET_ST_H
 
 /*******************************************************
 description�� macro definitions
 *******************************************************/
 /**********�꿪�ض���*********/
-
+#define PP_NETST_TSKTIME            60000
+#define PP_NETST_CNT                3
 
 /**********�곣������*********/
 
@@ -31,7 +32,10 @@ description�� struct definitions
 description�� typedef definitions
 *******************************************************/
 /*****struct definitions*****/
-
+typedef struct
+{
+	uint8_t	 faultflag;
+}PP_net_status_t;
 
 /******enum definitions******/
 
@@ -46,6 +50,5 @@ description�� variable External declaration
 /*******************************************************
 description�� function External declaration
 *******************************************************/
-extern void InitPP_VehiInfo_Parameter(void);
-extern void TskPP_VehiInfo_MainFunction(void);
+
 #endif 

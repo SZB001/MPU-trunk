@@ -60,7 +60,7 @@ description�� include the header file
 #include "PrvtProt_SigParse.h"
 #include "remoteDiag/PrvtProt_rmtDiag.h"
 #include "PrvtProt_CertDownload.h"
-#include "PrvtProt_VehiInfo.h"
+#include "PrvtProt_netstatus.h"
 #include "PrvtProt_lock.h"
 #include "../../base/uds/server/uds_did.h"
 #include "FileUpload/PrvtProt_FileUpload.h"
@@ -203,7 +203,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			hbtimeout = getPP_rmtCfg_heartbeatTimeout();
 			if(0 != hbtimeout)
 			PP_heartbeat.period = hbtimeout;
-			InitPP_VehiInfo_Parameter();
+			InitPP_netstatus_Parameter();
 		  	InitPP_lock_parameter();
 			InitPP_FileUpload_Parameter();
 		}
@@ -243,6 +243,7 @@ int PrvtProt_run(void)
     }
 
 	PP_ntp_run();
+	PP_netstatus_run();
 	//PP_FileUpload_run();
 #else
 	res = 	PrvtPro_do_rcvMsg(&pp_task) ||
@@ -293,7 +294,6 @@ static void *PrvtProt_main(void)
 		}
 
 		//TskPPsignFltr_MainFunction();
-		TskPP_VehiInfo_MainFunction();
 		PP_CertDownload_mainfunction(&pp_task);
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||

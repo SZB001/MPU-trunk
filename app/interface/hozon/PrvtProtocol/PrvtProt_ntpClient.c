@@ -17,6 +17,7 @@ Data			Vasion			author
 #include "timer.h"
 #include "log.h"
 #include "dev_time.h"
+#include "dev_api.h"
 #include "gb32960_api.h"
 #include "shell_api.h"
 
@@ -62,7 +63,11 @@ static void *PP_ntp_main(void)
     prctl(PR_SET_NAME, "NTP_CALI");
     while(1)
     {
-        PP_ntp_calibrationTime();
+        if(dev_get_KL15_signal())
+        {
+            PP_ntp_calibrationTime();
+        }
+
         sleep(1);
     }
     return NULL;
