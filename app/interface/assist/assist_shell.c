@@ -31,7 +31,7 @@ author        liuwei
 #include "ble.h"
 #include "hozon_PP_api.h"
 
-extern uint8_t tbox_ivi_get_link_fault(void);
+extern uint8_t tbox_ivi_get_link_fault(uint64_t *timestamp);
 
 /****************************************************************
 function:     app_shell_drcfg
@@ -224,8 +224,9 @@ int app_shell_drcfg(int argc, const char **argv)
     }
     shellprintf("WAN APN = %s\r\n", wanAPN);
 
-    shellprintf("HU LINK STATUS = %s\r\n", tbox_ivi_get_link_fault()?"fault":"normal");
-    shellprintf("PUBLIC STATUS = %s\r\n", PP_netstatus_pubilcfaultsts()?"fault":"normal");
+    uint64_t timestamp;
+    shellprintf("HU LINK STATUS = %s\r\n", tbox_ivi_get_link_fault(NULL)?"fault":"normal");
+    shellprintf("PUBLIC STATUS = %s\r\n", PP_netstatus_pubilcfaultsts(&timestamp)?"fault":"normal");
 
     len = 1;
 	ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_FORBIDEN,&EnFlag,&len);

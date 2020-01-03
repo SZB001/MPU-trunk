@@ -447,10 +447,10 @@ int clbt_cfg_set_default_para(CFG_SET_TYPE type)
 {
     short tmp_short;
     int   tmp_int;
-    char gbvin[18];
-    memset(gbvin, 0, sizeof(gbvin));
-    strcpy((char *) gbvin, "00000000000000000");
-    clbt_cfg_set_by_id(CFG_ITEM_GB32960_VIN, gbvin, 18, type);
+    //char gbvin[18];
+    //memset(gbvin, 0, sizeof(gbvin));
+    //strcpy((char *) gbvin, "00000000000000000");
+    //clbt_cfg_set_by_id(CFG_ITEM_GB32960_VIN, gbvin, 18, type);
 
     char gb_url[256];
     memset(gb_url, 0, sizeof(gb_url));

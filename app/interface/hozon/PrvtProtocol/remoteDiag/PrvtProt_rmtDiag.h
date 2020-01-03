@@ -26,6 +26,15 @@ description�� macro definitions
 #define PP_FAULTCODECLEAN_WAITTIME    	5000//5s
 #define PP_DIAGQUERYALL_WAITTIME	150000//150s
 /***********�꺯��***********/
+#define PP_DIAG_TBOX_INDEX	25
+#define PP_DIAG_TBOX_CURRENTFAULT		0
+#define PP_DIAG_TBOX_HISTORYFAULT		1
+
+#define PP_DIAG_TBOX_PBLNETFAULTCODE	"T0001"
+#define PP_DIAG_TBOX_PBLNETFAULTLOWBYTE	0
+
+#define PP_DIAG_TBOX_HULINKFAULTCODE	"T0004"
+#define PP_DIAG_TBOX_HULINKFAULTLOWBYTE	0
 
 /*******************************************************
 description�� struct definitions

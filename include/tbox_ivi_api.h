@@ -131,6 +131,11 @@ typedef enum IVI_MSG_EVENT
     IVI_MSG_GPS_EVENT = MPU_MID_IVI,
 } IVI_MSG_EVENT;
 
+typedef struct{
+        uint8_t ivi_net_faultflag;
+        uint64_t ivi_net_timestamp;
+}ivi_link_fault;
+
 /* initiaze thread communciation module */
 int ivi_init(INIT_PHASE phase);
 
@@ -169,7 +174,7 @@ extern void tbox_ivi_closesocket();
 
 extern void tbox_ivi_push_fota_informHU(uint8_t flag);
 
-extern uint8_t tbox_ivi_get_link_fault(void);
+extern uint8_t tbox_ivi_get_link_fault(uint64_t *timestamp);
 
 #endif
 

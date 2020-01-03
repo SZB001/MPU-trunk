@@ -47,7 +47,7 @@ int gps_onoff = 0;
 /*  信号强度      */
 static int signal_power = 0;
 static int signal_type = 0;
-static uint8_t ihu_fault = 0;
+ivi_link_fault ihu_fault;
 /*  信号强度      */
 
 RTCTIME localdatetime1;
@@ -189,7 +189,8 @@ void tbox_ivi_link_init(void)
 	signal_power = 0;   //HU每次连接上来，调用一次
 	signal_type = 0;
 	appointment_sync = 1;
-	ihu_fault = TBOX_HU_LINK_NORMAL;
+	ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_NORMAL;
+	ihu_fault.ivi_net_timestamp = tbox_ivi_getTimestamp();
 }
 
 void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
@@ -1552,7 +1553,9 @@ int tbox_ivi_create_tcp_socket(void)
     }
     int flags = fcntl(tcp_fd, F_GETFL, 0);  
     fcntl(tcp_fd, F_SETFL, flags | O_NONBLOCK);
-	ihu_fault = TBOX_HU_LINK_TIMEOUT;
+	ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_TIMEOUT;
+	ihu_fault.ivi_net_timestamp = tbox_ivi_getTimestamp();
+	
     log_o(LOG_IVI, "IVI module create server socket success");
     return 0;
 }
@@ -1805,7 +1808,8 @@ void *ivi_main(void)
 	                    	log_o(LOG_IVI,"Heartbeat timeout!!!!!!!");
 	                        close(ivi_clients[i].fd);
 	                        ivi_clients[i].fd = -1;
-							ihu_fault = TBOX_HU_LINK_TIMEOUT;
+							ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_TIMEOUT;
+							ihu_fault.ivi_net_timestamp = tbox_ivi_getTimestamp();
 	                    }
 	                    
 	                    if (FD_ISSET(ivi_clients[i].fd, &read_set))
@@ -1828,7 +1832,9 @@ void *ivi_main(void)
 	                            if (num == 0 && (EINTR != errno))
 	                            {
 	                                log_e(LOG_IVI, "TCP client disconnect!!!!");
-									ihu_fault = TBOX_HU_LINK_TIMEOUT;
+									ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_TIMEOUT;
+									ihu_fault.ivi_net_timestamp = tbox_ivi_getTimestamp();
+									
 	                            }
 	                            log_e(LOG_IVI, "Client(%d) exit\n", ivi_clients[i].fd);
 	                            close(ivi_clients[i].fd);
@@ -1903,7 +1909,8 @@ void *ivi_main(void)
 						}
 						log_o(LOG_IVI,"HzTboxSvrAccept  error+++++++++++++++iRet[%d] \n", ret);
 						memset(&ihu_client,0,sizeof(ihu_client));
-						ihu_fault = TBOX_HU_LINK_TIMEOUT;
+						ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_TIMEOUT;
+						ihu_fault.ivi_net_timestamp = tbox_ivi_getTimestamp();
 					} 
 					else
 					{
@@ -2269,7 +2276,11 @@ void tbox_ivi_ecall_key_deal(uint8_t dt)
 	}
 }
 
-uint8_t tbox_ivi_get_link_fault(void)
+uint8_t tbox_ivi_get_link_fault(uint64_t *timestamp)
 {
-	return ihu_fault;
+	if(timestamp != NULL)
+	{
+		*timestamp = ihu_fault.ivi_net_timestamp; 
+	}
+	return ihu_fault.ivi_net_faultflag;
 }

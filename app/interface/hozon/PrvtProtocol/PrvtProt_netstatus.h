@@ -35,6 +35,9 @@ description�� typedef definitions
 typedef struct
 {
 	uint8_t	 faultflag;
+    uint8_t  newSt;
+    uint8_t  oldSt;
+    uint64_t timestamp;
 }PP_net_status_t;
 
 /******enum definitions******/

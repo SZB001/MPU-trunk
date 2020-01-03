@@ -69,7 +69,7 @@ description�� include the header file
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
-extern uint8_t tbox_ivi_get_link_fault(void);
+extern uint8_t tbox_ivi_get_link_fault(uint64_t *timestamp);
 /*******************************************************
 description�� static variable definitions
 *******************************************************/
@@ -873,8 +873,9 @@ void PrvtPro_ShowPara(void)
 	PP_CertDL_showPara();
 	log_o(LOG_HOZON, "/*****************data over*****************/");
 	log_o(LOG_HOZON, "/*************show fault status*************/");
-	log_o(LOG_SOCK_PROXY, "public net status = %s\n",PP_netstatus_pubilcfaultsts()?"fault":"normal");
-	log_o(LOG_SOCK_PROXY, "HU link status = %s\n",tbox_ivi_get_link_fault()?"fault":"normal");
+	uint64_t timestamp;
+	log_o(LOG_SOCK_PROXY, "public net status = %s\n",PP_netstatus_pubilcfaultsts(&timestamp)?"fault":"normal");
+	log_o(LOG_SOCK_PROXY, "HU link status = %s\n",tbox_ivi_get_link_fault(NULL)?"fault":"normal");
 	log_o(LOG_HOZON, "/*****************data over*****************/");
 	log_o(LOG_HOZON, "/****************show version***************/");
 	log_o(LOG_HOZON, "hozon software version : %s\n",DID_F1B0_SW_UPGRADE_VER);

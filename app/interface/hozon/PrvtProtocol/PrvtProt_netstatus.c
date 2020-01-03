@@ -33,6 +33,7 @@ description�� function declaration
 
 /*Static function declaration*/
 static PP_net_status_t PP_net_st;
+static pthread_mutex_t dtmtx = 	PTHREAD_MUTEX_INITIALIZER;
 
 /*******************************************************
 description�� global variable definitions
@@ -99,13 +100,23 @@ static void *TskPP_netstatus_main(void)
         sleep(60);
         if(dev_get_KL15_signal())
         {
-            if(0 == PP_netstatus_pubilc_status("www.baidu.com",PP_NETST_CNT))
+            PP_net_st.newSt = PP_netstatus_pubilc_status("www.baidu.com",PP_NETST_CNT);
+            if(PP_net_st.newSt != PP_net_st.oldSt)
             {
-                PP_net_st.faultflag = 0;
-            }
-            else
-            {
-                PP_net_st.faultflag = 1;
+                PP_net_st.oldSt = PP_net_st.newSt;
+                if(0 == PP_net_st.newSt)
+                {
+                    pthread_mutex_lock(&dtmtx);
+                    PP_net_st.faultflag = 0;
+                    pthread_mutex_unlock(&dtmtx);
+                }
+                else
+                {
+                    pthread_mutex_lock(&dtmtx);
+                    PP_net_st.faultflag = 1;
+                    PP_net_st.timestamp = tm_get_time();
+                    pthread_mutex_unlock(&dtmtx);
+                }
             }
         }
     }
@@ -144,7 +155,14 @@ static int PP_netstatus_pubilc_status(char* dstaddr,int cnt)
 /*
     网络故障状态
 */
-uint8_t PP_netstatus_pubilcfaultsts(void)
+uint8_t PP_netstatus_pubilcfaultsts(uint64_t *timestamp)
 {
-    return PP_net_st.faultflag;
+    uint8_t faultst;
+
+    pthread_mutex_lock(&dtmtx);
+    *timestamp = PP_net_st.timestamp;
+    faultst = PP_net_st.faultflag;
+    pthread_mutex_unlock(&dtmtx);
+
+    return faultst;
 }

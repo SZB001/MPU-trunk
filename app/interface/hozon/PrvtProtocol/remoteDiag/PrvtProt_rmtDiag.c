@@ -127,6 +127,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task);
 static void PP_rmtDiag_send_cb(void * para);
 static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task);
 static int PP_rmtDiag_FaultCodeCleanResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
+static void getPPrmtDiag_tboxFaultcode(PP_rmtDiag_Fault_t *rmtDiag_Fault);
 /******************************************************
 description锛� function code
 ******************************************************/
@@ -524,6 +525,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 				if(1 == PP_rmtDiag.state.faultquerySt)//查询完成
 				{
 					getPPrmtDiagCfg_Faultcode(PP_rmtDiag.state.diagType,&PP_rmtDiag_Fault);//读取故障码
+					getPPrmtDiag_tboxFaultcode(&PP_rmtDiag_Fault);
 					log_i(LOG_HOZON, "PP_rmtDiag.state.diagType = %d and PP_rmtDiag_Fault.failNum = %d\n",PP_rmtDiag.state.diagType,PP_rmtDiag_Fault.faultNum);
 					PP_rmtDiag.state.result = PP_rmtDiag_Fault.sueecss;
 					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
@@ -1591,4 +1593,31 @@ void clearPP_rmtDiag_para(void)
 uint8_t PP_rmtDiag_sleepflag(void)
 {
 	return PP_rmtDiag.state.sleepflag;
+}
+
+/*
+	读取tbox故障，非本地诊断
+*/
+static void getPPrmtDiag_tboxFaultcode(PP_rmtDiag_Fault_t *rmtDiag_Fault)
+{
+	uint64_t timestamp;
+
+	if(1 == PP_netstatus_pubilcfaultsts(&timestamp))
+	{
+		memcpy(rmtDiag_Fault->faultcode[rmtDiag_Fault->faultNum].diagcode,PP_DIAG_TBOX_PBLNETFAULTCODE,5);
+		rmtDiag_Fault->faultcode[rmtDiag_Fault->faultNum].faultCodeType = PP_DIAG_TBOX_CURRENTFAULT;
+		rmtDiag_Fault->faultcode[rmtDiag_Fault->faultNum].lowByte = PP_DIAG_TBOX_PBLNETFAULTLOWBYTE;
+		rmtDiag_Fault->faultcode[rmtDiag_Fault->faultNum].diagTime	= timestamp;
+		rmtDiag_Fault->faultNum++;
+	}
+
+	if(1 == tbox_ivi_get_link_fault(&timestamp))
+	{
+		memcpy(rmtDiag_Fault->faultcode[rmtDiag_Fault->faultNum].diagcode,PP_DIAG_TBOX_HULINKFAULTCODE,5);
+		rmtDiag_Fault->faultcode[rmtDiag_Fault->faultNum].faultCodeType = PP_DIAG_TBOX_CURRENTFAULT;
+		rmtDiag_Fault->faultcode[rmtDiag_Fault->faultNum].lowByte = PP_DIAG_TBOX_HULINKFAULTLOWBYTE;
+		rmtDiag_Fault->faultcode[rmtDiag_Fault->faultNum].diagTime	= timestamp;
+		rmtDiag_Fault->faultNum++;
+	}
+
 }
