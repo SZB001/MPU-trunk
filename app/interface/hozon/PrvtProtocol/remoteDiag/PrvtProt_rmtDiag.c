@@ -688,9 +688,10 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 			{
 				if(1 == PP_rmtDiag.state.faultCleanFinish)
 				{
+					uint8_t failureType = 0;
 					PP_rmtDiag.state.faultCleanResult = \
-								getPPrmtDiagCfg_clearDTCresult(PP_rmtDiag.state.cleanfaultType);
-					PP_rmtDiag.state.faultCleanfailureType = 0;
+								getPPrmtDiagCfg_clearDTCresult(PP_rmtDiag.state.cleanfaultType,&failureType);
+					PP_rmtDiag.state.faultCleanfailureType = failureType;
 					PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_END;
 				}
 			}

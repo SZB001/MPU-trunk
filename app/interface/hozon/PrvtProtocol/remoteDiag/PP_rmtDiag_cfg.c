@@ -126,7 +126,7 @@ void getPPrmtDiagCfg_NodeFault(PP_rmtDiag_NodeFault_t *rmtDiag_NodeFault)
 /*
 *获取故障码清除结果
 */
-unsigned char getPPrmtDiagCfg_clearDTCresult(unsigned char obj)
+unsigned char getPPrmtDiagCfg_clearDTCresult(unsigned char obj,unsigned char *failureType)
 {
 	int result;
 
