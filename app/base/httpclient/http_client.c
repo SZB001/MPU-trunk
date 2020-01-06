@@ -901,7 +901,7 @@ static int http_internal_sync_request(ft_http_client_t* http, const char* url,
 			if(nread > 0)
 			{
 				http->body_len += nread;
-                printf("BODY\r\n----------------\r\n%*s\r\n", http->body_len, http->body);
+                //printf("BODY\r\n----------------\r\n%*s\r\n", http->body_len, http->body);
                 break;
 			}
 
