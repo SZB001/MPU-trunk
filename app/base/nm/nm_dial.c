@@ -826,7 +826,7 @@ static void nm_dial_set_dns(NM_NET_INFO *phndl)
     char command[200];
 
     memset(command, 0, sizeof(command));
-#if 0
+#if 1
     if (phndl->pri_dns_addr.s_addr)
     {
         snprintf(command, sizeof(command), "echo 'nameserver %s' > /etc/resolv.conf",

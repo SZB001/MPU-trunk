@@ -849,6 +849,24 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 				log_e(LOG_SOCK_PROXY,"\n", iRet);
 				/*Initiate a connection server request*/
 				HzTboxSocketFd(&SP_sockFd);
+				#if 0
+				struct ifreq nif;
+				memset(&nif,0x00,sizeof(nif));
+    			char *inface = "rmnet_data0";
+				strcpy(nif.ifr_name, inface);
+				/* 绑定接口 */
+				if (setsockopt(SP_sockFd, SOL_SOCKET, SO_BINDTODEVICE, (char *)&nif, sizeof(nif)) < 0)
+				{
+					printf("bind interface fail, errno: %d \r\n", errno);
+					sleep(1);
+					return -1;		
+				}
+				else
+				{
+					printf("setsockopt interface success \r\n");
+				}
+				#endif
+
 				iRet = HzTboxConnect(SP_sockFd);
 				if(iRet != 1230)
 				{
