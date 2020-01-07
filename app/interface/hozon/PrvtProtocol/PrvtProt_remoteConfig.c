@@ -1688,6 +1688,16 @@ static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 	if(rmtCfg->COMMON.commonConfigValid == 1)
 	{
 		PrvtPro_SetHeartBeatPeriod((uint8_t)rmtCfg->COMMON.heartbeatTimeout);
+
+		uint8_t btKeyEntryEn;
+		btKeyEntryEn = PP_rmtCfg_enable_btKeyEntryEnabled();
+		if(rmtCfg->COMMON.btKeyEntryEnabled != btKeyEntryEn)
+		{
+			cfg_set_para(CFG_ITEM_EN_BLE, (unsigned char *)&rmtCfg->COMMON.btKeyEntryEnabled, 1);
+
+			sleep(3);
+			system("reboot");
+		}
 	}
 	
 }
