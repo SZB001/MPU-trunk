@@ -1553,9 +1553,7 @@ int tbox_ivi_create_tcp_socket(void)
     }
     int flags = fcntl(tcp_fd, F_GETFL, 0);  
     fcntl(tcp_fd, F_SETFL, flags | O_NONBLOCK);
-	ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_TIMEOUT;
-	ihu_fault.ivi_net_timestamp = tbox_ivi_getTimestamp();
-	
+	ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_NORMAL;
     log_o(LOG_IVI, "IVI module create server socket success");
     return 0;
 }
@@ -1808,8 +1806,6 @@ void *ivi_main(void)
 	                    	log_o(LOG_IVI,"Heartbeat timeout!!!!!!!");
 	                        close(ivi_clients[i].fd);
 	                        ivi_clients[i].fd = -1;
-							ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_TIMEOUT;
-							ihu_fault.ivi_net_timestamp = tbox_ivi_getTimestamp();
 	                    }
 	                    
 	                    if (FD_ISSET(ivi_clients[i].fd, &read_set))
@@ -1832,9 +1828,6 @@ void *ivi_main(void)
 	                            if (num == 0 && (EINTR != errno))
 	                            {
 	                                log_e(LOG_IVI, "TCP client disconnect!!!!");
-									ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_TIMEOUT;
-									ihu_fault.ivi_net_timestamp = tbox_ivi_getTimestamp();
-									
 	                            }
 	                            log_e(LOG_IVI, "Client(%d) exit\n", ivi_clients[i].fd);
 	                            close(ivi_clients[i].fd);
@@ -1907,11 +1900,11 @@ void *ivi_main(void)
 							}
 							sleep(1);	
 						}
+						ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_TIMEOUT;
 						log_o(LOG_IVI,"HzTboxSvrAccept  error+++++++++++++++iRet[%d] \n", ret);
 						memset(&ihu_client,0,sizeof(ihu_client));
-						ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_TIMEOUT;
-						ihu_fault.ivi_net_timestamp = tbox_ivi_getTimestamp();
 					} 
+					
 					else
 					{
 						log_o(LOG_IVI,"HzTboxSvrAccept +++++++++++++++iRet[%d] \n", ret);
@@ -2028,13 +2021,43 @@ void *ivi_txmain(void)
 void *ivi_check(void)
 {
 	static uint64_t lastsynctime;
+	static uint64_t lastfaulttime;
+	static uint8_t old_ivi_fault = 0;
 	uint8_t active_flag = 0;
 	prctl(PR_SET_NAME, "IVI_CHECK");
+	lastfaulttime = tm_get_time();
 	while(1)
 	{	
 		usleep(5000);
+		/****************************安全气囊**************************************/
 		tbox_ivi_ecall_srs_deal(tbox_ivi_ecall_srs());   //安全气囊拨打ecall处理
 		tbox_ivi_ecall_key_deal(tbox_ivi_ecall_key()); 	 //按键拨打ecall处理
+		/*****************************车机连接错误*********************************/
+		if(tm_get_time() - lastfaulttime > 10000)
+		{
+			if(hu_pki_en == 0) 
+			{
+				if(ivi_clients[0].fd <= 0 )   //初始化之后10s没有连上来，就认为HU连接超时
+				{
+					ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_TIMEOUT;
+				}
+			}
+			else
+			{
+				if(ihu_client.states != 1)
+				{
+					ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_TIMEOUT;
+				}
+			}
+			if(old_ivi_fault != ihu_fault.ivi_net_faultflag)
+			{
+				old_ivi_fault = ihu_fault.ivi_net_faultflag;
+				ihu_fault.ivi_net_timestamp = tbox_ivi_getTimestamp();
+				lastfaulttime = tm_get_time();
+			}
+		}
+		/*****************************轮训任务*************************************/
+		
 		if(hu_pki_en == 0)  //不带PKI
 		{
 			if(ivi_clients[0].fd > 0)  //轮询任务：信号强度、电话状态、绑车激活、远程诊断、

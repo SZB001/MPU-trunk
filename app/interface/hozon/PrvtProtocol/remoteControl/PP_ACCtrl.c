@@ -685,7 +685,7 @@ void PP_AcCtrl_acStMonitor(void *task)
 			if(oldsec != localdatetime.sec)
 			{
 				oldsec = localdatetime.sec;
-				log_i(LOG_HOZON,"%s %d:%d:%d\n",wday[localdatetime.week],localdatetime.hour,localdatetime.min,localdatetime.sec);
+				//log_i(LOG_HOZON,"%s %d:%d:%d\n",wday[localdatetime.week],localdatetime.hour,localdatetime.min,localdatetime.sec);
 			}
 			if(PP_rmtac_AppointBook[i].period & 0x80)//重复
 			{
@@ -794,6 +794,37 @@ unsigned char GetPP_ACtrl_Sleep(void)
 	return PP_ACtrl_Sleepflag;
 }
 
+unsigned char GetPP_ACCtrl_appointHour(PP_rmtAc_time *time)
+{
+	int i= 0,j = 0;
+	memset(time,0,sizeof(PP_rmtAc_time));
+	for(i = 0;i < 10 ; i++)
+	{
+		if(PP_rmtac_AppointBook[i].validFlg == 1)
+		{
+			time->actime[j].min = PP_rmtac_AppointBook[i].min;
+			time->actime[j].hour = PP_rmtac_AppointBook[i].hour;
+			j++;
+			if(j == 3)
+			{
+				return 0;
+			}
+		}
+	}
+	return 0;
+}
+unsigned char GetPP_ACCtrl_appointSt(void)
+{
+	int i = 0;
+	for(i = 0 ;i < 10 ; i++)
+	{
+		if(PP_rmtac_AppointBook[i].validFlg == 1)
+		{
+			return 2;
+		}
+	}
+	return 1;
+}
 int PP_ACCtrl_waketime(void)
 {
 	int i;

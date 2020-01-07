@@ -116,8 +116,6 @@ extern tBSA_SEC_IO_CAP g_sp_caps ;
 ******************************************************************************/
 int cm256_init(void)
 {
-   int status;
-
    	memset(&aucTxbuff, 0, sizeof(aucTxbuff));
 	rb_init(&stTxRb, aucTxbuff, sizeof(aucTxbuff));
 	log_i(LOG_BLE, "rb_unused_len(&stTxRb)  = %d\r\n",rb_unused_len(&stTxRb) );
@@ -134,52 +132,6 @@ int cm256_init(void)
 
 	memset(&stBleCtl, 0, sizeof(BLE_CTL));	
 		
-    /* Initialize BLE application */
-    status = app_ble_init();
-    if (status < 0)
-    {
-        APP_ERROR0("Couldn't Initialize BLE app, exiting");
-        return -1;
-    }
-
-    /* Open connection to BSA Server */
-    app_mgt_init();
-	
-    if (app_mgr_config())
-    {
-       // APP_ERROR0("Couldn't configure successfully, exiting");
-       // return -1;
-    }
-			
-    if(app_mgt_open(NULL, app_ble_test_mgt_callback) < 0)
-    {
-        APP_ERROR0("Unable to connect to server");
-        return -1;
-    }
-    app_mgr_sec_set_sp_cap(BTA_IO_CAP_OUT);
-
-    if(0 != strlen((const char *)ble_info.aucDevName))
-    {
-    	status = app_dm_set_local_bt_name(ble_info.aucDevName);
-    }
-	else
-	{
-		status = app_dm_set_local_bt_name((unsigned char*)"HZ00000000000000000");
-	}
-	
-	if ( 0 != status)
-	{
-		return status;
-	}
-
-	/* Start BLE application */
-    status = app_ble_start();
-    if (status < 0)
-    {
-        APP_ERROR0("Couldn't Start BLE app, exiting");
-        return -1;
-    }
-
 	return 0;
 }
 
@@ -230,6 +182,53 @@ int cm256_open(void)
 {
 	tBSA_DM_GET_CONFIG bt_config;
 	int iRet = -1;
+	int status;
+	
+	 /* Initialize BLE application */
+    status = app_ble_init();
+    if (status < 0)
+    {
+        APP_ERROR0("Couldn't Initialize BLE app, exiting");
+        return -1;
+    }
+
+    /* Open connection to BSA Server */
+    app_mgt_init();
+	
+    if (app_mgr_config())
+    {
+       // APP_ERROR0("Couldn't configure successfully, exiting");
+       // return -1;
+    }
+			
+    if(app_mgt_open(NULL, app_ble_test_mgt_callback) < 0)
+    {
+        APP_ERROR0("Unable to connect to server");
+        return -1;
+    }
+    app_mgr_sec_set_sp_cap(BTA_IO_CAP_OUT);
+
+    if(0 != strlen((const char *)ble_info.aucDevName))
+    {
+    	status = app_dm_set_local_bt_name(ble_info.aucDevName);
+    }
+	else
+	{
+		status = app_dm_set_local_bt_name((unsigned char*)"HZ00000000000000000");
+	}
+	
+	if ( 0 != status)
+	{
+		return status;
+	}
+
+	/* Start BLE application */
+    status = app_ble_start();
+    if (status < 0)
+    {
+        APP_ERROR0("Couldn't Start BLE app, exiting");
+        return -1;
+    }
 	
     iRet = app_ble_test_server_start();
 	if (-1 == iRet)
@@ -553,6 +552,11 @@ int cm256_apiget_state(unsigned char *pucInRemot, int ulInState)
 	}
 	else
 	{
+		memset(&aucTxbuff, 0, sizeof(aucTxbuff));
+		rb_init(&stTxRb, aucTxbuff, sizeof(aucTxbuff));
+		
+		memset(&aucRxbuff, 0, sizeof(aucRxbuff));
+		rb_init(&stRxRb, aucRxbuff, sizeof(aucRxbuff));
 		BleSendMsg(BLE_MSG_DISCONNECT, 1);
 	}
 	return YT_OK;

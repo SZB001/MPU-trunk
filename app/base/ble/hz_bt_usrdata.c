@@ -227,19 +227,98 @@ int pb_ack_set(ACK **des, bt_send_t *src)
 
 	return 0;
 }
+
 int pb_vihe_info_set(VehicleInfor **des, bt_send_t *src)
 {
 	VehicleInfor *pobj = (VehicleInfor*) calloc(1, sizeof(VehicleInfor));
     if (pobj)
     {
 		vehicle_infor__init(pobj);
-		pobj->vehiclie_door_state = src->vehi_info.vehiclie_door_state;
+		//pobj->vehiclie_door_state = src->vehi_info.vehiclie_door_state;
 		pobj->sunroof_state = src->vehi_info.sunroof_state;
 		pobj->electric_door_state = src->vehi_info.electric_door_state;
 		pobj->fine_car_state = src->vehi_info.fine_car_state;
-		pobj->charge_state = src->vehi_info.charge_state;
-		pobj->power_state = src->vehi_info.power_state;
+		//pobj->charge_state = src->vehi_info.charge_state;
+		//pobj->power_state = src->vehi_info.power_state;
         *des = pobj;
     }
 	return 0;
 }
+int pb_vihe_door_set(VehicleLrdoorInfor **des, bt_send_t *src)
+{
+	VehicleLrdoorInfor *pobj = (VehicleLrdoorInfor*) calloc(1, sizeof(VehicleLrdoorInfor));
+    if (pobj)
+    {
+		vehicle_lrdoor_infor__init(pobj);
+        pobj->ldoor1_state = src->vehi_door.ldoor1_state;
+        pobj->ldoor2_state = src->vehi_door.ldoor2_state;
+		pobj->rdoor1_state= src->vehi_door.rdoor1_state;
+		pobj->rdoor2_state = src->vehi_door.rdoor2_state;
+        *des = pobj;
+    }
+	return 0;
+}
+
+int pb_vihe_charge_set(VehicleChargeInfor **des, bt_send_t *src)
+{
+	VehicleChargeInfor *pobj = (VehicleChargeInfor*) calloc(1, sizeof(VehicleChargeInfor));
+    if (pobj)
+    {
+		vehicle_charge_infor__init(pobj);
+        pobj->charge_reservation = src->vehi_charge.charge_reservation;
+        pobj->charge_state = src->vehi_charge.charge_state;
+		pobj->remaining_charge_hour= src->vehi_charge.remaining_charge_hour;
+		pobj->remaining_charge_minute = src->vehi_charge.remaining_charge_minute;
+		pobj->reservation_hour = src->vehi_charge.reservation_hour;
+		pobj->reservation_minute = src->vehi_charge.reservation_minute;
+		pobj->battery_temperature = src->vehi_charge.battery_temperature;
+        *des = pobj;
+    }
+	return 0;
+}
+int pb_vihe_tire_set(VehicleTireInfor **des, bt_send_t *src)
+{
+	VehicleTireInfor *pobj = (VehicleTireInfor*) calloc(1, sizeof(VehicleTireInfor));
+    if (pobj)
+    {
+		vehicle_tire_infor__init(pobj);
+        pobj->ltire_pressure1 = src->vehi_tire.ltire_pressure1;
+        pobj->ltire_temp1 = src->vehi_tire.ltire_temp1;
+		pobj->ltire_pressure2= src->vehi_tire.ltire_pressure2;
+		pobj->ltire_temp2 = src->vehi_tire.ltire_temp2;
+		pobj->rtire_pressure1 = src->vehi_tire.rtire_pressure1;
+		pobj->rtire_temp1 = src->vehi_tire.rtire_temp1;
+		pobj->rtire_pressure2 = src->vehi_tire.rtire_pressure2;
+		pobj->rtire_temp2 = src->vehi_tire.rtire_temp2;
+        *des = pobj;
+    }
+	return 0;
+}
+
+int pb_vihe_air_set(VehicleAirInfor **des, bt_send_t *src)
+{
+	VehicleAirInfor *pobj = (VehicleAirInfor*) calloc(1, sizeof(VehicleAirInfor));
+    if (pobj)
+    {
+		vehicle_air_infor__init(pobj);
+		pobj->air_conditioning_mode = src->vehi_air.air_conditioning_mode;
+		pobj->air_condition_reservation = src->vehi_air.air_condition_reservation;
+		pobj->air_temperature = src->vehi_air.air_temperature;
+		pobj->reservation_hour1 = src->vehi_air.reservation_hour1;
+		pobj->reservation_hour2 = src->vehi_air.reservation_hour2;
+		pobj->reservation_hour3 = src->vehi_air.reservation_hour3;
+		pobj->reservation_minute1 = src->vehi_air.reservation_minute1;
+		pobj->reservation_minute2 = src->vehi_air.reservation_minute2;
+		pobj->reservation_minute3 = src->vehi_air.reservation_minute3;
+		pobj->vehicle_air_state = src->vehi_air.vehicle_air_state;
+		pobj->vehicle_mainseat_state = src->vehi_air.vehicle_mainseat_state;
+		pobj->vehicle_secondseat_state = src->vehi_air.vehicle_secondseat_state;
+		pobj->vehicle_temperature = src->vehi_air.vehicle_temperature;
+		pobj->outside_temperature = src->vehi_air.outside_temperature;
+		pobj->airwindshield = src->vehi_air.airwindshield;
+        *des = pobj;
+    }
+	return 0;
+}
+
+

@@ -43,22 +43,20 @@ extern char *pubIpAddr;
 #define VERIFYCERTFAIL             -7
 #define KEYGENFAIL                 -8
 
-/********************************* BASE64 *********************************************/
-               
-#define HZBASE64 1 
-//#define HZBASE64 0
+/********************************* BASE64 *********************************************/      
+#define HZBASE64 1
 
 
 /**************************************  Struct   *************************************************/
-struct hz_vehicle_info_st{
+struct hzBT_vehicle_info_st{
     char *unique_id;
     char *tty_type;
     char *carowner_acct;
     char *impower_acct;
 };
-typedef struct hz_vehicle_info_st CAR_INFO;
+typedef struct hzBT_vehicle_info_st CARBT_INFO;
 
-#define CIPHERS_LIST "ALL:!eNULL:!ADH:!PSK:!IDEA:!AES256:!AES128:!SRP:!SSLv3:!GMTLSv1.1:+DHE:+ECDSA:+SHA256:+CHACHA20:+CAMELLIA256"
+#define CIPHERSBT_LIST "ALL:!eNULL:!ADH:!PSK:!IDEA:!AES256:!AES128:!SRP:!SSLv3:!GMTLSv1.1:+DHE:+ECDSA:+SHA256:+CHACHA20:+CAMELLIA256"
 
 
 /************************************** Functions *************************************************/
@@ -70,15 +68,15 @@ int HzBtCertcfg(char *RtcertPath, char *ScdCertPath);
 
 int HzBtSymEncrypt(char *raw_buf, int len, char *result_buf, int *result_len, char *userkey, int type);
 
-int HzRequestInfo (char *cert, char *Vin, char *UserID, char *AuthorID, char *CodeInfo,  char *BackInfo, int *info_len, char *sekey,int *se_len);
+int HzRequestInfo(char *cert, char *crlfile, char *Vin, char *UserID,  char *AuthorID, char *CodeInfo,  char *BackInfo, int *info_len, char *sekey,int *se_len);
 
 int HzBtGenSymKey(char *cert, char *chiperkey, char *plainkey,int *ch_len, int *p_len);
 
-int HzBtCertRevoke(char *cert,char *informat, char *crlfile);
 
-int HZBase64Encode( unsigned char *dst, int *dlen, const unsigned char *src, int  slen );
 
-int HZBase64Decode( unsigned char *dst, int *dlen, const unsigned char *src, int  slen );
+int HZBase64Encode(unsigned char *dst, int *dlen, const unsigned char *src, int  slen);
+
+int HZBase64Decode(unsigned char *dst, int *dlen, const unsigned char *src, int  slen);
 
 int showversion(char *version);
 

@@ -119,7 +119,6 @@ static PrvtProt_RmtCtrlFunc_t PP_RmtCtrlFunc[RMTCTRL_OBJ_MAX] =
 
 static PrvtProt_TxInform_t rmtCtrl_TxInform[PP_TXINFORMNODE_NUM];
 
-static uint8_t testflag = 0;
 /*******************************************************
 description： function declaration
 *******************************************************/
@@ -914,19 +913,148 @@ int PP_rmtCtrl_vehicle_status_InformBt(unsigned char obj, unsigned char cmd)
 	respbt.failtype = 0;
 	respbt.msg_type = BT_VEHILCLE_STATUS_RESP;
 	respbt.cmd_state.execution_result = 0;
+	PP_rmtAc_time acappoint_time;
 	
-	respbt.state.charge_state = PP_rmtCtrl_cfg_chargeOnOffSt() ? 2 : 1;
+	/**********************vihe_info****************************/
 	
-	respbt.state.electric_door_state = PP_rmtCtrl_cfg_bdmreardoorSt() ? 2 : 1; 
+	respbt.state.vihe_info.electric_door_state = PP_rmtCtrl_cfg_bdmreardoorSt() ? 2 : 1; 
+	log_i(LOG_HOZON,"electric_door_state = %d",respbt.state.vihe_info.electric_door_state);
 	
-	respbt.state.fine_car_state = 1;  //保留
+	respbt.state.vihe_info.fine_car_state = 1;  //保留
+	log_i(LOG_HOZON,"fine_car_state = %d",respbt.state.vihe_info.fine_car_state);
 	
-	respbt.state.power_state = PP_rmtCtrl_cfg_RmtStartSt() ? 2 : 1;
+	respbt.state.vihe_info.power_control_state = PP_rmtCtrl_cfg_RmtStartSt() ? 2 : 1;
+	log_i(LOG_HOZON,"power_control_state = %d",respbt.state.vihe_info.power_control_state);
 
-	respbt.state.sunroof_state = PP_rmtCtrl_cfg_bt_sunroofst();
+	respbt.state.vihe_info.sunroof_state = PP_rmtCtrl_cfg_bt_sunroofst();
+	log_i(LOG_HOZON,"sunroof_state = %d",respbt.state.vihe_info.sunroof_state);
 
-	respbt.state.vehiclie_door_state = PrvtProtCfg_doorlockSt() ? 1 :2;
+	respbt.state.vihe_info.vehicle_door_state =PrvtProtCfg_doorlockSt() ? 1 :2;
+	log_i(LOG_HOZON,"vehicle_door_state = %d",respbt.state.vihe_info.vehicle_door_state);
 
+	respbt.state.vihe_info.remaining_capacity = PrvtProtCfg_vehicleSOC();
+	log_i(LOG_HOZON,"remaining_capacity = %d",respbt.state.vihe_info.remaining_capacity);
+
+	respbt.state.vihe_info.remaining_mileage = PrvtProtCfg_ResidualOdometer();
+	log_i(LOG_HOZON,"remaining_mileage = %d",respbt.state.vihe_info.remaining_mileage);
+
+	respbt.state.vihe_info.total_mileage = PrvtProtCfg_TotalOdometer()/10;
+	log_i(LOG_HOZON,"total_mileage = %d",respbt.state.vihe_info.total_mileage);
+	
+	if(gb_data_gearPosition() == 15)
+	{
+		respbt.state.vihe_info.car_gear_position = 1; //P档
+	}
+	else if(gb_data_gearPosition() == 13)
+	{
+		respbt.state.vihe_info.car_gear_position = 2; //R档
+	}
+	else if(gb_data_gearPosition() == 0)
+	{
+		respbt.state.vihe_info.car_gear_position = 3; //N档
+	}
+	else if(gb_data_gearPosition() == 14)
+	{
+		respbt.state.vihe_info.car_gear_position = 4; //D档
+	}
+	log_i(LOG_HOZON,"car_gear_position = %d",respbt.state.vihe_info.car_gear_position);
+	/**********************vihe_air****************************/
+	if(PP_rmtCtrl_cfg_ACOnOffSt() == 1)  //空调开启
+	{
+		respbt.state.vihe_air.air_conditioning_mode = 3;           //远程控制开空调，auto命令开启
+		
+		respbt.state.vihe_air.vehicle_air_state = 2;
+		
+		respbt.state.vihe_air.air_temperature = PP_rmtCtrl_cfg_LHTemp();  //实际设置的空调温度
+	}
+	else   //空调关闭
+	{
+		respbt.state.vihe_air.air_conditioning_mode = 0;      
+		
+		respbt.state.vihe_air.vehicle_air_state = 1;
+		
+		respbt.state.vihe_air.air_temperature = 0;
+	}
+	log_i(LOG_HOZON,"air_conditioning_mode = %d",respbt.state.vihe_air.air_conditioning_mode);
+	log_i(LOG_HOZON,"vehicle_air_state = %d",respbt.state.vihe_air.vehicle_air_state);
+	log_i(LOG_HOZON,"air_temperature = %d",respbt.state.vihe_air.air_temperature);
+
+	GetPP_ACCtrl_appointHour(&acappoint_time);
+	
+	respbt.state.vihe_air.air_condition_reservation = GetPP_ACCtrl_appointSt();
+	
+	respbt.state.vihe_air.reservation_hour1 = acappoint_time.actime[0].hour;
+	log_i(LOG_HOZON,"reservation_hour1 = %d",respbt.state.vihe_air.reservation_hour1);
+	
+	respbt.state.vihe_air.reservation_minute1 = acappoint_time.actime[0].min;
+	log_i(LOG_HOZON,"reservation_minute1 = %d",respbt.state.vihe_air.reservation_minute1);
+	
+	respbt.state.vihe_air.reservation_hour2 = acappoint_time.actime[1].hour;
+	log_i(LOG_HOZON,"reservation_hour2 = %d",respbt.state.vihe_air.reservation_hour2);
+	
+	respbt.state.vihe_air.reservation_minute2 = acappoint_time.actime[1].min;
+	log_i(LOG_HOZON,"reservation_minute2 = %d",respbt.state.vihe_air.reservation_minute2);
+	
+	respbt.state.vihe_air.reservation_hour3 = acappoint_time.actime[2].hour;
+	log_i(LOG_HOZON,"reservation_hour3 = %d",respbt.state.vihe_air.reservation_hour3);
+	
+	respbt.state.vihe_air.reservation_minute3 = acappoint_time.actime[2].min;
+	log_i(LOG_HOZON,"reservation_minute3 = %d",respbt.state.vihe_air.reservation_minute3);
+	
+	respbt.state.vihe_air.vehicle_mainseat_state = PP_rmtCtrl_cfg_DrivHeatingSt() + 1;
+	log_i(LOG_HOZON,"vehicle_mainseat_state = %d",respbt.state.vihe_air.vehicle_mainseat_state);
+	
+	respbt.state.vihe_air.vehicle_secondseat_state = PP_rmtCtrl_cfg_PassHeatingSt() + 1;
+	log_i(LOG_HOZON,"vehicle_secondseat_state = %d",respbt.state.vihe_air.vehicle_secondseat_state);
+	
+	/**********************vihe_charge****************************/
+	respbt.state.vihe_charge.charge_reservation = GetPP_ChargeCtrl_appointSt()? 2 : 1;
+	log_i(LOG_HOZON,"charge_reservation = %d",respbt.state.vihe_charge.charge_reservation);
+	
+	respbt.state.vihe_charge.charge_state = PP_rmtCtrl_cfg_chargeOnOffSt() ? 2 : 1;
+	log_i(LOG_HOZON,"charge_state = %d",respbt.state.vihe_charge.charge_state);
+	
+	respbt.state.vihe_charge.remaining_charge_hour = PP_rmtCtrl_cfg_chargeOnOffSt() ? gb_data_ACChargeRemainTime()/60 :0;
+	log_i(LOG_HOZON,"remaining_charge_hour = %d",respbt.state.vihe_charge.remaining_charge_hour);
+	
+	respbt.state.vihe_charge.remaining_charge_minute = PP_rmtCtrl_cfg_chargeOnOffSt() ? gb_data_ACChargeRemainTime()%60 :0;
+	log_i(LOG_HOZON,"remaining_charge_minute = %d",respbt.state.vihe_charge.remaining_charge_minute);
+	
+	respbt.state.vihe_charge.reservation_hour = GetPP_ChargeCtrl_appointSt() ? GetPP_ChargeCtrl_appointHour():0;
+	log_i(LOG_HOZON,"reservation_hour = %d",respbt.state.vihe_charge.reservation_hour);
+	
+	respbt.state.vihe_charge.reservation_minute = GetPP_ChargeCtrl_appointSt() ? GetPP_ChargeCtrl_appointMin():0;
+	log_i(LOG_HOZON,"reservation_minute = %d",respbt.state.vihe_charge.reservation_minute);
+
+	respbt.state.vihe_charge.battery_temperature = 1;
+
+	/**********************胎压信息****************************/
+	respbt.state.vihe_tire.ltire_pressure1 = PrvtProtCfg_TyrePre(2);//左前胎压
+	log_i(LOG_HOZON,"ltire_pressure1 = %d",respbt.state.vihe_tire.ltire_pressure1);
+	respbt.state.vihe_tire.ltire_temp1 = PrvtProtCfg_TyreTemp(2);//左前温度
+	log_i(LOG_HOZON,"ltire_temp1 = %d",respbt.state.vihe_tire.ltire_temp1);
+	respbt.state.vihe_tire.ltire_pressure2 = PrvtProtCfg_TyrePre(4);//左后胎压
+	log_i(LOG_HOZON,"ltire_pressure2 = %d",respbt.state.vihe_tire.ltire_pressure2);
+	respbt.state.vihe_tire.ltire_temp2 = PrvtProtCfg_TyreTemp(4);//左后温度
+	log_i(LOG_HOZON,"ltire_temp2 = %d",respbt.state.vihe_tire.ltire_temp2);
+	respbt.state.vihe_tire.rtire_pressure1 = PrvtProtCfg_TyrePre(1);//右前胎压
+	log_i(LOG_HOZON,"rtire_pressure1 = %d",respbt.state.vihe_tire.rtire_pressure1);
+	respbt.state.vihe_tire.rtire_temp1= PrvtProtCfg_TyreTemp(1);//右前温度
+	log_i(LOG_HOZON,"rtire_temp1 = %d",respbt.state.vihe_tire.rtire_temp1);
+	respbt.state.vihe_tire.rtire_pressure2 = PrvtProtCfg_TyrePre(3);//右后胎压
+	log_i(LOG_HOZON,"rtire_pressure2 = %d",respbt.state.vihe_tire.rtire_pressure2);
+	respbt.state.vihe_tire.rtire_temp2 =PrvtProtCfg_TyreTemp(3);//右后温度
+	log_i(LOG_HOZON,"rtire_temp2 = %d",respbt.state.vihe_tire.rtire_temp2);
+	/**********************车门状态****************************/
+	respbt.state.vihe_door.ldoor1_state = getgb_data_LFDoorOpenSt()?2:1;
+	log_i(LOG_HOZON,"ldoor1_state = %d",respbt.state.vihe_door.ldoor1_state);
+	respbt.state.vihe_door.ldoor2_state = getgb_data_LRDoorOpenSt()?2:1;
+	log_i(LOG_HOZON,"ldoor2_state = %d",respbt.state.vihe_door.ldoor2_state);
+	respbt.state.vihe_door.rdoor1_state = getgb_data_RFDoorOpenSt()?2:1;
+	log_i(LOG_HOZON,"rdoor1_state = %d",respbt.state.vihe_door.rdoor1_state);
+	respbt.state.vihe_door.rdoor2_state = getgb_data_RRDoorOpenSt()?2:1;
+	log_i(LOG_HOZON,"rdoor2_state = %d",respbt.state.vihe_door.rdoor2_state);
+	
 	msghdr.sender    = MPU_MID_HOZON_PP;
 	msghdr.receiver  = MPU_MID_BLE;
 	msghdr.msgid     = BLE_MSG_CONTROL;
@@ -1490,12 +1618,4 @@ void PP_rmtCtrl_showSleepPara(void)
 	log_o(LOG_HOZON, "GetPP_Wake_Sleep = %d",GetPP_Wake_Sleep());
 	log_o(LOG_HOZON, "PP_get_virtual_flag = %s",PP_get_virtual_flag()?"off":"on");
 }
-void PP_rmtCtrl_settestflag(uint8_t flag)
-{
-	testflag = flag;
-}
 
-uint8_t PP_rmtCtrl_gettestflag(void)
-{
-	return testflag;
-}

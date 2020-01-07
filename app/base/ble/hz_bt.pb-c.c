@@ -547,6 +547,186 @@ void   vehicle_status__free_unpacked
   assert(message->base.descriptor == &vehicle_status__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   vehicle_air_infor__init
+                     (VehicleAirInfor         *message)
+{
+  static const VehicleAirInfor init_value = VEHICLE_AIR_INFOR__INIT;
+  *message = init_value;
+}
+size_t vehicle_air_infor__get_packed_size
+                     (const VehicleAirInfor *message)
+{
+  assert(message->base.descriptor == &vehicle_air_infor__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t vehicle_air_infor__pack
+                     (const VehicleAirInfor *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &vehicle_air_infor__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t vehicle_air_infor__pack_to_buffer
+                     (const VehicleAirInfor *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &vehicle_air_infor__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+VehicleAirInfor *
+       vehicle_air_infor__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (VehicleAirInfor *)
+     protobuf_c_message_unpack (&vehicle_air_infor__descriptor,
+                                allocator, len, data);
+}
+void   vehicle_air_infor__free_unpacked
+                     (VehicleAirInfor *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &vehicle_air_infor__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   vehicle_charge_infor__init
+                     (VehicleChargeInfor         *message)
+{
+  static const VehicleChargeInfor init_value = VEHICLE_CHARGE_INFOR__INIT;
+  *message = init_value;
+}
+size_t vehicle_charge_infor__get_packed_size
+                     (const VehicleChargeInfor *message)
+{
+  assert(message->base.descriptor == &vehicle_charge_infor__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t vehicle_charge_infor__pack
+                     (const VehicleChargeInfor *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &vehicle_charge_infor__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t vehicle_charge_infor__pack_to_buffer
+                     (const VehicleChargeInfor *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &vehicle_charge_infor__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+VehicleChargeInfor *
+       vehicle_charge_infor__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (VehicleChargeInfor *)
+     protobuf_c_message_unpack (&vehicle_charge_infor__descriptor,
+                                allocator, len, data);
+}
+void   vehicle_charge_infor__free_unpacked
+                     (VehicleChargeInfor *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &vehicle_charge_infor__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   vehicle_lrdoor_infor__init
+                     (VehicleLrdoorInfor         *message)
+{
+  static const VehicleLrdoorInfor init_value = VEHICLE_LRDOOR_INFOR__INIT;
+  *message = init_value;
+}
+size_t vehicle_lrdoor_infor__get_packed_size
+                     (const VehicleLrdoorInfor *message)
+{
+  assert(message->base.descriptor == &vehicle_lrdoor_infor__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t vehicle_lrdoor_infor__pack
+                     (const VehicleLrdoorInfor *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &vehicle_lrdoor_infor__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t vehicle_lrdoor_infor__pack_to_buffer
+                     (const VehicleLrdoorInfor *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &vehicle_lrdoor_infor__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+VehicleLrdoorInfor *
+       vehicle_lrdoor_infor__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (VehicleLrdoorInfor *)
+     protobuf_c_message_unpack (&vehicle_lrdoor_infor__descriptor,
+                                allocator, len, data);
+}
+void   vehicle_lrdoor_infor__free_unpacked
+                     (VehicleLrdoorInfor *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &vehicle_lrdoor_infor__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   vehicle_tire_infor__init
+                     (VehicleTireInfor         *message)
+{
+  static const VehicleTireInfor init_value = VEHICLE_TIRE_INFOR__INIT;
+  *message = init_value;
+}
+size_t vehicle_tire_infor__get_packed_size
+                     (const VehicleTireInfor *message)
+{
+  assert(message->base.descriptor == &vehicle_tire_infor__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t vehicle_tire_infor__pack
+                     (const VehicleTireInfor *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &vehicle_tire_infor__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t vehicle_tire_infor__pack_to_buffer
+                     (const VehicleTireInfor *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &vehicle_tire_infor__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+VehicleTireInfor *
+       vehicle_tire_infor__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (VehicleTireInfor *)
+     protobuf_c_message_unpack (&vehicle_tire_infor__descriptor,
+                                allocator, len, data);
+}
+void   vehicle_tire_infor__free_unpacked
+                     (VehicleTireInfor *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &vehicle_tire_infor__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 void   vehicle_infor__init
                      (VehicleInfor         *message)
 {
@@ -1294,15 +1474,557 @@ const ProtobufCMessageDescriptor vehicle_status__descriptor =
   (ProtobufCMessageInit) vehicle_status__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor vehicle_infor__field_descriptors[6] =
+static const ProtobufCFieldDescriptor vehicle_air_infor__field_descriptors[15] =
 {
   {
-    "vehiclie_door_state",
+    "vehicle_air_state",
     1,
     PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_INT32,
     0,   /* quantifier_offset */
-    offsetof(VehicleInfor, vehiclie_door_state),
+    offsetof(VehicleAirInfor, vehicle_air_state),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "air_temperature",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FLOAT,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, air_temperature),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "air_conditioning_mode",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, air_conditioning_mode),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "air_condition_reservation",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, air_condition_reservation),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "vehicle_mainseat_state",
+    5,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, vehicle_mainseat_state),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "vehicle_secondseat_state",
+    6,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, vehicle_secondseat_state),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "reservation_hour1",
+    7,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, reservation_hour1),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "reservation_minute1",
+    8,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, reservation_minute1),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "reservation_hour2",
+    9,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, reservation_hour2),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "reservation_minute2",
+    10,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, reservation_minute2),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "reservation_hour3",
+    11,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, reservation_hour3),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "reservation_minute3",
+    12,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, reservation_minute3),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "vehicle_temperature",
+    13,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FLOAT,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, vehicle_temperature),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "outside_temperature",
+    14,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FLOAT,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, outside_temperature),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "airwindshield",
+    15,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleAirInfor, airwindshield),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned vehicle_air_infor__field_indices_by_name[] = {
+  3,   /* field[3] = air_condition_reservation */
+  2,   /* field[2] = air_conditioning_mode */
+  1,   /* field[1] = air_temperature */
+  14,   /* field[14] = airwindshield */
+  13,   /* field[13] = outside_temperature */
+  6,   /* field[6] = reservation_hour1 */
+  8,   /* field[8] = reservation_hour2 */
+  10,   /* field[10] = reservation_hour3 */
+  7,   /* field[7] = reservation_minute1 */
+  9,   /* field[9] = reservation_minute2 */
+  11,   /* field[11] = reservation_minute3 */
+  0,   /* field[0] = vehicle_air_state */
+  4,   /* field[4] = vehicle_mainseat_state */
+  5,   /* field[5] = vehicle_secondseat_state */
+  12,   /* field[12] = vehicle_temperature */
+};
+static const ProtobufCIntRange vehicle_air_infor__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 15 }
+};
+const ProtobufCMessageDescriptor vehicle_air_infor__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "VehicleAirInfor",
+  "VehicleAirInfor",
+  "VehicleAirInfor",
+  "",
+  sizeof(VehicleAirInfor),
+  15,
+  vehicle_air_infor__field_descriptors,
+  vehicle_air_infor__field_indices_by_name,
+  1,  vehicle_air_infor__number_ranges,
+  (ProtobufCMessageInit) vehicle_air_infor__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor vehicle_charge_infor__field_descriptors[7] =
+{
+  {
+    "charge_state",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleChargeInfor, charge_state),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "charge_reservation",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleChargeInfor, charge_reservation),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "reservation_hour",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleChargeInfor, reservation_hour),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "reservation_minute",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleChargeInfor, reservation_minute),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "remaining_charge_hour",
+    5,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleChargeInfor, remaining_charge_hour),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "remaining_charge_minute",
+    6,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleChargeInfor, remaining_charge_minute),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "battery_temperature",
+    7,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FLOAT,
+    0,   /* quantifier_offset */
+    offsetof(VehicleChargeInfor, battery_temperature),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned vehicle_charge_infor__field_indices_by_name[] = {
+  6,   /* field[6] = battery_temperature */
+  1,   /* field[1] = charge_reservation */
+  0,   /* field[0] = charge_state */
+  4,   /* field[4] = remaining_charge_hour */
+  5,   /* field[5] = remaining_charge_minute */
+  2,   /* field[2] = reservation_hour */
+  3,   /* field[3] = reservation_minute */
+};
+static const ProtobufCIntRange vehicle_charge_infor__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 7 }
+};
+const ProtobufCMessageDescriptor vehicle_charge_infor__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "VehicleChargeInfor",
+  "VehicleChargeInfor",
+  "VehicleChargeInfor",
+  "",
+  sizeof(VehicleChargeInfor),
+  7,
+  vehicle_charge_infor__field_descriptors,
+  vehicle_charge_infor__field_indices_by_name,
+  1,  vehicle_charge_infor__number_ranges,
+  (ProtobufCMessageInit) vehicle_charge_infor__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor vehicle_lrdoor_infor__field_descriptors[4] =
+{
+  {
+    "ldoor1_state",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleLrdoorInfor, ldoor1_state),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "ldoor2_state",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleLrdoorInfor, ldoor2_state),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "rdoor1_state",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleLrdoorInfor, rdoor1_state),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "rdoor2_state",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleLrdoorInfor, rdoor2_state),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned vehicle_lrdoor_infor__field_indices_by_name[] = {
+  0,   /* field[0] = ldoor1_state */
+  1,   /* field[1] = ldoor2_state */
+  2,   /* field[2] = rdoor1_state */
+  3,   /* field[3] = rdoor2_state */
+};
+static const ProtobufCIntRange vehicle_lrdoor_infor__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 4 }
+};
+const ProtobufCMessageDescriptor vehicle_lrdoor_infor__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "vehicle_lrdoor_infor",
+  "VehicleLrdoorInfor",
+  "VehicleLrdoorInfor",
+  "",
+  sizeof(VehicleLrdoorInfor),
+  4,
+  vehicle_lrdoor_infor__field_descriptors,
+  vehicle_lrdoor_infor__field_indices_by_name,
+  1,  vehicle_lrdoor_infor__number_ranges,
+  (ProtobufCMessageInit) vehicle_lrdoor_infor__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor vehicle_tire_infor__field_descriptors[8] =
+{
+  {
+    "ltire_pressure1",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FLOAT,
+    0,   /* quantifier_offset */
+    offsetof(VehicleTireInfor, ltire_pressure1),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "ltire_temp1",
+    2,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FLOAT,
+    0,   /* quantifier_offset */
+    offsetof(VehicleTireInfor, ltire_temp1),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "ltire_pressure2",
+    3,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FLOAT,
+    0,   /* quantifier_offset */
+    offsetof(VehicleTireInfor, ltire_pressure2),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "ltire_temp2",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FLOAT,
+    0,   /* quantifier_offset */
+    offsetof(VehicleTireInfor, ltire_temp2),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "rtire_pressure1",
+    5,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FLOAT,
+    0,   /* quantifier_offset */
+    offsetof(VehicleTireInfor, rtire_pressure1),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "rtire_temp1",
+    6,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FLOAT,
+    0,   /* quantifier_offset */
+    offsetof(VehicleTireInfor, rtire_temp1),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "rtire_pressure2",
+    7,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FLOAT,
+    0,   /* quantifier_offset */
+    offsetof(VehicleTireInfor, rtire_pressure2),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "rtire_temp2",
+    8,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_FLOAT,
+    0,   /* quantifier_offset */
+    offsetof(VehicleTireInfor, rtire_temp2),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned vehicle_tire_infor__field_indices_by_name[] = {
+  0,   /* field[0] = ltire_pressure1 */
+  2,   /* field[2] = ltire_pressure2 */
+  1,   /* field[1] = ltire_temp1 */
+  3,   /* field[3] = ltire_temp2 */
+  4,   /* field[4] = rtire_pressure1 */
+  6,   /* field[6] = rtire_pressure2 */
+  5,   /* field[5] = rtire_temp1 */
+  7,   /* field[7] = rtire_temp2 */
+};
+static const ProtobufCIntRange vehicle_tire_infor__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 8 }
+};
+const ProtobufCMessageDescriptor vehicle_tire_infor__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "vehicle_tire_infor",
+  "VehicleTireInfor",
+  "VehicleTireInfor",
+  "",
+  sizeof(VehicleTireInfor),
+  8,
+  vehicle_tire_infor__field_descriptors,
+  vehicle_tire_infor__field_indices_by_name,
+  1,  vehicle_tire_infor__number_ranges,
+  (ProtobufCMessageInit) vehicle_tire_infor__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor vehicle_infor__field_descriptors[13] =
+{
+  {
+    "vehicle_door_state",
+    1,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleInfor, vehicle_door_state),
     NULL,
     NULL,
     0,             /* flags */
@@ -1345,24 +2067,108 @@ static const ProtobufCFieldDescriptor vehicle_infor__field_descriptors[6] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "charge_state",
+    "power_control_state",
     5,
     PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_INT32,
     0,   /* quantifier_offset */
-    offsetof(VehicleInfor, charge_state),
+    offsetof(VehicleInfor, power_control_state),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "power_state",
+    "remaining_capacity",
     6,
     PROTOBUF_C_LABEL_NONE,
     PROTOBUF_C_TYPE_INT32,
     0,   /* quantifier_offset */
-    offsetof(VehicleInfor, power_state),
+    offsetof(VehicleInfor, remaining_capacity),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "remaining_mileage",
+    7,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleInfor, remaining_mileage),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "lrdoor_infor",
+    8,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    0,   /* quantifier_offset */
+    offsetof(VehicleInfor, lrdoor_infor),
+    &vehicle_lrdoor_infor__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "air_infor",
+    9,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    0,   /* quantifier_offset */
+    offsetof(VehicleInfor, air_infor),
+    &vehicle_air_infor__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "charge_infor",
+    10,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    0,   /* quantifier_offset */
+    offsetof(VehicleInfor, charge_infor),
+    &vehicle_charge_infor__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "tire_infor",
+    11,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_MESSAGE,
+    0,   /* quantifier_offset */
+    offsetof(VehicleInfor, tire_infor),
+    &vehicle_tire_infor__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "total_mileage",
+    12,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleInfor, total_mileage),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "car_gear_position",
+    13,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(VehicleInfor, car_gear_position),
     NULL,
     NULL,
     0,             /* flags */
@@ -1370,17 +2176,24 @@ static const ProtobufCFieldDescriptor vehicle_infor__field_descriptors[6] =
   },
 };
 static const unsigned vehicle_infor__field_indices_by_name[] = {
-  4,   /* field[4] = charge_state */
+  8,   /* field[8] = air_infor */
+  12,   /* field[12] = car_gear_position */
+  9,   /* field[9] = charge_infor */
   2,   /* field[2] = electric_door_state */
   3,   /* field[3] = fine_car_state */
-  5,   /* field[5] = power_state */
+  7,   /* field[7] = lrdoor_infor */
+  4,   /* field[4] = power_control_state */
+  5,   /* field[5] = remaining_capacity */
+  6,   /* field[6] = remaining_mileage */
   1,   /* field[1] = sunroof_state */
-  0,   /* field[0] = vehiclie_door_state */
+  10,   /* field[10] = tire_infor */
+  11,   /* field[11] = total_mileage */
+  0,   /* field[0] = vehicle_door_state */
 };
 static const ProtobufCIntRange vehicle_infor__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 6 }
+  { 0, 13 }
 };
 const ProtobufCMessageDescriptor vehicle_infor__descriptor =
 {
@@ -1390,7 +2203,7 @@ const ProtobufCMessageDescriptor vehicle_infor__descriptor =
   "VehicleInfor",
   "",
   sizeof(VehicleInfor),
-  6,
+  13,
   vehicle_infor__field_descriptors,
   vehicle_infor__field_indices_by_name,
   1,  vehicle_infor__number_ranges,

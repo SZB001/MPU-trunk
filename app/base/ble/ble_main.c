@@ -46,8 +46,7 @@ typedef struct
 	uint8_t cmd;
 	bt_ack_t cmd_state; // 0��ʾ�ɹ�  1��ʾʧ��
 	uint8_t failtype;
-	bt_vihe_info_t state;
-	
+	bt_info_state_t state;
 }__attribute__((packed))  PrvtProt_respbt_t;  
 
 
@@ -650,7 +649,7 @@ static void *ble_main(void)
                 {
                     if (BLE_MSG_ID_TIMER_HEARTER == msgheader.msgid)
                     {
-						if(0 == (ucCnt % 50))
+						if(0 == (ucCnt % 20))
 						{
 							//log_i(LOG_BLE, "***********2333\r\n");
 						}
@@ -671,7 +670,7 @@ static void *ble_main(void)
 				    if (BLE_MSG_CONTROL == msgheader.msgid)
 				    {
 				    	PrvtProt_respbt_t respbt;
-						bt_vihe_info_t 	  vihe_info;
+						bt_info_state_t 	  vihe_info;
 						memcpy((char *)&respbt, g_pucbuf, msgheader.msglen);
 						log_i(LOG_BLE, "respbt.cmd = %d", respbt.cmd);
 						log_i(LOG_BLE, "msgheader.msglen = %d", msgheader.msglen);
@@ -745,6 +744,13 @@ static void *ble_main(void)
 								PP_rmtCtrl_BluetoothCtrlReq(g_hz_protocol.type, 0);
 							}
 						}
+						else
+						{
+							stBtApi.Init();
+							g_BleMember.ucTransStatus = BLE_INIT_STATUS;
+							reset_hz_data();
+							log_i(LOG_BLE, "data err");
+						}
 					}
 					else if (BLE_MSG_CONNECT == msgheader.msgid)
 					{
@@ -753,10 +759,12 @@ static void *ble_main(void)
 					}
 					else if (BLE_MSG_DISCONNECT == msgheader.msgid)
 					{
+					  
 						memset((char *)&g_BleMember, 0, sizeof(BLE_MEMBER));
 						g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
 		    			g_BleMember.ucTransStatus = BLE_INIT_STATUS;
 						reset_hz_data();
+						stBtApi.Init();
 						//BleSendMsgToApp(AICHI_MSG_DISCONFIG_TYPE);
 						log_i(LOG_BLE, "1BLE_MSG_DISCONNECT");
 					}

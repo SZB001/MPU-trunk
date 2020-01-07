@@ -82,6 +82,7 @@ SUBDIRS := \
 	./app \
 	./appl \
 	./goml \
+	./curl \
 	./shell
 	
 # ROOT DIR

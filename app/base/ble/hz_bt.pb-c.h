@@ -27,6 +27,10 @@ typedef struct _RemoteFineCar RemoteFineCar;
 typedef struct _Charge Charge;
 typedef struct _PowerControl PowerControl;
 typedef struct _VehicleStatus VehicleStatus;
+typedef struct _VehicleAirInfor VehicleAirInfor;
+typedef struct _VehicleChargeInfor VehicleChargeInfor;
+typedef struct _VehicleLrdoorInfor VehicleLrdoorInfor;
+typedef struct _VehicleTireInfor VehicleTireInfor;
 typedef struct _VehicleInfor VehicleInfor;
 typedef struct _ApplicationHeader ApplicationHeader;
 typedef struct _ProtocolHeader ProtocolHeader;
@@ -184,19 +188,96 @@ struct  _VehicleStatus
     , 0 }
 
 
+struct  _VehicleAirInfor
+{
+  ProtobufCMessage base;
+  int32_t vehicle_air_state;
+  float air_temperature;
+  int32_t air_conditioning_mode;
+  int32_t air_condition_reservation;
+  int32_t vehicle_mainseat_state;
+  int32_t vehicle_secondseat_state;
+  int32_t reservation_hour1;
+  int32_t reservation_minute1;
+  int32_t reservation_hour2;
+  int32_t reservation_minute2;
+  int32_t reservation_hour3;
+  int32_t reservation_minute3;
+  float vehicle_temperature;
+  float outside_temperature;
+  int32_t airwindshield;
+};
+#define VEHICLE_AIR_INFOR__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&vehicle_air_infor__descriptor) \
+    , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+
+
+struct  _VehicleChargeInfor
+{
+  ProtobufCMessage base;
+  int32_t charge_state;
+  int32_t charge_reservation;
+  int32_t reservation_hour;
+  int32_t reservation_minute;
+  int32_t remaining_charge_hour;
+  int32_t remaining_charge_minute;
+  float battery_temperature;
+};
+#define VEHICLE_CHARGE_INFOR__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&vehicle_charge_infor__descriptor) \
+    , 0, 0, 0, 0, 0, 0, 0 }
+
+
+struct  _VehicleLrdoorInfor
+{
+  ProtobufCMessage base;
+  int32_t ldoor1_state;
+  int32_t ldoor2_state;
+  int32_t rdoor1_state;
+  int32_t rdoor2_state;
+};
+#define VEHICLE_LRDOOR_INFOR__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&vehicle_lrdoor_infor__descriptor) \
+    , 0, 0, 0, 0 }
+
+
+struct  _VehicleTireInfor
+{
+  ProtobufCMessage base;
+  float ltire_pressure1;
+  float ltire_temp1;
+  float ltire_pressure2;
+  float ltire_temp2;
+  float rtire_pressure1;
+  float rtire_temp1;
+  float rtire_pressure2;
+  float rtire_temp2;
+};
+#define VEHICLE_TIRE_INFOR__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&vehicle_tire_infor__descriptor) \
+    , 0, 0, 0, 0, 0, 0, 0, 0 }
+
+
 struct  _VehicleInfor
 {
   ProtobufCMessage base;
-  int32_t vehiclie_door_state;
+  int32_t vehicle_door_state;
   int32_t sunroof_state;
   int32_t electric_door_state;
   int32_t fine_car_state;
-  int32_t charge_state;
-  int32_t power_state;
+  int32_t power_control_state;
+  int32_t remaining_capacity;
+  int32_t remaining_mileage;
+  VehicleLrdoorInfor *lrdoor_infor;
+  VehicleAirInfor *air_infor;
+  VehicleChargeInfor *charge_infor;
+  VehicleTireInfor *tire_infor;
+  int32_t total_mileage;
+  int32_t car_gear_position;
 };
 #define VEHICLE_INFOR__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&vehicle_infor__descriptor) \
-    , 0, 0, 0, 0, 0, 0 }
+    , 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, 0, 0 }
 
 
 struct  _ApplicationHeader
@@ -451,6 +532,82 @@ VehicleStatus *
 void   vehicle_status__free_unpacked
                      (VehicleStatus *message,
                       ProtobufCAllocator *allocator);
+/* VehicleAirInfor methods */
+void   vehicle_air_infor__init
+                     (VehicleAirInfor         *message);
+size_t vehicle_air_infor__get_packed_size
+                     (const VehicleAirInfor   *message);
+size_t vehicle_air_infor__pack
+                     (const VehicleAirInfor   *message,
+                      uint8_t             *out);
+size_t vehicle_air_infor__pack_to_buffer
+                     (const VehicleAirInfor   *message,
+                      ProtobufCBuffer     *buffer);
+VehicleAirInfor *
+       vehicle_air_infor__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   vehicle_air_infor__free_unpacked
+                     (VehicleAirInfor *message,
+                      ProtobufCAllocator *allocator);
+/* VehicleChargeInfor methods */
+void   vehicle_charge_infor__init
+                     (VehicleChargeInfor         *message);
+size_t vehicle_charge_infor__get_packed_size
+                     (const VehicleChargeInfor   *message);
+size_t vehicle_charge_infor__pack
+                     (const VehicleChargeInfor   *message,
+                      uint8_t             *out);
+size_t vehicle_charge_infor__pack_to_buffer
+                     (const VehicleChargeInfor   *message,
+                      ProtobufCBuffer     *buffer);
+VehicleChargeInfor *
+       vehicle_charge_infor__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   vehicle_charge_infor__free_unpacked
+                     (VehicleChargeInfor *message,
+                      ProtobufCAllocator *allocator);
+/* VehicleLrdoorInfor methods */
+void   vehicle_lrdoor_infor__init
+                     (VehicleLrdoorInfor         *message);
+size_t vehicle_lrdoor_infor__get_packed_size
+                     (const VehicleLrdoorInfor   *message);
+size_t vehicle_lrdoor_infor__pack
+                     (const VehicleLrdoorInfor   *message,
+                      uint8_t             *out);
+size_t vehicle_lrdoor_infor__pack_to_buffer
+                     (const VehicleLrdoorInfor   *message,
+                      ProtobufCBuffer     *buffer);
+VehicleLrdoorInfor *
+       vehicle_lrdoor_infor__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   vehicle_lrdoor_infor__free_unpacked
+                     (VehicleLrdoorInfor *message,
+                      ProtobufCAllocator *allocator);
+/* VehicleTireInfor methods */
+void   vehicle_tire_infor__init
+                     (VehicleTireInfor         *message);
+size_t vehicle_tire_infor__get_packed_size
+                     (const VehicleTireInfor   *message);
+size_t vehicle_tire_infor__pack
+                     (const VehicleTireInfor   *message,
+                      uint8_t             *out);
+size_t vehicle_tire_infor__pack_to_buffer
+                     (const VehicleTireInfor   *message,
+                      ProtobufCBuffer     *buffer);
+VehicleTireInfor *
+       vehicle_tire_infor__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   vehicle_tire_infor__free_unpacked
+                     (VehicleTireInfor *message,
+                      ProtobufCAllocator *allocator);
 /* VehicleInfor methods */
 void   vehicle_infor__init
                      (VehicleInfor         *message);
@@ -546,6 +703,18 @@ typedef void (*PowerControl_Closure)
 typedef void (*VehicleStatus_Closure)
                  (const VehicleStatus *message,
                   void *closure_data);
+typedef void (*VehicleAirInfor_Closure)
+                 (const VehicleAirInfor *message,
+                  void *closure_data);
+typedef void (*VehicleChargeInfor_Closure)
+                 (const VehicleChargeInfor *message,
+                  void *closure_data);
+typedef void (*VehicleLrdoorInfor_Closure)
+                 (const VehicleLrdoorInfor *message,
+                  void *closure_data);
+typedef void (*VehicleTireInfor_Closure)
+                 (const VehicleTireInfor *message,
+                  void *closure_data);
 typedef void (*VehicleInfor_Closure)
                  (const VehicleInfor *message,
                   void *closure_data);
@@ -573,6 +742,10 @@ extern const ProtobufCMessageDescriptor remote_fine_car__descriptor;
 extern const ProtobufCMessageDescriptor charge__descriptor;
 extern const ProtobufCMessageDescriptor power_control__descriptor;
 extern const ProtobufCMessageDescriptor vehicle_status__descriptor;
+extern const ProtobufCMessageDescriptor vehicle_air_infor__descriptor;
+extern const ProtobufCMessageDescriptor vehicle_charge_infor__descriptor;
+extern const ProtobufCMessageDescriptor vehicle_lrdoor_infor__descriptor;
+extern const ProtobufCMessageDescriptor vehicle_tire_infor__descriptor;
 extern const ProtobufCMessageDescriptor vehicle_infor__descriptor;
 extern const ProtobufCMessageDescriptor application_header__descriptor;
 extern const ProtobufCEnumDescriptor    application_header__message_type__descriptor;

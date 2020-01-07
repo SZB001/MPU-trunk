@@ -122,8 +122,8 @@ get_index:
 }
 
 int process_char_0002(tBSA_BLE_MSG *p_data)
-{
-	if (82 == ql_app_ble_cb.ble_server[1].attr[2].characteristic[1].char_handle )
+{ //APP_DEBUG0("process_char_0003\r\n");
+	if (42 == ql_app_ble_cb.ble_server[1].attr[1].characteristic[1].char_handle )
 	{
 	    APP_DEBUG0("process_char_0002\r\n");
 		APP_DEBUG1("process_char_0002 = %d\r\n", p_data->ser_write.len);
@@ -162,9 +162,9 @@ int ble_send_notification(unsigned char *pucBuf, unsigned int *pulLen)
 	
 	ble_sendind_param.conn_id = g_NfBleMsg.ulHandle;
    //ble_sendind_param.attr_id = app_ble_ts_cb.attr_id;
-   ble_sendind_param.attr_id = 84;
-   APP_DEBUG1("app_ble_ts_cb.conn_id=%d\r\n", ble_sendind_param.conn_id);
-   APP_DEBUG1("app_ble_ts_cb.attr_id=%d\r\n", ble_sendind_param.attr_id);
+   ble_sendind_param.attr_id = 44;
+   //log_i(LOG_BLE, "app_ble_ts_cb.conn_id=%d\r\n", ble_sendind_param.conn_id);
+   //log_i(LOG_BLE, "app_ble_ts_cb.attr_id=%d\r\n", ble_sendind_param.attr_id);
 
 
 	iTmpLen = *pulLen;
@@ -179,7 +179,7 @@ int ble_send_notification(unsigned char *pucBuf, unsigned int *pulLen)
 			ble_sendind_param.need_confirm = FALSE;
     		if(BSA_SUCCESS == BSA_BleSeSendInd(&ble_sendind_param))
 	        {
-	        	APP_DEBUG0("Nf3303Send37\r\n");
+	        	//APP_DEBUG0("ble_send_notification\r\n");
 	        } 
 	        else
 	        {
@@ -198,7 +198,7 @@ int ble_send_notification(unsigned char *pucBuf, unsigned int *pulLen)
 			ble_sendind_param.need_confirm = FALSE;
 			if(BSA_SUCCESS == BSA_BleSeSendInd(&ble_sendind_param))
 	        {
-	        	APP_DEBUG0("Nf3303Send38\r\n");
+	        	//APP_DEBUG0("ble_send_notification\r\n");
 	        } 
 	        else
 	        {
@@ -250,9 +250,9 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
             ql_app_ble_cb.ble_server[current_server_index].current_service++;
             current_service_index = ql_app_ble_cb.ble_server[current_server_index].current_service;
             ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].service_id = p_data->ser_create.service_id;
-            APP_DEBUG0("Service is created\n");
-            APP_DEBUG1("\tserver_if=%d, service_id=%d\n\n", p_data->ser_create.server_if, p_data->ser_create.service_id);
-            APP_DEBUG1("current_server_index:%d, current_service_index:%d\n", current_server_index, current_service_index);
+            log_i(LOG_BLE,  "Service is created\n");
+            log_i(LOG_BLE, "\tserver_if=%d, service_id=%d\n\n", p_data->ser_create.server_if, p_data->ser_create.service_id);
+            log_i(LOG_BLE, "current_server_index:%d, current_service_index:%d\n", current_server_index, current_service_index);
             break;
             
         case BSA_BLE_SE_ADDCHAR_EVT:
@@ -269,12 +269,12 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
             ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].characteristic[current_char_index].char_id = 100*current_server_index+10*current_service_index+current_char_index;
             ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].characteristic[current_char_index].char_handle = p_data->ser_addchar.attr_id;
             
-            APP_DEBUG0("char data is added \n");
-            APP_DEBUG1("\tserver_if:%d, service_id:%d, attr_id:%d, is_discr:%d, ", \
+            printf("char data is added \n");
+            printf("\tserver_if:%d, service_id:%d, attr_id:%d, is_discr:%d, ", \
             p_data->ser_addchar.server_if, p_data->ser_addchar.service_id, p_data->ser_addchar.attr_id, p_data->ser_addchar.is_discr);
-            APP_DEBUG1("char_id=%d\n", ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].characteristic[current_char_index].char_id);
-            APP_DEBUG1("\tcurrent_server_index:%d, current_service_index:%d, current_char_index:%d\n", current_server_index, current_service_index, current_char_index);
-            APP_DEBUG1("\thandle:%d\n", ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].characteristic[current_char_index].char_handle);
+            printf("char_id=%d\n", ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].characteristic[current_char_index].char_id);
+            printf("\tcurrent_server_index:%d, current_service_index:%d, current_char_index:%d\n", current_server_index, current_service_index, current_char_index);
+            printf("\thandle:%d\n", ql_app_ble_cb.ble_server[current_server_index].attr[current_service_index].characteristic[current_char_index].char_handle);
             break;
             
         case BSA_BLE_SE_START_EVT:
@@ -370,9 +370,9 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
             send_server_resp.status = p_data->ser_read.status;
             send_server_resp.handle = p_data->ser_read.handle;
             ql_prepare_send_data(&send_server_resp);
-            APP_INFO1("BSA_BLE_SE_READ_EVT: send_server_resp.conn_id:%d, send_server_resp.trans_id:%d", send_server_resp.conn_id, send_server_resp.trans_id, send_server_resp.status);
-            APP_INFO1("BSA_BLE_SE_READ_EVT: send_server_resp.status:%d,send_server_resp.auth_req:%d", send_server_resp.status,send_server_resp.auth_req);
-            APP_INFO1("BSA_BLE_SE_READ_EVT: send_server_resp.handle:%d, send_server_resp.offset:%d, send_server_resp.len:%d", send_server_resp.handle,send_server_resp.offset,send_server_resp.len );
+            log_i(LOG_BLE, "BSA_BLE_SE_READ_EVT: send_server_resp.conn_id:%d, send_server_resp.trans_id:%d", send_server_resp.conn_id, send_server_resp.trans_id, send_server_resp.status);
+            log_i(LOG_BLE, "BSA_BLE_SE_READ_EVT: send_server_resp.status:%d,send_server_resp.auth_req:%d", send_server_resp.status,send_server_resp.auth_req);
+            log_i(LOG_BLE, "BSA_BLE_SE_READ_EVT: send_server_resp.handle:%d, send_server_resp.offset:%d, send_server_resp.len:%d", send_server_resp.handle,send_server_resp.offset,send_server_resp.len );
             BSA_BleSeSendRsp(&send_server_resp);
             break;
             
@@ -390,7 +390,7 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
 			ApiBLETraceBuf((unsigned char *)g_NfBleMsg.aucLocalAddress,6);
 			g_NfBleMsg.ulBleStatus = BLE_CONNECT;
 			g_NfBleMsg.ulHandle = p_data->ser_open.conn_id;
-			APP_INFO1("ser_open.server_if:%d, ser_open.conn_id:%d, ser_open.reason:%d", p_data->ser_open.server_if, p_data->ser_open.conn_id, p_data->ser_open.reason);
+			log_o(LOG_BLE, "ser_open.server_if:%d, ser_open.conn_id:%d, ser_open.reason:%d", p_data->ser_open.server_if, p_data->ser_open.conn_id, p_data->ser_open.reason);
             
             break;
             
@@ -606,7 +606,7 @@ int ql_ble_server_add_char(tBSA_BLE_SE_ADDCHAR *p_ble_addchar_param)
     }
 
     ble_addchar_param.service_id = p_ble_addchar_param->service_id;
-    ble_addchar_param.is_descr = FALSE;
+    ble_addchar_param.is_descr = p_ble_addchar_param->is_descr;
     
     ble_addchar_param.char_uuid.len = p_ble_addchar_param->char_uuid.len;
     if(LEN_UUID_16 == p_ble_addchar_param->char_uuid.len)

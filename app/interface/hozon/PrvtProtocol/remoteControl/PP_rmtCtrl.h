@@ -183,19 +183,81 @@ typedef enum
 
 typedef struct
 {
-	size_t vehiclie_door_state;
-	size_t sunroof_state;
-	size_t electric_door_state;
-	size_t fine_car_state;
-	size_t charge_state;
-	size_t power_state;
-} bt_vihe_info_t;
+	int32_t charge_state;
+	int32_t charge_reservation;
+	int32_t reservation_hour;
+	int32_t reservation_minute;
+	int32_t remaining_charge_hour;
+	int32_t remaining_charge_minute;
+	float battery_temperature;
+} bt_vihe_charge_t;
 
 typedef struct
 {
-	size_t msg_type;
-	size_t state;
-	size_t execution_result;
+	int32_t vehicle_air_state;
+	float air_temperature;
+	int32_t air_conditioning_mode;
+	int32_t air_condition_reservation;
+	int32_t vehicle_mainseat_state;
+	int32_t vehicle_secondseat_state;
+	int32_t reservation_hour1;
+	int32_t reservation_minute1;
+	int32_t reservation_hour2;
+	int32_t reservation_minute2;
+	int32_t reservation_hour3;
+	int32_t reservation_minute3;
+	float vehicle_temperature;
+    float outside_temperature;
+    int32_t airwindshield;
+} bt_vihe_air_t;
+
+
+typedef struct
+{
+	int32_t vehicle_door_state;
+  	int32_t sunroof_state;
+  	int32_t electric_door_state;
+  	int32_t fine_car_state;
+  	int32_t power_control_state;
+  	int32_t remaining_capacity;
+  	int32_t remaining_mileage;
+	int32_t total_mileage;
+	int32_t car_gear_position;
+} bt_vihe_info_t;
+typedef struct
+{
+	int32_t ldoor1_state;
+	int32_t ldoor2_state;
+	int32_t rdoor1_state;
+	int32_t rdoor2_state;
+} bt_vihe_door_t;
+typedef struct
+{
+	float ltire_pressure1;
+	float ltire_temp1;
+	float ltire_pressure2;
+	float ltire_temp2;
+	float rtire_pressure1;
+	float rtire_temp1;
+	float rtire_pressure2;
+	float rtire_temp2;
+} bt_vihe_tire_t;
+
+typedef struct
+{
+	bt_vihe_info_t 	vihe_info;
+	bt_vihe_air_t 	vihe_air;
+	bt_vihe_charge_t vihe_charge;
+	bt_vihe_door_t vihe_door;
+	bt_vihe_tire_t vihe_tire;
+} bt_info_state_t;
+
+
+typedef struct
+{
+	int32_t msg_type;
+	int32_t state;
+	int32_t execution_result;
 } bt_ack_t;
 
 typedef struct
@@ -204,7 +266,7 @@ typedef struct
 	uint8_t cmd;
 	bt_ack_t cmd_state; // 0表示成功  1表示失败
 	uint8_t failtype;
-	bt_vihe_info_t state;
+	bt_info_state_t state;
 }__attribute__((packed))  PrvtProt_respbt_t; /*resp bt结构体*/
 
 typedef struct
@@ -421,7 +483,6 @@ extern unsigned char GetPP_rmtCtrl_Sleep(void);
 extern void PP_rmtCtrl_showSleepPara(void);
 extern int PP_rmtCtrl_vehicle_status_InformBt(unsigned char obj, unsigned char cmd);
 extern void PP_rmtCtrl_settestflag(uint8_t flag);
-extern uint8_t PP_rmtCtrl_gettestflag(void);
 extern void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result);
 
 #endif 

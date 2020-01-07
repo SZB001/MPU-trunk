@@ -78,6 +78,10 @@ typedef struct
 	uint8_t close_syscall_count;
 } pki_client;
 
+typedef struct{
+	uint8_t ivi_net_faultflag;
+	uint64_t ivi_net_timestamp;
+}ivi_link_fault;
 
 typedef struct{
 	uint8_t call_type;
@@ -130,11 +134,6 @@ typedef enum IVI_MSG_EVENT
 {
     IVI_MSG_GPS_EVENT = MPU_MID_IVI,
 } IVI_MSG_EVENT;
-
-typedef struct{
-        uint8_t ivi_net_faultflag;
-        uint64_t ivi_net_timestamp;
-}ivi_link_fault;
 
 /* initiaze thread communciation module */
 int ivi_init(INIT_PHASE phase);

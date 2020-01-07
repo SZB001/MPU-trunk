@@ -20,7 +20,7 @@ author        wangqinglong
 #define COM_APP_DATA_BT_DIR           		"/usrdata/bt/"
 #define COM_APP_SERVER_DATA          		"bt-daemon-socket"
 
-
+#define DEBUG_LQF
 
 
 #define HIBYTE(X)                       ((unsigned char)((X) >> 8))
@@ -123,6 +123,8 @@ typedef struct BLE_MEMBER
 	unsigned char       ucTransStatus;
 	unsigned char		ucFct;
 } BLE_MEMBER;
+
+
 
 extern ST_BT_API           stBtApi; 
 

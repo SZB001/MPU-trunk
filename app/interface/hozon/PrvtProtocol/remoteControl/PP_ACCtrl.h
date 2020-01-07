@@ -55,9 +55,20 @@ typedef struct
 	uint8_t  mask;
 } PP_rmtAc_Appointperiod_t; /*结构体*/
 
+
+typedef struct
+{
+	uint8_t  min;
+	uint8_t  hour;
+} PP_rmtAc_time_t; /*结构体*/
+
+typedef struct
+{
+	PP_rmtAc_time_t actime[3];
+} PP_rmtAc_time; /*结构体*/
+
 extern void PP_ACCtrl_init(void);
 extern int 	PP_ACCtrl_mainfunction(void *task);
-
 extern uint8_t PP_ACCtrl_start(void);
 extern uint8_t PP_ACCtrl_end(void);
 extern int SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody);
@@ -67,4 +78,6 @@ extern void PP_AcCtrl_acStMonitor(void *task);
 extern unsigned char GetPP_ACtrl_Sleep(void);
 extern int PP_ACCtrl_waketime(void);
 extern uint8_t PP_ACCtrl_cmdoff(void);
+extern unsigned char GetPP_ACCtrl_appointSt(void);
+extern unsigned char GetPP_ACCtrl_appointHour(PP_rmtAc_time *time);
 #endif 

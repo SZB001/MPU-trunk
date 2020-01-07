@@ -95,26 +95,12 @@ int app_ble_test_server_start(void)
     GKI_delay(1000);
 
     /*Create GATT Service*/
-    current_server_index = ql_app_ble_cb.current_server;
-    ble_create_param.server_if =  ql_app_ble_cb.ble_server[current_server_index].server_if;
-    ble_create_param.num_handle = 40;
-    ble_create_param.is_primary = TRUE;
-    ble_create_param.service_uuid.len = 0x2;
-    ble_create_param.service_uuid.uu.uuid16 = UUID_SERVCLASS_DEVICE_INFO; 
-     iRet = ql_ble_server_create_service(&ble_create_param);
-	if (-1 == iRet)
-	{
-		return -1;
-	}
-    GKI_delay(1000);
-	printf("********************************4\r\n");
-
-
 #if 1
     /*Create GATT Service*/
     current_server_index = ql_app_ble_cb.current_server;
     ble_create_param.server_if =  ql_app_ble_cb.ble_server[current_server_index].server_if;
     ble_create_param.num_handle = 40;
+	 ble_create_param.is_primary = TRUE;
   #if 0	
    ble_create_param.service_uuid.len = 0x2;
    ble_create_param.service_uuid.uu.uuid16 = 0x0001; 

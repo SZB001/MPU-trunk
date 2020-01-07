@@ -170,6 +170,8 @@ set_exit:
     ack__free_unpacked(response, NULL);
     return res;
 }
+
+
 /******************************************************************************
 * Function Name  : bt_set_init
 * Description	 :	
@@ -186,6 +188,7 @@ int bt_vihe_info_response_set(bt_send_t        *src, uint8_t *buf, size_t *bufsz
         return YT_ERR;
     }
 
+#if 0
 	vehicle_infor__init(response);
 	response->vehiclie_door_state = src->vehi_info.vehiclie_door_state;
 	response->sunroof_state 	  = src->vehi_info.sunroof_state ;
@@ -200,6 +203,53 @@ int bt_vihe_info_response_set(bt_send_t        *src, uint8_t *buf, size_t *bufsz
 	log_i(LOG_BLE, "src->vehi_info.fine_car_state =%d", src->vehi_info.fine_car_state);
 	log_i(LOG_BLE, "src->vehi_info.charge_state =%d", src->vehi_info.charge_state);
 	log_i(LOG_BLE, "src->vehi_info.power_state =%d", src->vehi_info.power_state);
+#endif
+
+	vehicle_infor__init(response);
+
+	//response->vehiclie_door_state = src->vehi_info.vehiclie_door_state;
+	response->sunroof_state 	  = src->vehi_info.sunroof_state ;
+	response->electric_door_state = src->vehi_info.electric_door_state;
+	response->fine_car_state	  = src->vehi_info.fine_car_state;
+	//response->vehicle_lrdoor_state= src->vehi_info.vehicle_lrdoor_state;
+	response->vehicle_door_state  = src->vehi_info.vehicle_door_state;
+	response->remaining_mileage	  = src->vehi_info.remaining_mileage;
+	response->power_control_state = src->vehi_info.power_control_state;
+	response->remaining_capacity  = src->vehi_info.remaining_capacity;
+	response->remaining_mileage  = src->vehi_info.remaining_mileage;
+	response->total_mileage  = src->vehi_info.total_mileage;
+	response->car_gear_position  = src->vehi_info.car_gear_position;
+	//response->charge_state 		  = src->vehi_info.charge_state;
+	//response->power_state         = src->vehi_info.power_state;
+    log_i(LOG_BLE, "src->vehi_info.vehicle_door_state = %d", src->vehi_info.vehicle_door_state);
+	log_i(LOG_BLE, "src->vehi_info.sunroof_state =%d", src->vehi_info.sunroof_state);
+
+	log_i(LOG_BLE, "src->vehi_info.electric_door_state = %d", src->vehi_info.electric_door_state);
+	log_i(LOG_BLE, "src->vehi_info.fine_car_state =%d", src->vehi_info.fine_car_state);
+	//log_i(LOG_BLE, "src->vehi_info.charge_state =%d", src->vehi_info.charge_state);
+	log_i(LOG_BLE, "src->vehi_info.power_control_state =%d", src->vehi_info.power_control_state);
+
+
+	if(pb_vihe_charge_set(&response->charge_infor, src))
+	{
+		 goto set_exit0;
+	}
+
+	if(pb_vihe_air_set(&response->air_infor, src))
+	{
+		 goto set_exit0;
+	}
+
+	
+	if(pb_vihe_door_set(&response->lrdoor_infor, src))
+	{
+		 goto set_exit0;
+	}
+
+	if(pb_vihe_tire_set(&response->tire_infor, src))
+	{
+		 goto set_exit0;
+	}
 
 	len = vehicle_infor__get_packed_size(response);
 	if (len > *bufsz)
@@ -218,6 +268,7 @@ set_exit:
     vehicle_infor__free_unpacked(response, NULL);
     return res;
 }
+
 /******************************************************************************
 * Function Name  : bt_set_init
 * Description	 :	
@@ -608,7 +659,7 @@ int set_cmd (uint8_t *buf, size_t len)
 * Input 		 :	
 * Return		 : NONE
 ******************************************************************************/
-int bt_send_cmd_pack(bt_ack_t state, bt_vihe_info_t indata,  uint8_t *out, size_t *out_len)
+int bt_send_cmd_pack(bt_ack_t state, bt_info_state_t indata,  uint8_t *out, size_t *out_len)
 {
 	int temp_len = 0;
 	temp_len = 1024;
@@ -627,18 +678,39 @@ int bt_send_cmd_pack(bt_ack_t state, bt_vihe_info_t indata,  uint8_t *out, size_
 	}
 	else if (APPLICATION_HEADER__MESSAGE_TYPE__Vehicle_Infor == g_hz_protocol.hz_send.msg_type) 
 	{
-		log_i(LOG_BLE, "g_hz_protocol.hz_send.vehi_info.charge_state = %d \r\n",g_hz_protocol.hz_send.vehi_info.charge_state);
-		log_i(LOG_BLE, "indata.electric_door_state = %d \r\n",indata.electric_door_state);
-		log_i(LOG_BLE, "indata.fine_car_state = %d \r\n",indata.fine_car_state);
-		log_i(LOG_BLE, "indata.power_state = %d \r\n",indata.power_state);
-		log_i(LOG_BLE, "indata.sunroof_state = %d \r\n",indata.sunroof_state);
-		log_i(LOG_BLE, "indata.vehiclie_door_state = %d \r\n",indata.vehiclie_door_state);
-		g_hz_protocol.hz_send.vehi_info.charge_state 			= indata.charge_state;
-		g_hz_protocol.hz_send.vehi_info.electric_door_state		= indata.electric_door_state;
-		g_hz_protocol.hz_send.vehi_info.fine_car_state 			= indata.fine_car_state;
-		g_hz_protocol.hz_send.vehi_info.power_state				= indata.power_state;
-		g_hz_protocol.hz_send.vehi_info.sunroof_state 			= indata.sunroof_state;
-		g_hz_protocol.hz_send.vehi_info.vehiclie_door_state		= indata.vehiclie_door_state;
+	   #if 1
+		log_i(LOG_BLE, "vehicle_door_state = %d",indata.vihe_info.vehicle_door_state);
+		log_i(LOG_BLE, "sunroof_state = %d",indata.vihe_info.sunroof_state);
+		log_i(LOG_BLE, "electric_door_state = %d",indata.vihe_info.electric_door_state);
+		log_i(LOG_BLE, "fine_car_state = %d",indata.vihe_info.fine_car_state);
+		log_i(LOG_BLE, "power_control_state = %d",indata.vihe_info.power_control_state);
+		log_i(LOG_BLE, "remaining_capacity = %d",indata.vihe_info.remaining_capacity);
+		//log_i(LOG_BLE, "vehicle_lrdoor_state = %d",indata.vihe_info.vehicle_lrdoor_state);
+		log_i(LOG_BLE, "vehicle_air_state = %d",indata.vihe_air.vehicle_air_state);
+		log_i(LOG_BLE, "air_temperature = %d",indata.vihe_air.air_temperature);
+		log_i(LOG_BLE, "air_conditioning_mode = %d",indata.vihe_air.air_conditioning_mode);
+		log_i(LOG_BLE, "air_condition_reservation = %d",indata.vihe_air.air_condition_reservation);
+		log_i(LOG_BLE, "vehicle_mainseat_state = %d",indata.vihe_air.vehicle_mainseat_state);
+		log_i(LOG_BLE, "vehicle_secondseat_state = %d",indata.vihe_air.vehicle_secondseat_state);
+		log_i(LOG_BLE, "reservation_hour1 = %d",indata.vihe_air.reservation_hour1);
+		log_i(LOG_BLE, "reservation_minute1 = %d",indata.vihe_air.reservation_minute1);
+		log_i(LOG_BLE, "reservation_hour2 = %d",indata.vihe_air.reservation_hour2);
+		log_i(LOG_BLE, "reservation_minute2 = %d",indata.vihe_air.reservation_minute2);
+		log_i(LOG_BLE, "reservation_hour3 = %d",indata.vihe_air.reservation_hour3);
+		log_i(LOG_BLE, "reservation_minute3 = %d",indata.vihe_air.reservation_minute3);
+		log_i(LOG_BLE, "charge_state = %d",indata.vihe_charge.charge_state);
+		log_i(LOG_BLE, "charge_reservation = %d",indata.vihe_charge.charge_reservation);
+		log_i(LOG_BLE, "reservation_hour = %d",indata.vihe_charge.reservation_hour);
+		log_i(LOG_BLE, "reservation_minute = %d",indata.vihe_charge.reservation_minute);
+		log_i(LOG_BLE, "remaining_charge_hour = %d",indata.vihe_charge.remaining_charge_hour);
+		log_i(LOG_BLE, "remaining_charge_minute = %d",indata.vihe_charge.remaining_charge_minute);
+
+	#endif
+		memcpy(&g_hz_protocol.hz_send.vehi_info, &indata.vihe_info,sizeof(bt_vihe_info_t));
+		memcpy(&g_hz_protocol.hz_send.vehi_charge, &indata.vihe_charge,sizeof(bt_vihe_charge_t));
+		memcpy(&g_hz_protocol.hz_send.vehi_air, &indata.vihe_air,sizeof(bt_vihe_air_t));
+		memcpy(&g_hz_protocol.hz_send.vehi_door, &indata.vihe_door,sizeof(bt_info_state_t));
+		memcpy(&g_hz_protocol.hz_send.vehi_tire, &indata.vihe_tire,sizeof(bt_vihe_tire_t));
 	}
 	else
 	{
@@ -742,6 +814,7 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
 		
 	    if (APPLICATION_HEADER__MESSAGE_TYPE__VEHICLE_SECURITY_FUNC == request->head->msg_type)
 	    {
+	        unsigned char url_adr[30] = "/usrdata/pem/tbox.crl";
 			AuthenticationInfo *auth_info =  authentication_info__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 			if (auth_info->authentication_data.len < 50)
 			{
@@ -752,8 +825,8 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
 			memset(Temp, 0, sizeof(Temp));
 			memcpy(Temp, (char *)auth_info->authentication_data.data,  auth_info->authentication_data.len);
 			ApiBLETraceBuf((unsigned char *)Temp, auth_info->authentication_data.len);
-			iRet = HzRequestInfo ((char *)Temp, (char *)&vin, NULL, NULL, NULL,  (char *)BackInfo, &info_len, sekey, &se_len);
-
+			iRet = HzRequestInfo ((char *)Temp, (char *)&url_adr, (char *)&vin, NULL, NULL, NULL,  (char *)BackInfo, &info_len, sekey, &se_len);
+			
 			if(iRet)
 			{
 				log_i(LOG_BLE, "HzRequestInfo sucess \r\n");

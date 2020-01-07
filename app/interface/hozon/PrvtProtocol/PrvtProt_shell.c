@@ -68,7 +68,6 @@ static int PP_shell_SetNTPTime(int argc, const char **argv);
 static int PP_shell_rmtdiagtest(int argc, const char **argv);
 static int PP_shell_SetRmtCfgapn1(int argc, const char **argv);
 static int PP_shell_SetRmtCfgficm(int argc, const char **argv);
-static int PP_shell_SetTestflag(int argc, const char **argv);
 static int PP_shell_showpldata(int argc, const char **argv);
 static int PP_shell_deleteCipher(int argc, const char **argv);
 static int PP_shell_setFIPReq(int argc, const char **argv);
@@ -125,7 +124,6 @@ void PrvtProt_shell_init(void)
     shell_cmd_register("hozon_setntptime", PP_shell_SetNTPTime, "set ntp time");
 
     shell_cmd_register("hozon_rmtdiagtest", PP_shell_rmtdiagtest, "rmt diag test");
-	shell_cmd_register("hozon_testflag", PP_shell_SetTestflag, "rhozon_testflag");
 
     shell_cmd_register("hozon_pldata", PP_shell_showpldata, "show production line data");
     shell_cmd_register("hozon_delcipher", PP_shell_deleteCipher, "delete cipher");
@@ -746,21 +744,6 @@ static int PP_shell_SetNTPTime(int argc, const char **argv)
     return 0;
 }
 
-static int PP_shell_SetTestflag(int argc, const char **argv)
-{
-    unsigned int obj;
-    if (argc != 1)
-    {
-        shellprintf(" usage: HOZON_PP_SetRemoteCfgEnable <remote config enable>\r\n");
-        return -1;
-    }
-
-	sscanf(argv[0], "%u", &obj);
-  
-	PP_rmtCtrl_settestflag((uint8_t)obj);
-    sleep(1);
-    return 0;
-}
 
 /*
 * 获取产线数据，pki相关

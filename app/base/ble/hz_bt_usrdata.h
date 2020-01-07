@@ -137,20 +137,83 @@ typedef struct
 
 typedef struct
 {
-	size_t msg_type;
-	size_t state;
-	size_t execution_result;
+	int32_t msg_type;
+	int32_t state;
+	int32_t execution_result;
 } bt_ack_t;
+typedef struct
+{
+	int32_t ldoor1_state;
+	int32_t ldoor2_state;
+	int32_t rdoor1_state;
+	int32_t rdoor2_state;
+} bt_vihe_door_t;
 
 typedef struct
 {
-	size_t vehiclie_door_state;
-	size_t sunroof_state;
-	size_t electric_door_state;
-	size_t fine_car_state;
-	size_t charge_state;
-	size_t power_state;
+	int32_t vehicle_door_state;
+  	int32_t sunroof_state;
+  	int32_t electric_door_state;
+  	int32_t fine_car_state;
+  	int32_t power_control_state;
+  	int32_t remaining_capacity;
+  	int32_t remaining_mileage;
+	int32_t total_mileage;
+	int32_t car_gear_position;
 } bt_vihe_info_t;
+
+typedef struct
+{
+	int32_t charge_state;
+	int32_t charge_reservation;
+	int32_t reservation_hour;
+	int32_t reservation_minute;
+	int32_t remaining_charge_hour;
+	int32_t remaining_charge_minute;
+	float battery_temperature;
+} bt_vihe_charge_t;
+
+
+typedef struct
+{
+	int32_t vehicle_air_state;
+	float air_temperature;
+	int32_t air_conditioning_mode;
+	int32_t air_condition_reservation;
+	int32_t vehicle_mainseat_state;
+	int32_t vehicle_secondseat_state;
+	int32_t reservation_hour1;
+	int32_t reservation_minute1;
+	int32_t reservation_hour2;
+	int32_t reservation_minute2;
+	int32_t reservation_hour3;
+	int32_t reservation_minute3;
+	float vehicle_temperature;
+    float outside_temperature;
+    int32_t airwindshield;
+} bt_vihe_air_t;
+typedef struct
+{
+	float ltire_pressure1;
+	float ltire_temp1;
+	float ltire_pressure2;
+	float ltire_temp2;
+	float rtire_pressure1;
+	float rtire_temp1;
+	float rtire_pressure2;
+	float rtire_temp2;
+} bt_vihe_tire_t;
+
+typedef struct
+{
+	bt_vihe_info_t 	vihe_info;
+	bt_vihe_air_t 	vihe_air;
+	bt_vihe_charge_t vihe_charge;
+	bt_vihe_door_t vihe_door;
+	bt_vihe_tire_t vihe_tire; 
+} bt_info_state_t;
+
+
 typedef struct
 {
 	uint8_t protocol_version; 
@@ -192,6 +255,10 @@ typedef struct
     uint8_t  ver_data1[BT_BYTE_SZ_1024 -6];     /* data area */
 	bt_ack_t ack;
 	bt_vihe_info_t 		vehi_info;
+	bt_vihe_charge_t 	vehi_charge;
+	bt_vihe_air_t 		vehi_air;
+	bt_vihe_door_t 		vehi_door;
+	bt_vihe_tire_t 		vehi_tire;
 } bt_send_t;
 
 typedef struct
@@ -225,9 +292,15 @@ int pb_TimeStamp_set(TimeStamp **des, bt_send_t *src);
 int pb_ack_set(ACK **des, bt_send_t *src);
 
 void reset_hz_data(void);
-int bt_send_cmd_pack(bt_ack_t state, bt_vihe_info_t indata,  uint8_t *out, size_t *out_len);
+int bt_send_cmd_pack(bt_ack_t state, bt_info_state_t indata,  uint8_t *out, size_t *out_len);
 unsigned char bt_get_auth_flag(void);
 
 int pb_vihe_info_set(VehicleInfor **des, bt_send_t *src);
+int pb_vihe_charge_set(VehicleChargeInfor **des, bt_send_t *src);
+int pb_vihe_air_set(VehicleAirInfor **des, bt_send_t *src);
+int pb_vihe_tire_set(VehicleTireInfor **des, bt_send_t *src);
+int pb_vihe_door_set(VehicleLrdoorInfor **des, bt_send_t *src);
+
+
 
 #endif /* NGCP_PB_USR_H_ */
