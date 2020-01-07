@@ -34,8 +34,9 @@ static int PP_get_remote_clearDTCresult_test(int argc, const char **argv)
     shellprintf("argv[0]:%s", argv[0]);
     StrToHex(request_msg, (unsigned char *)argv[0], strlen(argv[0])/2);
     shellprintf("request_msg:%x", request_msg[0]);
-    
-    shellprintf("PP_get_remote_clearDTCresult:%d", PP_get_remote_clearDTCresult(request_msg[0]));
+
+    unsigned char failureType = 0;
+    shellprintf("PP_get_remote_clearDTCresult:%d", PP_get_remote_clearDTCresult(request_msg[0], &failureType));
 
     return 0;
 

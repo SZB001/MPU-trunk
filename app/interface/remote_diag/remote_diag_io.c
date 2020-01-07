@@ -10,6 +10,7 @@
 #include "remote_diag_api.h"
 #include "remote_diag.h"
 #include "hozon_PP_api.h"
+#include "../hozon/PrvtProtocol/remoteDiag/PrvtProt_rmtDiag.h"
 
 #define REMOTE_DIAG_SERVICE_NUM 6
 #define REMOTE_DIAG_TO_SDK_MSG_LEN 1000
@@ -362,7 +363,7 @@ return:
 const char clear_result_success = 0;
 const char clear_result_failed = 1;
 */
-int PP_get_remote_clearDTCresult(uint8_t obj)
+int PP_get_remote_clearDTCresult(uint8_t obj, unsigned char *failureType)
 {
     
     const char clear_result_success = 0;
@@ -386,8 +387,19 @@ int PP_get_remote_clearDTCresult(uint8_t obj)
             if(REMOTE_DIAG_CMD_RESULT_OK == response_arr->remote_diag_response[response_size].result_type)
             {
                 ret = clear_result_success;
+                *failureType = PP_RMTDIAG_ERROR_NONE;
             }
-
+            else if(REMOTE_DIAG_CMD_RESULT_NEGATIVE == response_arr->remote_diag_response[response_size].result_type)
+            {
+                ret = clear_result_failed;
+                *failureType = PP_RMTDIAG_ERROR_ECURESERRCODE;
+            }
+            else if(REMOTE_DIAG_CMD_RESULT_TIMEOUT == response_arr->remote_diag_response[response_size].result_type)
+            {
+                ret = clear_result_failed;
+                *failureType = PP_RMTDIAG_ERROR_ECUNORES;
+            }
+            
             /* 读取之后就销毁 */
             int response_cpy_size =  response_size;
             for(;response_cpy_size<response_arr->remote_diag_response_size;response_cpy_size++)
@@ -400,7 +412,8 @@ int PP_get_remote_clearDTCresult(uint8_t obj)
             break;
         }
     }
-    
+
+    log_i(LOG_REMOTE_DIAG, "ret:%d, failureType:%d", ret, *failureType);
     return ret;
 }
 
@@ -457,6 +470,17 @@ int PP_get_remote_result(uint8_t obj, PP_rmtDiag_Fault_t * pp_rmtdiag_fault)
                 }
                 /* 执行结果中有该ECU的结果，且该结果正常，则执行成功，其它情况都认为执行失败 */
                 pp_rmtdiag_fault->sueecss = 1;
+                pp_rmtdiag_fault->failureType = PP_RMTDIAG_ERROR_NONE;
+            }
+            else if(REMOTE_DIAG_CMD_RESULT_NEGATIVE == response_arr->remote_diag_response[response_size].result_type)
+            {
+                pp_rmtdiag_fault->sueecss = 0;
+                pp_rmtdiag_fault->failureType = PP_RMTDIAG_ERROR_ECURESERRCODE;
+            }
+            else if(REMOTE_DIAG_CMD_RESULT_TIMEOUT == response_arr->remote_diag_response[response_size].result_type)
+            {
+                pp_rmtdiag_fault->sueecss = 0;
+                pp_rmtdiag_fault->failureType = PP_RMTDIAG_ERROR_ECUNORES;
             }
 
             /* 读取之后就销毁 */
@@ -472,6 +496,7 @@ int PP_get_remote_result(uint8_t obj, PP_rmtDiag_Fault_t * pp_rmtdiag_fault)
         }
     }
     pp_rmtdiag_fault->faultNum = dtc_num;
+    log_i(LOG_REMOTE_DIAG, "pp_rmtdiag_fault->sueecss:%d, failureType:%d", pp_rmtdiag_fault->sueecss, pp_rmtdiag_fault->failureType);
     return ret;
 }
 

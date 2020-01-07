@@ -130,7 +130,7 @@ unsigned char getPPrmtDiagCfg_clearDTCresult(unsigned char obj,unsigned char *fa
 {
 	int result;
 
-	result = PP_get_remote_clearDTCresult(obj);
+	result = PP_get_remote_clearDTCresult(obj, failureType);
 	if(!result)
 	{
 		return 1;

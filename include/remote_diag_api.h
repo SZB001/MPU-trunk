@@ -36,6 +36,6 @@ return:
 const char clear_result_success = 0;
 const char clear_result_failed = 1;
 */
-int PP_get_remote_clearDTCresult(uint8_t obj);
+int PP_get_remote_clearDTCresult(uint8_t obj, unsigned char *failureType);
 
 #endif //__REMOTE_DIAG_API_H__

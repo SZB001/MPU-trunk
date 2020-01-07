@@ -1107,18 +1107,53 @@ int uds_did_get_manufacture_date(unsigned char *did, unsigned int len)
         did[did_cur_len] = 0x00;
         did_cur_len++;
     }
-    else if(SN[9] > 'Y')
+    else if(SN[9] > 'Z')
     {
         did[did_cur_len] = 0x00;
         did_cur_len++;
         did[did_cur_len] = 0x00;
         did_cur_len++;
     }
-    else
+    else if( (SN[9] == 'I') || (SN[9] == 'O') || (SN[9] == 'Q') || (SN[9] == 'X') || (SN[9] == 'Z') )
+    {
+        did[did_cur_len] = 0x00;
+        did_cur_len++;
+        did[did_cur_len] = 0x00;
+        did_cur_len++;
+    }
+    else if(SN[9] < 'I')
     {
         did[did_cur_len] = hex_to_BCD(20);
         did_cur_len++;
         did[did_cur_len] = hex_to_BCD(SN[did_cur_len+8] - 0x41 + 19);
+        did_cur_len++;
+    }
+    else if(SN[9] < 'O')
+    {
+        did[did_cur_len] = hex_to_BCD(20);
+        did_cur_len++;
+        did[did_cur_len] = hex_to_BCD(SN[did_cur_len+8] - 0x41 + 19 -1);
+        did_cur_len++;
+    }
+    else if(SN[9] < 'Q')
+    {
+        did[did_cur_len] = hex_to_BCD(20);
+        did_cur_len++;
+        did[did_cur_len] = hex_to_BCD(SN[did_cur_len+8] - 0x41 + 19 - 2);
+        did_cur_len++;
+    }
+    else if(SN[9] < 'X')
+    {
+        did[did_cur_len] = hex_to_BCD(20);
+        did_cur_len++;
+        did[did_cur_len] = hex_to_BCD(SN[did_cur_len+8] - 0x41 + 19 - 3);
+        did_cur_len++;
+    }
+    else if(SN[9] < 'Z')
+    {
+        did[did_cur_len] = hex_to_BCD(20);
+        did_cur_len++;
+        did[did_cur_len] = hex_to_BCD(SN[did_cur_len+8] - 0x41 + 19 - 4);
         did_cur_len++;
     }
     
@@ -1127,12 +1162,20 @@ int uds_did_get_manufacture_date(unsigned char *did, unsigned int len)
     /*Conversion month according to the SN rules of the HOZON*/
     if(sscanf(SN + 10, "%1x", &mdate_month) == 1)
     {
-        did[did_cur_len] = mdate_month;
-        did_cur_len++;
+        if(mdate_month > 0x0C)
+        {
+            did[did_cur_len] = 0x00;
+            did_cur_len++;
+        }
+        else
+        {
+            did[did_cur_len] = hex_to_BCD(mdate_month);
+            did_cur_len++;
+        }
     }
     else
     {
-        did[did_cur_len] = 0x00;/*异常情况写0*/
+        did[did_cur_len] = 0x00;
         did_cur_len++;
     }
 
@@ -1140,12 +1183,20 @@ int uds_did_get_manufacture_date(unsigned char *did, unsigned int len)
     /*Conversion day according to the SN rules of the HOZON*/
     if(sscanf(SN + 11, "%2x", &mdate_day) == 1)
     {
-        did[did_cur_len] = mdate_day;
-        did_cur_len++;
+        if(mdate_day>31)
+        {
+            did[did_cur_len] = 0x00;
+            did_cur_len++;
+        }
+        else
+        {
+            did[did_cur_len] = mdate_day;
+            did_cur_len++;
+        }
     }
     else
     {
-        did[did_cur_len] = 0x00;/*异常情况写0*/
+        did[did_cur_len] = 0x00;
         did_cur_len++;
 
     }
@@ -1209,7 +1260,7 @@ int uds_did_get_hw_version(unsigned char *did, unsigned int len)
 }
 int uds_did_get_tester_sn(unsigned char *did, unsigned int len)
 {
-    unsigned int length = DID_LEN_SN;
+    unsigned int length = DID_LEN_TESTER_SN;
 
     if (DID_LEN_TESTER_SN > len)
     {
