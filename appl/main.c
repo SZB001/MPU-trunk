@@ -92,72 +92,72 @@ int appl_start_app(int *startup_cnt_ptr)
             all the pthread of app must startup in 5S.
             */
             while(1)
-			{
-				usleep(500000);
+            {
+                usleep(500000);
 
-				time += 500;
-					
-				//wait for child to finished
-				ret = waitpid(app_pid, &statchild, WNOHANG);
+                time += 500;
+                    
+                //wait for child to finished
+                ret = waitpid(app_pid, &statchild, WNOHANG);
                 
-				/* the child process is running */
-				if( 0 == ret )
-				{
-				    if( NULL != appl_startup_status_addr )
-	                {
-		                ret = shm_read(appl_startup_status_addr, (unsigned char *)start_status, sizeof(start_status));
-		                if (ret != 0)
-		                {
-		                    log_e(LOG_APPL, "read startup shm failed, ret:%08x", ret);
-							break;
-		                }
-		                else
-		                {
-		                    if ( 0 != strncmp(start_status, "OK", strlen("OK")) )
-		                    {
-		                        /* tbox_app.bin×÷?a×ó??3ì￡????ˉoóAPP_STARTUP_TIME???ú??óDíù12?í?ú′??DD′?°OK?± */
-		                        if( time > APP_STARTUP_TIME * 1000 )
-		                        {
-		                        	log_e(LOG_APPL, "tbox app status is NOK");
-		                        	return 1;
-		                        }
-								else
-								{
-									continue;
-								}
-		                    }
-		                    else
-		                    {
-		                        log_o(LOG_APPL, "tbox app status is OK");
+                /* the child process is running */
+                if( 0 == ret )
+                {
+                    if( NULL != appl_startup_status_addr )
+                    {
+                        ret = shm_read(appl_startup_status_addr, (unsigned char *)start_status, sizeof(start_status));
+                        if (ret != 0)
+                        {
+                            log_e(LOG_APPL, "read startup shm failed, ret:%08x", ret);
+                            break;
+                        }
+                        else
+                        {
+                            if ( 0 != strncmp(start_status, "OK", strlen("OK")) )
+                            {
+                                /* tbox_app.bin作为子进程，启动后APP_STARTUP_TIME秒内没有往共享内存中写“OK” */
+                                if( time > APP_STARTUP_TIME * 1000 )
+                                {
+                                    log_e(LOG_APPL, "tbox app status is NOK");
+                                    return 1;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                log_o(LOG_APPL, "tbox app status is OK");
 
-                                /* ??3y????′?êy￡?·à?1?ó??í? */
+                                /* 清除重启次数，防止误回退 */
                                 *startup_cnt_ptr = 0;
 
-                                /* éy??oó￡?è?APP3é1|?ü?eà′￡??òé?3y???°APP?￠2?êyμ?±?·Y?·??￡?3ìDò±?à￡3′?oó￡?
-                                ??1?ê±?D???·??2?′??ú￡??ìD?ì?μ?start app?′DD￡?±ü?aóéóúò?D?ì?êa?-òòμ???TBOX
-                                ?ú???a?ú60???ú￡?APP??è￥D′12?í?ú′?￡???±???í? */
+                                /* 升级后，若APP成功跑起来，则删除之前APP、参数的备份路径，程序奔溃3次后，
+                                回滚时判断路径不存在，继续跳到start app执行，避免由于一些特殊原因导致TBOX
+                                在刚开机60秒内，APP没去写共享内存，而被回退 */
                                 ret = dir_remove_path(COM_APP_PRE_DIR);
                                 if (ret != 0)
                                 {
                                     log_e(LOG_APPL, "remove previous dir failed, path:%s, ret:0x%08x",
                                           COM_APP_PRE_DIR, ret);
                                 }
-								break;
-		                    }
-		                }
-	                }
-				}
+                                break;
+                            }
+                        }
+                    }
+                }
                 
-                /* ×ó??3ì???ˉoó?′?-1yAPP_STARTUP_TIME??3?ê±ò??-í?3?￡?
-                ?a???é??3????úó?pkg°üéy??￡?éy??oóμ?appóD?êìa￡??ü2??eà′￡?
-                í¨3￡APPL?á?úá?D?3′?ê§°üoó??°?±???í?μ?éy???°μ?°?±? */
-				else
-				{
-				    log_e(LOG_APPL, "tbox app exit");
+                /* 子进程启动后未经过APP_STARTUP_TIME秒超时已经退出，
+                这种情况出现在用pkg包升级，升级后的app有问题，跑不起来，
+                通常APPL会在连续3次失败后将版本回退到升级前的版本 */
+                else
+                {
+                    log_e(LOG_APPL, "tbox app exit");
                     return 1;
-					//break;
-				}
-   			}
+                    //break;
+                }
+               }
 
             //wait for child to finished
             wait(&statchild);
@@ -346,7 +346,6 @@ int appl_overlap(const char *src_dir, const char *dst_dir)
     return 0;
 }
 
-
 int main(int argc, char **argv)
 {
     int ret;
@@ -355,7 +354,7 @@ int main(int argc, char **argv)
     appl_startup_status_addr = shm_create(COM_APP_STARTUP_FILE, O_CREAT | O_TRUNC | O_RDWR, 16);
     if( NULL == appl_startup_status_addr )
     {
-        log_e(LOG_APPL, "create shm failed");    
+        log_e(LOG_APPL, "create shm failed");
     }
 
     /* if upgrade directory is good, copy it to current directory */
@@ -425,8 +424,8 @@ int main(int argc, char **argv)
 
         dir_update_commit(COM_APP_CUR_DIR);
 
-		/*backup the current file to another zone*/
-		ret = dir_copy(COM_APP_CUR_DIR, COM_DATA_CUR_DIR);
+        /*backup the current file to another zone*/
+        ret = dir_copy(COM_APP_CUR_DIR, COM_DATA_CUR_DIR);
 
         if (ret != 0)
         {
@@ -442,7 +441,7 @@ int main(int argc, char **argv)
         log_e(LOG_APPL, "remove upgrade dir failed, path:%s, ret:0x%08x",
               COM_APP_UPG_DIR, ret);
     }
-	
+    
     if (dir_exists("/usrdata/cache"))
     {
         ret = dir_remove_path("/usrdata/cache");
@@ -454,25 +453,26 @@ int main(int argc, char **argv)
     }
 
 start_app:
-	//if(!dir_get_status(COM_DATA_CUR_DIR) || !dir_get_status(COM_DATA_CUR_CFG_DIR))
-	if(!dir_get_status(COM_DATA_CUR_DIR))
-	{
-		ret = dir_copy(COM_APP_CUR_DIR, COM_DATA_CUR_DIR);
-		
-		if (ret != 0)
-		{
-			log_e(LOG_APPL, "backup to /usrdata/current failed, ret:0x%08x", ret);
-		}
-	}
-	if(!dir_get_status(COM_APP_CUR_DIR) && !dir_get_status(COM_APP_PRE_DIR))
-	{
-		ret = dir_copy(COM_DATA_CUR_DIR, COM_APP_CUR_DIR);
-	
-		if (ret != 0)
-		{
-			log_e(LOG_APPL, "usrdata rollback to usrapp failed, ret:0x%08x", ret);
-		}
-	}
+    if((!dir_get_status(COM_DATA_CUR_DIR) || !dir_get_status(COM_DATA_CUR_CFG_DIR)) && dir_get_status(COM_APP_CUR_DIR))
+    {
+        ret = dir_copy(COM_APP_CUR_DIR, COM_DATA_CUR_DIR);
+        log_o(LOG_APPL, "copy \"%s\" to \"%s\"",COM_APP_CUR_DIR,COM_DATA_CUR_DIR);
+        if (ret != 0)
+        {
+            log_e(LOG_APPL, "backup to /usrdata/current failed, ret:0x%08x", ret);
+        }
+    }
+    
+    /* /usrapp/current path and /usrapp/previous are not good,and /usrdata/current path is good */
+    if(!dir_get_status(COM_APP_CUR_DIR) && !dir_get_status(COM_APP_PRE_DIR) && dir_get_status(COM_DATA_CUR_DIR))
+    {
+        log_o(LOG_APPL,"%s path is not good,copy %s to %s",COM_APP_CUR_DIR,COM_DATA_CUR_DIR,COM_APP_CUR_DIR);
+        ret = dir_copy(COM_DATA_CUR_DIR, COM_APP_CUR_DIR);
+        if (ret != 0)
+        {
+            log_e(LOG_APPL, "usrdata rollback to usrapp failed, ret:0x%08x", ret);
+        }
+    }
 
     /* if current directory is good, start app manager */
     if (dir_get_status(COM_APP_CUR_DIR) && (!dir_is_empty(COM_APP_CUR_DIR)) )
@@ -561,15 +561,15 @@ roll_back:
 
         dir_update_commit(COM_APP_CUR_DIR);
 
-		/*rollback the current file to another zone*/
-		ret = dir_copy(COM_APP_CUR_DIR, COM_DATA_CUR_DIR);
+        /*rollback the current file to another zone*/
+        ret = dir_copy(COM_APP_CUR_DIR, COM_DATA_CUR_DIR);
 
         if (ret != 0)
         {
             log_e(LOG_APPL, "rollack usrdata file failed, ret:0x%08x", ret);
             goto exit;
         }
-		
+        
         goto start_app;
     }
     else
