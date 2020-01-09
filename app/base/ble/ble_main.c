@@ -29,6 +29,7 @@
 #include "cm256_if.h"
 #include "hz_bt_usrdata.h"
 #include "hozon_PP_api.h"
+#include "ql_cm256sm_ble_sleep.h"
 #include <unistd.h>
 #include<sys/types.h>
 
@@ -775,6 +776,8 @@ static void *ble_main(void)
                     { 
                        
                        g_iBleSleep = 1;
+					   ql_bt_unlock_wakelock();
+					   log_i(LOG_BLE, "sleep******BLE***************");
                        // if (1 == g_BleContr.ucSleepCloseBle)
                        {
                           //stBtApi.Close();
