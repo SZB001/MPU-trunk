@@ -30,6 +30,9 @@
 #include "hz_bt_usrdata.h"
 #include "hozon_PP_api.h"
 #include "ql_cm256sm_ble_sleep.h"
+
+
+
 #include <unistd.h>
 #include<sys/types.h>
 
@@ -747,10 +750,23 @@ static void *ble_main(void)
 						}
 						else
 						{
+						    stBtApi.LinkDrop();
+							g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
+							log_e(LOG_BLE, "stBtApi.LinkDrop");
 							stBtApi.Init();
 							g_BleMember.ucTransStatus = BLE_INIT_STATUS;
 							reset_hz_data();
 							log_i(LOG_BLE, "data err");
+						}
+
+						if (BT_AUTH_FAIL == bt_get_auth_flag())
+						{
+							stBtApi.LinkDrop();
+							g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
+							stBtApi.Init();
+							g_BleMember.ucTransStatus = BLE_INIT_STATUS;
+							reset_hz_data();
+							log_e(LOG_BLE, "stBtApi.LinkDrop");
 						}
 					}
 					else if (BLE_MSG_CONNECT == msgheader.msgid)
@@ -777,7 +793,6 @@ static void *ble_main(void)
                        
                        g_iBleSleep = 1;
 					   ql_bt_unlock_wakelock();
-					   log_i(LOG_BLE, "sleep******BLE***************");
                        // if (1 == g_BleContr.ucSleepCloseBle)
                        {
                           //stBtApi.Close();

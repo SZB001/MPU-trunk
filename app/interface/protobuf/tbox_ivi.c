@@ -196,9 +196,10 @@ void tbox_ivi_link_init(void)
 void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
 {
     int ret, len, i;
-    int r_pos = 0, start_pos = -1, end_pos = -1,flag = 0,start_pos_first = 0;
+    int r_pos = 0, start_pos = -1, end_pos = -1,flag = 0;
 
-    while ( r_pos < rx->used )
+    //while ( r_pos < rx->used )
+    while(rx->used > IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE)
     { 
         if( start_pos < 0 )
         {
@@ -207,11 +208,8 @@ void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
 			flag++;
             if( ret >= 0 )
             {
-            	if(flag == 1)
-            	{
-            		start_pos_first = ret;
-            	}
                 start_pos = r_pos + ret;
+				//log_i(LOG_IVI,"start_pos = %d",start_pos);
                 r_pos = start_pos + IVI_PKG_S_MARKER_SIZE;
             }
             else
@@ -267,16 +265,8 @@ void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
                 else
 #endif                    
                 {
-                	if(flag == 1)
-                	{
-                    	log_buf_dump(LOG_IVI, "ivi send", rx->data + start_pos - start_pos_first, len);
-                    	ivi_msg_proc(rx->data + start_pos - start_pos_first, len, para);
-                	}
-					else
-					{
-						log_buf_dump(LOG_IVI, "ivi send", rx->data + start_pos , len);
-                    	ivi_msg_proc(rx->data + start_pos, len, para);
-					}
+					log_buf_dump(LOG_IVI, "ivi send", rx->data , len);
+                    ivi_msg_proc(rx->data , len, para);
                     start_pos = -1;
                     end_pos = -1;
                 }
@@ -286,6 +276,7 @@ void ivi_msg_decodex(MSG_RX *rx, ivi_msg_handler ivi_msg_proc, void *para)
                 r_pos = rx->used;
             }
         }
+		//log_o(LOG_IVI,"rx->used = %d",rx->used);
 		if(rx->used < IVI_PKG_S_MARKER_SIZE + IVI_PKG_E_MARKER_SIZE)
 		{
 			rx->used = 0;
@@ -1698,18 +1689,21 @@ void *ivi_main(void)
 	    log_e(LOG_IVI, "tcom_get_read_fd failed");
 	    return NULL;
 	}
-	ret = tbox_ivi_create_tcp_socket();
-	if( ret != 0 )
+	if(hu_pki_en == 0)
 	{
-		if (tcp_fd < 0)
+		ret = tbox_ivi_create_tcp_socket();
+		if( ret != 0 )
 		{
-		    close(tcp_fd);
-		    tcp_fd = -1;
+			if (tcp_fd < 0)
+			{
+		   		close(tcp_fd);
+		    	tcp_fd = -1;
 
-		    log_e(LOG_IVI,"tbox_ivi_create_tcp_socket failed!!!");
+		    	log_e(LOG_IVI,"tbox_ivi_create_tcp_socket failed!!!");
 
-		    return NULL;
-		 }
+		    	return NULL;
+			 }
+		}
 	}
 
     while (1)

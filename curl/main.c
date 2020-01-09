@@ -19,8 +19,9 @@ author        wangzhiwei
 #include <sys/stat.h> 
 #include <dirent.h>
 #include <sys/inotify.h>  
-#include "dev_api.h"
+//#include "dev_api.h"
 #include "log.h"
+#include "curl_commshm.h"
 #include "shell_api.h"
 
 
@@ -53,7 +54,7 @@ int sendPostFile(char *name){
   	struct curl_httppost *lastptr=NULL;
   	struct curl_slist *headerlist=NULL;
  	char filesize[15]={0};
-  	char file_name[50] = {0};
+  	char file_name[80] = {0};
   	strcat(file_name,file_path);
   	strcat(file_name,name);
   	sprintf(filesize, "%lu", get_file_size(file_name));
@@ -63,6 +64,7 @@ int sendPostFile(char *name){
   	curl_global_init(CURL_GLOBAL_ALL);
    
    	/* Fill in the file upload field */ 
+	printf("filename = %s",file_name);
    	curl_formadd(&formpost,
                	&lastptr,
                	CURLFORM_COPYNAME, "file",
@@ -70,7 +72,7 @@ int sendPostFile(char *name){
                	CURLFORM_CONTENTTYPE, "application/octet-stream", 
                	CURLFORM_END);
    
-   	printf("curl_formadd filesize\n");  
+   	//printf("curl_formadd filesize\n");  
   	curl_formadd(&formpost,
                	&lastptr,
                	CURLFORM_COPYNAME, "filesize",
@@ -78,20 +80,20 @@ int sendPostFile(char *name){
                 CURLFORM_END); 
 	
   
-   	printf("curl_formadd submit\n");  
+   	//printf("curl_formadd submit\n");  
    	curl_formadd(&formpost,
                	&lastptr,
                	CURLFORM_COPYNAME, "file",
                	CURLFORM_COPYCONTENTS, "commit",
                	CURLFORM_END);
     
-   	printf("curl curl_easy_init\n");
+   	//printf("curl curl_easy_init\n");
    	curl = curl_easy_init();
   	/* initalize custom header list (stating that Expect: 100-continue is not
      	wanted */ 
   	headerlist = curl_slist_append(headerlist, buf);
   	if(curl) {
-	printf("curl true begin post\n");
+	//printf("curl true begin post\n");
     /* what URL that receives this POST */ 
     curl_easy_setopt(curl, CURLOPT_URL, "https://file-uat.chehezhi.cn/fileApi/1.0/pickData");
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
@@ -105,7 +107,11 @@ int sendPostFile(char *name){
       fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
 	  printf("curl url_easy_perform() failed:%s \n",curl_easy_strerror(res));
 	  return -1;
-	} 
+	}
+	else
+	{
+		printf("\nFile uploaded %s successfully\n",name);
+	}
     /* always cleanup */ 
     curl_easy_cleanup(curl); 
     /* then cleanup the formpost chain */ 
@@ -120,14 +126,19 @@ int main(int argc, char *argv[])
 {  
 	DIR *dir = NULL;
 	struct dirent *ptr;
-	//for(;;)
+	int shmid = 0;
+	shmid = CreateShm(4096);   //创建共享内存
+	char *addr = shmat(shmid,NULL,0); //共享内存映射到本地进程
+	for(;;)
 	{
 		usleep(20000);
-		//if(dev_get_KL15_signal() == 1)
+
+		if(strcmp(addr,"upload") == 0)//上传文件
 		{
+			memset(addr,0,512);
 			if((dir = opendir(file_path)) != NULL)
 			{
-				printf("%p\n",dir);
+				//printf("%p\n",dir);
 				printf("open file_path success \n");
 		
 				while((ptr = readdir(dir)) != NULL)
@@ -140,6 +151,9 @@ int main(int argc, char *argv[])
     				if(0==sendPostFile(ptr->d_name))
 					{
 						printf("sendPostFile success\n"); 
+						//system("cd /media/sdcard/fileUL/");
+						//system("pwd");
+						//system("rm ptr->d_name");
 					}
 					else
 					{					

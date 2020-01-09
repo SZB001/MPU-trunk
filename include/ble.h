@@ -20,7 +20,7 @@ author        wangqinglong
 #define COM_APP_DATA_BT_DIR           		"/usrdata/bt/"
 #define COM_APP_SERVER_DATA          		"bt-daemon-socket"
 
-#define DEBUG_LQF
+//#define DEBUG_LQF
 
 
 #define HIBYTE(X)                       ((unsigned char)((X) >> 8))
@@ -37,13 +37,11 @@ author        wangqinglong
 
 /* return */
 #define YT_OK							 				0
-#define YT_ERR									(-1)  
-#define YTERR_PARAMETER					(-2)  
-#define YTERR_OUT_OF_MEMORY				(-3)  
-#define YTERR_TIMEOUT						(-4)  
-#define YTERR_DISCONCET					(-5)  
-
-
+#define YT_ERR											(-1)  
+#define YTERR_PARAMETER									(-2)  
+#define YTERR_OUT_OF_MEMORY								(-3)  
+#define YTERR_TIMEOUT									(-4)  
+#define YTERR_DISCONCET									(-5)  
 
 /* msg id definition */
 typedef enum

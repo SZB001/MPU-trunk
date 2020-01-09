@@ -123,7 +123,7 @@ get_index:
 
 int process_char_0002(tBSA_BLE_MSG *p_data)
 { //APP_DEBUG0("process_char_0003\r\n");
-	if (42 == ql_app_ble_cb.ble_server[1].attr[1].characteristic[1].char_handle )
+	//if (42 == ql_app_ble_cb.ble_server[1].attr[1].characteristic[1].char_handle )
 	{
 	    APP_DEBUG0("process_char_0002\r\n");
 		APP_DEBUG1("process_char_0002 = %d\r\n", p_data->ser_write.len);
@@ -309,7 +309,11 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
             APP_INFO1("BSA_BLE_SE_WRITE_EVT trans_id:%d, conn_id:%d, handle:%d", p_data->ser_write.trans_id, p_data->ser_write.conn_id,
             p_data->ser_write.handle);
 			//ApiBLETraceBuf(p_data->ser_write.value,  p_data->ser_write.len);	
-            process_char_0002(p_data);   
+			if (42 ==p_data->ser_write.handle)
+			{
+				process_char_0002(p_data);   
+			}
+            
 			//cm256_apiget_recv(p_data->ser_write.value, &p_data->ser_write.len);
 
 #if 0

@@ -54,7 +54,7 @@ static void bt_eint_callback(Enum_PinName PinName, int level)
 	{
 		//pm_send_evt(MPU_MID_BLE, PM_EVT_RING);
 		 ble_ring_wakeup();
-         ql_bt_lock_wakelock() ;
+		 ql_bt_lock_wakelock();
 	}
 	 
 }

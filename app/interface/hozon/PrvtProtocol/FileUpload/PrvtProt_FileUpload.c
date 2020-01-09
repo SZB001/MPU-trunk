@@ -25,11 +25,18 @@ description�� include the header file
 #include "init.h"
 #include "log.h"
 #include "file.h"
+#include "curl_commshm.h"
 #include "../../../../base/minizip/zip.h"
 #include "gb32960_api.h"
 #include "hozon_PP_api.h"
+#include "hozon_SP_api.h"
 #include "../PrvtProt.h"
+#include "com_app_def.h"
+#include "dir.h"
+#include "file.h"
+#include "dev_api.h"
 #include "PrvtProt_FileUpload.h"
+
 
 /*******************************************************
 description�� function declaration
@@ -40,6 +47,8 @@ static PP_FileUpload_t PP_FileUL;
 
 /*Static function declaration*/
 static void *PP_FileUpload_main(void);
+static void *PP_FileSend_main(void);
+
 static void PP_FileUpload_datacollection(void);
 static void PP_FileUpload_pkgzip(void);
 /*******************************************************
@@ -80,7 +89,7 @@ void InitPP_FileUpload_Parameter(void)
 
 *��  ע��
 ******************************************************/
-void PP_FileUpload_run(void)
+int PP_FileUpload_run(void)
 {
     int ret;
     pthread_t tid;
@@ -93,6 +102,18 @@ void PP_FileUpload_run(void)
     {
         log_e(LOG_HOZON, "file upload pthread create failed, error: %s", strerror(errno));
     }
+
+	pthread_t send_tid;
+	pthread_attr_t send_ta;
+
+    pthread_attr_init(&send_ta);
+    pthread_attr_setdetachstate(&send_ta, PTHREAD_CREATE_DETACHED);
+    ret = pthread_create(&send_tid, &send_ta, (void *)PP_FileSend_main, NULL);
+    if (ret != 0)
+    {
+        log_e(LOG_HOZON, "file upload pthread create failed, error: %s", strerror(errno));
+    }
+	return 0;
 }
 
 /******************************************************
@@ -123,6 +144,26 @@ static void *PP_FileUpload_main(void)
 
     return NULL;
 }
+static void *PP_FileSend_main(void)
+{
+	log_o(LOG_HOZON, "file upload thread running");
+    prctl(PR_SET_NAME, "FILE_UPLOAD");
+    while(1)
+    {	
+		int shmid = GetShm(512);
+		char *addr = shmat(shmid,NULL,0);
+    	if((1 == sockproxy_socketState())&&(dev_get_KL15_signal() == 1))
+    	{
+			
+			strcpy(addr,"upload");
+    	}
+		shmdt(addr);
+		sleep(60);	
+    }
+
+    return NULL;
+}
+
 
 /******************************************************
 *PP_FileUpload_datacollection

@@ -68,5 +68,5 @@ description�� variable External declaration
 description�� function External declaration
 *******************************************************/
 extern void InitPP_FileUpload_Parameter(void);
-extern void PP_FileUpload_run(void);
+//extern void PP_FileUpload_run(void);
 #endif 

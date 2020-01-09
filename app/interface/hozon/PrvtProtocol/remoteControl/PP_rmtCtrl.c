@@ -251,7 +251,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 				}
 				else
 				{
-					PP_rmtCtrl.rmtCtrlSt = RMTCTRL_END;
+					PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDLE;
 				}
 				log_o(LOG_HOZON,"-------identificat success---------");
   			}
@@ -1006,6 +1006,15 @@ int PP_rmtCtrl_vehicle_status_InformBt(unsigned char obj, unsigned char cmd)
 	
 	respbt.state.vihe_air.vehicle_secondseat_state = PP_rmtCtrl_cfg_PassHeatingSt() + 1;
 	log_i(LOG_HOZON,"vehicle_secondseat_state = %d",respbt.state.vihe_air.vehicle_secondseat_state);
+
+	respbt.state.vihe_air.vehicle_temperature =  gb_data_InnerTemp() - 80;
+	log_i(LOG_HOZON,"vehicle_temperature = %d",respbt.state.vihe_air.vehicle_temperature);
+	
+	respbt.state.vihe_air.outside_temperature = gb_data_outTemp() - 80;
+	log_i(LOG_HOZON,"outside_temperature = %d",respbt.state.vihe_air.outside_temperature);
+
+	respbt.state.vihe_air.airwindshield = gb_data_BlowerGears();
+	log_i(LOG_HOZON,"airwindshield = %d",respbt.state.vihe_air.airwindshield);
 	
 	/**********************vihe_charge****************************/
 	respbt.state.vihe_charge.charge_reservation = GetPP_ChargeCtrl_appointSt()? 2 : 1;
@@ -1031,27 +1040,38 @@ int PP_rmtCtrl_vehicle_status_InformBt(unsigned char obj, unsigned char cmd)
 	/**********************胎压信息****************************/
 	respbt.state.vihe_tire.ltire_pressure1 = PrvtProtCfg_TyrePre(2);//左前胎压
 	log_i(LOG_HOZON,"ltire_pressure1 = %d",respbt.state.vihe_tire.ltire_pressure1);
+	
 	respbt.state.vihe_tire.ltire_temp1 = PrvtProtCfg_TyreTemp(2);//左前温度
 	log_i(LOG_HOZON,"ltire_temp1 = %d",respbt.state.vihe_tire.ltire_temp1);
+	
 	respbt.state.vihe_tire.ltire_pressure2 = PrvtProtCfg_TyrePre(4);//左后胎压
 	log_i(LOG_HOZON,"ltire_pressure2 = %d",respbt.state.vihe_tire.ltire_pressure2);
+	
 	respbt.state.vihe_tire.ltire_temp2 = PrvtProtCfg_TyreTemp(4);//左后温度
 	log_i(LOG_HOZON,"ltire_temp2 = %d",respbt.state.vihe_tire.ltire_temp2);
+	
 	respbt.state.vihe_tire.rtire_pressure1 = PrvtProtCfg_TyrePre(1);//右前胎压
 	log_i(LOG_HOZON,"rtire_pressure1 = %d",respbt.state.vihe_tire.rtire_pressure1);
+	
 	respbt.state.vihe_tire.rtire_temp1= PrvtProtCfg_TyreTemp(1);//右前温度
 	log_i(LOG_HOZON,"rtire_temp1 = %d",respbt.state.vihe_tire.rtire_temp1);
+	
 	respbt.state.vihe_tire.rtire_pressure2 = PrvtProtCfg_TyrePre(3);//右后胎压
 	log_i(LOG_HOZON,"rtire_pressure2 = %d",respbt.state.vihe_tire.rtire_pressure2);
+	
 	respbt.state.vihe_tire.rtire_temp2 =PrvtProtCfg_TyreTemp(3);//右后温度
 	log_i(LOG_HOZON,"rtire_temp2 = %d",respbt.state.vihe_tire.rtire_temp2);
+	
 	/**********************车门状态****************************/
 	respbt.state.vihe_door.ldoor1_state = getgb_data_LFDoorOpenSt()?2:1;
 	log_i(LOG_HOZON,"ldoor1_state = %d",respbt.state.vihe_door.ldoor1_state);
+	
 	respbt.state.vihe_door.ldoor2_state = getgb_data_LRDoorOpenSt()?2:1;
 	log_i(LOG_HOZON,"ldoor2_state = %d",respbt.state.vihe_door.ldoor2_state);
+	
 	respbt.state.vihe_door.rdoor1_state = getgb_data_RFDoorOpenSt()?2:1;
 	log_i(LOG_HOZON,"rdoor1_state = %d",respbt.state.vihe_door.rdoor1_state);
+	
 	respbt.state.vihe_door.rdoor2_state = getgb_data_RRDoorOpenSt()?2:1;
 	log_i(LOG_HOZON,"rdoor2_state = %d",respbt.state.vihe_door.rdoor2_state);
 	

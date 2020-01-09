@@ -286,7 +286,7 @@ int bt_channel_response_set(bt_send_t *src, uint8_t *buf, size_t *bufsz)
         return -1;
     }
 	
-	log_i(LOG_BLE, "bt_channel_response_set************1 \r\n");
+	log_i(LOG_BLE, "bt_channel_response_set************1");
 	protocol_header__init(response_hd);
 
 	if(pb_appliheader_set(&response_hd->head, src))
@@ -344,19 +344,18 @@ int hz_bt_send_init(bt_send_t *src, uint8_t *buf, size_t *bufsz)
 	src->Timestamp.minute = time.min;
 	src->Timestamp.second = time.sec;
 
-	log_i(LOG_BLE, " src->Timestamp.year=%d \r\n", src->Timestamp.year);
-	log_i(LOG_BLE, " src->Timestamp.month=%d \r\n", src->Timestamp.month);
-	log_i(LOG_BLE, " src->Timestamp.day=%d \r\n", src->Timestamp.day);
-	log_i(LOG_BLE, " src->Timestamp.hour=%d \r\n", src->Timestamp.hour);
-
-	log_i(LOG_BLE, " src->Timestamp.second =%d \r\n", src->Timestamp.second );
+	log_i(LOG_BLE, " src->Timestamp.year=%d", src->Timestamp.year);
+	log_i(LOG_BLE, " src->Timestamp.month=%d", src->Timestamp.month);
+	log_i(LOG_BLE, " src->Timestamp.day=%d", src->Timestamp.day);
+	log_i(LOG_BLE, " src->Timestamp.hour=%d", src->Timestamp.hour);
+	log_i(LOG_BLE, " src->Timestamp.second =%d", src->Timestamp.second);
 
 	if (BT_AH_MSG_TYPE_SE_FUN_RESP == src->msg_type)
 	{
 		iRet = bt_auth_response_set(src, aucTmp, &len);
 		if (YT_ERR == iRet)
 		{
-			log_i(LOG_BLE, "bt_auth_response_set fail \r\n");
+			log_i(LOG_BLE, "bt_auth_response_set fail");
 			return YT_ERR;
 		}
 			
@@ -366,7 +365,7 @@ int hz_bt_send_init(bt_send_t *src, uint8_t *buf, size_t *bufsz)
 		  iRet = bt_ack_response_set(src, aucTmp, &len);
 		  if (YT_ERR == iRet)
 		  {
-			  log_i(LOG_BLE, "bt_auth_response_set fail \r\n");
+			  log_i(LOG_BLE, "bt_auth_response_set fail");
 			  return YT_ERR;
 		  }
 		
@@ -376,7 +375,7 @@ int hz_bt_send_init(bt_send_t *src, uint8_t *buf, size_t *bufsz)
 		  iRet = bt_vihe_info_response_set(src, aucTmp, &len);
 		  if (YT_ERR == iRet)
 		  {
-			  log_i(LOG_BLE, "bt_auth_response_set fail \r\n");
+			  log_i(LOG_BLE, "bt_auth_response_set fail");
 			  return YT_ERR;
 		  }
 	}
@@ -387,7 +386,7 @@ int hz_bt_send_init(bt_send_t *src, uint8_t *buf, size_t *bufsz)
 	
 	src->ver_data1_len = len;
 	memcpy(src->ver_data1, aucTmp, len);
-	log_i(LOG_BLE, " len =%d \r\n", len);
+	log_i(LOG_BLE, " len =%d", len);
 
 	if (0 == len )
 	{
@@ -505,20 +504,20 @@ int set_cmd (uint8_t *buf, size_t len)
 	ProtocolHeader *request =  protocol_header__unpack(NULL, len, buf);
 	if (NULL == request)
 	{
-		log_e(LOG_BLE, "protocol_header__unpack Fail \r\n");
+		log_e(LOG_BLE, "protocol_header__unpack Fail");
 		return YT_ERR;
 	}
 
-	log_i(LOG_BLE, "request->head->protocol_version = %d\r\n",request->head->protocol_version);
-	log_i(LOG_BLE, "request->head->msg_type = %d\r\n",request->head->msg_type);
-	log_i(LOG_BLE, "request->timestamp->year = %d\r\n",request->timestamp->year);
-	log_i(LOG_BLE, "request->head->month = %d\r\n",request->timestamp->month);
-	log_i(LOG_BLE, "request->head->day = %d\r\n",request->timestamp->day);
-	log_i(LOG_BLE, "request->head->hour = %d\r\n",request->timestamp->hour);
-	log_i(LOG_BLE, "request->head->minute = %d\r\n",request->timestamp->minute);
-	log_i(LOG_BLE, "request->head->second = %d\r\n",request->timestamp->second);
-	log_i(LOG_BLE, "request->msgcarrierlen = %d\r\n",request->msgcarrierlen);
-	log_i(LOG_BLE, "request->msgcarrier.len = %d\r\n",request->msgcarrier.len);
+	log_i(LOG_BLE, "request->head->protocol_version = %d",request->head->protocol_version);
+	log_i(LOG_BLE, "request->head->msg_type = %d",request->head->msg_type);
+	log_i(LOG_BLE, "request->timestamp->year = %d",request->timestamp->year);
+	log_i(LOG_BLE, "request->head->month = %d",request->timestamp->month);
+	log_i(LOG_BLE, "request->head->day = %d",request->timestamp->day);
+	log_i(LOG_BLE, "request->head->hour = %d",request->timestamp->hour);
+	log_i(LOG_BLE, "request->head->minute = %d",request->timestamp->minute);
+	log_i(LOG_BLE, "request->head->second = %d",request->timestamp->second);
+	log_i(LOG_BLE, "request->msgcarrierlen = %d",request->msgcarrierlen);
+	log_i(LOG_BLE, "request->msgcarrier.len = %d",request->msgcarrier.len);
 	switch(request->head->msg_type)
 	{
 		case APPLICATION_HEADER__MESSAGE_TYPE__VEHICLE_DOOR:
@@ -526,11 +525,11 @@ int set_cmd (uint8_t *buf, size_t len)
 				VehicleDoor *door =  vehicle_door__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 				if (NULL == door)
 				{
-					log_e(LOG_BLE, "vehicle_door__unpack Fail \r\n");
+					log_e(LOG_BLE, "vehicle_door__unpack Fail");
 					return YT_ERR;
 				}
 				g_hz_protocol.hz_send.ack.state = door->door_state ;
-				log_i(LOG_BLE, "door->door_state = %d\r\n",door->door_state);
+				log_i(LOG_BLE, "door->door_state = %d",door->door_state);
 				g_hz_protocol.hz_send.ack.msg_type = BT_ACK_MSG_TYPE_VEH_DOOR;
 
 				if (door)
@@ -545,11 +544,11 @@ int set_cmd (uint8_t *buf, size_t len)
 			
 				if (NULL == sunroof)
 				{
-					log_e(LOG_BLE, "panoramic_sunroof__unpack Fail \r\n");
+					log_e(LOG_BLE, "panoramic_sunroof__unpack Fail");
 					return YT_ERR;
 				}
 				g_hz_protocol.hz_send.ack.state =  sunroof->panoramic_sunroof_state;
-				log_i(LOG_BLE, "sunroof->panoramic_sunroof_state = %d\r\n",sunroof->panoramic_sunroof_state);
+				log_i(LOG_BLE, "sunroof->panoramic_sunroof_state = %d",sunroof->panoramic_sunroof_state);
 				g_hz_protocol.hz_send.ack.msg_type = BT_ACK_MSG_TYPE_PAN_SUNROOf;
 
 				if (sunroof)
@@ -564,11 +563,11 @@ int set_cmd (uint8_t *buf, size_t len)
 			
 				if (NULL == elec_door)
 				{
-					log_e(LOG_BLE, "electric_door__unpack Fail \r\n");
+					log_e(LOG_BLE, "electric_door__unpack Fail");
 					return YT_ERR;
 				}
 				g_hz_protocol.hz_send.ack.state =  elec_door->electric_door_state;
-			    log_i(LOG_BLE, "elec_door->electric_door_state = %d\r\n",elec_door->electric_door_state);
+			    log_i(LOG_BLE, "elec_door->electric_door_state = %d",elec_door->electric_door_state);
 				g_hz_protocol.hz_send.ack.msg_type = BT_ACK_MSG_TYPE_ELEC_DOOR;
 				
 				if (elec_door)
@@ -582,11 +581,11 @@ int set_cmd (uint8_t *buf, size_t len)
 				RemoteFineCar *find_car =  remote_fine_car__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 				if (NULL == find_car)
 				{
-					log_e(LOG_BLE, "remote_fine_car__unpack Fail \r\n");
+					log_e(LOG_BLE, "remote_fine_car__unpack Fail");
 					return YT_ERR;
 				}
 				g_hz_protocol.hz_send.ack.state =  find_car->fine_car_state;
-				 log_i(LOG_BLE, "find_car->fine_car_state = %d\r\n",find_car->fine_car_state);
+				 log_i(LOG_BLE, "find_car->fine_car_state = %d",find_car->fine_car_state);
 				g_hz_protocol.hz_send.ack.msg_type = BT_ACK_MSG_TYPE_REMOTE_FIND_CAR;
 
 				if (find_car)
@@ -600,11 +599,11 @@ int set_cmd (uint8_t *buf, size_t len)
 				Charge *charge =  charge__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 				if (NULL == charge)
 				{
-					log_e(LOG_BLE, "remote_fine_car__unpack Fail \r\n");
+					log_e(LOG_BLE, "remote_fine_car__unpack Fail");
 					return YT_ERR;
 				}
 				g_hz_protocol.hz_send.ack.state =  charge->charge_state;
-				 log_i(LOG_BLE, "charge->charge_state = %d\r\n",charge->charge_state);
+				 log_i(LOG_BLE, "charge->charge_state = %d",charge->charge_state);
 				g_hz_protocol.hz_send.ack.msg_type = BT_ACK_MSG_TYPE_CHARGE;
 
 				if (charge)
@@ -618,12 +617,12 @@ int set_cmd (uint8_t *buf, size_t len)
 				PowerControl *control =  power_control__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 				if (NULL == control)
 				{
-					log_e(LOG_BLE, "remote_fine_car__unpack Fail \r\n");
+					log_e(LOG_BLE, "remote_fine_car__unpack Fail");
 					return YT_ERR;
 				}
 				
 			    g_hz_protocol.hz_send.ack.state =  control->power_state;
-				log_i(LOG_BLE, "control->power_state = %d\r\n",control->power_state);
+				log_i(LOG_BLE, "control->power_state = %d",control->power_state);
 				g_hz_protocol.hz_send.ack.msg_type = BT_ACK_MSG_TYPE_POWER_CONTRO;
 
 				if (control)
@@ -719,12 +718,12 @@ int bt_send_cmd_pack(bt_ack_t state, bt_info_state_t indata,  uint8_t *out, size
 	  
 	if (YT_ERR == hz_bt_send_init(&g_hz_protocol.hz_send, Temp, (size_t *)&temp_len))
 	{
-		log_e(LOG_BLE, "hz_bt_send_init Fail \r\n");
+		log_e(LOG_BLE, "hz_bt_send_init Fail");
 		return YT_ERR;
 	}
 	
 	log_i(LOG_BLE, "temp_len = %d \r\n",temp_len);	
-	log_i(LOG_BLE, "g_hz_protocol.hz_send.ack.msg_type = %d \r\n",g_hz_protocol.hz_send.ack.msg_type);	
+	log_i(LOG_BLE, "g_hz_protocol.hz_send.ack.msg_type = %d",g_hz_protocol.hz_send.ack.msg_type);	
 	ApiBLETraceBuf(Temp, temp_len);
 
 	iRet = send_to_app(Temp, (unsigned int *)&temp_len, out, (unsigned int *)out_len);
@@ -749,15 +748,20 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
 	char sekey[1024]={0};
 	int info_len = 0, temp_len = 0;
 	int se_len = 0,ency_len = 0;
-	log_i(LOG_BLE, "pb_recv_app_process\r\n");
+	log_i(LOG_BLE, "pb_recv_app_process");
 
     if ( g_hz_protocol.ency)
 	{
- 		
+		if( 2 == bt_get_auth_flag())
+		{
+			log_e(LOG_BLE, "no auth");
+	   		return YT_ERR;
+		}
+		
 	    if (64 != g_hz_protocol.se_len)
 	   	{
 	   		
-	   		log_e(LOG_BLE, "g_hz_protocol.se_len len err \r\n");
+	   		log_e(LOG_BLE, "g_hz_protocol.se_len len err");
 	   		return YT_ERR;
 	   	}
 
@@ -768,17 +772,30 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
 		{
 			if (NULL == ency)
 			{
-				   log_e(LOG_BLE, "ency is null\r\n");
+				   log_e(LOG_BLE, "ency is null");
 				   return -1;
 			}
-			log_e(LOG_BLE, "ency_len = %d\r\n",ency_len);
+
+			if (ency_len < 0)
+			{
+				 log_e(LOG_BLE, "ency_len is null");
+				 return -1;
+			}
+			
+			log_i(LOG_BLE, "ency_len = %d",ency_len);
+			log_i(LOG_BLE, "ency is succes");
 			ApiBLETraceBuf(ency, ency_len);
+		}
+		else
+		{
+			log_e(LOG_BLE, "ency is fail");
+			return -1;
 		}
 
         iRet = set_cmd (ency, ency_len) ;
 		if (YT_ERR == iRet)
 		{
-			log_e(LOG_BLE, "set_cmd Fail \r\n");
+			log_e(LOG_BLE, "set_cmd Fail");
 			return iRet;
 		}
 		 //return YT_OK;
@@ -797,20 +814,20 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
 		ProtocolHeader *request =  protocol_header__unpack(NULL, len, buf);
 		if (NULL == request)
 		{
-			log_e(LOG_BLE, "protocol_header__unpack Fail \r\n");
+			log_e(LOG_BLE, "protocol_header__unpack Fail");
 			return YT_ERR;
 		}
 
-		log_i(LOG_BLE, "request->head->protocol_version = %d\r\n",request->head->protocol_version);
-		log_i(LOG_BLE, "request->head->msg_type = %d\r\n",request->head->msg_type);
-		log_i(LOG_BLE, "request->head->msg_type = %d\r\n",request->timestamp->year);
-		log_i(LOG_BLE, "request->head->month = %d\r\n",request->timestamp->month);
-		log_i(LOG_BLE, "request->head->day = %d\r\n",request->timestamp->day);
-		log_i(LOG_BLE, "request->head->hour = %d\r\n",request->timestamp->hour);
-		log_i(LOG_BLE, "request->head->minute = %d\r\n",request->timestamp->minute);
-		log_i(LOG_BLE, "request->head->second = %d\r\n",request->timestamp->second);
-		log_i(LOG_BLE, "request->msgcarrierlen = %d\r\n",request->msgcarrierlen);
-		log_i(LOG_BLE, "request->msgcarrier.len = %d\r\n",request->msgcarrier.len);
+		log_i(LOG_BLE, "request->head->protocol_version = %d",request->head->protocol_version);
+		log_i(LOG_BLE, "request->head->msg_type = %d",request->head->msg_type);
+		log_i(LOG_BLE, "request->head->msg_type = %d",request->timestamp->year);
+		log_i(LOG_BLE, "request->head->month = %d",request->timestamp->month);
+		log_i(LOG_BLE, "request->head->day = %d",request->timestamp->day);
+		log_i(LOG_BLE, "request->head->hour = %d",request->timestamp->hour);
+		log_i(LOG_BLE, "request->head->minute = %d",request->timestamp->minute);
+		log_i(LOG_BLE, "request->head->second = %d",request->timestamp->second);
+		log_i(LOG_BLE, "request->msgcarrierlen = %d",request->msgcarrierlen);
+		log_i(LOG_BLE, "request->msgcarrier.len = %d",request->msgcarrier.len);
 		
 	    if (APPLICATION_HEADER__MESSAGE_TYPE__VEHICLE_SECURITY_FUNC == request->head->msg_type)
 	    {
@@ -818,7 +835,7 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
 			AuthenticationInfo *auth_info =  authentication_info__unpack(NULL, request->msgcarrierlen, request->msgcarrier.data);
 			if (auth_info->authentication_data.len < 50)
 			{
-				log_e(LOG_BLE, "get cert Fail \r\n");
+				log_e(LOG_BLE, "get cert Fail");
 				return YT_ERR;
 			}
 
@@ -826,27 +843,40 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
 			memcpy(Temp, (char *)auth_info->authentication_data.data,  auth_info->authentication_data.len);
 			ApiBLETraceBuf((unsigned char *)Temp, auth_info->authentication_data.len);
 			iRet = HzRequestInfo ((char *)Temp, (char *)&url_adr, (char *)&vin, NULL, NULL, NULL,  (char *)BackInfo, &info_len, sekey, &se_len);
-			
-			if(iRet)
+			log_i(LOG_BLE, "iRet = %d",iRet);
+			if (1 ==iRet)
 			{
-				log_i(LOG_BLE, "HzRequestInfo sucess \r\n");
+				log_i(LOG_BLE, "HzRequestInfo sucess");
+				bt_set_auth_flag(BT_AUTH_SUCCESS);
 			}
 			else
 			{
-				log_e(LOG_BLE, "HzRequestInfo Fail \r\n");
-				//return -1;
+				log_e(LOG_BLE, "HzRequestInfo Fail");
+				bt_set_auth_flag(BT_AUTH_FAIL);
 			}
 
 			if ((0 == se_len) || (0 == info_len))
 			{
-				log_e(LOG_BLE, "no key Fail or no return\r\n");
-				return YT_ERR;
+				log_e(LOG_BLE, "no key Fail or no return");
+				bt_set_auth_flag(BT_AUTH_FAIL);
 			}
 
-			bt_set_auth_flag(BT_AUTH_SUCCESS);
+			
 	        g_hz_protocol.hz_send.msg_type =   BT_AH_MSG_TYPE_SE_FUN_RESP;
-			g_hz_protocol.hz_send.auth_result = 1; //True: auth_success  False: auth_Fail
-			g_hz_protocol.hz_send.failure_reasons = 0;
+
+			
+			//g_hz_protocol.hz_send.auth_result = 1; //True: auth_success  False: auth_Fail
+			g_hz_protocol.hz_send.auth_result = bt_get_auth_flag(); //True: auth_success  False: auth_Fail
+
+			if( 2 == bt_get_auth_flag())
+			{
+				g_hz_protocol.hz_send.failure_reasons = 1;
+			}
+			else
+			{
+				g_hz_protocol.hz_send.failure_reasons = 0;
+			}
+			
 			g_hz_protocol.hz_send.ver_data1_len = info_len;
 			g_hz_protocol.type = request->head->msg_type;
 			memcpy(g_hz_protocol.hz_send.ver_data1, BackInfo, info_len);
@@ -854,20 +884,20 @@ int pb_recv_app_process(uint8_t *out, size_t *out_len, uint8_t *buf, size_t len)
 			g_hz_protocol.se_len = request->head->msg_type;
 			memcpy(g_hz_protocol.sekey, sekey, se_len);
 			g_hz_protocol.se_len = se_len;
-	        log_i(LOG_BLE, "g_hz_protocol.hz_send.ver_data1_len = %d \r\n",info_len);
+	        log_i(LOG_BLE, "g_hz_protocol.hz_send.ver_data1_len = %d",info_len);
 			ApiBLETraceBuf(g_hz_protocol.hz_send.ver_data1, info_len);
-			log_i(LOG_BLE, "se_len = %d \r\n",se_len);
+			log_i(LOG_BLE, "se_len = %d",se_len);
 			ApiBLETraceBuf((unsigned char *)sekey, se_len);
 			
 	        temp_len = 1024;
 			memset(Temp, 0, sizeof(Temp));
 			if (YT_ERR == hz_bt_send_init(&g_hz_protocol.hz_send, Temp, (size_t *)&temp_len))
 			{
-				log_e(LOG_BLE, "hz_bt_send_init Fail \r\n");
+				log_e(LOG_BLE, "hz_bt_send_init Fail");
 				return YT_ERR;
 			}
 
-			log_i(LOG_BLE, "temp_len = %d \r\n",temp_len);  
+			log_i(LOG_BLE, "temp_len = %d",temp_len);  
 			ApiBLETraceBuf(Temp, temp_len);
 			
 			iRet = send_to_app(Temp, (unsigned int *)&temp_len, out, (unsigned int *)out_len);
@@ -897,26 +927,49 @@ void test_bt_hz(void)
 	unsigned char aucbuf[1024]={0};
 	int bufsz = 29;
 	memcpy(aucbuf, "\x0a\x04\x08\x01\x10\x01\x12\x0c\x08\x13\x10\x07\x18\x04\x20\x0d\x28\x1c\x30\x2f\x18\x03\x22\x03\x73\x6f\x73",bufsz);
-    printf("test_bt_hz\r\n");
+    printf("test_bt_hz");
 	pb_recv_app_process(aucOut, (size_t *)&iOutLen,aucbuf, bufsz);
-	printf("test_bt_hz2\r\n");
+	printf("test_bt_hz2");
 }
 void reset_hz_data(void)
 {
 	memset(&g_hz_protocol, 0, sizeof(hz_protocol_t));
 	bt_set_auth_flag(BT_UNAUTH);
 }
+
+int check_start(unsigned char *pucInData,unsigned int *pulInLen, unsigned int *pulOutLen)
+{
+	int i = 0, inlen = *pulInLen;
+	
+	for(i = 0; i < inlen; i++)	
+	{
+		if (0 != strncmp((const char *)(pucInData+i),"#START*", 7))
+		{
+			//log_e(LOG_BLE, "hz_protocol_process Head fail");
+			continue;
+		}
+		else
+		{
+		    *pulOutLen = i;
+			return YT_OK;
+		}
+		
+	}
+	return YT_ERR;
+}
+
 /******************************************************************************
 * Function Name  : hz_protocol_process
 * Description	 :	
 * Input 		 :	
 * Return		 : NONE
 ******************************************************************************/
-int hz_protocol_process(unsigned char *pucInData,unsigned int *pulInLen,unsigned char *pucOutData,unsigned int *pulOutLen)
+int hz_protocol_process1(unsigned char *pucInData,unsigned int *pulInLen,unsigned char *pucOutData,unsigned int *pulOutLen)
 {
 	unsigned char aucbuf[1024]={0};
 	int bufsz = 29;
 	int iRet = -1 , xor = 0;
+	unsigned int index =0;
 	unsigned char root_path[1024]={0};
 	unsigned char sec_path[1024]={0};
 
@@ -934,15 +987,121 @@ int hz_protocol_process(unsigned char *pucInData,unsigned int *pulInLen,unsigned
 	}
 
 	showversion((char *)aucbuf);
-	log_i(LOG_BLE, "the version+++++++++++++++++[%s]\r\n",aucbuf);
+	log_i(LOG_BLE, "the version+++++++++++++++++[%s]",aucbuf);
 
 
 
 	if (*pulInLen <19)
 	{
-		log_e(LOG_BLE, "len err\r\n");
+		log_e(LOG_BLE, "len err");
 		return YT_ERR;
 	}
+
+#if 1
+	if (YT_OK != check_start(pucInData, pulInLen, &index))
+	{
+		log_e(LOG_BLE, "no find start");
+		return YT_ERR;
+	}
+#endif
+
+	bufsz =(((int)(pucInData[index+9]<<8))&0xFF00) | (((int)(pucInData[index+8]))&0xFF);
+	log_i(LOG_BLE, "pucInData[9] = %x",pucInData[index+9]);
+	log_i(LOG_BLE, "pucInData[8] = %x",pucInData[index+8]);
+	log_i(LOG_BLE, "bufsz = %x\r\n",bufsz);
+
+	if (bufsz != (*pulInLen - 20 - index))
+	{
+		log_e(LOG_BLE, "hz_protocol_process len sum err");
+		return YT_ERR;
+	}
+
+	if (0 != strncmp((const char *)(pucInData+index),"#START*", 7))
+	{
+		log_e(LOG_BLE, "hz_protocol_process Head fail");
+		return YT_ERR;
+	}
+
+    printf("END = %x",pucInData[*pulInLen - 5 - index]);
+	if (0 != strncmp((const char *)&pucInData[*pulInLen - 5 -index], "#END*", 5))
+	{
+		log_e(LOG_BLE, "hz_protocol_process End fail");
+		return YT_ERR;
+	}	
+
+	g_hz_protocol.ency = pucInData[index+7];
+	log_i(LOG_BLE, "g_hz_protocol.ency = %d",g_hz_protocol.ency);
+
+	g_hz_protocol.msg_cnt = MAKEDWORD(pucInData[index + 13],pucInData[index + 12],pucInData[index + 11],pucInData[index + 10]);
+	
+	log_i(LOG_BLE, "g_hz_protocol.msg_cnt = %d",g_hz_protocol.msg_cnt);
+
+	xor = check_sum(&pucInData[index + 7], (bufsz + 14 -7));
+
+	log_i(LOG_BLE, "pucInData[*pulInLen - 5] = %x",pucInData[*pulInLen - 5 - index]);
+	if (pucInData[*pulInLen - 6 - index] != xor)
+	{
+		log_e(LOG_BLE, "hz_protocol_process xor fail");
+		return YT_ERR;
+	}
+	
+	iRet = pb_recv_app_process(pucOutData, pulOutLen, &pucInData[14 + index], bufsz);
+	if(YT_ERR == iRet)
+	{
+		return YT_ERR;
+	}
+     
+	log_i(LOG_BLE, "*pulOutLen = %d",*pulOutLen);  
+	ApiBLETraceBuf(pucOutData, *pulOutLen);
+	return YT_OK;
+}
+
+/******************************************************************************
+* Function Name  : hz_protocol_process
+* Description	 :	
+* Input 		 :	
+* Return		 : NONE
+******************************************************************************/
+int hz_protocol_process(unsigned char *pucInData,unsigned int *pulInLen,unsigned char *pucOutData,unsigned int *pulOutLen)
+{
+	unsigned char aucbuf[1024]={0};
+	int bufsz = 29;
+	int iRet = -1 , xor = 0;
+	//unsigned int index =0;
+	unsigned char root_path[1024]={0};
+	unsigned char sec_path[1024]={0};
+
+	sprintf((char * __restrict__)&root_path, "%s", COM_APP_PEM_ROOT_DIR) ;
+	sprintf((char * __restrict__)&sec_path, "%s",  COM_APP_PEM_TPONE_DIR) ;
+	iRet = HzBtCertcfg((char *)&root_path, (char *)&sec_path);
+	if (iRet)
+	{
+		log_i(LOG_BLE, "HzBtCertcfg sucess");
+	}
+	else
+	{
+		log_e(LOG_BLE, "HzBtCertcfg Fail");
+		return YT_ERR;
+	}
+
+	showversion((char *)aucbuf);
+	log_i(LOG_BLE, "the version+++++++++++++++++[%s]",aucbuf);
+
+
+
+	if (*pulInLen <19)
+	{
+		log_e(LOG_BLE, "len err");
+		return YT_ERR;
+	}
+
+#if 0
+	if (YT_OK != check_start(pucInData, pulInLen, &index))
+	{
+		log_e(LOG_BLE, "no find start");
+		return YT_ERR;
+	}
+#endif
 
 	bufsz =(((int)(pucInData[9]<<8))&0xFF00) | (((int)(pucInData[8]))&0xFF);
 	log_i(LOG_BLE, "pucInData[9] = %x",pucInData[9]);
@@ -994,5 +1153,4 @@ int hz_protocol_process(unsigned char *pucInData,unsigned int *pulInLen,unsigned
 	ApiBLETraceBuf(pucOutData, *pulOutLen);
 	return YT_OK;
 }
-
 

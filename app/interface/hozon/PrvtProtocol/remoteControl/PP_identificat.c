@@ -200,7 +200,7 @@ int PP_identificat_mainfunction()
 		{
 			if(( tm_get_time() - PP_stage3_time ) >= PP_RMTCTRL_CFG_CANSIGWAITTIME)//延时一段时间后判断can信号状态
 			{
-				if(( tm_get_time() - PP_stage3_time ) <= 500)
+				if(( tm_get_time() - PP_stage3_time ) <= 100)
 				{
 					if(PP_rmtCtrl_cfg_AuthStatus() == 1)
 					{

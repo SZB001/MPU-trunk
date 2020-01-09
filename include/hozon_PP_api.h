@@ -65,6 +65,7 @@ extern void PP_rmtDiag_queryInform_cb(void);
 
 extern int PrvtProt_init(INIT_PHASE phase);
 extern int PrvtProt_run(void);
+extern int PP_FileUpload_run(void);
 
 extern void PrvtPro_SetHeartBeatPeriod(unsigned char period);
 extern void PrvtPro_Setsuspend(unsigned char suspend);

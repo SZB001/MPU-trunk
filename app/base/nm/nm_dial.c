@@ -824,21 +824,38 @@ return:       none
 static void nm_dial_set_dns(NM_NET_INFO *phndl)
 {
     char command[200];
-
+	FILE *fp;
+	char dns[50] = {0};
+	char dns_name[50] = {0};
+	int i = 0;
     memset(command, 0, sizeof(command));
 #if 1
     if (phndl->pri_dns_addr.s_addr)
     {
-        snprintf(command, sizeof(command), "echo 'nameserver %s' > /etc/resolv.conf",
+        snprintf(command, sizeof(command), "echo 'nameserver %s' >> /etc/resolv.conf",
                  inet_ntoa(phndl->pri_dns_addr));
-        nm_sys_call(command);
+		snprintf(dns_name, sizeof(dns_name), "nameserver %s",inet_ntoa(phndl->pri_dns_addr));
+		fp = fopen("/etc/resolv.conf","r");
+		while(fgets(dns,50,fp) != NULL)
+		{
+			if(strncmp(dns,dns_name,strlen(dns_name)) == 0)
+			{
+				i++;
+			}
+			memset(dns,0 ,sizeof(dns));
+		}
+		if(i == 0)
+		{
+			nm_sys_call(command);
 
-        if (phndl->sec_dns_addr.s_addr)
-        {
-            snprintf(command, sizeof(command), "echo 'nameserver %s' >> /etc/resolv.conf",
-                     inet_ntoa(phndl->sec_dns_addr));
-            nm_sys_call(command);
-        }
+        	if (phndl->sec_dns_addr.s_addr)
+        	{
+            	snprintf(command, sizeof(command), "echo 'nameserver %s' >> /etc/resolv.conf",
+                  inet_ntoa(phndl->sec_dns_addr));
+            	nm_sys_call(command);
+        	}
+		}
+		fclose(fp);
     }
     else
 #endif
