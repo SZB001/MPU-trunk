@@ -589,7 +589,7 @@ int cfg_set_default_para(CFG_SET_TYPE type)
 	unsigned char status = 0;
 	cfg_set_by_id(CFG_ITEM_FT_REGISTER, &status, sizeof(status), type);
 
-	unsigned char ble_enable = 1;
+	unsigned char ble_enable = 0;
     cfg_set_by_id(CFG_ITEM_EN_BLE, &ble_enable, sizeof(ble_enable), type);
 
 	char ble_name[256];

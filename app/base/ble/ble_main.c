@@ -479,8 +479,8 @@ int ble_init(INIT_PHASE phase)
 			tm_start(g_BleMember.Retimer, BLE_TIMER_CMD, TIMER_TIMEOUT_REL_PERIOD);
 			
 			BleShellInit();
-			unsigned char ble_enable = 1;
-			cfg_set_para(CFG_ITEM_EN_BLE, (unsigned char *)&ble_enable, 1);
+			//unsigned char ble_enable = 0;
+			//cfg_set_para(CFG_ITEM_EN_BLE, (unsigned char *)&ble_enable, 1);
 			break;
 
 		default:
