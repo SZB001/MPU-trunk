@@ -55,6 +55,7 @@ int app_shell_drcfg(int argc, const char **argv)
     int ret = 0;
     char vin[18] = {0};
     int i;
+    unsigned char otamodein;
 
     len = sizeof(unsigned int);
     cfg_get_para(CFG_ITEM_DEV_NUM, (unsigned char *)(&tmpInt), &len);
@@ -282,6 +283,10 @@ int app_shell_drcfg(int argc, const char **argv)
     len = 1;
 	ret |= cfg_get_para(CFG_ITEM_EN_HUPKI,&EnFlag,&len);
     shellprintf("HU PKI ENABLE = %u\r\n", EnFlag);
+
+    len = 1;
+	ret |= cfg_get_para(CFG_ITEM_EN_OTAMODEIN,&otamodein,&len);
+    shellprintf("OTA Mode in ENABLE = %u\r\n", otamodein);
 
     EnFlag = PP_rmtCfg_enable_actived();
     shellprintf("ACTIVED ENABLE = %u\r\n", EnFlag);

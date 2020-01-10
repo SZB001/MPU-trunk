@@ -16,6 +16,8 @@ author        chenyin
 #include "scom_tl.h"
 #include "../../base/dev/dev_mcu_cfg.h"
 #include "pm_api.h"
+#include "../hozon/PrvtProtocol/PrvtProt.h"
+#include "../hozon/PrvtProtocol/PrvtProt_lock.h"
 
 static pthread_t wsrv_tid;
 static unsigned char msgbuf[TCOM_MAX_MSG_LEN];
@@ -181,11 +183,30 @@ static int wrsv_sleep_available(PM_EVT_ID id)
     return 1;
 }
 
+static int wrsv_set_ota_mode(int argc, const char **argv)
+{  
+    unsigned int otamodein = 0;
+
+    if (argc != 1)
+    {
+        shellprintf(" usage:set ota mode en error\r\n");
+        return -1;
+    }
+
+    sscanf(argv[0], "%u", &otamodein);
+    cfg_set_para(CFG_ITEM_EN_OTAMODEIN, (unsigned char *)&otamodein, 1);
+    shellprintf(" set ota mode ok\r\n");
+    sleep(1);
+    //system("reboot");
+    return 0;
+}
 
 int wsrv_init(INIT_PHASE phase)
 {
     int ret = 0;
     int i = 0;
+    unsigned int len;
+    unsigned char otamodein;
 
     switch (phase)
     {
@@ -202,9 +223,13 @@ int wsrv_init(INIT_PHASE phase)
 
         case INIT_PHASE_OUTSIDE:
             ret |= pm_reg_handler(MPU_MID_WSRV, wrsv_sleep_available);
-            ret |= shell_cmd_register("modein", wrsv_mode_in, "OTA Mode In");
-            ret |= shell_cmd_register("moderesult", wrsv_mode_in_result, "OTA Mode In Resullt");
-            ret |= shell_cmd_register("modeout", wrsv_mode_out, "OTA Mode Out");
+            //ret |= shell_cmd_register("modein", wrsv_mode_in, "OTA Mode In");
+            //ret |= shell_cmd_register("moderesult", wrsv_mode_in_result, "OTA Mode In Resullt");
+            //ret |= shell_cmd_register("modeout", wrsv_mode_out, "OTA Mode Out");
+
+            ret |= shell_cmd_register("setotamode", wrsv_set_ota_mode, "Set Ota Mode");
+
+            
             ret = tm_create(TIMER_REL, TIMER_WSRV_RECREATE, MPU_MID_WSRV, &recreate_timer);
 
             if (ret != 0)
@@ -219,6 +244,21 @@ int wsrv_init(INIT_PHASE phase)
             {
                 log_e(LOG_WSRV, "create timer TIMER_WSRV_RESTART_DA failed ret=0x%08x", ret);
                 return ret;
+            }
+
+            len = 1;
+	        ret |= cfg_get_para(CFG_ITEM_EN_OTAMODEIN, &otamodein, &len);
+
+            if(1 == otamodein)
+            {
+                if(PP_LOCK_OK == setPP_lock_odcmtxlock(PP_LOCK_OTA_FOTAUPDATE))
+                {
+                    log_o(LOG_WSRV, "When Init, Get OTA Mode In, So Get Lock");
+                }
+                else
+                {
+                    log_e(LOG_WSRV, "When Init, Get OTA Mode In, But Other Task Doing, So Can Not Get Lock");
+                }
             }
 
             break;

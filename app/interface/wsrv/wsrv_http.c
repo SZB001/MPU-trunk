@@ -28,7 +28,7 @@ author        chenyin
 #include "../hozon/PrvtProtocol/PrvtProt_lock.h"
 
 extern timer_t restart_da_timer;
-static unsigned int g_u32WsrvWakeTime = 0;
+static RTCTIME g_tWsrvAlarmTime = {0};
 
 #define URI_LENGTH                  128
 #define TIME_BUFFER_SIZE            32
@@ -274,11 +274,6 @@ static void deal_after_send()
     // send MSG to other module
 }
 
-unsigned int wsrv_Get_WakeTime(void)
-{
-    return g_u32WsrvWakeTime;
-}
-
 unsigned int wsrv_calc_wake_time(RTCTIME abstime, 
                                       unsigned int year,
                                       unsigned int mon,
@@ -302,9 +297,37 @@ unsigned int wsrv_calc_wake_time(RTCTIME abstime,
         time_wake = 24 * 60 + settimetick - abstimetick;
     }
 
-    log_i(LOG_WSRV, "OTA Set Alarm Time : %d min", time_wake);
-
     return time_wake;
+}
+
+unsigned int wsrv_Get_WakeTime(void)
+{
+    RTCTIME abstime;
+    unsigned int u32WsrvWakeTime = 0;
+
+    if(0 != g_tWsrvAlarmTime.year)
+    {
+        tm_get_abstime(&abstime);
+        
+        u32WsrvWakeTime = wsrv_calc_wake_time(abstime, g_tWsrvAlarmTime.year, 
+                                                       g_tWsrvAlarmTime.mon, 
+                                                       g_tWsrvAlarmTime.mday, 
+                                                       g_tWsrvAlarmTime.hour, 
+                                                       g_tWsrvAlarmTime.min);
+
+        if(0 == u32WsrvWakeTime)
+        {
+            g_tWsrvAlarmTime.year = 0;
+        }
+        else
+        {
+            //Delay 1 min, Beacuse When OTA Wake Up, It Have 1~2 min Delay To Wake Vehicle, 
+            //So We Delay 1 min To Prevent TBox ReSleep
+            u32WsrvWakeTime = u32WsrvWakeTime + 1;
+        }
+    }
+
+    return u32WsrvWakeTime;
 }
 
 static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_buf)
@@ -336,6 +359,8 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     int supplier_len;
     unsigned int timer_wake;
     RTCTIME abstime;
+    int len = 0;
+    unsigned char otamodein = 0;
 
     //1:Success. 0:wait. Other:Fail
     int u32AuthResult = 0;
@@ -444,28 +469,19 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     {
         extern int fota_upgrade(unsigned char *file_path);
 
-        if(PP_LOCK_OK == setPP_lock_odcmtxlock(PP_LOCK_OTA_READECUVER))
+        // TODO: analyse XML file and upgrade ecu
+        log_o(LOG_WSRV, " ######### cmd:%s arg:%s data:%s", cmd_buf, args_buf, data_buf);
+        
+        sscanf(data_buf, "{\"config\":\"%s", file_path);
+        
+        if (0 != file_path[0])
         {
-            // TODO: analyse XML file and upgrade ecu
-            log_o(LOG_WSRV, " ######### cmd:%s arg:%s data:%s", cmd_buf, args_buf, data_buf);
-            
-            sscanf(data_buf, "{\"config\":\"%s", file_path);
-            
-            if (0 != file_path[0])
-            {
-                file_path[strlen((char *)file_path) - 2] = '/';
-                file_path[strlen((char *)file_path) - 1] = 0;
-                log_o(LOG_WSRV, " ######### file_path:%s", file_path);
-            
-                //call upgrade function
-                fota_upgrade(file_path);
-            }
-
-            clearPP_lock_odcmtxlock(PP_LOCK_OTA_READECUVER);
-        }
-        else
-        {
-            log_e(LOG_WSRV, "Other Task Doing Can Not Upgrade ECU");
+            file_path[strlen((char *)file_path) - 2] = '/';
+            file_path[strlen((char *)file_path) - 1] = 0;
+            log_o(LOG_WSRV, " ######### file_path:%s", file_path);
+        
+            //call upgrade function
+            fota_upgrade(file_path);
         }
 
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
@@ -525,13 +541,11 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
             if(0 != timer_wake)
             {
-                g_u32WsrvWakeTime = timer_wake;
-                //ret = scom_tl_send_frame(SCOM_TL_CMD_WAKE_TIME, SCOM_TL_SINGLE_FRAME, 0,
-                //         (unsigned char *)&timer_wake, sizeof(timer_wake));
-                //if (0 != ret)
-                //{
-                //    log_e(LOG_PM, "set timer wake failed");
-                //}
+                g_tWsrvAlarmTime.year = year;
+                g_tWsrvAlarmTime.mon  = mon;
+                g_tWsrvAlarmTime.mday = mday;
+                g_tWsrvAlarmTime.hour = hour;
+                g_tWsrvAlarmTime.min  = min;
             }
             else
             {
@@ -666,6 +680,12 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 {
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     log_o(LOG_WSRV, "Mode In Success");
+
+                    //Save OTA Mode In state
+                    otamodein = 1;
+                    len = 1;
+                    cfg_set_para(CFG_ITEM_EN_OTAMODEIN, &otamodein, len);
+                    
                     sprintf(body_buf, WSRV_MODEINRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
                 }
                 else
@@ -689,7 +709,15 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         SetPP_rmtCtrl_AuthRequest();
         SetPP_rmtCtrl_FOTA_endInform();
 
+        //Save OTA Mode In state
+        otamodein = 0;
+        len = 1;
+        cfg_set_para(CFG_ITEM_EN_OTAMODEIN, &otamodein, len);
+
         s_u8BDCMAuthResult = 0;
+
+        //High Voltage Out
+        PP_can_send_data(PP_CAN_HV, 0, 0);
 
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }
