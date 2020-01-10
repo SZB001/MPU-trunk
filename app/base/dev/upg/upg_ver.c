@@ -339,12 +339,14 @@ int upg_proc_mcu_ver_msg(unsigned char *msg, unsigned int len)
             }
         }
 
+        #if 0
         log_o(LOG_DEV, "begin write startup shm");
         upg_set_startup("OK", strlen("OK") + 1);
         log_o(LOG_DEV, "end write startup shm");
+        #endif
+        
+        upg_set_status(DEV_UPG_IDLE);
 
-		upg_set_status( DEV_UPG_IDLE );
-		
         dev_print_softver_delay();
     }
 	

@@ -243,6 +243,7 @@ static void *scom_main(void)
     prctl(PR_SET_NAME, "SCOM");
     pwdg_init(MPU_MID_SCOM);
     tcom_fd = tcom_get_read_fd(MPU_MID_SCOM);
+    static int shm_flag = 0;//0,Ã»ÓÐÐ´¹ý¹²ÏíÄÚ´æ 1£¬¹²ÏíÄÚ´æÒÑÐ´ÈëOK
 
     if (tcom_fd < 0)
     {
@@ -357,6 +358,19 @@ static void *scom_main(void)
 
                         case SCOM_MSG_ID_TIMER_HEARTER:
                             scom_heart_data.pwdg = pwdg_food();
+
+                            /* Ã»ÓÐÐ´"OK"µ½¹²ÏíÄÚ´æ£¬ÇÒËùÓÐÏß³Ì¶¼ÒÑÎ¹¹· */
+                            if(!shm_flag && (0xffffffff == scom_heart_data.pwdg))
+                            {
+                                /* Ð´OKµ½¹²ÏíÄÚ´æ */
+                                log_o(LOG_SCOM, "begin write startup shm");
+                                upg_set_startup("OK", strlen("OK") + 1);
+                                log_o(LOG_SCOM, "end write startup shm");
+
+                                /* ÉèÖÃ±ê¼Ç */
+                                shm_flag = 1;
+                            }
+                            
                             scom_heart_count++;
                             scom_tl_send_msg(SCOM_TL_CMD_HEARTBEAT, (unsigned char *)&scom_heart_data, sizeof(scom_heart_data));
                             break;
