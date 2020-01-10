@@ -821,45 +821,67 @@ input:        nm_NET_INFO *phndl;
 output:       none
 return:       none
 ****************************************************************/
+static int nm_dial_check_dns(char *dns_name)
+{
+	FILE *fp;
+	char dns[50] = {0};
+	int i = 0;
+	fp = fopen("/etc/resolv.conf","r");
+	
+	if(fp == NULL)
+	return 0;
+	
+	while(fgets(dns,50,fp) != NULL)
+	{
+		if(strncmp(dns,dns_name,strlen(dns_name)) == 0)
+		{
+			i++;
+		}
+		memset(dns,0 ,sizeof(dns));
+	}
+	fclose(fp);
+	return i;
+}
+
+/****************************************************************
+function:     nm_dial_set_dns
+description:  set dns configuration file
+input:        nm_NET_INFO *phndl;
+output:       none
+return:       none
+****************************************************************/
 static void nm_dial_set_dns(NM_NET_INFO *phndl)
 {
     char command[200];
-	FILE *fp;
-	char dns[50] = {0};
 	char dns_name[50] = {0};
-	int i = 0;
     memset(command, 0, sizeof(command));
-#if 1
+
     if (phndl->pri_dns_addr.s_addr)
     {
         snprintf(command, sizeof(command), "echo 'nameserver %s' >> /etc/resolv.conf",
                  inet_ntoa(phndl->pri_dns_addr));
 		snprintf(dns_name, sizeof(dns_name), "nameserver %s",inet_ntoa(phndl->pri_dns_addr));
-		fp = fopen("/etc/resolv.conf","r");
-		while(fgets(dns,50,fp) != NULL)
-		{
-			if(strncmp(dns,dns_name,strlen(dns_name)) == 0)
-			{
-				i++;
-			}
-			memset(dns,0 ,sizeof(dns));
-		}
-		if(i == 0)
+		if(nm_dial_check_dns(dns_name) == 0)
 		{
 			nm_sys_call(command);
-
-        	if (phndl->sec_dns_addr.s_addr)
-        	{
-            	snprintf(command, sizeof(command), "echo 'nameserver %s' >> /etc/resolv.conf",
-                  inet_ntoa(phndl->sec_dns_addr));
-            	nm_sys_call(command);
-        	}
 		}
-		fclose(fp);
     }
-    else
-#endif
+	
+	if (phndl->sec_dns_addr.s_addr)
     {
+        snprintf(command, sizeof(command), "echo 'nameserver %s' >> /etc/resolv.conf",
+                  inet_ntoa(phndl->sec_dns_addr));
+		memset(dns_name,0,sizeof(dns_name));
+		snprintf(dns_name, sizeof(dns_name), "nameserver %s",inet_ntoa(phndl->sec_dns_addr));
+		if(nm_dial_check_dns(dns_name) == 0)
+		{
+			nm_sys_call(command);
+		}
+     }
+	 
+	 if((!(phndl->sec_dns_addr.s_addr)) && (!(phndl->pri_dns_addr.s_addr)))	
+    {
+    	
         snprintf(command, sizeof(command), "echo 'nameserver 114.114.114.114' > /etc/resolv.conf");
         nm_sys_call(command);
 
