@@ -199,6 +199,10 @@ static void PP_FileUpload_datacollection(void)
 		}
 
 		log_i(LOG_HOZON, "index = %d,cnt = %d\n",PP_FileUL.index,PP_FileUL.buffer[PP_FileUL.index].cnt);
+		//protocol_dump(LOG_HOZON, "zip data", \
+				PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].data, \
+				PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].len, 1);
+
 	}
 }
 

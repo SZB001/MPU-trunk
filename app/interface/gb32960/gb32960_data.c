@@ -4169,6 +4169,9 @@ static void gb_data_periodic(gb_info_t *gbinf, int intv, uint32_t uptime)
 	{
 		gb_PPS.len = gb_data_save_all(gbinf, gb_PPS.data, uptime);
 		gb_PPS.flag = 1;
+		//protocol_dump(LOG_GB32960, "gb data", \
+				gb_PPS.data, \
+				gb_PPS.len, 1);
 	}
 	DAT_UNLOCK();
 }

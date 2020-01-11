@@ -2015,18 +2015,24 @@ int gb32960_gbLogoutSt(void)
 */
 uint8_t gb_data_perReportPack(uint8_t *data,int *len)
 {
+    int datalen = 0;
     int length = 0;
+    uint8_t *datalenhighbyte,*datalenlowbyte;
     if(1 == gb_data_perPackValid())
     {
-        *len = gb_pack_head(0x02, 0xfe, data);
+        datalen = gb_pack_head(0x02, 0xfe, data);
+        datalenhighbyte = &data[datalen++];
+        datalenlowbyte  = &data[datalen++];
         /* report data */
-        gb_data_perPack(data + (*len) + 2,&length);
+        gb_data_perPack(data + datalen,&length);
         /* data length */
-        data[(*len)++] = length >> 8;
-        data[(*len)++] = length;
-        *len = *len + length;
+        *datalenhighbyte = length >> 8;
+        *datalenlowbyte = length;
+        datalen = datalen + length;
+
         /* check sum */
-        data[*len] = gb_checksum(data + 2, *len - 2);
+        data[datalen] = gb_checksum(data + 2, datalen - 2);
+        *len = datalen + 1;
         return 1;
     }
 
