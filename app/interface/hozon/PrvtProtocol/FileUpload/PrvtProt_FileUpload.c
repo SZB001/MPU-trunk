@@ -39,6 +39,7 @@ description�� include the header file
 #include "dir.h"
 #include "file.h"
 #include "dev_api.h"
+#include "nm_api.h"
 #include "../../support/protocol.h"
 #include "PrvtProt_FileUpload.h"
 
@@ -58,6 +59,7 @@ static void PP_FileUpload_datacollection(void);
 static void PP_FileUpload_pkgzip(void);
 static void PP_FileUpload_delfile(void);
 static int PP_FileUpload_escapeData(uint8_t *datain,int datainlen,uint8_t *dataout,int *dataoutlen);
+static int PP_FileUpload_nm_callback(NET_TYPE type, NM_STATE_MSG nmmsg);
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
@@ -83,6 +85,7 @@ description�� function code
 void InitPP_FileUpload_Parameter(void)
 {
 	memset(&PP_FileUL,0,sizeof(PP_FileUpload_t));
+	nm_register_status_changed(PP_FileUpload_nm_callback);
 }
 
 /******************************************************
@@ -141,7 +144,7 @@ static void *PP_FileUpload_main(void)
     prctl(PR_SET_NAME, "FILE_UPLOAD");
     while(1)
     {
-		if(gb32960_networkSt())
+		if(1 == PP_FileUL.network)
 		{
 			PP_FileUpload_datacollection();
 			PP_FileUpload_pkgzip();
@@ -162,7 +165,9 @@ static void *PP_FileSend_main(void)
 		int shmid = GetShm(4096);
 		char *addr = shmat(shmid,NULL,0);
 		
-    	if((dev_get_KL15_signal() == 1)&&(0 == PP_netstatus_pubilcfaultsts(NULL)))
+    	if((dev_get_KL15_signal() == 1) &&	\
+		   (0 == PP_netstatus_pubilcfaultsts(NULL)) && \
+		   (1 == PP_FileUL.network))
     	{	
 			strcpy(addr,"upload");
     	}
@@ -423,5 +428,34 @@ static int PP_FileUpload_escapeData(uint8_t *datain,int datainlen,uint8_t *datao
 
 	*dataoutlen = j;
 	//protocol_dump(LOG_HOZON, "zip escape data", dataout, *dataoutlen, 1);
+	return 0;
+}
+
+/*
+* 获取网络状态
+*/
+static int PP_FileUpload_nm_callback(NET_TYPE type, NM_STATE_MSG nmmsg)
+{
+    if (NM_PUBLIC_NET != type)
+    {
+        return -1;
+    }
+
+    switch (nmmsg)
+    {
+        case NM_REG_MSG_CONNECTED:
+		{
+            PP_FileUL.network = 1;
+		}
+        break;
+        case NM_REG_MSG_DISCONNECTED:
+		{
+            PP_FileUL.network = 0;
+		}
+        break;
+        default:
+            return -1;
+    }
+
 	return 0;
 }
