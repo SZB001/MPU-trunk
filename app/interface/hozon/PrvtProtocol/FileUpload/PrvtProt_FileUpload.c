@@ -16,7 +16,11 @@ description�� include the header file
 #include <unistd.h>
 #include  <errno.h>
 #include <sys/times.h>
+#include <dirent.h>
+
 #include <sys/time.h>
+#include <semaphore.h>
+
 #include "timer.h"
 #include <sys/prctl.h>
 #include "dir.h"
@@ -52,6 +56,7 @@ static void *PP_FileSend_main(void);
 
 static void PP_FileUpload_datacollection(void);
 static void PP_FileUpload_pkgzip(void);
+static void PP_FileUpload_delfile(void);
 static int PP_FileUpload_escapeData(uint8_t *datain,int datainlen,uint8_t *dataout,int *dataoutlen);
 /*******************************************************
 description�� global variable definitions
@@ -115,6 +120,7 @@ int PP_FileUpload_run(void)
     {
         log_e(LOG_HOZON, "file upload pthread create failed, error: %s", strerror(errno));
     }
+
 	return 0;
 }
 
@@ -148,24 +154,76 @@ static void *PP_FileUpload_main(void)
 }
 static void *PP_FileSend_main(void)
 {
-	log_o(LOG_HOZON, "file upload thread running");
-    prctl(PR_SET_NAME, "FILE_UPLOAD");
+	log_o(LOG_HOZON, "file send thread running");
+    prctl(PR_SET_NAME, "FILE_SEND");
+	usleep(20);
     while(1)
     {	
-		int shmid = GetShm(512);
+		int shmid = GetShm(4096);
 		char *addr = shmat(shmid,NULL,0);
-    	if((1 == sockproxy_socketState())&&(dev_get_KL15_signal() == 1))
-    	{
-			
+		
+    	if((dev_get_KL15_signal() == 1)&&(0 == PP_netstatus_pubilcfaultsts(NULL)))
+    	{	
 			strcpy(addr,"upload");
     	}
+		else
+		{
+			PP_FileUpload_delfile();
+		}
 		shmdt(addr);
-		sleep(60);	
+		sleep(30);	
     }
 
     return NULL;
 }
 
+static void PP_FileUpload_delfile(void)
+{
+	DIR *dir = NULL;
+	struct dirent *ptr;
+	int cnt = 0;
+	char cmd[80] = {0};
+	char stamp_min[12] = {0};
+	if((dir = opendir(PP_FILEUPLOAD_PATH)) != NULL)
+	{
+		log_o(LOG_HOZON,"open %s success",PP_FILEUPLOAD_PATH);
+	
+		while((ptr = readdir(dir)) != NULL)
+		{
+			if((strcmp(ptr->d_name,".") == 0)||(strcmp(ptr->d_name,"..") == 0))
+			{
+				continue;
+			}
+			cnt++;
+			if(cnt == 1)
+			{
+				strncpy(stamp_min,ptr->d_name+18,10);
+				sprintf(cmd,"rm -rf %s%s",PP_FILEUPLOAD_PATH,ptr->d_name);
+			}
+		}
+		closedir(dir);
+	}
+	if(cnt > 10)
+	{
+		if((dir = opendir(PP_FILEUPLOAD_PATH)) != NULL)
+		while((ptr = readdir(dir)) != NULL)
+		{
+			if((strcmp(ptr->d_name,".") == 0)||(strcmp(ptr->d_name,"..") == 0))
+			{
+				continue;
+			}
+			if(strncmp(ptr->d_name+18,stamp_min,10) < 0)
+			{
+				strncpy(stamp_min,ptr->d_name+18,10);
+				memset(cmd,0,sizeof(cmd));
+				sprintf(cmd,"rm -rf %s%s",PP_FILEUPLOAD_PATH,ptr->d_name);
+			}
+		}
+		system(cmd);
+		log_o(LOG_HOZON,"carried out %s success",cmd);
+		closedir(dir);
+	}
+}
 
 /******************************************************
 *PP_FileUpload_datacollection

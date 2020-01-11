@@ -13,6 +13,7 @@ author        wangzhiwei
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <semaphore.h>
 #include <sys/socket.h>
 #include <time.h> 
 #include "curl.h"
@@ -28,13 +29,18 @@ author        wangzhiwei
  
 static char file_path[30]="/media/sdcard/fileUL/";
 
+union semum
+{
+     int                 val;
+     struct semid_ds     *buf;
+     unsigned short      *array;
+ }arg;
 
 int sendPostFile(char *name);
 
 unsigned long get_file_size(char *name);
  
 unsigned long get_file_size(char *name)  
-
 {  
 	unsigned long filesize = -1;	  
 	struct stat statbuff;
@@ -54,46 +60,38 @@ int sendPostFile(char *name){
   	struct curl_httppost *lastptr=NULL;
   	struct curl_slist *headerlist=NULL;
  	char filesize[15]={0};
-  	char file_name[80] = {0};
-  	strcat(file_name,file_path);
-  	strcat(file_name,name);
-  	sprintf(filesize, "%lu", get_file_size(file_name));
+  	sprintf(filesize, "%lu", get_file_size(name));
 
   	static const char buf[] = "Expect:";
 
   	curl_global_init(CURL_GLOBAL_ALL);
    
-   	/* Fill in the file upload field */ 
-	printf("filename = %s",file_name);
+
    	curl_formadd(&formpost,
                	&lastptr,
                	CURLFORM_COPYNAME, "file",
-               	CURLFORM_FILE, file_name,			   
+               	CURLFORM_FILE, name,			   
                	CURLFORM_CONTENTTYPE, "application/octet-stream", 
                	CURLFORM_END);
    
-   	//printf("curl_formadd filesize\n");  
+
   	curl_formadd(&formpost,
                	&lastptr,
                	CURLFORM_COPYNAME, "filesize",
                	CURLFORM_COPYCONTENTS, filesize,
                 CURLFORM_END); 
 	
-  
-   	//printf("curl_formadd submit\n");  
    	curl_formadd(&formpost,
                	&lastptr,
                	CURLFORM_COPYNAME, "file",
                	CURLFORM_COPYCONTENTS, "commit",
                	CURLFORM_END);
     
-   	//printf("curl curl_easy_init\n");
+
    	curl = curl_easy_init();
-  	/* initalize custom header list (stating that Expect: 100-continue is not
-     	wanted */ 
+
   	headerlist = curl_slist_append(headerlist, buf);
   	if(curl) {
-	//printf("curl true begin post\n");
     /* what URL that receives this POST */ 
     curl_easy_setopt(curl, CURLOPT_URL, "https://file-uat.chehezhi.cn/fileApi/1.0/pickData");
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
@@ -126,8 +124,13 @@ int main(int argc, char *argv[])
 {  
 	DIR *dir = NULL;
 	struct dirent *ptr;
+	char file_name[80] = {0};
+	char cmd[60] = {0};
 	int shmid = 0;
+	//sem_t  mutex;
+
 	shmid = CreateShm(4096);   //创建共享内存
+	
 	char *addr = shmat(shmid,NULL,0); //共享内存映射到本地进程
 	for(;;)
 	{
@@ -135,42 +138,43 @@ int main(int argc, char *argv[])
 
 		if(strcmp(addr,"upload") == 0)//上传文件
 		{
-			memset(addr,0,512);
+			//sem_wait(mutex);    //请求信号量
+			memset(addr,0,4096);
+			//sem_post(mutex);    //释放信号量
 			if((dir = opendir(file_path)) != NULL)
 			{
-				//printf("%p\n",dir);
 				printf("open file_path success \n");
-		
+	
 				while((ptr = readdir(dir)) != NULL)
 				{
 					if((strcmp(ptr->d_name,".") == 0)||(strcmp(ptr->d_name,"..") == 0))
 					{
 						continue;
 					}
-					printf("%s\n",ptr->d_name);
-    				if(0==sendPostFile(ptr->d_name))
+					memset(file_name,0,sizeof(file_name));
+					memset(cmd,0,sizeof(cmd));
+					strcat(file_name,file_path);
+  					strcat(file_name,ptr->d_name);
+    				if(0==sendPostFile(file_name))
 					{
 						printf("sendPostFile success\n"); 
-						//system("cd /media/sdcard/fileUL/");
-						//system("pwd");
-						//system("rm ptr->d_name");
+						sprintf(cmd,"rm %s",file_name);
+						system(cmd);
 					}
 					else
 					{					
 						printf("sendPostFile failed\n"); 
 					}
 				}
+				closedir(dir);
+				printf("closedir finish\n");
 			}	
-	
 			else
 			{
 				printf("open file_path fail\n");
 			}
 		}
 	}
-	
-	closedir(dir);
-	printf("closedir finish");
 	return 0;
 }
 

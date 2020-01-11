@@ -160,7 +160,10 @@ uint8_t PP_netstatus_pubilcfaultsts(uint64_t *timestamp)
     uint8_t faultst;
 
     pthread_mutex_lock(&dtmtx);
-    *timestamp = PP_net_st.timestamp;
+    if(timestamp != NULL)
+    {
+        *timestamp = PP_net_st.timestamp;
+    }
     faultst = PP_net_st.faultflag;
     pthread_mutex_unlock(&dtmtx);
 

@@ -10,7 +10,11 @@
  
 #define PATHNAME "/"
 #define PROJ_ID 0x6666
- 
+#define SEM_NAME "gb"     //有名信号量名称
+#define GB_FILE  0
+#define CAN_FILE 1
+#define CDM_SEND "sendfile"
+
 static int CommShm(int size,int flags)
 {
 	key_t key = ftok(PATHNAME,PROJ_ID);
