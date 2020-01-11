@@ -16,6 +16,8 @@ description�� macro definitions
 #define PP_FILEUPLOAD_PACKNUM       60
 #define PP_FILEUPLOAD_BUFNUM        2
 
+#define PP_FILEUPLOAD_DATALEN       1350
+
 #define PP_FILEUPLOAD_PATH      "/media/sdcard/fileUL/"
 /**********�곣������*********/
 
@@ -36,7 +38,7 @@ description�� typedef definitions
 typedef struct
 {
     int len;
-	uint8_t data[1024];
+	uint8_t data[PP_FILEUPLOAD_DATALEN];
 }__attribute__((packed))  PP_FileUpload_Pack_t;
 
 

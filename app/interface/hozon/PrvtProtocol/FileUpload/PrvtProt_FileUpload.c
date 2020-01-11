@@ -35,6 +35,7 @@ description�� include the header file
 #include "dir.h"
 #include "file.h"
 #include "dev_api.h"
+#include "../../support/protocol.h"
 #include "PrvtProt_FileUpload.h"
 
 
@@ -51,6 +52,7 @@ static void *PP_FileSend_main(void);
 
 static void PP_FileUpload_datacollection(void);
 static void PP_FileUpload_pkgzip(void);
+static int PP_FileUpload_escapeData(uint8_t *datain,int datainlen,uint8_t *dataout,int *dataoutlen);
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
@@ -178,31 +180,30 @@ static void *PP_FileSend_main(void)
 ******************************************************/
 static void PP_FileUpload_datacollection(void)
 {
-	uint8_t data[1024];
+	uint8_t data[PP_FILEUPLOAD_DATALEN];
 	int len;
 	if(1 == gb_data_perReportPack(data,&len))
 	{
-		memcpy(PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].data, \
-				data,1024);
-		PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].len = len;
-		PP_FileUL.buffer[PP_FileUL.index].cnt++;
-		if(PP_FILEUPLOAD_PACKNUM == PP_FileUL.buffer[PP_FileUL.index].cnt)
+		//protocol_dump(LOG_HOZON, "zip original data", data, len, 1);
+		if(0 == PP_FileUpload_escapeData(data,len, \
+					PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].data,\
+					&PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].len))
 		{
-			PP_FileUL.buffer[PP_FileUL.index].cnt = 0;
-			PP_FileUL.buffer[PP_FileUL.index].successflag = 1;
-			PP_FileUL.index++;
+			PP_FileUL.buffer[PP_FileUL.index].cnt++;
+			if(PP_FILEUPLOAD_PACKNUM == PP_FileUL.buffer[PP_FileUL.index].cnt)
+			{
+				PP_FileUL.buffer[PP_FileUL.index].cnt = 0;
+				PP_FileUL.buffer[PP_FileUL.index].successflag = 1;
+				PP_FileUL.index++;
+			}
+
+			if(PP_FILEUPLOAD_BUFNUM == PP_FileUL.index)
+			{
+				PP_FileUL.index = 0;
+			}
+
+			log_i(LOG_HOZON, "index = %d,cnt = %d\n",PP_FileUL.index,PP_FileUL.buffer[PP_FileUL.index].cnt);
 		}
-
-		if(PP_FILEUPLOAD_BUFNUM == PP_FileUL.index)
-		{
-			PP_FileUL.index = 0;
-		}
-
-		log_i(LOG_HOZON, "index = %d,cnt = %d\n",PP_FileUL.index,PP_FileUL.buffer[PP_FileUL.index].cnt);
-		//protocol_dump(LOG_HOZON, "zip data", \
-				PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].data, \
-				PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].len, 1);
-
 	}
 }
 
@@ -300,4 +301,69 @@ static void PP_FileUpload_pkgzip(void)
 			}
 		}
 	}
+}
+
+/******************************************************
+*PP_FileUpload_escapeData
+
+*��  �Σ�
+
+*����ֵ��
+
+*��  ������������
+
+*��	数据转义
+******************************************************/
+static int PP_FileUpload_escapeData(uint8_t *datain,int datainlen,uint8_t *dataout,int *dataoutlen)
+{
+	int i = 0;
+	int j = 0;
+
+	for(i = 0;i < datainlen;i++)
+	{
+		switch(datain[i])
+		{
+			case 0xa:
+			{
+				dataout[j++] = 0x9;
+				dataout[j++] = 0x2;
+			}
+			break;
+			case 0x9:
+			{
+				dataout[j++] = 0x9;
+				dataout[j++] = 0x1;
+			}
+			break;
+			case 0xd:
+			{
+				dataout[j++] = 0xc;
+				dataout[j++] = 0x2;
+			}
+			break;
+			case 0xc:
+			{
+				dataout[j++] = 0xc;
+				dataout[j++] = 0x1;
+			}
+			break;
+			default:
+			{
+				dataout[j++] = datain[i];
+			}
+			break;
+		}
+
+		if(j >= (PP_FILEUPLOAD_DATALEN -2))
+		{
+			return -1;
+		}
+	}
+
+	dataout[j++] = 0xd;
+	dataout[j++] = 0xa;
+
+	*dataoutlen = j;
+	//protocol_dump(LOG_HOZON, "zip escape data", dataout, *dataoutlen, 1);
+	return 0;
 }
