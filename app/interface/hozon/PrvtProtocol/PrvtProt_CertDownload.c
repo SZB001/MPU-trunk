@@ -1489,10 +1489,17 @@ static int PP_CertDL_CertStatus(PrvtProt_task_t *task,PP_CertificateSt_t *Certif
 	{
 		PP_CertEn_pack.msgdata[8+i] = CertificateSt->para.certSn[i];
 	}
-
 	log_i(LOG_HOZON, "CertificateSt->certSn = %s\n",CertificateSt->para.certSn);
 
-	PP_CertEn_pack.totallen = 18 + 8 + CertificateSt->para.certSnLength;
+	char vin[18] = {0};
+	gb32960_getvin(vin);
+
+	for(i = 0;i < 17;i++)
+	{
+		PP_CertEn_pack.msgdata[8 + CertificateSt->para.certSnLength + i] = vin[i];
+	}
+
+	PP_CertEn_pack.totallen = 18 + 8 + CertificateSt->para.certSnLength + 17;
 	PP_CertEn_pack.Header.msglen = PrvtPro_BSEndianReverse((long)PP_CertEn_pack.totallen);
 
 	i = PP_CertDL_getIdleNode();
