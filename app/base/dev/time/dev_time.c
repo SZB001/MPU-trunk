@@ -116,6 +116,14 @@ int dev_syn_time(RTCTIME *time, SYN_TIME_SOURCE src)
             allowed = 1;
             dev_time_sync = true;
             break;
+        case NTP_TIME_SOURCE:
+            if((GNSS_TIME_SOURCE != last_syn.src) && \
+               (TSP_TIME_SOURCE != last_syn.src))
+            {
+                allowed = 1;
+            }
+            dev_time_sync = true;
+            break;
     }
 
     if (allowed)

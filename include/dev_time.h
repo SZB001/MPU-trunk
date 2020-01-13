@@ -11,6 +11,7 @@ typedef enum
     GNSS_TIME_SOURCE,
     MCU_RTC_TIME_SOURCE,
     SHELL_TIME_SOURCE,
+    NTP_TIME_SOURCE,
 } SYN_TIME_SOURCE;
 
 /* syn time state */

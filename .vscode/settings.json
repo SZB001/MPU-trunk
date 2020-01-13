@@ -62,6 +62,7 @@
         "prvtprot_cfg.h": "c",
         "tbox_limit.h": "c",
         "prvtprot_netstatus.h": "c",
-        "ql_cm256sm_ble_sleep.h": "c"
+        "ql_cm256sm_ble_sleep.h": "c",
+        "gps_decode.h": "c"
     }
 }

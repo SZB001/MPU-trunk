@@ -128,7 +128,7 @@ static int PP_ntp_service(char * serviceURL)
                 {
                     log_i(LOG_HOZON,"adjust time form %s",serviceURL); 
                     tm_get_abstime(&time);
-                    dev_syn_time(&time , GNSS_TIME_SOURCE);
+                    dev_syn_time(&time , NTP_TIME_SOURCE);
                     ret = 0;
                 }    
             }
