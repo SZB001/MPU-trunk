@@ -81,6 +81,7 @@ static void sockproxy_testTask(void);
 #endif
 static int PP_shell_setPKIenable(int argc, const char **argv);
 static int sockproxy_get_link_status(void);
+static int sockproxy_nm_callback(NET_TYPE type, NM_STATE_MSG nmmsg);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -123,6 +124,7 @@ int sockproxy_init(INIT_PHASE phase)
 			cfglen = 1;
 			ret |= cfg_get_para(CFG_ITEM_EN_PKI, &sockSt.pkiEnFlag, &cfglen);
 			ret |= nm_register_get_ota_status(sockproxy_get_link_status);
+			ret |= nm_register_status_changed(sockproxy_nm_callback);
 		}
         break;
     }
@@ -389,7 +391,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	}
 	else
 	{
-		if(sockproxy_SkipSockCheck())
+		if(1 == sockSt.network)
 		{
 			log_e(LOG_HOZON, "network is not ok\n");
 			sleep(1);
@@ -1724,4 +1726,33 @@ int sockproxy_check_link_status(void)
 	}
 
 	return res;
+}
+
+/*
+* 获取网络状态
+*/
+static int sockproxy_nm_callback(NET_TYPE type, NM_STATE_MSG nmmsg)
+{
+    if (NM_PUBLIC_NET != type)
+    {
+        return -1;
+    }
+
+    switch (nmmsg)
+    {
+        case NM_REG_MSG_CONNECTED:
+		{
+            sockSt.network = 1;
+		}
+        break;
+        case NM_REG_MSG_DISCONNECTED:
+		{
+            sockSt.network = 0;
+		}
+        break;
+        default:
+            return -1;
+    }
+
+	return 0;
 }

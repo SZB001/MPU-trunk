@@ -146,6 +146,7 @@ typedef struct
 	uint8_t	pkiEnFlag;//pki使能标志
 	uint8_t	dnserrcnt;//
 	int	tsplinkstatus;//
+	uint8_t network;
 }__attribute__ ((packed)) sockproxy_stat_t;
 
 
