@@ -19,6 +19,7 @@ Data			Vasion			author
 #include "dev_time.h"
 #include "dev_api.h"
 #include "gb32960_api.h"
+#include "hozon_PP_api.h"
 #include "shell_api.h"
 
 #define NTP_SERVICE_CNT 6
@@ -78,7 +79,7 @@ static void *PP_ntp_main(void)
 */
 static void PP_ntp_calibrationTime(void)
 {
-    if((!gb32960_networkSt() 
+    if(((0 != PP_netstatus_pubilcfaultsts(NULL)) 
         || (dev_is_time_syn())) && (!ntp_test_flag))
     {
         return;
