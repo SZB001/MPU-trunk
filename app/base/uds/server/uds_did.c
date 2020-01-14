@@ -1183,7 +1183,7 @@ int uds_did_get_manufacture_date(unsigned char *did, unsigned int len)
     /*Conversion day according to the SN rules of the HOZON*/
     if(sscanf(SN + 11, "%2x", &mdate_day) == 1)
     {
-        if(mdate_day>31)
+        if(mdate_day>0x31)
         {
             did[did_cur_len] = 0x00;
             did_cur_len++;
