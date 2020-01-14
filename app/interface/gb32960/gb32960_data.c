@@ -4165,7 +4165,7 @@ static void gb_data_periodic(gb_info_t *gbinf, int intv, uint32_t uptime)
     }
 
 	DAT_LOCK();
-	if(0 != ticks)
+	//if(0 != ticks)
 	{
 		gb_PPS.len = gb_data_save_all(gbinf, gb_PPS.data, uptime);
 		gb_PPS.flag = 1;

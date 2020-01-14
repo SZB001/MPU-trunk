@@ -39,7 +39,7 @@ description�� typedef definitions
 typedef struct
 {
     int len;
-	uint8_t data[PP_FILEUPLOAD_DATALEN];
+	uint8_t data[2*PP_FILEUPLOAD_DATALEN];
 }__attribute__((packed))  PP_FileUpload_Pack_t;
 
 

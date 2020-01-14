@@ -248,6 +248,7 @@ static void PP_FileUpload_datacollection(void)
 	if(1 == gb_data_perReportPack(data,&len))
 	{
 		//protocol_dump(LOG_HOZON, "zip original data", data, len, 1);
+		memset(PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].data,0,2*PP_FILEUPLOAD_DATALEN);
 		if(0 == PP_FileUpload_escapeData(data,len, \
 					PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].data,\
 					&PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].len))
@@ -381,43 +382,14 @@ static int PP_FileUpload_escapeData(uint8_t *datain,int datainlen,uint8_t *datao
 {
 	int i = 0;
 	int j = 0;
+	char pbuf[3] = {0};
 
 	for(i = 0;i < datainlen;i++)
 	{
-		switch(datain[i])
-		{
-			case 0xa:
-			{
-				dataout[j++] = 0x9;
-				dataout[j++] = 0x2;
-			}
-			break;
-			case 0x9:
-			{
-				dataout[j++] = 0x9;
-				dataout[j++] = 0x1;
-			}
-			break;
-			case 0xd:
-			{
-				dataout[j++] = 0xc;
-				dataout[j++] = 0x2;
-			}
-			break;
-			case 0xc:
-			{
-				dataout[j++] = 0xc;
-				dataout[j++] = 0x1;
-			}
-			break;
-			default:
-			{
-				dataout[j++] = datain[i];
-			}
-			break;
-		}
-
-		if(j >= (PP_FILEUPLOAD_DATALEN -2))
+		sprintf(pbuf,"%02X",datain[i]);
+		strncat((char*)dataout,pbuf,2);
+		j = j + 2;
+		if(j >= (2*PP_FILEUPLOAD_DATALEN -2))
 		{
 			return -1;
 		}
