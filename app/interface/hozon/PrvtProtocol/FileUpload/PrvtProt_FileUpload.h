@@ -13,7 +13,8 @@ Data			  Vasion			author
 description�� macro definitions
 *******************************************************/
 /**********�꿪�ض���*********/
-#define PP_FILEUPLOAD_PACKNUM       60
+#define PP_FILEUPLOAD_PACKNUM_MAX   255
+#define PP_FILEUPLOAD_PACKNUM_DEF   60
 #define PP_FILEUPLOAD_BUFNUM        2
 
 #define PP_FILEUPLOAD_DATALEN       1350
@@ -47,7 +48,7 @@ typedef struct
 {
 	uint8_t successflag;
     uint8_t cnt;
-	PP_FileUpload_Pack_t pack[PP_FILEUPLOAD_PACKNUM];
+	PP_FileUpload_Pack_t pack[PP_FILEUPLOAD_PACKNUM_MAX];
 }__attribute__((packed))  PP_FileUpload_Buf_t;
 
 typedef struct
@@ -56,6 +57,7 @@ typedef struct
     uint8_t index;
 	PP_FileUpload_Buf_t buffer[PP_FILEUPLOAD_BUFNUM];
 	uint8_t network;
+	int pkgnum;
 }__attribute__((packed))  PP_FileUpload_t;
 
 /******enum definitions******/

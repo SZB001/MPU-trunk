@@ -84,8 +84,23 @@ description�� function code
 ******************************************************/
 void InitPP_FileUpload_Parameter(void)
 {
+	int infoCollectCycle;
 	memset(&PP_FileUL,0,sizeof(PP_FileUpload_t));
 	nm_register_status_changed(PP_FileUpload_nm_callback);
+
+	PP_FileUL.pkgnum = PP_FILEUPLOAD_PACKNUM_DEF;
+	infoCollectCycle = getPP_rmtCfg_infoCollectCycle();
+	if(0 != infoCollectCycle)
+	{
+		if(infoCollectCycle > PP_FILEUPLOAD_PACKNUM_MAX)
+		{
+			PP_FileUL.pkgnum = PP_FILEUPLOAD_PACKNUM_MAX;
+		}
+		else
+		{
+			PP_FileUL.pkgnum = infoCollectCycle;
+		}
+	}
 }
 
 /******************************************************
@@ -254,7 +269,7 @@ static void PP_FileUpload_datacollection(void)
 					&PP_FileUL.buffer[PP_FileUL.index].pack[PP_FileUL.buffer[PP_FileUL.index].cnt].len))
 		{
 			PP_FileUL.buffer[PP_FileUL.index].cnt++;
-			if(PP_FILEUPLOAD_PACKNUM == PP_FileUL.buffer[PP_FileUL.index].cnt)
+			if(PP_FileUL.pkgnum == PP_FileUL.buffer[PP_FileUL.index].cnt)
 			{
 				PP_FileUL.buffer[PP_FileUL.index].cnt = 0;
 				PP_FileUL.buffer[PP_FileUL.index].successflag = 1;
@@ -337,7 +352,7 @@ static void PP_FileUpload_pkgzip(void)
 				return;
 			}
 
-			for(j = 0;j < PP_FILEUPLOAD_PACKNUM;j++)
+			for(j = 0;j < PP_FileUL.pkgnum;j++)
 			{
 				ret = zipWriteInFileInZip(zfile, PP_FileUL.buffer[i].pack[j].data, PP_FileUL.buffer[i].pack[j].len);
 				if (ret != ZIP_OK) 

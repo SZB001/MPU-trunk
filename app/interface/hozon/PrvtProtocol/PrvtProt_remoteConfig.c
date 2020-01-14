@@ -1947,6 +1947,27 @@ int getPP_rmtCfg_heartbeatTimeout(void)
 }
 
 /*
+* 国标报文采集打包周期
+*/
+int getPP_rmtCfg_infoCollectCycle(void)
+{
+	int infoCollectCycle = 0;
+	unsigned int len;
+	App_rmtCfg_COMMON_t rmt_COMMON;
+	len = sizeof(App_rmtCfg_COMMON_t);
+	pthread_mutex_lock(&cfgdtmtx);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
+	
+	if(1 == rmt_COMMON.commonConfigValid)
+	{
+		infoCollectCycle = rmt_COMMON.infoCollectCycle;
+	}
+	
+	return infoCollectCycle;
+}
+
+/*
 * 获取tsp ip addr和port
 */
 void getPP_rmtCfg_tspAddrPort(char* addr,int* port)
