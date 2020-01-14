@@ -175,5 +175,9 @@ extern void tbox_ivi_push_fota_informHU(uint8_t flag);
 
 extern uint8_t tbox_ivi_get_link_fault(uint64_t *timestamp);
 
+extern uint8_t tbox_ivi_signal_type(void);
+
+extern uint8_t tbox_ivi_signal_power(void);
+
 #endif
 

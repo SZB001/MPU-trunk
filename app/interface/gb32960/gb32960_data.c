@@ -20,6 +20,7 @@
 #include "../support/protocol.h"
 #include "../hozon/PrvtProtocol/PrvtProt_SigParse.h"
 #include "hozon_PP_api.h"
+#include "tbox_ivi_api.h"
 
 static nw_client_handle_type    	h_nw_type;
 static QL_MCM_NW_REG_STATUS_INFO_T	base_info;
@@ -2067,8 +2068,8 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 	}
 
     /* 基本状态信息值数据 */
-    buf[len++] = 0xff;//蜂窝网络状态״̬
-    buf[len++] = 0xff;//蜂窝网络信号 强度
+    buf[len++] = tbox_ivi_signal_type();//蜂窝网络状态״̬
+    buf[len++] = tbox_ivi_signal_power();//蜂窝网络信号 强度
     buf[len++] = (uint8_t)canact;//CAN通讯状态״̬
 	unsigned int length;
     unsigned short voltage = 0;
