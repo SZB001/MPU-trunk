@@ -249,9 +249,14 @@ void PP_can_send_cycle(void)
 			PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//无效
 			PP_canSend_setbit(CAN_ID_445,17,1,0,NULL);//autocmd 清零
 		}
+		
 		if(GetPP_CertDL_CertValid() == 1) //TBOX与HU之间的证书有效
 		{
 			PP_canSend_setbit(CAN_ID_440,23,1,1,NULL);//证书有效
+		}
+		else
+		{
+			PP_canSend_setbit(CAN_ID_440,23,1,0,NULL);//证书无效
 		}
 		
 		if(sync_flag_440 == 1)
