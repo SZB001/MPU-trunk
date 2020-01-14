@@ -208,7 +208,7 @@ static void PP_FileUpload_delfile(void)
 		}
 		closedir(dir);
 	}
-	if(cnt > 10)
+	if(cnt > PP_FILEUPLOAD_MAXPKG)
 	{
 		if((dir = opendir(PP_FILEUPLOAD_PATH)) != NULL)
 		while((ptr = readdir(dir)) != NULL)

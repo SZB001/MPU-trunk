@@ -17,6 +17,7 @@ description�� macro definitions
 #define PP_FILEUPLOAD_BUFNUM        2
 
 #define PP_FILEUPLOAD_DATALEN       1350
+#define PP_FILEUPLOAD_MAXPKG        120
 
 #define PP_FILEUPLOAD_PATH      "/media/sdcard/fileUL/"
 /**********�곣������*********/
