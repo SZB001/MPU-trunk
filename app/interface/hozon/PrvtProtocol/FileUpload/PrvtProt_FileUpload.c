@@ -159,7 +159,7 @@ static void *PP_FileUpload_main(void)
     prctl(PR_SET_NAME, "FILE_UPLOAD");
     while(1)
     {
-		if(1 == PP_FileUL.network)
+		//if(1 == PP_FileUL.network)
 		{
 			PP_FileUpload_datacollection();
 			PP_FileUpload_pkgzip();

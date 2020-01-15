@@ -391,7 +391,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	}
 	else
 	{
-		if(1 == sockSt.network)
+		if(1 != sockSt.network)
 		{
 			log_e(LOG_HOZON, "network is not ok\n");
 			sleep(1);
