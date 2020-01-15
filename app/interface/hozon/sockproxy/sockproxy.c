@@ -1716,6 +1716,12 @@ static int sockproxy_get_link_status(void)
 int sockproxy_check_link_status(void)
 {
 	int tcpst,res=0;
+
+	if(!sockSt.pkiEnFlag)
+	{
+		return 0;
+	}
+
 	if(1 == sockproxy_socketState())
 	{
 		HzTcpLinkStateSg(SP_sockFd,&tcpst);
