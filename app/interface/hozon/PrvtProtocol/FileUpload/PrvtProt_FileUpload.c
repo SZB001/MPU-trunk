@@ -41,6 +41,8 @@ description�� include the header file
 #include "dev_api.h"
 #include "nm_api.h"
 #include "../../support/protocol.h"
+#include "cfg_api.h"
+#include "udef_cfg_api.h"
 #include "PrvtProt_FileUpload.h"
 
 
@@ -174,7 +176,10 @@ static void *PP_FileSend_main(void)
 {
 	log_o(LOG_HOZON, "file send thread running");
     prctl(PR_SET_NAME, "FILE_SEND");
-	usleep(20);
+	char vin[18] = {0};
+	char tboxsn[19] = {0};
+	char buf[200] = {0};
+	unsigned int len;
     while(1)
     {	
 		int shmid = GetShm(4096);
@@ -184,7 +189,11 @@ static void *PP_FileSend_main(void)
 		   (0 == PP_netstatus_pubilcfaultsts(NULL)) && \
 		   (1 == PP_FileUL.network))
     	{	
-			strcpy(addr,"upload");
+			gb32960_getvin(vin);
+			len = sizeof(tboxsn);
+			cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN,tboxsn,&len);
+			sprintf(buf,"%s%s%s","upload",vin,tboxsn);
+			strcpy(addr,buf);
     	}
 		else
 		{
