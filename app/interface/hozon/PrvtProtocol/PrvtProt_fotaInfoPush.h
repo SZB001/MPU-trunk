@@ -11,8 +11,10 @@ Data			  Vasion			author
 /*******************************************************
 description£º include the header file
 *******************************************************/
-#define PP_FIP_INFOPUSH_SUCCESS	1
-#define PP_FIP_INFOPUSH_FAIL	2
+#define PP_FIP_INFOPUSH_SUCCESS		1
+#define PP_FIP_INFOPUSH_FAIL		2
+#define PP_FIP_INFOPUSH_TIMEOUT		7
+#define PP_FIP_INFOPUSH_HUOFFLINE	8
 /*******************************************************
 description£º macro definitions
 *******************************************************/

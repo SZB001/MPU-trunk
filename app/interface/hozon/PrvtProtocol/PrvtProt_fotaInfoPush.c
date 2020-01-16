@@ -405,4 +405,30 @@ void PP_FIP_InfoPush_cb(uint8_t st)
 {
 	PP_FotaInfoPush.resptspflag = 1;
 	PP_FotaInfoPush.pushst	= st;
+
+	switch(st)
+	{
+		case 1:
+		{
+			PP_FotaInfoPush.pushst = PP_FIP_INFOPUSH_SUCCESS;
+		}
+		break;
+		case 2:
+		{
+			PP_FotaInfoPush.pushst = PP_FIP_INFOPUSH_FAIL;
+		}
+		break;
+		case 3:
+		{
+			PP_FotaInfoPush.pushst = PP_FIP_INFOPUSH_TIMEOUT;
+		}
+		break;
+		case 4:
+		{
+			PP_FotaInfoPush.pushst = PP_FIP_INFOPUSH_HUOFFLINE;
+		}
+		break;
+		default:
+		break;
+	}
 }
