@@ -185,21 +185,22 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				PP_rmtChargeCtrl.failtype  = PP_RMTCTRL_NORMAL;
 				PP_rmtChargeCtrl.chargeOnOffFlag = 0;
 
-				if(PP_can_ring_virtual() == 1)
+				if(PP_canSend_weakupVehicle(CHARGE_VIRTUAL) == 0)
 				{
-					if(0 == PP_ChargeCtrl_startHandle(&PP_rmtChargeCtrl))
-					{
-						PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_REQSTART;
-					}
-					else
-					{
-						PP_rmtChargeCtrl.state.chargecmd = 0;
-						PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_END;
-					}
-				
-					PP_rmtChargeCtrl.state.req = 0;
+					return 0;
 				}
 				
+				if(0 == PP_ChargeCtrl_startHandle(&PP_rmtChargeCtrl))
+				{
+					PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_REQSTART;
+				}
+				else
+				{
+					PP_rmtChargeCtrl.state.chargecmd = 0;
+					PP_rmtChargeCtrl.state.CtrlSt   = PP_CHARGECTRL_END;
+				}
+				
+				PP_rmtChargeCtrl.state.req = 0;
 			}
 		}
 		break;
@@ -274,7 +275,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 		{
 			log_o(LOG_HOZON,"charge control end\n");
 			PP_ChargeCtrl_EndHandle(&PP_rmtChargeCtrl);
-			PP_can_mcu_sleep();//清除虚拟on线
+			clearPP_canSend_virtualOnline(CHARGE_VIRTUAL);//清除虚拟on线
 			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_CHRG);
 			PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_IDLE;
 		}

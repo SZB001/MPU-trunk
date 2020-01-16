@@ -163,7 +163,7 @@ int cm256_apiget_recv(unsigned char *pucInBuf, unsigned int *ulInLen);
 
 int cm256_apiset_send(unsigned char *pucOutBuf, unsigned int *ulOutLen);
 
-int cm256_apiget_state(unsigned char *pucInRemot, int ulInState);
+int cm256_apiget_state(void);
 
 int cm256_check_len(void);
 

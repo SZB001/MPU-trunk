@@ -446,13 +446,12 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
 					return 0;
 				}
-
-				pm_ring_wakeup();   //ring脚唤醒MCU
-				if((tm_get_time() - PP_rmtDiag.state.waittime) < 20)
+				
+				if(PP_canSend_weakupVehicle(RMTDIAG_VIRTUAL) == 0)
 				{
 					return 0;
 				}
-				PP_can_mcu_awaken();//唤醒
+
 
 				log_i(LOG_HOZON, "start remote diag\n");
 				memset(&PP_rmtDiag_Fault,0 , sizeof(PP_rmtDiag_Fault_t));
@@ -570,7 +569,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 		case PP_DIAGRESP_END:
 		{
 			clearPP_lock_odcmtxlock(PP_LOCK_DIAG_TSPDIAG);
-			PP_can_mcu_sleep();//清除虚拟on线
+			clearPP_canSend_virtualOnline(RMTDIAG_VIRTUAL);//清除虚拟on线
 			PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
 			PP_rmtDiag.state.sleepflag = 1;
 		}
@@ -611,13 +610,12 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 					PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_END;
 					return 0;
 				}
-
-				pm_ring_wakeup();   //ring脚唤醒MCU
-				if((tm_get_time() - PP_rmtDiag.state.faultcleanwaittime) < 20)
+				
+				if(PP_canSend_weakupVehicle(RMTDIAG_VIRTUAL) == 0)
 				{
 					return 0;
 				}
-				PP_can_mcu_awaken();//唤醒
+
 
 				log_i(LOG_HOZON, "rmt clean fault request\n");
 				mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_DIAG_CLEAN);
@@ -708,7 +706,7 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 		{
 			PP_rmtDiag_FaultCodeCleanResp(task,&PP_rmtDiag);
 			clearPP_lock_odcmtxlock(PP_LOCK_DIAG_CLEAN);
-			PP_can_mcu_sleep();//清除虚拟on线
+			clearPP_canSend_virtualOnline(RMTDIAG_VIRTUAL);//清除虚拟on线
 			PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_IDLE;
 			PP_rmtDiag.state.sleepflag = 1;
 		}

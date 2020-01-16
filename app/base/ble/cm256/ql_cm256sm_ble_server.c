@@ -381,30 +381,29 @@ void ql_ble_server_profile_cback(tBSA_BLE_EVT event,  tBSA_BLE_MSG *p_data)
             break;
             
         case BSA_BLE_SE_OPEN_EVT:
-			APP_DEBUG0("Connect request from client\n");
+			log_i(LOG_BLE,"Connect request from client\n");
             if (p_data->ser_open.reason != BSA_SUCCESS)
             {
-                APP_ERROR1("Connect request from client failed status = %d", p_data->ser_open.reason);
+                log_i(LOG_BLE,"Connect request from client failed status = %d", p_data->ser_open.reason);
                 break;
             }
-            APP_DEBUG0("Connect request from client\n");
-
 			
-			memcpy((void *)g_NfBleMsg.aucLocalAddress,(const void *)p_data->ser_open.remote_bda,6);
-			ApiBLETraceBuf((unsigned char *)g_NfBleMsg.aucLocalAddress,6);
+			memcpy((void *)g_NfBleMsg.aucRemoteAddress,(const void *)p_data->ser_open.remote_bda,6);
+			ApiBLETraceBuf((unsigned char *)g_NfBleMsg.aucRemoteAddress,6);
 			g_NfBleMsg.ulBleStatus = BLE_CONNECT;
 			g_NfBleMsg.ulHandle = p_data->ser_open.conn_id;
-			log_o(LOG_BLE, "ser_open.server_if:%d, ser_open.conn_id:%d, ser_open.reason:%d", p_data->ser_open.server_if, p_data->ser_open.conn_id, p_data->ser_open.reason);
-            
+			log_i(LOG_BLE, "ser_open.server_if:%d, ser_open.conn_id:%d, ser_open.reason:%d", p_data->ser_open.server_if, p_data->ser_open.conn_id, p_data->ser_open.reason);
+            cm256_apiget_state();
             break;
             
         case BSA_BLE_SE_CLOSE_EVT:
-            APP_DEBUG1("Disconnect request from client reason number = %d\n", p_data->ser_open.reason);
+			log_i(LOG_BLE, "Disconnect request from client reason number = %d\n", p_data->ser_open.reason);
             current_server_index = ql_app_ble_cb.current_server;
             ql_app_ble_cb.ble_server[current_server_index].conn_id = p_data->ser_close.conn_id;
             ql_app_ble_cb.ble_server[current_server_index].server_if = p_data->ser_close.server_if;
-			memset((void *)g_NfBleMsg.aucLocalAddress,0,6);
+			memset((void *)g_NfBleMsg.aucRemoteAddress,0,6);
 			g_NfBleMsg.ulBleStatus = BLE_DISCONNECT;
+			cm256_apiget_state();
             ql_bt_unlock_wakelock();
             break;
             

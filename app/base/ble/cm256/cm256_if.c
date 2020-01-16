@@ -131,6 +131,7 @@ int cm256_init(void)
 	log_i(LOG_BLE, "stRxRb.out  = %d\r\n", stRxRb.out);
 
 	memset(&stBleCtl, 0, sizeof(BLE_CTL));	
+	g_NfBleMsg.ulBleStatus = BLE_MSG_DISCONNECT;
 		
 	return 0;
 }
@@ -349,6 +350,7 @@ int cm256_disconnect(void)
 {
   int iRet = YT_ERR;
   api_ble_server_close();
+  g_NfBleMsg.ulBleStatus = BLE_MSG_DISCONNECT;
   return iRet;
 }
 /******************************************************************************
@@ -359,19 +361,18 @@ int cm256_disconnect(void)
 ******************************************************************************/
 int cm256_get_state(void)
 {
-    int iRet = YT_ERR;
-   	pthread_mutex_lock(&cm256Statemutex);
-	iRet = ulBleStatus;
-    pthread_mutex_unlock(&cm256Statemutex);
-
-	if (BLE_CONNECT == iRet)
+    if(BLE_CONNECT == g_NfBleMsg.ulBleStatus)
+    {
+    	return BLE_MSG_CONNECT;
+    }
+	else  if(BLE_DISCONNECT == g_NfBleMsg.ulBleStatus)
 	{
-		return YT_OK;
+		return BLE_MSG_DISCONNECT;
 	}
 	else
 	{
 		return YT_ERR;
-	}	
+	}
 }
 /******************************************************************************
 * Function Name  : cm256_get_name
@@ -532,21 +533,23 @@ int cm256_apiset_send(unsigned char *pucOutBuf, unsigned int *ulOutLen)
 * Input          :  
 * Return         : 0 indicates success,others indicates failed
 ******************************************************************************/
-int cm256_apiget_state(unsigned char *pucInRemot, int ulInState)
+int cm256_apiget_state(void)
 {
 
    	pthread_mutex_lock(&cm256Statemutex);
+	//ulBleStatus = ulInState;
 
-	if (BLE_CONNECT == ulBleStatus)
+	if (BLE_CONNECT == g_NfBleMsg.ulBleStatus)
 	{
-		memcpy((char *)g_NfBleMsg.aucRemoteAddress, pucInRemot, 6);
-		//DEBUG("Gatt Request read event :  [%02X:%02X:%02X:%02X:%02X:%02X]\r\n",
-        //    g_NfBleMsg.aucRemoteAddress[0], g_NfBleMsg.aucRemoteAddress[1], g_NfBleMsg.aucRemoteAddress[2],
-         //   g_NfBleMsg.aucRemoteAddress[3], g_NfBleMsg.aucRemoteAddress[4], g_NfBleMsg.aucRemoteAddress[5]);
+		//memcpy((char *)g_NfBleMsg.aucRemoteAddress, pucInRemot, 6);
+		log_i(LOG_BLE, "Request MAC :  [%02X:%02X:%02X:%02X:%02X:%02X]\r\n",
+        g_NfBleMsg.aucRemoteAddress[0], g_NfBleMsg.aucRemoteAddress[1], g_NfBleMsg.aucRemoteAddress[2],
+        g_NfBleMsg.aucRemoteAddress[3], g_NfBleMsg.aucRemoteAddress[4], g_NfBleMsg.aucRemoteAddress[5]);
 	}
+	
     pthread_mutex_unlock(&cm256Statemutex);
    
-	if (BLE_CONNECT == ulBleStatus)
+	if (BLE_CONNECT == g_NfBleMsg.ulBleStatus)
 	{
 		BleSendMsg(BLE_MSG_CONNECT, 1);
 	}

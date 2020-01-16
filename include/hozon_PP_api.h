@@ -31,6 +31,15 @@
 
 #define PP_CERTDL_TBOXCRL			"/usrdata/pem/tbox.crl"//吊销列表
 
+#define REMOTE_VIRTUAL    0
+#define FOTA_VIRTUAL      1
+#define BLUETOOTH_VIRTUAL 2
+#define RMTDIAG_VIRTUAL   3
+#define CHARGE_VIRTUAL    4
+
+#define VRITUAL_ON  1
+#define VIRTUAL_OFF 0
+
 /* diag struct */
 typedef struct
 {
@@ -135,7 +144,8 @@ extern void PP_rmtDiag_showPara(void);
 extern void PP_rmtDiag_mcuRTCweakup(void);
 extern void clearPP_rmtDiag_para(void);
 extern uint8_t PP_rmtDiag_sleepflag(void);
-extern uint8_t PP_can_ring_virtual(void);
+extern int PP_canSend_weakupVehicle(uint8_t type);
+extern void clearPP_canSend_virtualOnline(uint8_t type);
 extern unsigned int PP_hbTimeoutStatus(void);
 extern void InitPP_netstatus_Parameter(void);
 extern void PP_netstatus_run(void);

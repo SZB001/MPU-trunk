@@ -640,7 +640,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             else
             {
                 SetPP_rmtCtrl_FOTA_endInform();
-                PP_send_virtual_on_to_mcu(0);
+                clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                 sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
                 
                 log_o(LOG_WSRV, "Mode In BDCM Auth Fail");
@@ -659,7 +659,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 {
                     SetPP_rmtCtrl_FOTA_endInform();
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
-                    PP_send_virtual_on_to_mcu(0);
+                    clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode In Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
                     sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
                     break;
@@ -669,7 +669,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 {
                     SetPP_rmtCtrl_FOTA_endInform();
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
-                    PP_send_virtual_on_to_mcu(0);
+                    clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode In Get Ota Fail Status %d", u8OtaFailSts);
                     sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
                     break;
@@ -743,7 +743,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             }
             else
             {
-                PP_send_virtual_on_to_mcu(0);
+                clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                 sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, -1);
 
                 log_o(LOG_WSRV, "Mode Out BDCM Auth Fail");
@@ -761,7 +761,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 if(tm_get_time() - s_u64OTAModeStartTime > 5000)
                 {
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
-                    PP_send_virtual_on_to_mcu(0);
+                   clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode Out Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
                     sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, -1);
                     break;
@@ -770,7 +770,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 if(u8OtaFailSts != 0)
                 {
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
-                    PP_send_virtual_on_to_mcu(0);
+                    clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode Out Get Ota Fail Status %d", u8OtaFailSts);
                     sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, -1);
                     break;
@@ -780,7 +780,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 if(0 == u8PowerMode)
                 {
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
-                    PP_send_virtual_on_to_mcu(0);
+                    clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode Out Success");
                     sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
                 }
@@ -822,7 +822,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
         log_o(LOG_WSRV, "Keep TBOX Alive And Let Vehicle Alive");
         
-        while(0 == PP_can_ring_virtual());
+        while(0 == PP_canSend_weakupVehicle(FOTA_VIRTUAL));
     
         sprintf(body_buf, WSRV_WAKE_BODY, 1);
         set_normal_information(rsp_buf, body_buf, MIME_JSON);

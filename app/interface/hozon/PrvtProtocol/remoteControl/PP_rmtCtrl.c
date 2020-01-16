@@ -208,7 +208,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 			ret = PP_rmtCtrl_request();
 			if((ret == 1) || (1 == PP_rmtCtrl.fotaAuthReq))
 			{			
-				if(PP_can_ring_virtual() == 1)	
+				if(PP_canSend_weakupVehicle(REMOTE_VIRTUAL) == 1)	
 				{
 					if(1 == PP_rmtCtrl.fotaAuthReq)
 					{
@@ -298,7 +298,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 		{
 			//if(GetPP_ChargeCtrl_Sleep()&&GetPP_ACtrl_Sleep()&&GetPP_SeatCtrl_Sleep() == 1)
 			{
-				PP_can_mcu_sleep();//清除虚拟on线
+				clearPP_canSend_virtualOnline(REMOTE_VIRTUAL);//清除虚拟on线
 			}
 			PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDLE;
 		}
@@ -641,7 +641,7 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 		case BT_VEHILCLE_STATUS_REQ:
 		{
 			PP_rmtCtrl_vehicle_status_InformBt(obj,cmd);
-				log_i(LOG_HOZON, "Bluetooth Vehicle status req");
+			log_i(LOG_HOZON, "Bluetooth Vehicle status req");
 		}
 		break;
 		default:

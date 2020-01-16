@@ -14,7 +14,9 @@
 #include "PPrmtCtrl_cfg.h"
 #include "scom_api.h"
 #include <pthread.h>
+#include "hozon_PP_api.h"
 #include "PP_canSend.h"
+
 
 static PP_can_msg_info_t canmsg_3D2;
 static uint64_t old_ID440_data = 0;
@@ -27,6 +29,7 @@ static uint64_t new_ID445_data = 0;
 static uint8_t can_data[8] = {0};
 
 static uint8_t virtual_on_flag;
+static uint8_t virtual_request_falg = 0;
 
 static uint8_t sync_flag_440 = 1;  //上电起来同步一次
 static uint8_t sync_flag_445 = 1;  //上电起来同步一次
@@ -250,7 +253,7 @@ void PP_can_send_cycle(void)
 			PP_canSend_setbit(CAN_ID_445,17,1,0,NULL);//autocmd 清零
 		}
 		
-		if(GetPP_CertDL_CertValid() == 1) //TBOX与HU之间的证书有效
+		if(GetPP_CertDL_CertValid() == 1) //TBOX与HU之间的证书有效性
 		{
 			PP_canSend_setbit(CAN_ID_440,23,1,1,NULL);//证书有效
 		}
@@ -468,10 +471,79 @@ uint8_t PP_get_virtual_flag()
 		st = 0;
 	return st;
 }
+
+void PP_can_virtuar_on_printf(uint8_t type)
+{
+	switch(type)
+	{
+		case REMOTE_VIRTUAL:
+			log_o(LOG_HOZON,"Keep awake by REMOTE_VIRTUAL");
+			break;
+		case FOTA_VIRTUAL:
+			log_o(LOG_HOZON,"Keep awake by FOTA_VIRTUAL");
+			break;
+		case BLUETOOTH_VIRTUAL:
+			log_o(LOG_HOZON,"Keep awake by BLUETOOTH_VIRTUAL");
+			break;
+		case RMTDIAG_VIRTUAL:
+			log_o(LOG_HOZON,"Keep awake by RMTDIAG_VIRTUAL");
+			break;	
+		case CHARGE_VIRTUAL:
+			log_o(LOG_HOZON,"Keep awake by CHARGE_VIRTUAL");
+			break;	
+		default:
+			break;
+	}
+}
+
+void PP_can_virtuar_off_printf(uint8_t type,uint8_t data)
+{
+	switch(type)
+	{
+		case REMOTE_VIRTUAL:
+			log_o(LOG_HOZON,"cancel Keep awake by REMOTE_VIRTUAL");
+			break;
+		case FOTA_VIRTUAL:
+			log_o(LOG_HOZON,"cancel Keep awake by FOTA_VIRTUAL");
+			break;
+		case BLUETOOTH_VIRTUAL:
+			log_o(LOG_HOZON,"cancel Keep awake by BLUETOOTH_VIRTUAL");
+			break;
+		case RMTDIAG_VIRTUAL:
+			log_o(LOG_HOZON,"cancel Keep awake by RMTDIAG_VIRTUAL");
+			break;
+		case CHARGE_VIRTUAL:
+			log_o(LOG_HOZON,"cancel Keep awake by CHARGE_VIRTUAL");
+			break;	
+		default:
+			break;
+	}
+	//log_o(LOG_HOZON,"virtual_request_falg = %d",virtual_request_falg);
+	if(data & (1 << REMOTE_VIRTUAL ))
+	{
+		log_o(LOG_HOZON,"Remote control keeps virtual on");
+	}
+	else if(data & (1 << FOTA_VIRTUAL ))
+	{
+		log_o(LOG_HOZON,"fota keeps virtual on");
+	}
+	else if(data & (1 << BLUETOOTH_VIRTUAL ))
+	{
+		log_o(LOG_HOZON,"bluetooth keeps virtual on");
+	}
+	else if(data & (1 << RMTDIAG_VIRTUAL ))
+	{
+		log_o(LOG_HOZON,"rmtdiag keeps virtual on");
+	}
+	else if(data & (1 << CHARGE_VIRTUAL ))
+	{
+		log_o(LOG_HOZON,"charge keeps virtual on");
+	}
+}
 /*****************************************************
 		TBOX 虚拟ON线唤醒整车
 *****************************************************/
-uint8_t PP_can_ring_virtual(void)
+uint8_t PP_can_ring_virtual(uint8_t type)
 {
 	static uint64_t lasttime_on;
 	static uint8_t virutal_on_stage = VIRTUAL_WAIT;
@@ -490,7 +562,8 @@ uint8_t PP_can_ring_virtual(void)
 		{
 			if(tm_get_time() - lasttime_on > 20)
 			{
-				PP_can_mcu_awaken();//唤醒		
+				PP_can_mcu_awaken();//唤醒	
+				PP_can_virtuar_on_printf(type);
 				virutal_on_stage = VIRTUAL_WAIT;
 				ret = 1;
 			}
@@ -500,4 +573,32 @@ uint8_t PP_can_ring_virtual(void)
 		break;
 	}
 	return ret;
+}
+
+/*****************************************************
+		TBOX 唤醒车辆
+*****************************************************/
+int PP_canSend_weakupVehicle(uint8_t type)
+{
+	int ret = 0;
+
+	virtual_request_falg |= 1 << type;
+	
+	ret = PP_can_ring_virtual(type);  //唤醒车辆
+
+	return ret;
+}
+
+/*
+* 清保持唤醒处理
+*/
+void clearPP_canSend_virtualOnline(uint8_t type)
+{
+	virtual_request_falg &= ~(1 << type);
+	PP_can_virtuar_off_printf(type,virtual_request_falg);
+
+	if(0 == virtual_request_falg)
+	{
+		PP_can_mcu_sleep();     //不需要保持唤醒
+	}
 }

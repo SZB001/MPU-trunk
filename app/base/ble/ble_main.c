@@ -619,19 +619,38 @@ static void *ble_main(void)
         	}
         }
 
-		if (BLE_MSG_CONNECT == g_BleMember.ucConnStatus)
-        {
-        	if (BT_AUTH_SUCCESS != bt_get_auth_flag())
-			{
-				if (IS_TIME_OUT(ulConnStartTime, 30000))
+		if (BLE_MSG_CONNECT == stBtApi.GetState() )
+		{
+		   	if (BLE_MSG_CONNECT == g_BleMember.ucConnStatus)
+	        {
+	        	if (BT_AUTH_SUCCESS != bt_get_auth_flag())
 				{
-					stBtApi.LinkDrop();
-					g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
-					log_e(LOG_BLE, "stBtApi.LinkDrop");
-				}
+					if (IS_TIME_OUT(ulConnStartTime, 30000))
+					{
+						stBtApi.LinkDrop();
+						g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
+						log_e(LOG_BLE, "no auth disconnect");
+					}
+			    }
+		   	}
+	        else if ((BLE_MSG_CONNECT != g_BleMember.ucConnStatus))
+			{
+				//g_BleMember.ucConnStatus == BLE_MSG_CONNECT;
+				//sleep(1);
+				//log_e(LOG_BLE, "1BLE_MSG_CONNECT");
+				//BleSendMsg(BLE_MSG_CONNECT, 1);
 			}
-        }
-		
+		}
+		else if (BLE_MSG_DISCONNECT == stBtApi.GetState())
+		{
+			if (BLE_MSG_CONNECT == g_BleMember.ucConnStatus)
+			{
+				//log_e(LOG_BLE, "1BLE_MSG_DISCONNECT");
+				//sleep(1);
+				//BleSendMsg(BLE_MSG_DISCONNECT, 1);
+			}
+		}
+	
         FD_ZERO(&fds);
         FD_SET(iTcom_fd, &fds);
 
@@ -752,7 +771,7 @@ static void *ble_main(void)
 						{
 						    stBtApi.LinkDrop();
 							g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
-							log_e(LOG_BLE, "stBtApi.LinkDrop");
+							log_e(LOG_BLE, "auth fail");
 							stBtApi.Init();
 							g_BleMember.ucTransStatus = BLE_INIT_STATUS;
 							reset_hz_data();
@@ -766,13 +785,16 @@ static void *ble_main(void)
 							stBtApi.Init();
 							g_BleMember.ucTransStatus = BLE_INIT_STATUS;
 							reset_hz_data();
-							log_e(LOG_BLE, "stBtApi.LinkDrop");
+							log_e(LOG_BLE, "auth fail2");
 						}
 					}
 					else if (BLE_MSG_CONNECT == msgheader.msgid)
 					{
+					    //tmp = 5;
 						g_BleMember.ucConnStatus = BLE_MSG_CONNECT;
+						ulConnStartTime = tm_get_time();
 						log_i(LOG_BLE, "BLE_MSG_CONNECT");
+						while(0 == PP_canSend_weakupVehicle(BLUETOOTH_VIRTUAL));
 					}
 					else if (BLE_MSG_DISCONNECT == msgheader.msgid)
 					{
@@ -784,6 +806,7 @@ static void *ble_main(void)
 						stBtApi.Init();
 						//BleSendMsgToApp(AICHI_MSG_DISCONFIG_TYPE);
 						log_i(LOG_BLE, "1BLE_MSG_DISCONNECT");
+						clearPP_canSend_virtualOnline(BLUETOOTH_VIRTUAL);
 					}
 				}
                 else if (MPU_MID_PM == msgheader.sender)
