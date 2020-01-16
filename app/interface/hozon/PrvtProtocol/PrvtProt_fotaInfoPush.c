@@ -404,7 +404,6 @@ void PP_FIP_shellReq(void)
 void PP_FIP_InfoPush_cb(uint8_t st)
 {
 	PP_FotaInfoPush.resptspflag = 1;
-	PP_FotaInfoPush.pushst	= st;
 
 	switch(st)
 	{
