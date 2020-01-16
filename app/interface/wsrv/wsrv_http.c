@@ -51,6 +51,7 @@ static RTCTIME g_tWsrvAlarmTime = {0};
 #define WSRV_CMD_UPGRADEMODEIN      "upgrademodein"
 #define WSRV_CMD_UPGRADEMODEOUT     "upgrademodeout"
 #define WSRV_CMD_WAKE               "wake"
+#define WSRV_CMD_WAKEOUT            "wakeout"
 #define WSRV_CMD_HVOIN              "hvoin"
 #define WSRV_CMD_HVOINRESULT        "hvoinresult"
 #define WSRV_CMD_HVOOUT             "hvoout"
@@ -825,6 +826,14 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         while(0 == PP_canSend_weakupVehicle(FOTA_VIRTUAL));
     
         sprintf(body_buf, WSRV_WAKE_BODY, 1);
+        set_normal_information(rsp_buf, body_buf, MIME_JSON);
+    }
+    else if (0 == strcmp(cmd_buf, WSRV_CMD_WAKEOUT))
+    {
+        log_o(LOG_WSRV, "Exit TBOX Alive And Let Vehicle Alive");
+        
+        clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
+    
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_HVOIN))
