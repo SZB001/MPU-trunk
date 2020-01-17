@@ -180,6 +180,8 @@ static void *PP_FileSend_main(void)
 	char tboxsn[19] = {0};
 	char buf[200] = {0};
 	unsigned int len;
+	int semid = Commsem();
+	set_semvalue(semid);//初始化信号量值为1
     while(1)
     {	
 		int shmid = GetShm(4096);
@@ -193,9 +195,12 @@ static void *PP_FileSend_main(void)
 			len = sizeof(tboxsn);
 			cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN,tboxsn,&len);
 			sprintf(buf,"%s%s%s","upload",vin,tboxsn);
+			sem_p(semid);
 			strcpy(addr,buf);
+			sem_v(semid);	
     	}
-		else
+		
+		if(dev_get_KL15_signal() == 1)
 		{
 			PP_FileUpload_delfile();
 		}

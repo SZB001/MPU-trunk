@@ -354,6 +354,7 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 	int i = 0;
 	int ret;
     size_t szlen = 0;
+	static int fotapush_cnt = 0;
     unsigned char send_buf[4096] = {0};
     unsigned char pro_buf[2048] = {0};
 	if(hu_pki_en == 0)
@@ -372,6 +373,13 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 		{	//	fota升级推送
 			TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK;
 			log_o(LOG_HOZON,"fota push success.....");
+			fotapush_cnt++;
+			if(fotapush_cnt > 3)
+			{
+				fotapush_cnt = 0;
+				otaupdate_flag = 0;//清除同步标志
+				PP_FIP_InfoPush_cb(IVI_FOTA_PUSH_FAIL_TIMEOUT);
+			}
 		}
 		break;
 		case TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE:
@@ -1461,10 +1469,16 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 				log_e(LOG_IVI,"TopMsg->msg_result == NULL !!!");
 				return;
 			}
+			otaupdate_flag = 0;
 			if(TopMsg->msg_result->result == true)
 			{
 				log_o(LOG_IVI,"TSP FOTA UODATing INFORM HU success......");
 				PP_FIP_InfoPush_cb(IVI_FOTA_PUSH_SUCCESS);
+			}
+			else
+			{
+				log_o(LOG_IVI,"TSP FOTA UODATing INFORM HU success......");
+				PP_FIP_InfoPush_cb(IVI_FOTA_PUSH_FAIL);
 			}
 			break;	
 	    }
@@ -2016,6 +2030,7 @@ void *ivi_check(void)
 {
 	static uint64_t lastsynctime;
 	static uint64_t lastfaulttime;
+	static uint64_t lastfotatime;
 	static uint8_t old_ivi_fault = 0;
 	uint8_t active_flag = 0;
 	prctl(PR_SET_NAME, "IVI_CHECK");
@@ -2076,10 +2091,13 @@ void *ivi_check(void)
 					ivi_message_request( ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE,NULL);
 					tsplogfile_flag = 0;
 				}
-				if(otaupdate_flag == 1)
+				if(tm_get_time() - lastfotatime > 1000)
 				{
-					ivi_message_request( ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK,NULL);
-					otaupdate_flag = 0;
+					if(otaupdate_flag == 1)
+					{
+						ivi_message_request( ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK,NULL);
+					}
+					lastfotatime = tm_get_time();
 				}
 				if(tspdiagnos_flag == 1) //TSP是否下发远程命令
 				{
@@ -2117,10 +2135,13 @@ void *ivi_check(void)
 					ivi_message_request( ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE,NULL);
 					tsplogfile_flag = 0;
 				}
-				if(otaupdate_flag == 1)
+				if(tm_get_time() - lastfotatime > 1000)
 				{
-					ivi_message_request( ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK,NULL);
-					otaupdate_flag = 0;
+					if(otaupdate_flag == 1)
+					{
+						ivi_message_request( ivi_clients[0].fd,TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK,NULL);
+					}
+					lastfotatime = tm_get_time();
 				}
 				if(tspdiagnos_flag == 1) //TSP是否下发远程命令
 				{
@@ -2206,7 +2227,14 @@ void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp)
 
 void tbox_ivi_push_fota_informHU(uint8_t flag)
 {
-	otaupdate_flag = 1;
+	if((ivi_clients[0].fd > 0) || (hu_pki_en == 1))
+	{
+		otaupdate_flag = 1;
+	}
+	else
+	{
+		PP_FIP_InfoPush_cb(IVI_FOTA_PUSH_FAIL_offline);
+	}
 	log_o(LOG_HOZON,"fota push.....");
 }
 /**

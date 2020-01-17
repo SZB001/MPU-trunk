@@ -40,8 +40,11 @@
 #define PKI_RECV      3
 #define PKI_END       4
 
-#define IVI_FOTA_PUSH_SUCCESS 1
-#define IVI_FOTA_PUSH_FAIL    2
+#define IVI_FOTA_PUSH_SUCCESS         1
+#define IVI_FOTA_PUSH_FAIL            2
+#define IVI_FOTA_PUSH_FAIL_TIMEOUT    3
+#define IVI_FOTA_PUSH_FAIL_offline  4
+
 
 #define TBOX_HU_LINK_TIMEOUT  1  //HU与TBOX连接超时
 #define TBOX_HU_LINK_NORMAL   0  //HU与TBOX连接正常

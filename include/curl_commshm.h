@@ -20,8 +20,15 @@
 #define TBOX_VIN_LENGTH    17
 #define TBOX_SN_LENGTH     18
 
-/*
-static int Commsem()
+union semun
+{
+ 	int val; //信号量初始值                   
+ 	struct semid_ds *buf;        
+ 	unsigned short int *array;  
+ 	struct seminfo *__buf;      
+}; 
+
+static int Commsem(void)
 {
 	key_t key = ftok(PATHNAME,PROJ_ID);
 	if(key < 0)
@@ -36,7 +43,20 @@ static int Commsem()
 		return -1;
 	}
 	return semid;
-}*/
+}
+ int set_semvalue(int semid)
+{
+    // 用于初始化信号量，在使用信号量前必须这样做
+    union semun num;
+ 
+    num.val = 1;
+    if (semctl(semid, 0, SETVAL, num) == -1)
+    {
+        return 0;
+    }
+    return 1;
+}
+
 int sem_p(int sem_id) 
 {
     struct sembuf sem_buf;
@@ -45,7 +65,7 @@ int sem_p(int sem_id)
     sem_buf.sem_flg=SEM_UNDO;//系统退出前未释放信号量，系统自动释放
     if (semop(sem_id,&sem_buf,1)==-1) {
         perror("Sem P operation");
-        exit(1);
+        return -1;
     }
     return 0;
 }
@@ -58,12 +78,12 @@ int sem_v(int sem_id)
     sem_buf.sem_flg=SEM_UNDO;
     if (semop(sem_id,&sem_buf,1)==-1) {
         perror("Sem V operation");
-        exit(1);
+        return -1;
     }
     return 0;
 }
 
-static int CommShm(int size,int flags)
+int CommShm(int size,int flags)
 {
 	key_t key = ftok(PATHNAME,PROJ_ID);
 	if(key < 0)
@@ -94,7 +114,7 @@ int CreateShm(int size)
 }
 int GetShm(int size)
 {
-	return CommShm(size,IPC_CREAT);   //如果不存在就创建
+	return CommShm(size,IPC_CREAT| 0666);   //如果不存在就创建
 }
 
 #endif
