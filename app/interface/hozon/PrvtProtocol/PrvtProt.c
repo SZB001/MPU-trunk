@@ -279,6 +279,7 @@ static void *PrvtProt_main(void)
 		log_set_level(LOG_HOZON, LOG_DEBUG);
 		log_set_level(LOG_SOCK_PROXY, LOG_DEBUG);
 		log_set_level(LOG_GB32960, LOG_DEBUG);
+		log_set_level(LOG_UPER_ECDC, LOG_DEBUG);
 #endif
 		PP_HBRateSwitch.IGNnewst = dev_get_KL15_signal();
 		if(PP_HBRateSwitch.IGNoldst != PP_HBRateSwitch.IGNnewst)
