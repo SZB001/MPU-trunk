@@ -150,4 +150,5 @@ extern unsigned int PP_hbTimeoutStatus(void);
 extern void InitPP_netstatus_Parameter(void);
 extern void PP_netstatus_run(void);
 extern uint8_t PP_netstatus_pubilcfaultsts(uint64_t *timestamp);
+extern void PP_identificat_readESK(uint8_t *esk);
 #endif

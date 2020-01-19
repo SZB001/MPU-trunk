@@ -272,6 +272,14 @@ int PP_identificat_rcvdata(uint8_t *dt)
 	return 0;
 }
 
+/*
+* 读取esk
+*/
+void PP_identificat_readESK(uint8_t *esk)
+{
+	memcpy(esk,DataSk,16);
+}
+
 
 
 

@@ -185,6 +185,19 @@ int app_shell_drcfg(int argc, const char **argv)
     shellprintf("BDL ADDR PKI = %s\r\n", bdlLinkAddr);
     shellprintf("BDL PORT PKI = %d\r\n", bdlPort);
 
+	uint8_t esk[16] = {0};
+    PP_identificat_readESK(esk);
+    shellprintf("ESK =");
+    for(i = 0;i < 16;i++)
+    {
+        shellprintf("%02X", esk[i]);
+        if(i < 15)
+        {
+            shellprintf(" ");
+        }
+    }
+    shellprintf("\r\n");
+
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_DBC_PATH, buff, &len);
