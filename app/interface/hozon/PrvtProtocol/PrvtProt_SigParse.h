@@ -53,7 +53,8 @@ description�� macro definitions
 #define PP_CANSIGN_ODOMETERUPDATE    	0x1C//总计里程同步状态
 #define PP_CANSIGN_ACAUTOST    	        0x1D//空调auto状态
 #define PP_CANSIGN_HVREADY    	        0x1F//HV Ready状态
-#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_HVREADY + 1)
+#define PP_CANSIGN_BTMCHARGECMD    	    0x20//BTM充电请求
+#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_BTMCHARGECMD + 1)
 /***********�꺯��***********/
 
 
@@ -106,4 +107,5 @@ extern unsigned char PrvtProt_SignParse_chrgGunCnctSt(void);
 extern unsigned char PrvtProt_SignParse_OdomtrUpdtSt(void);
 extern unsigned char PrvtProt_SignParse_ACAutoSt(void);
 extern unsigned char PrvtProt_SignParse_HVReadySt(void);
+extern unsigned char PrvtProt_SignParse_BTMChrgCmd(void);
 #endif 

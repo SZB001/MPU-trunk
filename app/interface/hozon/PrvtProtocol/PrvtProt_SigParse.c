@@ -93,6 +93,19 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
 }
 
 /*
+ *	BTM充电请求
+  */
+unsigned char PrvtProt_SignParse_BTMChrgCmd(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_BTMCHARGECMD] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_BTMCHARGECMD])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
+
+/*
  *	HV Ready状态
   */
 unsigned char PrvtProt_SignParse_HVReadySt(void)
