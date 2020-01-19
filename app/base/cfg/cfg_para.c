@@ -29,7 +29,7 @@ author        liuzhongwen
 #include "dev_api.h"
 #include "udef_cfg_api.h"
 
-#define CFG_PARA_DBC_PATH   "/usrdata/dbc/GB-EP30_CAN_r4_011WIP_v1.1.dbc"
+#define CFG_PARA_DBC_PATH   "/usrdata/dbc/GB-EP30_CAN_r4_011WIP_v1.2.dbc"
 
 static unsigned char cfg_para_buf[CFG_PARA_BUF_LEN];
 static pthread_mutex_t cfg_para_mutex;
