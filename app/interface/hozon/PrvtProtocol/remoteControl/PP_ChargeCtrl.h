@@ -144,4 +144,5 @@ extern void SetPP_ChargeCtrl_appointPara(void);
 extern int PP_ChargeCtrl_waketime(void);
 extern void PP_ChargeCtrl_HUBookingBackResp(void* HUbookingBackResp);
 extern void PP_ChargeCtrl_informTsp(void);
+extern void PP_ChargeCtrl_BtmRequest(void);
 #endif 

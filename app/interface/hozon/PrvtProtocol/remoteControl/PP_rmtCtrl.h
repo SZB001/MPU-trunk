@@ -141,6 +141,7 @@ typedef enum
 	RMTCTRL_HU,//车机
 	RMTCTRL_TBOX,  //TBOX
 	RMTCTRL_SHELL, //SHELL命令
+	RMTCTRL_BTM,
 }PP_RMTCTRL_CTRLSTYLE;//控制方式
 
 typedef enum

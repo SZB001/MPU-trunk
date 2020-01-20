@@ -1,6 +1,6 @@
 /****************************************************************
 file:         main.c
-description:  the source file of shell client implemention
+description:  Upload files to https using libcurl
 date:         2020/1/6
 author        wangzhiwei
 ****************************************************************/
@@ -185,6 +185,7 @@ int main(int argc, char *argv[])
 			
 			if((dir = opendir(file_path)) != NULL)     //打开文件夹
 			{
+			
 				printf("open file_path success \n");
 	
 				while((ptr = readdir(dir)) != NULL)   

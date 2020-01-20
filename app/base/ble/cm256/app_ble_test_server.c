@@ -92,7 +92,7 @@ int app_ble_test_server_start(void)
 	{
 		return -1;
 	}
-    GKI_delay(1000);
+    GKI_delay(10);
 
     /*Create GATT Service*/
 #if 1
@@ -113,7 +113,7 @@ int app_ble_test_server_start(void)
 	{
 		return -1;
 	}
-    GKI_delay(1000);
+    GKI_delay(10);
 
   /* Add a characteristic */
     current_server_index = ql_app_ble_cb.current_server;
@@ -137,7 +137,7 @@ int app_ble_test_server_start(void)
 	{
 		return -1;
 	}
-    GKI_delay(1000);
+    GKI_delay(10);
 	printf("current_server_index = %d\r\n",current_server_index);
 	printf("********************************38\r\n");
 
@@ -157,7 +157,7 @@ int app_ble_test_server_start(void)
     ble_addchar_param.property = BSA_GATT_CHAR_PROP_BIT_WRITE | BSA_GATT_CHAR_PROP_BIT_READ|BSA_GATT_CHAR_PROP_BIT_NOTIFY|BSA_GATT_CHAR_PROP_BIT_INDICATE;
     
     iRet = ql_ble_server_add_char(&ble_addchar_param);
-    GKI_delay(1000);
+    GKI_delay(10);
 	printf("********************************10\r\n");
 
 	current_server_index = ql_app_ble_cb.current_server;
@@ -173,7 +173,7 @@ int app_ble_test_server_start(void)
 	{
 		return -1;
 	}
-    GKI_delay(1000);
+    GKI_delay(10);
 	printf("********************************11\r\n");
 
      /*Start BLE Service*/
@@ -186,7 +186,7 @@ int app_ble_test_server_start(void)
 	{
 		return -1;
 	}
-    GKI_delay(1000);
+    GKI_delay(10);
 #endif
     /* make discoverable & connectable */
     printf("********************************1\r\n");

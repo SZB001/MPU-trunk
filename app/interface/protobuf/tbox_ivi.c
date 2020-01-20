@@ -366,7 +366,7 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 	    }
 	}
     Tbox__Net__TopMessage TopMsg;
-    tbox__net__top_message__init( &TopMsg );
+    tbox__net__top_message__init( &TopMsg ); 
 	switch( id )
 	{
 		case TBOX__NET__MESSAGETYPE__REQUEST_OTAUPDATE_TASK:
@@ -379,6 +379,7 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 				fotapush_cnt = 0;
 				otaupdate_flag = 0;//清除同步标志
 				PP_FIP_InfoPush_cb(IVI_FOTA_PUSH_FAIL_TIMEOUT);
+				log_e(LOG_IVI,"OTA PUSH HU responed timeout");
 			}
 		}
 		break;
