@@ -15,7 +15,7 @@ author        wangqinglong
 #include "cfg_api.h"
 #include "can_api.h"
 #include "uds_shell_vendor.h"
-
+#include "uds_did.h"
 /****************************************************************
 function:     uds_shell_set_uds
 description:  set uds server/client
@@ -154,6 +154,118 @@ int uds_shell_cleardt(int argc, const char **argv)
     return 0;
 }
 
+static int uds_shell_set_cfg(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: udssetcfg <value>\r\n");
+        return -1;
+    }
+    int cfg_value = 0;
+    sscanf((char *) argv[0], "%d", &cfg_value);
+    return set_cfg_code((unsigned char)cfg_value);
+}
+
+static int uds_shell_get_cfg_test(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: udsgetcftest <cfg type>\r\n");
+        return -1;
+    }
+    int ret = 0;
+    int cfg_type = 0;
+    sscanf((char *) argv[0], "%d", &cfg_type);
+    switch(cfg_type)
+    {
+        case 1:
+        {
+            unsigned char ble_ctl = get_ble_ctl();
+            log_o(LOG_UDS, "ble_ctl:%d", ble_ctl);
+            break;
+        }
+        case 2:
+        {
+            unsigned char ota_ctl = get_ota_ctl();
+            log_o(LOG_UDS, "ota_ctl:%d", ota_ctl);
+            break;
+        }
+        case 3:
+        {
+            unsigned char factory_mode = get_factory_mode();
+            log_o(LOG_UDS, "factory_mode:%d", factory_mode);
+            break;
+        }
+        default:
+            log_e(LOG_UDS, "cfg type error,cfg_type:%d", cfg_type);
+            ret = -1;
+            break;
+    }
+    return ret;
+}
+
+
+static int uds_shell_set_cfg_test(int argc, const char **argv)
+{
+    if (argc != 2)
+    {
+        shellprintf(" usage: udssetcftest <cfg type> <value>\r\n");
+        return -1;
+    }
+    int cfg_type = 0;
+    int cfg_value = 0;
+    sscanf((char *) argv[0], "%d", &cfg_type);
+    sscanf((char *) argv[1], "%d", &cfg_value);
+    int ret = 0;
+    switch(cfg_type)
+    {
+        case 1:
+        {
+            set_ble_ctl((unsigned char)cfg_value);
+            if(ret == 0)
+            {
+                log_o(LOG_UDS, "set bluetooth ctrl success!");
+            }
+            else
+            {
+                log_e(LOG_UDS, "set bluetooth ctrl failed, ret:%d", ret);
+            }
+            break;
+        }
+        case 2:
+        {
+            set_ota_ctl((unsigned char)cfg_value);
+            if(ret == 0)
+            {
+                log_o(LOG_UDS, "set OTA ctrl success!");
+            }
+            else
+            {
+                log_e(LOG_UDS, "set OTA ctrl failed, ret:%d", ret);
+            }
+            break;
+        }
+        case 3:
+        {
+            set_factory_mode((unsigned char)cfg_value);
+            if(ret == 0)
+            {
+                log_o(LOG_UDS, "set factory mode success!");
+            }
+            else
+            {
+                log_e(LOG_UDS, "set factory mode failed, ret:%d", ret);
+            }
+            break;
+        }
+        default:
+            log_e(LOG_UDS, "cfg type error,cfg_type:%d", cfg_type);
+            ret = -1;
+            break;
+    }
+    return ret;
+}
+
 /****************************************************************
 function:     uds_shell_init
 description:  initiaze wireless communcaiton device
@@ -180,6 +292,9 @@ int uds_shell_init(INIT_PHASE phase)
             shell_cmd_register("dumpuds",    uds_shell_dump_uds,         "dump uds diag information");
             shell_cmd_register("cleardt",    uds_shell_cleardt,          "clear uds diag fault information)");
             shell_cmd_register("dumpvf",     J1939_shell_dump_vhflt,     "dump fault of current generate");
+            shell_cmd_register("udssetcfg",  uds_shell_set_cfg,     "uds set cfg code");
+            shell_cmd_register("udsgetcfgtest",  uds_shell_get_cfg_test,     "uds get cfg test");
+            shell_cmd_register("udssetcfgtest",  uds_shell_set_cfg_test,     "uds set cfg code");
             break;
 
         default:

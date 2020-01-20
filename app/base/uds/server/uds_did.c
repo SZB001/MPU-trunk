@@ -1317,12 +1317,127 @@ int uds_did_set_configuration_code(unsigned char *did, unsigned int len)
         return UDS_INVALID_PARA;
     }
 
-    if(did[0]>1)
+    if(did[0] > 0x07)
     {
         log_e(LOG_UDS, "set configuration code value error, value:%d", did[0]);
         return NRC_RequestOutOfRange;
     }
-    return cfg_set_para(CFG_ITEM_EN_BLE, did, 1); 
+    return cfg_set_para(CFG_ITEM_EN_BLE, did, DID_LEN_CONFIGURATION_CODE);
+}
+
+
+int set_cfg_code(unsigned char cfg_code)
+{
+    if(cfg_code > 0x07)
+    {
+        log_e(LOG_UDS, "cfg code value is illegal!");
+        return -1;
+    }
+    return cfg_set_para(CFG_ITEM_EN_BLE, &cfg_code, DID_LEN_CONFIGURATION_CODE); 
+}
+
+
+unsigned char get_ble_ctl(void)
+{
+    unsigned char cfg_code[DID_LEN_CONFIGURATION_CODE] = {0x00};
+    unsigned int length = DID_LEN_CONFIGURATION_CODE;
+
+    int ret_get_cfg = cfg_get_para(CFG_ITEM_EN_BLE, cfg_code, &length);
+    if(ret_get_cfg != 0)
+    {
+        log_e(LOG_UDS, "get ble ctl error, storage error,ret:%d", ret_get_cfg);
+        return 0x01;/* default value */
+    }
+    return (cfg_code[0] & 0x01);
+}
+
+int set_ble_ctl(unsigned char ble_ctl)
+{
+    if(ble_ctl > 0x01)
+    {
+        log_e(LOG_UDS, "Bluetooth configuration value is illegal!, ble_ctl:%x", ble_ctl);
+        return -1;
+    }
+    unsigned char cfg_code[DID_LEN_CONFIGURATION_CODE] = {0x00};
+    unsigned int length = DID_LEN_CONFIGURATION_CODE;
+
+    int ret_get_cfg = cfg_get_para(CFG_ITEM_EN_BLE, cfg_code, &length);
+    if(ret_get_cfg != 0)
+    {
+        log_e(LOG_UDS, "set ble ctl error, storage error,ret:%d", ret_get_cfg);
+        return -1;
+    }
+    cfg_code[0] = (cfg_code[0] & 0xFE) | (ble_ctl & 0x01);
+    return cfg_set_para(CFG_ITEM_EN_BLE, cfg_code, DID_LEN_CONFIGURATION_CODE); 
+}
+
+unsigned char get_ota_ctl(void)
+{
+    unsigned char cfg_code[DID_LEN_CONFIGURATION_CODE] = {0x00};
+    unsigned int length = DID_LEN_CONFIGURATION_CODE;
+
+    int ret_get_cfg = cfg_get_para(CFG_ITEM_EN_BLE, cfg_code, &length);
+    if(ret_get_cfg != 0)
+    {
+        log_e(LOG_UDS, "get ota cfg error, storage error,ret:%d", ret_get_cfg);
+        return 0;/* default value */
+    }
+    return (cfg_code[0] & 0x02) >> 1;
+}
+
+int set_ota_ctl(unsigned char ota_cfg)
+{
+    if(ota_cfg > 0x01)
+    {
+        log_e(LOG_UDS, "OTA Ctrl value is illegal!");
+        return -1;
+    }
+    unsigned char cfg_code[DID_LEN_CONFIGURATION_CODE] = {0x00};
+    unsigned int length = DID_LEN_CONFIGURATION_CODE;
+
+    int ret_get_cfg = cfg_get_para(CFG_ITEM_EN_BLE, cfg_code, &length);
+    if(ret_get_cfg != 0)
+    {
+        log_e(LOG_UDS, "set ota cfg error, storage error,ret:%d", ret_get_cfg);
+        return 0;
+    }
+    cfg_code[0] = (cfg_code[0] & 0xFD) | ((ota_cfg & 0x01) << 1);
+    return cfg_set_para(CFG_ITEM_EN_BLE, cfg_code, DID_LEN_CONFIGURATION_CODE); 
+}
+
+unsigned char get_factory_mode(void)
+{
+    unsigned char cfg_code[DID_LEN_CONFIGURATION_CODE] = {0x00};
+    unsigned int length = DID_LEN_CONFIGURATION_CODE;
+
+    int ret_get_cfg = cfg_get_para(CFG_ITEM_EN_BLE, cfg_code, &length);
+    if(ret_get_cfg != 0)
+    {
+        log_e(LOG_UDS, "get factory mode error, Storage error,ret:%d", ret_get_cfg);
+        return 1;/* default value */
+    }
+    return (cfg_code[0] & 0x04) >> 2;
+}
+
+
+int set_factory_mode(unsigned char factory_mode)
+{
+    if(factory_mode > 0x01)
+    {
+        log_e(LOG_UDS, "Factory mode value is illegal!");
+        return -1;
+    }
+    unsigned char cfg_code[DID_LEN_CONFIGURATION_CODE] = {0x00};
+    unsigned int length = DID_LEN_CONFIGURATION_CODE;
+
+    int ret_get_cfg = cfg_get_para(CFG_ITEM_EN_BLE, cfg_code, &length);
+    if(ret_get_cfg != 0)
+    {
+        log_e(LOG_UDS, "set factory mode error, Storage error,ret:%d", ret_get_cfg);
+        return 1;
+    }
+    cfg_code[0] = (cfg_code[0] & 0xFB) | ((factory_mode & 0x01) << 2);
+    return cfg_set_para(CFG_ITEM_EN_BLE, cfg_code, DID_LEN_CONFIGURATION_CODE); 
 }
 
 int uds_did_get_phone(unsigned char *did, unsigned int len)

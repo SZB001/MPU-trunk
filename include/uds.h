@@ -42,4 +42,80 @@ void init_PP_rmtDiag_NodeFault(void);
 
 IS_UDS_TRIGGER_FAULT_TYPE get_is_uds_trigger_fault(void);
 
+
+
+/****************************************************************
+function:     get_ble_ctl
+description:  get bluetooth configuration
+input:        none
+output:       none
+return:       0:No bluetooth
+              1:With Bluetooth
+****************************************************************/
+unsigned char get_ble_ctl(void);
+
+
+
+/****************************************************************
+function:     set_ble_ctl
+description:  set bluetooth configuration
+input:        ble_ctl:
+                      0:No bluetooth
+                      1:With Bluetooth
+output:       none
+return:       0 indicates success;
+              others indicates failed
+****************************************************************/
+int set_ble_ctl(unsigned char ble_ctl);
+
+
+/****************************************************************
+function:     get_ota_ctl
+description:  get OTA ctrl
+input:        none
+output:       none
+return:       0:IHU Master
+              1:TBOX Master
+****************************************************************/
+unsigned char get_ota_ctl(void);
+
+
+/****************************************************************
+function:     set_ota_ctl
+description:  get OTA ctrl
+input:        ota_cfg
+                      0:IHU Master
+                      1:TBOX Master
+output:       none
+return:       0 indicates success;
+              others indicates failed
+****************************************************************/
+int set_ota_ctl(unsigned char ota_cfg);
+
+
+
+/****************************************************************
+function:     get_factory_mode
+description:  get factory mode
+input:        none
+output:       none
+return:       0:Non-factory mode
+              1:Factory mode
+****************************************************************/
+unsigned char get_factory_mode(void);
+
+
+
+/****************************************************************
+function:     set_factory_mode
+description:  dump uds information
+input:        Factory mode
+                          0:Non-factory mode
+                          1:Factory mode
+output:       none
+return:       0 indicates success;
+              others indicates failed
+****************************************************************/
+int set_factory_mode(unsigned char factory_mode);
+
 #endif
