@@ -48,6 +48,7 @@ description�� include the header file
 #include "PrvtProt_EcDc.h"
 #include "PrvtProt_cfg.h"
 #include "PrvtProt.h"
+#include "uds.h"
 #include "PrvtProt_remoteConfig.h"
 
 /*******************************************************
@@ -1684,11 +1685,10 @@ static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 		PrvtPro_SetHeartBeatPeriod((uint8_t)rmtCfg->COMMON.heartbeatTimeout);
 
 		uint8_t btKeyEntryEn;
-		btKeyEntryEn = PP_rmtCfg_enable_btKeyEntryEnabled();
+		btKeyEntryEn = get_ble_ctl();
 		if(rmtCfg->COMMON.btKeyEntryEnabled != btKeyEntryEn)
 		{
-			cfg_set_para(CFG_ITEM_EN_BLE, (unsigned char *)&rmtCfg->COMMON.btKeyEntryEnabled, 1);
-
+			set_ble_ctl((unsigned char)rmtCfg->COMMON.btKeyEntryEnabled);
 			sleep(3);
 			system("reboot");
 		}

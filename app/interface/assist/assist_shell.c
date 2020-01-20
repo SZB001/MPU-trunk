@@ -29,6 +29,7 @@ author        liuwei
 #include "fault_sync.h"
 #include "diag.h"
 #include "ble.h"
+#include "uds.h"
 #include "hozon_PP_api.h"
 
 extern uint8_t tbox_ivi_get_link_fault(uint64_t *timestamp);
@@ -285,8 +286,7 @@ int app_shell_drcfg(int argc, const char **argv)
     }
     shellprintf("\r\n");
 
-    len = 1;
-	ret |= cfg_get_para(CFG_ITEM_EN_BLE,&EnFlag,&len);
+    EnFlag = get_ble_ctl();
     shellprintf("BLE ENABLE = %u\r\n", EnFlag);
 
     len = 1;
