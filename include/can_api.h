@@ -29,7 +29,8 @@ typedef struct
     unsigned int  isRTR : 1;   /* RTR flag */
     unsigned int  isEID : 1;   /* EID flag */
     unsigned int  port  : 3;   /* can port */
-    unsigned int  res   : 9;
+    unsigned int  isRx  : 1;   /* tx or rx flag */ 
+    unsigned int  res   : 8;
     union
     {
         uint32_t data32[2];

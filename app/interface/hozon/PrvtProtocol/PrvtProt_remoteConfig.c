@@ -239,7 +239,7 @@ static int PP_rmtCfg_do_rcvMsg(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 		return 0;
 	}
 	
-	log_i(LOG_HOZON, "receive remote config message");
+	log_o(LOG_HOZON, "receive remote config message");
 	protocol_dump(LOG_HOZON, "remote_config_message", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
 			(rlen <= 18))
@@ -1271,54 +1271,6 @@ void PP_rmtCfg_setCfgficm(unsigned char obj,const void *data)
 }
 
 /******************************************************
-*������:PP_rmtCfg_SetmcuSw
-
-*��  �Σ�
-
-*����ֵ��
-
-*��  ����
-
-*��  ע��
-******************************************************/
-void PP_rmtCfg_SetmcuSw(const char *mcuSw)
-{
-	uint8_t rmt_mcuSw[11];
-	memset(rmt_mcuSw,0 , 11);
-	memcpy(rmt_mcuSw,mcuSw,strlen(mcuSw));
-	pthread_mutex_lock(&cfgdtmtx);
-	if (cfg_set_user_para(CFG_ITEM_HOZON_TSP_MCUSW, rmt_mcuSw, sizeof(rmt_mcuSw)))
-	{
-		log_e(LOG_HOZON, "save mcuSw failed");
-	}
-	pthread_mutex_unlock(&cfgdtmtx);
-}
-
-/******************************************************
-*������:PP_rmtCfg_SetmpuSw
-
-*��  �Σ�
-
-*����ֵ��
-
-*��  ����
-
-*��  ע��
-******************************************************/
-void PP_rmtCfg_SetmpuSw(const char *mpuSw)
-{
-	uint8_t rmt_mpuSw[11];
-	memset(rmt_mpuSw,0 , 11);
-	memcpy(rmt_mpuSw,mpuSw,strlen(mpuSw));
-	pthread_mutex_lock(&cfgdtmtx);
-	if (cfg_set_user_para(CFG_ITEM_HOZON_TSP_MPUSW, rmt_mpuSw, sizeof(rmt_mpuSw)))
-	{
-		log_e(LOG_HOZON, "save mpuSw failed");
-	}
-	pthread_mutex_unlock(&cfgdtmtx);
-}
-
-/******************************************************
 *������:PP_rmtCfg_ShowCfgPara
 
 *��  �Σ�
@@ -1556,7 +1508,7 @@ static void PP_rmtCfg_send_cb(void * para)
 		{
 			if(PP_TXPAKG_SUCCESS == TxInform_ptr->successflg)//����ok
 			{
-				log_i(LOG_HOZON, "remote config take effect\r\n");
+				log_o(LOG_HOZON, "remote config is take effect\r\n");
 				if(PP_rmtCfg.state.cfgsuccess == 1)
 				{
 					//配置参数写入flash

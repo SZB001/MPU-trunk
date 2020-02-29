@@ -174,7 +174,8 @@ int SetPP_bluetoothstart_Request(char ctrlstyle,void *appdatarmtCtrl,void *dispt
 				{
 					PP_bluetoothstart.state.cmd = 2;
 					PP_bluetoothstart.state.req = 1;
-					PP_bluetoothstart.state.style = RMTCTRL_BLUETOOTH;		
+					PP_bluetoothstart.state.style = RMTCTRL_BLUETOOTH;	
+					log_o(LOG_HOZON,"bluetooth request start");
 				} 
 			}
 			break;

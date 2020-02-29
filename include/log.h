@@ -57,6 +57,7 @@ typedef enum LOG_ID
 	LOG_REMOTE_DIAG,
 	LOG_BLE,
 	LOG_WSRV,
+	LOG_CURL,
     LOG_MAX,
 } LOG_ID;
 

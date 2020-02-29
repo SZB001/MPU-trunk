@@ -703,9 +703,14 @@ int assist_get_call_status(void)
         status = 0x01;
     }
     /* outgoing call */
-    else if ((temp == 2) || (temp == 3))
+   // else if ((temp == 2) || (temp == 3))
+    else if(temp == 2)
     {
         status = 0x03;
+    }
+	else if(temp == 3)
+	{
+        status = 0x06;
     }
     /* on line */
     else if ((temp == 0) || (temp == 1))

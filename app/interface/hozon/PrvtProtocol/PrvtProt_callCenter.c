@@ -127,7 +127,6 @@ int PrvtProt_CC_Dial_Hang(void)
 			{
 				if(PP_rmtCfg_enable_ecall() == 1)  //ecall使能
 				{
-					//log_i(LOG_HOZON,"ECALL ENABLE");
 					if(assist_get_call_status() != 5) //电话状态非空闲
 					{
 						if( 0 == Get_call_tpye())  //ecall正在通话中
@@ -345,18 +344,4 @@ int PrvtProt_CC_mainfunction(void *task)
 	return 0;
 }
 
-/******************************************************
-*��������PrvtPro_SetEcallResp
 
-*��  �Σ�
-
-*����ֵ��
-
-*��  ��������ecall response
-
-*��  ע��
-******************************************************/
-void PrvtPro_SetcallCCReq(unsigned char req)
-{
-	CC_task.callreq = req;
-}

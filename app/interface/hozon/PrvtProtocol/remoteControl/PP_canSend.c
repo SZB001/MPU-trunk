@@ -45,8 +45,6 @@ static pthread_mutex_t sync_mutex_445 = PTHREAD_MUTEX_INITIALIZER;
 extern unsigned char GetPP_CertDL_CertValid(void);
 extern void pm_ring_wakeup(void);
 
-void PP_hozon_set_virtual(void);
-
 int PP_canSend_init(void)
 {
 	memset(&canmsg_3D2,0,sizeof(PP_can_msg_info_t));
@@ -60,7 +58,6 @@ int PP_canSend_init(void)
 	old_ID445_data |= (uint64_t)1 << 46;
 	old_ID445_data |= (uint64_t)1 << 54;
 	new_ID445_data = old_ID445_data;
-	shell_cmd_register("hozon_set_virtual", PP_hozon_set_virtual, "HU charge CTRL");
 	return 0;
 }
 
@@ -85,10 +82,6 @@ int PP_send_virtual_on_to_mcu(unsigned char on)
         return -2;
     }
     return 0;
-}
-void PP_hozon_set_virtual(void)
-{
-	PP_send_virtual_on_to_mcu(0);
 }
 
 /***********************************************
@@ -119,7 +112,6 @@ int PP_send_event_info_to_mcu(PP_can_msg_info_t *caninfo)
     buf[len++] = caninfo->times_event;
     memcpy(buf + len, &caninfo->period, sizeof(caninfo->period));
     len += sizeof(caninfo->period);
-	log_o(LOG_HOZON,"3D2 is sending");
 	if (scom_tl_send_frame(SCOM_TL_CMD_CTRL, SCOM_TL_SINGLE_FRAME, 0, buf, len))
 	{
 	   log_e(LOG_HOZON, "Fail to send msg to MCU");
@@ -228,7 +220,6 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 		if(dt == NULL)
 		{
 			memset(canmsg_3D2.data,0,8*sizeof(uint8_t));
-			log_o(LOG_HOZON,"3D2 is packing");
 		}
 		else
 		{

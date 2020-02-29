@@ -613,7 +613,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 				certAvailableSt = PP_CertDL_do_checkCertStatus();
 				if(1 == certAvailableSt)//检查吊销和过期
 				{
-					log_i(LOG_HOZON, "certificate need renew\n");
+					log_o(LOG_HOZON, "certificate need renew\n");
 					PP_CertDL.state.CertValid = 0;
 					(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
 					PP_CertDL.state.CertEnflag = 0;
@@ -622,7 +622,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 				}
 				else if(0 == certAvailableSt)
 				{
-					log_i(LOG_HOZON, "certificate available\n");
+					log_o(LOG_HOZON, "certificate available\n");
 					PP_CertDL.state.certAvailableFlag = 1;
 					PP_CertDL.state.checkSt = PP_CHECK_CERT_END;
 				}
@@ -654,12 +654,12 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 				dlSt = PP_CertDL_do_CertDownload(task);
 				if(1 == dlSt)
 				{//下载完成,验证证书
-					log_i(LOG_HOZON, "auth download success\n");
+					log_o(LOG_HOZON, "auth download success\n");
 					PP_CertDL.state.checkSt = PP_CHECK_CERT_VERIFYCERT;
 				}
 				else if(dlSt < 0)
 				{//下载失败
-					log_i(LOG_HOZON, "auth download fail\n");
+					log_o(LOG_HOZON, "auth download fail\n");
 					PP_CertDL.state.checkSt = PP_CHECK_CERT_END;
 				}
 				else
@@ -670,7 +670,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 			{
 				if(0 == MatchCertVerify())//验证证书
 				{
-					log_i(LOG_HOZON,"verify userAuth.cer success\n");
+					log_o(LOG_HOZON,"verify userAuth.cer success\n");
 					PrvtPro_SettboxId(1,PP_CertDownloadPara.tboxid);
 					if(0 == PP_CertDL_getCertSn(PP_CERTDL_CERTPATH))
 					{
@@ -681,7 +681,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 				}
 				else
 				{
-					log_e(LOG_HOZON,"verify userAuth.cer fail,inform tsp\n");
+					log_o(LOG_HOZON,"verify userAuth.cer fail,inform tsp\n");
 					if(0 == PP_CertDL_getCertSn(PP_CERTDL_CERTPATH_UPDATE))
 					{
 						PP_CertSt.para.mid = PP_CERTDL_MID_CERT_STATUS;
@@ -742,7 +742,7 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 			outofdataRet = PP_CertDL_checkCertOutofdate(PP_CERTDL_CERTPATH);//检查过期
 			if((3 == outofdataRet) || ((2 == outofdataRet) && (0 == PP_CertDL.state.renewfailflag)))
 			{
-				log_i(LOG_HOZON,"cert out of date\n");
+				log_o(LOG_HOZON,"cert out of date\n");
 				certRevoOutofdateflag = 1;
 			}
 		}
@@ -772,12 +772,11 @@ static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_CertDL_do_CertDownload(PrvtProt_task_t *task)
 {
-
 	switch(PP_CertDL.state.dlSt)
 	{
 		case PP_CERTDL_IDLE:
 		{
-			log_i(LOG_HOZON, "cdrtificate download request\n");
+			log_o(LOG_HOZON, "cdrtificate download request\n");
 			PP_CertDL.state.dlsuccess = PP_CERTDL_INITVAL;
 			PP_CertDL.state.waittime = tm_get_time();
 			PP_CertDL.state.dlSt = PP_CERTDL_CHECK_CIPHER_CSR;
@@ -838,7 +837,7 @@ static int PP_CertDL_do_CertDownload(PrvtProt_task_t *task)
 			{
 				if(PP_CERTDL_INITVAL != PP_CertDL.state.dlsuccess)
 				{
-					log_i(LOG_HOZON, "auth download \n");
+					log_o(LOG_HOZON, "auth download \n");
 					PP_CertDL.state.dlSt = PP_CERTDL_END;
 				}
 			}
@@ -916,13 +915,13 @@ static int PP_CertDL_do_CertRenew(PrvtProt_task_t *task)
 			updateSt = PP_CertDL_checkRevoRenewCert(task);
 			if(1 == updateSt)//更新完成
 			{
-				log_i(LOG_HOZON,"update userAuth.cer success\n");
+				log_o(LOG_HOZON,"update userAuth.cer success\n");
 				checkAvailSt = 0;
 				return 1;
 			}
 			else if(updateSt < 0)//更新失败
 			{
-				log_i(LOG_HOZON,"update userAuth.cer fail\n");
+				log_o(LOG_HOZON,"update userAuth.cer fail\n");
 				checkAvailSt = 0;
 				return -1;
 			}
@@ -960,7 +959,7 @@ static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 			if((PP_CertDL.state.CertEnflag == 0) &&	\
 					(PP_CertSt.CertEnCnt < PP_CERTEN_TIMES))//证书未启用,启用证书
 			{
-				log_i(LOG_HOZON, "certificate unenable,start to enable certificate\n");
+				log_o(LOG_HOZON, "certificate unenable,start to enable certificate\n");
 				PP_CertSt.CertEnCnt++;
 				CertEnSt = PP_CERTEN_REQ;
 			}
@@ -992,7 +991,7 @@ static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 		{
 			if(PP_CertSt.enSt == 1)
 			{
-				log_i(LOG_HOZON, "enable certificate success\n");
+				log_o(LOG_HOZON, "enable certificate success\n");
 				PP_CertDL.state.CertEnflag = 1;
 				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
 				PP_CertDL.state.CertValid = 1;
@@ -1085,13 +1084,13 @@ static int PP_CertDL_do_checkRevocationList(PrvtProt_task_t *task)
 			{
 				if(1 == PP_CertRevoList.RLSt)
 				{
-					log_i(LOG_HOZON, "check revo list success\n");
+					log_o(LOG_HOZON, "check revo list success\n");
 					CheckRevoSt = PP_CHECK_REVO_END;
 					return 1;
 				}
 				else if(2 == PP_CertRevoList.RLSt)
 				{
-					log_i(LOG_HOZON, "check revo list fail\n");
+					log_o(LOG_HOZON, "check revo list fail\n");
 					CheckRevoSt = PP_CHECK_REVO_END;
 					return -1;
 				}
@@ -1191,15 +1190,15 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task)
 			{
 				int certSnSignLength;
 				PP_CertUpdata.para.certSnLength = strlen((char*)PP_CertUpdata.para.certSn);
-				log_i(LOG_HOZON,"PPP_CertUpdata.para.certSnLength = %d ",PP_CertUpdata.para.certSnLength);
-				log_i(LOG_HOZON,"PP_CertUpdata.para.certSn = %s\n", PP_CertUpdata.para.certSn);
+				log_o(LOG_HOZON,"PPP_CertUpdata.para.certSnLength = %d ",PP_CertUpdata.para.certSnLength);
+				log_o(LOG_HOZON,"PP_CertUpdata.para.certSn = %s\n", PP_CertUpdata.para.certSn);
 				HzTboxdoSign(PP_CertUpdata.para.certSn,PP_CERTDL_TWOCERTKEYPATH,(char*)signinfo,&len);
 				memset(PP_CertUpdata.para.certSnSign,0,sizeof(PP_CertUpdata.para.certSnSign));
 				certSnSignLength = sizeof(PP_CertUpdata.para.certSnSign);
 				hz_base64_encode(PP_CertUpdata.para.certSnSign,&certSnSignLength,signinfo,len);
 				PP_CertUpdata.para.certSnSignLength = certSnSignLength;
-				log_i(LOG_HOZON,"PPP_CertUpdata.para.certSnSignLength = %d ",PP_CertUpdata.para.certSnSignLength);
-				log_i(LOG_HOZON,"PP_CertUpdata.para.certSnSign = %s\n", PP_CertUpdata.para.certSnSign);
+				log_o(LOG_HOZON,"PPP_CertUpdata.para.certSnSignLength = %d ",PP_CertUpdata.para.certSnSignLength);
+				log_o(LOG_HOZON,"PP_CertUpdata.para.certSnSign = %s\n", PP_CertUpdata.para.certSnSign);
 				PP_CertDL_CertRenewReq(task,&PP_CertUpdata);
 				PP_CertUpdata.allowupdata = 0;
 				updatawaittime = tm_get_time();
@@ -1218,12 +1217,12 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task)
 			{
 				if(1 == PP_CertUpdata.allowupdata)
 				{
-					log_i(LOG_HOZON,"Cert update allow\n");
+					log_o(LOG_HOZON,"Cert update allow\n");
 					PP_checkCertSt.updataSt = PP_CERTUPDATA_UDREQ;
 				}
 				else if(2 == PP_CertUpdata.allowupdata)
 				{
-					log_i(LOG_HOZON,"Cert update not allow\n");
+					log_o(LOG_HOZON,"Cert update not allow\n");
 					PP_checkCertSt.updataSt = PP_CERTUPDATA_END;
 				}
 				else
@@ -1255,7 +1254,7 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task)
 					filedata_ptr = (char*)malloc(sizeof(char)*size);
 					fread(filedata_ptr,1,size,fp);//每次读一个，共读size次
 
-					log_i(LOG_HOZON,"userAuth.csr =  %s",filedata_ptr);
+					log_o(LOG_HOZON,"userAuth.csr =  %s",filedata_ptr);
 					gb32960_getvin(vin);
 					PrvtProt_gettboxsn(PP_CertDL_SN);
 					PP_CertDL.para.CertDLReq.infoListLength = size + strlen(vin) + strlen("&&") + \
@@ -1311,12 +1310,12 @@ static int PP_CertDL_checkRevoRenewCert(PrvtProt_task_t *task)
 
 			if((1 == PP_CertUpdata.allowupdata) && (PP_CERTDL_SUCCESS == PP_CertDL.state.dlsuccess))
 			{
-				log_i(LOG_HOZON,"Cert update success\n");
+				log_o(LOG_HOZON,"Cert update success\n");
 				return 1;
 			}
 			else
 			{
-				log_i(LOG_HOZON,"Cert update fail\n");
+				log_o(LOG_HOZON,"Cert update fail\n");
 				return -1;
 			}
 		}

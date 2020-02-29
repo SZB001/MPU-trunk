@@ -254,12 +254,12 @@ int SetPP_autodoorCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 				if(PP_rmtautodoorCtrl.state.reqType ==PP_RMTCTRL_AUTODOOROPEN)
 				{
 					PP_rmtautodoorCtrl.state.autodoorcmd = PP_AUTODOOR_OPEN;
-					log_i(LOG_HOZON,"TSP remote auto unlock control");
+					log_o(LOG_HOZON,"TSP remote auto unlock control");
 				}
 				else
 				{
 					PP_rmtautodoorCtrl.state.autodoorcmd = PP_AUTODOOR_CLOSE;
-					log_i(LOG_HOZON,"TSP remote auto lock control");
+					log_o(LOG_HOZON,"TSP remote auto lock control");
 				}
 				PP_rmtautodoorCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
 				PP_rmtautodoorCtrl.state.style = RMTCTRL_TSP;
@@ -271,12 +271,12 @@ int SetPP_autodoorCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 				 if(cmd == 1 )//蓝牙关尾门
 				 {
 				 	PP_rmtautodoorCtrl.state.autodoorcmd = PP_AUTODOOR_CLOSE;
-					log_i(LOG_HOZON,"bluetooth auto lock control");
+					log_o(LOG_HOZON,"bluetooth auto lock control");
 				 }
 				 else if (cmd == 2) //蓝牙开尾门
 				 {
 				 	PP_rmtautodoorCtrl.state.autodoorcmd = PP_AUTODOOR_OPEN;
-					log_i(LOG_HOZON,"bluetooth auto unlock control");
+					log_o(LOG_HOZON,"bluetooth auto unlock control");
 				 }
 				 PP_rmtautodoorCtrl.state.req = 1;
 				 PP_rmtautodoorCtrl.state.style = RMTCTRL_BLUETOOTH;	 

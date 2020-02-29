@@ -144,8 +144,13 @@ static int msg_check(unsigned char *buf, int *len)
     //*len = ilen;
 
     if (ilen < DCCP_PKG_CS_SIZE)    /* length */
-    {
+    {int i;
         log_e(LOG_MID, "header is broken! len=%d,ilen=%d\r\n", *len,ilen);
+        for(i=0;i<*len;i++)
+        {
+            printf("%02X ", buf[i]);
+        }
+        printf("\r\n");
         return -1;
     }
 
@@ -156,7 +161,7 @@ static int msg_check(unsigned char *buf, int *len)
     {
         int i;
         log_e(LOG_MID, "dcom_checksum unmatch!, cs:%u,%u", buf[ilen - DCCP_PKG_CS_SIZE], cs);
-        for(i=0;i<ilen;i++)
+        for(i=0;i<*len;i++)
         {
             printf("%02X ", buf[i]);
         }

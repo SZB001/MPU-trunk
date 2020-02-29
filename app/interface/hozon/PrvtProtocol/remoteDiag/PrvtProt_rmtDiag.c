@@ -51,7 +51,7 @@ description锛� include the header file
 #include "../PrvtProt_cfg.h"
 #include "../PrvtProt.h"
 #include "tbox_ivi_api.h"
-
+#include "uds.h"
 #include "PP_rmtDiag_cfg.h"
 #include "../PrvtProt_lock.h"
 #include "PrvtProt_rmtDiag.h"
@@ -263,7 +263,7 @@ static int PP_rmtDiag_do_rcvMsg(PrvtProt_task_t *task)
 		return 0;
 	}
 
-	log_i(LOG_HOZON, "receive diag message");
+	log_o(LOG_HOZON, "receive diag message");
 	protocol_dump(LOG_HOZON, "PRVT_PROT", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
 			(rlen <= 18))//鍒ゆ柇鏁版嵁甯уご鏈夎鎴栬�呮暟鎹暱搴︿笉瀵�
@@ -320,7 +320,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		{
 			if((0 == PP_rmtDiag.state.diagReq) && (PP_DIAGRESP_IDLE == PP_rmtDiag.state.diagrespSt))
 			{
-				log_i(LOG_HOZON, "receive remote diag request\n");
+				log_o(LOG_HOZON, "receive remote diag request\n");
 				PP_rmtDiag.state.diagReq 	 = 1;
 				PP_rmtDiag.state.diagType 	 = Appdata.DiagnosticReq.diagType;
 				PP_rmtDiag.state.diageventId = MsgDataBody.eventId;
@@ -338,7 +338,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		{
 			if(PP_IMAGEACQRESP_IDLE == PP_rmtDiag.state.ImageAcqRespSt)
 			{
-				log_i(LOG_HOZON, "receive remote ImageAcquisition request\n");
+				log_o(LOG_HOZON, "receive remote ImageAcquisition request\n");
 				PP_rmtDiag.state.ImageAcquisitionReq = 1;
 				PP_rmtDiag.state.dataType    = Appdata.ImageAcquisitionReq.dataType;
 				PP_rmtDiag.state.ImagedurationTime  =  Appdata.ImageAcquisitionReq.durationTime;
@@ -356,7 +356,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		{
 			if(PP_LOGACQRESP_IDLE == PP_rmtDiag.state.LogAcqRespSt)
 			{
-				log_i(LOG_HOZON, "receive remote LogAcquisition request\n");
+				log_o(LOG_HOZON, "receive remote LogAcquisition request\n");
 				PP_rmtDiag.state.LogAcquisitionReq = 1;
 				PP_rmtDiag.state.logType    	=  Appdata.LogAcquisitionResp.logType;
 				PP_rmtDiag.state.logLevel  		=  Appdata.LogAcquisitionResp.logLevel;
@@ -391,6 +391,8 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		case PP_MID_DIAG_CANBUSMSGCOLLREQ:
 		{
 			//TAP 向 TCU 请求车辆进行 CAN 总线报文采集
+			log_o(LOG_HOZON, "rcv Can bus message collect request\n");
+			PP_FileUpload_CanMsgRequest(Appdata.CanBusMessageCollectReq.durationTime);
 		}
 		break;
 		default:
@@ -431,6 +433,12 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 	int ret = 0;
 	int idlenode;
 	int mtxlockst = 0;
+
+	if(1 == get_factory_mode())
+	{
+		return 0;
+	}
+
 	switch(PP_rmtDiag.state.diagrespSt)
 	{
 		case PP_DIAGRESP_IDLE:
@@ -439,7 +447,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 			{
 				if(0 == PP_rmtCfg_enable_dtcEnabled())
 				{
-					log_e(LOG_HOZON, "remote diag func unenable\n");
+					log_o(LOG_HOZON, "remote diag func unenable\n");
 					PP_rmtDiag.state.diagReq = 0;
 					PP_rmtDiag.state.result = 0;
 					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_DIAGUNENABLE;
@@ -453,7 +461,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 				}
 
 
-				log_i(LOG_HOZON, "start remote diag\n");
+				log_o(LOG_HOZON, "start remote diag\n");
 				memset(&PP_rmtDiag_Fault,0 , sizeof(PP_rmtDiag_Fault_t));
 				mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_DIAG_TSPDIAG);
 				if(PP_LOCK_OK == mtxlockst)
@@ -525,7 +533,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 				{
 					getPPrmtDiagCfg_Faultcode(PP_rmtDiag.state.diagType,&PP_rmtDiag_Fault);//读取故障码
 					getPPrmtDiag_tboxFaultcode(&PP_rmtDiag_Fault);
-					log_i(LOG_HOZON, "PP_rmtDiag.state.diagType = %d and PP_rmtDiag_Fault.failNum = %d\n",PP_rmtDiag.state.diagType,PP_rmtDiag_Fault.faultNum);
+					log_o(LOG_HOZON, "PP_rmtDiag.state.diagType = %d and PP_rmtDiag_Fault.failNum = %d\n",PP_rmtDiag.state.diagType,PP_rmtDiag_Fault.faultNum);
 					PP_rmtDiag.state.result = PP_rmtDiag_Fault.sueecss;
 					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
 					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
@@ -556,7 +564,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 
 				if(1 == ret)//上报完成
 				{
-					log_i(LOG_HOZON, "fault report finish\n");
+					log_o(LOG_HOZON, "fault report finish\n");
 					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_END;
 				}
 			}
@@ -595,6 +603,12 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 {
 	int mtxlockst = 0;
+
+	if(1 == get_factory_mode())
+	{
+		return 0;
+	}
+
 	switch(PP_rmtDiag.state.cleanfaultSt)
 	{
 		case PP_FAULTCODECLEAN_IDLE:
@@ -603,7 +617,7 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 			{
 				if(0 == PP_rmtCfg_enable_dtcEnabled())
 				{
-					log_e(LOG_HOZON, "remote diag func unenable\n");
+					log_o(LOG_HOZON, "remote diag func unenable\n");
 					PP_rmtDiag.state.cleanfaultReq = 0;
 					PP_rmtDiag.state.faultCleanResult	= 0;
 					PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_DIAGUNENABLE;
@@ -617,7 +631,7 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 				}
 
 
-				log_i(LOG_HOZON, "rmt clean fault request\n");
+				log_o(LOG_HOZON, "rmt clean fault request\n");
 				mtxlockst = setPP_lock_odcmtxlock(PP_LOCK_DIAG_CLEAN);
 				if(PP_LOCK_OK == mtxlockst)
 				{
@@ -656,7 +670,7 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 		{
 			if(gb_data_vehicleSpeed() <= 50)//判断车速<=5km/h,满足诊断条件
 			{
-				log_i(LOG_HOZON, "vehi speed <= 5km,start clean fault code\n");
+				log_o(LOG_HOZON, "vehi speed <= 5km,start clean fault code\n");
 				PP_rmtDiag.state.faultcleanwaittime = tm_get_time();
 				PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_REQ;
 			}
@@ -731,13 +745,18 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_rmtDiag_do_checkrmtImageReq(PrvtProt_task_t *task)
 {
+	if(1 == get_factory_mode())
+	{
+		return 0;
+	}
+
 	switch(PP_rmtDiag.state.ImageAcqRespSt)
 	{
 		case PP_IMAGEACQRESP_IDLE:
 		{
 			if(1 == PP_rmtDiag.state.ImageAcquisitionReq)
 			{
-				log_i(LOG_HOZON, "start remote ImageAcquisition\n");
+				log_o(LOG_HOZON, "start remote ImageAcquisition\n");
 				PP_rmtDiag.state.ImageAcquisitionReq = 0;
 				PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_INFORM_HU;
 			}
@@ -777,13 +796,18 @@ static int PP_rmtDiag_do_checkrmtImageReq(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task)
 {
+	if(1 == get_factory_mode())
+	{
+		return 0;
+	}
+
 	switch(PP_rmtDiag.state.LogAcqRespSt)
 	{
 		case PP_LOGACQRESP_IDLE:
 		{
 			if(1 == PP_rmtDiag.state.LogAcquisitionReq)
 			{
-				log_i(LOG_HOZON, "start remote LogAcquisition\n");
+				log_o(LOG_HOZON, "start remote LogAcquisition\n");
 				PP_rmtDiag.state.LogAcquisitionReq = 0;
 				PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_INFORM_UPLOADLOG;
 			}
@@ -797,7 +821,7 @@ static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task)
 			}
 			else if(PP_LOG_HU == PP_rmtDiag.state.logType)
 			{//通知HU 上传log
-				log_i(LOG_HOZON, "inform HU upload log\n");
+				log_o(LOG_HOZON, "inform HU upload log\n");
 				ivi_logfile appointchargeSt;
 				appointchargeSt.aid = PP_AID_DIAG;
 				appointchargeSt.mid = PP_MID_DIAG_LOGACQRESP;
@@ -842,6 +866,11 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 	int idlenode;
 	int mtxlockst = 0;
 
+	if(1 == get_factory_mode())
+	{
+		return 0;
+	}
+
 	switch(PP_rmtDiag.state.activeDiagSt)
 	{
 		case PP_ACTIVEDIAG_IDLE:
@@ -878,11 +907,11 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 			{//已上传过故障码
 				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_END;
 				log_i(LOG_HOZON,"The fault code has been uploaded today\n");
-				log_i(LOG_HOZON,"uploaded date : %d\n",rmtDiag_datetime.datetime);
+				log_o(LOG_HOZON,"uploaded date : %d\n",rmtDiag_datetime.datetime);
 			}
 			else
 			{
-				log_i(LOG_HOZON,"start to daig report\n");
+				log_o(LOG_HOZON,"start to daig report\n");
 				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKOTACOND;
 			}
 		}
@@ -929,7 +958,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 		{
 			if(0 == PP_rmtCfg_enable_dtcEnabled())
 			{
-				log_e(LOG_HOZON, "remote diag func unenable\n");
+				log_o(LOG_HOZON, "remote diag func unenable\n");
 				PP_rmtDiag.state.result = 0;
 				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_DIAGUNENABLE;
 				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
@@ -941,7 +970,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 			{
 				if(gb_data_vehicleSpeed() <= 50)//判断车速<=5km/h,满足诊断条件
 				{
-					log_i(LOG_HOZON,"vehicle speed <= 5km/h,start diag\n");
+					log_o(LOG_HOZON,"vehicle speed <= 5km/h,start diag\n");
 					PP_rmtDiag.state.faultquerySt = 0;
 					setPPrmtDiagCfg_QueryFaultReq(PP_DIAG_ALL);//请求查询所有故障码
 					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
@@ -1345,7 +1374,7 @@ static void PP_rmtDiag_send_cb(void * para)
 		case PP_MID_DIAG_RESP:
 		{
 			//PP_rmtDiag.state.diagReq = 0;
-			log_i(LOG_HOZON, "send remote diag response ok\n");
+			log_o(LOG_HOZON, "send remote diag response ok\n");
 		}
 		break;
 		case PP_MID_DIAG_STATUS:
@@ -1388,7 +1417,7 @@ void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 	int i;
 	if(0 == reqtype)
 	{
-		log_i(LOG_HOZON, "receive remote diag request\n");
+		log_o(LOG_HOZON, "receive remote diag request\n");
 		PP_rmtDiag.state.diagReq = 1;
 		PP_rmtDiag.state.diagType = diagType;
 		PP_rmtDiag.state.diageventId = 100;
@@ -1398,7 +1427,7 @@ void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 	}
 	else if(1 == reqtype)//主动上报所有故障码
 	{
-		log_i(LOG_HOZON, " diag fault code active report request\n");
+		log_o(LOG_HOZON, " diag fault code active report request\n");
 		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
 		PP_rmtDiag.state.activeDiagFlag = 1;
 		rmtDiag_datetime.diagflag = 0;
@@ -1415,7 +1444,7 @@ void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 	}
 	else//test
 	{
-		log_i(LOG_HOZON, " diag fault code active report test\n");
+		log_o(LOG_HOZON, " diag fault code active report test\n");
 		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
 		PP_rmtDiag.state.result = 1;
 		PP_rmtDiag_allFault.currdiagtype = PP_DIAG_VCU;
@@ -1540,7 +1569,7 @@ char getPP_rmtDiag_Idle(void)
 void PP_rmtDiag_mcuRTCweakup(void)
 {
 	PP_rmtDiag.state.mcurtcflag = 1;
-	log_i(LOG_HOZON, "mcu rtc weakup\n");
+	log_o(LOG_HOZON, "mcu rtc weakup\n");
 }
 
 /******************************************************
@@ -1556,8 +1585,8 @@ void PP_rmtDiag_mcuRTCweakup(void)
 ******************************************************/
 void PP_rmtDiag_showPara(void)
 {
-	log_i(LOG_HOZON, "mcu rtc weakup = %s\n",PP_rmtDiag.state.mcurtcflag?"ture":"false");
-	log_i(LOG_HOZON, "PP_rmtDiag.state.sleepflag = %d\n",PP_rmtDiag.state.sleepflag);
+	log_o(LOG_HOZON, "mcu rtc weakup = %s\n",PP_rmtDiag.state.mcurtcflag?"ture":"false");
+	log_o(LOG_HOZON, "PP_rmtDiag.state.sleepflag = %d\n",PP_rmtDiag.state.sleepflag);
 }
 
 

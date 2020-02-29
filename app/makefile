@@ -9,7 +9,7 @@ TARGETNAME := tbox_app.bin
 CCXXFLAGS = -DDEBUG -g
 
 # app module 
-OFLAGS = -L $(TARGET_PATH_R)  -lassist -lgb32960 -lprvtprot -lsockproxy -lasn -lFileUpload -lremoteControl -lremoteDiag -livi -lprotocol  -lftp -lhttp -lminizip -lzlib -lluajit -lremote_diag -lKSPSM -lxdsse -lwsrv -lfota -ludefcfg
+OFLAGS = -L $(TARGET_PATH_R)  -lassist -lgb32960 -lprvtprot -lsockproxy -lasn -lFileUpload -lCanMessageUL -lremoteControl -lremoteDiag -livi -lprotocol  -lftp -lhttp -lminizip -lzlib -lluajit -lremote_diag -lKSPSM -lxdsse -lwsrv -lfota -ludefcfg
 # base module
 OFLAGS +=  -ltcom -lshell -lscom -lcfg -lgps -lcan -lnm  -lat -lpm -ldev -lupg -lfault -lstatus -ldev_time -lsock -ldsu -luds -luds_client -luds_server -luds_vendor -lJ1939 -lfct  -lble -lbsa_client 
 # mid module

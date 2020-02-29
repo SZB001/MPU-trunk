@@ -767,6 +767,11 @@ void ivi_callstate_response_send(int fd  )
 		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_CONNECTED;
 		log_o(LOG_IVI,"connected call");
 	}
+	else if(call_flag == 6)
+	{
+		callstate.call_status = TBOX__NET__CALL_STATUS_ENUM__CALL_RING;
+		log_o(LOG_IVI,"");
+	}
 	else         //挂断电话
 	{
 		callstate.call_status =  TBOX__NET__CALL_STATUS_ENUM__CALL_DISCONNECTED;
@@ -1010,7 +1015,6 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 					TopMsg.signal_power = 4;
 				}
             }
-			log_o(LOG_IVI,"power = %d",TopMsg.signal_power);
             result.result = true;
             
             break;
@@ -1319,7 +1323,7 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 					log_e(LOG_IVI,"TopMsg->tbox_gps_ctrl == NULL !!!");
 					return;
 			}
-            log_o(LOG_IVI,"onoff sta %d.",TopMsg->tbox_gps_ctrl->onoff);
+            //log_o(LOG_IVI,"onoff sta %d.",TopMsg->tbox_gps_ctrl->onoff);
             switch ( TopMsg->tbox_gps_ctrl->onoff )
             {
                 case TBOX__NET__GPS__SEND__ON_OFF__GPS_ON:
@@ -1412,7 +1416,7 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 				log_e(LOG_IVI,"TopMsg->ihu_charge_appoointmentsts == NULL");
 				return ;
 			}
-			log_i(LOG_IVI,"HuChargeAppoint.effectivestate = %d",TopMsg->ihu_charge_appoointmentsts->effectivestate);
+			log_o(LOG_IVI,"HuChargeAppoint.effectivestate = %d",TopMsg->ihu_charge_appoointmentsts->effectivestate);
 			if(TopMsg->ihu_charge_appoointmentsts->effectivestate == 1)
 			{
 				HuChargeAppoint.cmd = PP_RMTCTRL_APPOINTCHARGE;
@@ -1478,7 +1482,7 @@ void ivi_msg_request_process(unsigned char *data, int len,int fd)
 			}
 			else
 			{
-				log_o(LOG_IVI,"TSP FOTA UODATing INFORM HU success......");
+				log_o(LOG_IVI,"TSP FOTA UODATing INFORM HU fail......");
 				PP_FIP_InfoPush_cb(IVI_FOTA_PUSH_FAIL);
 			}
 			break;	
@@ -1706,7 +1710,7 @@ void *ivi_main(void)
 	}
 	if(hu_pki_en == 0)
 	{
-		ret = tbox_ivi_create_tcp_socket();
+loop:	ret = tbox_ivi_create_tcp_socket();
 		if( ret != 0 )
 		{
 			if (tcp_fd < 0)
@@ -1815,6 +1819,7 @@ void *ivi_main(void)
 	                    	log_o(LOG_IVI,"Heartbeat timeout!!!!!!!");
 	                        close(ivi_clients[i].fd);
 	                        ivi_clients[i].fd = -1;
+							goto loop;
 	                    }
 	                    
 	                    if (FD_ISSET(ivi_clients[i].fd, &read_set))
@@ -1841,6 +1846,7 @@ void *ivi_main(void)
 	                            log_e(LOG_IVI, "Client(%d) exit\n", ivi_clients[i].fd);
 	                            close(ivi_clients[i].fd);
 	                            ivi_clients[i].fd = -1;
+								goto loop;
 	                        }
 	                    }
 	                }
@@ -2224,6 +2230,7 @@ void tbox_ivi_set_tsplogfile_InformHU(ivi_logfile *tsp)
 	tsplogfile.level = tsp->level;
 	tsplogfile.durationtime = tsp->durationtime;
 	tsplogfile_flag = 1;
+	log_o(LOG_IVI,"log is synchronized to the HU.");
 }
 
 void tbox_ivi_push_fota_informHU(uint8_t flag)
@@ -2295,7 +2302,7 @@ void tbox_ivi_ecall_srs_deal(uint8_t dt)
 				ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
 				log_o(LOG_IVI,"dev_get_SRS_signal() = %d,PP_rmtCtrl_cfg_CrashOutputSt() = %d",dev_get_SRS_signal(),PP_rmtCtrl_cfg_CrashOutputSt());
 			}
-			log_i(LOG_IVI, "SOS trigger by the srs!!!!!");
+			log_o(LOG_IVI, "SOS trigger by the srs!!!!!");
 		}
 	}
 }
@@ -2317,7 +2324,7 @@ void tbox_ivi_ecall_key_deal(uint8_t dt)
 				//下发远程诊断命令
 				ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
 			}
-			log_i(LOG_IVI, "SOS trigger by the key!!!!!");
+			log_o(LOG_IVI, "SOS trigger by the key!!!!!");
 		}
 	}
 }

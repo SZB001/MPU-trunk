@@ -368,7 +368,7 @@ static int PP_xcall_do_checkXcall(PrvtProt_task_t *task)
 	/* Live detection warning  */
 	if(1 == PP_xcall[PP_detection].state.req)
 	{
-		log_i(LOG_HOZON, "detection trig\n");
+		log_o(LOG_HOZON, "detection trig\n");
 		PP_xcall[PP_detection].state.req = 0;
 		if(0 == PP_xcall_xcallResponse(task,PP_detection))
 		{

@@ -54,7 +54,14 @@ description�� macro definitions
 #define PP_CANSIGN_ACAUTOST    	        0x1D//空调auto状态
 #define PP_CANSIGN_HVREADY    	        0x1F//HV Ready状态
 #define PP_CANSIGN_BTMCHARGECMD    	    0x20//BTM充电请求
-#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_BTMCHARGECMD + 1)
+#define PP_CANSIGN_VCU5SYSFAUTST    	0x21//VCU5 System Faults status
+#define PP_CANSIGN_MCU2FAULTLVL     	0x22//mcu2 fault level
+#define PP_CANSIGN_OVERCURRENTST     	0x23//总电流过流
+#define PP_CANSIGN_DIAGST            	0x24//动力电池系统故障
+#define PP_CANSIGN_AVHLAMPREQ           0x25//AVH Lamp Req
+#define PP_CANSIGN_EGSMERRST            0x26//EGSM故障状态
+#define PP_CANSIGN_ESCBRAKEWARNMAMP     0x27//ESC Brake Warning Lamp
+#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_ESCBRAKEWARNMAMP + 1)
 /***********�꺯��***********/
 
 
@@ -108,4 +115,11 @@ extern unsigned char PrvtProt_SignParse_OdomtrUpdtSt(void);
 extern unsigned char PrvtProt_SignParse_ACAutoSt(void);
 extern unsigned char PrvtProt_SignParse_HVReadySt(void);
 extern unsigned char PrvtProt_SignParse_BTMChrgCmd(void);
+extern unsigned char PrvtProt_SignParse_SysFaultSt(void);
+extern unsigned char PrvtProt_SignParse_Mcu2FltLvl(void);
+extern unsigned char PrvtProt_SignParse_overCurrSt(void);
+extern unsigned char PrvtProt_SignParse_DiagSts(void);
+extern unsigned char PrvtProt_SignParse_AVHLampSts(void);
+extern unsigned char PrvtProt_SignParse_EGSMErrSt(void);
+extern unsigned char PrvtProt_SignParse_BkWarnLampSt(void);
 #endif 

@@ -132,11 +132,11 @@ void PP_ACCtrl_init(void)
 		{
 			if(PP_rmtac_AppointBook[i].validFlg == 1)  //将有效的预约记录打印出来
 			{
-				log_e(LOG_HOZON,"There are currently reservation records\n");
-				log_e(LOG_HOZON, "PP_rmtac_AppointBook[%d].id = %d\n",i,PP_rmtac_AppointBook[i].id);
-				log_e(LOG_HOZON, "PP_rmtac_AppointBook[%d].hour = %d\n",i,PP_rmtac_AppointBook[i].hour);
-				log_e(LOG_HOZON, "PP_rmtac_AppointBook[%d].min = %d\n",i,PP_rmtac_AppointBook[i].min);
-				log_e(LOG_HOZON, "PP_rmtac_AppointBook[%d].period = %d\n",i,PP_rmtac_AppointBook[i].period);
+				log_i(LOG_HOZON,"There are currently reservation records\n");
+				log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].id = %d\n",i,PP_rmtac_AppointBook[i].id);
+				log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].hour = %d\n",i,PP_rmtac_AppointBook[i].hour);
+				log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].min = %d\n",i,PP_rmtac_AppointBook[i].min);
+				log_i(LOG_HOZON, "PP_rmtac_AppointBook[%d].period = %d\n",i,PP_rmtac_AppointBook[i].period);
 			}
 		}
 	}	
@@ -518,7 +518,7 @@ int SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 					if(cancel_flag == 0)
 					{
 						log_o(LOG_HOZON,"No such ID = %d",appointId);
-						log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
+						log_o(LOG_HOZON, "appointment id error,exit cancel appointment\n");
 					}
 				}
 				else
@@ -643,7 +643,7 @@ int SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 					if(cancel_flag == 0)
 					{
 						log_o(LOG_HOZON,"No such ID :%d",shell_actrl->id);
-						log_e(LOG_HOZON, "appointment id error,exit cancel appointment\n");
+						log_o(LOG_HOZON, "appointment id error,exit cancel appointment\n");
 					}
 				}
 			}
@@ -678,7 +678,7 @@ void PP_AcCtrl_acStMonitor(void *task)
 	{
 		if(PP_rmtac_AppointBook[i].validFlg == 1)
 		{
-			char *wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+			//char *wday[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 			RTCTIME localdatetime;
 			tm_get_abstime(&localdatetime);
 			static uint64_t oldsec;
@@ -696,11 +696,11 @@ void PP_AcCtrl_acStMonitor(void *task)
 					{
 						if(appointPerformFlg == 0)
 						{
-							log_i(LOG_HOZON,"%d-%d-%d ",(localdatetime.year - 2000), \
-								(localdatetime.mon), localdatetime.mday);
-							log_i(LOG_HOZON,"%s %d:%d:%d\n", wday[localdatetime.week], \
-								localdatetime.hour, localdatetime.min, localdatetime.sec);
-							log_i(LOG_HOZON,"Air conditioning reservation time is up, turn on the air conditioner");
+							//log_i(LOG_HOZON,"%d-%d-%d ",(localdatetime.year - 2000), 
+								//(localdatetime.mon), localdatetime.mday);
+							//log_i(LOG_HOZON,"%s %d:%d:%d\n", wday[localdatetime.week], 
+								//localdatetime.hour, localdatetime.min, localdatetime.sec);
+							log_o(LOG_HOZON,"Air conditioning reservation time is up, turn on the air conditioner");
 							appointPerformFlg = 1;
 							SetPP_ACCtrl_Request(RMTCTRL_TBOX,(void *)&i,NULL);	
 						}

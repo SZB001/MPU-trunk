@@ -39,6 +39,7 @@ description�� include the header file
 #include "../sockproxy/sockproxy_txdata.h"
 #include "../../support/protocol.h"
 #include "cfg_api.h"
+#include "udef_cfg_api.h"
 #include "pm_api.h"
 #include "dev_api.h"
 #include "gb32960_api.h"
@@ -56,7 +57,6 @@ description�� include the header file
 #include "PP_rmtCtrl.h"
 #include "PrvtProt_VehiSt.h"
 #include "PrvtProt_fotaInfoPush.h"
-#include "PrvtProt_signFltr.h"
 #include "PrvtProt_SigParse.h"
 #include "remoteDiag/PrvtProt_rmtDiag.h"
 #include "PrvtProt_CertDownload.h"
@@ -64,6 +64,7 @@ description�� include the header file
 #include "PrvtProt_lock.h"
 #include "../../base/uds/server/uds_did.h"
 #include "FileUpload/PrvtProt_FileUpload.h"
+#include "CanMessageUL/CanMsgUL.h"
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -159,7 +160,6 @@ int PrvtProt_init(INIT_PHASE phase)
 			PP_heartbeat.timer = tm_get_time();
 			PP_heartbeat.waitSt = 0;
 			PP_heartbeat.waittime = 0;
-			pp_task.suspend = 0;
 			pp_task.nonce = 0;
 			pp_task.version = 0x30;
 
@@ -198,10 +198,10 @@ int PrvtProt_init(INIT_PHASE phase)
 			}
 			InitPrvtProt_SignParse_Parameter();
 			PP_CertDownload_init();
-			//InitPPsignFltr_Parameter();
 			InitPP_netstatus_Parameter();
 		  	InitPP_lock_parameter();
 			InitPP_FileUpload_Parameter();
+			InitPP_CanMsgUL_Parameter();
 		}
         break;
     }
@@ -241,6 +241,7 @@ int PrvtProt_run(void)
 	PP_ntp_run();
 	PP_netstatus_run();
 	PP_FileUpload_run();
+	//PP_CanMsgUL_run();
 #else
 	res = 	PrvtPro_do_rcvMsg(&pp_task) ||
 			PrvtPro_do_wait(&pp_task) || 
@@ -271,10 +272,7 @@ static void *PrvtProt_main(void)
     while (1)
     {
 		usleep(5000);
-		if(pp_task.suspend != 0)
-		{
-			continue;
-		}
+
 #if 0
 		log_set_level(LOG_HOZON, LOG_DEBUG);
 		log_set_level(LOG_SOCK_PROXY, LOG_DEBUG);
@@ -290,7 +288,6 @@ static void *PrvtProt_main(void)
 			PP_HBRateSwitch.switchsuccessflag = 0;
 		}
 
-		//TskPPsignFltr_MainFunction();
 		PP_CertDownload_mainfunction(&pp_task);
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||
@@ -506,7 +503,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 		{
 			if(18 == len)
 			{
-				log_i(LOG_HOZON, "the heartbeat is ok");
+				log_o(LOG_HOZON, "the heartbeat is ok");
 				PP_heartbeat.hbtimeoutflag = 0;
 				PP_heartbeat.timeoutCnt = 0;
 				PP_heartbeat.state = 1;
@@ -520,7 +517,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 			}
 			else if((19 == len) && ((2 == rxPack->msgdata[0]) || (1 == rxPack->msgdata[0])))//接收到心跳频率切换请求响应
 			{
-				log_o(LOG_HOZON, "the heartbeat rate switch when to sleep is ok");
+				log_o(LOG_HOZON, "the heartbeat rate switch is ok");
 				PP_HBRateSwitch.waitSt = 0;
 				PP_HBRateSwitch.sleepflag = 1;
 				PP_HBRateSwitch.switchsuccessflag = 1;
@@ -707,7 +704,7 @@ static int PrvtProt_do_HBRateSwitch(PrvtProt_task_t *task)
 		PP_HBRateSwitch.switchtaskflag    = 0;
 		if(1 == PP_HBRateSwitch.IGNnewst)//IGN ON
 		{
-			log_i(LOG_HOZON, "Switch to normal heart rate\n");
+			log_o(LOG_HOZON, "Switch to normal heart rate\n");
 			int hbtimeout;
 			hbtimeout = getPP_rmtCfg_heartbeatTimeout();
 			if(0 != hbtimeout)
@@ -718,7 +715,7 @@ static int PrvtProt_do_HBRateSwitch(PrvtProt_task_t *task)
 		}
 		else
 		{
-			log_i(LOG_HOZON, "Switch to sleep heart rate\n");
+			log_o(LOG_HOZON, "Switch to sleep heart rate\n");
 			PP_heartbeat.period = PP_HEART_BEAT_TIME_SLEEP;
 			PrvtProt_HBSPackage(task,2);//切换到休眠状态心跳频率
 		}
@@ -912,23 +909,26 @@ long PrvtPro_getTimestamp(void)
 	struct timeval timestamp;
 	gettimeofday(&timestamp, NULL);
 	
-	return (long)(timestamp.tv_sec);
+	return timestamp.tv_sec;
 }
 
 /******************************************************
-*��������PrvtPro_Setsuspend
+*PP_rmtCtrl_usTimestamp
 
-*��  �Σ�
+*形  参：void
 
-*����ֵ��
+*返回值：void
 
-*��  ����������ͣ
+*描  述：获取时间戳 (us)
 
-*��  ע��
+*备  注：
 ******************************************************/
-void PrvtPro_Setsuspend(unsigned char suspend)
+long PP_rmtCtrl_usTimestamp(void)
 {
-	pp_task.suspend = suspend;
+	struct timeval timestamp;
+	gettimeofday(&timestamp, NULL);
+	
+	return timestamp.tv_usec;
 }
 
 /******************************************************
@@ -1011,7 +1011,7 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 }
 
 /******************************************************
-*������:PrvtProt_SaveCfgPara
+*������:PrvtProt_defaultsettings
 
 *��  �Σ�
 
@@ -1021,20 +1021,34 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 
 *��  ע��
 ******************************************************/
-void PrvtProt_SaveCfgPara(unsigned char req)
+void PrvtProt_defaultsettings(void)
 {
-	if(1 == dev_diag_get_emmc_status())//emmc挂载成功
-    {
-		if (dir_exists("/media/sdcard/usrdata/bkup/") == 0 &&
-				dir_make_path("/media/sdcard/usrdata/bkup/", S_IRUSR | S_IWUSR, false) != 0)
-		{
-			log_e(LOG_HOZON, "creat path:/media/sdcard/usrdata/bkup/ fail");
-			return;
-		}
+	clbt_cfg_set_default_para(UDEF_CFG_SET_SILENT);
+	cfg_set_para(CFG_ITEM_INTEST_HW, "H1.11", 32);
+	PP_rmtCfg_setCfgapn1(1,"tboxgw-uat.chehezhi.cn","21000");
+	PP_rmtCfg_setCfgapn1(6,"tboxgw-uat.chehezhi.cn","22000");
 
-		file_copy(PP_USER_CFG_PATH,PP_USER_CFG_BKUP_PATH);//备份配置文件
-		file_copy(PP_SYS_CFG_PATH,PP_SYS_CFG_BKUP_PATH);//备份配置文件
-	}
+	PP_rmtCfg_setCfgEnable(1,1);
+	PP_rmtCfg_setCfgEnable(2,1);
+	PP_rmtCfg_setCfgEnable(3,1);
+	PP_rmtCfg_setCfgEnable(4,1);
+	PP_rmtCfg_setCfgEnable(5,1);
+	PP_rmtCfg_setCfgEnable(6,1);
+	PP_rmtCfg_setCfgEnable(7,1);
+	PP_rmtCfg_setCfgEnable(8,1);
+	PP_rmtCfg_setCfgEnable(9,1);
+	PP_rmtCfg_setCfgEnable(10,1);
+	PP_rmtCfg_setCfgEnable(11,1);
+	PP_rmtCfg_setCfgEnable(12,1);
+	PP_rmtCfg_setCfgEnable(13,1);
+	PP_rmtCfg_setCfgEnable(14,1);
+	PP_rmtCfg_setCfgEnable(15,1);
+	PP_rmtCfg_setCfgEnable(16,1);
+
+	unsigned char pkien = 1;
+	cfg_set_para(CFG_ITEM_EN_PKI, &pkien, 1);
+	pkien = 0;
+	cfg_set_para(CFG_ITEM_EN_HUPKI,&pkien, 1);
 }
 
 

@@ -1,7 +1,7 @@
 /******************************************************
-ÎÄ¼þÃû£º	PrvtProt_callCenter.h
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	PrvtProt_callCenter.h
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 
 Data			  Vasion			author
 2019/04/16		   V1.0			    liujian
@@ -9,26 +9,26 @@ Data			  Vasion			author
 #ifndef		_PRVTPROT_CALL_CENTER_H
 #define		_PRVTPROT_CALL_CENTER_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
 
-/**********ºê³£Á¿¶¨Òå*********/
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
 
-/***********ºêº¯Êý***********/
+/***********ï¿½êº¯ï¿½ï¿½***********/
 #define PrvtProt_CC_callreq() 0//call request
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 
@@ -36,18 +36,17 @@ description£º typedef definitions
 /*****struct definitions*****/
 typedef struct
 {
-	char callreq;/* ÔÝÍ£ */
-}__attribute__((packed))  PrvtProt_CC_task_t; /* ÈÎÎñ²ÎÊý½á¹¹Ìå*/
+	char callreq;/* ï¿½ï¿½Í£ */
+}__attribute__((packed))  PrvtProt_CC_task_t; /* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½*/
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern void PrvtProt_CC_init(void);
 extern int PrvtProt_CC_mainfunction(void *task);
-extern void PrvtPro_SetcallCCReq(unsigned char req);
 #endif 

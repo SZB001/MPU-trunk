@@ -244,7 +244,7 @@ int SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 				if(PP_rmtsearchvehicle.state.reqType == PP_RMTCTRL_RMTSRCHVEHICLEOPEN)
 				{
 					PP_rmtsearchvehicle.state.serachcmd = PP_SEARCH_cmd;
-					log_i(LOG_HOZON,"TSP remote search control");
+					log_o(LOG_HOZON,"TSP remote search control");
 				}
 				PP_rmtsearchvehicle.pack.DisBody.eventId = disptrBody_ptr->eventId;
 				PP_rmtsearchvehicle.state.style = RMTCTRL_TSP;
@@ -256,7 +256,7 @@ int SetPP_searchvehicle_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptr
 				 if(cmd == 2)
 				 {
 				 	PP_rmtsearchvehicle.state.serachcmd = PP_SEARCH_cmd;
-					log_i(LOG_HOZON,"Bluetooth remote search control");
+					log_o(LOG_HOZON,"Bluetooth remote search control");
 				 }
 				 PP_rmtsearchvehicle.state.req = 1;
 				 PP_rmtsearchvehicle.state.style = RMTCTRL_BLUETOOTH;

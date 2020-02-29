@@ -261,6 +261,7 @@ typedef struct
 {
 	long	durationTime;
 }PP_CanBusMessageCollectReq_t;
+
 typedef struct
 {
 	PP_DiagnosticReq_t  		DiagnosticReq;

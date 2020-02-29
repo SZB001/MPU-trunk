@@ -225,7 +225,6 @@ typedef struct
 
 typedef struct 
 {	
-	char suspend;/* ��ͣ */
 	uint32_t nonce;/* TCP�ỰID ��TSPƽ̨���� */
 	unsigned char version;/* ��/С�汾(��TSPƽ̨����)*/
 	uint32_t tboxid;/* ƽ̨ͨ��tboxID��tboxSNӳ�� */
@@ -283,6 +282,7 @@ description�� function External declaration
 *******************************************************/
 extern long PrvtPro_BSEndianReverse(long value);
 extern long PrvtPro_getTimestamp(void);
+extern long  PP_rmtCtrl_usTimestamp(void);
 extern uint8_t PrvtProt_tboxsnValidity(void);
 extern void PrvtProt_gettboxsn(char *tboxsn);
 extern int PP_getIdleNode(void);

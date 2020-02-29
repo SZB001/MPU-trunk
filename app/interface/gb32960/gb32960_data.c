@@ -4198,20 +4198,30 @@ static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 
 			while (canact && gb_inf && arg2--)
 			{
-				if (msg->type == 'T' && ++counter == 100)
+				if(msg->type == 'T')
 				{
-					counter = 0;
-					gb_data_periodic(gb_inf, gb_datintv, msg->uptime);
-				}
-				if(msg->MsgID == 0x3D1)
-				{
-					PP_identificat_rcvdata(msg->Data);
-					int i;
-					for(i=0;i<8;i++)
+					if(++counter == 100)
 					{
-						log_o(LOG_GB32960,"data[%d] = %d",i,msg->Data[i]);
+						counter = 0;
+						gb_data_periodic(gb_inf, gb_datintv, msg->uptime);
 					}
 				}
+				else
+				{
+					if(msg->MsgID == 0x3D1)
+					{
+						PP_identificat_rcvdata(msg->Data);
+						int i;
+						for(i=0;i<8;i++)
+						{
+							log_o(LOG_GB32960,"data[%d] = %d",i,msg->Data[i]);
+						}
+					}
+
+					msg->isRx = 1;
+					//PP_CanMsgUL_datacollection(msg);
+				}
+				
 				msg++;
 			}
 #if GB_EXT
@@ -5417,6 +5427,347 @@ long getgb_data_RRDoorOpenSt(void)
 
 	return st;
 }
+
+/*
+* 获取EPB功能指示灯状态
+*/
+long gb_data_EPBLampSt(void)
+{
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf && gb_inf->event.info[GB_EVT_EPBLAMP_ON])
+	{
+		st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_EPBLAMP_ON])->value;
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取BMS模块通讯丢失状态
+*/
+long gb_data_BMSCommFaultSt(void)
+{
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf && gb_inf->warn[2][0x35])
+	{
+		st = dbc_get_signal_from_id(gb_inf->warn[2][0x35])->value;
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取加速踏板信号故障状态
+*/
+long gb_data_GasPedalFault(void)
+{
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf && gb_inf->warn[2][0x42])
+	{
+		st = dbc_get_signal_from_id(gb_inf->warn[2][0x42])->value;
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取电池温升过快故障状态
+*/
+long gb_data_BattTempRiseFast(void)
+{
+	unsigned char i;
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf)
+	{
+		for(i = 0; i < 3; i++)
+		{
+			if(gb_inf->warn[i][0x36])
+			{
+				st = dbc_get_signal_from_id(gb_inf->warn[i][0x36])->value;
+				break;
+			}
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+
+/*
+* 获取电池组高温报警
+*/
+long gb_data_cellOverTemp(void)
+{
+	unsigned char i;
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf)
+	{
+		for(i = 0; i < 3; i++)
+		{
+			if(gb_inf->warn[i][0x1])
+			{
+				st = dbc_get_signal_from_id(gb_inf->warn[i][0x1])->value;
+				break;
+			}
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取总电压低压报警
+*/
+long gb_data_underVoltSts(void)
+{
+	unsigned char i;
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf)
+	{
+		for(i = 0; i < 3; i++)
+		{
+			if(gb_inf->warn[i][0x3])
+			{
+				st = dbc_get_signal_from_id(gb_inf->warn[i][0x3])->value;
+				break;
+			}
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取绝缘报警状态
+*/
+long gb_data_IsolSuperSts(void)
+{
+	unsigned char i;
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf)
+	{
+		for(i = 0; i < 3; i++)
+		{
+			if(gb_inf->warn[i][0xB])
+			{
+				st = dbc_get_signal_from_id(gb_inf->warn[i][0xB])->value;
+				break;
+			}
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取温度差异报警状态
+*/
+long gb_data_tempDiffSts(void)
+{
+	unsigned char i;
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf)
+	{
+		for(i = 0; i < 3; i++)
+		{
+			if(gb_inf->warn[i][0x0])
+			{
+				st = dbc_get_signal_from_id(gb_inf->warn[i][0x0])->value;
+				break;
+			}
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取安全气囊模块故障状态
+*/
+long gb_data_AirBagFailSts(void)
+{
+	unsigned char i;
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf)
+	{
+		for(i = 0; i < 3; i++)
+		{
+			if(gb_inf->warn[i][0x2D])
+			{
+				st = dbc_get_signal_from_id(gb_inf->warn[i][0x2D])->value;
+				break;
+			}
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取EPS故障状态
+*/
+long gb_data_EPSFaultSts(void)
+{
+	unsigned char i;
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf)
+	{
+		for(i = 0; i < 3; i++)
+		{
+			if(gb_inf->warn[i][0x21])
+			{
+				st = dbc_get_signal_from_id(gb_inf->warn[i][0x21])->value;
+				break;
+			}
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取胎压系统故障状态
+*/
+long gb_data_BDMSysFail(void)
+{
+	unsigned char i;
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf)
+	{
+		for(i = 0; i < 3; i++)
+		{
+			if(gb_inf->warn[i][0x4B])
+			{
+				st = dbc_get_signal_from_id(gb_inf->warn[i][0x4B])->value;
+				break;
+			}
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取胎压报警状态
+*/
+long gb_data_tyrePressWarnSts(unsigned char obj)
+{
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf)
+	{
+		if(gb_inf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*obj])
+		{
+			st = dbc_get_signal_from_id(gb_inf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*obj])->value;
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取车胎高温报警状态
+*/
+long gb_data_tyreHighTempWarnSts(unsigned char obj)
+{
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf)
+	{
+		if(gb_inf->gb_alarmFault.info[GB_AF_FLTYREHIGHTEMPWARN + 6*obj])
+		{
+			st = dbc_get_signal_from_id(gb_inf->gb_alarmFault.info[GB_AF_FLTYREHIGHTEMPWARN + 6*obj])->value;
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 获取车胎漏气报警状态
+*/
+long gb_data_tyreLeakWarnSts(unsigned char obj)
+{
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf)
+	{
+		if(gb_inf->gb_alarmFault.info[GB_AF_FLTYRELEAK + 6*obj])
+		{
+			st = dbc_get_signal_from_id(gb_inf->gb_alarmFault.info[GB_AF_FLTYRELEAK + 6*obj])->value;
+		}
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
 
 /*
 * 每秒国标实时数据有效性

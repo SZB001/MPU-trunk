@@ -2011,6 +2011,14 @@ int gb32960_gbLogoutSt(void)
 }
 
 /*
+ * 获取can bus激活状态
+ */
+int gb32960_gbCanbusActiveSt(void)
+{
+    return state.can;
+}
+
+/*
 * 读取国标每秒实时数据（整包数据：包含协议头和数据、校验位）
 */
 uint8_t gb_data_perReportPack(uint8_t *data,int *len)

@@ -293,22 +293,22 @@ int SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFOPEN) //天窗打开
 				{
 					PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFOPEN;
-					log_i(LOG_HOZON,"TSP remote sunroof open control");
+					log_o(LOG_HOZON,"TSP remote sunroof open control");
 				}
 				else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFCLOSE)//天窗关闭
 				{
 					PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFCLOSE;
-					log_i(LOG_HOZON,"TSP remote sunroof close control");
+					log_o(LOG_HOZON,"TSP remote sunroof close control");
 				}
 				else if(PP_rmtsunroofCtrl.state.reqType == PP_RMTCTRL_PNRSUNROOFUPWARP)//天窗翘起
 				{
 					PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFUPWARP;
-					log_i(LOG_HOZON,"TSP remote sunroof upwarp control");
+					log_o(LOG_HOZON,"TSP remote sunroof upwarp control");
 				}
 				else  //天窗停止
 				{
 					PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFSTOP;
-					log_i(LOG_HOZON,"TSP remote sunroof stop control");
+					log_o(LOG_HOZON,"TSP remote sunroof stop control");
 				}
 				PP_rmtsunroofCtrl.state.req = 1;
 				PP_rmtsunroofCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
@@ -321,22 +321,22 @@ int SetPP_sunroofctrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				 if(cmd == 1 )//蓝牙开天窗
 				 {
 				 	PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFOPEN;
-					log_i(LOG_HOZON,"bluetooth sunroof open control");
+					log_o(LOG_HOZON,"bluetooth sunroof open control");
 				 }
 				 else if (cmd == 2) //蓝牙关天窗
 				 {
 				 	PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFCLOSE;
-					log_i(LOG_HOZON,"bluetooth sunroof close control");
+					log_o(LOG_HOZON,"bluetooth sunroof close control");
 				 }
 				 else if(cmd == 3) //天窗翘起
 				 {
 				 	PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFUPWARP;
-					log_i(LOG_HOZON,"bluetooth sunroof upwarp control");
+					log_o(LOG_HOZON,"bluetooth sunroof upwarp control");
 				 }
 				 else    //天窗停止
 				 {
 				 	PP_rmtsunroofCtrl.state.sunroofcmd = PP_SUNROOFSTOP;
-					log_i(LOG_HOZON,"bluetooth sunroof stop control");
+					log_o(LOG_HOZON,"bluetooth sunroof stop control");
 				 }
 				 PP_rmtsunroofCtrl.state.req = 1;
 				 PP_rmtsunroofCtrl.state.style = RMTCTRL_BLUETOOTH;	 

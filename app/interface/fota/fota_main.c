@@ -30,6 +30,7 @@ extern void fota_show(fota_t *fota);
 extern int fota_excute(fota_t *fota);
 extern int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz, 
                                                       char *h_ver, int *h_siz, 
+                                                      char *bl_ver,   int *bl_siz,
                                                       char *sn, int *sn_siz,
                                                       char *partnum,  int *partnum_siz,
                                                       char *supplier, int *supplier_siz);
@@ -181,11 +182,13 @@ static int fota_test_ver(int argc, const char **argv)
 {
     char s_ver[255] = {0};
     char h_ver[255] = {0};
+    char bl_ver[255] = {0};
     char sn[255] = {0};
     char partnum[255] = {0};
     char supplier[255] = {0};
     int s_len;
     int h_len;
+    int bl_len;
     int sn_len;
     int partnum_len;
     int supplier_len;
@@ -204,6 +207,7 @@ static int fota_test_ver(int argc, const char **argv)
 
     fota_ecu_get_ver((unsigned char *)argv[0], s_ver,    &s_len, 
                                                h_ver,    &h_len, 
+                                               bl_ver,   &bl_len,
                                                sn,       &sn_len,
                                                partnum,  &partnum_len,
                                                supplier, &supplier_len);
@@ -211,6 +215,7 @@ static int fota_test_ver(int argc, const char **argv)
     shellprintf("Read version:");
     shellprintf("s_len        = %d, %s_sv       : %s", s_len, argv[0], s_ver);
     shellprintf("h_len        = %d, %s_hv       : %s", h_len, argv[0], h_ver);
+    shellprintf("bl_len       = %d, %s_blv      : %s", bl_len, argv[0], bl_ver);
     shellprintf("sn_len       = %d, %s_sn       : %s", sn_len, argv[0], sn);
     shellprintf("partnum_len  = %d, %s_partnum  : %s", partnum_len, argv[0], partnum);
     shellprintf("supplier_len = %d, %s_supplier : %s", supplier_len, argv[0], supplier);

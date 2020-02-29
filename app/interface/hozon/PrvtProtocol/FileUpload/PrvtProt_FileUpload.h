@@ -21,6 +21,44 @@ description�� macro definitions
 #define PP_FILEUPLOAD_MAXPKG        120
 
 #define PP_FILEUPLOAD_PATH      "/media/sdcard/fileUL/"
+#define PP_CANFILEUPLOAD_PATH   "/media/sdcard/CanMsgFileUL/"
+
+
+#define PP_CANFILEUL_SIGN_VCU5SYSFLT		0
+#define PP_CANFILEUL_SIGN_BMSCOMMFLT		1
+#define PP_CANFILEUL_SIGN_GASPEDELFLT		2
+#define PP_CANFILEUL_SIGN_MCU2FLTLVL		3
+#define PP_CANFILEUL_SIGN_TEMPRISEFAST		4
+#define PP_CANFILEUL_SIGN_CELLOVERTEMP		5
+#define PP_CANFILEUL_SIGN_UNDERVOLT			6
+#define PP_CANFILEUL_SIGN_OVERCURRENT		7
+#define PP_CANFILEUL_SIGN_ISOISUPER			8
+#define PP_CANFILEUL_SIGN_TEMPDIFF			9
+#define PP_CANFILEUL_SIGN_BMS7DIAGSTS		10
+#define PP_CANFILEUL_SIGN_EGSMERR			11
+#define PP_CANFILEUL_SIGN_BRAKEWARNLAMP		12
+#define PP_CANFILEUL_SIGN_AVHLAMPREQ		13
+#define PP_CANFILEUL_SIGN_EPBSTLAMPREQ		14
+#define PP_CANFILEUL_SIGN_EHBFAIL			15
+#define PP_CANFILEUL_SIGN_ESCLFAILIND		16
+#define PP_CANFILEUL_SIGN_RLTYREPRESS		17
+#define PP_CANFILEUL_SIGN_RLTYRETEMP		18
+#define PP_CANFILEUL_SIGN_RLTYREQUCIKLK		19
+#define PP_CANFILEUL_SIGN_RRTYREPRESS		20
+#define PP_CANFILEUL_SIGN_RRTYRETEMP		21
+#define PP_CANFILEUL_SIGN_RRTYREQUCIKLK		22
+#define PP_CANFILEUL_SIGN_FLTYREPRESS		23
+#define PP_CANFILEUL_SIGN_FLTYRETEMP		24
+#define PP_CANFILEUL_SIGN_FLTYREQUCIKLK		25
+#define PP_CANFILEUL_SIGN_FRTYREPRESS		26
+#define PP_CANFILEUL_SIGN_FRTYRETEMP		27
+#define PP_CANFILEUL_SIGN_FRTYREQUCIKLK		28
+#define PP_CANFILEUL_SIGN_BDMSYSFAIL		29
+#define PP_CANFILEUL_SIGN_AIRBAGFAIL		30
+#define PP_CANFILEUL_SIGN_CRASHOUTPUT		31
+#define PP_CANFILEUL_SIGN_EPSELESTRFAIL		32
+#define PP_CANFILEUL_SIGN_WARN_MAX			(PP_CANFILEUL_SIGN_EPSELESTRFAIL + 1)
+
 /**********�곣������*********/
 
 
@@ -39,6 +77,12 @@ description�� typedef definitions
 /*****struct definitions*****/
 typedef struct
 {
+	uint8_t oldSt;
+	uint8_t newSt;
+}__attribute__((packed))  PP_FileUpload_warnSign_t;
+
+typedef struct
+{
     int len;
 	uint8_t data[2*PP_FILEUPLOAD_DATALEN];
 }__attribute__((packed))  PP_FileUpload_Pack_t;
@@ -53,11 +97,15 @@ typedef struct
 
 typedef struct
 {
+	PP_FileUpload_warnSign_t	warnSign[PP_CANFILEUL_SIGN_WARN_MAX];
 	uint64_t tasktime;
     uint8_t index;
 	PP_FileUpload_Buf_t buffer[PP_FILEUPLOAD_BUFNUM];
 	uint8_t network;
 	int pkgnum;
+	uint8_t tspReqFlag;
+ 	int tspReqTime;
+	uint8_t signTrigFlag;
 }__attribute__((packed))  PP_FileUpload_t;
 
 /******enum definitions******/

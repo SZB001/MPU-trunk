@@ -7,6 +7,7 @@ typedef enum
 	PP_SP_COLSE_CDL = 200,//
 	PP_SP_COLSE_PP = 300,//
     PP_SP_COLSE_SP = 400,//
+	PP_SP_COLSE_OTA = 500,//
 } PP_SOCK_CLOSE_TYPE;
 
 extern int sockproxy_init(INIT_PHASE phase);

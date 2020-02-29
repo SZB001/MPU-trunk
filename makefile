@@ -74,6 +74,7 @@ SUBDIRS := \
 	./app/interface/hozon/PrvtProtocol/remoteControl \
 	./app/interface/hozon/PrvtProtocol/remoteDiag \
 	./app/interface/hozon/PrvtProtocol/FileUpload \
+	./app/interface/hozon/PrvtProtocol/CanMessageUL \
 	./app/interface/hozon/sockproxy \
 	./app/interface/protobuf \
 	./app/interface/wsrv \

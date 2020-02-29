@@ -23,6 +23,7 @@ author        chenyin
 #include "../../base/dev/dev_mcu_cfg.h"
 #include "hozon_PP_api.h"
 #include "gb32960_api.h"
+#include "uds.h"
 #include "uds_did.h"
 #include "../hozon/PrvtProtocol/PrvtProt.h"
 #include "../hozon/PrvtProtocol/PrvtProt_lock.h"
@@ -59,7 +60,7 @@ static RTCTIME g_tWsrvAlarmTime = {0};
 extern unsigned char PrvtProt_SignParse_HVReadySt(void);
 
 /* fill response body */
-#define WSRV_VERSION_BODY           "{\"%s_sv\":\"%s\",\"%s_hv\":\"%s\",\"%s_sn\":\"%s\",\"%s_partnum\":\"%s\",\"%s_supplier\":\"%s\"}"
+#define WSRV_VERSION_BODY           "{\"%s_sv\":\"%s\",\"%s_hv\":\"%s\",\"%s_blv\":\"%s\",\"%s_sn\":\"%s\",\"%s_partnum\":\"%s\",\"%s_supplier\":\"%s\"}"
 #define WSRV_GPS_BODY               "{\"la\":%lf,\"lo\":%lf}"
 #define WSRV_VIN_BODY               "{\"vin\":\"%s\"}"
 #define WSRV_ECURESULT_BODY         "{\"name\":\"%s\",\"result\":\"%s\"}"
@@ -103,6 +104,7 @@ typedef enum
 
 extern int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz, 
                                                       char *h_ver, int *h_siz, 
+                                                      char *bl_ver,   int *bl_siz,
                                                       char *sn, int *sn_siz,
                                                       char *partnum,  int *partnum_siz,
                                                       char *supplier, int *supplier_siz);
@@ -350,11 +352,13 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     unsigned int cfg_len;
     char s_ver[64] = {0};
     char h_ver[64] = {0};
+    char bl_ver[64] = {0};
     char sn[19] = {0};
     char partnum[64] = {0};
     char supplier[64] = {0};
     int s_len;
     int h_len;
+    int bl_len;
     int sn_len;
     int partnum_len;
     int supplier_len;
@@ -373,6 +377,25 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     unsigned char u8HVready = 0;
 
     log_o(LOG_WSRV, "fd: %d, cmd: %s, args: %s, data: %s", *p_cli_fd, cmd_buf, args_buf, data_buf);
+
+    if (1 == get_factory_mode())
+    {
+        log_o(LOG_WSRV, "It Is In Factory Mode, Can Not Request Ota Cmd");
+
+        if (0 == strcmp(cmd_buf, WSRV_CMD_RESETWD))
+        {
+            tm_start(restart_da_timer, WSRV_NO_ACK_TIMEOUT, TIMER_TIMEOUT_REL_ONCE);
+            log_o(LOG_WSRV, "In Factory Mode, Reset Watch Dog");
+        }
+        
+        shutdown(*p_cli_fd, SHUT_RDWR);
+        close(*p_cli_fd);
+        *p_cli_fd = -1;
+        
+        deal_after_send();
+        
+        return 0;
+    }
 
     // TODO
     if (0 == strcmp(cmd_buf, WSRV_CMD_GETVERSION))
@@ -395,6 +418,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             {
                 sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, 
                                                      dev_buf, h_ver, 
+                                                     dev_buf, bl_ver, 
                                                      dev_buf, sn,
                                                      dev_buf, partnum,
                                                      dev_buf, supplier);
@@ -408,11 +432,13 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             {
                 ret = fota_ecu_get_ver((unsigned char *)dev_buf, s_ver,    &s_len, 
                                                                  h_ver,    &h_len, 
+                                                                 bl_ver,   &bl_len,
                                                                  sn,       &sn_len, 
                                                                  partnum,  &partnum_len, 
                                                                  supplier, &supplier_len);
                 sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, 
                                                      dev_buf, h_ver, 
+                                                     dev_buf, bl_ver, 
                                                      dev_buf, sn,
                                                      dev_buf, partnum,
                                                      dev_buf, supplier);

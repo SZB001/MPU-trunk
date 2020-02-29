@@ -3,22 +3,15 @@
 
 include $(ROOTDIR)/make.include
 
-TYPE := bin
-TARGETNAME := curl.bin
+TYPE := staticlib
+TARGETNAME := CanMessageUL
 
-
-CCXXFLAGS = -DDEBUG -g
-OFLAGS = -L $(TARGET_PATH_R) -llog -lfile -ldir -lminizip -lzlib -lshm -lmd5 -ldev_rw -lpthread -lrt
-OFLAGS += -L $(LIB_PATH_R)  -lz -lcurl -lssl -lcrypto -ldl
-
-
-#INCLUDES =
-#CCXXFLAGS =
+#INCLUDES += 
+CCXXFLAGS = -Wall
 #CFLAGS =
 #CXXFLAGS =
 #OFLAGS =
 #EXOBJS =
 #EXCLUDESRCS =
-
 
 include $(ROOTDIR)/make.share

@@ -157,7 +157,7 @@ int PP_doorLockCtrl_mainfunction(void *task)
 				}
 				else  //不满足门控条件
 				{
-					log_i(LOG_HOZON," Vehicle status is on.........!");
+					log_o(LOG_HOZON," Vehicle status is on.........!");
 					PP_rmtdoorCtrl.state.failtype = PP_RMTCTRL_ACCNOOFF;
 					PP_rmtdoorCtrl.success_flag = 0;
 					PP_rmtdoorCtrl.state.CtrlSt = PP_DOORLOCKCTRL_END;
@@ -286,12 +286,12 @@ int SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 				if(PP_rmtdoorCtrl.state.reqType == PP_RMTCTRL_DOORLOCKOPEN)
 				{
 					PP_rmtdoorCtrl.state.doorcmd = PP_DOORLOCK_OPEN;
-					log_i(LOG_HOZON,"TSP remote unlock control");
+					log_o(LOG_HOZON,"TSP remote unlock control");
 				}
 				else
 				{
 					PP_rmtdoorCtrl.state.doorcmd = PP_DOORLOCK_CLOSE;
-					log_i(LOG_HOZON,"TSP remote lock control");
+					log_o(LOG_HOZON,"TSP remote lock control");
 				}
 				PP_rmtdoorCtrl.pack.DisBody.eventId = disptrBody_ptr->eventId;
 				PP_rmtdoorCtrl.state.style = RMTCTRL_TSP;
@@ -303,12 +303,12 @@ int SetPP_doorLockCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrB
 				 if(cmd == 1 )//蓝牙锁门
 				 {
 				 	PP_rmtdoorCtrl.state.doorcmd = PP_DOORLOCK_CLOSE;
-					log_i(LOG_HOZON,"bluetooth lock control");
+					log_o(LOG_HOZON,"bluetooth lock control");
 				 }
 				 else if (cmd == 2) //蓝牙开门
 				 {
 				 	PP_rmtdoorCtrl.state.doorcmd = PP_DOORLOCK_OPEN;
-					log_i(LOG_HOZON,"bluetooth unlock control");
+					log_o(LOG_HOZON,"bluetooth unlock control");
 				 }
 				 PP_rmtdoorCtrl.state.req = 1;
 				 PP_rmtdoorCtrl.state.style = RMTCTRL_BLUETOOTH;

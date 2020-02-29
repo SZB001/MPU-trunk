@@ -17,11 +17,13 @@
 extern int fota_uds_open(int port, int fid, int rid, int pid);
 extern int fota_uds_get_version_gw(uint8_t *s_ver,           int *s_siz, 
                                          uint8_t *h_ver,    int *h_siz, 
+                                         uint8_t *bl_ver,   int *bl_siz, 
                                          uint8_t *sn,       int *sn_siz,
                                          uint8_t *partnum,  int *partnum_siz,
                                          uint8_t *supplier, int *supplier_siz);
 extern int fota_uds_get_version(uint8_t *s_ver,           int *s_siz, 
                                       uint8_t *h_ver,    int *h_siz, 
+                                      uint8_t *bl_ver,   int *bl_siz, 
                                       uint8_t *sn,       int *sn_siz,
                                       uint8_t *partnum,  int *partnum_siz,
                                       uint8_t *supplier, int *supplier_siz);
@@ -78,6 +80,7 @@ static ECU_NAME_2_UDSID_t s_atECUName2UDSID[] = {{"vcu",  0x7E2, 0x7EA, 0x7DF},
 
 int fota_ecu_get_ver(unsigned char *name, char *s_ver,    int *s_siz, 
                                                char *h_ver,    int *h_siz,
+                                               char *bl_ver,   int *bl_siz,
                                                char *sn,       int *sn_siz,
                                                char *partnum,  int *partnum_siz,
                                                char *supplier, int *supplier_siz)
@@ -92,6 +95,7 @@ int fota_ecu_get_ver(unsigned char *name, char *s_ver,    int *s_siz,
 
         fota_uds_get_version_gw((uint8_t *)s_ver,    s_siz, 
                                 (uint8_t *)h_ver,    h_siz, 
+                                (uint8_t *)bl_ver,   bl_siz, 
                                 (uint8_t *)sn,       sn_siz,
                                 (uint8_t *)partnum,  partnum_siz,
                                 (uint8_t *)supplier, supplier_siz);
@@ -124,6 +128,7 @@ int fota_ecu_get_ver(unsigned char *name, char *s_ver,    int *s_siz,
             
             fota_uds_get_version((uint8_t *)s_ver,    s_siz, 
                                  (uint8_t *)h_ver,    h_siz, 
+                                 (uint8_t *)bl_ver,   bl_siz, 
                                  (uint8_t *)sn,       sn_siz,
                                  (uint8_t *)partnum,  partnum_siz,
                                  (uint8_t *)supplier, supplier_siz);

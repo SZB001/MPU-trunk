@@ -181,7 +181,7 @@ static int PP_VS_do_rcvMsg(PrvtProt_task_t *task)
 		return 0;
 	}
 	
-	log_i(LOG_HOZON, "receive vehi status message");
+	log_o(LOG_HOZON, "receive vehi status message");
 	protocol_dump(LOG_HOZON, "PRVT_PROT", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
 			(rlen <= 18))
@@ -298,6 +298,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 				SP_data_write(PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,PP_VS_send_cb,&PP_TxInform[idlenode]);
 			}
 			PP_rmtVS.state.req = PP_VS_NOREQ;
+			log_o(LOG_HOZON, "Vehicle status response\n");
 		}
 		break;
 		case PP_VS_EXTSTATUS:
@@ -315,6 +316,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 				SP_data_write(PP_VS_Pack.Header.sign,PP_VS_Pack.totallen,PP_VS_send_cb,&PP_TxInform[idlenode]);
 			}
 			PP_rmtVS.state.req = PP_VS_NOREQ;
+			log_o(LOG_HOZON, "extended Vehicle status response\n");
 		}
 		break;
 		default:

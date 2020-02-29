@@ -149,12 +149,12 @@ void PP_ChargeCtrl_init(void)
 	res = cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,&len);
 	if((res==0) && (PP_rmtCharge_AppointBook.validFlg == 1))
 	{
-		log_e(LOG_HOZON,"There are currently reservation records\n");
-		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.id = %u\n",PP_rmtCharge_AppointBook.id);
-		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.hour = %d\n",PP_rmtCharge_AppointBook.hour);
-		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.min = %d\n",PP_rmtCharge_AppointBook.min);
-		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.targetSOC = %d\n",PP_rmtCharge_AppointBook.targetSOC);
-		log_e(LOG_HOZON, "PP_rmtCharge_AppointBook.period = %d\n",PP_rmtCharge_AppointBook.period);
+		log_o(LOG_HOZON,"There are currently reservation records\n");
+		log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.id = %u\n",PP_rmtCharge_AppointBook.id);
+		log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.hour = %d\n",PP_rmtCharge_AppointBook.hour);
+		log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.min = %d\n",PP_rmtCharge_AppointBook.min);
+		log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.targetSOC = %d\n",PP_rmtCharge_AppointBook.targetSOC);
+		log_o(LOG_HOZON, "PP_rmtCharge_AppointBook.period = %d\n",PP_rmtCharge_AppointBook.period);
 		PP_can_send_data(PP_CAN_CHAGER,CAN_SETAPPOINT,0);//有效充电预约，将预约充电使能位置起
 	}
 
@@ -372,7 +372,7 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 						if(PP_LOCK_OK == ret)
 						{
 							PP_rmtChargeCtrl.appointCharging = 1;  //预约充电
-							log_i(LOG_HOZON,"Appointment The charging conditions are met. Execute the charge appointment!!\n");
+							log_o(LOG_HOZON,"Appointment The charging conditions are met. Execute the charge appointment!!\n");
 						}
 						else
 						{
@@ -478,7 +478,7 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 	if(PP_rmtChargeCtrl.state.dataUpdata == 1)
 	{
 		//保存记录
-		log_i(LOG_HOZON,"save charge para when power off\n");
+		log_o(LOG_HOZON,"save charge para when power off\n");
 		(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_RMTAPPOINT,&PP_rmtCharge_AppointBook,32);
 		PP_rmtChargeCtrl.state.dataUpdata = 0;
 	}	
@@ -786,7 +786,7 @@ void PP_ChargeCtrl_SetCtrlReq(unsigned char req,uint16_t reqType)
 
 void PP_ChargeCtrl_send_cb(void)
 {
-	log_i(LOG_HOZON, "HU appointment status inform to tsp success!\n");
+	log_o(LOG_HOZON, "HU appointment status inform to tsp success!\n");
 }
 
 int PP_ChargeCtrl_start(void)
@@ -914,11 +914,11 @@ static int PP_ChargeCtrl_startHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge)
 			}
 			else if(pp_rmtCharge->state.style == RMTCTRL_TBOX)//
 			{
-				log_o(LOG_HOZON,"tbox platform\n");
+				//log_o(LOG_HOZON,"tbox platform\n");
 			}
 			else
 			{
-				log_o(LOG_HOZON,"bluetooth platform\n");
+				//log_o(LOG_HOZON,"bluetooth platform\n");
 			}
 		}
 		else

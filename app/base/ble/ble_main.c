@@ -30,6 +30,8 @@
 #include "hz_bt_usrdata.h"
 #include "hozon_PP_api.h"
 #include "ql_cm256sm_ble_sleep.h"
+#include "uds.h"
+
 
 
 
@@ -409,14 +411,11 @@ static int BleShellBleEn(int argc, const char **argv)
 
     if (0 == strncmp("on", argv[0], 2))
     {
-		unsigned char ble_enable = 1;
-		cfg_set_para(CFG_ITEM_EN_BLE, (unsigned char *)&ble_enable, 1);
-
+		set_ble_ctl(1);
     }
     else if (0 == strncmp("off", argv[0], 3))
     {
-		unsigned char ble_enable = 0;
-		cfg_set_para(CFG_ITEM_EN_BLE, (unsigned char *)&ble_enable, 1);
+		set_ble_ctl(0);
     }
     else
     {
@@ -507,7 +506,8 @@ int start_ble(void)
 	unsigned char tmp_len = 0;
 	unsigned char ble_en = 0;
 
-	cfg_get_para(CFG_ITEM_EN_BLE, &ble_en, &len);
+	//cfg_get_para(CFG_ITEM_EN_BLE, &ble_en, &len);
+	ble_en = get_ble_ctl();
 	if (0 == ble_en)
 	{
 	 	return -1;

@@ -95,7 +95,7 @@ static void PP_ntp_calibrationTime(void)
         }
         else
         {
-            log_i(LOG_HOZON, "ntp adjust time success!\n");
+            log_o(LOG_HOZON, "ntp adjust time success!\n");
             ntp_test_flag = 0;
         }
         

@@ -92,6 +92,98 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
     return 5;
 }
 
+
+/*
+ *	ESC Brake Warning Lamp sts
+  */
+unsigned char PrvtProt_SignParse_BkWarnLampSt(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ESCBRAKEWARNMAMP] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_ESCBRAKEWARNMAMP])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
+
+/*
+ *	EGSM故障状态
+  */
+unsigned char PrvtProt_SignParse_EGSMErrSt(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_EGSMERRST] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_EGSMERRST])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
+
+/*
+ *	AVH lamp req sts
+  */
+unsigned char PrvtProt_SignParse_AVHLampSts(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AVHLAMPREQ] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_AVHLAMPREQ])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
+
+/*
+ *	动力电池系统故障
+  */
+unsigned char PrvtProt_SignParse_DiagSts(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_DIAGST] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_DIAGST])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
+
+/*
+ *	总电流过流
+  */
+unsigned char PrvtProt_SignParse_overCurrSt(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_OVERCURRENTST] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_OVERCURRENTST])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
+
+/*
+ *	mcu2 fault level
+  */
+unsigned char PrvtProt_SignParse_Mcu2FltLvl(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_MCU2FAULTLVL] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_MCU2FAULTLVL])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
+
+/*
+ *	系统故障状态
+  */
+unsigned char PrvtProt_SignParse_SysFaultSt(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_VCU5SYSFAUTST] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_VCU5SYSFAUTST])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
+
 /*
  *	BTM充电请求
   */

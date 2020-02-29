@@ -39,8 +39,15 @@ typedef enum
     USER_CFG_ITEM_ID_MAX,
 }USER_CFG_PARA_ITEM_ID;
 
+typedef enum UDEF_CFG_SET_TYPE
+{
+    UDEF_CFG_SET_UNSILENT = 0,
+    UDEF_CFG_SET_SILENT   = 1,
+} UDEF_CFG_SET_TYPE;
+
 int udef_cfg_init(INIT_PHASE phase);
 int cfg_set_user_para(USER_CFG_PARA_ITEM_ID id, void *data, unsigned int len);
 int cfg_get_user_para(USER_CFG_PARA_ITEM_ID id, void *data, unsigned int *len);
 int clbt_cfg_dump_para(void);
+int clbt_cfg_set_default_para(UDEF_CFG_SET_TYPE type);
 #endif

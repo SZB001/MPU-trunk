@@ -153,6 +153,7 @@ void PP_rmtCtrl_init(void)
 {
 	int i;
 	memset(&PP_rmtCtrl,0,sizeof(PrvtProt_rmtCtrl_t));
+	PP_identificat_init();
 	PP_canSend_init();
 	for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
 	{
@@ -251,7 +252,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 				}
 				else
 				{
-					PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDLE;
+					PP_rmtCtrl.rmtCtrlSt = RMTCTRL_END;
 				}
 				log_o(LOG_HOZON,"-------identificat success---------");
   			}
@@ -358,7 +359,7 @@ long PP_rmtCtrl_getTimestamp(void)
 	struct timeval timestamp;
 	gettimeofday(&timestamp, NULL);
 	
-	return (long)(timestamp.tv_sec);
+	return timestamp.tv_sec;
 }
 
 /******************************************************
@@ -1558,6 +1559,7 @@ int SetPP_rmtCtrl_FOTA_startInform(void)
 		PP_rmtCtrl.fotaAuthReq = 1;
 		PP_rmtCtrl.fotaUpgradeSt = 1;
 		PP_rmtCtrl.fotaAuthResult = 0;
+		sockproxy_socketclose((int)(PP_SP_COLSE_OTA));
 	}
 	else
 	{

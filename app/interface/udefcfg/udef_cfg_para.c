@@ -296,7 +296,7 @@ int clbt_cfg_set_by_id(USER_CFG_PARA_ITEM_ID id, void *data, unsigned int len, u
 
 int cfg_set_user_para(USER_CFG_PARA_ITEM_ID id, void *data, unsigned int len)
 {
-    return clbt_cfg_set_by_id(id, data, len, CFG_SET_UNSILENT);
+    return clbt_cfg_set_by_id(id, data, len, UDEF_CFG_SET_UNSILENT);
 }
 
 
@@ -443,23 +443,19 @@ int udef_cfg_para_restor(int argc , const char **argv)
     return 0;
 }
 
-int clbt_cfg_set_default_para(CFG_SET_TYPE type)
+int clbt_cfg_set_default_para(UDEF_CFG_SET_TYPE type)
 {
     short tmp_short;
     int   tmp_int;
-    //char gbvin[18];
-    //memset(gbvin, 0, sizeof(gbvin));
-    //strcpy((char *) gbvin, "00000000000000000");
-    //clbt_cfg_set_by_id(CFG_ITEM_GB32960_VIN, gbvin, 18, type);
 
-    char gb_url[256];
-    memset(gb_url, 0, sizeof(gb_url));
-    strcpy((char *) gb_url, "60.12.185.130");
+    char gbvin[18] = {0};
+    strcpy((char *) gbvin, "00000000000000000");
+    clbt_cfg_set_by_id(CFG_ITEM_GB32960_VIN, gbvin, 18, type);
+    char gb_url[256] = {0};
+    strcpy((char *) gb_url, "47.102.130.222");
     clbt_cfg_set_by_id(CFG_ITEM_GB32960_URL, gb_url, sizeof(gb_url), type);
-
     tmp_short = 20000;
     clbt_cfg_set_by_id(CFG_ITEM_GB32960_PORT, &tmp_short, sizeof(short), type);
-
     tmp_short = 0;
     clbt_cfg_set_by_id(CFG_ITEM_GB32960_REGINTV, &tmp_short, sizeof(short), type);
     tmp_short = 10;
@@ -471,12 +467,6 @@ int clbt_cfg_set_default_para(CFG_SET_TYPE type)
 
     clbt_cfg_set_by_id(CFG_ITEM_HOZON_TSP_TBOXID, &tmp_int, sizeof(int), type);
 
-    char mxuSw[11];
-    memset(mxuSw, 0, sizeof(mxuSw));
-    strcpy((char *) mxuSw, "0");
-    clbt_cfg_set_by_id(CFG_ITEM_HOZON_TSP_MCUSW, mxuSw, sizeof(mxuSw), type);
-    clbt_cfg_set_by_id(CFG_ITEM_HOZON_TSP_MPUSW, mxuSw, sizeof(mxuSw), type);
-    
     return 0;
 }
 
@@ -496,7 +486,7 @@ int clbt_cfg_restore_para(void)
     if (ret != 0)
     {
         /* file is not exist, set default data */
-        clbt_cfg_set_default_para(CFG_SET_SILENT); 
+        clbt_cfg_set_default_para(UDEF_CFG_SET_SILENT); 
         udef_cfg_save_para(udef_cfg_user_data);
     }
     else

@@ -29,7 +29,7 @@ author        liuzhongwen
 #include "dev_api.h"
 #include "udef_cfg_api.h"
 
-#define CFG_PARA_DBC_PATH   "/usrdata/dbc/GB-EP30_CAN_r4_011WIP_v1.2.dbc"
+#define CFG_PARA_DBC_PATH   "/usrdata/dbc/GB-EP30_CAN_r4_011WIP_v1.1.dbc"
 
 static unsigned char cfg_para_buf[CFG_PARA_BUF_LEN];
 static pthread_mutex_t cfg_para_mutex;
@@ -402,34 +402,21 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     cfg_set_by_id(CFG_ITEM_CAN_DEFAULT_BAUD_2,  &tmp_short, sizeof(short), type);
     cfg_set_by_id(CFG_ITEM_CAN_DEFAULT_BAUD_3,  &tmp_short, sizeof(short), type);
     cfg_set_by_id(CFG_ITEM_CAN_DEFAULT_BAUD_4,  &tmp_short, sizeof(short), type);
-    
-//    tmp_short = 0;
-//    cfg_set_by_id(CFG_ITEM_CAN2_AUTO_BAUD, &tmp_short, sizeof(short), type);
-    
-//    can_baud_reset();
-//    can_auto_baud_rs();
 
     car_type = 0xff;
     cfg_set_by_id(CFG_ITEM_FT_UDS_VEHICLE_TYPE,  &car_type, 1, type);
-    
     tmp_char = UDS_12V_POWER;
     cfg_set_by_id(CFG_ITEM_FT_UDS_POWER,  &tmp_char, 1, type);
-    
-    //tmp_char = 0;
-    //cfg_set_by_id(CFG_ITEM_DBC_PATH, &tmp_char, 256, type);
 
     sleep_mode = 3;
     cfg_set_by_id(CFG_ITEM_SLEEP_MODE, &sleep_mode, sizeof(sleep_mode), type);
 
     /* China telecom */
-    cfg_set_by_id(CFG_ITEM_WAN_APN, (unsigned char *) "ctnet", 32, type);
-    
+    cfg_set_by_id(CFG_ITEM_WAN_APN, (unsigned char *) "bjlenovo09.xfdz.njm2mapn", 32, type);
     memset(&apn_auth, 0, sizeof(apn_auth));
     cfg_set_by_id(CFG_ITEM_WAN_APN_AUTH, &apn_auth, sizeof(apn_auth), type);
-
     /* China telecom, no private apn */
     cfg_set_by_id(CFG_ITEM_LOCAL_APN, (unsigned char *) "", 32, type);
-
     memset(&apn_auth, 0, sizeof(apn_auth));
     cfg_set_by_id(CFG_ITEM_LOC_APN_AUTH, &apn_auth, sizeof(apn_auth), type);
 
@@ -438,17 +425,14 @@ int cfg_set_default_para(CFG_SET_TYPE type)
 
     wifi_enable = 0;
     cfg_set_by_id(CFG_ITEM_WIFI_SET, &wifi_enable, sizeof(wifi_enable), type);
-
     dcom_enable = 1;
     cfg_set_by_id(CFG_ITEM_DCOM_SET, &dcom_enable, sizeof(dcom_enable), type);
-
     /* auto */
     net_type = 0;
     cfg_set_by_id(CFG_ITEM_NET_TYPE, &net_type, sizeof(net_type), type);
 
     wifi_maxassoc = 8;
     cfg_set_by_id(CFG_ITEM_WIFI_MAXASSOC, &wifi_maxassoc, sizeof(wifi_maxassoc), type);
-
     cfg_set_by_id(CFG_ITEM_WIFI_SSID, (unsigned char *)DEFAULT_SSID, 32, type);
     cfg_set_by_id(CFG_ITEM_WIFI_KEY, (unsigned char *)DEFAULT_PASSWORD, 32, type);
 
@@ -461,76 +445,17 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     memset(auth, 0, sizeof(auth));
     strcpy((char *) auth, "intestadmin");
     cfg_set_by_id(CFG_ITEM_DSU_AUTHKEY, (unsigned char *) &auth, sizeof(auth), type);
-
     unsigned short canlog_time = 30;
     cfg_set_by_id(CFG_ITEM_DSU_CANLOG_TIME, (unsigned char *) &canlog_time, sizeof(canlog_time), type);
-
     unsigned char canlog_mode = 0; // record iwd file by default
     cfg_set_by_id(CFG_ITEM_DSU_CANLOG_MODE, (unsigned char *) &canlog_mode, sizeof(canlog_mode), type);
-
     unsigned char sdhz = 1;
     cfg_set_by_id(CFG_ITEM_DSU_SDHZ, (unsigned char *) &sdhz, sizeof(sdhz) , type);
-
     unsigned char hourfile = 3;
     cfg_set_by_id(CFG_ITEM_DSU_HOURFILE, (unsigned char *) &hourfile, sizeof(hourfile), type);
-
     unsigned char loopfile = 1;
     cfg_set_by_id(CFG_ITEM_DSU_LOOPFILE, (unsigned char *) &loopfile, sizeof(loopfile), type);
 
-#if 0
-    char gbvin[18];
-    memset(gbvin, 0, sizeof(gbvin));
-    strcpy((char *) gbvin, "00000000000000000");
-    cfg_set_by_id(CFG_ITEM_GB32960_VIN, gbvin, 18, type);
-
-    char gb_url[256];
-    memset(gb_url, 0, sizeof(gb_url));
-    strcpy((char *) gb_url, "60.12.185.130");
-    cfg_set_by_id(CFG_ITEM_GB32960_URL, gb_url, sizeof(gb_url), type);
-
-    tmp_short = 20000;
-    cfg_set_by_id(CFG_ITEM_GB32960_PORT, &tmp_short, sizeof(short), type);
-
-    tmp_short = 0;
-    cfg_set_by_id(CFG_ITEM_GB32960_REGINTV, &tmp_short, sizeof(short), type);
-    tmp_short = 10;
-    cfg_set_by_id(CFG_ITEM_GB32960_INTERVAL, &tmp_short, sizeof(short), type);
-    tmp_short = 5;
-    cfg_set_by_id(CFG_ITEM_GB32960_TIMEOUT, &tmp_short, sizeof(short), type);
-    tmp_int = 0;
-    cfg_set_by_id(CFG_ITEM_GB32960_REGSEQ, &tmp_int, sizeof(int), type);
-
-    cfg_set_by_id(CFG_ITEM_HOZON_TSP_TBOXID, &tmp_int, sizeof(int), type);
-
-    char mxuSw[11];
-    memset(mxuSw, 0, sizeof(mxuSw));
-    strcpy((char *) mxuSw, "0");
-    cfg_set_by_id(CFG_ITEM_HOZON_TSP_MCUSW, mxuSw, sizeof(mxuSw), type);
-    cfg_set_by_id(CFG_ITEM_HOZON_TSP_MPUSW, mxuSw, sizeof(mxuSw), type);
-#endif
-#if 0
-    cfg_set_by_id(CFG_ITEM_FOTON_VIN, "00000000000000000", 18, type);
-    
-    cfg_set_by_id(CFG_ITEM_FOTON_URL, "211.94.119.48", 256, type);
-
-    tmp_short = 39091;
-    cfg_set_by_id(CFG_ITEM_FOTON_PORT, &tmp_short, sizeof(short), type);
-
-    tmp_short = 30;
-    cfg_set_by_id(CFG_ITEM_FOTON_REGINTV, &tmp_short, sizeof(short), type);
-
-    tmp_short = 10;
-    cfg_set_by_id(CFG_ITEM_FT_HBINTV, &tmp_short, sizeof(short), type);
-
-    tmp_short = 10;
-    cfg_set_by_id(CFG_ITEM_FOTON_INTERVAL, &tmp_short, sizeof(short), type);
-
-    tmp_short = 5;
-    cfg_set_by_id(CFG_ITEM_FOTON_TIMEOUT, &tmp_short, sizeof(short), type);
-
-	tmp_short = 15;
-    cfg_set_by_id(CFG_ITEM_FT_HBINTV, &tmp_short, sizeof(short), type);
-#endif
     unsigned int sleep_time = 7 * 24 * 60;
     cfg_set_by_id(CFG_ITEM_SLEEP_TIME, &sleep_time, sizeof(sleep_time), type);
     unsigned int dsleep_time = 14 * 24 * 60;
@@ -551,7 +476,7 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     unsigned char log_enable = 0;
     cfg_set_by_id(CFG_ITEM_LOG_ENABLE, &log_enable, sizeof(log_enable), type);
 
-    unsigned int wakeup_time = 0;
+    unsigned int wakeup_time = 270;
     cfg_set_by_id(CFG_ITEM_RTC_WAKEUP_TIME, &wakeup_time, sizeof(wakeup_time), type);
 
     unsigned char bat_type = 2;
@@ -582,22 +507,18 @@ int cfg_set_default_para(CFG_SET_TYPE type)
 	memset(model_num, 0, sizeof(model_num));
 	strcpy(model_num, MODEL_NUM);
 	cfg_set_by_id(CFG_ITEM_FT_DEV_TYPE, model_num, sizeof(model_num), type);
-
 	unsigned char brand = 0;
 	cfg_set_by_id(CFG_ITEM_FT_PORT, &brand, sizeof(brand), type);
-
 	unsigned char status = 0;
 	cfg_set_by_id(CFG_ITEM_FT_REGISTER, &status, sizeof(status), type);
 
 	unsigned char ble_enable = 0;
     cfg_set_by_id(CFG_ITEM_EN_BLE, &ble_enable, sizeof(ble_enable), type);
-
 	char ble_name[256];
     memset(ble_name, 0, sizeof(ble_name));
     strcpy((char *)ble_name, "HZ00000000000000000");
 	cfg_set_by_id(CFG_ITEM_BLE_NAME, ble_name, sizeof(ble_name), type);
-  
-  //  printf("wang wang wang\r\n");
+
     return 0;
 }
 
@@ -792,7 +713,7 @@ int cfg_set_default(int argc, const char **argv)
 //    can_baud_reset();
 
     rds_set_default();
-
+    //file_delete(PP_SYS_CFG_BKUP_PATH);
     shell_cmd_exec("mcudbg clrbrt", NULL, 0);
 
     sleep(2);

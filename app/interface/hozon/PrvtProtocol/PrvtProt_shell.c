@@ -20,7 +20,6 @@ description�� include the header file
 #include "at.h"
 #include "shell_api.h"
 #include "hozon_PP_api.h"
-#include "PrvtProt_callCenter.h"
 #include "PrvtProt_xcall.h"
 #include "PrvtProt_remoteConfig.h"
 #include "PP_rmtCtrl.h"
@@ -46,22 +45,17 @@ description�� function declaration
 /*Global function declaration*/
 
 /*Static function declaration*/
-static int PP_shell_setHeartBeatPeriod(int argc, const char **argv);
-static int PP_shell_setSuspend(int argc, const char **argv);
 static int PP_shell_setXcallReq(int argc, const char **argv);
-static int PP_shell_setEcallResp(int argc, const char **argv);
 static int PP_shell_SetRmtCfgReq(int argc, const char **argv);
 static int PP_shell_SetRmtCtrlReq(int argc, const char **argv);
 static int PP_shell_SetRmtVSReq(int argc, const char **argv);
 static int PP_shell_SetTboxid(int argc, const char **argv);
-static int PP_shell_SetTmcuSw(int argc, const char **argv);
-static int PP_shell_SetTmpuSw(int argc, const char **argv);
 static int PP_shell_showpara(int argc, const char **argv);
 static int PP_shell_SetdiagReq(int argc, const char **argv);
 static int PP_shell_SetTboxSN(int argc, const char **argv);
 static int PP_shell_SetCertDLReq(int argc, const char **argv);
 static int PP_shell_SetCertDLUpdata(int argc, const char **argv);
-static int PP_shell_SetCfgSaveReq(int argc, const char **argv);
+static int PP_shell_factorydefaultsettings(int argc, const char **argv);
 static int PP_shell_SetRmtCfgEnable(int argc, const char **argv);
 static int PP_shell_SetRmtFotaUpdate(int argc, const char **argv);
 static int PP_shell_SetNTPTime(int argc, const char **argv);
@@ -87,21 +81,17 @@ description�� function code
 ******************************************************/
 void PrvtProt_shell_init(void)
 {
-	shell_cmd_register("hozon_setHeartBeatPeriod", PP_shell_setHeartBeatPeriod, \
-                                            "set HOZON PrvtProt HeartBeat Period");
-	shell_cmd_register("hozon_setSuspend", PP_shell_setSuspend, "set HOZON PrvtProt suspend");
-	shell_cmd_register("hozon_setXcallReq", PP_shell_setXcallReq, "set HOZON PrvtProt ecall request");
-    shell_cmd_register("hozon_setFIPReq", PP_shell_setFIPReq, "set HOZON PrvtProt fota info push request");
-	shell_cmd_register("hozon_setEcallResp", PP_shell_setEcallResp, "set HOZON PrvtProt ecall response");
+	shell_cmd_register("hozon_setXcallReq", PP_shell_setXcallReq, \
+                                            "set HOZON PrvtProt ecall request");
+    shell_cmd_register("hozon_setFIPReq", PP_shell_setFIPReq, \
+                                             "set HOZON fota info push request");
 	shell_cmd_register("hozon_setRmtCfgReq", PP_shell_SetRmtCfgReq, \
-                                        "set HOZON PrvtProt remote config request");
+                                            "set HOZON PrvtProt remote config request");
 	shell_cmd_register("hozon_setRmtCtrlReq", PP_shell_SetRmtCtrlReq, \
-                                        "set HOZON PrvtProt remote control request");
-	shell_cmd_register("hozon_setRmtVSReq", PP_shell_SetRmtVSReq, "set HOZON PrvtProt remote VS request");
-
+                                            "set HOZON PrvtProt remote control request");
+	shell_cmd_register("hozon_setRmtVSReq", PP_shell_SetRmtVSReq, \
+                                            "set HOZON PrvtProt remote VS request");
 	shell_cmd_register("hozon_settboxid", PP_shell_SetTboxid, "set HOZON tboxid");
-	shell_cmd_register("hozon_setmcuSw", PP_shell_SetTmcuSw, "set HOZON mcuSw");
-	shell_cmd_register("hozon_setmpuSw", PP_shell_SetTmpuSw, "set HOZON mpuSw");
 	shell_cmd_register("hozon_settboxsn", PP_shell_SetTboxSN, "set tbox sn");
 
 	/* show */
@@ -114,7 +104,8 @@ void PrvtProt_shell_init(void)
 	shell_cmd_register("hozon_setcertdlReq", PP_shell_SetCertDLReq, "set cert download req");
 	shell_cmd_register("hozon_setcertupdataReq", PP_shell_SetCertDLUpdata, "set cert updata req");
 
-    shell_cmd_register("hozon_setsavecfgReq", PP_shell_SetCfgSaveReq, "set save cfg req");
+    shell_cmd_register("hozon_defaultsettings", PP_shell_factorydefaultsettings, \
+                                                "the factory default settings");
 
     shell_cmd_register("hozon_setcfgenable", PP_shell_SetRmtCfgEnable, "set save cfg enable");
 	shell_cmd_register("hozon_setcfgapn1", PP_shell_SetRmtCfgapn1, "set save cfg apn1");
@@ -129,71 +120,6 @@ void PrvtProt_shell_init(void)
     shell_cmd_register("hozon_delcipher", PP_shell_deleteCipher, "delete cipher");
 }
 
-
-/******************************************************
-*��������PP_shell_setHeartBeatPeriod
-
-*��  �Σ�
-argv[0] - �������� ����λ:��
-
-
-*����ֵ��void
-
-*��  ����
-
-*��  ע��
-******************************************************/
-static int PP_shell_setHeartBeatPeriod(int argc, const char **argv)
-{
-	unsigned int period;
-    if (argc != 1)
-    {
-        shellprintf(" usage: HOZON_PP_SetheartbeatPeriod <heartbeat period>\r\n");
-        return -1;
-    }
-	
-	sscanf(argv[0], "%u", &period);
-	log_o(LOG_HOZON, "heartbeat period = %d",period);
-	if(period == 0)
-	{
-		 shellprintf(" usage: heartbeat period invalid\r\n");
-		 return -1;
-	}	
-	PrvtPro_SetHeartBeatPeriod((uint8_t)period);
-	
-	sleep(1);
-    return 0;
-}
-
-
-/******************************************************
-*��������PP_shell_setSuspend
-
-*��  �Σ�������ͣ
-
-
-*����ֵ��void
-
-*��  ����
-
-*��  ע��
-******************************************************/
-static int PP_shell_setSuspend(int argc, const char **argv)
-{
-	unsigned int suspend;
-    if (argc != 1)
-    {
-        shellprintf(" usage: HOZON_PP_Setsuspend <suspend>\r\n");
-        return -1;
-    }
-	
-	sscanf(argv[0], "%u", &suspend);
-	log_o(LOG_HOZON, "suspend = %d",suspend);
-	PrvtPro_Setsuspend((uint8_t)suspend);
-	
-    sleep(1);
-    return 0;
-}
 
 /******************************************************
 *��������PP_shell_setXcallReq
@@ -239,35 +165,6 @@ static int PP_shell_setXcallReq(int argc, const char **argv)
 static int PP_shell_setFIPReq(int argc, const char **argv)
 {
 	PP_FIP_shellReq();
-    sleep(1);
-    return 0;
-}
-
-/******************************************************
-*��������PP_shell_setEcallResp
-
-*��  �Σ�����ecall response
-
-
-*����ֵ��void
-
-*��  ����
-
-*��  ע��
-******************************************************/
-static int PP_shell_setEcallResp(int argc, const char **argv)
-{
-	unsigned int EcallResp;
-    if (argc != 1)
-    {
-        shellprintf(" usage: HOZON_PP_SetecallResponse <ecall resp>\r\n");
-        return -1;
-    }
-
-	sscanf(argv[0], "%u", &EcallResp);
-	log_o(LOG_HOZON, "EcallReq = %d",EcallResp);
-	//PP_xcall_SetEcallResp((uint8_t)EcallResp);
-	PrvtPro_SetcallCCReq((uint8_t)EcallResp);
     sleep(1);
     return 0;
 }
@@ -449,56 +346,6 @@ static int PP_shell_SetTboxid(int argc, const char **argv)
 }
 
 /******************************************************
-*��������PP_shell_SetTmcuSw
-
-*��  �Σ�����
-
-
-*����ֵ��void
-
-*��  ����
-
-*��  ע��
-******************************************************/
-static int PP_shell_SetTmcuSw(int argc, const char **argv)
-{
-    if (argc != 1)
-    {
-        shellprintf(" usage: HOZON_PP_SetmcuSw <set mcuSw>\r\n");
-        return -1;
-    }
-
-    PP_rmtCfg_SetmcuSw(argv[0]);
-    sleep(1);
-    return 0;
-}
-
-/******************************************************
-*��������PP_shell_SetTmpuSw
-
-*��  �Σ�����
-
-
-*����ֵ��void
-
-*��  ����
-
-*��  ע��
-******************************************************/
-static int PP_shell_SetTmpuSw(int argc, const char **argv)
-{
-    if (argc != 1)
-    {
-        shellprintf(" usage: HOZON_PP_SetmpuSw <set mpuSw>\r\n");
-        return -1;
-    }
-
-    PP_rmtCfg_SetmpuSw(argv[0]);
-    sleep(1);
-    return 0;
-}
-
-/******************************************************
 *��������PP_shell_showremoteCfg
 
 *��  �Σ�����
@@ -661,7 +508,7 @@ static int PP_shell_SetCertDLUpdata(int argc, const char **argv)
 }
 
 /******************************************************
-*PP_shell_SetCfgSaveReq
+*PP_shell_factorydefaultsettings
 
 *��  �Σ�����
 
@@ -672,18 +519,9 @@ static int PP_shell_SetCertDLUpdata(int argc, const char **argv)
 
 *��  ע��
 ******************************************************/
-static int PP_shell_SetCfgSaveReq(int argc, const char **argv)
+static int PP_shell_factorydefaultsettings(int argc, const char **argv)
 {
-	unsigned int saveReq;
-    if (argc != 1)
-    {
-        shellprintf(" usage: hozon_setsavecfgReq <set save cfg req>\r\n");
-        return -1;
-    }
-
-	sscanf(argv[0], "%u", &saveReq);
-
-	PrvtProt_SaveCfgPara((uint8_t)saveReq);
+	PrvtProt_defaultsettings();
     sleep(1);
     return 0;
 }

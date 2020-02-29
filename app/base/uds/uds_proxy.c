@@ -134,7 +134,7 @@ int uds_proxy_init(void)
     uds_client.can_id_fun = 0;
     uds_client.can_id_res = 0;
     uds_client.timer_t[P2CLINT].timer_value = 150;
-    uds_client.timer_t[P2EXT_CLIENT].timer_value = 5000;
+    uds_client.timer_t[P2EXT_CLIENT].timer_value = 6000;
     uds_client.timer_t[S3CLIENT].timer_value = 4000;
     uds_client.timer_t[CLIENT_SET].timer_value = 1000;
 
@@ -473,7 +473,7 @@ void uds_proxy(uint8_t *msg, uint16_t len)
                     if ((SID_NegativeResponse == msg[0]) &&
                         (NRC_RequestCorrectlyReceivedResponsePending == msg[2]))
                     {
-                        log_i(LOG_UDS, "pending reset");
+                        log_o(LOG_UDS, "pending reset");
                         uds_set_timer(&uds_client, P2EXT_CLIENT, 1);
                     }
                     else

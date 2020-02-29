@@ -10,7 +10,9 @@
 #define COM_SDCARD_DIR_PKI_KEY	   "/media/sdcard/usrdata/pki/userAuth.key"
 #define COM_SDCARD_DIR_PKI_CSR	   "/media/sdcard/usrdata/pki/userAuth.csr"
 
-#define PP_CERTDL_CIPHER_PATH			"/usrdata/pki/sn_sim_encinfo.txt"
+#define PP_CERTDL_HOZONCACER_PATH	"/usrdata/pem/HozonCA.cer"
+#define PP_CERTDL_TSPCACER_PATH		"/usrdata/pem/TspCA.cer"
+#define PP_CERTDL_CIPHER_PATH		"/usrdata/pki/sn_sim_encinfo.txt"
 
 #define PP_CERTDL_CERTPATH			"/usrdata/pki/userAuth.cer"
 #define PP_CERTDL_CERTPATH_UPDATE	"/usrdata/pki/update/userAuth.cer"
@@ -77,12 +79,9 @@ extern int PrvtProt_run(void);
 extern int PP_FileUpload_run(void);
 
 extern void PrvtPro_SetHeartBeatPeriod(unsigned char period);
-extern void PrvtPro_Setsuspend(unsigned char suspend);
 extern void PrvtPro_SettboxId(char obj,unsigned int tboxid);
 extern void PrvtPro_SetEcallReq(unsigned char req);
 extern void PrvtPro_SetEcallResp(unsigned char resp);
-extern void PP_rmtCfg_SetmcuSw(const char *mcuSw);
-extern void PP_rmtCfg_SetmpuSw(const char *mpuSw);
 extern void PrvtProt_Settboxsn(const char *tboxsn);
 extern void PrvtPro_ShowPara(void);
 extern void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd);
@@ -101,7 +100,7 @@ extern unsigned char GetPP_CertDL_CertValid(void);
 extern void PP_CertDL_CertDLReset(void);
 extern unsigned char GetPP_CertDL_CertUpdate(void);
 extern unsigned char GetPP_CertDL_allowBDLink(void);
-extern void PrvtProt_SaveCfgPara(unsigned char req);
+extern void PrvtProt_defaultsettings(void);
 extern void setPrvtProt_sendHeartbeat(void);
 extern void SetPP_rmtCtrl_AuthRequest(void);
 extern unsigned char GetPP_rmtCtrl_AuthResult(void);
@@ -151,4 +150,6 @@ extern void InitPP_netstatus_Parameter(void);
 extern void PP_netstatus_run(void);
 extern uint8_t PP_netstatus_pubilcfaultsts(uint64_t *timestamp);
 extern void PP_identificat_readESK(uint8_t *esk);
+extern void PP_CanMsgUL_datacollection(void *msg);
+extern void PP_FileUpload_CanMsgRequest(int mintue);
 #endif

@@ -322,7 +322,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 			{
 				if(sockSt.state != PP_CLOSED)
 				{
-					log_i(LOG_SOCK_PROXY, "socket closed");
+					log_o(LOG_SOCK_PROXY, "socket closed");
 					sock_close(sockSt.socket);
 					sockSt.state = PP_CLOSED;
 					sockSt.tsplinkstatus = 0;
@@ -402,7 +402,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		{
 			case SOCKPROXY_CHECK_CERT:
 			{
-				if(0 == sockSt.sleepFlag)
+				if((0 == sockSt.sleepFlag) && (0 == GetPP_rmtCtrl_fotaUpgrade()))
 				{
 					if(sockSt.cancelRcvphreadFlag)
 					{
@@ -416,14 +416,14 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 
 					if(GetPP_CertDL_allowBDLink() == 0)//
 					{//建立单向连接
-						log_i(LOG_HOZON, "Cert inValid,set up sglink\n");
+						log_o(LOG_HOZON, "Cert inValid,set up sglink\n");
 						sockSt.waittime = tm_get_time();
 						sockSt.sglinkSt =  SOCKPROXY_SGLINK_INIT;
 						sockSt.linkSt = SOCKPROXY_SETUP_SGLINK;
 					}
 					else
 					{//建立双向连接
-						log_i(LOG_HOZON, "Cert Valid,set up BDLlink\n");
+						log_o(LOG_HOZON, "Cert Valid,set up BDLlink\n");
 						sockSt.waittime = tm_get_time();
 						sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
 						sockSt.linkSt = SOCKPROXY_SETUP_BDLLINK;
@@ -474,7 +474,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					sockSt.cancelRcvphreadFlag = 1;
 					sockSt.asynCloseFlg = 0;
 					sockSt.rcvflag = 0;
-					log_i(LOG_SOCK_PROXY, "socket closed\n");
+					log_o(LOG_SOCK_PROXY, "socket closed\n");
 					if(sockSt.linkSt == SOCKPROXY_SETUP_SGLINK)
 					{
 						(void)SgHzTboxClose();
@@ -561,9 +561,9 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 static int sockproxy_sgLink(sockproxy_stat_t *state)
 {
 	int iRet = 0;
-	char	OnePath[128]="\0";
-	char	ScdPath[128]="\0";
-	char 	destIP[128];
+	char	OnePath[64]="\0";
+	char	ScdPath[64]="\0";
+	char 	destIP[32];
 	struct 	hostent * he;
 	char 	**phe = NULL;
 
@@ -622,8 +622,8 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 				}
 
 				/*create random string*/
-				sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
-				sprintf(ScdPath, "%s","/usrdata/pem/TspCA.cer");
+				sprintf(OnePath, "%s",PP_CERTDL_HOZONCACER_PATH);
+				sprintf(ScdPath, "%s",PP_CERTDL_TSPCACER_PATH);
 
 				iRet = SgHzTboxCertchainCfg(OnePath, ScdPath);
 				if(iRet != SOCKPROXY_SG_CCIC_SUCCESS)
@@ -670,7 +670,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					return -1;
 				}
 
-				log_i(LOG_HOZON, "set up sglink success\n");
+				log_o(LOG_HOZON, "set up sglink success\n");
 				sockSt.state = PP_OPENED;
 				sockSt.tsplinkstatus = 1;
 				setPrvtProt_sendHeartbeat();
@@ -701,7 +701,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 				sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
 				if(sockSt.state != PP_CLOSED)
 				{
-					log_i(LOG_SOCK_PROXY, "close sg socket\n");
+					log_o(LOG_SOCK_PROXY, "close sg socket\n");
 					SgHzTboxClose();
 					sockSt.state = PP_CLOSED;
 				}
@@ -734,9 +734,9 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 static int sockproxy_BDLink(sockproxy_stat_t *state)
 {
 	int 	iRet = 0;
-	char	OnePath[128]="\0";
-	char	ScdPath[128]="\0";
-	char 	destIP[128];
+	char	OnePath[64]="\0";
+	char	ScdPath[64]="\0";
+	char 	destIP[32];
 	struct 	hostent * he;
 	char 	**phe = NULL;
 
@@ -751,8 +751,8 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 		break;
 		case SOCKPROXY_BDLLINK_CREAT:
 		{
-			char	UsCertPath[128]="\0";
-			char	UsKeyPath[128]="\0";
+			char	UsCertPath[64]="\0";
+			char	UsKeyPath[64]="\0";
 
 			if(sockSt.state == PP_CLOSED)
 			{
@@ -800,8 +800,8 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 				}
 
 				/*create random string*/
-				sprintf(OnePath, "%s","/usrdata/pem/HozonCA.cer");
-				sprintf(ScdPath, "%s","/usrdata/pem/TspCA.cer");
+				sprintf(OnePath, "%s",PP_CERTDL_HOZONCACER_PATH);
+				sprintf(ScdPath, "%s",PP_CERTDL_TSPCACER_PATH);
 				sprintf(UsCertPath, "%s",PP_CERTDL_CERTPATH);//申请的证书，要跟userAuth.key匹配使用
 				sprintf(UsKeyPath, "%s",PP_CERTDL_TWOCERTKEYPATH);
 				iRet = HzTboxCertchainCfg(OnePath, ScdPath, UsCertPath, UsKeyPath);
@@ -848,7 +848,6 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					return -1;
 				}
 
-				log_e(LOG_SOCK_PROXY,"\n", iRet);
 				/*Initiate a connection server request*/
 				HzTboxSocketFd(&SP_sockFd);
 				#if 0
@@ -879,7 +878,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					return -1;
 				}
 
-				log_i(LOG_HOZON, "set up BDLlink success\n");
+				log_o(LOG_HOZON, "set up BDLlink success\n");
 				sockSt.state = PP_OPENED;
 				sockSt.tsplinkstatus = 1;
 				setPrvtProt_sendHeartbeat();
@@ -908,7 +907,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 			{
 				if(sockSt.state != PP_CLOSED)
 				{
-					log_i(LOG_SOCK_PROXY, "bdl socket closed\n");
+					log_o(LOG_SOCK_PROXY, "bdl socket closed\n");
 					(void)HzTboxClose();
 					sockSt.state = PP_CLOSED;
 				}
@@ -1654,9 +1653,9 @@ void setsockproxy_bdlAddrPort(char* addr,char* port)
 	memset(sockSt.BDLLinkAddr, 0 , 33);
 	memcpy(sockSt.BDLLinkAddr,addr,strlen((const char*)addr));
 	sockSt.BDLPort = atoi((const char*)port);
-	log_i(LOG_SOCK_PROXY, "sockSt.BDLLinkAddr: %s\n",sockSt.BDLLinkAddr);
-	log_i(LOG_SOCK_PROXY, "port = %s\n",port);
-	log_i(LOG_SOCK_PROXY, "sockSt.BDLPort = %d\n",sockSt.BDLPort);
+	log_o(LOG_SOCK_PROXY, "sockSt.BDLLinkAddr: %s\n",sockSt.BDLLinkAddr);
+	log_o(LOG_SOCK_PROXY, "port = %s\n",port);
+	log_o(LOG_SOCK_PROXY, "sockSt.BDLPort = %d\n",sockSt.BDLPort);
 	sockproxy_socketclose((int)(PP_SP_COLSE_SP + 10));//by liujian 20191015
 }
 
@@ -1668,9 +1667,9 @@ void setsockproxy_sgAddrPort(char* addr,char* port)
 	memset(sockSt.sgLinkAddr, 0 , 33);
 	memcpy(sockSt.sgLinkAddr,addr,strlen((const char*)addr));
 	sockSt.sgPort = atoi((const char*)port);
-	log_i(LOG_SOCK_PROXY, "sockSt.sgLinkAddr: %s\n",sockSt.sgLinkAddr);
-	log_i(LOG_SOCK_PROXY, "port = %s\n",port);
-	log_i(LOG_SOCK_PROXY, "sockSt.sgPort = %d\n",sockSt.sgPort);
+	log_o(LOG_SOCK_PROXY, "sockSt.sgLinkAddr: %s\n",sockSt.sgLinkAddr);
+	log_o(LOG_SOCK_PROXY, "port = %s\n",port);
+	log_o(LOG_SOCK_PROXY, "sockSt.sgPort = %d\n",sockSt.sgPort);
 	sockproxy_socketclose((int)(PP_SP_COLSE_SP + 11));//by liujian 20191015
 }
 
