@@ -1710,7 +1710,7 @@ void *ivi_main(void)
 	}
 	if(hu_pki_en == 0)
 	{
-loop:	ret = tbox_ivi_create_tcp_socket();
+		ret = tbox_ivi_create_tcp_socket();
 		if( ret != 0 )
 		{
 			if (tcp_fd < 0)
@@ -1819,7 +1819,6 @@ loop:	ret = tbox_ivi_create_tcp_socket();
 	                    	log_o(LOG_IVI,"Heartbeat timeout!!!!!!!");
 	                        close(ivi_clients[i].fd);
 	                        ivi_clients[i].fd = -1;
-							goto loop;
 	                    }
 	                    
 	                    if (FD_ISSET(ivi_clients[i].fd, &read_set))
@@ -1846,7 +1845,6 @@ loop:	ret = tbox_ivi_create_tcp_socket();
 	                            log_e(LOG_IVI, "Client(%d) exit\n", ivi_clients[i].fd);
 	                            close(ivi_clients[i].fd);
 	                            ivi_clients[i].fd = -1;
-								goto loop;
 	                        }
 	                    }
 	                }
@@ -2005,6 +2003,7 @@ void *ivi_txmain(void)
 	int res = 0;
 	while(1)
 	{
+		usleep(5000);
 		pthread_mutex_lock(&send_mutex);
 		if ((rpt = HU_data_get_pack()) != NULL)
 		{

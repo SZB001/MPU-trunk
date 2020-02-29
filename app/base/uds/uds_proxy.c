@@ -449,6 +449,12 @@ void uds_proxy(uint8_t *msg, uint16_t len)
             if (len < 6 || len - 6 != msg[4] + (((uint16_t)msg[5]) << 8))
             {
                 log_e(LOG_UDS, "message length invalid");
+                log_e(LOG_UDS, "len = %d", len);
+                uint16_t i;
+                for(i = 0;i < len;i++)
+                {
+                    log_e(LOG_UDS, "%02x ",msg[i]);
+                }
                 break;
             }
             

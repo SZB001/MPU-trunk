@@ -196,7 +196,7 @@ static void *PP_FileUpload_main(void)
 			PP_FileUpload_pkgzip();
 		}
 
-		usleep(100*1000);
+		usleep(100000);
     }
 
     return NULL;
@@ -235,7 +235,7 @@ static void *PP_GbFileSend_main(void)
 		int shmid = GetShm(4096);
 		char *addr = shmat(shmid,NULL,0);
 		
-    	if((dev_get_KL15_signal() == 1) &&	\
+    	if((dev_get_KL15_signal() == 1) &&	(0 == GetPP_rmtCtrl_fotaUpgrade()) && \
 		   (0 == PP_netstatus_pubilcfaultsts(NULL)) && \
 		   (1 == PP_FileUL.network) && (0 == get_factory_mode()))
     	{	
@@ -280,7 +280,7 @@ static void *PP_CanFileSend_main(void)
 		int shmid = GetShm(4096);
 		char *addr = shmat(shmid,NULL,0);
 		
-    	if((dev_get_KL15_signal() == 1) &&	\
+    	if((dev_get_KL15_signal() == 1) && (0 == GetPP_rmtCtrl_fotaUpgrade()) && \
 		   (0 == PP_netstatus_pubilcfaultsts(NULL)) && \
 		   (1 == PP_FileUL.network) && (0 == get_factory_mode()))
     	{
@@ -337,6 +337,10 @@ static void *PP_CanFileSend_main(void)
 				PP_tsp_flag = 0;
 			}
     	}
+		else
+		{
+			PP_tsp_flag = 0;
+		}
 		shmdt(addr);
 
 		//整车报文文件删除
