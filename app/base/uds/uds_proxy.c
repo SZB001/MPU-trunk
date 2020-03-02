@@ -134,7 +134,7 @@ int uds_proxy_init(void)
     uds_client.can_id_fun = 0;
     uds_client.can_id_res = 0;
     uds_client.timer_t[P2CLINT].timer_value = 150;
-    uds_client.timer_t[P2EXT_CLIENT].timer_value = 6000;
+    uds_client.timer_t[P2EXT_CLIENT].timer_value = 10000;
     uds_client.timer_t[S3CLIENT].timer_value = 4000;
     uds_client.timer_t[CLIENT_SET].timer_value = 1000;
 
