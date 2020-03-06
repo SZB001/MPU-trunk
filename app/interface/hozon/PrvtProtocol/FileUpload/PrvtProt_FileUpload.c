@@ -190,10 +190,18 @@ static void *PP_FileUpload_main(void)
     prctl(PR_SET_NAME, "FILE_UPLOAD");
     while(1)
     {
-		//if(1 == PP_FileUL.network)
+		unsigned int i;
+		if(0 == GetPP_rmtCtrl_fotaUpgrade())
 		{
 			PP_FileUpload_datacollection();
 			PP_FileUpload_pkgzip();
+		}
+		else
+		{
+			for(i = 0;i < PP_FILEUPLOAD_BUFNUM;i++)
+			{
+				memset(&PP_FileUL.buffer[i],0,sizeof(PP_FileUpload_Buf_t));
+			}
 		}
 
 		usleep(100000);

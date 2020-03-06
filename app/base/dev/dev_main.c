@@ -419,7 +419,7 @@ void dev_sync_timeout(void)
 
     /*sync mpu fault to mcu */
     flt_sync_to_mcu(&mpu_fault);
-    scom_tl_send_frame(SCOM_TL_CMD_MPU_FAULT_SYN, SCOM_TL_SINGLE_FRAME, 0,
+    scom_tl_send_frame(SCOM_TL_CMD_MPU_FAULT_SYN, SCOM_TL_SINGLE_FRAME, 0,    
                        (unsigned char *) &mpu_fault, sizeof(mpu_fault));
 
     /*sync mpu status to mcu */

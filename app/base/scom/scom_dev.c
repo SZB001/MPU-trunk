@@ -86,8 +86,8 @@ int scom_dev_close(void)
 {
     pthread_mutex_lock(&scom_dev_mutex);
     close(scom_dev_fd);
-
     scom_dev_fd = -1;
+    log_e(LOG_SCOM, "scom closed\n");
     pthread_mutex_unlock(&scom_dev_mutex);
 
     return 0;
@@ -117,7 +117,15 @@ void scom_dev_recv(unsigned char *buf, unsigned int *len)
     {
         *len = ret;
     }
-
+#if 0
+    log_e(LOG_SCOM, "scom recv:");
+    uint16_t i;
+    for(i = 0;i < *len;i++)
+    {
+        log_e(LOG_SCOM, "%02x ",buf[i]);
+    }
+    log_e(LOG_SCOM, "\r\n");
+#endif
     log_buf_dump(LOG_SCOM, ">>>>>>>>>>>>>>>>>>(recv)>>>>>>>>>>>>>>>>>", buf, *len);
 }
 

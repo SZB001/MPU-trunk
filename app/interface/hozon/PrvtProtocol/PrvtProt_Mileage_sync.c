@@ -60,7 +60,7 @@ void PP_Mileagesync_init(void)
 int PP_Mileagesync_mainfunction(void *task)
 {
 	
-	static uint8_t w_flag ;
+	static uint8_t w_flag = 0;
 	int i;
 	if(1 == dev_get_KL15_signal())  //IGN on
 	{
@@ -68,7 +68,7 @@ int PP_Mileagesync_mainfunction(void *task)
 		{
 			new_mileage = gb_data_vehicleOdograph();
 		}	
-		w_flag = 0;
+		
 		if(new_mileage != old_mileage)   //里程同步，里程有变化才同步一次
 		{
 			for(i = 0;i < 3 ;i++)
@@ -80,15 +80,16 @@ int PP_Mileagesync_mainfunction(void *task)
 				usleep(10);
 			}
 			old_mileage = new_mileage;
+			w_flag = 1;
 		}
 	}
 	else
 	{
-		if(w_flag == 0)
+		if(w_flag == 1)
 		{
 			log_o(LOG_HOZON,"IGN off write mileage = %d  to ROM",old_mileage);
 			cfg_set_user_para(CFG_ITEM_HOZON_MILEAGE,&old_mileage,sizeof(uint32_t));
-			w_flag = 1;
+			w_flag = 0;
 		}
 	}
 	

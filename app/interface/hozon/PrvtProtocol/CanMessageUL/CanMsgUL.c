@@ -188,7 +188,8 @@ static void *PP_CanMsgUL_main(void)
 		}
 		else
 		{
-			if(1 == gb32960_gbCanbusActiveSt())//can bus active
+			if((1 == gb32960_gbCanbusActiveSt()) && \
+							(0 == GetPP_rmtCtrl_fotaUpgrade()))
 			{
 				if(Pfilepathname == NULL)
 				{
@@ -350,7 +351,8 @@ void PP_CanMsgUL_datacollection(void *msg)
 	static uint64_t Sebasetime = 0;
 	uint64_t	Lecurrtime;
 	CAN_MSG *	canMsg  = msg;
-	if(1 != gb32960_gbCanbusActiveSt())//can bus not active
+	if((1 != gb32960_gbCanbusActiveSt()) || \
+						(1 == GetPP_rmtCtrl_fotaUpgrade()))
 	{
 		return;
 	}
