@@ -60,10 +60,12 @@ static PP_FileUpload_t PP_FileUL;
 static int PP_tsp_flag = 0;
 static uint16_t PP_tsp_time = 0;
 
+static PP_log_upload_t PP_up_log;
 /*Static function declaration*/
 static void *PP_FileUpload_main(void);
 static void *PP_GbFileSend_main(void);
 static void *PP_CanFileSend_main(void);
+static void *PP_LogFileSend_main(void);
 
 
 static void PP_FileUpload_datacollection(void);
@@ -170,6 +172,16 @@ int PP_FileUpload_run(void)
 	//临时做一条shell命令
 	shell_cmd_register("hozon_tsprequest", PP_FileUpload_Tspshell, "hozon_tsprequest");	
 
+	pthread_t log_tid;
+	pthread_attr_t log_ta;
+
+    pthread_attr_init(&log_ta);
+    pthread_attr_setdetachstate(&log_ta, PTHREAD_CREATE_DETACHED);
+    ret = pthread_create(&log_tid, &log_ta, (void *)PP_LogFileSend_main, NULL);
+    if (ret != 0)
+    {
+        log_e(LOG_HOZON, "file upload pthread create failed, error: %s", strerror(errno));
+    }
 	return 0;
 }
 
@@ -191,7 +203,8 @@ static void *PP_FileUpload_main(void)
     while(1)
     {
 		unsigned int i;
-		if(0 == GetPP_rmtCtrl_fotaUpgrade())
+		if((0 == GetPP_rmtCtrl_fotaUpgrade()) && \
+		   				(1 == PP_rmtCfg_enable_dcEnabled()))
 		{
 			PP_FileUpload_datacollection();
 			PP_FileUpload_pkgzip();
@@ -214,7 +227,17 @@ void PP_FileUpload_CanMsgRequest(int mintue)
 {
 	PP_tsp_flag = 1;
 	PP_tsp_time = (uint16_t)mintue;
-	log_o(LOG_HOZON,"TSP request upload file");
+	log_o(LOG_HOZON,"TSP request upload can file");
+}
+
+void PP_FileUpload_LogRequest(PP_log_upload_t log_para)
+{
+	PP_up_log.log_flag = 1;
+	PP_up_log.log_grade = log_para.log_grade;  //日志等级
+	PP_up_log.log_start_time = log_para.log_start_time;  //开始上传日志的时间
+	PP_up_log.log_up_time = log_para.log_up_time;    //采集日志的时间
+	PP_up_log.log_eventId = log_para.log_eventId;
+	log_o(LOG_HOZON,"TSP request upload log file");
 }
 
 static int PP_FileUpload_Tspshell(int argc, const char **argv)
@@ -256,10 +279,8 @@ static void *PP_GbFileSend_main(void)
 			buf[1] = 0x01;     //代表国标触发
 			sprintf(buf+2,"%s%s",vin,tboxsn);
 			buf[37] = m_end;
-			log_o(LOG_HOZON,"PP_GbFileSend_main sem_p");
 			sem_p(semid);
 			strcpy(addr,buf);
-			log_o(LOG_HOZON,"PP_GbFileSend_main sem_v");
 			sem_v(semid);	
     	}
 		shmdt(addr);
@@ -319,8 +340,6 @@ static void *PP_CanFileSend_main(void)
 				buf[4] = 0;
 				sprintf(buf+5,"%s",vin);
 				buf[22] = m_end;
-				//log_o(LOG_HOZON,"PP_CanFileSend_main sem_p");
-				sem_p(semid);
 				strcpy(addr,buf);
 				sem_v(semid);
 				//log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");
@@ -344,16 +363,62 @@ static void *PP_CanFileSend_main(void)
 				//log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");
 				PP_tsp_flag = 0;
 			}
+	
     	}
-		else
-		{
-			PP_tsp_flag = 0;
-		}
 		shmdt(addr);
 
 		//整车报文文件删除
 		PP_CanFile_delfile();
     }
+}
+static void *PP_LogFileSend_main(void)
+{
+	log_o(LOG_HOZON, "logfile send thread running");
+    prctl(PR_SET_NAME, "LOGFILE_SEND");
+	
+	char buf[200] = {0};
+	char vin[18] = {0};
+//	unsigned int len;
+	int semid = Commsem();
+	set_semvalue(semid);//初始化信号量值为1
+    while(1)
+    {	
+    	sleep(10);	
+		int shmid = GetShm(4096);
+		char *addr = shmat(shmid,NULL,0);
+		
+    	if((dev_get_KL15_signal() == 1) &&	\
+		   (0 == PP_netstatus_pubilcfaultsts(NULL)) && \
+		   (1 == PP_FileUL.network) && (0 == get_factory_mode()))
+    	{	
+    		if(PP_up_log.log_flag == 1)
+    		{
+    			memset(&PP_up_log,0,sizeof(PP_up_log));
+				buf[0] = m_start;
+				buf[1] = 0x03;     //代表log触发
+				buf[2] = 0x01;     //开始上传
+				buf[3] = (char)(PP_up_log.log_start_time >> 24);
+				buf[4] = (char)(PP_up_log.log_start_time >> 16);
+				buf[5] = (char)(PP_up_log.log_start_time >> 8);
+				buf[6] = (char)(PP_up_log.log_start_time );
+				buf[7] = (char)(PP_up_log.log_up_time >> 8);
+				buf[8] = (char)(PP_up_log.log_up_time );
+				buf[9] = (char)(PP_up_log.log_eventId >> 24);
+				buf[10] = (char)(PP_up_log.log_eventId >> 16);
+				buf[11] = (char)(PP_up_log.log_eventId >> 8);
+				buf[12] = (char)(PP_up_log.log_eventId );
+				gb32960_getvin(vin);
+				sprintf(buf+13,"%s",vin);
+				buf[30] = m_end;
+				sem_p(semid);
+				strcpy(addr,buf);
+				sem_v(semid);
+    		}	
+    	}
+		shmdt(addr);		
+    }
+
+    return NULL;
 }
 
 static double PP_GetCanfile_Size(void)

@@ -1738,17 +1738,6 @@ uint8_t PP_rmtCfg_enable_ecall(void)
 	return rmt_COMMON.eCallEnabled;
 }
 
-uint8_t PP_rmtCfg_enable_datacollect(void)
-{
-	unsigned int len;
-	App_rmtCfg_COMMON_t rmt_COMMON;
-	len = sizeof(App_rmtCfg_COMMON_t);
-	pthread_mutex_lock(&cfgdtmtx);
-	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&rmt_COMMON,&len);
-	pthread_mutex_unlock(&cfgdtmtx);
-	
-	return rmt_COMMON.dcEnabled;
-}
 uint8_t PP_rmtCfg_enable_dtcEnabled(void)
 {
 	unsigned int len;

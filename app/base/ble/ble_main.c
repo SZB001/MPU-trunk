@@ -769,13 +769,18 @@ static void *ble_main(void)
 						}
 						else
 						{
-						    stBtApi.LinkDrop();
-							g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
-							log_e(LOG_BLE, "auth fail");
 							stBtApi.Init();
 							g_BleMember.ucTransStatus = BLE_INIT_STATUS;
-							reset_hz_data();
-							log_i(LOG_BLE, "data err");
+							if (BT_AUTH_FAIL == bt_get_auth_flag())
+							{
+						    	stBtApi.LinkDrop();
+								g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
+								log_e(LOG_BLE, "cmd fail1");
+								//stBtApi.Init();
+								//g_BleMember.ucTransStatus = BLE_INIT_STATUS;
+								reset_hz_data();
+								log_i(LOG_BLE, "data err1");
+							}
 						}
 
 						if (BT_AUTH_FAIL == bt_get_auth_flag())

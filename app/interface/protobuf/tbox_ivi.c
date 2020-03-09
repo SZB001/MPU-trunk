@@ -388,6 +388,16 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 			Tbox__Net__IhuLogfile logfile;
 			tbox__net__ihu_logfile__init(&logfile);
 			TopMsg.message_type = TBOX__NET__MESSAGETYPE__REQUEST_IHU_LOGFILE;
+			
+			logfile.aid = tsplogfile.aid;
+			logfile.mid = tsplogfile.mid;
+			logfile.eventid = tsplogfile.eventid;
+			logfile.starttime = tsplogfile.starttime;
+			logfile.durationtime = tsplogfile.durationtime;
+			logfile.timestamp = tsplogfile.timestamp;
+			logfile.channel = tsplogfile.channel;
+			logfile.level = tsplogfile.level;
+			
 			TopMsg.ihu_logfile = &logfile;
 		}
 		break;
@@ -1727,6 +1737,7 @@ void *ivi_main(void)
 
     while (1)
     {
+    	usleep(5000);
 		if(hu_pki_en == 0)	
 		{
 	    	FD_ZERO(&read_set);
@@ -1954,7 +1965,6 @@ void *ivi_main(void)
 					}
 					else
 					{
-						log_i(LOG_IVI,"HzTboxSvrDataRecv +++++++++++++++iRet[%d] \n", ret);
 						if (num > 0)
 			            {
 			                ihu_client.lasthearttime = tm_get_time();

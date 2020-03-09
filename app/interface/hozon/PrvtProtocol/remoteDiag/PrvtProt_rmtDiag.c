@@ -878,9 +878,19 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 			if((1 == PP_rmtDiag.state.activeDiagFlag) && \
 								(0 == PP_rmtDiag.state.mcurtcflag))
 			{
+				PP_rmtDiag.state.activeDiagFlag = 0;
+				if(0 == PP_rmtCfg_enable_dtcEnabled())
+				{
+					log_o(LOG_HOZON, "remote diag func unenable\n");
+					PP_rmtDiag.state.result = 0;
+					PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_DIAGUNENABLE;
+					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
+					return 0;
+				}
+
 				memset(&PP_rmtDiag_allFault,0 , sizeof(PP_rmtDiag_allFault_t));
 				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKREPORTST;
-				PP_rmtDiag.state.activeDiagFlag = 0;
 			}
 			else
 			{
@@ -956,16 +966,6 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 		break;
 		case PP_ACTIVEDIAG_CHECKVEHICOND:
 		{
-			if(0 == PP_rmtCfg_enable_dtcEnabled())
-			{
-				log_o(LOG_HOZON, "remote diag func unenable\n");
-				PP_rmtDiag.state.result = 0;
-				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_DIAGUNENABLE;
-				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
-				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
-				return 0;
-			}
-
 			if((tm_get_time() - PP_rmtDiag.state.activeDiagdelaytime) >= PP_DIAGPWRON_WAITTIME)//延时5s
 			{
 				if(gb_data_vehicleSpeed() <= 50)//判断车速<=5km/h,满足诊断条件

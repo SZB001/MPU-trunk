@@ -103,7 +103,7 @@ typedef struct{
 }ivi_remotediagnos;
 
 typedef struct{
-	char *vin;
+	 char *vin;
 	  uint32_t eventid;
 	  uint32_t timestamp;
 	  uint32_t aid;

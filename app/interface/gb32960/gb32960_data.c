@@ -4219,7 +4219,7 @@ static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 					}
 
 					msg->isRx = 1;
-					//PP_CanMsgUL_datacollection(msg);
+					PP_CanMsgUL_datacollection(msg);
 				}
 				
 				msg++;

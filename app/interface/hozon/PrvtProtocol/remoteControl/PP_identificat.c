@@ -111,8 +111,9 @@ void PP_identificat_init()
 	if(cnt != 16)
 	{
 		memcpy(DataSk,temp,16);
+		log_o(LOG_HOZON,"ESK read successful");
 	}
-	log_o(LOG_HOZON,"ESK read successful");
+	
 	log_buf_dump(LOG_HOZON, "ESK", DataSk, length);
 }
 
@@ -152,7 +153,7 @@ int PP_identificat_mainfunction()
 			}
 			else
 			{
-				log_e(LOG_HOZON,"BDCM in trouble!!!!!!!!!");
+				log_e(LOG_HOZON,"BDCM in trouble1!!!!!!!!!");
 				PP_stage = PP_stage_idle;
 				return PP_AUTH_FAIL;
 			}
@@ -190,7 +191,7 @@ int PP_identificat_mainfunction()
 			}
 			else
 			{
-				log_e(LOG_HOZON,"BDCM in trouble!!!!!!!!!");
+				log_e(LOG_HOZON,"BDCM in trouble2!!!!!!!!!");
 				PP_stage = PP_stage_idle;
 				return PP_AUTH_FAIL;
 			}

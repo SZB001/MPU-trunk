@@ -66,6 +66,16 @@ typedef struct
 	uint8_t MCUMiss;
 }PP_rmtDiag_NodeFault_t;
 
+typedef struct
+{
+	uint8_t  log_flag;
+	uint8_t  log_grade;
+	uint16_t log_up_time;
+	uint32_t log_start_time;
+	uint32_t log_eventId;
+	
+}PP_log_upload_t;
+
 typedef enum
 {
     PP_MSG_SOCKET = 1,//MPU_MID_GB32960,
@@ -152,4 +162,5 @@ extern uint8_t PP_netstatus_pubilcfaultsts(uint64_t *timestamp);
 extern void PP_identificat_readESK(uint8_t *esk);
 extern void PP_CanMsgUL_datacollection(void *msg);
 extern void PP_FileUpload_CanMsgRequest(int mintue);
+extern void PP_FileUpload_LogRequest(PP_log_upload_t log_para);
 #endif

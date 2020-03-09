@@ -76,9 +76,7 @@ description�� static variable definitions
 *******************************************************/
 static PrvtProt_heartbeat_t PP_heartbeat;
 static PrvtProt_task_t 	pp_task;
-static PrvtProt_pack_Header_t 	PP_PackHeader_HB;
 static PrvtProt_TxInform_t HB_TxInform;
-static PrvtProt_TxInform_t HBRS_TxInform;
 static char pp_tboxsn[PP_TBOXSN_LEN];
 
 typedef struct
@@ -108,7 +106,6 @@ static PrvtProt_RmtFunc_t PP_RmtFunc[PP_RMTFUNC_MAX] =
 
 static uint8_t PP_sleepflag = 0;
 static uint16_t PP_hbtaskmpurtcwakeuptestflag = 0;
-static PP_heartbeatrateswitch_t PP_HBRateSwitch;
 PrvtProt_TxInform_t 	PP_TxInform[PP_TXINFORM_NUM];
 
 /*******************************************************
@@ -126,11 +123,7 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task);
 static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len);
 static int PrvtPro_do_wait(PrvtProt_task_t *task);
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len);
-
 static void PP_HB_send_cb(void * para);
-static int PrvtProt_do_HBRateSwitch(PrvtProt_task_t *task);
-static int PrvtProt_HBSPackage(PrvtProt_task_t *task,unsigned char type);
-static void PP_HBRS_send_cb(void * para);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -155,7 +148,7 @@ int PrvtProt_init(INIT_PHASE phase)
         case INIT_PHASE_INSIDE:
 		{
 			//pp_task.heartbeat.ackFlag = 0;
-			PP_heartbeat.state = 1;
+			//PP_heartbeat.state = 1;
 			PP_heartbeat.period = PP_HEART_BEAT_TIME;
 			PP_heartbeat.timer = tm_get_time();
 			PP_heartbeat.waitSt = 0;
@@ -163,17 +156,10 @@ int PrvtProt_init(INIT_PHASE phase)
 			pp_task.nonce = 0;
 			pp_task.version = 0x30;
 
-			memset(&PP_PackHeader_HB,0 , sizeof(PrvtProt_pack_Header_t));
-			memset(&PP_HBRateSwitch,0 , sizeof(PP_heartbeatrateswitch_t));
-			memcpy(PP_PackHeader_HB.sign,"**",2);
-			PP_PackHeader_HB.ver.Byte = 0x30;
-			PP_PackHeader_HB.commtype.Byte = 0x70;
-			PP_PackHeader_HB.opera = 0x01;
-			PP_PackHeader_HB.msglen = 18;
 			memset(pp_tboxsn,0 , sizeof(pp_tboxsn));
 			PP_heartbeat.hbtaskflag = 1;
-			PP_HBRateSwitch.IGNoldst = 0xff;
-			PP_HBRateSwitch.IGNnewst = 0xff;
+			PP_heartbeat.IGNoldst = 0xff;
+			PP_heartbeat.IGNnewst = 0xff;
 		}
         break;
         case INIT_PHASE_RESTORE:
@@ -182,7 +168,6 @@ int PrvtProt_init(INIT_PHASE phase)
 		{
 			cfglen = 4;
 			ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXID, &pp_task.tboxid, &cfglen);
-			PP_PackHeader_HB.tboxid = pp_task.tboxid;
 
 			cfglen = 19;
 			ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN,pp_tboxsn,&cfglen);
@@ -241,7 +226,7 @@ int PrvtProt_run(void)
 	PP_ntp_run();
 	PP_netstatus_run();
 	PP_FileUpload_run();
-	//PP_CanMsgUL_run();
+	PP_CanMsgUL_run();
 #else
 	res = 	PrvtPro_do_rcvMsg(&pp_task) ||
 			PrvtPro_do_wait(&pp_task) || 
@@ -279,13 +264,29 @@ static void *PrvtProt_main(void)
 		log_set_level(LOG_GB32960, LOG_DEBUG);
 		log_set_level(LOG_UPER_ECDC, LOG_DEBUG);
 #endif
-		PP_HBRateSwitch.IGNnewst = dev_get_KL15_signal();
-		if(PP_HBRateSwitch.IGNoldst != PP_HBRateSwitch.IGNnewst)
+		PP_heartbeat.IGNnewst = dev_get_KL15_signal();
+		if(PP_heartbeat.IGNoldst != PP_heartbeat.IGNnewst)
 		{
-			PP_HBRateSwitch.IGNoldst = PP_HBRateSwitch.IGNnewst;
-			PP_HBRateSwitch.switchtaskflag = 1;
-			PP_HBRateSwitch.sleepflag 	   = 0;
-			PP_HBRateSwitch.switchsuccessflag = 0;
+			PP_heartbeat.IGNoldst = PP_heartbeat.IGNnewst;
+			if(1 == PP_heartbeat.IGNnewst)//IGN ON
+			{
+				log_o(LOG_HOZON, "Switch to normal heart rate\n");
+				int hbtimeout;
+				hbtimeout = getPP_rmtCfg_heartbeatTimeout();
+				if(0 != hbtimeout)
+				{
+					PP_heartbeat.period = hbtimeout;
+				}
+				PP_heartbeat.hbtype = 1;//切换到正常通信心跳频率
+			}
+			else
+			{
+				log_o(LOG_HOZON, "Switch to sleep heart rate\n");
+				//PP_heartbeat.period = PP_HEART_BEAT_TIME_SLEEP;
+				PP_heartbeat.hbtype = 2;//切换到休眠状态心跳频率
+			}
+
+			PP_heartbeat.hbtaskflag = 1;
 		}
 
 		PP_CertDownload_mainfunction(&pp_task);
@@ -303,13 +304,7 @@ static void *PrvtProt_main(void)
 			}
 		}
 
-		if(1 == sockproxy_socketState())
-		{
-			PrvtProt_do_HBRateSwitch(&pp_task);
-		}
-
-		PP_sleepflag = PP_HBRateSwitch.sleepflag	&&	\
-					   PP_heartbeat.hbtasksleepflag &&	\
+		PP_sleepflag = PP_heartbeat.hbtasksleepflag &&	\
 					   GetPP_rmtCtrl_Sleep();
     }
 	(void)res;
@@ -337,15 +332,10 @@ static int PrvtPro_do_checksock(PrvtProt_task_t *task)
 	}
 	else
 	{
-		//if((tm_get_time() - PP_heartbeat.resettimer) > 1000)
-		{
-			PP_heartbeat.waitSt = 0;
-			PP_heartbeat.state = 0;
-			PP_heartbeat.hbtaskflag = 0;
-			PP_heartbeat.hbtasksleepflag = 1;
-			PP_HBRateSwitch.switchtaskflag = 0;
-			PP_HBRateSwitch.sleepflag 	   = 1;
-		}
+		PP_heartbeat.waitSt = 0;
+		//PP_heartbeat.state = 0;
+		PP_heartbeat.hbtaskflag = 0;
+		PP_heartbeat.hbtasksleepflag = 1;
 	}
 
 	return -1;
@@ -501,26 +491,15 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 		break;
 		case PP_OPERATETYPE_HEARTBEAT://心跳
 		{
-			if(18 == len)
+			if((19 == len) && ((2 == rxPack->msgdata[0]) || \
+								(1 == rxPack->msgdata[0])))//接收到心跳响应
 			{
 				log_o(LOG_HOZON, "the heartbeat is ok");
 				PP_heartbeat.hbtimeoutflag = 0;
 				PP_heartbeat.timeoutCnt = 0;
-				PP_heartbeat.state = 1;
+				//PP_heartbeat.state = 1;
 				PP_heartbeat.waitSt = 0;
 				PP_heartbeat.hbtasksleepflag = 1;
-				if(0 == PP_HBRateSwitch.switchsuccessflag)
-				{
-					PP_HBRateSwitch.switchtaskflag = 1;
-					PP_HBRateSwitch.sleepflag 	   = 0;
-				}
-			}
-			else if((19 == len) && ((2 == rxPack->msgdata[0]) || (1 == rxPack->msgdata[0])))//接收到心跳频率切换请求响应
-			{
-				log_o(LOG_HOZON, "the heartbeat rate switch is ok");
-				PP_HBRateSwitch.waitSt = 0;
-				PP_HBRateSwitch.sleepflag = 1;
-				PP_HBRateSwitch.switchsuccessflag = 1;
 			}
 			else
 			{}
@@ -598,20 +577,6 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 ******************************************************/
 static int PrvtPro_do_wait(PrvtProt_task_t *task)
 {
-	if(PP_HBRateSwitch.waitSt == 1)
-	{
-		if((tm_get_time() - PP_HBRateSwitch.waittime) > PP_HB_WAIT_TIMEOUT)
-		{
-			PP_HBRateSwitch.waitSt = 0;
-			PP_HBRateSwitch.sleepflag = 1;
-			log_e(LOG_HOZON, "heartbeat rate switch timeout");
-		}
-	}
-	else
-	{
-		PP_HBRateSwitch.waittime = tm_get_time();
-	}
-
     if(!PP_heartbeat.waitSt)//
     {
         return 0;
@@ -622,7 +587,7 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
         if (PP_heartbeat.waitSt == 1)
         {
         	PP_heartbeat.waitSt = 0;
-        	PP_heartbeat.state = 0;//
+        	//PP_heartbeat.state = 0;//
         	PP_heartbeat.timeoutCnt++;
 			if(0 != sockproxy_check_link_status())
 			{
@@ -652,27 +617,30 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 {
-	PrvtProt_pack_Header_t pack_Header;
+	PrvtProt_pack_t PP_PackHeader_HB;
 
 	if(((tm_get_time() - PP_heartbeat.timer) > (PP_heartbeat.period*1000)) || 
 		PP_heartbeat.hbtaskflag)
 	{
 		PP_heartbeat.hbtaskflag = 0;
 		PP_heartbeat.hbtasksleepflag = 0;
-		PP_PackHeader_HB.ver.Byte = task->version;
-		PP_PackHeader_HB.nonce  = PrvtPro_BSEndianReverse(task->nonce);
-		PP_PackHeader_HB.msglen = PrvtPro_BSEndianReverse((long)18);
-		PP_PackHeader_HB.tboxid = PrvtPro_BSEndianReverse(task->tboxid);
-		memcpy(&pack_Header, &PP_PackHeader_HB, sizeof(PrvtProt_pack_Header_t));
+		memset(&PP_PackHeader_HB,0 , sizeof(PrvtProt_pack_t));
+		memcpy(PP_PackHeader_HB.Header.sign,"**",2);
+		PP_PackHeader_HB.Header.ver.Byte = 0x30;
+		PP_PackHeader_HB.Header.commtype.Byte = 0x70;
+		PP_PackHeader_HB.Header.opera = 0x01;
+		PP_PackHeader_HB.Header.ver.Byte = task->version;
+		PP_PackHeader_HB.Header.nonce  = PrvtPro_BSEndianReverse(task->nonce);
+		PP_PackHeader_HB.Header.tboxid = PrvtPro_BSEndianReverse(task->tboxid);
+		PP_PackHeader_HB.msgdata[0] = PP_heartbeat.hbtype;
+		PP_PackHeader_HB.Header.msglen = PrvtPro_BSEndianReverse((long)19);
 
 		HB_TxInform.pakgtype = PP_TXPAKG_SIGTRIG;
 		HB_TxInform.eventtime = tm_get_time();
 		HB_TxInform.description = "heartbeat";
-		SP_data_write(pack_Header.sign,18,PP_HB_send_cb,&HB_TxInform);
+		SP_data_write(PP_PackHeader_HB.Header.sign,19,PP_HB_send_cb,&HB_TxInform);
 
 		PP_heartbeat.timer = tm_get_time();
-
-		log_i(LOG_HOZON, "PP_hbtaskmpurtcwakeuptestflag = %d\n",PP_hbtaskmpurtcwakeuptestflag);
 
 		return -1;
 	}
@@ -685,76 +653,6 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 	}
 	return 0;
 }
-
-/******************************************************
-*PrvtProt_do_HBRateSwitch
-
-*��  �Σ�void
-
-*����ֵ��void
-
-*��  ������������
-
-*��  ע��
-******************************************************/
-static int PrvtProt_do_HBRateSwitch(PrvtProt_task_t *task)
-{
-	if(1 == PP_HBRateSwitch.switchtaskflag)
-	{
-		PP_HBRateSwitch.switchtaskflag    = 0;
-		if(1 == PP_HBRateSwitch.IGNnewst)//IGN ON
-		{
-			log_o(LOG_HOZON, "Switch to normal heart rate\n");
-			int hbtimeout;
-			hbtimeout = getPP_rmtCfg_heartbeatTimeout();
-			if(0 != hbtimeout)
-			{
-				PP_heartbeat.period = hbtimeout;
-			}
-			PrvtProt_HBSPackage(task,1);//切换到正常通信心跳频率
-		}
-		else
-		{
-			log_o(LOG_HOZON, "Switch to sleep heart rate\n");
-			PP_heartbeat.period = PP_HEART_BEAT_TIME_SLEEP;
-			PrvtProt_HBSPackage(task,2);//切换到休眠状态心跳频率
-		}
-	}
-
-	return 0;
-}
-
-/******************************************************
-*PrvtProt_HBSPackage
-
-*��  �Σ�void
-
-*����ֵ��void
-
-*��  ������������
-
-*��  ע��
-******************************************************/
-static int PrvtProt_HBSPackage(PrvtProt_task_t *task,unsigned char type)
-{
-	PrvtProt_pack_t	heartbeatrateswitch;
-	memcpy(heartbeatrateswitch.Header.sign,"**",2);
-	heartbeatrateswitch.Header.ver.Byte = task->version;
-	heartbeatrateswitch.Header.nonce  = PrvtPro_BSEndianReverse(task->nonce);
-	heartbeatrateswitch.Header.tboxid = PrvtPro_BSEndianReverse(task->tboxid);
-	heartbeatrateswitch.Header.commtype.Byte = 0x70;
-	heartbeatrateswitch.Header.opera = 0x01;
-	heartbeatrateswitch.msgdata[0] = type;
-	heartbeatrateswitch.Header.msglen = PrvtPro_BSEndianReverse((long)19);
-
-	HBRS_TxInform.pakgtype = PP_TXPAKG_SIGTIME;
-	HBRS_TxInform.eventtime = tm_get_time();
-	HBRS_TxInform.description = "frequency switching message";
-	SP_data_write(heartbeatrateswitch.Header.sign,19,PP_HBRS_send_cb,&HBRS_TxInform);
-
-	return 0;
-}
-
 
 /******************************************************
 *��������PP_HB_send_cb
@@ -775,41 +673,12 @@ static void PP_HB_send_cb(void * para)
 	{
 		PP_heartbeat.waitSt = 1;
 		PP_heartbeat.waittime = tm_get_time();
-		//PP_heartbeat.timer = tm_get_time();
 	}
 	else
 	{
 		log_e(LOG_HOZON, "send heartbeat frame fail\r\n");
 		PP_heartbeat.waitSt = 0;
 		PP_heartbeat.hbtasksleepflag = 1;
-	}
-}
-
-/******************************************************
-*PP_HBRS_send_cb
-
-*��  �Σ�
-
-*����ֵ��
-
-*��  ����
-
-*��  ע��
-******************************************************/
-static void PP_HBRS_send_cb(void * para)
-{
-	PrvtProt_TxInform_t *TxInform_ptr = (PrvtProt_TxInform_t*)para;
-
-	if(PP_TXPAKG_SUCCESS == TxInform_ptr->successflg)
-	{
-		PP_HBRateSwitch.waitSt = 1;
-		PP_HBRateSwitch.waittime = tm_get_time();
-	}
-	else
-	{
-		log_e(LOG_HOZON, "send heartbeat rate swatch frame fail\r\n");
-		PP_HBRateSwitch.waitSt = 0;
-		PP_HBRateSwitch.sleepflag = 1;
 	}
 }
 

@@ -195,33 +195,22 @@ typedef struct
 }__attribute__((packed)) PrvtProt_pack_t; /*���Ľṹ��*/
 
 typedef struct 
-{		
-	uint64_t  timer;/* ������ʱ�� */
+{
 	//uint8_t ackFlag;/* Ӧ���־:2-�ȴ�Ӧ��1-�ɹ�Ӧ�� */
-	uint8_t state;/* ����״̬ 1- ���� */
+	//uint8_t state;/* ����״̬ 1- ���� */
 	uint8_t period;/* ��������uints����*/
+	uint8_t hbtype;
 	PP_WAIT_STATE waitSt;/* �ȴ���Ӧ��״̬ */
 	uint64_t waittime;/* �ȴ���Ӧ��ʱ�� */
 	char timeoutCnt;
 	char hbtasksleepflag;
 	char hbtaskflag;
 	char hbtimeoutflag;
-	uint64_t resettimer;
-}__attribute__((packed))  PrvtProt_heartbeat_t; /*�����ṹ��*/
-
-typedef struct 
-{		
-	//uint64_t  timer;/* ������ʱ�� */
-	uint8_t state;/* ����״̬ 1- ���� */
-	PP_WAIT_STATE waitSt;/* �ȴ���Ӧ��״̬ */
-	uint64_t waittime;/* �ȴ���Ӧ��ʱ�� */
-	char sendCnt;
-	char switchtaskflag;
-	char switchsuccessflag;
-	char sleepflag;
 	char IGNoldst;
 	char IGNnewst;
-}__attribute__((packed))  PP_heartbeatrateswitch_t; /*�����ṹ��*/
+	uint64_t resettimer;
+	uint64_t  timer;/* ������ʱ�� */
+}__attribute__((packed))  PrvtProt_heartbeat_t; /*�����ṹ��*/
 
 typedef struct 
 {	

@@ -10,6 +10,9 @@ author        liuzhongwen
 #include <stdlib.h>
 #include <pthread.h>
 #include "init.h"
+#include <unistd.h>
+#include <sys/time.h>
+#include "timer.h"
 #include "log.h"
 #include "log_file_mgr.h"
 #include "file.h"
@@ -476,7 +479,9 @@ void log_msg(int id, int lv, const char *func, const char *fmt, ...)
 {
     log_msg_t *msg;
     int size;
-
+	struct timeval  tv;
+    struct timezone tz;
+    struct tm timenow;
     if (log_cfg_table[id].level < lv)
     {
         return;
@@ -495,9 +500,11 @@ void log_msg(int id, int lv, const char *func, const char *fmt, ...)
 
         log_put = 0;
     }
-
+	gettimeofday(&tv, &tz);
+    localtime_r(&tv.tv_sec, &timenow);
     msg  = (log_msg_t *)(log_buf + log_put);
-    size = snprintf(msg->buff, LOG_BUF_SIZE, " %s>%s()", log_cfg_table[id].name, func);
+    size = snprintf(msg->buff, LOG_BUF_SIZE, "[%4d-%02d-%02d %02d:%02d:%02d] %s>%s()",timenow.tm_year+1900,  \
+		timenow.tm_mon + 1,timenow.tm_mday,timenow.tm_hour,timenow.tm_min,timenow.tm_sec,log_cfg_table[id].name, func);
     msg->colr = lv == LOG_ERROR ? LOG_COLOR_RED : LOG_COLOR_BLACK;
 
     if (size < LOG_BUF_SIZE - 1)

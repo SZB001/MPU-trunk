@@ -36,8 +36,8 @@
 #define CAN_TSPREQUEST_120 "CANDTATTSP_12"
 
 #define SHARE_MEMORY_LENGTH 4096
-#define BUF_SIZE 100
-#define  BUFFSIZE  512     // 缓冲区大小
+#define CURL_BUF_SIZE 100
+#define  BUFFSIZE  1024     // 缓冲区大小
 
 #define CMD_LENGTH         6
 #define TBOX_VIN_LENGTH    17
