@@ -805,20 +805,59 @@ static void gb_data_eventReport(gb_info_t *gbinf,  uint32_t uptime)
 		if (gbinf->event.info[i])
 		{
 			gbinf->event.newst[i] = dbc_get_signal_from_id(gbinf->event.info[i])->value;
-			if(gbinf->event.newst[i])
+			if(GB_EVT_LEFTTURNLAMP_ON == i)
 			{
-				if(gbinf->event.oldst[i] == 0)
+				if(0x1 == gbinf->event.newst[i])
 				{
-					gbinf->event.triflg = 1;
-					gbinf->event.oldst[i] = gbinf->event.newst[i];
-					(*eventcnt_ptr) += 1;
-					buf[len++] = gb_eventCode[i].code >> 8;
-					buf[len++] = gb_eventCode[i].code;
+					if(gbinf->event.oldst[i] == 0)
+					{
+						gbinf->event.triflg = 1;
+						gbinf->event.oldst[i] = gbinf->event.newst[i];
+						(*eventcnt_ptr) += 1;
+						buf[len++] = gb_eventCode[i].code >> 8;
+						buf[len++] = gb_eventCode[i].code;
+					}
+				}
+				else 
+				{
+					gbinf->event.oldst[i] = 0;
 				}
 			}
-			else 
+			else if(GB_EVT_RIGHTTURNLAMP_ON == i)
 			{
-				gbinf->event.oldst[i] = 0;
+				if(0x2 == gbinf->event.newst[i])
+				{
+					if(gbinf->event.oldst[i] == 0)
+					{
+						gbinf->event.triflg = 1;
+						gbinf->event.oldst[i] = gbinf->event.newst[i];
+						(*eventcnt_ptr) += 1;
+						buf[len++] = gb_eventCode[i].code >> 8;
+						buf[len++] = gb_eventCode[i].code;
+					}
+				}
+				else 
+				{
+					gbinf->event.oldst[i] = 0;
+				}
+			}
+			else
+			{
+				if(gbinf->event.newst[i])
+				{
+					if(gbinf->event.oldst[i] == 0)
+					{
+						gbinf->event.triflg = 1;
+						gbinf->event.oldst[i] = gbinf->event.newst[i];
+						(*eventcnt_ptr) += 1;
+						buf[len++] = gb_eventCode[i].code >> 8;
+						buf[len++] = gb_eventCode[i].code;
+					}
+				}
+				else 
+				{
+					gbinf->event.oldst[i] = 0;
+				}
 			}
 		}
 	}
@@ -1381,7 +1420,7 @@ static uint32_t gb_data_save_extr(gb_info_t *gbinf, uint8_t *buf)
 
 static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 {
-    uint32_t len = 0, i, j, warnbit = 0, warnlvl = 0,warnlvltemp = 0;
+    uint32_t len = 0, i, j, warnbit = 0, warnlvl = 0,warnlvltemp = 0,otherwarnlvl = 0;
     uint8_t* warnlvl_ptr;
     uint8_t gb_warn[32] = {0};
     uint8_t gb_warning[3][32] = {{0,0,0}};
@@ -1482,6 +1521,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 			buf[len++] = faultCode >> 8;
 			buf[len++] = faultCode;
 			*battFaultNum_ptr = 1;
+			otherwarnlvl = 3;
 		}
     }
 
@@ -1504,6 +1544,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 				buf[len++] = faultCode >> 8;
 				buf[len++] = faultCode;
 				*otherFaultNum_ptr += 1;
+				otherwarnlvl = 1;
 			}
 		}
 
@@ -1517,6 +1558,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 				buf[len++] = faultCode >> 8;
 				buf[len++] = faultCode;
 				*otherFaultNum_ptr += 1;
+				otherwarnlvl = 1;
 			}
 		}
 
@@ -1530,6 +1572,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 				buf[len++] = faultCode >> 8;
 				buf[len++] = faultCode;
 				*otherFaultNum_ptr += 1;
+				otherwarnlvl = 1;
 			}
 		}
 
@@ -1543,6 +1586,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 				buf[len++] = faultCode >> 8;
 				buf[len++] = faultCode;
 				*otherFaultNum_ptr += 1;
+				otherwarnlvl = 1;
 			}
 		}
 
@@ -1556,6 +1600,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 				buf[len++] = faultCode >> 8;
 				buf[len++] = faultCode;
 				*otherFaultNum_ptr += 1;
+				otherwarnlvl = 1;
 			}
 		}
 
@@ -1569,9 +1614,15 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 				buf[len++] = faultCode >> 8;
 				buf[len++] = faultCode;
 				*otherFaultNum_ptr += 1;
+				otherwarnlvl = 1;
 			}
 		}
     }
+
+	if(otherwarnlvl > warnlvl)
+	{
+		warnlvl = otherwarnlvl;
+	}
 
     *warnlvl_ptr = warnlvl;
 
@@ -2368,9 +2419,9 @@ static uint32_t gb_data_save_VehiPosExt(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
-    tmp =gps_snap.hdop * 10;//��λ����
-    buf[len++] = tmp >> 8;
-    buf[len++] = tmp;
+    //tmp =gps_snap.hdop * 10;//��λ����
+    buf[len++] = 0xFF;
+    buf[len++] = 0xFF;
 
     tmp = gps_snap.direction;//����
     buf[len++] = tmp >> 8;
@@ -2414,6 +2465,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
+#if 0
 	if(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETSPEED])//
 	{
 		tmp = (dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETSPEED])->value + 16000) * 2;
@@ -2421,6 +2473,7 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		buf[len++] = tmp;
 	}
 	else
+#endif
 	{
 		 buf[len++] = 0xff;
 		 buf[len++] = 0xff;
