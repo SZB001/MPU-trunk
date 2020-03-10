@@ -70,10 +70,10 @@ typedef struct
 {
 	uint8_t  log_flag;
 	uint8_t  log_grade;
+	uint8_t  log_stop_flag;
 	uint16_t log_up_time;
 	uint32_t log_start_time;
 	uint32_t log_eventId;
-	
 }PP_log_upload_t;
 
 typedef enum

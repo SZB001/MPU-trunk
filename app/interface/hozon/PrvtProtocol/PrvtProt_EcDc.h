@@ -57,7 +57,9 @@ typedef enum
 	ECDC_RMTDIAG_RESP,//remote diag status response
 	ECDC_RMTDIAG_STATUS,//remote diag status
 	ECDC_RMTDIAG_IMAGEACQRESP,//remote diag image acq response
-	ECDC_RMTDIAG_CLEANFAULTRESP,//remote diag image acq response
+	ECDC_RMTDIAG_CLEANFAULTRESP,//remote clean fault code response
+	ECDC_RMTDIAG_LOGACQRESP,//remote log acq response
+	ECDC_RMTDIAG_STOPLOGACQRESP,//remote stop log acq response
 
 	/*FOTA INFO PUSH*/
 	ECDC_FIP_REQ,//request

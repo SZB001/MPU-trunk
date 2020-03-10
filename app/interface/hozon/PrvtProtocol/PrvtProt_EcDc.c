@@ -53,7 +53,13 @@ description�� include the header file
 #include "ImageAcquisitionReqInfo.h"
 //#include "ImageAcquisitionRespInfo.h"
 
-#include "LogAcquisitionRespInfo.h"
+//#include "LogAcquisitionRespInfo.h"
+#include "DiagnosticLogType.h"
+#include "DiagnosticLogReqInfo.h"
+#include "DiagnosticLogFailure.h"
+#include "DiagnosticLogRespInfo.h"
+#include "DiagnosticLogStopReqInfo.h"
+#include "DiagnosticLogStopRespInfo.h"
 //#include "LogAcquisitionResInfo.h"
 #include "FaultCodeClearanceReqInfo.h"
 #include "FaultCodeClearanceRespInfo.h"
@@ -113,8 +119,10 @@ static asn_TYPE_descriptor_t *pduType_GIAG_st = &asn_DEF_DiagnosticStInfo;
 static asn_TYPE_descriptor_t *pduType_GIAG_imageAcqReq = &asn_DEF_ImageAcquisitionReqInfo;
 //static asn_TYPE_descriptor_t *pduType_GIAG_imageAcqResp = &asn_DEF_ImageAcquisitionRespInfo;
 
-static asn_TYPE_descriptor_t *pduType_GIAG_LogAcqResp = &asn_DEF_LogAcquisitionRespInfo;
-//static asn_TYPE_descriptor_t *pduType_GIAG_LogAcqRes = &asn_DEF_LogAcquisitionResInfo;
+static asn_TYPE_descriptor_t *pduType_GIAG_LogAcqReq = &asn_DEF_DiagnosticLogReqInfo;
+static asn_TYPE_descriptor_t *pduType_GIAG_LogAcqResp = &asn_DEF_DiagnosticLogRespInfo;
+static asn_TYPE_descriptor_t *pduType_GIAG_StopLogAcq = &asn_DEF_DiagnosticLogStopReqInfo;
+static asn_TYPE_descriptor_t *pduType_GIAG_StopLogAcqResp = &asn_DEF_DiagnosticLogStopRespInfo;
 static asn_TYPE_descriptor_t *pduType_GIAG_FaultCodeCleanReq = &asn_DEF_FaultCodeClearanceReqInfo;
 static asn_TYPE_descriptor_t *pduType_GIAG_FaultCodeCleanResp = &asn_DEF_FaultCodeClearanceRespInfo;
 static asn_TYPE_descriptor_t *pduType_GIAG_CanBusMsgCollReq = &asn_DEF_CanBusMessageCollectReqInfo;
@@ -1032,6 +1040,67 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			}
 		}
 		break;
+		case ECDC_RMTDIAG_LOGACQRESP:
+		{
+			log_i(LOG_UPER_ECDC, "encode:appdata rmt_diag_logReq_response\n");
+			PP_LogAcquisitionResp_t	*DiagnosticLogResp_ptr = (PP_LogAcquisitionResp_t*)appchoice;
+			DiagnosticLogRespInfo_t DiagnosticLogResp;
+			struct failureList failureList;
+			DiagnosticLogFailure_t DiagnosticLogFailure[255];
+
+			memset(&DiagnosticLogResp,0 , sizeof(DiagnosticLogRespInfo_t));
+			memset(&failureList,0 , sizeof(struct failureList));
+			memset(&DiagnosticLogFailure,0 , sizeof(DiagnosticLogFailure_t));
+
+			if(DiagnosticLogResp_ptr->ecuNum)
+			{
+				for(i = 0;i < DiagnosticLogResp_ptr->ecuNum;i++)
+				{
+					DiagnosticLogFailure[i].ecuType = DiagnosticLogResp_ptr->EcuLog[i].ecuType;
+					DiagnosticLogFailure[i].result  = DiagnosticLogResp_ptr->EcuLog[i].result;
+					DiagnosticLogFailure[i].failureType = &DiagnosticLogResp_ptr->EcuLog[i].failureType;
+					log_i(LOG_UPER_ECDC, "DiagnosticLogFailure[i].ecuType = %d\n",DiagnosticLogFailure[i].ecuType);
+					log_i(LOG_UPER_ECDC, "DiagnosticLogFailure[i].result = %d\n",DiagnosticLogFailure[i].result);
+					log_i(LOG_UPER_ECDC, "DiagnosticLogFailure[i].failureType = %d\n",*DiagnosticLogFailure[i].failureType);
+				
+					ASN_SEQUENCE_ADD(&failureList, &DiagnosticLogFailure[i]);
+				}
+				DiagnosticLogResp.failureList = &failureList;
+			}
+			else
+			{
+				DiagnosticLogResp.failureList = NULL;
+			}
+
+			ec = uper_encode(pduType_GIAG_LogAcqResp,(void *) &DiagnosticLogResp,PrvtPro_writeout,&key);
+			if(ec.encoded  == -1)
+			{
+				log_e(LOG_UPER_ECDC, "encode:appdata rmt_diag_log_req_response fail\n");
+				return -1;
+			}
+		}
+		break;
+		case ECDC_RMTDIAG_STOPLOGACQRESP:
+		{
+			log_i(LOG_UPER_ECDC, "encode:appdata rmt_diag_stoplog_response\n");
+			PP_LogAcqEcuResp_t	*PP_LogAcqEcuResp_ptr = (PP_LogAcqEcuResp_t*)appchoice;
+			DiagnosticLogStopRespInfo_t DiagnosticLogStopResp;
+			memset(&DiagnosticLogStopResp,0 , sizeof(DiagnosticLogStopRespInfo_t));
+			DiagnosticLogStopResp.ecuType = PP_LogAcqEcuResp_ptr->ecuType;
+			DiagnosticLogStopResp.result   = PP_LogAcqEcuResp_ptr->result;
+			DiagnosticLogStopResp.failureType = &PP_LogAcqEcuResp_ptr->failureType;
+			log_i(LOG_UPER_ECDC, "DiagnosticLogStopResp.ecuType = %d\n",DiagnosticLogStopResp.ecuType);
+			log_i(LOG_UPER_ECDC, "DiagnosticLogStopResp.result = %d\n",DiagnosticLogStopResp.result);
+			log_i(LOG_UPER_ECDC, "DiagnosticLogStopResp.failureType = %d\n",*DiagnosticLogStopResp.failureType);
+			
+			ec = uper_encode(pduType_GIAG_StopLogAcqResp,(void *) &DiagnosticLogStopResp,PrvtPro_writeout,&key);
+			if(ec.encoded  == -1)
+			{
+				log_e(LOG_UPER_ECDC, "encode:appdata rmt stop log response fail\n");
+				return -1;
+			}
+		}
+		break;
 		case ECDC_RMTDIAG_RESP:
 		{
 			log_i(LOG_UPER_ECDC, "encode:appdata rmt_diag_resp\n");
@@ -1259,6 +1328,7 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 	Bodyinfo_t RxBodydata;
 	Bodyinfo_t *RxBodydata_ptr = &RxBodydata;
 	int i;
+	int j;
 	memset(&RxBodydata,0 , sizeof(Bodyinfo_t));
 	uint16_t AID;
 	uint8_t MID;
@@ -1674,7 +1744,7 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 						app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen = RmtCtrlReq.rvcReqParams->size;
 						for(i= 0;i<app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen;i++)
 						{
-							log_i(LOG_UPER_ECDC, "RmtCtrlReq.rvcReqParams = 0x%x ",app_rmtCtrl_ptr->CtrlReq.rvcReqParams[i]);
+							log_e(LOG_UPER_ECDC, "RmtCtrlReq.rvcReqParams = 0x%x ",app_rmtCtrl_ptr->CtrlReq.rvcReqParams[i]);
 						}
 						log_i(LOG_UPER_ECDC, "RmtCtrlReq.rvcReqParamslen = %d\n",app_rmtCtrl_ptr->CtrlReq.rvcReqParamslen);
 					}
@@ -1758,7 +1828,7 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 							 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
 					if(dc.code  != RC_OK)
 					{
-						log_i(LOG_UPER_ECDC,"Could not decode application data Frame\n");
+						log_e(LOG_UPER_ECDC,"Could not decode application data Frame\n");
 						return -1;
 					}
 
@@ -1772,28 +1842,58 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->ImageAcquisitionReq.cameraName = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.cameraName);
 					//log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->ImageAcquisitionReq.sizeLimit = %ld\n",app_rmtDiag_ptr->ImageAcquisitionReq.sizeLimit);
 				}
-				else if(PP_MID_DIAG_LOGACQRESP == MID)//giag logAcqReq
+				else if(PP_MID_DIAG_LOGACQREQ == MID)//giag collect log Req
 				{
-					LogAcquisitionRespInfo_t LogAcquisitionResp;
-					LogAcquisitionRespInfo_t *LogAcquisitionResp_ptr = &LogAcquisitionResp;
-					memset(&LogAcquisitionResp,0 , sizeof(LogAcquisitionRespInfo_t));
-					dc = uper_decode(asn_codec_ctx,pduType_GIAG_LogAcqResp,(void *) &LogAcquisitionResp_ptr, \
+					DiagnosticLogReqInfo_t DiagnosticLogReq;
+					DiagnosticLogReqInfo_t *DiagnosticLogReq_ptr = &DiagnosticLogReq;
+					memset(&DiagnosticLogReq,0 , sizeof(DiagnosticLogReqInfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_GIAG_LogAcqReq,(void *) &DiagnosticLogReq_ptr, \
 							 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
 					if(dc.code  != RC_OK)
 					{
-						log_i(LOG_UPER_ECDC, "Could not decode giag logAcqReq\n");
+						log_e(LOG_UPER_ECDC, "Could not decode giag logAcqReq\n");
 						return -1;
 					}
 
-					app_rmtDiag_ptr->LogAcquisitionResp.logType 	 = LogAcquisitionResp.logType;
-					app_rmtDiag_ptr->LogAcquisitionResp.logLevel 	 = LogAcquisitionResp.logLevel;
-					app_rmtDiag_ptr->LogAcquisitionResp.startTime 	 = LogAcquisitionResp.startTime;
-					app_rmtDiag_ptr->LogAcquisitionResp.durationTime = LogAcquisitionResp.durationTime;
+					if(DiagnosticLogReq.diagTypeList.list.count <= PP_ECULOG_MAX)
+					{
+						for(i = 0;i < DiagnosticLogReq.diagTypeList.list.count;i++)
+						{	
+							j =	DiagnosticLogReq.diagTypeList.list.array[i]->ecuType-1;	
+							log_i(LOG_UPER_ECDC, "DiagnosticLogReq.diagTypeList.list.array[%d]->ecuType = %ld\n",i,(j+1));		
+							app_rmtDiag_ptr->LogAcquisitionReq[j].ecuType 	  = 1;
+							app_rmtDiag_ptr->LogAcquisitionReq[j].logLevel    = DiagnosticLogReq.diagTypeList.list.array[i]->logLevel;
+							app_rmtDiag_ptr->LogAcquisitionReq[j].startTime   = *DiagnosticLogReq.diagTypeList.list.array[i]->startTime;
+							app_rmtDiag_ptr->LogAcquisitionReq[j].durationTime= DiagnosticLogReq.diagTypeList.list.array[i]->durationTime;
 
-					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->LogAcquisitionResp.logType = %ld\n",app_rmtDiag_ptr->LogAcquisitionResp.logType);
-					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->LogAcquisitionResp.logLevel = %ld\n",app_rmtDiag_ptr->LogAcquisitionResp.logLevel);
-					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->LogAcquisitionResp.startTime = %ld\n",app_rmtDiag_ptr->LogAcquisitionResp.startTime);
-					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->LogAcquisitionResp.durationTime = %ld\n",app_rmtDiag_ptr->LogAcquisitionResp.durationTime);
+							log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->LogAcquisitionReq.ecuType = %ld\n",app_rmtDiag_ptr->LogAcquisitionReq[j].ecuType);
+							log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->LogAcquisitionReq.logLevel = %ld\n",app_rmtDiag_ptr->LogAcquisitionReq[j].logLevel);
+							log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->LogAcquisitionReq.startTime = %ld\n",app_rmtDiag_ptr->LogAcquisitionReq[j].startTime);
+							log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->LogAcquisitionReq.durationTime = %ld\n",app_rmtDiag_ptr->LogAcquisitionReq[j].durationTime);			
+						}
+					}
+					else
+					{
+						log_e(LOG_UPER_ECDC, "logAcqReq ecu num is unmatch\n");
+						return -1;
+					}
+				}
+				else if(PP_MID_DIAG_STOPLOGREQ == MID)
+				{
+					DiagnosticLogStopReqInfo_t DiagnosticLogStopReq;
+					DiagnosticLogStopReqInfo_t *DiagnosticLogStopReq_ptr = &DiagnosticLogStopReq;
+					memset(&DiagnosticLogStopReq,0 , sizeof(DiagnosticLogStopReqInfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_GIAG_StopLogAcq,(void *) &DiagnosticLogStopReq_ptr, \
+							 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_e(LOG_UPER_ECDC,   "Could not decode remote diag req data Frame\n");
+						return -1;
+					}
+
+					app_rmtDiag_ptr->StopLogAcquisitionReq.ecuType = DiagnosticLogStopReq.ecuType;
+					log_i(LOG_UPER_ECDC, "app_rmtDiag_ptr->StopLogAcquisitionReq.ecuType = %ld\n", \
+																	app_rmtDiag_ptr->StopLogAcquisitionReq.ecuType);
 				}
 				else if(PP_MID_DIAG_FAULTCODECLEAN == MID)
 				{

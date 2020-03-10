@@ -188,7 +188,7 @@ extern void dbc_clr_signal_flag(int id, int flags);
 extern int dbc_test_signal_flag(int id, int flags, int and);
 
 
-/*set default 同步将default baud清零*/
+/*set default ?????default baud????*/
 void can_baud_reset(void);
 void can_auto_baud_rs(void);
 short can_get_auto_baud(void);

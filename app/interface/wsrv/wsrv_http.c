@@ -65,8 +65,8 @@ extern unsigned char PrvtProt_SignParse_HVReadySt(void);
 #define WSRV_VIN_BODY               "{\"vin\":\"%s\"}"
 #define WSRV_ECURESULT_BODY         "{\"name\":\"%s\",\"result\":\"%s\"}"
 #define WSRV_RTC_BODY               "{\"t\":\"%04d%02d%02dT%02d%02d%02dZ\"}"
-#define WSRV_MODEINRESULT_BODY      "{\"r\":%d}"
-#define WSRV_MODEOUTRESULT_BODY     "{\"r\":%d}"
+#define WSRV_MODEINRESULT_BODY      "{\"r\":%d,\"err\":%d}"
+#define WSRV_MODEOUTRESULT_BODY     "{\"r\":%d,\"err\":%d}"
 
 #define WSRV_UPGRADEMODEIN_BODY     "{\"r\":%d}"
 #define WSRV_UPGRADEMODEOUT_BODY    "{\"r\":%d}"
@@ -375,6 +375,15 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     unsigned char u8PowerMode = 0;
     //0x0=High Voltage Down, 0x1=High Voltage
     unsigned char u8HVready = 0;
+    //-1:error, 0:Doing Mode Enter Or Exit, 1:Mode Success
+    int s32ModeRet = 0;
+    //1:Commen Fail
+    //2:Remote Diag Or Remote Controll Is Running
+    //3:Vehicle Is In On
+    //4:Call BDCM Authentication Fail
+    //5:BDCM Authentication Time Out
+    //6:BDCM Authentication Fail
+    unsigned int u32ModeFailReason = 0;
 
     log_o(LOG_WSRV, "fd: %d, cmd: %s, args: %s, data: %s", *p_cli_fd, cmd_buf, args_buf, data_buf);
 
@@ -655,20 +664,21 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 s_u8BDCMAuthResult = 1;
                 PP_can_send_data(PP_CAN_OTAREQ, 0x02, 0);
                 s_u64OTAModeStartTime = tm_get_time();
-                sprintf(body_buf, WSRV_MODEINRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+                s32ModeRet = 0;
 
                 log_o(LOG_WSRV, "Mode In BDCM Auth OK");
             }
             else if(0 == u32AuthResult)
             {
                 //Tell Gmobi Wait
-                sprintf(body_buf, WSRV_MODEINRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+                s32ModeRet = 0;
             }
             else
             {
                 SetPP_rmtCtrl_FOTA_endInform();
                 clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
-                sprintf(body_buf, WSRV_MODEINRESULT_BODY, -4);
+                s32ModeRet = -1;
+                u32ModeFailReason = 4;
                 
                 log_o(LOG_WSRV, "Mode In BDCM Auth Fail");
             }
@@ -688,7 +698,8 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode In Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
-                    sprintf(body_buf, WSRV_MODEINRESULT_BODY, -5);
+                    s32ModeRet = -1;
+                    u32ModeFailReason = 5;
                     break;
                 }
 
@@ -698,7 +709,8 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode In Get Ota Fail Status %d", u8OtaFailSts);
-                    sprintf(body_buf, WSRV_MODEINRESULT_BODY, -6);
+                    s32ModeRet = -1;
+                    u32ModeFailReason = 6;
                     break;
                 }
 
@@ -713,11 +725,11 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                     len = 1;
                     cfg_set_para(CFG_ITEM_EN_OTAMODEIN, &otamodein, len);
                     
-                    sprintf(body_buf, WSRV_MODEINRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
+                    s32ModeRet = 1;
                 }
                 else
                 {
-                    sprintf(body_buf, WSRV_MODEINRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+                    s32ModeRet = 0;
                 }
 
             }while(0);
@@ -727,20 +739,24 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         {
             //Mode In Other Task Doing Can Not Upgrade ECU
             SetPP_rmtCtrl_FOTA_endInform();
-            sprintf(body_buf, WSRV_MODEINRESULT_BODY, -2);
+            s32ModeRet = -1;
+            u32ModeFailReason = 2;
         }
         else if(3 == s_u8BDCMAuthResult)
         {
             //It Is Not In Off, So Can Not Enter OTA mode
             SetPP_rmtCtrl_FOTA_endInform();
-            sprintf(body_buf, WSRV_MODEINRESULT_BODY, -3);
+            s32ModeRet = -1;
+            u32ModeFailReason = 3;
         }
         else 
         {
             SetPP_rmtCtrl_FOTA_endInform();
-            sprintf(body_buf, WSRV_MODEINRESULT_BODY, -1);
+            s32ModeRet = -1;
+            u32ModeFailReason = 1;
         }
 
+        sprintf(body_buf, WSRV_MODEINRESULT_BODY, s32ModeRet, u32ModeFailReason);
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_MODEOUT))
@@ -771,19 +787,20 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 s_u8BDCMAuthResult = 1;
                 s_u64OTAModeStartTime = tm_get_time();
             
-                sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+                s32ModeRet = 0;
 
                 log_o(LOG_WSRV, "Mode Out BDCM Auth OK");
             }
             else if(0 == u32AuthResult)
             {
                 //Tell Gmobi Wait
-                sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+                s32ModeRet = 0;
             }
             else
             {
                 clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
-                sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, -4);
+                s32ModeRet = -1;
+                u32ModeFailReason = 4;
 
                 log_o(LOG_WSRV, "Mode Out BDCM Auth Fail");
             }
@@ -802,7 +819,8 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                    clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode Out Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
-                    sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, -5);
+                    s32ModeRet = -1;
+                    u32ModeFailReason = 5;
                     break;
                 }
 
@@ -811,7 +829,8 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode Out Get Ota Fail Status %d", u8OtaFailSts);
-                    sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, -6);
+                    s32ModeRet = -1;
+                    u32ModeFailReason = 6;
                     break;
                 }
 
@@ -821,20 +840,22 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode Out Success");
-                    sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
+                    s32ModeRet = 1;
                 }
                 else
                 {
-                    sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, 0);//-1:fail 0:Doing 1;Success
+                    s32ModeRet = 0;
                 }
             }while(0);
 
         }
         else
         {
-            sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, -1);
+            s32ModeRet = -1;
+            u32ModeFailReason = 1;
         }
 
+        sprintf(body_buf, WSRV_MODEOUTRESULT_BODY, s32ModeRet, u32ModeFailReason);
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_UPGRADEMODEIN))

@@ -119,6 +119,7 @@ static int PP_rmtDiag_do_wait(PrvtProt_task_t *task);
 static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task);
 static int PP_rmtDiag_do_checkrmtImageReq(PrvtProt_task_t *task);
 static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task);
+static int PP_rmtDiag_do_stoprmtLogReq(PrvtProt_task_t *task);
 
 static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag,PP_rmtDiag_Fault_t *rmtDiag_Fault);
 static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
@@ -128,6 +129,8 @@ static void PP_rmtDiag_send_cb(void * para);
 static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task);
 static int PP_rmtDiag_FaultCodeCleanResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
 static void getPPrmtDiag_tboxFaultcode(PP_rmtDiag_Fault_t *rmtDiag_Fault);
+static int PP_rmtDiag_LogAcqReqResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
+static int PP_rmtDiag_StopLogAcqResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
 /******************************************************
 description锛� function code
 ******************************************************/
@@ -198,7 +201,7 @@ int PP_rmtDiag_mainfunction(void *task)
 			PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_IDLE;
 			PP_rmtDiag.state.diagReq = 0;
 			PP_rmtDiag.state.ImageAcquisitionReq = 0;
-			PP_rmtDiag.state.LogAcquisitionReq = 0;
+			PP_rmtDiag.state.LogAcqReq = 0;
 		}
 	}
 
@@ -208,6 +211,7 @@ int PP_rmtDiag_mainfunction(void *task)
 				PP_rmtDiag_do_checkrmtDiag((PrvtProt_task_t*)task) 		||	\
 				PP_rmtDiag_do_checkrmtImageReq((PrvtProt_task_t*)task) 	||	\
 				PP_rmtDiag_do_checkrmtLogReq((PrvtProt_task_t*)task)   	||	\
+				PP_rmtDiag_do_stoprmtLogReq((PrvtProt_task_t*)task)   	||	\
 				PP_rmtDiag_do_FaultCodeClean((PrvtProt_task_t*)task);
 
 	if(1 == sockproxy_socketState())//socket open
@@ -305,6 +309,7 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 
 	PrvtProt_DisptrBody_t MsgDataBody;
 	PP_App_rmtDiag_t Appdata;
+	memset(&Appdata,0 , sizeof(PP_App_rmtDiag_t));
 	PrvtPro_decodeMsgData(rxPack->msgdata,(len - 18),&MsgDataBody,&Appdata);
 	aid = (MsgDataBody.aID[0] - 0x30)*100 +  (MsgDataBody.aID[1] - 0x30)*10 + \
 			  (MsgDataBody.aID[2] - 0x30);
@@ -352,21 +357,42 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			}
 		}
 		break;
-		case PP_MID_DIAG_LOGACQRESP://tsp请求 log
+		case PP_MID_DIAG_LOGACQREQ://tsp请求开始采集log
 		{
 			if(PP_LOGACQRESP_IDLE == PP_rmtDiag.state.LogAcqRespSt)
 			{
+				int i;
 				log_o(LOG_HOZON, "receive remote LogAcquisition request\n");
-				PP_rmtDiag.state.LogAcquisitionReq = 1;
-				PP_rmtDiag.state.logType    	=  Appdata.LogAcquisitionResp.logType;
-				PP_rmtDiag.state.logLevel  		=  Appdata.LogAcquisitionResp.logLevel;
-				PP_rmtDiag.state.startTime 		=  Appdata.LogAcquisitionResp.startTime;
-				PP_rmtDiag.state.durationTime   =  Appdata.LogAcquisitionResp.durationTime;
-				PP_rmtDiag.state.logeventId 	=  MsgDataBody.eventId;
+				PP_rmtDiag.state.LogAcqReq  = 1;
+				PP_rmtDiag.state.logeventId =  MsgDataBody.eventId;
+				PP_rmtDiag.state.logexpTime = MsgDataBody.expTime;
+				for(i = 0;i < PP_ECULOG_MAX;i++)
+				{
+					PP_rmtDiag.state.ecuLog[i].ecuType    	=  Appdata.LogAcquisitionReq[i].ecuType;
+					PP_rmtDiag.state.ecuLog[i].logLevel  	=  Appdata.LogAcquisitionReq[i].logLevel;
+					PP_rmtDiag.state.ecuLog[i].startTime 	=  Appdata.LogAcquisitionReq[i].startTime;
+					PP_rmtDiag.state.ecuLog[i].durationTime =  Appdata.LogAcquisitionReq[i].durationTime;
+				}
 			}
 			else
 			{
-				log_e(LOG_HOZON, "repeat logAcq request\n");
+				log_e(LOG_HOZON, "logAcq request is busy\n");
+			}
+		}
+		break;
+		case PP_MID_DIAG_STOPLOGREQ://tsp请求停止采集 log
+		{
+			log_o(LOG_HOZON, "receive stop log collect  request\n");
+			if(PP_STOPLOG_IDLE == PP_rmtDiag.state.StopLogAcqSt)
+			{
+				PP_rmtDiag.state.StopLogAcqReq  =  1;
+				PP_rmtDiag.state.StoplogeventId =  MsgDataBody.eventId;
+				PP_rmtDiag.state.StoplogexpTime = MsgDataBody.expTime;
+				PP_rmtDiag.state.StopLogResp.ecuType    =  Appdata.StopLogAcquisitionReq.ecuType;
+			}
+			else
+			{
+				log_e(LOG_HOZON, "stop log collect request is busy\n");
 			}
 		}
 		break;
@@ -796,6 +822,7 @@ static int PP_rmtDiag_do_checkrmtImageReq(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task)
 {
+	int i;
 	if(1 == get_factory_mode())
 	{
 		return 0;
@@ -805,21 +832,45 @@ static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task)
 	{
 		case PP_LOGACQRESP_IDLE:
 		{
-			if(1 == PP_rmtDiag.state.LogAcquisitionReq)
+			if(1 == PP_rmtDiag.state.LogAcqReq)
 			{
 				log_o(LOG_HOZON, "start remote LogAcquisition\n");
-				PP_rmtDiag.state.LogAcquisitionReq = 0;
+				for(i = 0;i < PP_ECULOG_MAX;i++)
+				{
+					memset(&PP_rmtDiag.state.logReqResp[i],0,sizeof(PP_rmtDiag_logReqResp_t));
+				}
+				PP_rmtDiag.state.LogAcqReq = 0;
 				PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_INFORM_UPLOADLOG;
 			}
 		}
 		break;
 		case PP_LOGACQRESP_INFORM_UPLOADLOG://通知上传log
 		{
-			if(PP_LOG_TBOX == PP_rmtDiag.state.logType)
+			if(1 == PP_rmtDiag.state.ecuLog[0].ecuType)
 			{//tbox上传log
+				log_o(LOG_HOZON, "inform tbox upload log\n");
+				PP_rmtDiag.state.ecuLog[0].ecuType = 0;
+
+				//通知采集tboxlog
+				PP_log_upload_t acqlog_para;
+				acqlog_para.log_stop_flag = 0;
+				acqlog_para.log_grade 	= PP_rmtDiag.state.ecuLog[0].logLevel;
+				acqlog_para.log_up_time = PP_rmtDiag.state.ecuLog[0].durationTime;
+				acqlog_para.log_start_time = PP_rmtDiag.state.ecuLog[0].startTime;
+				acqlog_para.log_eventId = PP_rmtDiag.state.logeventId;
+				PP_FileUpload_LogRequest(acqlog_para);
+
+				PP_rmtDiag.state.logReqResp[0].ecuType = 1;
+				PP_rmtDiag.state.logReqResp[0].result = 1;
+				PP_rmtDiag.state.logReqResp[0].failureType = 0;
+			}
+#if 0
+			for(i = 1;i < PP_ECULOG_MAX;i++)
+			{
 
 			}
-			else if(PP_LOG_HU == PP_rmtDiag.state.logType)
+
+			if(PP_ECULOG_IHU == PP_rmtDiag.state.ecuType)
 			{//通知HU 上传log
 				log_o(LOG_HOZON, "inform HU upload log\n");
 				ivi_logfile appointchargeSt;
@@ -832,9 +883,20 @@ static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task)
 				appointchargeSt.durationtime = PP_rmtDiag.state.durationTime;
 				tbox_ivi_set_tsplogfile_InformHU(&appointchargeSt);
 			}
-			else
-			{}
-
+#endif
+			PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_INFORM_TSP;
+		}
+		break;
+		case PP_LOGACQRESP_INFORM_WAITING:
+		break;
+		case PP_LOGACQRESP_INFORM_TSP:
+		{
+			PP_rmtDiag_LogAcqReqResp(task,&PP_rmtDiag);
+			PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_END;
+		}
+		break;
+		case PP_LOGACQRESP_END:
+		{
 			PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
 		}
 		break;
@@ -845,6 +907,74 @@ static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task)
 	return 0;
 }
 
+/******************************************************
+*鍑芥暟鍚嶏細:PP_rmtDiag_do_stoprmtLogReq
+
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*鎻�  杩帮細
+
+*澶�  娉細
+******************************************************/
+static int PP_rmtDiag_do_stoprmtLogReq(PrvtProt_task_t *task)
+{
+	//int i;
+	if(1 == get_factory_mode())
+	{
+		return 0;
+	}
+
+	switch(PP_rmtDiag.state.StopLogAcqSt)
+	{
+		case PP_STOPLOG_IDLE:
+		{
+			if(1 == PP_rmtDiag.state.StopLogAcqReq)
+			{
+				PP_rmtDiag.state.StopLogAcqReq = 0;
+				PP_rmtDiag.state.StopLogAcqSt = PP_STOPLOG_INFORM_STOP;
+			}
+		}
+		break;
+		case PP_STOPLOG_INFORM_STOP:
+		{
+			if(1 == PP_rmtDiag.state.StopLogResp.ecuType)
+			{
+				//通知停止采集tboxlog
+				PP_log_upload_t acqlog_para;
+				acqlog_para.log_stop_flag = 1;
+				PP_FileUpload_LogRequest(acqlog_para);
+				PP_rmtDiag.state.StopLogResp.result  = 1;
+				PP_rmtDiag.state.StopLogResp.failureType  = 0;
+			}
+			else
+			{
+				PP_rmtDiag.state.StopLogResp.result  = 0;
+				PP_rmtDiag.state.StopLogResp.failureType  = 1;
+			}
+			PP_rmtDiag.state.StopLogAcqSt = PP_STOPLOG_INFORM_TSP;
+		}
+		break;
+		case PP_STOPLOG_INFORM_WAITING:
+		break;
+		case PP_STOPLOG_INFORM_TSP:
+		{
+			PP_rmtDiag_StopLogAcqResp(task,&PP_rmtDiag);
+			PP_rmtDiag.state.StopLogAcqSt = PP_STOPLOG_END;
+		}
+		break;
+		case PP_STOPLOG_END:
+		{
+			PP_rmtDiag.state.StopLogAcqSt = PP_STOPLOG_IDLE;
+		}
+		break;
+		default:
+		break;
+	}
+
+	return 0;
+}
 
 /******************************************************
 *鍑芥暟鍚嶏細:PP_rmtDiag_do_DiagActiveReport
@@ -1136,6 +1266,149 @@ static int PP_rmtDiag_FaultCodeCleanResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_
 	PP_TxInform[idlenode].eventtime = tm_get_time();
 	PP_TxInform[idlenode].idleflag = 1;
 	PP_TxInform[idlenode].description = "diag cleanfaultcode response";
+	SP_data_write(PP_rmtDiag_Pack.Header.sign, \
+			PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&PP_TxInform[idlenode]);
+
+	return 0;
+}
+
+/******************************************************
+*PP_rmtDiag_StopLogAcqResp
+
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*鎻�  杩帮細diag response
+
+*澶�  娉細
+******************************************************/
+static int PP_rmtDiag_StopLogAcqResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag)
+{
+	int msgdatalen;
+	//int i;
+	int idlenode;
+	
+	memset(&PP_rmtDiag_Pack,0 , sizeof(PrvtProt_pack_t));
+	/* header */
+	memcpy(PP_rmtDiag.pack.Header.sign,"**",2);
+	PP_rmtDiag.pack.Header.commtype.Byte = 0xe1;
+	PP_rmtDiag.pack.Header.ver.Byte = 0x30;
+	PP_rmtDiag.pack.Header.opera = 0x02;
+	PP_rmtDiag.pack.Header.ver.Byte = task->version;
+	PP_rmtDiag.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+	PP_rmtDiag.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	memcpy(&PP_rmtDiag_Pack, &PP_rmtDiag.pack.Header, sizeof(PrvtProt_pack_Header_t));
+
+	/* disbody */
+	memcpy(PP_rmtDiag.pack.DisBody.aID,"140",3);
+	PP_rmtDiag.pack.DisBody.mID = PP_MID_DIAG_STOPLOGRESP;
+	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
+	PP_rmtDiag.pack.DisBody.eventId = rmtDiag->state.StoplogeventId;
+	PP_rmtDiag.pack.DisBody.expTime = rmtDiag->state.StoplogexpTime;
+	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
+	PP_rmtDiag.pack.DisBody.testFlag = 1;
+
+	/*appdata*/
+	memset(&AppData_rmtDiag.StopLogResp,0,sizeof(PP_LogAcqEcuResp_t));
+	AppData_rmtDiag.StopLogResp.ecuType = rmtDiag->state.StopLogResp.ecuType;
+	AppData_rmtDiag.StopLogResp.result = rmtDiag->state.StopLogResp.result;
+	AppData_rmtDiag.StopLogResp.failureType = rmtDiag->state.StopLogResp.failureType;
+
+	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_STOPLOGACQRESP,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
+									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag.StopLogResp))
+	{
+		log_e(LOG_HOZON, "encode error\n");
+		return -1;
+	}
+
+	PP_rmtDiag_Pack.totallen = 18 + msgdatalen;
+	PP_rmtDiag_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
+
+	idlenode = PP_getIdleNode();
+	PP_TxInform[idlenode].aid = PP_AID_DIAG;
+	PP_TxInform[idlenode].mid = PP_MID_DIAG_STOPLOGRESP;
+	PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
+	PP_TxInform[idlenode].eventtime = tm_get_time();
+	PP_TxInform[idlenode].idleflag = 1;
+	PP_TxInform[idlenode].description = "diag stop log response";
+	SP_data_write(PP_rmtDiag_Pack.Header.sign, \
+			PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&PP_TxInform[idlenode]);
+
+	return 0;
+}
+
+/******************************************************
+*PP_rmtDiag_LogAcqReqResp
+
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*鎻�  杩帮細diag response
+
+*澶�  娉細
+******************************************************/
+static int PP_rmtDiag_LogAcqReqResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag)
+{
+	int msgdatalen;
+	//int i;
+	int idlenode;
+	int i,j = 0;
+	
+	memset(&PP_rmtDiag_Pack,0 , sizeof(PrvtProt_pack_t));
+	/* header */
+	memcpy(PP_rmtDiag.pack.Header.sign,"**",2);
+	PP_rmtDiag.pack.Header.commtype.Byte = 0xe1;
+	PP_rmtDiag.pack.Header.ver.Byte = 0x30;
+	PP_rmtDiag.pack.Header.opera = 0x02;
+	PP_rmtDiag.pack.Header.ver.Byte = task->version;
+	PP_rmtDiag.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+	PP_rmtDiag.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	memcpy(&PP_rmtDiag_Pack, &PP_rmtDiag.pack.Header, sizeof(PrvtProt_pack_Header_t));
+
+	/* disbody */
+	memcpy(PP_rmtDiag.pack.DisBody.aID,"140",3);
+	PP_rmtDiag.pack.DisBody.mID = PP_MID_DIAG_LOGACQRESP;
+	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
+	PP_rmtDiag.pack.DisBody.eventId = rmtDiag->state.logeventId;
+	PP_rmtDiag.pack.DisBody.expTime = rmtDiag->state.logexpTime;
+	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
+	PP_rmtDiag.pack.DisBody.testFlag = 1;
+
+	/*appdata*/
+	AppData_rmtDiag.LogAcquisitionResp.ecuNum = 0;
+	for(i = 0 ;i < PP_ECULOG_MAX;i++)
+	{
+		if(1 == PP_rmtDiag.state.logReqResp[i].ecuType)
+		{
+			AppData_rmtDiag.LogAcquisitionResp.EcuLog[j].ecuType = i+1;
+			AppData_rmtDiag.LogAcquisitionResp.EcuLog[j].result = PP_rmtDiag.state.logReqResp[i].result;
+			AppData_rmtDiag.LogAcquisitionResp.EcuLog[j].failureType = PP_rmtDiag.state.logReqResp[i].failureType;
+			j++;
+			AppData_rmtDiag.LogAcquisitionResp.ecuNum++;
+		}
+	}
+
+	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_LOGACQRESP,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
+									   &PP_rmtDiag.pack.DisBody,&AppData_rmtDiag.LogAcquisitionResp))
+	{
+		log_e(LOG_HOZON, "encode error\n");
+		return -1;
+	}
+
+	PP_rmtDiag_Pack.totallen = 18 + msgdatalen;
+	PP_rmtDiag_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
+
+	idlenode = PP_getIdleNode();
+	PP_TxInform[idlenode].aid = PP_AID_DIAG;
+	PP_TxInform[idlenode].mid = PP_MID_DIAG_LOGACQRESP;
+	PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
+	PP_TxInform[idlenode].eventtime = tm_get_time();
+	PP_TxInform[idlenode].idleflag = 1;
+	PP_TxInform[idlenode].description = "diag req log upload response";
 	SP_data_write(PP_rmtDiag_Pack.Header.sign, \
 			PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&PP_TxInform[idlenode]);
 

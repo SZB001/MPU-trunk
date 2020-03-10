@@ -476,6 +476,43 @@ CanBusMessageCollectReqInfo ::= SEQUENCE --mid = 8
 	durationTime 			INTEGER(0..65535) -- 
 }
 
+DiagnosticLogType ::= SEQUENCE
+{
+	ecuType  			INTEGER(0..255), -- 
+	logLevel			INTEGER(0..255), -- 
+	startTime 			INTEGER(0..2147483647) OPTIONAL, --
+	durationTime 		INTEGER(0..65535) -- 
+}
+
+DiagnosticLogReqInfo ::= SEQUENCE --mid = 10
+{
+	diagTypeList 			SEQUENCE(SIZE(1..255)) OF DiagnosticLogType --
+}
+
+DiagnosticLogFailure ::= SEQUENCE --
+{
+	ecuType  			INTEGER(0..255), -- 
+	result				BOOLEAN, --
+	failureType			INTEGER(0..255) OPTIONAL --
+}
+
+DiagnosticLogRespInfo ::= SEQUENCE --mid = 11
+{
+	failureList 			SEQUENCE(SIZE(0..255)) OF DiagnosticLogFailure OPTIONAL --
+}
+
+DiagnosticLogStopReqInfo ::= SEQUENCE --mid = 12
+{
+	ecuType  			INTEGER(0..255) -- 
+}
+
+DiagnosticLogStopRespInfo ::= SEQUENCE --mid = 13
+{
+	ecuType  			INTEGER(0..255), -- 
+	result				BOOLEAN, --
+	failureType			INTEGER(0..255) OPTIONAL --
+}
+
 FotaNoticeReqInfo ::= SEQUENCE --mid = 1
 {
 	fotaNotice 			INTEGER(0..255) -- 
