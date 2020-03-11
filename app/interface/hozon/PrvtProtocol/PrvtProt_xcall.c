@@ -98,6 +98,7 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 
 static void PP_xcall_send_cb(void * para);
 static char PP_xcall_VivoDetection(void);
+static uint32_t PP_xcall_gpsconv(double dddmm);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -452,20 +453,20 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	{
 		if(gpsDt.is_north)
 		{
-			Appdata_Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000);
+			Appdata_Xcall.gpsPos.latitude = (long)(PP_xcall_gpsconv(gpsDt.latitude)*10000);
 		}
 		else
 		{
-			Appdata_Xcall.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));
+			Appdata_Xcall.gpsPos.latitude = (long)(PP_xcall_gpsconv(gpsDt.latitude)*10000*(-1));
 		}
 
 		if(gpsDt.is_east)
 		{
-			Appdata_Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000);
+			Appdata_Xcall.gpsPos.longitude = (long)(PP_xcall_gpsconv(gpsDt.longitude)*10000);
 		}
 		else
 		{
-			Appdata_Xcall.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));
+			Appdata_Xcall.gpsPos.longitude = (long)(PP_xcall_gpsconv(gpsDt.longitude)*10000*(-1));
 		}
 		log_i(LOG_HOZON, "PP_appData.latitude = %lf",Appdata_Xcall.gpsPos.latitude);
 		log_i(LOG_HOZON, "PP_appData.longitude = %lf",Appdata_Xcall.gpsPos.longitude);
@@ -482,7 +483,7 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 		Appdata_Xcall.gpsPos.altitude = 10000;
 	}
 	Appdata_Xcall.gpsPos.heading = (long)gpsDt.direction;
-	Appdata_Xcall.gpsPos.gpsSpeed = (long)gpsDt.kms*10;
+	Appdata_Xcall.gpsPos.gpsSpeed = (long)gpsDt.knots*10;
 	Appdata_Xcall.gpsPos.hdop = (long)gpsDt.hdop*10;
 	if(Appdata_Xcall.gpsPos.hdop > 1000)
 	{
@@ -579,4 +580,16 @@ static char PP_xcall_VivoDetection(void)
 		cnt = 0;
 	}
 	return 0;
+}
+
+/* Convert dddmm.mmmm(double) To ddd.dd+(double)*/
+static uint32_t PP_xcall_gpsconv(double dddmm)
+{
+    int deg;
+    double min;
+
+    deg = dddmm / 100.0;
+    min = dddmm - deg * 100;
+
+    return (uint32_t)((deg + min / 60 + 0.5E-6) * 1000000);
 }

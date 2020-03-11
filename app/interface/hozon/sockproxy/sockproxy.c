@@ -1740,7 +1740,7 @@ static int sockproxy_nm_callback(NET_TYPE type, NM_STATE_MSG nmmsg)
 {
     if (NM_PUBLIC_NET != type)
     {
-        return -1;
+        return 0;
     }
 
     switch (nmmsg)
