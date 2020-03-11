@@ -32,9 +32,6 @@
 #include "ql_cm256sm_ble_sleep.h"
 #include "uds.h"
 
-
-
-
 #include <unistd.h>
 #include<sys/types.h>
 
@@ -46,6 +43,16 @@ static unsigned char	g_pucbuf[TCOM_MAX_MSG_LEN];
 static int				g_iBleSleep = 0; 
 BT_DATA              	g_stBt_Data;
 BLE_CONTR				g_BleContr;
+
+
+#define BLE_PKG_MARKER                 "#START*"
+#define BLE_PKG_ESC                    "#END*"
+#define BLE_PKG_S_MARKER_SIZE          (7)
+#define BLE_PKG_E_MARKER_SIZE          (5)
+static unsigned char second_buf[1024] = {0};
+static unsigned int second_cmd_length = 0;
+static int second_cmd_flag = 0;
+
 typedef struct
 {
 	uint8_t msg_type;
@@ -547,6 +554,108 @@ int start_ble(void)
 	
 	return iRet;
 }
+int ble_str_findhead(const unsigned char* string, unsigned int strlen, const char *substring, int unsigned sublen)
+{
+	int i = 0;
+	int j = 0;
+	
+	if( ( string == NULL ) || ( substring == NULL ) )
+	{
+        log_e(LOG_BLE,"str_find string is null!!!");
+		return -1;
+	}
+	
+	if ( strlen < sublen )
+	{
+        log_e(LOG_BLE,"strlen = %d, sublen = %d.",strlen,sublen);
+		return -1;
+	}
+	
+	for ( i = BLE_PKG_S_MARKER_SIZE + BLE_PKG_E_MARKER_SIZE ; i <= strlen - sublen; i++ )  //buf传进来，找寻第二次出现#START*
+	{
+		for ( j = 0; j < sublen; j++ )
+		{
+			if ( string[i + j] != substring[j] )
+			{
+				break;
+			}
+		}
+		
+		if ( j == sublen )
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+int ble_str_findtail(const unsigned char * string, unsigned int strlen, const char *substring, int unsigned sublen,int length)
+{
+	int i = 0;
+	int j = 0;
+	
+	if( ( string == NULL ) || ( substring == NULL ) )
+	{
+        log_e(LOG_BLE,"str_find string is null!!!");
+		return -1;
+	}
+	
+	if ( strlen < sublen )
+	{
+        log_e(LOG_BLE,"strlen = %d, sublen = %d.",strlen,sublen);
+		return -1;
+	}
+	
+	for ( i = length + BLE_PKG_S_MARKER_SIZE; i <= strlen - sublen; i++ )  //buf传进来，找寻第二次出现#END*
+	{
+		for ( j = 0; j < sublen; j++ )
+		{
+			if ( string[i + j] != substring[j] )
+			{
+				break;
+			}
+		}
+		
+		if ( j == sublen )
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+/******************************************************************************
+* Function Name  : ble_msg_decodex
+* Description    :  init
+* Input          :  
+* Return         : NONE
+******************************************************************************/
+void ble_msg_decodex(void)
+{
+	int ret1 = -1;
+	int ret2 = -1;
+    ret1 = ble_str_findhead(g_stBt_Data.aucRxPack,g_stBt_Data.ulRxLen,BLE_PKG_MARKER,BLE_PKG_S_MARKER_SIZE);
+	if(ret1 > 0)  //找到第二个开头标志
+	{
+		ret2 = ble_str_findtail(g_stBt_Data.aucRxPack,g_stBt_Data.ulRxLen,BLE_PKG_ESC,BLE_PKG_E_MARKER_SIZE,ret1);
+		if(ret2 > 0)
+		{
+			second_cmd_flag = 1;
+			second_cmd_length = ret2 + BLE_PKG_E_MARKER_SIZE -ret1;
+			memset(second_buf,0,sizeof(second_buf));
+			strncpy((char *)second_buf,(char *)g_stBt_Data.aucRxPack+ret1,second_cmd_length);
+			log_o(LOG_BLE,"BLE second flag = %d",second_cmd_flag);
+			log_o(LOG_BLE,"BLE second length = %d",second_cmd_length);
+			log_o(LOG_BLE,"BLE second cmd : %s",second_buf);
+		}
+	}     
+}
+void ble_second_cmd_init(void)
+{
+	second_cmd_flag = 0;
+	second_cmd_length = 0;
+	memset(second_buf,0,sizeof(second_buf));
+}
 /****************************************************************
  function:     ble_main
  description:   
@@ -714,7 +823,23 @@ static void *ble_main(void)
 						   	bt_send_cmd_pack(respbt.cmd_state, respbt.state, g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
 							stBtApi.Send(g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
 	 					}
+						
+						if(second_cmd_flag == 1)
+						{
+							BleSendMsg(BLE_MSG_SEND_TYPE, 1);
+						}
+						else
+						{
+							stBtApi.Recv(second_buf, &second_cmd_length);
+						
+							if(second_cmd_length >= 20)
+							{
+								second_cmd_flag = 1;
+								BleSendMsg(BLE_MSG_SEND_TYPE, 1);
+							}
+						}
 				    }
+				
 				}
 				else if (MPU_MID_BLE == msgheader.sender)
 				{
@@ -743,8 +868,25 @@ static void *ble_main(void)
 					else if (BLE_MSG_RECV_TO_APP == msgheader.msgid)
 					{
 						log_i(LOG_BLE, "LOG_BLE2\r\n");
-						g_stBt_Data.ulRxLen = sizeof(g_stBt_Data.aucRxPack);
-						stBtApi.Recv(g_stBt_Data.aucRxPack, &g_stBt_Data.ulRxLen);
+						
+						if( second_cmd_flag == 0)
+						{
+							g_stBt_Data.ulRxLen = sizeof(g_stBt_Data.aucRxPack);
+							stBtApi.Recv(g_stBt_Data.aucRxPack, &g_stBt_Data.ulRxLen);
+							ble_msg_decodex();
+							if((second_cmd_flag == 1) && (g_stBt_Data.ulRxLen >= second_cmd_length))
+							{
+								g_stBt_Data.ulRxLen -= second_cmd_length;
+							}
+						}
+						else if(second_cmd_flag == 1)
+						{
+							memset(g_stBt_Data.aucRxPack,0,g_stBt_Data.ulRxLen);
+							strncpy((char *)g_stBt_Data.aucRxPack,(char *)second_buf,second_cmd_length);
+							g_stBt_Data.ulRxLen = second_cmd_length;
+							ble_second_cmd_init();
+						}
+						
 						log_i(LOG_BLE, "g_stBt_Data.ulRxLen=%d\r\n", g_stBt_Data.ulRxLen);
 						ApiBLETraceBuf(g_stBt_Data.aucRxPack,  g_stBt_Data.ulRxLen);	
 						iRet = hz_protocol_process(g_stBt_Data.aucRxPack,&g_stBt_Data.ulRxLen, g_stBt_Data.aucTxPack,&g_stBt_Data.ulTxLen) ;
@@ -779,7 +921,9 @@ static void *ble_main(void)
 								//stBtApi.Init();
 								//g_BleMember.ucTransStatus = BLE_INIT_STATUS;
 								reset_hz_data();
+								ble_second_cmd_init();
 								log_i(LOG_BLE, "data err1");
+								
 							}
 						}
 
@@ -790,6 +934,7 @@ static void *ble_main(void)
 							stBtApi.Init();
 							g_BleMember.ucTransStatus = BLE_INIT_STATUS;
 							reset_hz_data();
+							ble_second_cmd_init();
 							log_e(LOG_BLE, "auth fail2");
 						}
 					}
@@ -808,6 +953,7 @@ static void *ble_main(void)
 						g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
 		    			g_BleMember.ucTransStatus = BLE_INIT_STATUS;
 						reset_hz_data();
+						ble_second_cmd_init();
 						stBtApi.Init();
 						//BleSendMsgToApp(AICHI_MSG_DISCONFIG_TYPE);
 						log_i(LOG_BLE, "1BLE_MSG_DISCONNECT");

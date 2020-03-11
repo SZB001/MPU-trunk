@@ -238,13 +238,13 @@ void PP_can_send_cycle(void)
 {
 	if(1 == scom_dev_openSt())
 	{
-		if(PP_rmtCtrl_cfg_RmtStartSt() == 0)  //防止空调开启之后，高压电不是TBOX下的，导致一些状态不能恢复
+		if(PP_rmtCtrl_cfg_RmtStartSt() == 0)//防止空调开启之后，高压电不是TBOX下的，导致一些状态不能恢复
 		{
 			PP_canSend_setbit(CAN_ID_445,1,1,0,NULL);//无效
 			PP_canSend_setbit(CAN_ID_445,17,1,0,NULL);//autocmd 清零
 		}
 		
-		if(GetPP_CertDL_CertValid() == 1) //TBOX与HU之间的证书有效性
+		if(GetPP_CertDL_CertValid() == 1)//TBOX与HU之间的证书有效性
 		{
 			PP_canSend_setbit(CAN_ID_440,23,1,1,NULL);//证书有效
 		}

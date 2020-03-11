@@ -141,22 +141,27 @@ int ble_send_notification(unsigned char *pucBuf, unsigned int *pulLen)
 	
     if (BLE_CONNECT != g_NfBleMsg.ulBleStatus)
     {
-        APP_DEBUG0("err1-ble_send_notification\r\n");
-    	return -1;
+        //APP_DEBUG0("err1-ble_send_notification\r\n");
+        log_i(LOG_BLE,"err1-ble_send_notification\r\n");
+    	g_NfBleMsg.ulBleStatus = BLE_CONNECT;
+		//return -1;
     }
 	
     num = 1;
     if (ql_app_ble_cb.ble_server[num].enabled != TRUE)
     {
-        APP_DEBUG1("Server was not registered! = %d", num);
-		APP_DEBUG0("err2-ble_send_notification\r\n");
+        //APP_DEBUG1("Server was not registered! = %d", num);
+		//APP_DEBUG0("err2-ble_send_notification\r\n");
+		log_i(LOG_BLE,"Server was not registered! = %d", num);
+		log_i(LOG_BLE,"err2-ble_send_notification\r\n");
         return -1;
     }
 
     status = BSA_BleSeSendIndInit(&ble_sendind_param);
     if (status != BSA_SUCCESS)
     {
-        APP_ERROR1("BSA_BleSeSendIndInit failed status = %d", status);
+        //APP_ERROR1("BSA_BleSeSendIndInit failed status = %d", status);
+        log_i(LOG_BLE,"BSA_BleSeSendIndInit failed status = %d", status);
         return -1;
     }
 	
@@ -173,7 +178,7 @@ int ble_send_notification(unsigned char *pucBuf, unsigned int *pulLen)
     {
     	if(iTmpLen >=  100)
     	{ 
-    	    //log_i(LOG_BLE, "Nf3303Send1111\r\n");
+    	    log_i(LOG_BLE, "Nf3303Send1111\r\n");
 			ble_sendind_param.data_len = 100;
 			memcpy(ble_sendind_param.value, pucBuf+iOffset,100);
 			ble_sendind_param.need_confirm = FALSE;

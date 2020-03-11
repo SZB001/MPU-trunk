@@ -27,8 +27,8 @@ description�� include the header file
 #include <sysexits.h>	/* for EX_* exit codes */
 #include "init.h"
 #include "log.h"
-//#include "curl_commshm.h"
-//#include "../../../../base/minizip/zip.h"
+#include "diag.h"
+#include "fault_sync.h"
 #include "gb32960_api.h"
 #include "hozon_PP_api.h"
 #include "hozon_SP_api.h"
@@ -180,6 +180,9 @@ static void *PP_CanMsgUL_main(void)
 		long relTStamp;
 		CanMsg_t *canMsgin;
 		long long currClctime;
+
+		if(DIAG_EMMC_OK == flt_get_by_id(EMMC))
+		{
 		
 		if(dir_exists(PP_CANMSGUL_PATH) == 0 &&
 			dir_make_path(PP_CANMSGUL_PATH, S_IRUSR | S_IWUSR, false) != 0)
@@ -325,6 +328,7 @@ static void *PP_CanMsgUL_main(void)
 				rename(Sefilepathname, Lenewfilepathname);
 				Pfilepathname = NULL;
 				log_i(LOG_HOZON, "\ncurrent timestamp 41: %d\n",tm_get_time());
+				}
 			}
 		}
 		

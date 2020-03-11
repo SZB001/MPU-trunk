@@ -53,7 +53,6 @@ static char tboxsn[19] = {0};
 static pthread_t curl_gb_tid;
 static pthread_t curl_can_tid;
 static pthread_t curl_log_tid;
-
 static short canfile_upload_time = 0;
 static int before_flag = 0;
 static struct timeval timestamp;
@@ -61,6 +60,7 @@ static struct timeval log_timestamp;
 static unsigned int log_starttime = 0;
 static unsigned short log_uptime = 0;
 static char log_eventId[20] = {0};
+static int eventid = 0;
 
 
 /**
@@ -866,34 +866,42 @@ void curl_get_tboxgbpara(char *pt)
      * @param[in] void.
      * @return   void.
 */
+/*
 void curl_get_tboxcanpara(char *pt)
 {
+	int i = 0;
 	if(pt != NULL)
 	{
 		strncpy(vin,pt + 5,TBOX_VIN_LENGTH);  //获取VIN
+		for(i =0;i<17;i++)
+		printf("%c\n",*(pt+5+i));
 	}
 }
-
+*/
 /**
      * @brief    获取TBOX VIN eventId
      * @param[in] void.
      * @return   void.
 */
+/*
 void curl_get_tboxlogpara(char *pt)
 {
 	unsigned long eventId = 0;
+	int i = 0;
 	if(pt != NULL)
 	{
 		eventId = (((unsigned long)(pt[9]) )| ((unsigned long)(pt[10])) |  \
 				  ((unsigned long)(pt[11]))| ((unsigned long)(pt[12])));
-		
+		printf("eventId = %ld\n",eventId);
 		sprintf(log_eventId, "%lu", eventId);
-		
+		//for(i = 0; i<20;i++)
+		//	printf("%d ",log_eventId[i]);
 		strncpy(vin,pt + 13,TBOX_VIN_LENGTH);  //获取VIN
-		
+		for(i = 0; i<17;i++)
+			printf("%d ",vin[i]);
 	}
 }
-
+*/
 
 /**
      * @brief    故障点之前报文上传处理函数.
@@ -1314,7 +1322,10 @@ int main(int argc, char *argv[])
 			
 				strncpy(gb_memory,addr,CURL_BUF_SIZE);
 				
-				curl_get_tboxgbpara(gb_memory);         //得到终端的VIN、TBOXSN
+				//curl_get_tboxgbpara(gb_memory);         //得到终端的VIN、TBOXSN
+				strncpy(vin,addr + 2,TBOX_VIN_LENGTH);  //获取VIN
+		
+				strncpy(tboxsn,addr+2+TBOX_VIN_LENGTH,TBOX_SN_LENGTH);//获取TBOXSN
 			
 				memset(addr,0,4096);         //清掉共享内存	
 			}
@@ -1322,11 +1333,14 @@ int main(int argc, char *argv[])
 			{
 				printf("Vehicle can upload request\n");
 
+				strncpy(vin,addr+5,TBOX_VIN_LENGTH);  //获取VIN
+
 				if(addr[2] == 0x01) //故障触发整车报文上传
 				{
 					gettimeofday(&timestamp, NULL);  //故障触发时间戳
 
-
+					strncpy(can_memory,addr,CURL_BUF_SIZE);
+					
 					//curl_canfile_handle_before_time();       //前十分钟文件
 					
 					before_flag = 1;
@@ -1341,40 +1355,45 @@ int main(int argc, char *argv[])
 					
 					gettimeofday(&now_timestamp, NULL);  //故障触发时间戳
 
-					if((now_timestamp.tv_sec >timestamp.tv_sec) &&  \
-						(now_timestamp.tv_sec < timestamp.tv_sec + 10*60))
+					if(before_flag == 1)
 					{
+						if((now_timestamp.tv_sec >timestamp.tv_sec) &&  \
+							(now_timestamp.tv_sec < timestamp.tv_sec + 10*60))
+						{
 						
-						memset(addr,0,4096);         //清掉共享内存	
+							memset(addr,0,4096);         //清掉共享内存	
+
+							sem_v(semid); //申请信号量，操作共享内存
 						
-						continue;
+							continue;
+						}
 					}
 						
-					gettimeofday(&timestamp, NULL); 
+					gettimeofday(&timestamp, NULL);
 					
-					canfile_upload_time = ((short)addr[3] << 8) | (short)addr[4] ;
+					canfile_upload_time = ((short)addr[4]) ;
 
 					printf("Request to upload a %d-minute message\n",canfile_upload_time );
+
+					strncpy(can_memory,addr,CURL_BUF_SIZE);	
 					
 				}
-
-				strncpy(can_memory,addr,CURL_BUF_SIZE);
 				
-				curl_get_tboxcanpara(can_memory);
+				//curl_get_tboxcanpara(can_memory);
 				
 				memset(addr,0,4096);         //清掉共享内存	
+				
 			}
 			else if(addr[1] == 0x03)    //整车日志上传
 			{
 				printf("log file upload request\n");
 			
 				strncpy(log_memory,addr,CURL_BUF_SIZE);
-				
-				curl_get_tboxlogpara(log_memory);
+
+				//curl_get_tboxlogpara(log_memory);
 
 				if(addr[2] == 0x01)
 				{
-				
 					gettimeofday(&log_timestamp, NULL); //日志上传时间戳
 					
 					//开始采集日志时间
@@ -1382,8 +1401,22 @@ int main(int argc, char *argv[])
 									((unsigned int)addr[5] <<8) | (unsigned int)addr[6]);
 					//采集日志时长
 					log_uptime =  ((unsigned short)addr[7] <<8) | ((unsigned short)addr[8]);
+
+					eventid = (((unsigned int)addr[9] <<24) |((unsigned int)addr[10] <<16) |
+									((unsigned int)addr[11] <<8) | (unsigned int)addr[12]);
+
+					strncpy(vin,addr+13,17);
+					
+					printf("log_starttime = %d ",log_starttime);
+
+					printf("log_uptime = %d ",log_uptime);
+					
+					printf("eventid = %d\n",eventid);
 				}
-				
+				else if(addr[2] == 0x02)
+				{
+					//停止采集日志
+				}
 				memset(addr,0,4096);         //清掉共享内存	
 			}
 		}

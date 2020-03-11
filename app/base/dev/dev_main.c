@@ -567,24 +567,21 @@ static void *dev_main(void)
                     }
                     else if (MPU_MID_TIMER == msgheader.sender)
                     {
-                        if(dev_get_KL15_signal())
+                        if (DEV_MSG_DIAG_TIMER == msgheader.msgid)
                         {
-                            if (DEV_MSG_DIAG_TIMER == msgheader.msgid)
-                            {
-                                dev_diag_timeout();
-                            }
-                            else if (DEV_MSG_SYNC_TIMER == msgheader.msgid)
-                            {
-                                dev_sync_timeout();
-                            }
-                            else if (DEV_MSG_PRINT_VER_TIMER == msgheader.msgid)
-                            {
-                                dev_print_ver_timeout();
-                            }
-                            else if ( DEV_MSG_DIAG_LOGDIR == msgheader.msgid )
-                            {
-                                dev_diag_logdir_timeout();
-                            }
+                            dev_diag_timeout();
+                        }
+                        else if (DEV_MSG_SYNC_TIMER == msgheader.msgid)
+                        {
+                            dev_sync_timeout();
+                        }
+                        else if (DEV_MSG_PRINT_VER_TIMER == msgheader.msgid)
+                        {
+                            dev_print_ver_timeout();
+                        }
+                        else if ( DEV_MSG_DIAG_LOGDIR == msgheader.msgid )
+                        {
+                            dev_diag_logdir_timeout();
                         }
                     }
                     else if (MPU_MID_SCOM == msgheader.sender)

@@ -37,7 +37,8 @@ description�� include the header file
 #include "../PrvtProt.h"
 #include "com_app_def.h"
 #include "dir.h"
-#include "file.h"
+#include "diag.h"
+#include "fault_sync.h"
 #include "dev_api.h"
 #include "nm_api.h"
 #include "shell_api.h"
@@ -60,6 +61,8 @@ static PP_FileUpload_t PP_FileUL;
 static int PP_tsp_flag = 0;
 static uint16_t PP_tsp_time = 0;
 
+static int canupload_en = 0;
+	
 static PP_log_upload_t PP_up_log;
 /*Static function declaration*/
 static void *PP_FileUpload_main(void);
@@ -170,7 +173,7 @@ int PP_FileUpload_run(void)
     }
 
 	//临时做一条shell命令
-	shell_cmd_register("hozon_tsprequest", PP_FileUpload_Tspshell, "hozon_tsprequest");	
+	shell_cmd_register("hozon_canfile_en", PP_FileUpload_Tspshell, "hozon_canfile_en");	
 
 	pthread_t log_tid;
 	pthread_attr_t log_ta;
@@ -203,8 +206,8 @@ static void *PP_FileUpload_main(void)
     while(1)
     {
 		unsigned int i;
-		if((0 == GetPP_rmtCtrl_fotaUpgrade()) && \
-		   				(1 == PP_rmtCfg_enable_dcEnabled()))
+		if((0 == GetPP_rmtCtrl_fotaUpgrade()) && (DIAG_EMMC_OK == flt_get_by_id(EMMC)) \
+		   			&&	(1 == PP_rmtCfg_enable_dcEnabled()))
 		{
 			PP_FileUpload_datacollection();
 			PP_FileUpload_pkgzip();
@@ -226,7 +229,9 @@ static void *PP_FileUpload_main(void)
 void PP_FileUpload_CanMsgRequest(int mintue)
 {
 	PP_tsp_flag = 1;
+	log_o(LOG_HOZON,"PP_tsp_flag  %d",mintue);
 	PP_tsp_time = (uint16_t)mintue;
+	log_o(LOG_HOZON,"PP_tsp_flag  %d",mintue);
 	log_o(LOG_HOZON,"TSP request upload can file");
 }
 
@@ -299,6 +304,7 @@ static void *PP_CanFileSend_main(void)
     prctl(PR_SET_NAME, "CANFILE_SEND");
 	char buf[200] = {0};
 	char vin[18] = {0};
+	unsigned int cfglen;
 	int semid = Commsem();
 	set_semvalue(semid);//初始化信号量值为1
 	while(1)
@@ -327,40 +333,57 @@ static void *PP_CanFileSend_main(void)
 					}
 				}
 			}
-		
+			cfglen = 1;
 			if(1 == PP_FileUL.signTrigFlag)    //整车报文触发条件
-			{
-				gb32960_getvin(vin);
+			{	
+				cfg_get_para(CFG_ITEM_EN_CANFILE, &canupload_en, &cfglen);
+				if(canupload_en == 1)
+				{
+					gb32960_getvin(vin);
+					memset(buf,0,sizeof(buf));
+					buf[0] = m_start;
+					buf[1] = 0x02;
+					buf[2] = 0x01;
+					buf[3] = 0;     //故障触发第3、4字节填0补充
+					buf[4] = 0;
+					sprintf(buf+5,"%s",vin);
+					buf[22] = m_end;
+					sem_p(semid);
+					strncpy(addr,buf,strlen(buf));
+					sem_v(semid);
+					log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");
+				}
+				else
+				{
+					log_o(LOG_HOZON,"canfileload not enable");
+				}
 				PP_FileUL.signTrigFlag = 0;
-				memset(buf,0,sizeof(buf));
-				buf[0] = m_start;
-				buf[1] = 0x02;
-				buf[2] = 0x01;
-				buf[3] = 0;     //故障触发第3、4字节填0补充
-				buf[4] = 0;
-				sprintf(buf+5,"%s",vin);
-				buf[22] = m_end;
-				strcpy(addr,buf);
-				sem_v(semid);
-				//log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");
 			}
 
 			if(PP_tsp_flag == 1)                   //平台请求触发
 			{
-				gb32960_getvin(vin);
-				memset(buf,0,sizeof(buf));
-				buf[0] = m_start;
-				buf[1] = 0x02;
-				buf[2] = 0x02;
-				buf[3] = (char)(PP_tsp_time>>8);
-				buf[4] = (char)PP_tsp_time;
-				sprintf(buf+5,"%s",vin);
-				buf[22] = m_end;
-				//log_o(LOG_HOZON,"PP_CanFileSend_main sem_p");
-				sem_p(semid);
-				strcpy(addr,buf);
-				sem_v(semid);
-				//log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");
+				cfg_get_para(CFG_ITEM_EN_CANFILE, &canupload_en, &cfglen);
+				if(canupload_en == 1)
+				{
+					gb32960_getvin(vin);
+					memset(buf,0,sizeof(buf));
+					buf[0] = m_start;
+					buf[1] = 0x02;
+					buf[2] = 0x02;
+					buf[3] = 5;  //无效值
+					//buf[3] = (char)(PP_tsp_time >> 8);
+					buf[4] = (char)PP_tsp_time;
+					sprintf(buf+5,"%s",vin);
+					buf[22] = m_end;
+					sem_p(semid);
+					strncpy(addr,buf,strlen(buf));
+					sem_v(semid);
+					log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");	
+				}
+				else
+				{
+					log_o(LOG_HOZON,"canfileload not enable");
+				}
 				PP_tsp_flag = 0;
 			}
 	
@@ -375,10 +398,10 @@ static void *PP_LogFileSend_main(void)
 {
 	log_o(LOG_HOZON, "logfile send thread running");
     prctl(PR_SET_NAME, "LOGFILE_SEND");
-	
-	char buf[200] = {0};
+
+	int i;
 	char vin[18] = {0};
-//	unsigned int len;
+	
 	int semid = Commsem();
 	set_semvalue(semid);//初始化信号量值为1
     while(1)
@@ -391,29 +414,40 @@ static void *PP_LogFileSend_main(void)
 		   (0 == PP_netstatus_pubilcfaultsts(NULL)) && \
 		   (1 == PP_FileUL.network) && (0 == get_factory_mode()))
     	{	
-    		if(PP_up_log.log_flag == 1)
+    		if((PP_up_log.log_flag == 1) && (PP_up_log.log_stop_flag == 0))
     		{
-    			memset(&PP_up_log,0,sizeof(PP_up_log));
-				buf[0] = m_start;
-				buf[1] = 0x03;     //代表log触发
-				buf[2] = 0x01;     //开始上传
-				buf[3] = (char)(PP_up_log.log_start_time >> 24);
-				buf[4] = (char)(PP_up_log.log_start_time >> 16);
-				buf[5] = (char)(PP_up_log.log_start_time >> 8);
-				buf[6] = (char)(PP_up_log.log_start_time );
-				buf[7] = (char)(PP_up_log.log_up_time >> 8);
-				buf[8] = (char)(PP_up_log.log_up_time );
-				buf[9] = (char)(PP_up_log.log_eventId >> 24);
-				buf[10] = (char)(PP_up_log.log_eventId >> 16);
-				buf[11] = (char)(PP_up_log.log_eventId >> 8);
-				buf[12] = (char)(PP_up_log.log_eventId );
-				gb32960_getvin(vin);
-				sprintf(buf+13,"%s",vin);
-				buf[30] = m_end;
 				sem_p(semid);
-				strcpy(addr,buf);
+				addr[0] = m_start;
+				addr[1] = 0x03;     //代表log触发
+				addr[2] = 0x01;     //开始上传
+				addr[3] = (char)(PP_up_log.log_start_time >> 24);
+				addr[4] = (char)(PP_up_log.log_start_time >> 16);
+				addr[5] = (char)(PP_up_log.log_start_time >> 8);
+				addr[6] = (char)(PP_up_log.log_start_time );
+				addr[7] = (char)(PP_up_log.log_up_time >> 8);
+				addr[8] = (char)(PP_up_log.log_up_time );
+				addr[9] = (char)(PP_up_log.log_eventId >> 24);
+				addr[10] = (char)(PP_up_log.log_eventId >> 16);
+				addr[11] = (char)(PP_up_log.log_eventId >> 8);
+				addr[12] = (char)(PP_up_log.log_eventId );
+				for(i=0;i<17;i++)
+					addr[13+i] = vin[i];
+				gb32960_getvin(vin);
+				addr[30] = m_end;
 				sem_v(semid);
-    		}	
+				PP_up_log.log_flag = 0;
+    		}
+			else if((PP_up_log.log_flag == 1) && (PP_up_log.log_stop_flag == 1))
+			{
+				sem_p(semid);
+				addr[0] = m_start;
+				addr[1] = 0x03;     //代表log触发
+				addr[2] = 0x02;     //停止上传
+				addr[30] = m_end;
+				sem_v(semid);
+				PP_up_log.log_flag = 0;
+				PP_up_log.log_stop_flag = 0;
+			}
     	}
 		shmdt(addr);		
     }
@@ -430,12 +464,10 @@ static double PP_GetCanfile_Size(void)
 	double total_size = 0;
 	if((dir = opendir(PP_CANFILEUPLOAD_PATH)) != NULL)
 	{
-		//log_o(LOG_HOZON,"open %s success",PP_CANFILEUPLOAD_PATH);
 		
 		while((ptr = readdir(dir)) != NULL)
 		{
 			memset(file_name,0,sizeof(file_name));
-			
 			
 			if((strcmp(ptr->d_name,".") == 0)||(strcmp(ptr->d_name,"..") == 0))
 			{

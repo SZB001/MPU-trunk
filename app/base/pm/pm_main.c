@@ -443,6 +443,7 @@ static void *pm_main(void)
                 {
                     if (AT_MSG_ID_RING == msgheader.msgid)
                     {
+                        setPrvtProt_sendHeartbeat();
                         pm_send_evt(MPU_MID_AT, PM_EVT_RING);
                     }
 					else if(BLE_MSG_ID_RING == msgheader.msgid)

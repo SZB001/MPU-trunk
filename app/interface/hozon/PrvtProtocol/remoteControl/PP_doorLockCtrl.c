@@ -184,12 +184,12 @@ int PP_doorLockCtrl_mainfunction(void *task)
 	
 		case PP_DOORLOCKCTRL_RESPWAIT://ִ等待BDM应答
 		{
-			if((tm_get_time() - PP_Respwaittime) > 300) //延时200毫秒在去检测结果
+			if((tm_get_time() - PP_Respwaittime) > 200) //延时200毫秒在去检测结果
 			{
 				if((tm_get_time() - PP_Respwaittime) < 2000)
 			    {
-			     	if(PP_rmtdoorCtrl.state.doorcmd == PP_DOORLOCK_OPEN) // 打开车门结果
-			    	 {
+			     	if(PP_rmtdoorCtrl.state.doorcmd == PP_DOORLOCK_OPEN) // 打开车门结果	
+			    	{
 			      		if(PrvtProtCfg_doorlockSt() == 0) //  打开车门成功
 			     		{
 			       			log_o(LOG_HOZON,"open door success");
@@ -198,16 +198,28 @@ int PP_doorLockCtrl_mainfunction(void *task)
 			       			PP_rmtdoorCtrl.state.CtrlSt = PP_DOORLOCKCTRL_END;
 			      		}
 			     	}
-			    	else
-			     	{
-			      		if(PrvtProtCfg_doorlockSt() == 1) //锁门成功
-			      		{
-			      			 log_o(LOG_HOZON,"lock door success");
-			       			 PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); ////清除锁门标志位
-			       			 PP_rmtdoorCtrl.success_flag = 1;
-			       			 PP_rmtdoorCtrl.state.CtrlSt = PP_DOORLOCKCTRL_END;
-			      		}
-			     	}
+					else
+					{
+						if((getgb_data_LFDoorOpenSt() != 0) || (getgb_data_RFDoorOpenSt() != 0) || 
+							(getgb_data_LRDoorOpenSt() != 0) || (getgb_data_RRDoorOpenSt() != 0) ||
+							(PP_rmtCtrl_cfg_bdmreardoorSt()!= 0))
+						{
+							log_o(LOG_HOZON,"door not close");
+					 		PP_rmtdoorCtrl.state.failtype = PP_RMTCTRL_UNDOORCLOSE;
+				     		PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0);
+				     		PP_rmtdoorCtrl.success_flag = 0;
+				     		PP_rmtdoorCtrl.state.CtrlSt = PP_DOORLOCKCTRL_END;
+							break;
+						}	
+			   			if(PrvtProtCfg_doorlockSt() == 1) //锁门成功
+			    		{
+			      			log_o(LOG_HOZON,"lock door success");
+			       			PP_can_send_data(PP_CAN_DOORLOCK,CAN_CLEANDOOR,0); ////清除锁门标志位
+			       			PP_rmtdoorCtrl.success_flag = 1;
+			       			PP_rmtdoorCtrl.state.CtrlSt = PP_DOORLOCKCTRL_END;
+			   			}
+					}
+				
 			    }
 			    else//BDM超时
 			    {

@@ -98,11 +98,12 @@ static PP_rmtCharge_Appointperiod_t PP_rmtCharge_Appointperiod[7] =
 	{5,0x04},//星期5
 	{6,0x02},//星期6
 };
-
+static int PP_stopflag = 0;
 static uint8_t PP_ChargeCtrl_Sleepflag = 0;
 //extern void pm_ring_wakeup(void);
 extern void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para);
 static void PP_ChargeCtrl_chargeStMonitor(void);
+static int PP_ChargeCtrl_stopflag(void);
 static int PP_ChargeCtrl_startHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge);
 static void PP_ChargeCtrl_EndHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge);
 
@@ -211,6 +212,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 			if(PP_rmtChargeCtrl.state.chargecmd == PP_CHARGECTRL_OPEN)
 			{
 				log_o(LOG_HOZON,"request start charge\n");
+				PP_stopflag = 0;
 				PP_can_send_data(PP_CAN_CHAGER,CAN_STARTCHAGER,0);
 			}
 			else
@@ -228,18 +230,33 @@ int PP_ChargeCtrl_mainfunction(void *task)
 		break;
 		case PP_CHARGECTRL_RESPWAIT:
 		{
-			if((tm_get_time() - PP_rmtChargeCtrl.state.waittime) < 2000)
+			if((tm_get_time() - PP_rmtChargeCtrl.state.waittime) > 2500)
 			{
+				
 				if(PP_rmtChargeCtrl.state.chargecmd == PP_CHARGECTRL_OPEN)
 				{
-					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1) //充电开启
+					if((tm_get_time() - PP_rmtChargeCtrl.state.waittime) < 3000)
 					{
-						log_o(LOG_HOZON,"start charge success\n");
-						PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); //
-						PP_rmtChargeCtrl.chargeOnOffFlag = 1;//
-						PP_rmtChargeCtrl.fail     = 0;
-						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_ONGOING;
-						PP_rmtChargeCtrl.chargeFinishCloseFlag = 0;
+						if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1) //充电开启
+						{
+							log_o(LOG_HOZON,"start charge success");
+							PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); 
+							PP_rmtChargeCtrl.chargeOnOffFlag = 1;
+							PP_rmtChargeCtrl.fail     = 0;
+							PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_ONGOING;
+							PP_rmtChargeCtrl.chargeFinishCloseFlag = 0;
+							PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
+							PP_rmtChargeCtrl.state.chargecmd = 0;
+						}
+					}
+					else//开启超时
+					{
+						log_e(LOG_HOZON,"Instruction execution timeout\n");
+						PP_rmtChargeCtrl.appointCharging = 0;
+						PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0);//start命令清除
+						PP_rmtChargeCtrl.fail     = 1;
+						PP_rmtChargeCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
+						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_IDLE;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
 						PP_rmtChargeCtrl.state.chargecmd = 0;
 					}
@@ -248,28 +265,19 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				{
 					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 0) //充电关闭
 					{
-						log_o(LOG_HOZON,"close charge success\n");
-						PP_rmtChargeCtrl.chargeOnOffFlag = 2;//
+						log_o(LOG_HOZON,"close charge success");
+						PP_rmtChargeCtrl.chargeOnOffFlag = 2;
 						PP_rmtChargeCtrl.appointCharging = 0;
 						PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);//如果充电超时
-						PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); //
+						//PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); //stop命令不清除
 						PP_rmtChargeCtrl.fail     = 0;
+						PP_rmtChargeCtrl.state.chargecmd = 0;
+						PP_stopflag = PP_ChargeCtrl_stopflag();
 						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_IDLE;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
-						PP_rmtChargeCtrl.state.chargecmd = 0;
+						
 					}
 				}
-			}
-			else//��ʱ
-			{
-				log_e(LOG_HOZON,"Instruction execution timeout\n");
-				PP_rmtChargeCtrl.appointCharging = 0;
-				PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0);
-				PP_rmtChargeCtrl.fail     = 1;
-				PP_rmtChargeCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
-				PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_IDLE;
-				PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
-				PP_rmtChargeCtrl.state.chargecmd = 0;
 			}
 		}
 		break;
@@ -286,6 +294,39 @@ int PP_ChargeCtrl_mainfunction(void *task)
 		break;
 	}
 
+	return 0;
+}
+
+static int PP_ChargeCtrl_stopflag(void)
+{
+	long currTimestamp;
+	currTimestamp = PrvtPro_getTimestamp();
+	if(PP_rmtCharge_AppointBook.validFlg == 1)
+	{
+		RTCTIME localdatetime;
+    	tm_get_abstime(&localdatetime);
+		if(PP_rmtCharge_AppointBook.period & 0x80)
+		{//重复预约,充电没有单次预约
+			if(PP_rmtCharge_Appointperiod[localdatetime.week].mask & PP_rmtCharge_AppointBook.period)
+			{
+				struct tm time;
+				time.tm_sec = 0;
+				time.tm_min = PP_rmtCharge_AppointBook.min;
+				time.tm_hour = 	PP_rmtCharge_AppointBook.hour;
+				time.tm_mday = localdatetime.mday;
+				time.tm_mon = localdatetime.mon - 1;
+				time.tm_year = localdatetime.year - 1900;
+				PP_rmtChargeCtrl.state.appointchargeTime = mktime(&time);
+			}
+		}
+		/********************************控制使能信号*************************************/
+		if((currTimestamp <= (PP_rmtChargeCtrl.state.appointchargeTime + \
+										 PP_CHARGECTRL_APPOINTHOLDTIME))&& \
+			(currTimestamp >= PP_rmtChargeCtrl.state.appointchargeTime))
+		{
+			return 1;
+		}
+	}
 	return 0;
 }
 
@@ -306,8 +347,14 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 	//static uint64_t listentime;
 	long currTimestamp;
 	static uint64_t waittime;
+	//static int flag = 0;
 	//static uint8_t level;
 
+	if(PP_rmtCtrl_cfg_chargeGunCnctSt() == 0)
+	{
+		PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0);//充电枪一拨出，控制指令就发norequest
+	}
+	
  	PP_ChargeCtrl_BtmRequest();//检查BTM充电请求
  	/* *
  *	检查预约充电
@@ -361,31 +408,34 @@ static void PP_ChargeCtrl_chargeStMonitor(void)
 			{
 				if(tm_get_time() - waittime > 10000)
 				{
-					if((PP_rmtCtrl_cfg_chargeGunCnctSt() == 1) || \
-					   (currTimestamp == PP_rmtChargeCtrl.state.appointchargeTime))
+					if(PP_stopflag == 0)
 					{
-						//充电枪一插上，就是非ready状态,当到达预约充电的时候，唤醒整车一次，不管有没有充电枪插上
-						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_READY;
-						uint8_t cmd = PP_CHARGECTRL_OPEN;
-						int ret;
-						ret = SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,&cmd,NULL);
-						if(PP_LOCK_OK == ret)
+						if((PP_rmtCtrl_cfg_chargeGunCnctSt() == 1) || \
+					   		(currTimestamp == PP_rmtChargeCtrl.state.appointchargeTime))
 						{
-							PP_rmtChargeCtrl.appointCharging = 1;  //预约充电
-							log_o(LOG_HOZON,"Appointment The charging conditions are met. Execute the charge appointment!!\n");
-						}
-						else
-						{
-							if(PP_LOCK_ERR_FOTAUPDATE == ret)
+							//充电枪一插上，就是非ready状态,当到达预约充电的时候，唤醒整车一次，不管有没有充电枪插上
+							PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_READY;
+							uint8_t cmd = PP_CHARGECTRL_OPEN;
+							int ret;
+							ret = SetPP_ChargeCtrl_Request(RMTCTRL_TBOX,&cmd,NULL);
+							if(PP_LOCK_OK == ret)
 							{
-								log_e(LOG_HOZON,"fota upgrade, charging later....");
-								PP_rmtChargeCtrl.failtype = PP_RMTCTRL_FOTA_UPGRADE;
-								rmtCtrl_chargeStpara.rvcReqCode = 0x711;
-								rmtCtrl_chargeStpara.bookingId  = PP_rmtCharge_AppointBook.id;
-								rmtCtrl_chargeStpara.eventid  = PP_rmtCharge_AppointBook.eventId;
-								rmtCtrl_chargeStpara.expTime = -1;
-								rmtCtrl_chargeStpara.Resptype = PP_RMTCTRL_RVCBOOKINGRESP;//预约
-								PP_rmtCtrl_StInformTsp(&rmtCtrl_chargeStpara);
+								PP_rmtChargeCtrl.appointCharging = 1;  //预约充电
+								log_o(LOG_HOZON,"Appointment The charging conditions are met. Execute the charge appointment!!\n");
+							}
+							else
+							{
+								if(PP_LOCK_ERR_FOTAUPDATE == ret)
+								{
+									log_e(LOG_HOZON,"fota upgrade, charging later....");
+									PP_rmtChargeCtrl.failtype = PP_RMTCTRL_FOTA_UPGRADE;
+									rmtCtrl_chargeStpara.rvcReqCode = 0x711;
+									rmtCtrl_chargeStpara.bookingId  = PP_rmtCharge_AppointBook.id;
+									rmtCtrl_chargeStpara.eventid  = PP_rmtCharge_AppointBook.eventId;
+									rmtCtrl_chargeStpara.expTime = -1;
+									rmtCtrl_chargeStpara.Resptype = PP_RMTCTRL_RVCBOOKINGRESP;//预约
+									PP_rmtCtrl_StInformTsp(&rmtCtrl_chargeStpara);
+								}
 							}
 						}
 					}

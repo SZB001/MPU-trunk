@@ -100,6 +100,8 @@ description： macro definitions
 #define PP_RMTCTRL_FOTA_UPGRADE         0x0C//fota升级中  
 #define PP_RMTCTRL_INSTRTIMEOUT         0x0A//指令超时
 #define PP_RMTCTRL_VEHIUNLOCK           0x0D//整车未上锁
+#define PP_RMTCTRL_UNDOORCLOSE          0x0E//整车有门没有关
+
 
 //蓝牙请求消息类型
 #define BT_VEhICLE_DOOR_REQ       0x03 //车门锁
