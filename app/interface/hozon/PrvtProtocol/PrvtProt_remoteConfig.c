@@ -425,7 +425,6 @@ static int PP_rmtCfg_do_wait(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 {
-	unsigned int len;
 	uint8_t iccid[21] = {0};
 
 	if(0 == rmtCfg->state.avtivecheckflag)
@@ -522,66 +521,8 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		break;
 		case PP_RMTCFG_CFG_END://
 		{
-			App_rmtCfg_CfgReadResp_t app_ReadResp;
-			if(rmtCfg->state.getRespResult == 1)
-			{
-				rmtCfg->state.getRespResult = 0;
-				pthread_mutex_lock(&cfgdtmtx);
-				len = sizeof(App_rmtCfg_APN1_t);
-				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&app_ReadResp.APN1,&len);
-				len = sizeof(App_rmtCfg_APN2_t);
-				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN2,&app_ReadResp.APN2,&len);
-				len = sizeof(App_rmtCfg_FICM_t);
-				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_FICM,&app_ReadResp.FICM,&len);
-				len = sizeof(App_rmtCfg_COMMON_t);
-				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&app_ReadResp.COMMON,&len);
-				len = sizeof(App_rmtCfg_EXTEND_t);
-				cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_EXT,&app_ReadResp.EXTEND,&len);
-				pthread_mutex_unlock(&cfgdtmtx);
-				//if(1 == AppDt_getResp.FICM.ficmConfigValid)
-				{
-				//	memcpy(&(AppData_rmtCfg.ReadResp.FICM),&AppDt_getResp.FICM,sizeof(App_rmtCfg_FICM_t));
-				}
-
-				if(1 == AppDt_getResp.APN1.apn1ConfigValid)
-				{
-					if((0 != strcmp((const char*)app_ReadResp.APN1.tspAddr,(const char*)AppDt_getResp.APN1.tspAddr)) || \
-						(0 != strcmp((const char*)app_ReadResp.APN1.tspPort,(const char*)AppDt_getResp.APN1.tspPort)))
-					{
-						rmtCfg->state.apn1tspaddrchangedflag = 1;
-					}
-
-					if((0 != strcmp((const char*)app_ReadResp.APN1.certAddress,(const char*)AppDt_getResp.APN1.certAddress)) || \
-						(0 != strcmp((const char*)app_ReadResp.APN1.certPort,(const char*)AppDt_getResp.APN1.certPort)))
-					{
-						rmtCfg->state.apn1certaddrchangeflag = 1;
-					}
-
-					if(0 != strcmp((const char*)app_ReadResp.APN1.tspSms, \
-									(const char*)AppDt_getResp.APN1.tspSms))
-					{
-						rmtCfg->state.tspSMSchangeflag = 1;
-					}
-				}
-
-				if(1 == AppDt_getResp.APN2.apn2ConfigValid)
-				{
-					//memcpy(&(AppData_rmtCfg.ReadResp.APN2),&(AppData_rmtCfg.getResp.APN2),sizeof(App_rmtCfg_APN2_t));
-				}
-		
-				if(1 == AppDt_getResp.COMMON.commonConfigValid)
-				{
-					//memcpy(&(AppData_rmtCfg.ReadResp.COMMON),&(AppData_rmtCfg.getResp.COMMON),sizeof(App_rmtCfg_COMMON_t));
-				}
-
-				if(1 == AppDt_getResp.EXTEND.extendConfigValid)
-				{
-					//memcpy(&(AppData_rmtCfg.ReadResp.EXTEND),&(AppData_rmtCfg.getResp.EXTEND),sizeof(App_rmtCfg_EXTEND_t));
-				}
-
-				rmtCfg->state.cfgsuccess = 1;
-			}
-
+			rmtCfg->state.cfgsuccess = rmtCfg->state.getRespResult;
+			rmtCfg->state.getRespResult = 0;
 			if(0 == PP_rmtCfg_CfgEndRequest(task,rmtCfg))
 			{
 				rmtCfg->state.waitSt 	= PP_RMTCFG_END_WAIT_SENDRESP;
@@ -1391,32 +1332,6 @@ void PP_rmtCfg_ShowCfgPara(void)
 	log_o(LOG_HOZON, "EXTEND info length = %d\n",sizeof(App_rmtCfg_EXTEND_t));
 }
 
-#if 0
-/******************************************************
-*������:PP_rmtCfg_strcmp
-
-*��  �Σ�
-
-*����ֵ��
-
-*��  �����ַ����Ƚ�
-
-*��  ע��
-******************************************************/
-static int PP_rmtCfg_strcmp(unsigned char* str1,unsigned char* str2,int len)
-{
-	int i;
-	for(i = 0;i < len;i++)
-	{
-		if(str1[i] != str2[i])
-		{
-			return -1;
-		}
-	}
-	return 0;
-}
-#endif
-
 /******************************************************
 *������:PP_rmtCfg_reset
 
@@ -1557,7 +1472,64 @@ uint8_t PP_rmtCfg_getIccid(uint8_t* iccid)
 */
 static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 {
-	int ret;	
+	int ret;
+	unsigned int len;
+	App_rmtCfg_CfgReadResp_t app_ReadResp;
+
+	pthread_mutex_lock(&cfgdtmtx);
+	len = sizeof(App_rmtCfg_APN1_t);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&app_ReadResp.APN1,&len);
+	len = sizeof(App_rmtCfg_APN2_t);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN2,&app_ReadResp.APN2,&len);
+	len = sizeof(App_rmtCfg_FICM_t);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_FICM,&app_ReadResp.FICM,&len);
+	len = sizeof(App_rmtCfg_COMMON_t);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_COMM,&app_ReadResp.COMMON,&len);
+	len = sizeof(App_rmtCfg_EXTEND_t);
+	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_EXT,&app_ReadResp.EXTEND,&len);
+	pthread_mutex_unlock(&cfgdtmtx);
+	//if(1 == rmtCfg->FICM.ficmConfigValid)
+	{
+	//	memcpy(&(AppData_rmtCfg.ReadResp.FICM),&rmtCfg->FICM,sizeof(App_rmtCfg_FICM_t));
+	}
+
+	if(1 == rmtCfg->APN1.apn1ConfigValid)
+	{
+		if((0 != strcmp((const char*)app_ReadResp.APN1.tspAddr,(const char*)rmtCfg->APN1.tspAddr)) || \
+			(0 != strcmp((const char*)app_ReadResp.APN1.tspPort,(const char*)rmtCfg->APN1.tspPort)))
+		{
+			PP_rmtCfg.state.apn1tspaddrchangedflag = 1;
+		}
+
+		if((0 != strcmp((const char*)app_ReadResp.APN1.certAddress,(const char*)rmtCfg->APN1.certAddress)) || \
+			(0 != strcmp((const char*)app_ReadResp.APN1.certPort,(const char*)rmtCfg->APN1.certPort)))
+		{
+			PP_rmtCfg.state.apn1certaddrchangeflag = 1;
+		}
+
+		if(0 != strcmp((const char*)app_ReadResp.APN1.tspSms, \
+						(const char*)rmtCfg->APN1.tspSms))
+		{
+			PP_rmtCfg.state.tspSMSchangeflag = 1;
+		}
+	}
+
+	if(1 == rmtCfg->APN2.apn2ConfigValid)
+	{
+		//memcpy(&(AppData_rmtCfg.ReadResp.APN2),&(AppData_rmtCfg.getResp.APN2),sizeof(App_rmtCfg_APN2_t));
+	}
+
+	if(1 == rmtCfg->COMMON.commonConfigValid)
+	{
+		//memcpy(&(AppData_rmtCfg.ReadResp.COMMON),&(AppData_rmtCfg.getResp.COMMON),sizeof(App_rmtCfg_COMMON_t));
+	}
+
+	if(1 == rmtCfg->EXTEND.extendConfigValid)
+	{
+		//memcpy(&(AppData_rmtCfg.ReadResp.EXTEND),&(AppData_rmtCfg.getResp.EXTEND),sizeof(App_rmtCfg_EXTEND_t));
+	}
+
+
 	//FICMConfigSettings
 	if(rmtCfg->FICM.ficmConfigValid == 1)
 	{
@@ -1645,7 +1617,6 @@ static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 			system("reboot");
 		}
 	}
-	
 }
 
 /*

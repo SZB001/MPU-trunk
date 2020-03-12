@@ -388,6 +388,10 @@ static void *PP_CanFileSend_main(void)
 			}
 	
     	}
+		else
+		{
+			PP_tsp_flag = 0;
+		}
 		shmdt(addr);
 
 		//整车报文文件删除

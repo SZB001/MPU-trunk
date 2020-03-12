@@ -2296,11 +2296,23 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-    for(i = 0;i<3;i++)
+	if(gbinf->gb_VSExt.info[GB_VS_TIPC])//瞬时功耗
+	{
+		tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TIPC])->value + 500;
+		buf[len++] = tmp >> 8;
+		buf[len++] = tmp;
+	}
+	else
+	{
+			buf[len++] = 0xff;
+			buf[len++] = 0xff;
+	}
+
+    for(i = 0;i<2;i++)
     {
-		if(gbinf->gb_VSExt.info[GB_VS_TIPC+i])//˲ʱ/ƽ��/С�Ƶ��
+		if(gbinf->gb_VSExt.info[GB_VS_TAPC+i])//平均电耗、小计电耗
 		{
-			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TIPC+i])->value * 10;
+			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_TAPC+i])->value * 10;
 			buf[len++] = tmp >> 8;
 			buf[len++] = tmp;
 		}

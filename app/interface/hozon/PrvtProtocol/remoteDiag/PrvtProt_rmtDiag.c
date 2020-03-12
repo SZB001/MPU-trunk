@@ -462,6 +462,8 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 
 	if(1 == get_factory_mode())
 	{
+		PP_rmtDiag.state.diagReq = 0;
+		PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
 		return 0;
 	}
 
@@ -471,6 +473,16 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 		{
 			if(1 == PP_rmtDiag.state.diagReq)//接收到tsp查询故障请求
 			{
+				if(!dev_get_KL15_signal())
+				{
+					log_o(LOG_HOZON, "ign status：off\n");
+					PP_rmtDiag.state.diagReq = 0;
+					PP_rmtDiag.state.result = 0;
+					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_IGNOFF;
+					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
+					return 0;
+				}
+
 				if(0 == PP_rmtCfg_enable_dtcEnabled())
 				{
 					log_o(LOG_HOZON, "remote diag func unenable\n");
@@ -632,6 +644,8 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 
 	if(1 == get_factory_mode())
 	{
+		PP_rmtDiag.state.cleanfaultReq = 0;
+		PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_IDLE;
 		return 0;
 	}
 
@@ -641,6 +655,16 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 		{
 			if(1 == PP_rmtDiag.state.cleanfaultReq)
 			{
+				if(!dev_get_KL15_signal())
+				{
+					log_o(LOG_HOZON, "ign status：off\n");
+					PP_rmtDiag.state.cleanfaultReq = 0;
+					PP_rmtDiag.state.faultCleanResult	= 0;
+					PP_rmtDiag.state.faultCleanfailureType = PP_RMTDIAG_ERROR_IGNOFF;
+					PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_END;
+					return 0;
+				}
+
 				if(0 == PP_rmtCfg_enable_dtcEnabled())
 				{
 					log_o(LOG_HOZON, "remote diag func unenable\n");
@@ -771,8 +795,10 @@ static int PP_rmtDiag_do_FaultCodeClean(PrvtProt_task_t *task)
 ******************************************************/
 static int PP_rmtDiag_do_checkrmtImageReq(PrvtProt_task_t *task)
 {
-	if(1 == get_factory_mode())
+	if((1 == get_factory_mode())  || (!dev_get_KL15_signal()))
 	{
+		PP_rmtDiag.state.ImageAcquisitionReq = 0;
+		PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
 		return 0;
 	}
 
@@ -823,8 +849,10 @@ static int PP_rmtDiag_do_checkrmtImageReq(PrvtProt_task_t *task)
 static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task)
 {
 	int i;
-	if(1 == get_factory_mode())
+	if((1 == get_factory_mode())  || (!dev_get_KL15_signal()))
 	{
+		PP_rmtDiag.state.LogAcqReq = 0;
+		PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
 		return 0;
 	}
 
@@ -921,8 +949,10 @@ static int PP_rmtDiag_do_checkrmtLogReq(PrvtProt_task_t *task)
 static int PP_rmtDiag_do_stoprmtLogReq(PrvtProt_task_t *task)
 {
 	//int i;
-	if(1 == get_factory_mode())
+	if((1 == get_factory_mode())  || (!dev_get_KL15_signal()))
 	{
+		PP_rmtDiag.state.StopLogAcqReq = 0;
+		PP_rmtDiag.state.StopLogAcqSt = PP_STOPLOG_IDLE;
 		return 0;
 	}
 
@@ -998,6 +1028,8 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 
 	if(1 == get_factory_mode())
 	{
+		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
+		PP_rmtDiag.state.activeDiagFlag = 0;
 		return 0;
 	}
 

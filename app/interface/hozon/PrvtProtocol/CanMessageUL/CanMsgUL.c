@@ -36,6 +36,7 @@ description�� include the header file
 #include "com_app_def.h"
 #include "dir.h"
 #include "file.h"
+#include "uds.h"
 #include "dev_api.h"
 #include "nm_api.h"
 #include "can_api.h"
@@ -191,8 +192,8 @@ static void *PP_CanMsgUL_main(void)
 		}
 		else
 		{
-			if((1 == gb32960_gbCanbusActiveSt()) && \
-							(0 == GetPP_rmtCtrl_fotaUpgrade()))
+				if((1 == gb32960_gbCanbusActiveSt()) && (1 == dev_get_KL15_signal())  && \
+						 (0 == get_factory_mode()) && (0 == GetPP_rmtCtrl_fotaUpgrade()))
 			{
 				if(Pfilepathname == NULL)
 				{
@@ -355,8 +356,8 @@ void PP_CanMsgUL_datacollection(void *msg)
 	static uint64_t Sebasetime = 0;
 	uint64_t	Lecurrtime;
 	CAN_MSG *	canMsg  = msg;
-	if((1 != gb32960_gbCanbusActiveSt()) || \
-						(1 == GetPP_rmtCtrl_fotaUpgrade()))
+	if((0 == dev_get_KL15_signal()) || (1 == get_factory_mode()) \
+									|| (1 == GetPP_rmtCtrl_fotaUpgrade()))
 	{
 		return;
 	}
