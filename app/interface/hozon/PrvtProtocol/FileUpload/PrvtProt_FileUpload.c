@@ -206,8 +206,10 @@ static void *PP_FileUpload_main(void)
     while(1)
     {
 		unsigned int i;
-		if((0 == GetPP_rmtCtrl_fotaUpgrade()) && (DIAG_EMMC_OK == flt_get_by_id(EMMC)) \
-		   			&&	(1 == PP_rmtCfg_enable_dcEnabled()))
+		if( (0 == GetPP_rmtCtrl_fotaUpgrade()) 		&& \
+		    (DIAG_EMMC_OK == flt_get_by_id(EMMC)) 	&& \
+			(0 == get_factory_mode()) 				&& \
+			(1 == PP_rmtCfg_enable_dcEnabled()))
 		{
 			PP_FileUpload_datacollection();
 			PP_FileUpload_pkgzip();
@@ -271,9 +273,11 @@ static void *PP_GbFileSend_main(void)
 		int shmid = GetShm(4096);
 		char *addr = shmat(shmid,NULL,0);
 		
-    	if((dev_get_KL15_signal() == 1) &&	(0 == GetPP_rmtCtrl_fotaUpgrade()) && \
+    	if((0 == GetPP_rmtCtrl_fotaUpgrade()) 	&& \
 		   (0 == PP_netstatus_pubilcfaultsts(NULL)) && \
-		   (1 == PP_FileUL.network) && (0 == get_factory_mode()))
+		   (1 == PP_rmtCfg_enable_dcEnabled()) 	&& \
+		   (1 == PP_FileUL.network) 			&& \
+		   (0 == get_factory_mode()))
     	{	
     		
     		//国标文件上传
@@ -315,9 +319,11 @@ static void *PP_CanFileSend_main(void)
 		int shmid = GetShm(4096);
 		char *addr = shmat(shmid,NULL,0);
 		
-    	if((dev_get_KL15_signal() == 1) && (0 == GetPP_rmtCtrl_fotaUpgrade()) && \
+    	if((dev_get_KL15_signal() == 1) 		&& \
+		   (0 == GetPP_rmtCtrl_fotaUpgrade()) 	&& \
 		   (0 == PP_netstatus_pubilcfaultsts(NULL)) && \
-		   (1 == PP_FileUL.network) && (0 == get_factory_mode()))
+		   (1 == PP_FileUL.network) 			&& \
+		   (0 == get_factory_mode()))
     	{
 			//整车报文文件上传
 			for(obj = 0;obj < PP_CANFILEUL_SIGN_WARN_MAX;obj++)
@@ -416,7 +422,8 @@ static void *PP_LogFileSend_main(void)
 		
     	if((dev_get_KL15_signal() == 1) &&	\
 		   (0 == PP_netstatus_pubilcfaultsts(NULL)) && \
-		   (1 == PP_FileUL.network) && (0 == get_factory_mode()))
+		   (1 == PP_FileUL.network) 	&& \
+		   (0 == get_factory_mode()))
     	{	
     		if((PP_up_log.log_flag == 1) && (PP_up_log.log_stop_flag == 0))
     		{
