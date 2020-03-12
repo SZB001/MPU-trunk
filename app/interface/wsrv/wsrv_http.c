@@ -676,7 +676,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             else
             {
                 SetPP_rmtCtrl_FOTA_endInform();
-                clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
+                //clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                 s32ModeRet = -1;
                 u32ModeFailReason = 4;
                 
@@ -696,7 +696,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 {
                     SetPP_rmtCtrl_FOTA_endInform();
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
-                    clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
+                    //clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode In Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
                     s32ModeRet = -1;
                     u32ModeFailReason = 5;
@@ -707,7 +707,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 {
                     SetPP_rmtCtrl_FOTA_endInform();
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
-                    clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
+                    //clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode In Get Ota Fail Status %d", u8OtaFailSts);
                     s32ModeRet = -1;
                     u32ModeFailReason = 6;
@@ -798,7 +798,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             }
             else
             {
-                clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
+                //clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                 s32ModeRet = -1;
                 u32ModeFailReason = 4;
 
@@ -817,7 +817,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 if(tm_get_time() - s_u64OTAModeStartTime > 5000)
                 {
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
-                   clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
+                    //clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode Out Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
                     s32ModeRet = -1;
                     u32ModeFailReason = 5;
@@ -827,7 +827,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 if(u8OtaFailSts != 0)
                 {
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
-                    clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
+                    //clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode Out Get Ota Fail Status %d", u8OtaFailSts);
                     s32ModeRet = -1;
                     u32ModeFailReason = 6;
@@ -838,7 +838,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 if(0 == u8PowerMode)
                 {
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
-                    clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
+                    //clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
                     log_o(LOG_WSRV, "Mode Out Success");
                     s32ModeRet = 1;
                 }

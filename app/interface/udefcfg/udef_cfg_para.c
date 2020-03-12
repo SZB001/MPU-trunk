@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "tbox_limit.h"
 #include "log.h"
+#include "diag.h"
 #include "udef_cfg_api.h"
 #include "com_app_def.h"
 #include "udef_cfg.h"
@@ -220,7 +221,7 @@ int udef_cfg_save_para(udef_cfg_foton_item item)
             CFG_PARA_CLBT_LOCK();
             ret = rds_update_once(RDS_USER_CFG, (unsigned char *)&clbt_cfg_para_buf, sizeof(clbt_cfg_para_buf));
             
-            if(1 == dev_diag_get_emmc_status())//emmc挂载成功
+            if(DIAG_EMMC_OK == dev_diag_get_emmc_status())//emmc挂载成功
             {
                 if (dir_exists("/media/sdcard/usrdata/bkup/") == 0 &&
                 dir_make_path("/media/sdcard/usrdata/bkup/", S_IRUSR | S_IWUSR, false) != 0)

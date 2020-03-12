@@ -254,20 +254,6 @@ static int PP_FileUpload_Tspshell(int argc, const char **argv)
 	PP_FileUpload_CanMsgRequest(min);
 	return 0;
 }
-int PP_get_emmc_status(void)
-{
-	if (!bfile_exists("/dev/mmcblk0"))
-    {
-        return -1;  //emmc not exist
-    }
-
-    if (!bfile_exists("/dev/mmcblk0p1"))
-    {
-        return -2;  //emmc not formated
-    }
-	return 0;
-}
-
 
 //国标一分钟文件上传线程
 static void *PP_GbFileSend_main(void)
@@ -307,7 +293,7 @@ static void *PP_GbFileSend_main(void)
     	}
 		shmdt(addr);
 		
-    	if(PP_get_emmc_status() == 0)
+    	if(dev_diag_get_emmc_status() == DIAG_EMMC_OK)
     	{
 			PP_GbFile_delfile();
     	}
@@ -417,7 +403,7 @@ static void *PP_CanFileSend_main(void)
 		shmdt(addr);
 
 		//整车报文文件删除
-		if(PP_get_emmc_status() == 0)
+		if(dev_diag_get_emmc_status() == DIAG_EMMC_OK)
 		{
 			PP_CanFile_delfile();
 		}

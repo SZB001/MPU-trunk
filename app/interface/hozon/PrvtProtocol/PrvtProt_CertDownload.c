@@ -36,6 +36,7 @@ description�� include the header file
 #include "init.h"
 #include "log.h"
 #include "list.h"
+#include "diag.h"
 #include "../sockproxy/sockproxy_txdata.h"
 #include "../../support/protocol.h"
 #include "cfg_api.h"
@@ -268,7 +269,7 @@ int PP_CertDownload_mainfunction(void *task)
 
 	if(1 == pp_certDL_IGNnewSt)//IGN ON
 	{
-		if(1 == dev_diag_get_emmc_status())//emmc挂载成功
+		if(DIAG_EMMC_OK == dev_diag_get_emmc_status())//emmc挂载成功
 		{
 			PP_CertDL_checkCertExist();
 			PP_CertDL_checkCertKeyExist();
