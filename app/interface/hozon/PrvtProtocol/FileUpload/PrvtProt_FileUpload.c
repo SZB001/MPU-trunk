@@ -250,8 +250,21 @@ void PP_FileUpload_LogRequest(PP_log_upload_t log_para)
 static int PP_FileUpload_Tspshell(int argc, const char **argv)
 {
 	unsigned int min = 10;
-	sscanf(argv[1], "%u", &min);
+	sscanf(argv[0], "%u", &min);
 	PP_FileUpload_CanMsgRequest(min);
+	return 0;
+}
+int PP_get_emmc_status(void)
+{
+	if (!bfile_exists("/dev/mmcblk0"))
+    {
+        return -1;  //emmc not exist
+    }
+
+    if (!bfile_exists("/dev/mmcblk0p1"))
+    {
+        return -2;  //emmc not formated
+    }
 	return 0;
 }
 
@@ -289,12 +302,15 @@ static void *PP_GbFileSend_main(void)
 			sprintf(buf+2,"%s%s",vin,tboxsn);
 			buf[37] = m_end;
 			sem_p(semid);
-			strcpy(addr,buf);
+			memcpy(addr,buf,sizeof(buf));
 			sem_v(semid);	
     	}
 		shmdt(addr);
-    	
-		PP_GbFile_delfile();
+		
+    	if(PP_get_emmc_status() == 0)
+    	{
+			PP_GbFile_delfile();
+    	}
 		
     }
 
@@ -355,7 +371,7 @@ static void *PP_CanFileSend_main(void)
 					sprintf(buf+5,"%s",vin);
 					buf[22] = m_end;
 					sem_p(semid);
-					strncpy(addr,buf,strlen(buf));
+					memcpy(addr,buf,strlen(buf));
 					sem_v(semid);
 					log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");
 				}
@@ -382,9 +398,9 @@ static void *PP_CanFileSend_main(void)
 					sprintf(buf+5,"%s",vin);
 					buf[22] = m_end;
 					sem_p(semid);
-					strncpy(addr,buf,strlen(buf));
+					memcpy(addr,buf,strlen(buf));
 					sem_v(semid);
-					log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");	
+					//log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");	
 				}
 				else
 				{
@@ -401,7 +417,10 @@ static void *PP_CanFileSend_main(void)
 		shmdt(addr);
 
 		//整车报文文件删除
-		PP_CanFile_delfile();
+		if(PP_get_emmc_status() == 0)
+		{
+			PP_CanFile_delfile();
+		}
     }
 }
 static void *PP_LogFileSend_main(void)

@@ -185,150 +185,150 @@ static void *PP_CanMsgUL_main(void)
 		if(DIAG_EMMC_OK == flt_get_by_id(EMMC))
 		{
 		
-		if(dir_exists(PP_CANMSGUL_PATH) == 0 &&
-			dir_make_path(PP_CANMSGUL_PATH, S_IRUSR | S_IWUSR, false) != 0)
-		{
-			log_e(LOG_HOZON, "create the path %s fail\n",PP_CANMSGUL_PATH);
-		}
-		else
-		{
+			if(dir_exists(PP_CANMSGUL_PATH) == 0 &&
+				dir_make_path(PP_CANMSGUL_PATH, S_IRUSR | S_IWUSR, false) != 0)
+			{
+				log_e(LOG_HOZON, "create the path %s fail\n",PP_CANMSGUL_PATH);
+			}
+			else
+			{
 				if((1 == gb32960_gbCanbusActiveSt()) && (1 == dev_get_KL15_signal())  && \
 						 (0 == get_factory_mode()) && (0 == GetPP_rmtCtrl_fotaUpgrade()))
-			{
-				if(Pfilepathname == NULL)
 				{
-					log_i(LOG_HOZON, "\ncurrent timestamp 00: %d\n",tm_get_time());
-					PP_CanMsgUL_creatNewFile();
-					Pfilepathname = Sefilepathname;
-					CanMsgUL.firstframeflag = 1;
-					log_i(LOG_HOZON, "\ncurrent timestamp 01: %d\n",tm_get_time());
-				}
-
-				for(index = 0;index < PP_CANMSGUL_BUFNUM;index++)
-				{
-					if(1 == CanMsgUL.buffer[index].successflag)
+					if(Pfilepathname == NULL)
 					{
-						log_i(LOG_HOZON, "\ncurrent timestamp 10: %d\n",tm_get_time());
-						CanMsgUL.buffer[index].successflag = 0;
-						if(1 == CanMsgUL.firstframeflag)
+						log_i(LOG_HOZON, "\ncurrent timestamp 00: %d\n",tm_get_time());
+						PP_CanMsgUL_creatNewFile();
+						Pfilepathname = Sefilepathname;
+						CanMsgUL.firstframeflag = 1;
+						log_i(LOG_HOZON, "\ncurrent timestamp 01: %d\n",tm_get_time());
+					}
+
+					for(index = 0;index < PP_CANMSGUL_BUFNUM;index++)
+					{
+						if(1 == CanMsgUL.buffer[index].successflag)
 						{
-							CanMsgUL.firstframeflag = 0;
-							CanMsgUL_busS[0].fsttime = CanMsgUL.buffer[index].msg[0].miscUptime;
-							CanMsgUL_busS[1].fsttime = CanMsgUL.buffer[index].msg[0].miscUptime;
+							log_i(LOG_HOZON, "\ncurrent timestamp 10: %d\n",tm_get_time());
+							CanMsgUL.buffer[index].successflag = 0;
+							if(1 == CanMsgUL.firstframeflag)
+							{
+								CanMsgUL.firstframeflag = 0;
+								CanMsgUL_busS[0].fsttime = CanMsgUL.buffer[index].msg[0].miscUptime;
+								CanMsgUL_busS[1].fsttime = CanMsgUL.buffer[index].msg[0].miscUptime;
+							}
+							//文件操作--打开文件
+							FILE *pfid = fopen(Sefilepathname,"a+");
+							for(cnt = 0;cnt < CanMsgUL.buffer[index].cnt;cnt++)
+							{
+								memset(dataout,0,sizeof(dataout));
+								canMsgin = &CanMsgUL.buffer[index].msg[cnt];
+
+								if(!canMsgin->exten)//标准帧
+								{
+									if(!canMsgin->isRTR)//数据帧
+									{
+										CanMsgUL_busS[canMsgin->port-1].Dcnt++;
+										PP_CanMsgUL_dataMsgEvt(canMsgin,dataout);
+									}
+									else//远程帧
+									{
+										CanMsgUL_busS[canMsgin->port-1].Rcnt++;
+										PP_CanMsgUL_rmtMsgEvt(canMsgin,dataout);
+									}
+								}
+								else//扩展帧
+								{
+									if(!canMsgin->isRTR)//数据帧
+									{
+										CanMsgUL_busS[canMsgin->port-1].XDcnt++;
+										PP_CanMsgUL_extDtMsgEvt(canMsgin,dataout);
+									}
+									else//远程帧
+									{}
+								}
+
+								//文件操作--格式数据写入文件
+								fwrite(dataout,strlen(dataout),1,pfid);
+							}
+							CanMsgUL_busS[0].lsttime = CanMsgUL.buffer[index].msg[cnt-1].miscUptime;
+							CanMsgUL_busS[1].lsttime = CanMsgUL.buffer[index].msg[cnt-1].miscUptime;
+							CanMsgUL.buffer[index].cnt = 0;
+
+							currClctime = tm_get_time();
+							if((currClctime - CanMsgUL.BaseStatistictime) >= 1000)
+							{
+								log_i(LOG_HOZON, "\ncurrent timestamp 20: %d\n",tm_get_time());
+								CanMsgUL.BaseStatistictime = currClctime;
+
+								memset(dataout,0,sizeof(dataout));
+								PP_CanMsgUL_canBusStatistic(&CanMsgUL_busS[0],dataout);
+								fwrite(dataout,strlen(dataout),1,pfid);
+								memset(dataout,0,sizeof(dataout));
+								PP_CanMsgUL_canBusStatistic(&CanMsgUL_busS[1],dataout);
+								fwrite(dataout,strlen(dataout),1,pfid);
+
+								log_i(LOG_HOZON, "\ncurrent timestamp 21: %d\n",tm_get_time());
+							}
+
+							//文件操作--关闭文件
+							fclose(pfid);
+
+							log_i(LOG_HOZON, "\ncurrent timestamp 11: %d\n",tm_get_time());
 						}
+					}
+
+					currClctime = tm_get_time();
+					if((currClctime - CanMsgUL.BaseClctime) >= PP_CANMSGUL_PACKTIME)//采集累计时间1min
+					{
+						log_i(LOG_HOZON, "\ncurrent timestamp 30: %d\n",tm_get_time());
+						CanMsgUL.BaseClctime = currClctime;
+						relTStamp = currClctime - CanMsgUL.BaseTstamp;
 						//文件操作--打开文件
 						FILE *pfid = fopen(Sefilepathname,"a+");
-						for(cnt = 0;cnt < CanMsgUL.buffer[index].cnt;cnt++)
-						{
-							memset(dataout,0,sizeof(dataout));
-							canMsgin = &CanMsgUL.buffer[index].msg[cnt];
 
-							if(!canMsgin->exten)//标准帧
-							{
-								if(!canMsgin->isRTR)//数据帧
-								{
-									CanMsgUL_busS[canMsgin->port-1].Dcnt++;
-									PP_CanMsgUL_dataMsgEvt(canMsgin,dataout);
-								}
-								else//远程帧
-								{
-									CanMsgUL_busS[canMsgin->port-1].Rcnt++;
-									PP_CanMsgUL_rmtMsgEvt(canMsgin,dataout);
-								}
-							}
-							else//扩展帧
-							{
-								if(!canMsgin->isRTR)//数据帧
-								{
-									CanMsgUL_busS[canMsgin->port-1].XDcnt++;
-									PP_CanMsgUL_extDtMsgEvt(canMsgin,dataout);
-								}
-								else//远程帧
-								{}
-							}
-
-							//文件操作--格式数据写入文件
-							fwrite(dataout,strlen(dataout),1,pfid);
-						}
-						CanMsgUL_busS[0].lsttime = CanMsgUL.buffer[index].msg[cnt-1].miscUptime;
-						CanMsgUL_busS[1].lsttime = CanMsgUL.buffer[index].msg[cnt-1].miscUptime;
-						CanMsgUL.buffer[index].cnt = 0;
-
-						currClctime = tm_get_time();
-						if((currClctime - CanMsgUL.BaseStatistictime) >= 1000)
-						{
-							log_i(LOG_HOZON, "\ncurrent timestamp 20: %d\n",tm_get_time());
-							CanMsgUL.BaseStatistictime = currClctime;
-
-							memset(dataout,0,sizeof(dataout));
-							PP_CanMsgUL_canBusStatistic(&CanMsgUL_busS[0],dataout);
-							fwrite(dataout,strlen(dataout),1,pfid);
-							memset(dataout,0,sizeof(dataout));
-							PP_CanMsgUL_canBusStatistic(&CanMsgUL_busS[1],dataout);
-							fwrite(dataout,strlen(dataout),1,pfid);
-
-							log_i(LOG_HOZON, "\ncurrent timestamp 21: %d\n",tm_get_time());
-						}
+						//文件操作--格式数据写入文件
+						memset(dataout,0,sizeof(dataout));
+						PP_CanMsgUL_logDirStop((float)relTStamp,dataout);
+						fwrite(dataout,strlen(dataout),1,pfid);
+						memset(dataout,0,sizeof(dataout));
+						PP_CanMsgUL_logTrigEvt((float)relTStamp,dataout);
+						fwrite(dataout,strlen(dataout),1,pfid);
+						fwrite(PP_CANMSGUL_ENDTRIGBOLCK,sizeof(PP_CANMSGUL_ENDTRIGBOLCK)-1,1,pfid);
 
 						//文件操作--关闭文件
 						fclose(pfid);
 
-						log_i(LOG_HOZON, "\ncurrent timestamp 11: %d\n",tm_get_time());
+						CanMsgUL.renameflag = 1;
+						log_i(LOG_HOZON, "\ncurrent timestamp 31: %d\n",tm_get_time());
 					}
 				}
-
-				currClctime = tm_get_time();
-				if((currClctime - CanMsgUL.BaseClctime) >= PP_CANMSGUL_PACKTIME)//采集累计时间1min
+				else
 				{
-					log_i(LOG_HOZON, "\ncurrent timestamp 30: %d\n",tm_get_time());
-					CanMsgUL.BaseClctime = currClctime;
-					relTStamp = currClctime - CanMsgUL.BaseTstamp;
-					//文件操作--打开文件
-					FILE *pfid = fopen(Sefilepathname,"a+");
+					pthread_mutex_lock(&datmtx);
 
-					//文件操作--格式数据写入文件
-					memset(dataout,0,sizeof(dataout));
-					PP_CanMsgUL_logDirStop((float)relTStamp,dataout);
-					fwrite(dataout,strlen(dataout),1,pfid);
-					memset(dataout,0,sizeof(dataout));
-					PP_CanMsgUL_logTrigEvt((float)relTStamp,dataout);
-					fwrite(dataout,strlen(dataout),1,pfid);
-					fwrite(PP_CANMSGUL_ENDTRIGBOLCK,sizeof(PP_CANMSGUL_ENDTRIGBOLCK)-1,1,pfid);
+					memset(&CanMsgUL,0,sizeof(PP_CanMsgUL_t));
+					CanMsgUL.BaseClctime = tm_get_time();
+					CanMsgUL.BaseStatistictime = CanMsgUL.BaseClctime;
+					if(Pfilepathname != NULL)
+					{
+						CanMsgUL.renameflag = 1;
+					}
 
-					//文件操作--关闭文件
-					fclose(pfid);
-
-					CanMsgUL.renameflag = 1;
-					log_i(LOG_HOZON, "\ncurrent timestamp 31: %d\n",tm_get_time());
-				}
-			}
-			else
-			{
-				pthread_mutex_lock(&datmtx);
-
-				memset(&CanMsgUL,0,sizeof(PP_CanMsgUL_t));
-				CanMsgUL.BaseClctime = tm_get_time();
-				CanMsgUL.BaseStatistictime = CanMsgUL.BaseClctime;
-				if(Pfilepathname != NULL)
-				{
-					CanMsgUL.renameflag = 1;
+					pthread_mutex_unlock(&datmtx);
 				}
 
-				pthread_mutex_unlock(&datmtx);
-			}
-
-			if(1 == CanMsgUL.renameflag)
-			{
-				log_i(LOG_HOZON, "\ncurrent timestamp 40: %d\n",tm_get_time());
-				CanMsgUL.renameflag = 0;
-				//便于上传处理，重新命名文件
-				memcpy(Lenewfilepathname,Sefilepathname,128);
-				fnamelen = strlen(Lenewfilepathname);
-				Lenewfilepathname[fnamelen-5] = '1';
-				log_o(LOG_HOZON, "old name:%s\n new name:%s\n",Sefilepathname,Lenewfilepathname);
-				rename(Sefilepathname, Lenewfilepathname);
-				Pfilepathname = NULL;
-				log_i(LOG_HOZON, "\ncurrent timestamp 41: %d\n",tm_get_time());
+				if(1 == CanMsgUL.renameflag)
+				{
+					log_i(LOG_HOZON, "\ncurrent timestamp 40: %d\n",tm_get_time());
+					CanMsgUL.renameflag = 0;
+					//便于上传处理，重新命名文件
+					memcpy(Lenewfilepathname,Sefilepathname,128);
+					fnamelen = strlen(Lenewfilepathname);
+					Lenewfilepathname[fnamelen-5] = '1';
+					log_o(LOG_HOZON, "old name:%s\n new name:%s\n",Sefilepathname,Lenewfilepathname);
+					rename(Sefilepathname, Lenewfilepathname);
+					Pfilepathname = NULL;
+					log_i(LOG_HOZON, "\ncurrent timestamp 41: %d\n",tm_get_time());
 				}
 			}
 		}

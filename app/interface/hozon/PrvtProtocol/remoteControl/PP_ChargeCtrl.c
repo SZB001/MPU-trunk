@@ -975,7 +975,7 @@ static int PP_ChargeCtrl_startHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge)
 		{
 			log_i(LOG_HOZON,"The vehicle control condition is not satisfied\n");
 			pp_rmtCharge->fail     = 1;
-			if(PP_rmtCtrl_cfg_chargeGunCnctSt() == 1)
+			if(PP_rmtCtrl_cfg_chargeGunCnctSt() == 0)
 			{
 				pp_rmtCharge->failtype = PP_RMTCTRL_CHRGGUNUNCONNT;
 			}

@@ -131,7 +131,7 @@ static void rsp_cops_fn(const char *response, AT_CMD_ID cmd_id)
     memset(at_info.op_name, 0, sizeof(at_info.op_name));
     /*
      +COPS: <mode>[,<format>[,<oper>][,<Act>]]
-     Example: +COPS: 0,0,¡°CHN-UNICOM¡±,0
+     Example: +COPS: 0,0,??CHN-UNICOM??,0
      Act:
      0          GSM
      2          UTRAN

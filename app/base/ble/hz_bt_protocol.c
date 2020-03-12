@@ -1124,6 +1124,7 @@ int hz_protocol_process(unsigned char *pucInData,unsigned int *pulInLen,unsigned
 	if (0 != strncmp((const char *)&pucInData[*pulInLen - 5], "#END*", 5))
 	{
 		log_e(LOG_BLE, "hz_protocol_process End fail");
+		ApiBLETraceBuf(pucInData, *pulInLen);
 		return YT_ERR;
 	}	
 

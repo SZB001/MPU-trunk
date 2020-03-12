@@ -297,10 +297,7 @@ int PP_rmtCtrl_mainfunction(void *task)
 		break;
 		case RMTCTRL_END:
 		{
-			//if(GetPP_ChargeCtrl_Sleep()&&GetPP_ACtrl_Sleep()&&GetPP_SeatCtrl_Sleep() == 1)
-			{
-				clearPP_canSend_virtualOnline(REMOTE_VIRTUAL);//清除虚拟on线
-			}
+			clearPP_canSend_virtualOnline(REMOTE_VIRTUAL);//清除虚拟on线
 			PP_rmtCtrl.rmtCtrlSt = RMTCTRL_IDLE;
 		}
 		break;
@@ -383,7 +380,7 @@ static int PP_rmtCtrl_do_rcvMsg(PrvtProt_task_t *task)
 		return 0;
 	}
 	
-	log_i(LOG_HOZON, "receive rmt ctrl message");
+	log_o(LOG_HOZON, "receive rmt ctrl message");
 	protocol_dump(LOG_HOZON, "PRVT_PROT", rcv_pack.Header.sign, rlen, 0);
 	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
 			(rlen <= 18))//判断数据帧头有误或者数据长度不对

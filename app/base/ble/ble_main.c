@@ -634,6 +634,7 @@ void ble_msg_decodex(void)
 {
 	int ret1 = -1;
 	int ret2 = -1;
+	//int i = 0;
     ret1 = ble_str_findhead(g_stBt_Data.aucRxPack,g_stBt_Data.ulRxLen,BLE_PKG_MARKER,BLE_PKG_S_MARKER_SIZE);
 	if(ret1 > 0)  //找到第二个开头标志
 	{
@@ -643,10 +644,16 @@ void ble_msg_decodex(void)
 			second_cmd_flag = 1;
 			second_cmd_length = ret2 + BLE_PKG_E_MARKER_SIZE -ret1;
 			memset(second_buf,0,sizeof(second_buf));
-			strncpy((char *)second_buf,(char *)g_stBt_Data.aucRxPack+ret1,second_cmd_length);
+			//for(i=0;i<second_cmd_length;i++)
+			//{
+			//	second_buf[i] = g_stBt_Data.aucRxPack[ret1+i];
+			//}
+			//strncpy((char *)second_buf,(char *)g_stBt_Data.aucRxPack+ret1,second_cmd_length);
+			memcpy((void *)second_buf,(void *)(g_stBt_Data.aucRxPack+ret1),second_cmd_length);
 			log_o(LOG_BLE,"BLE second flag = %d",second_cmd_flag);
 			log_o(LOG_BLE,"BLE second length = %d",second_cmd_length);
-			log_o(LOG_BLE,"BLE second cmd : %s",second_buf);
+			//log_o(LOG_BLE,"BLE second cmd : %s",second_buf);
+			log_buf_dump(LOG_BLE, "second cmd", second_buf, second_cmd_length);
 		}
 	}     
 }
@@ -826,7 +833,8 @@ static void *ble_main(void)
 						
 						if(second_cmd_flag == 1)
 						{
-							BleSendMsg(BLE_MSG_SEND_TYPE, 1);
+							//BleSendMsg(BLE_MSG_SEND_TYPE, 1);
+							goto loop;
 						}
 						else
 						{
@@ -835,7 +843,8 @@ static void *ble_main(void)
 							if(second_cmd_length >= 20)
 							{
 								second_cmd_flag = 1;
-								BleSendMsg(BLE_MSG_SEND_TYPE, 1);
+								//BleSendMsg(BLE_MSG_SEND_TYPE, 1);
+								goto loop;
 							}
 						}
 				    }
@@ -867,27 +876,36 @@ static void *ble_main(void)
 					}
 					else if (BLE_MSG_RECV_TO_APP == msgheader.msgid)
 					{
-						log_i(LOG_BLE, "LOG_BLE2\r\n");
+				loop:	log_i(LOG_BLE, "LOG_BLE2\r\n");
 						
 						if( second_cmd_flag == 0)
 						{
 							g_stBt_Data.ulRxLen = sizeof(g_stBt_Data.aucRxPack);
 							stBtApi.Recv(g_stBt_Data.aucRxPack, &g_stBt_Data.ulRxLen);
+
+							log_i(LOG_BLE, "LOG_BLE3\r\n");
+							log_i(LOG_BLE, "g_stBt_Data.ulRxLen=%d\r\n", g_stBt_Data.ulRxLen);
+							ApiBLETraceBuf(g_stBt_Data.aucRxPack,  g_stBt_Data.ulRxLen);	
 							ble_msg_decodex();
-							if((second_cmd_flag == 1) && (g_stBt_Data.ulRxLen >= second_cmd_length))
-							{
+							log_i(LOG_BLE, "LOG_BLE4\r\n");
+							ApiBLETraceBuf(g_stBt_Data.aucRxPack,  g_stBt_Data.ulRxLen);	
+							
+							//if(second_cmd_flag == 1)
+							//{
 								g_stBt_Data.ulRxLen -= second_cmd_length;
-							}
+							//}
 						}
 						else if(second_cmd_flag == 1)
 						{
 							memset(g_stBt_Data.aucRxPack,0,g_stBt_Data.ulRxLen);
-							strncpy((char *)g_stBt_Data.aucRxPack,(char *)second_buf,second_cmd_length);
+							memcpy((void *)g_stBt_Data.aucRxPack,(void *)second_buf,second_cmd_length);
+							//strncpy((char *)g_stBt_Data.aucRxPack,(char *)second_buf,second_cmd_length);
 							g_stBt_Data.ulRxLen = second_cmd_length;
 							ble_second_cmd_init();
 						}
 						
-						log_i(LOG_BLE, "g_stBt_Data.ulRxLen=%d\r\n", g_stBt_Data.ulRxLen);
+
+						
 						ApiBLETraceBuf(g_stBt_Data.aucRxPack,  g_stBt_Data.ulRxLen);	
 						iRet = hz_protocol_process(g_stBt_Data.aucRxPack,&g_stBt_Data.ulRxLen, g_stBt_Data.aucTxPack,&g_stBt_Data.ulTxLen) ;
 						if (0 == iRet)

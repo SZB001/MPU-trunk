@@ -26,7 +26,7 @@ static pthread_mutex_t uds_mtx = PTHREAD_MUTEX_INITIALIZER;
 #define UDS_PROXY_LOCK()    pthread_mutex_lock(&uds_mtx)
 #define UDS_PROXY_UNLOCK()  pthread_mutex_unlock(&uds_mtx)
 
-/*¸ü¸Ätbox uds server Ä£Ê½£¬±¾µØÕï¶Ï or Ô¶³ÌÕï¶Ï£¬Ö»ÓÐÔÚÄ¬ÈÏ»á»°£¬²¢Î´½âËø°²È«µÈ¼¶Ê±¿É¸ü¸ÄÄ£Ê½*/
+/*ï¿½ï¿½ï¿½ï¿½tbox uds server Ä£Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ or Ô¶ï¿½ï¿½ï¿½ï¿½Ï£ï¿½Ö»ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½Ï»á»°ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È«ï¿½È¼ï¿½Ê±ï¿½É¸ï¿½ï¿½ï¿½Ä£Ê½*/
 int uds_set_uds_server_mode(uint8_t        mode)
 {
     int ret = 0;
@@ -55,8 +55,8 @@ int uds_set_uds_server_mode(uint8_t        mode)
 
 
 /*
-    0:²»ÊÇMCU·µ»ØµÄÔ¶³ÌÕï¶ÏÏìÓ¦
-    1:ÊÇMCU·µ»ØµÄÔ¶³ÌÕï¶ÏÏìÓ¦*/
+    0:ï¿½ï¿½ï¿½ï¿½MCUï¿½ï¿½ï¿½Øµï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦
+    1:ï¿½ï¿½MCUï¿½ï¿½ï¿½Øµï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦*/
 int is_remote_diag_response(unsigned char * msg)
 {
     int ret = 0;
@@ -65,11 +65,11 @@ int is_remote_diag_response(unsigned char * msg)
     unsigned int can_id = 0;
     switch (msg_type)
     {
-        case MSG_ID_UDS_S_ACK:/*ÉèÖÃUDS server*/
+        case MSG_ID_UDS_S_ACK:/*ï¿½ï¿½ï¿½ï¿½UDS server*/
             ret = 0;
             break;
             
-        case MSG_ID_UDS_C_ACK:/*ÉèÖÃUDS client*/
+        case MSG_ID_UDS_C_ACK:/*ï¿½ï¿½ï¿½ï¿½UDS client*/
             ret = 1;
             break;
             
@@ -275,7 +275,7 @@ void uds_timeout(UDS_TIMER_E timer_id, uint16_t seq)
             Set_Seesion_Default();
             Clear_SecurityAccess();
             UDS_SetDTCOn();
-            uds_send_can_CommunicationControl_to_mcu(2, 0);/*³õÊ¼»¯Í¨ÐÅ¿ØÖÆ¡£ËùÓÐ±¨ÎÄ£¬ÔÊÐíÊÕ·¢*/
+            uds_send_can_CommunicationControl_to_mcu(2, 0);/*ï¿½ï¿½Ê¼ï¿½ï¿½Í¨ï¿½Å¿ï¿½ï¿½Æ¡ï¿½ï¿½ï¿½ï¿½Ð±ï¿½ï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ·ï¿½*/
             log_e(LOG_UDS, "uds s3_server timeout!!!");
             break;
 
@@ -387,7 +387,7 @@ static void uds_confirm(UDS_T *uds, uint8_t result)
 
 /****************************************************************
 function:     uds_proxy
-description:  distribute confirm¡¢indication frame
+description:  distribute confirmï¿½ï¿½indication frame
 input:        uint8_t* msg,
               uint16_t length
 output:       none

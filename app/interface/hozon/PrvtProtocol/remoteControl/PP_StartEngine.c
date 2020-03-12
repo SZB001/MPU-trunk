@@ -397,13 +397,17 @@ void PP_rmtCtrl_checkenginetime(void)
 		{
 			if((PP_rmtCtrl_cfg_ACOnOffSt() == 1)&&(PP_get_ac_remote_flag() == 1) )
 			{
+				//空调是远程控制打开
 			}
 			else
 			{
-				log_o(LOG_HOZON,"The seat is heated off and the request is powered off\n");
-				enginecation = PP_POWEROFF;
-				PP_rmtengineCtrl.state.req = 1;
-				PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;
+				if((PP_rmtCtrl_cfg_HeatingSt(0) == 0)&&(PP_rmtCtrl_cfg_HeatingSt(1) == 0))
+				{
+					log_o(LOG_HOZON,"The seat is heated off and the request is powered off\n");
+					enginecation = PP_POWEROFF;
+					PP_rmtengineCtrl.state.req = 1;
+					PP_rmtengineCtrl.state.style = RMTCTRL_TBOX;
+				}
 			}
 			PP_set_seat_requestpower_flag();//清除座椅加热下电请求
 		}

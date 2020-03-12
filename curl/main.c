@@ -31,6 +31,7 @@ author        wangzhiwei
 #define LOG_FILE_UPPATH "/media/sdcard/log/"
 
 
+
 unsigned long curl_get_filesize(char *name);
 static int curl_Post_GbFile(char *name);
 static int curl_Post_CanFile(char *name);
@@ -356,12 +357,13 @@ static void curl_LogFile_handler(void)
 	char zipfile_name[80] = {0};
 	char stringVal[32] = {0};
 	char buf[BUFFSIZE] = {0};
+	char cmd[200] = {0};
 	FILE *fp = NULL;
 	DIR *dir = NULL;
 	struct dirent *ptr;
 	int i = 0;
-	if(dir_exists(CAN_FILE_UPPATH) == 0 &&
-				dir_make_path(CAN_FILE_UPPATH, S_IRUSR | S_IWUSR, false) != 0)
+	if(dir_exists(LOG_FILE_UPPATH) == 0 &&
+				dir_make_path(LOG_FILE_UPPATH, S_IRUSR | S_IWUSR, false) != 0)
 	{
 		printf("path not exist and creat fail");
 		sleep(1);
@@ -376,7 +378,7 @@ static void curl_LogFile_handler(void)
 	strcat(zipfile_name,"_");
 	strncat(zipfile_name,stringVal,sizeof(stringVal));
 	strcat(zipfile_name,".zip");    //zip文件的时间就是触发时候的时间戳
-		// /media/sdcard/CanFileload/LUZAGAAEP30A00701_xxxxxxxxxx.zip
+		// /media/sdcard/log/LUZAGAAEP30A00701_xxxxxxxxxx.zip
 	if((dir = opendir(LOG_FILE_UPPATH)) != NULL)     //打开文件夹
 	{
 		zipFile zfile;
@@ -396,9 +398,9 @@ static void curl_LogFile_handler(void)
 			}
 			memset(file_name,0,sizeof(file_name));
 			
-			if(strncmp(ptr->d_name+17+1+10,".txt",3) == 0)
+			//if(strncmp(ptr->d_name+17+1+10,".txt",3) == 0)
 			{
-				strcat(file_name,LOG_FILE_UPPATH);
+				strcpy(file_name,LOG_FILE_UPPATH);
 				
 				strcat(file_name,ptr->d_name);
 				// /media/sdcard/log/LUZAGAAEP30A00701_xxxxxxxxxx.txt
@@ -440,6 +442,14 @@ static void curl_LogFile_handler(void)
 		
 				}
 				fclose(fp);  //关闭文件描述符
+				
+				memset(cmd,0,sizeof(cmd));
+				
+				sprintf(cmd,"rm -rf %s",file_name);
+
+				system(cmd);  //删除文件
+				
+				usleep(200000);
 			}
 		}
 		ret = zipCloseFileInZip(zfile);
@@ -465,6 +475,12 @@ static void curl_LogFile_handler(void)
 		if(0 == curl_Post_LogFile(zipfile_name))   //上传成功之后删除压缩文件并执行改名
 		{
 			printf("curl_Post_LogFile success\n"); 
+
+			memset(cmd,0,sizeof(cmd));
+			
+			sprintf(cmd,"rm -rf %s",zipfile_name);
+			
+			//system(cmd);
 			
 			break;
 		}
@@ -948,7 +964,7 @@ void curl_canfile_handle_before_time(void)
 			//printf("file_name = %s\n",file_name);
 			stat(file_name,&buf);
 
-			if((buf.st_mtime -60 > timestamp.tv_sec - 60 -  10 * 60)  \
+			if((buf.st_mtime -60 > timestamp.tv_sec - 60 -  5 * 60)  \
 				&& (buf.st_mtime -60 < timestamp.tv_sec +60))
 			{
 			
@@ -1345,7 +1361,7 @@ int main(int argc, char *argv[])
 					
 					before_flag = 1;
 
-					canfile_upload_time = 10;
+					canfile_upload_time = 5;
 					
 					printf("Vehicle failure trigger!!!\n");
 				}

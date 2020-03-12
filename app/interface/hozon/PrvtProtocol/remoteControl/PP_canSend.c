@@ -585,6 +585,10 @@ int PP_canSend_weakupVehicle(uint8_t type)
 */
 void clearPP_canSend_virtualOnline(uint8_t type)
 {
+	if(virtual_request_falg == 0)
+	{
+		return ;
+	}
 	virtual_request_falg &= ~(1 << type);
 	PP_can_virtuar_off_printf(type,virtual_request_falg);
 
