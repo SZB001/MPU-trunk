@@ -1488,10 +1488,6 @@ static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 	len = sizeof(App_rmtCfg_EXTEND_t);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_EXT,&app_ReadResp.EXTEND,&len);
 	pthread_mutex_unlock(&cfgdtmtx);
-	//if(1 == rmtCfg->FICM.ficmConfigValid)
-	{
-	//	memcpy(&(AppData_rmtCfg.ReadResp.FICM),&rmtCfg->FICM,sizeof(App_rmtCfg_FICM_t));
-	}
 
 	if(1 == rmtCfg->APN1.apn1ConfigValid)
 	{
@@ -1512,28 +1508,6 @@ static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 		{
 			PP_rmtCfg.state.tspSMSchangeflag = 1;
 		}
-	}
-
-	if(1 == rmtCfg->APN2.apn2ConfigValid)
-	{
-		//memcpy(&(AppData_rmtCfg.ReadResp.APN2),&(AppData_rmtCfg.getResp.APN2),sizeof(App_rmtCfg_APN2_t));
-	}
-
-	if(1 == rmtCfg->COMMON.commonConfigValid)
-	{
-		//memcpy(&(AppData_rmtCfg.ReadResp.COMMON),&(AppData_rmtCfg.getResp.COMMON),sizeof(App_rmtCfg_COMMON_t));
-	}
-
-	if(1 == rmtCfg->EXTEND.extendConfigValid)
-	{
-		//memcpy(&(AppData_rmtCfg.ReadResp.EXTEND),&(AppData_rmtCfg.getResp.EXTEND),sizeof(App_rmtCfg_EXTEND_t));
-	}
-
-
-	//FICMConfigSettings
-	if(rmtCfg->FICM.ficmConfigValid == 1)
-	{
-		
 	}
 	
 	//APN1ConfigSettings APN1 
@@ -1559,12 +1533,6 @@ static void PP_rmtCfg_settbox(App_rmtCfg_getResp_t *rmtCfg)
 		{
 			log_e(LOG_HOZON,"set whitelist failed,ret=%d\r\n", ret);
 		}
-	}
-
-	//APN2ConfigSettings APN2
-	if(rmtCfg->APN2.apn2ConfigValid == 1)
-	{
-		
 	}
 
 	//ExtendConfigSettings
