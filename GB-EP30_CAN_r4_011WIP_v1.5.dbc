@@ -373,6 +373,8 @@ BO_ 850 VCU_Fr02_352: 8 VCU1
  SG_ VCU2DCDCEnabled : 45|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU2Checksum : 63|8@0+(1,0)[0|255] "" Vector__XXX
 BO_ 1251 VCU_Fr03_4E3: 8 VCU1
+ SG_ VCU3ACFILITSOH_@2WGF047 : 31|8@0+ (1,0) [0|0] "%"  TBOX
+ SG_ VCU3ACFILITSOHValid_@2WG300B : 16|1@0+ (1,0) [0|0] ""  TBOX
  SG_ VCU3PCUCtl : 7|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ VCU3TractionMode : 15|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU3TractionModeFailureReason : 14|3@0+(1,0)[0|7] "" Vector__XXX

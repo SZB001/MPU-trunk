@@ -53,7 +53,8 @@ static gb_PackPerSecond_t  gb_PPS;
 #define GB_SUPPLEMENTARY_DATA_BCN1			0x08//单体电压号1
 #define GB_SUPPLEMENTARY_DATA_BCN2			0x09//单体电压号2
 #define GB_SUPPLEMENTARY_DATA_AUTOST		0x0A//空调auto状态
-#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_AUTOST + 1)
+#define GB_SUPPLEMENTARY_DATA_ACFLTRVLID	0x0B//空调滤芯值有效性
+#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_ACFLTRVLID + 1)
 
 #if GB_EXT
 /* event information index */
@@ -146,7 +147,7 @@ static gb_PackPerSecond_t  gb_PPS;
 #define GB_VS_MAINDRIBELTST			0x44
 #define GB_VS_PASSDRIBELTST			0x45
 #define GB_VS_ELECSTOPBRAKEST		0x46
-#define GB_VS_RESERVE_ONE    		0x47
+#define GB_VS_ACFLTRVALUE    		0x47
 #define GB_VS_RESERVE_TWO    		0x48
 #define GB_VS_THREE    				0x49
 #define GB_VS_FOUR    				0x4A
@@ -2405,7 +2406,23 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 	{
 		 buf[len++] = 0xff;
 	}
-	buf[len++] = 0xff;//预留1
+
+	if(gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_ACFLTRVLID])
+	{
+		if(gbinf->gb_VSExt.info[GB_VS_ACFLTRVALUE])//
+		{
+			buf[len++] = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ACFLTRVALUE])->value;
+		}
+		else
+		{
+			buf[len++] = 0xff;
+		}
+	}
+	else
+	{
+		buf[len++] = 0xff;
+	}
+
 	buf[len++] = 0xff;//预留2
 	buf[len++] = 0xff;//预留3
 	buf[len++] = 0xff;
