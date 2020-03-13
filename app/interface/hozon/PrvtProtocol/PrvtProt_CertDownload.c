@@ -241,7 +241,8 @@ void PP_CertDownload_init(void)
 int PP_CertDownload_mainfunction(void *task)
 {
 	int res;
-	static char pp_certDL_IGNnewSt,pp_certDL_IGNoldSt = 0;
+	static char pp_certDL_IGNnewSt = 0xff;
+	static char pp_certDL_IGNoldSt = 0xff;
 	PrvtProt_task_t *task_ptr = (PrvtProt_task_t*)task;
 
 	if(0 == getsockproxy_pkiEnStatus())
@@ -261,6 +262,8 @@ int PP_CertDownload_mainfunction(void *task)
 		}
 		else
 		{
+			PP_CertDL.state.checkSt = PP_CHECK_CERT_IDLE;
+			PP_CertDL.Cnt 		= 0;
 			PP_CertUpdata.Cnt 	= 0;
 			PP_CertSt.CertEnCnt = 0;
 			PP_CertDL.state.renewfailflag = 0;
