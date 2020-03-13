@@ -2023,14 +2023,19 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         if(gbinf->gb_VSExt.info[GB_VS_RFTYRETEMP+2*i])//
     	{
 			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYRETEMP+2*i])->value;
-			if(tmp > 200) 
-			{
-				tmp = 0xfe;
-			}
-			else
+			if(tmp <= 200)
 			{
 				tmp = tmp + 50;
 			}
+			else if(tmp == 0xff)
+			{
+				//tmp = 0xff;
+			}
+			else
+			{
+				tmp = 0xfe;
+			}
+
     		buf[len++] = tmp;
     	}
     	else
@@ -2038,7 +2043,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     		buf[len++] = 0xff;
     	}
 
-        if(gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])//
+        if((tmp != 0xff) && gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])//
     	{
         	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_RFTYREPRESSURE+2*i])->value/100/0.0177;
         	if(tmp > 253) tmp = 0xfe;//超过范围，上报异常
