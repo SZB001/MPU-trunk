@@ -82,6 +82,21 @@ void setPPrmtDiagCfg_ClearDTCReq(uint8_t obj)
 	/*PP_rmtDiag_queryInform_cb();*/
 }
 
+void setPPrmtDiagCfg_GetDTCTimeReq(uint8_t obj, PP_rmtDiag_faultcode_t * faultcode)
+{
+    char tsp_diag_msg[8];
+    memset(tsp_diag_msg, 0x00, sizeof(tsp_diag_msg));
+    
+    tsp_diag_msg[0] = 0x03;
+    tsp_diag_msg[1] = obj;
+
+    memcpy(&(tsp_diag_msg[2]), faultcode->diagcode, 5);
+    tsp_diag_msg[7] = faultcode->lowByte;
+    
+    remote_diag_request(MPU_MID_REMOTE_DIAG, tsp_diag_msg, sizeof(tsp_diag_msg));
+}
+
+
 
 /******************************************************
 *��������getPPrmtDiagCfg_Faultcode

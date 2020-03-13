@@ -11,6 +11,7 @@
 #include "remote_diag.h"
 #include "hozon_PP_api.h"
 #include "../hozon/PrvtProtocol/remoteDiag/PrvtProt_rmtDiag.h"
+#include "timer.h"
 
 #define REMOTE_DIAG_SERVICE_NUM 6
 #define REMOTE_DIAG_TO_SDK_MSG_LEN 1000
@@ -22,8 +23,129 @@ extern UDS_T    uds_client;
 const unsigned char dtc_to_str_arr[4] = {'P', 'C', 'B', 'U'};
 
 
+typedef int (*PARSING_SINGLE_TIME)(const uint8_t *did_value, RTCTIME *time);
 
+const unsigned char Snapshot_no[REMOTE_DIAG_ECU_NUM] = 
+{
+    0,//REMOTE_DIAG_ALL = 0,//
+    
+    0,//REMOTE_DIAG_VCU,//
+    0,//REMOTE_DIAG_BMS,//
+    1,//REMOTE_DIAG_MCUp,
+    1,//REMOTE_DIAG_OBCp,
+    1,//REMOTE_DIAG_FLR,
+    
+    1,//REMOTE_DIAG_FLC,
+    1,//REMOTE_DIAG_APA,
+    1,//REMOTE_DIAG_ESCPluse,
+    1,//REMOTE_DIAG_EPS,
+    1,//REMOTE_DIAG_EHB,
+    
+    0,//REMOTE_DIAG_BDCM,
+    1,//REMOTE_DIAG_GW,
+    1,//REMOTE_DIAG_LSA,
+    1,//REMOTE_DIAG_CLM,
+    1,//REMOTE_DIAG_PTC,
+    
+    1,//REMOTE_DIAG_EACP,
+    1,//REMOTE_DIAG_EGSM,
+    1,//REMOTE_DIAG_ALM,
+    0,//REMOTE_DIAG_WPC,
+    1,//REMOTE_DIAG_IHU,
+    
+    1,//REMOTE_DIAG_ICU,
+    1,//REMOTE_DIAG_IRS,
+    1,//REMOTE_DIAG_DVR,
+    0,//REMOTE_DIAG_TAP,
+    1,//REMOTE_DIAG_MFCP,
+    
+    1,//REMOTE_DIAG_TBOX,
+    0,//REMOTE_DIAG_ACU,
+    1,//REMOTE_DIAG_PLG,
 
+};
+
+int comm_parsing_time(const uint8_t *did_value, RTCTIME *time);
+int vcu_parsing_time(const uint8_t *did_value, RTCTIME *time);
+int ehb_parsing_time(const uint8_t *did_value, RTCTIME *time);
+
+PARSING_SINGLE_TIME parsing_time_arr[REMOTE_DIAG_ECU_NUM] = 
+{
+    NULL,//REMOTE_DIAG_ALL = 0,//
+    
+    vcu_parsing_time,//REMOTE_DIAG_VCU,//
+    NULL,//REMOTE_DIAG_BMS,//
+    comm_parsing_time,//REMOTE_DIAG_MCUp,
+    comm_parsing_time,//REMOTE_DIAG_OBCp,
+    comm_parsing_time,//REMOTE_DIAG_FLR,
+    
+    comm_parsing_time,//REMOTE_DIAG_FLC,
+    comm_parsing_time,//REMOTE_DIAG_APA,
+    comm_parsing_time,//REMOTE_DIAG_ESCPluse,
+    comm_parsing_time,//REMOTE_DIAG_EPS,
+    ehb_parsing_time,//REMOTE_DIAG_EHB,
+    
+    NULL,//REMOTE_DIAG_BDCM,
+    comm_parsing_time,//REMOTE_DIAG_GW,
+    comm_parsing_time,//REMOTE_DIAG_LSA,
+    comm_parsing_time,//REMOTE_DIAG_CLM,
+    comm_parsing_time,//REMOTE_DIAG_PTC,
+    
+    comm_parsing_time,//REMOTE_DIAG_EACP,
+    comm_parsing_time,//REMOTE_DIAG_EGSM,
+    comm_parsing_time,//REMOTE_DIAG_ALM,
+    NULL,//REMOTE_DIAG_WPC,
+    comm_parsing_time,//REMOTE_DIAG_IHU,
+    
+    comm_parsing_time,//REMOTE_DIAG_ICU,
+    comm_parsing_time,//REMOTE_DIAG_IRS,
+    comm_parsing_time,//REMOTE_DIAG_DVR,
+    NULL,//REMOTE_DIAG_TAP,
+    comm_parsing_time,//REMOTE_DIAG_MFCP,
+    
+    comm_parsing_time,//REMOTE_DIAG_TBOX,
+    NULL,//REMOTE_DIAG_ACU,
+    comm_parsing_time,//REMOTE_DIAG_PLG,
+};
+
+const unsigned int time_pos[REMOTE_DIAG_ECU_NUM] = 
+{
+    0,//REMOTE_DIAG_ALL = 0,//
+    
+    4,//REMOTE_DIAG_VCU,//
+    0,//REMOTE_DIAG_BMS,//
+    39,//REMOTE_DIAG_MCUp,
+    7,//REMOTE_DIAG_OBCp,
+    15,//REMOTE_DIAG_FLR,
+    
+    15,//REMOTE_DIAG_FLC,
+    15,//REMOTE_DIAG_APA,
+    15,//REMOTE_DIAG_ESCPluse,
+    15,//REMOTE_DIAG_EPS,
+    15,//REMOTE_DIAG_EHB,
+    
+    0,//REMOTE_DIAG_BDCM,
+    16,//REMOTE_DIAG_GW,
+    15,//REMOTE_DIAG_LSA,
+    15,//REMOTE_DIAG_CLM,
+    15,//REMOTE_DIAG_PTC,
+    
+    15,//REMOTE_DIAG_EACP,
+    15,//REMOTE_DIAG_EGSM,
+    15,//REMOTE_DIAG_ALM,
+    0,//REMOTE_DIAG_WPC,
+    15,//REMOTE_DIAG_IHU,
+    
+    15,//REMOTE_DIAG_ICU,
+    15,//REMOTE_DIAG_IRS,
+    15,//REMOTE_DIAG_DVR,
+    0,//REMOTE_DIAG_TAP,
+    15,//REMOTE_DIAG_MFCP,
+    
+    15,//REMOTE_DIAG_TBOX,
+    0,//REMOTE_DIAG_ACU,
+    15,//REMOTE_DIAG_PLG,
+};
 
 const unsigned char remote_diag_server_cmd[REMOTE_DIAG_SERVICE_NUM][10] =
 {
@@ -98,6 +220,20 @@ const unsigned int REMOTE_DIAG_CAN_ID[REMOTE_DIAG_ECU_NUM][2] =
 };
 
 
+static void str_to_dtc(unsigned char * dtc, unsigned char * dtc_str)
+{
+    StrToHex(dtc, &(dtc_str[1]), 4);
+    uint8_t i = 0;
+    for(i=0;i<4;i++)
+    {
+        if(dtc_str[0] == dtc_to_str_arr[i])
+        {
+            break;
+        }
+    }
+    dtc[0] = dtc[0] + (i<<6);
+    dtc[2] = dtc_str[5];
+}
 
 
 /* 将接收到的远程诊断消息，解析为远程诊断模块可处理的标准请求格式 */
@@ -119,7 +255,7 @@ int parsing_remote_diag_msg(char * remote_diag_msg, TCOM_MSG_HEADER msg, remote_
        memcpy(request_msg, remote_diag_msg, msg.msglen);
     }
 
-
+    uint8_t dtc[3] = {0};
     memset(remote_diag_request_arr, 0x00, sizeof(remote_diag_request_arr_t));
 
     char remote_diag_sid = request_msg[0];
@@ -145,7 +281,22 @@ int parsing_remote_diag_msg(char * remote_diag_msg, TCOM_MSG_HEADER msg, remote_
                    
            remote_diag_request_arr->remote_diag_request[request_size].diag_request_len = 
                strlen((const char *)remote_diag_request_arr->remote_diag_request[request_size].diag_request);
+           
+           
+           if(remote_diag_sid == 3)/* 读取DTC快照信息 */
+           {
+               unsigned char *diag_request = remote_diag_request_arr->remote_diag_request[request_size].diag_request;
+               unsigned int *diag_request_len = &(remote_diag_request_arr->remote_diag_request[request_size].diag_request_len);
+               
+               str_to_dtc(dtc, &(request_msg[2]));
+               log_buf_dump(LOG_REMOTE_DIAG, "request_msg", request_msg, 3);
+               log_buf_dump(LOG_REMOTE_DIAG, "dtc", dtc, 3);
+               memcpy(&(diag_request[*diag_request_len]), dtc, 3);
+               *diag_request_len = *diag_request_len + 3;
 
+               diag_request[*diag_request_len] = Snapshot_no[(unsigned char)ecutype];
+               *diag_request_len = *diag_request_len + 1;
+           }
            log_o(LOG_REMOTE_DIAG, "baud:%d,port:%d,request_id:%X,response_id:%X,diag_request_len:%d,security_level:%d,session:%d,diag_request:%s",
                         remote_diag_request_arr->remote_diag_request[request_size].baud,
                         remote_diag_request_arr->remote_diag_request[request_size].port,
@@ -319,6 +470,8 @@ int remote_diag_excuted_result_output(void)
 
     return ret;
 }
+
+
 static void HexToStr(unsigned char *pbDest, unsigned char *pbSrc, int nLen)
 {
     char ddl, ddh;
@@ -417,7 +570,169 @@ int PP_get_remote_clearDTCresult(uint8_t obj, unsigned char *failureType)
     return ret;
 }
 
+int charcmp(const uint8_t *src,const uint8_t *dst, const int len)
+{
+    int ret=0;
+    int len_temp = len;
+    while(!(ret = *(unsigned char *)src - *(unsigned char *)dst) && len_temp)
+    {
+        ++src;
+        ++dst;
+        len_temp--;
+    }
+        
+    if(ret<0)
+        ret=-1;
+    else if(ret>0)
+        ret=1;
+    return(ret);
+}
+int vcu_parsing_time(const uint8_t *did_value, RTCTIME *time)
+{
+    int ret = 0;
+    if((did_value[0] == 0xF0) || (did_value[1] == 0x20))
+    {
+        time->year = 2018 + did_value[2];
+        time->mon = did_value[3];
+        time->mday = did_value[4];
+        time->hour = did_value[5];
+        time->min = did_value[6];
+        time->sec = did_value[7];
+    }
+    else
+    {
+        memset(time, 0x00, sizeof(RTCTIME));
+        ret = 1;
+    }
+    return ret;
+}
+int comm_parsing_time(const uint8_t *did_value, RTCTIME *time)
+{
+    int ret = 0;
+    if((did_value[0] == 0xF0) || (did_value[1] == 0x20))
+    {
+        time->year = (((unsigned short)did_value[3])<<8) + did_value[2];
+        time->mon = did_value[4];
+        time->mday = did_value[5];
+        time->hour = did_value[6];
+        time->min = did_value[7];
+        time->sec = did_value[8];
+        log_i(LOG_REMOTE_DIAG, "time->year:%d", time->year);
+        log_i(LOG_REMOTE_DIAG, "time->mon:%d", time->mon);
+        log_i(LOG_REMOTE_DIAG, "time->mday:%d", time->mday);
+        log_i(LOG_REMOTE_DIAG, "time->hour:%d", time->hour);
+        log_i(LOG_REMOTE_DIAG, "time->min:%d", time->min);
+        log_i(LOG_REMOTE_DIAG, "time->sec:%d", time->sec);
+    }
+    else
+    {
+        memset(time, 0x00, sizeof(RTCTIME));
+        ret = 1;
+        log_e(LOG_REMOTE_DIAG, "comm_parsing_time error!");
+    }
+    return ret;
+}
 
+int ehb_parsing_time(const uint8_t *did_value, RTCTIME *time)
+{
+    int ret = 0;
+    if((did_value[0] == 0x01) || (did_value[1] == 0x0B))
+    {
+        time->year = 2000 + did_value[2];
+        time->mon = did_value[3];
+        time->mday = did_value[4];
+        time->hour = did_value[5];
+        time->min = did_value[6];
+        time->sec = did_value[7];
+
+    }
+    else
+    {
+        memset(time, 0x00, sizeof(RTCTIME));
+        ret = 1;
+    }
+    return ret;
+}
+
+int remote_diag_changetime(RTCTIME *time, uint32_t * timesec)
+{
+    struct tm tm;
+
+    tm.tm_year = time->year - 1900;
+    tm.tm_mon = time->mon - 1;
+    tm.tm_mday = time->mday;
+    tm.tm_hour = time->hour;
+    tm.tm_min = time->min;
+    tm.tm_sec = time->sec;
+
+    *timesec = mktime(&tm);
+    
+    return 0;
+}
+
+int PP_get_dtc_time_result(uint8_t obj, PP_rmtDiag_faultcode_t *faultcode)
+{
+    int ret = 0;
+    int response_size = 0;
+    int byte_size = 2;/*apart from 59 04 XX XX XX 09 XX XX*/
+    unsigned char DTC_temp[5] = {0};
+    unsigned char * response;
+    remote_diag_response_arr_t * response_arr = get_remote_diag_response();
+    
+    /* 轮询查找匹配结果 */
+    for(response_size=0;response_size<response_arr->remote_diag_response_size;response_size++)
+    {
+        /* 已匹配结果 */
+        if(response_arr->remote_diag_response[response_size].request_id == REMOTE_DIAG_CAN_ID[obj][DIAG_REQUEST_ID_ROW])
+        {
+            if(REMOTE_DIAG_CMD_RESULT_OK == response_arr->remote_diag_response[response_size].result_type)
+            {
+                response = response_arr->remote_diag_response[response_size].diag_response;
+                dtc_to_str(DTC_temp,response+byte_size);
+                
+                if((charcmp(DTC_temp, faultcode->diagcode, 5) == 0) && (faultcode->lowByte == *(response+byte_size+2)))/* Get DTC corresponding snapshot information */
+                {
+                    byte_size = byte_size + 6;
+                    byte_size += time_pos[obj];
+                    RTCTIME time;
+                    memset(&time, 0x00, sizeof(RTCTIME));
+                    if(parsing_time_arr[obj] != NULL)
+                    {
+                        parsing_time_arr[obj](response+byte_size, &time);
+                        remote_diag_changetime(&time, &(faultcode->diagTime));
+                    }
+                    else
+                    {
+                        log_e(LOG_REMOTE_DIAG, "parsing_time_arr is NULL error!");
+                    }
+                }
+                else
+                {
+                    log_e(LOG_REMOTE_DIAG, "dtc does not match error!");
+                    log_buf_dump(LOG_REMOTE_DIAG, "DTC_temp", DTC_temp, 5);
+                    log_buf_dump(LOG_REMOTE_DIAG, "faultcode->diagcode", faultcode->diagcode, 5);
+                    log_i(LOG_REMOTE_DIAG, "faultcode->lowByte:%x, *(response+byte_size+1):%x", 
+                    faultcode->lowByte, *(response+byte_size+1));
+                }
+                break;
+            }
+            else
+            {
+                break;
+            }
+
+            /* 读取之后就销毁 */
+            int response_cpy_size =  response_size;
+            for(;response_cpy_size<response_arr->remote_diag_response_size;response_cpy_size++)
+            {
+                memcpy(&(response_arr->remote_diag_response[response_cpy_size]), 
+                                   &(response_arr->remote_diag_response[response_cpy_size + 1]), 
+                                   sizeof(remote_diag_response_t));
+            }
+        }
+    }
+    return ret;
+}
 
 int PP_get_remote_result(uint8_t obj, PP_rmtDiag_Fault_t * pp_rmtdiag_fault)
 {

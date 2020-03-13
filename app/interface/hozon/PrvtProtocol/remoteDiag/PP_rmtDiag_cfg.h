@@ -103,4 +103,7 @@ extern void getPPrmtDiagCfg_Faultcode(uint8_t obj,void *rmtDiag_Fault);
 extern unsigned char getPPrmtDiagCfg_MCUNodeFaultSt(void);
 extern unsigned char getPPrmtDiagCfg_BMSNodeFaultSt(void);
 extern unsigned char getPPrmtDiagCfg_clearDTCresult(unsigned char obj,unsigned char *failureType);
+extern void setPPrmtDiagCfg_GetDTCTimeReq(uint8_t obj, PP_rmtDiag_faultcode_t * faultcode);
+extern int PP_get_dtc_time_result(uint8_t obj, PP_rmtDiag_faultcode_t *faultcode);
+
 #endif 

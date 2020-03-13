@@ -8,6 +8,8 @@
 
 extern void setPPrmtDiagCfg_QueryFaultReq(uint8_t obj);
 extern void setPPrmtDiagCfg_ClearDTCReq(uint8_t obj);
+extern void setPPrmtDiagCfg_GetDTCTimeReq(uint8_t obj, PP_rmtDiag_faultcode_t * faultcode);
+extern int PP_get_dtc_time_result(uint8_t obj, PP_rmtDiag_faultcode_t *faultcode);
 
 unsigned int remote_diag_tsp(char * diag_msg, int diag_msg_len)
 {
@@ -78,6 +80,54 @@ static int setPPrmtDiagCfg_ClearDTCReq_test(int argc, const char **argv)
     return 0;
 }
 
+static int setPPrmtDiagCfg_GetDTCTimeReq_test(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: <UDS msg> \r\n");
+        return -1;
+    }
+    uint8_t request_msg[DIAG_REQUEST_LEN];
+    memset(request_msg, 0x00, DIAG_REQUEST_LEN);
+    
+    shellprintf("argv[0]:%s", argv[0]);
+    StrToHex((unsigned char *)request_msg, (unsigned char *)argv[0], 14);
+    //shellprintf("request_msg:%x", request_msg[0]);
+    log_buf_dump(LOG_REMOTE_DIAG, "request_msg", request_msg, 7);
+    PP_rmtDiag_faultcode_t faultcode;
+    memset(&faultcode, 0x00, sizeof(PP_rmtDiag_faultcode_t));
+    
+    memcpy(faultcode.diagcode, &(request_msg[1]), 5);
+    faultcode.lowByte = request_msg[6];
+    setPPrmtDiagCfg_GetDTCTimeReq(request_msg[0], &faultcode);
+    
+    return 0;
+}
+
+static int PP_get_dtc_time_result_test(int argc, const char **argv)
+{
+    if (argc != 1)
+    {
+        shellprintf(" usage: <UDS msg> \r\n");
+        return -1;
+    }
+    uint8_t request_msg[DIAG_REQUEST_LEN];
+    memset(request_msg, 0x00, DIAG_REQUEST_LEN);
+    
+    shellprintf("argv[0]:%s", argv[0]);
+    StrToHex((unsigned char *)request_msg, (unsigned char *)argv[0], 14);
+    //shellprintf("request_msg:%x", request_msg[0]);
+    log_buf_dump(LOG_REMOTE_DIAG, "request_msg", request_msg, 7);
+    PP_rmtDiag_faultcode_t faultcode;
+    memset(&faultcode, 0x00, sizeof(PP_rmtDiag_faultcode_t));
+    
+    memcpy(faultcode.diagcode, &(request_msg[1]), 5);
+    faultcode.lowByte = request_msg[6];
+    PP_get_dtc_time_result(request_msg[0], &faultcode);
+    log_o(LOG_REMOTE_DIAG, "faultcode->diagTime:%d", faultcode.diagTime);
+    
+    return 0;
+}
 
 
 static int remote_diag_shell_tbox(int argc, const char **argv)
@@ -146,6 +196,13 @@ int remote_diag_shell_init(INIT_PHASE phase)
 
             ret |= shell_cmd_register_ex("rdiagPPCD", "rdiagPPCD", setPPrmtDiagCfg_ClearDTCReq_test,
                              "setPPrmtDiagCfg_ClearDTCReq_test");
+
+            ret |= shell_cmd_register_ex("rdiagPPGT", "rdiagPPGT", setPPrmtDiagCfg_GetDTCTimeReq_test,
+                             "setPPrmtDiagCfg_GetDTCTimeReq_test");
+                             
+            ret |= shell_cmd_register_ex("rdiagPPGTR", "rdiagPPGTR", PP_get_dtc_time_result_test,
+                             "PP_get_dtc_time_result_test");
+                             
 
             ret |= shell_cmd_register_ex("rdiagPPCDRES", "rdiagPPCDRES", PP_get_remote_clearDTCresult_test,
                           "PP_get_remote_clearDTCresult_test");
