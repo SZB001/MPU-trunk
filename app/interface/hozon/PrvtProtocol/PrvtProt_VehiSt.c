@@ -88,7 +88,7 @@ static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task);
 static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS);
 
 static void PP_VS_send_cb(void * para);
-
+static uint32_t PP_VS_gpsconv(double dddmm);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -366,36 +366,37 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	{
 		if(gpsDt.is_north)
 		{
-			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(gpsDt.latitude*10000);
+			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(PP_VS_gpsconv(gpsDt.latitude)*10000);
 		}
 		else
 		{
-			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));
+			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(PP_VS_gpsconv(gpsDt.latitude)*10000*(-1));
 		}
 
 		if(gpsDt.is_east)
 		{
-			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(gpsDt.longitude*10000);
+			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(PP_VS_gpsconv(gpsDt.longitude)*10000);
 		}
 		else
 		{
-			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));
+			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(PP_VS_gpsconv(gpsDt.longitude*10000)*(-1));
 		}
 		log_i(LOG_HOZON, "PP_appData.latitude = %ld",PP_VS_appdata.VSResp.gpsPos.latitude);
 		log_i(LOG_HOZON, "PP_appData.longitude = %ld",PP_VS_appdata.VSResp.gpsPos.longitude);
 	}
 	else
 	{
-		PP_VS_appdata.VSResp.gpsPos.latitude  = 0;
-		PP_VS_appdata.VSResp.gpsPos.longitude = 0;
+		//PP_VS_appdata.VSResp.gpsPos.latitude  = 0;
+		//PP_VS_appdata.VSResp.gpsPos.longitude = 0;
 	}
+	
 	PP_VS_appdata.VSResp.gpsPos.altitude = (long)(gpsDt.height);
 	if(PP_VS_appdata.VSResp.gpsPos.altitude > 10000)
 	{
 		PP_VS_appdata.VSResp.gpsPos.altitude = 10000;
 	}
 	PP_VS_appdata.VSResp.gpsPos.heading = (long)(gpsDt.direction);
-	PP_VS_appdata.VSResp.gpsPos.gpsSpeed = (long)(gpsDt.kms*10);
+	PP_VS_appdata.VSResp.gpsPos.gpsSpeed = (long)(gpsDt.knots*10);
 	PP_VS_appdata.VSResp.gpsPos.hdop = (long)(gpsDt.hdop*10);
 	if(PP_VS_appdata.VSResp.gpsPos.hdop > 1000)
 	{
@@ -637,4 +638,17 @@ static void PP_VS_send_cb(void * para)
 	log_i(LOG_HOZON, "txfailtime = %d",TxInform_ptr->txfailtime);
 
 	TxInform_ptr->idleflag = 0;
+}
+
+
+/* Convert dddmm.mmmm(double) To ddd.dd+(double)*/
+static uint32_t PP_VS_gpsconv(double dddmm)
+{
+    int deg;
+    double min;
+
+    deg = dddmm / 100.0;
+    min = dddmm - deg * 100;
+
+    return (uint32_t)((deg + min / 60 + 0.5E-6) * 1000000);
 }
