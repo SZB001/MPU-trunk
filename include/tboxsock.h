@@ -16,7 +16,7 @@
 #define _INC_H_
 
 #define HOZON_TBOX_VERSION         0
-#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.18 - 2019-12-25"
+#define HOZON_TBOX_VERSION_TEXT    "TBOX SDK 1.1.19 - 2020-01-17"
 
 
 extern char *hurootcertstr;
@@ -48,7 +48,9 @@ int SgHzTboxCertchainCfg(char *RtcertPath, char *ScdCertPath);
 
 int SgHzTboxInit(char *uc_crl);
 
-int SgHzTboxConnect();
+int SgHzTboxSocketFd(int *p_sockfd);
+
+int SgHzTboxConnect(int conn_sockfd);
 
 int SgHzTboxDataSend(char *reqbuf , int sendlen);
 

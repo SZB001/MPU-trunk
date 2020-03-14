@@ -952,7 +952,7 @@ void PrvtProt_defaultsettings(void)
 ******************************************************/
 uint8_t PrvtProt_tboxsnValidity(void)
 {
-	if((strcmp(pp_tboxsn,"") == 0) || \
+	if((strlen(pp_tboxsn) == 0) || \
 	   (strcmp(pp_tboxsn,"000000000000000000") == 0) || \
 	   18 != strlen(pp_tboxsn)
 	   )

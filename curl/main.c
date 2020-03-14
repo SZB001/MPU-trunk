@@ -370,7 +370,7 @@ static void curl_LogFile_handler(void)
 		return;
 	}
 				
-	curl_timestamp_ultoa(timestamp.tv_sec,stringVal,10);  //时间戳转换成字符串
+	curl_timestamp_ultoa(log_timestamp.tv_sec,stringVal,10);  //时间戳转换成字符串
 				
 	memset(zipfile_name,0,sizeof(zipfile_name));
 	strcpy(zipfile_name,LOG_FILE_UPPATH);
@@ -398,7 +398,7 @@ static void curl_LogFile_handler(void)
 			}
 			memset(file_name,0,sizeof(file_name));
 			
-			//if(strncmp(ptr->d_name+17+1+10,".txt",3) == 0)
+			if(strncmp(ptr->d_name+17+1+10,".zip",3) != 0)
 			{
 				strcpy(file_name,LOG_FILE_UPPATH);
 				
@@ -447,7 +447,7 @@ static void curl_LogFile_handler(void)
 				
 				sprintf(cmd,"rm -rf %s",file_name);
 
-				system(cmd);  //删除文件
+				//system(cmd);  //删除文件
 				
 				usleep(200000);
 			}
@@ -480,7 +480,7 @@ static void curl_LogFile_handler(void)
 			
 			sprintf(cmd,"rm -rf %s",zipfile_name);
 			
-			//system(cmd);
+			system(cmd);
 			
 			break;
 		}
@@ -793,12 +793,6 @@ int curl_Post_LogFile(char *name)
    				CURLFORM_COPYCONTENTS, "10",  
    				CURLFORM_END);
   
-	//curl_formadd(&formpost,  
-    //             &lastptr,  
-    //             CURLFORM_COPYNAME, "mid",  
-    //             CURLFORM_COPYCONTENTS, "\t", 
-    //             CURLFORM_END);
-
    /********************配置参数eventId*********************/
    curl_formadd(&formpost,  
    				&lastptr,  
@@ -1260,11 +1254,23 @@ static void *curl_logdata_main(void)
 		
 		if(log_memory[2] == 0x01)
 		{
-			if(now_timestamp.tv_sec > log_starttime + log_uptime)
+			if(log_starttime == 0)
 			{
-				memset(log_memory,0,CURL_BUF_SIZE);
+				if(now_timestamp.tv_sec > log_timestamp.tv_sec + log_uptime)
+				{
+					memset(log_memory,0,CURL_BUF_SIZE);
 				
-				curl_LogFile_handler();
+					curl_LogFile_handler();
+				}
+			}
+			else
+			{
+				if(now_timestamp.tv_sec > log_starttime + log_uptime)
+				{
+					memset(log_memory,0,CURL_BUF_SIZE);
+				
+					curl_LogFile_handler();
+				}
 			}
 		}
 		
@@ -1428,10 +1434,13 @@ int main(int argc, char *argv[])
 					printf("log_uptime = %d ",log_uptime);
 					
 					printf("eventid = %d\n",eventid);
+					
+					sprintf(log_eventId, "%lu", (long)eventid);
 				}
 				else if(addr[2] == 0x02)
 				{
 					//停止采集日志
+					memset(log_memory,0,sizeof(log_memory));
 				}
 				memset(addr,0,4096);         //清掉共享内存	
 			}

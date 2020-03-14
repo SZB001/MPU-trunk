@@ -1351,10 +1351,20 @@ static int gb_nm_callback(NET_TYPE type, NM_STATE_MSG nmmsg)
     TCOM_MSG_HEADER msg;
     int network;
 
-    if (NM_PUBLIC_NET != type)
+    if(!sockproxy_nm_apncardtype())
     {
-        return 0;
+        if (NM_PUBLIC_NET != type)
+        {
+            return 0;
+        }
     }
+    else
+	{
+		if (NM_PRIVATE_NET != type)
+		{
+			return 0;
+		}
+	}
 
     switch (nmmsg)
     {

@@ -147,6 +147,7 @@ typedef struct
 	uint8_t	dnserrcnt;//
 	int	tsplinkstatus;//
 	uint8_t network;
+	uint8_t apnType;//0--单apn;1--双apn
 }__attribute__ ((packed)) sockproxy_stat_t;
 
 

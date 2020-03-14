@@ -206,7 +206,8 @@ static void *PP_FileUpload_main(void)
     while(1)
     {
 		unsigned int i;
-		if( (0 == GetPP_rmtCtrl_fotaUpgrade()) 		&& \
+		if( (1 == gb32960_gbCanbusActiveSt())		&& \
+			(0 == GetPP_rmtCtrl_fotaUpgrade()) 		&& \
 		    (DIAG_EMMC_OK == flt_get_by_id(EMMC)) 	&& \
 			(0 == get_factory_mode()) 				&& \
 			(1 == PP_rmtCfg_enable_dcEnabled()))
@@ -249,9 +250,18 @@ void PP_FileUpload_LogRequest(PP_log_upload_t log_para)
 
 static int PP_FileUpload_Tspshell(int argc, const char **argv)
 {
-	unsigned int min = 10;
-	sscanf(argv[0], "%u", &min);
-	PP_FileUpload_CanMsgRequest(min);
+	unsigned int canfile_en;
+    if (argc != 1)
+    {
+        shellprintf(" usage:set pki en error\r\n");
+        return -1;
+    }
+
+	sscanf(argv[0], "%u", &canfile_en);
+	cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
+	shellprintf(" set canfile ok\r\n");
+
+
 	return 0;
 }
 

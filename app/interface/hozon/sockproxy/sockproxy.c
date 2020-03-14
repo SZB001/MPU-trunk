@@ -59,6 +59,7 @@ static pthread_mutex_t rcvmtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ����
 static uint64_t socketopentimer = 0;
 static uint64_t socketclosetimer = 0;
 static int SP_sockFd;
+static int Sg_sockFd;
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -104,6 +105,7 @@ int sockproxy_init(INIT_PHASE phase)
 			sockSt.state = PP_CLOSED;
 			sockSt.rcvType = PP_RCV_UNRCV;
 			sockSt.rcvstep = PP_RCV_IDLE;
+			sockSt.apnType  = 0;//默认单apn
 			SockproxyData_Init();
 		}
         break;
@@ -117,6 +119,7 @@ int sockproxy_init(INIT_PHASE phase)
 			/*init SSL*/
 			//HzTboxInit();
 			unsigned int cfglen;
+			unsigned char localapn[32] = {0};
 			shell_cmd_register("hozon_pkien", PP_shell_setPKIenable, "set pki en");
 			SP_data_init();
 			socketopentimer = tm_get_time();
@@ -125,6 +128,13 @@ int sockproxy_init(INIT_PHASE phase)
 			ret |= cfg_get_para(CFG_ITEM_EN_PKI, &sockSt.pkiEnFlag, &cfglen);
 			ret |= nm_register_get_ota_status(sockproxy_get_link_status);
 			ret |= nm_register_status_changed(sockproxy_nm_callback);
+
+			cfglen = 32;
+    		ret = cfg_get_para(CFG_ITEM_LOCAL_APN, localapn, &cfglen);
+			if((0 != strlen((char*)localapn)) && (1 == sockSt.pkiEnFlag))
+			{
+				sockSt.apnType  = 1;
+			}
 		}
         break;
     }
@@ -593,7 +603,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					sleep(1);
 					return -1;
 				}
-
+				
 				he=gethostbyname(sockSt.sgLinkAddr);
 				if(he == NULL)
 				{
@@ -609,7 +619,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					 inet_ntop(he->h_addrtype,*phe,destIP,sizeof(destIP));
 					 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
 					 break;
-				}
+				} 
 				/*port ipaddr*/
 				iRet = HzPortAddrCft(sockSt.sgPort, 1,destIP,NULL);//TBOX端口地址配置初始化
 				if(iRet != SOCKPROXY_SG_ADDR_INIT_SUCCESS)
@@ -658,9 +668,27 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					sleep(1);
 					return -1;
 				}
-
+				SgHzTboxSocketFd(&Sg_sockFd);
+				if((sockSt.apnType == 1) && (strncmp(destIP,"172.16",6) == 0))
+				{
+					struct ifreq nif;
+					memset(&nif,0x00,sizeof(nif));
+    				char *inface = "rmnet_data0";
+					strcpy(nif.ifr_name, inface);
+					/* 绑定接口 */
+					if (setsockopt(Sg_sockFd, SOL_SOCKET, SO_BINDTODEVICE, (char *)&nif, sizeof(nif)) < 0)
+					{
+						printf("bind interface fail, errno: %d \r\n", errno);
+						sleep(1);
+						return -1;		
+					}
+					else
+					{
+						printf("setsockopt interface success \r\n");
+					}
+				}
 				/*Initiate a connection server request*/
-				iRet = SgHzTboxConnect();
+				iRet = SgHzTboxConnect(Sg_sockFd);
 				if(iRet != SOCKPROXY_SG_CONN_SUCCESS)
 				{
 					log_e(LOG_SOCK_PROXY,"SgHzTboxConnect error+++++++++++++++iRet[%d] \n", iRet);
@@ -766,7 +794,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					sleep(1);
 					return -1;
 				}
-
+				
 				he=gethostbyname(sockSt.BDLLinkAddr);
 				if(he == NULL)
 				{
@@ -787,7 +815,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					 inet_ntop(he->h_addrtype,*phe,destIP,sizeof(destIP));
 					 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
 					 break;
-				}
+				}  
 				/*port ipaddr*/
 				iRet = HzPortAddrCft(sockSt.BDLPort, 1,destIP,NULL);
 				if(iRet != 1010)
@@ -850,23 +878,24 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 				/*Initiate a connection server request*/
 				HzTboxSocketFd(&SP_sockFd);
-				#if 0
-				struct ifreq nif;
-				memset(&nif,0x00,sizeof(nif));
-    			char *inface = "rmnet_data0";
-				strcpy(nif.ifr_name, inface);
-				/* 绑定接口 */
-				if (setsockopt(SP_sockFd, SOL_SOCKET, SO_BINDTODEVICE, (char *)&nif, sizeof(nif)) < 0)
+				if((sockSt.apnType == 1) && (strncmp(destIP,"172.16",6) == 0))
 				{
-					printf("bind interface fail, errno: %d \r\n", errno);
-					sleep(1);
-					return -1;		
+					struct ifreq nif;
+					memset(&nif,0x00,sizeof(nif));
+    				char *inface = "rmnet_data0";
+					strcpy(nif.ifr_name, inface);
+					/* 绑定接口 */
+					if (setsockopt(SP_sockFd, SOL_SOCKET, SO_BINDTODEVICE, (char *)&nif, sizeof(nif)) < 0)
+					{
+						printf("bind interface fail, errno: %d \r\n", errno);
+						sleep(1);
+						return -1;		
+					}
+					else
+					{
+						printf("setsockopt interface success \r\n");
+					}
 				}
-				else
-				{
-					printf("setsockopt interface success \r\n");
-				}
-				#endif
 
 				iRet = HzTboxConnect(SP_sockFd);
 				if(iRet != 1230)
@@ -1733,15 +1762,31 @@ int sockproxy_check_link_status(void)
 	return res;
 }
 
+/*检查底层socket链路状态*/
+int sockproxy_nm_apncardtype(void)
+{
+	return sockSt.apnType;
+}
+
 /*
 * 获取网络状态
 */
 static int sockproxy_nm_callback(NET_TYPE type, NM_STATE_MSG nmmsg)
 {
-    if (NM_PUBLIC_NET != type)
-    {
-        return 0;
-    }
+	if(!sockSt.apnType)//单apn
+	{
+		if (NM_PUBLIC_NET != type)
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		if (NM_PRIVATE_NET != type)
+		{
+			return 0;
+		}
+	}
 
     switch (nmmsg)
     {

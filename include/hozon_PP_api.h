@@ -163,4 +163,5 @@ extern void PP_identificat_readESK(uint8_t *esk);
 extern void PP_CanMsgUL_datacollection(void *msg);
 extern void PP_FileUpload_CanMsgRequest(int mintue);
 extern void PP_FileUpload_LogRequest(PP_log_upload_t log_para);
+extern int sockproxy_nm_apncardtype(void);
 #endif
