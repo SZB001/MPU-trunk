@@ -911,9 +911,10 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 void PrvtProt_defaultsettings(void)
 {
 	clbt_cfg_set_default_para(UDEF_CFG_SET_SILENT);
-	cfg_set_para(CFG_ITEM_INTEST_HW, "H1.11", 32);
-	PP_rmtCfg_setCfgapn1(1,"tboxgw-uat.chehezhi.cn","21000");
-	PP_rmtCfg_setCfgapn1(6,"tboxgw-uat.chehezhi.cn","22000");
+	unsigned char sleep_mode = 3;
+    cfg_set_para(CFG_ITEM_SLEEP_MODE, &sleep_mode, sizeof(sleep_mode));
+	unsigned int wakeuptime = 270; 
+	cfg_set_para(CFG_ITEM_RTC_WAKEUP_TIME, &wakeuptime, sizeof(wakeuptime));
 
 	PP_rmtCfg_setCfgEnable(1,1);
 	PP_rmtCfg_setCfgEnable(2,1);
@@ -931,6 +932,13 @@ void PrvtProt_defaultsettings(void)
 	PP_rmtCfg_setCfgEnable(14,1);
 	PP_rmtCfg_setCfgEnable(15,1);
 	PP_rmtCfg_setCfgEnable(16,1);
+
+	cfg_set_para(CFG_ITEM_INTEST_HW, "H1.11", 32);
+	cfg_set_para(CFG_ITEM_WAN_APN,(unsigned char *)"bjlenovo09.xfdz.njm2mapn",32);
+	cfg_set_para(CFG_ITEM_LOCAL_APN,(unsigned char *)"bjlenovo17.njm2mapn", 32);
+
+	PP_rmtCfg_setCfgapn1(1,"tboxgw-uat.chehezhi.cn","21000");
+	PP_rmtCfg_setCfgapn1(6,"tboxgw-uat.chehezhi.cn","22000");
 
 	unsigned char pkien = 1;
 	cfg_set_para(CFG_ITEM_EN_PKI, &pkien, 1);

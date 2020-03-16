@@ -2223,7 +2223,6 @@ int PP_CertDL_getCipher(char* cipher,int* len)
 	}
 
 	int size = 0;
-	char *filedata_ptr;
 	//求得文件的大小
 	fseek(fp, 0, SEEK_END);
 	size = ftell(fp);
@@ -2233,24 +2232,9 @@ int PP_CertDL_getCipher(char* cipher,int* len)
 		return -1;
 	}
 	rewind(fp);
-	//申请一块能装下整个文件的空间
-	filedata_ptr = (char*)malloc(sizeof(char)*size);
-	fread(filedata_ptr,1,size,fp);//每次读一个，共读size次
-	memcpy(cipher,filedata_ptr,size);
+	fread(cipher,1,size,fp);//每次读一个，共读size次
 	*len = size;
-#if 0
-	int i;
-	for(i=0;i<size;i++)
-	{
-		printf( "%02X ", (unsigned char)cipher[i]);
-		if((i+1)%16==0) 
-		{
-			printf("\n");
-		}
-	}
-#endif
 	fclose(fp);
-	free(filedata_ptr);
 
 	return 0;
 }
