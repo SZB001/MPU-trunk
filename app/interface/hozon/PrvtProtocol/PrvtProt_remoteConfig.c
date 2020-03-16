@@ -469,6 +469,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		break;
 		case PP_CHECK_CFG_REQ:
 		{
+			log_o(LOG_HOZON, "check cfg request\n");
 			if(0 == PP_rmtCfg_checkRequest(task,rmtCfg))
 			{
 				rmtCfg->state.waitSt 	= PP_RMTCFG_CHECK_WAIT_RESP;
@@ -501,6 +502,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		break;
 		case PP_GET_CFG_REQ:
 		{
+			log_o(LOG_HOZON, "get cfg request\n");
 			if(0 == PP_rmtCfg_getRequest(task,rmtCfg))
 			{
 				rmtCfg->state.waitSt 	= PP_RMTCFG_GET_WAIT_RESP;
@@ -521,6 +523,7 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		break;
 		case PP_RMTCFG_CFG_END://
 		{
+			log_o(LOG_HOZON, "cfg end\n");
 			rmtCfg->state.cfgsuccess = rmtCfg->state.getRespResult;
 			rmtCfg->state.getRespResult = 0;
 			if(0 == PP_rmtCfg_CfgEndRequest(task,rmtCfg))
