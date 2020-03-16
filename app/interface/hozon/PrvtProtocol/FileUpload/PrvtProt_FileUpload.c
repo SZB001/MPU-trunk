@@ -20,7 +20,8 @@ description�� include the header file
 
 #include <sys/time.h>
 #include <semaphore.h>
-
+#include "at.h"
+#include "pm_api.h"
 #include "timer.h"
 #include <sys/prctl.h>
 #include "dir.h"
@@ -502,10 +503,18 @@ static double PP_GetCanfile_Size(void)
 			
 			strcpy(file_name,PP_CANFILEUPLOAD_PATH);
 			strcat(file_name,ptr->d_name);
+
+			if(at_get_pm_mode() == PM_LISTEN_MODE)
+			{
+				closedir(dir);
+				return 0;
+			}
 			
 			if(stat(file_name,&buf) < 0)
 			{
 				log_e(LOG_HOZON,"stat failed");
+				closedir(dir);
+				return 0;
 			}
 			else
 			{

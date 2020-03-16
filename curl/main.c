@@ -212,8 +212,6 @@ static void curl_CanFile_handler(void)
 					{
 						break;
 					}
-					
-
 		
 				}
 				
@@ -257,13 +255,25 @@ static void curl_CanFile_handler(void)
 			
 			sprintf(cmd,"rm -rf %s",zipfile_name);
 			
-			//system(cmd);
+			system(cmd);    //删除zip文件
+
+			memset(cmd,0,sizeof(cmd));
+			
+			sprintf(cmd,"rm -rf %s","/media/sdcard/CanFileload/*");
+			//成功之后确保清除/media/sdcard/CanFileload/下的文件
+			system(cmd);
 			
 			break;
 		}
 		else
 		{					
 			printf("curl_Post_CanFile failed\n");
+			
+			memset(cmd,0,sizeof(cmd));
+			
+			sprintf(cmd,"rm -rf %s","/media/sdcard/CanFileload/*");
+			//成功之后确保清除/media/sdcard/CanFileload/下的文件
+			system(cmd);
 		}
 		sleep(1);
 	}
