@@ -457,7 +457,7 @@ static void curl_LogFile_handler(void)
 				
 				sprintf(cmd,"rm -rf %s",file_name);
 
-				//system(cmd);  //删除文件
+				system(cmd);  //删除文件
 				
 				usleep(200000);
 			}
@@ -619,7 +619,7 @@ int curl_Post_GbFile(char *name)
   	if(curl) 
 	{
     	/* what URL that receives this POST */ 
-    	curl_easy_setopt(curl, CURLOPT_URL, "https://file-uat.chehezhi.cn/fileApi/1.0/pickData");
+    	curl_easy_setopt(curl, CURLOPT_URL, "https://file.chehezhi.cn/fileApi/1.0/pickData");
 		
     	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
 		
@@ -728,7 +728,7 @@ int curl_Post_CanFile(char *name)
   	if(curl) 
 	{
     	/* what URL that receives this POST */ 
-    	curl_easy_setopt(curl, CURLOPT_URL, "https://file-uat.chehezhi.cn/fileApi/1.0/uploadData");
+    	curl_easy_setopt(curl, CURLOPT_URL, "https://file.chehezhi.cn/fileApi/1.0/uploadData");
 		
     	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
 		
@@ -833,7 +833,7 @@ int curl_Post_LogFile(char *name)
   	if(curl) 
 	{
     	/* what URL that receives this POST */ 
-    	curl_easy_setopt(curl, CURLOPT_URL, "https://file-uat.chehezhi.cn/fileApi/1.0/uploadData");
+    	curl_easy_setopt(curl, CURLOPT_URL, "https://file.chehezhi.cn/fileApi/1.0/uploadData");
 		
     	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
 		

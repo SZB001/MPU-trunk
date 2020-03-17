@@ -100,6 +100,8 @@ description�� function External declaration
 extern void setPPrmtDiagCfg_QueryFaultReq(uint8_t obj);
 extern void setPPrmtDiagCfg_ClearDTCReq(uint8_t obj);
 extern void getPPrmtDiagCfg_Faultcode(uint8_t obj,void *rmtDiag_Fault);
+extern void getPPrmtDiagCfg_Faultdtctime(uint8_t obj,void *rmtDiag_Fault);
+
 extern unsigned char getPPrmtDiagCfg_MCUNodeFaultSt(void);
 extern unsigned char getPPrmtDiagCfg_BMSNodeFaultSt(void);
 extern unsigned char getPPrmtDiagCfg_clearDTCresult(unsigned char obj,unsigned char *failureType);

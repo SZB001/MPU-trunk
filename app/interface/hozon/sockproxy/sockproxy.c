@@ -40,6 +40,7 @@ description�� include the header file
 #include "at.h"
 #include "sockproxy_rxdata.h"
 #include "sockproxy_txdata.h"
+#include "../PrvtProtocol/PrvtProt_queue.h"
 #include "../PrvtProtocol/PrvtProt.h"
 #include "tboxsock.h"
 #include "sockproxy.h"
@@ -1551,9 +1552,16 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 				sockSt.rcvbuf[sockSt.rcvlen++] = data[rlen++];
 				if((sockSt.datalen) == sockSt.rcvlen)
 				{
-					if(WrSockproxyData_Queue(SP_PRIV,sockSt.rcvbuf,sockSt.rcvlen) < 0)
+					if(PP_OPERATETYPE_CERTDL == sockSt.rcvbuf[9])//收到证书下载包
 					{
-						log_e(LOG_SOCK_PROXY, "WrSockproxyData_Queue(SP_PRIV,rcvbuf,rlen) error");
+						WrPP_BigBuf_queue(PP_BUGBUF_CERT_DL,sockSt.rcvbuf,sockSt.rcvlen);
+					}
+					else
+					{
+						if(WrSockproxyData_Queue(SP_PRIV,sockSt.rcvbuf,sockSt.rcvlen) < 0)
+						{
+							log_e(LOG_SOCK_PROXY, "WrSockproxyData_Queue(SP_PRIV,rcvbuf,rlen) error");
+						}
 					}
 					sockSt.rcvstep = PP_RCV_IDLE;
 					sockSt.rcvType = PP_RCV_UNRCV;

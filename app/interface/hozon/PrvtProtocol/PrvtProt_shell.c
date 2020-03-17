@@ -64,7 +64,6 @@ static int PP_shell_SetRmtCfgapn1(int argc, const char **argv);
 static int PP_shell_SetRmtCfgficm(int argc, const char **argv);
 static int PP_shell_showpldata(int argc, const char **argv);
 static int PP_shell_deleteCipher(int argc, const char **argv);
-static int PP_shell_setFIPReq(int argc, const char **argv);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -83,8 +82,6 @@ void PrvtProt_shell_init(void)
 {
 	shell_cmd_register("hozon_setXcallReq", PP_shell_setXcallReq, \
                                             "set HOZON PrvtProt ecall request");
-    shell_cmd_register("hozon_setFIPReq", PP_shell_setFIPReq, \
-                                             "set HOZON fota info push request");
 	shell_cmd_register("hozon_setRmtCfgReq", PP_shell_SetRmtCfgReq, \
                                             "set HOZON PrvtProt remote config request");
 	shell_cmd_register("hozon_setRmtCtrlReq", PP_shell_SetRmtCtrlReq, \
@@ -149,26 +146,6 @@ static int PP_shell_setXcallReq(int argc, const char **argv)
     sleep(1);
     return 0;
 }
-
-/******************************************************
-*PP_shell_setFIPReq
-
-*
-
-
-*����ֵ��void
-
-*��  ����
-
-*��  ע��
-******************************************************/
-static int PP_shell_setFIPReq(int argc, const char **argv)
-{
-	PP_FIP_shellReq();
-    sleep(1);
-    return 0;
-}
-
 
 /******************************************************
 *��������PP_shell_SetRmtCfgReq

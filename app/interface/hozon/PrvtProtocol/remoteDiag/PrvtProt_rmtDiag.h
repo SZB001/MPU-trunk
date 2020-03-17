@@ -58,6 +58,7 @@ typedef enum
 	PP_DIAGRESP_VEHICOND,
 	PP_DIAGRESP_QUERYFAILREQ,//�����ѯ����
 	PP_DIAGRESP_QUERYWAIT,//�ȴ���ѯ���Ӧ��
+	PP_DIAGRESP_DTCEAIT,//
 	PP_DIAGRESP_QUERYUPLOAD,//��ѯ�ϱ�
 	PP_DIAGRESP_END
 } PP_RMTDIAG_DIAGRESP_ST;
@@ -95,6 +96,7 @@ typedef enum
 	PP_ACTIVEDIAG_CHECKOTACOND,
 	PP_ACTIVEDIAG_CHECKVEHICOND,//��鳵��
 	PP_ACTIVEDIAG_QUREYWAIT,//
+	PP_ACTIVEDIAG_QUREYDTCWAIT,
 	PP_ACTIVEDIAG_QUERYUPLOAD,//
 	PP_ACTIVEDIAG_END
 } PP_RMTDIAG_ACTIVEDIAG_ST;
@@ -168,10 +170,12 @@ typedef struct
 	uint8_t  ImageAcqRespSt;
 	uint8_t  waitSt;
 	uint64_t waittime;
-
+	uint64_t dtcwaittime;
+	
 	uint8_t  activeDiagSt;
 	uint8_t  activeDiagFlag;
 	uint8_t  mcurtcflag;
+	uint64_t activeDiagdtcwait;
 	uint64_t activeDiagdelaytime;
 	uint8_t	 activeDiagWeek;
 
@@ -183,6 +187,7 @@ typedef struct
 
 	PP_rmtDiag_logReqResp_t logReqResp[PP_ECULOG_MAX];
 	uint8_t	 faultquerySt;
+	uint8_t  faultdtcSt;
 
 	uint8_t  StopLogAcqSt;
 	uint8_t  StopLogAcqReq;

@@ -186,6 +186,9 @@ int PP_FileUpload_run(void)
     {
         log_e(LOG_HOZON, "file upload pthread create failed, error: %s", strerror(errno));
     }
+	unsigned int cfglen;
+	cfglen = 1;
+	cfg_get_para(CFG_ITEM_EN_CANFILE, &canupload_en, &cfglen);
 	return 0;
 }
 
@@ -321,7 +324,6 @@ static void *PP_CanFileSend_main(void)
     prctl(PR_SET_NAME, "CANFILE_SEND");
 	char buf[200] = {0};
 	char vin[18] = {0};
-	unsigned int cfglen;
 	int semid = Commsem();
 	set_semvalue(semid);//初始化信号量值为1
 	while(1)
@@ -331,13 +333,14 @@ static void *PP_CanFileSend_main(void)
 		sleep(20);	
 		int shmid = GetShm(4096);
 		char *addr = shmat(shmid,NULL,0);
-		
-    	if((dev_get_KL15_signal() == 1) 		&& \
-		   (0 == GetPP_rmtCtrl_fotaUpgrade()) 	&& \
-		   (0 == PP_netstatus_pubilcfaultsts(NULL)) && \
-		   (1 == PP_FileUL.network) 			&& \
-		   (0 == get_factory_mode()))
-    	{
+
+		if(	(canupload_en == 1)					&& \
+			(dev_get_KL15_signal() == 1) 		&& \
+			(0 == GetPP_rmtCtrl_fotaUpgrade()) 	&& \
+			(0 == PP_netstatus_pubilcfaultsts(NULL)) && \
+			(1 == PP_FileUL.network) 			&& \
+			(0 == get_factory_mode()))
+		{
 			//整车报文文件上传
 			for(obj = 0;obj < PP_CANFILEUL_SIGN_WARN_MAX;obj++)
 			{
@@ -352,65 +355,49 @@ static void *PP_CanFileSend_main(void)
 					}
 				}
 			}
-			cfglen = 1;
+		
 			if(1 == PP_FileUL.signTrigFlag)    //整车报文触发条件
 			{	
-				cfg_get_para(CFG_ITEM_EN_CANFILE, &canupload_en, &cfglen);
-				if(canupload_en == 1)
-				{
-					gb32960_getvin(vin);
-					memset(buf,0,sizeof(buf));
-					buf[0] = m_start;
-					buf[1] = 0x02;
-					buf[2] = 0x01;
-					buf[3] = 0;     //故障触发第3、4字节填0补充
-					buf[4] = 0;
-					sprintf(buf+5,"%s",vin);
-					buf[22] = m_end;
-					sem_p(semid);
-					memcpy(addr,buf,strlen(buf));
-					sem_v(semid);
-					log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");
-				}
-				else
-				{
-					log_o(LOG_HOZON,"canfileload not enable");
-				}
+				gb32960_getvin(vin);
+				memset(buf,0,sizeof(buf));
+				buf[0] = m_start;
+				buf[1] = 0x02;
+				buf[2] = 0x01;
+				buf[3] = 0;     //故障触发第3、4字节填0补充
+				buf[4] = 0;
+				sprintf(buf+5,"%s",vin);
+				buf[22] = m_end;
+				sem_p(semid);
+				memcpy(addr,buf,strlen(buf));
+				sem_v(semid);
+				log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");
 				PP_FileUL.signTrigFlag = 0;
 			}
-
+			
 			if(PP_tsp_flag == 1)                   //平台请求触发
 			{
-				cfg_get_para(CFG_ITEM_EN_CANFILE, &canupload_en, &cfglen);
-				if(canupload_en == 1)
-				{
-					gb32960_getvin(vin);
-					memset(buf,0,sizeof(buf));
-					buf[0] = m_start;
-					buf[1] = 0x02;
-					buf[2] = 0x02;
-					buf[3] = 5;  //无效值
-					//buf[3] = (char)(PP_tsp_time >> 8);
-					buf[4] = (char)PP_tsp_time;
-					sprintf(buf+5,"%s",vin);
-					buf[22] = m_end;
-					sem_p(semid);
-					memcpy(addr,buf,strlen(buf));
-					sem_v(semid);
-					//log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");	
-				}
-				else
-				{
-					log_o(LOG_HOZON,"canfileload not enable");
-				}
+				gb32960_getvin(vin);
+				memset(buf,0,sizeof(buf));
+				buf[0] = m_start;
+				buf[1] = 0x02;
+				buf[2] = 0x02;
+				//buf[3] = 5;  //无效值
+				buf[3] = (char)(PP_tsp_time >> 8);
+				buf[4] = (char)PP_tsp_time;
+				sprintf(buf+5,"%s",vin);
+				buf[22] = m_end;
+				sem_p(semid);
+				memcpy(addr,buf,strlen(buf));
+				sem_v(semid);
+				//log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");	
 				PP_tsp_flag = 0;
 			}
-	
-    	}
+		}
 		else
 		{
 			PP_tsp_flag = 0;
 		}
+
 		shmdt(addr);
 
 		//整车报文文件删除
@@ -427,7 +414,12 @@ static void *PP_LogFileSend_main(void)
 
 	int i;
 	char vin[18] = {0};
-	
+	int en = 0;
+	char cmd[200] = {0};
+	static int start_flag = 0;
+	static uint32_t start_time = 0;
+	static uint16_t up_time = 0;
+	struct timeval up_timestamp;
 	int semid = Commsem();
 	set_semvalue(semid);//初始化信号量值为1
     while(1)
@@ -443,6 +435,15 @@ static void *PP_LogFileSend_main(void)
     	{	
     		if((PP_up_log.log_flag == 1) && (PP_up_log.log_stop_flag == 0))
     		{
+    			en = 1;
+    			cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1); //打开日志文件生成
+    			memset(cmd,0,sizeof(cmd));
+				sprintf(cmd,"rm -rf %s","/media/sdcard/log/*");
+				system(cmd);
+				start_time = PP_up_log.log_start_time;
+				up_time = PP_up_log.log_up_time;
+				start_flag = 1;
+				gettimeofday(&up_timestamp, NULL);  //故障触发时间戳
 				sem_p(semid);
 				addr[0] = m_start;
 				addr[1] = 0x03;     //代表log触发
@@ -466,6 +467,8 @@ static void *PP_LogFileSend_main(void)
     		}
 			else if((PP_up_log.log_flag == 1) && (PP_up_log.log_stop_flag == 1))
 			{
+				en = 0;
+    			cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1); //打开日志文件生成
 				sem_p(semid);
 				addr[0] = m_start;
 				addr[1] = 0x03;     //代表log触发
@@ -476,7 +479,28 @@ static void *PP_LogFileSend_main(void)
 				PP_up_log.log_stop_flag = 0;
 			}
     	}
-		shmdt(addr);		
+		shmdt(addr);	
+		if(start_flag == 1)
+		{
+			if(start_time == 0)
+			{
+				if(tm_get_time() - (up_timestamp.tv_sec + up_time) > 0)
+				{
+					en = 0;
+    				cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1); //打开日志文件生成
+    				start_flag = 0;
+				}
+			}
+			else
+			{
+				if(tm_get_time() - (start_time+up_time) > 0)
+				{
+					en = 0;
+    				cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1); //打开日志文件生成
+    				start_flag = 0;
+				}
+			}
+		}
     }
 
     return NULL;
@@ -535,7 +559,7 @@ static void PP_CanFile_delfile(void)
 	double size = 0;
 	char stamp_min[12] = {'9','9','9','9','9','9','9','9','9','9','0','0'};
 	
-	if((size = PP_GetCanfile_Size()) > 5)//保存整车报文大小大于5G
+	if((size = PP_GetCanfile_Size()) > 2)//保存整车报文大小大于2G
 	{
 		
 		if((dir = opendir(PP_CANFILEUPLOAD_PATH)) != NULL)

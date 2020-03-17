@@ -569,11 +569,13 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 			}
 		}
 		break;
+#if 0
 		case PP_OPERATETYPE_CERTDL:
 		{
-			WrPP_queue(PP_CERT_DL,rxPack->Header.sign,len);
+			WrPP_queue(PP_BUGBUF_CERT_DL,rxPack->Header.sign,len);
 		}
 		break;
+#endif
 		default:
 		{
 			log_e(LOG_HOZON, "unknow package");
@@ -911,10 +913,23 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 void PrvtProt_defaultsettings(void)
 {
 	clbt_cfg_set_default_para(UDEF_CFG_SET_SILENT);
+	unsigned char logen = 0;
+	cfg_set_para(CFG_ITEM_LOG_ENABLE, &logen, sizeof(logen));
+
+	unsigned char wifien = 1;
+	cfg_set_para(CFG_ITEM_WIFI_SET, &wifien, sizeof(wifien));
+
 	unsigned char sleep_mode = 3;
     cfg_set_para(CFG_ITEM_SLEEP_MODE, &sleep_mode, sizeof(sleep_mode));
+
 	unsigned int wakeuptime = 270; 
 	cfg_set_para(CFG_ITEM_RTC_WAKEUP_TIME, &wakeuptime, sizeof(wakeuptime));
+
+	unsigned char otamodein = 0;
+    cfg_set_para(CFG_ITEM_EN_OTAMODEIN, &otamodein, sizeof(otamodein));
+
+	cfg_set_para(CFG_ITEM_BCALL,(unsigned char *)"057388279951",32);
+	cfg_set_para(CFG_ITEM_ECALL,(unsigned char *)"057388279950",32);
 
 	PP_rmtCfg_setCfgEnable(1,1);
 	PP_rmtCfg_setCfgEnable(2,1);
@@ -937,12 +952,14 @@ void PrvtProt_defaultsettings(void)
 	cfg_set_para(CFG_ITEM_WAN_APN,(unsigned char *)"bjlenovo09.xfdz.njm2mapn",32);
 	cfg_set_para(CFG_ITEM_LOCAL_APN,(unsigned char *)"bjlenovo17.njm2mapn", 32);
 
-	PP_rmtCfg_setCfgapn1(1,"tboxgw-uat.chehezhi.cn","21000");
-	PP_rmtCfg_setCfgapn1(6,"tboxgw-uat.chehezhi.cn","22000");
+	//PP_rmtCfg_setCfgapn1(1,"tboxgw-uat.chehezhi.cn","21000");
+	//PP_rmtCfg_setCfgapn1(6,"tboxgw-uat.chehezhi.cn","22000");
+
+	PP_rmtCfg_setCfgapn1(1,"tboxgw.chehezhi.cn","21000");
+	PP_rmtCfg_setCfgapn1(6,"tboxgw.chehezhi.cn","22000");
 
 	unsigned char pkien = 1;
 	cfg_set_para(CFG_ITEM_EN_PKI, &pkien, 1);
-	pkien = 0;
 	cfg_set_para(CFG_ITEM_EN_HUPKI,&pkien, 1);
 }
 

@@ -17,7 +17,7 @@ description�� function declaration
 
 /*Static function declaration*/
 static PPObj_t PPObj[PP_MAX];
-
+static PPBigBufObj_t PPBigBufObj[PP_BIGBUF_MAX];
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
@@ -72,6 +72,34 @@ int WrPP_queue(unsigned char  obj,unsigned char* data,int len)
 	return 0;
 }
 
+/******************************************************
+*WrPP_BigBuf_queue
+*��  �Σ�
+*����ֵ��
+*��  ����д���ݵ����ݶ���
+*��  ע��
+******************************************************/
+int WrPP_BigBuf_queue(unsigned char  obj,unsigned char* data,int len)
+{
+	int Lng;
+	
+	if(len > PP_DATA_BIGBUF_LNG) return -1;
+	
+	for(Lng = 0U;Lng< len;Lng++)
+	{
+		PPBigBufObj[obj].PPCache[PPBigBufObj[obj].HeadLabel].data[Lng] = data[Lng];
+	}
+	PPBigBufObj[obj].PPCache[PPBigBufObj[obj].HeadLabel].len = len;
+	PPBigBufObj[obj].PPCache[PPBigBufObj[obj].HeadLabel].NonEmptyFlg = 1U;
+	PPBigBufObj[obj].HeadLabel++;
+	if(PP_QUEUE_BIGBUF_LNG == PPBigBufObj[obj].HeadLabel)
+	{
+		PPBigBufObj[obj].HeadLabel = 0U;
+	}
+	
+	return 0;
+}
+
 
 /******************************************************
 *������:RdPP_queue
@@ -108,6 +136,40 @@ int RdPP_queue(unsigned char  obj,unsigned char* data,int len)
 }
 
 /******************************************************
+*������:RdPP_BigBuf_queue
+*��  �Σ�
+*����ֵ��
+*��  ������ȡ����
+*��  ע��
+******************************************************/
+int RdPP_BigBuf_queue(unsigned char  obj,unsigned char* data,int len)
+{	
+	int Lng;
+	if(0U == PPBigBufObj[obj].PPCache[PPBigBufObj[obj].TialLabel].NonEmptyFlg)
+	{
+		return 0;//
+	}
+		
+	if(PPBigBufObj[obj].PPCache[PPBigBufObj[obj].TialLabel].len > len)
+	{
+		return -1;//
+	}
+
+	for(Lng = 0U;Lng < PPBigBufObj[obj].PPCache[PPBigBufObj[obj].TialLabel].len;Lng++)
+	{
+		data[Lng] =PPBigBufObj[obj].PPCache[PPBigBufObj[obj].TialLabel].data[Lng];
+	}
+	PPBigBufObj[obj].PPCache[PPBigBufObj[obj].TialLabel].NonEmptyFlg = 0U;
+		
+	PPBigBufObj[obj].TialLabel++;
+	if(PP_QUEUE_BIGBUF_LNG == PPBigBufObj[obj].TialLabel)
+	{
+		PPBigBufObj[obj].TialLabel = 0U;
+	}
+	return Lng;
+}
+
+/******************************************************
 *��������ClrUnlockLogCache_Queue
 *��  �Σ�
 *����ֵ��
@@ -126,5 +188,15 @@ static void ClrPP_queue(void)
 		}
 		PPObj[i].HeadLabel = 0U;
 		PPObj[i].TialLabel = 0U;
+	}
+
+	for(i = 0U;i < PP_BIGBUF_MAX;i++)
+	{
+		for(j = 0U;j < PP_QUEUE_BIGBUF_LNG;j++)
+		{
+			PPBigBufObj[i].PPCache[j].NonEmptyFlg = 0U;
+		}
+		PPBigBufObj[i].HeadLabel = 0U;
+		PPBigBufObj[i].TialLabel = 0U;
 	}
 }

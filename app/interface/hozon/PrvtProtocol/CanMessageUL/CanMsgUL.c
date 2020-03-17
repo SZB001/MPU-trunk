@@ -56,7 +56,7 @@ static PP_CanMsgUL_t CanMsgUL;
 static char *Pfilepathname = NULL;
 static char Sefilepathname[128] = {0};
 static PP_CanMsgUL_busStatistic_t CanMsgUL_busS[PP_CANMSGUL_CANBUSNUM];
-
+static char canCollectEnflag;
 /*Static function declaration*/
 static void *PP_CanMsgUL_main(void);
 
@@ -126,6 +126,8 @@ void InitPP_CanMsgUL_Parameter(void)
 
 	CanMsgUL.BaseClctime = tm_get_time();
 	CanMsgUL.BaseStatistictime = CanMsgUL.BaseClctime;
+	unsigned int cfglen = 1;
+	cfg_get_para(CFG_ITEM_EN_CANFILE, &canCollectEnflag, &cfglen);
 }
 
 /******************************************************
@@ -182,7 +184,7 @@ static void *PP_CanMsgUL_main(void)
 		CanMsg_t *canMsgin;
 		long long currClctime;
 
-		if(DIAG_EMMC_OK == flt_get_by_id(EMMC))
+		if((1 == canCollectEnflag) && (DIAG_EMMC_OK == flt_get_by_id(EMMC)))
 		{
 		
 			if(dir_exists(PP_CANMSGUL_PATH) == 0 &&
@@ -356,8 +358,8 @@ void PP_CanMsgUL_datacollection(void *msg)
 	static uint64_t Sebasetime = 0;
 	uint64_t	Lecurrtime;
 	CAN_MSG *	canMsg  = msg;
-	if((0 == dev_get_KL15_signal()) || (1 == get_factory_mode()) \
-									|| (1 == GetPP_rmtCtrl_fotaUpgrade()))
+	if((0 == dev_get_KL15_signal()) || (1 == get_factory_mode()) || \
+	   (0 == canCollectEnflag) 		|| (1 == GetPP_rmtCtrl_fotaUpgrade()))
 	{
 		return;
 	}

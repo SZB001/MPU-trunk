@@ -449,6 +449,7 @@ int clbt_cfg_set_default_para(UDEF_CFG_SET_TYPE type)
     short tmp_short;
     int   tmp_int;
 
+    log_o(LOG_CFG, "set default para\n");
     char gbvin[18] = {0};
     strcpy((char *) gbvin, "00000000000000000");
     clbt_cfg_set_by_id(CFG_ITEM_GB32960_VIN, gbvin, 18, type);

@@ -59,6 +59,15 @@ description�� global variable definitions
 /*******************************************************
 description�� static variable definitions
 *******************************************************/
+#define PP_DL_MSG_DATA_LEN	16384U
+typedef struct 
+{		
+	PrvtProt_pack_Header_t Header;
+	unsigned char msgdata[PP_DL_MSG_DATA_LEN];
+	unsigned char msgtype;
+	int totallen;
+}__attribute__((packed)) PrvtProt_DL_pack_t;
+
 typedef struct
 {
 	PrvtProt_pack_Header_t	Header;
@@ -159,7 +168,8 @@ description�� function declaration
 /*Static function declaration*/
 static int PP_CertDL_do_checksock(PrvtProt_task_t *task);
 static int PP_CertDL_do_rcvMsg(PrvtProt_task_t *task);
-static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len);
+static void PrvtPro_CertDL_makeUpPack(PrvtProt_DL_pack_t *RxPack,uint8_t* input,int len);
+static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_DL_pack_t* rxPack,int len);
 static int PP_CertDL_do_wait(PrvtProt_task_t *task);
 static int PP_CertDL_do_checkCertificate(PrvtProt_task_t *task);
 
@@ -336,28 +346,117 @@ static int PP_CertDL_do_checksock(PrvtProt_task_t *task)
 static int PP_CertDL_do_rcvMsg(PrvtProt_task_t *task)
 {	
 	int rlen = 0;
-	PrvtProt_pack_t rcv_pack;
-	memset(&rcv_pack,0 , sizeof(PrvtProt_pack_t));
-	if ((rlen = RdPP_queue(PP_CERT_DL,rcv_pack.Header.sign,sizeof(PrvtProt_pack_t))) <= 0)
+	uint8_t rcvbuf[PP_DL_MSG_DATA_LEN] = {0};
+	PrvtProt_DL_pack_t rcv_pack;
+
+	if ((rlen = RdPP_BigBuf_queue(PP_BUGBUF_CERT_DL,rcvbuf,PP_DL_MSG_DATA_LEN)) <= 0)
     {
 		return 0;
 	}
 	
 	log_i(LOG_HOZON, "receive cert download message\n");
 	//protocol_dump(LOG_HOZON, "PRVT_PROT", rcv_pack.Header.sign, rlen, 0);
-	if((rcv_pack.Header.sign[0] != 0x2A) || (rcv_pack.Header.sign[1] != 0x2A) || \
+	if((rcvbuf[0] != 0x2A) || (rcvbuf[1] != 0x2A) || \
 			(rlen <= 18))//
 	{
 		return 0;
 	}
 	
-	if(rlen > (18 + PP_MSG_DATA_LEN))//
+	if(rlen > (18 + PP_DL_MSG_DATA_LEN))//
 	{
 		return 0;
 	}
+	memset(&rcv_pack,0 , sizeof(PrvtProt_DL_pack_t));
+	PrvtPro_CertDL_makeUpPack(&rcv_pack,rcvbuf,rlen);
 	PP_CertDL_RxMsgHandle(task,&rcv_pack,rlen);
 
 	return 0;
+}
+
+/******************************************************
+*PrvtPro_CertDL_makeUpPack
+
+*��  �Σ�void
+
+*����ֵ��void
+
+*��  �����������ݽ��
+
+*��  ע��
+******************************************************/
+static void PrvtPro_CertDL_makeUpPack(PrvtProt_DL_pack_t *RxPack,uint8_t* input,int len)
+{
+	int rlen = 0;
+	int size = len;
+	uint8_t rcvstep = 0;
+	RxPack->Header.sign[0] = input[rlen++];
+	RxPack->Header.sign[1] = input[rlen++];
+	size = size-2;
+	while(size--)
+	{
+		switch(rcvstep)
+		{
+			case 0:
+			{
+				RxPack->Header.ver.Byte = input[rlen++];
+				rcvstep = 1;
+			}
+			break;
+			case 1:
+			{
+				RxPack->Header.nonce = (RxPack->Header.nonce << 8) + input[rlen++];
+				if(7 == rlen)
+				{
+					rcvstep = 2;
+				}
+			}
+			break;	
+			case 2:
+			{
+				RxPack->Header.commtype.Byte = input[rlen++];
+				rcvstep = 3;
+			}
+			break;	
+			case 3:
+			{
+				RxPack->Header.safetype.Byte = input[rlen++];
+				rcvstep = 4;
+			}
+			break;
+			case 4:
+			{
+				RxPack->Header.opera = input[rlen++];
+				rcvstep = 5;
+			}
+			break;
+			case 5:
+			{
+				RxPack->Header.msglen = (RxPack->Header.msglen << 8) + input[rlen++];
+				if(14 == rlen)
+				{
+					rcvstep = 6;
+				}
+			}
+			break;
+			case 6://tboxid
+			{
+				RxPack->Header.tboxid = (RxPack->Header.tboxid << 8) + input[rlen++];
+				if(18 == rlen)
+				{
+					rcvstep = 7;
+				}
+			}
+			break;
+			case 7://message data
+			{
+				RxPack->msgdata[rlen-18] = input[rlen];
+				rlen += 1;
+			}
+			break;
+			default:
+			break;
+		}
+	}
 }
 
 /******************************************************
@@ -371,7 +470,7 @@ static int PP_CertDL_do_rcvMsg(PrvtProt_task_t *task)
 
 *��  ע��
 ******************************************************/
-static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int len)
+static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_DL_pack_t* rxPack,int len)
 {
 
 	if(PP_OPERATETYPE_CERTDL != rxPack->Header.opera)

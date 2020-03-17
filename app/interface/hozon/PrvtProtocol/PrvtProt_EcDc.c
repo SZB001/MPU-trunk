@@ -308,7 +308,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			PrvtProt_App_rmtCfg_t *rmtCfgCheckReq_ptr = (PrvtProt_App_rmtCfg_t*)appchoice;
 			memset(&cfgcheckReq,0 , sizeof(CfgCheckReqInfo_t));
 
-			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+			//Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 
 			cfgcheckReq.mcuSw.buf = rmtCfgCheckReq_ptr->checkReq.mcuSw;
 			cfgcheckReq.mcuSw.size = rmtCfgCheckReq_ptr->checkReq.mcuSwlen;
@@ -355,7 +355,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			PrvtProt_App_rmtCfg_t *rmtCfgGetReq_ptr = (PrvtProt_App_rmtCfg_t*)appchoice;
 			memset(&cfgGetReq,0 , sizeof(CfgGetReqInfo_t));
 
-			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+			//Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 
 			cfgGetReq.cfgVersion.buf = rmtCfgGetReq_ptr->getReq.cfgVersion;
 			cfgGetReq.cfgVersion.size = rmtCfgGetReq_ptr->getReq.cfgVersionlen;
@@ -375,7 +375,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			PrvtProt_App_rmtCfg_t *rmtCfgEndReq_ptr = (PrvtProt_App_rmtCfg_t*)appchoice;
 			memset(&CfgEndReq,0 , sizeof(CfgEndReqInfo_t));
 
-			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+			//Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 
 			CfgEndReq.configSuccess = rmtCfgEndReq_ptr->EndReq.configSuccess;
 			CfgEndReq.mcuSw.buf 	= rmtCfgEndReq_ptr->EndReq.mcuSw;
@@ -402,7 +402,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			PrvtProt_App_rmtCfg_t *rmtCfgConnResp_ptr = (PrvtProt_App_rmtCfg_t*)appchoice;
 			memset(&CfgConnResp,0 , sizeof(CfgConnRespInfo_t));
 
-			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+			//Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 			CfgConnResp.configAccepted = rmtCfgConnResp_ptr->connResp.configAccepted;
 			ec = uper_encode(pduType_Cfg_conn_resp,(void *) &CfgConnResp,PrvtPro_writeout,&key);
 			if(ec.encoded  == -1)
@@ -643,7 +643,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			memset(&rmtCtrlRvspos,0 , sizeof(RmtRvsposInfo_t));
 			memset(&RvsBasicSt,0 , sizeof(RvsBasicStatus_t));
 
-			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+			//Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 
 			RmtCtrlResp.rvcReqType 			= rmtCtrlResp_ptr->CtrlResp.rvcReqType;
 			RmtCtrlResp.rvcReqStatus 		= rmtCtrlResp_ptr->CtrlResp.rvcReqStatus;
@@ -746,7 +746,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			PrvtProt_App_rmtCtrl_t *rmtCtrlBookingResp_ptr = (PrvtProt_App_rmtCtrl_t*)appchoice;
 			memset(&ctrlBookingResp,0 , sizeof(BookingResp_t));
 
-			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+			//Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 			ctrlBookingResp.bookingId = rmtCtrlBookingResp_ptr->CtrlbookingResp.bookingId;
 			log_i(LOG_UPER_ECDC, "ctrlBookingResp.bookingId = %d\n",ctrlBookingResp.bookingId);
 			ctrlBookingResp.oprTime = rmtCtrlBookingResp_ptr->CtrlbookingResp.oprTime;
@@ -769,7 +769,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			OCTET_STRING_t rvcReqCycle;
 			memset(&ctrlHUBookingResp,0 , sizeof(HUBookingResp_t));
 
-			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+			//Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 
 			ctrlHUBookingResp.rvcReqType 		= rmtCtrlHUBookingResp_ptr->CtrlHUbookingResp.rvcReqType;
 			log_i(LOG_UPER_ECDC, "ctrlHUBookingResp.rvcReqType = %d\n",ctrlHUBookingResp.rvcReqType);
@@ -810,7 +810,7 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 			VehicleStRespInfo_t VSResp;
 			memset(&VSResp,0 , sizeof(VehicleStRespInfo_t));
 
-			Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
+			//Bodydata.dlMsgCnt 		= NULL;	/* OPTIONAL */
 
 			VSgpspos_t VSgpspos;
 			VSgpspos_t *VSgpspos_ptr = &VSgpspos;

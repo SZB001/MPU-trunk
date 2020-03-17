@@ -111,7 +111,7 @@ typedef enum
 	PP_PRIV_RCV_DATA,//��������
 } PP_SOCK_PRIV_RCV_STEP;
 /*****struct definitions*****/
-#define SOCK_PROXY_RCVLEN	1456
+#define SOCK_PROXY_RCVLEN	16384U
 typedef struct
 {
     /* protocol status */

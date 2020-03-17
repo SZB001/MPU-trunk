@@ -96,6 +96,10 @@ void setPPrmtDiagCfg_GetDTCTimeReq(uint8_t obj, PP_rmtDiag_faultcode_t * faultco
     remote_diag_request(MPU_MID_REMOTE_DIAG, tsp_diag_msg, sizeof(tsp_diag_msg));
 }
 
+void getPPrmtDiagCfg_Faultdtctime(uint8_t obj,void *rmtDiag_Fault)
+{
+	PP_get_dtc_time_result(obj, rmtDiag_Fault);
+}
 
 
 /******************************************************

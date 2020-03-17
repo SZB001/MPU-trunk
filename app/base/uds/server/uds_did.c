@@ -660,7 +660,7 @@ int uds_did_set_vin(unsigned char *did, unsigned int len)
     char VIN[18];
     int ret = 0;
     memset(VIN, 0x00, 18);
-    
+    log_o(LOG_UDS, "uds set vin");
     if (DID_LEN_VIN != len)
     {
         log_e(LOG_UDS, "set vin len error, len:%d", len);

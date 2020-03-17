@@ -85,7 +85,7 @@ void InitPP_lock_parameter(void)
 ******************************************************/
 int setPP_lock_odcmtxlock(unsigned char obj)
 {
-	unsigned char ret = PP_LOCK_OK;
+	int ret = PP_LOCK_OK;
 	pthread_mutex_lock(&odc_mtx);
 
 	if(0 == PP_odc_lockflag)
