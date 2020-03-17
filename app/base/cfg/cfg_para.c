@@ -438,8 +438,9 @@ int cfg_set_default_para(CFG_SET_TYPE type)
     cfg_set_by_id(CFG_ITEM_WIFI_KEY, (unsigned char *)DEFAULT_PASSWORD, 32, type);
 
     /*set icall bcall and white list*/
+    cfg_set_by_id(CFG_ITEM_ECALL, (unsigned char *)"057388279950", 32, type);
     cfg_set_by_id(CFG_ITEM_ICALL, (unsigned char *)"95190738", 32, type);
-    cfg_set_by_id(CFG_ITEM_BCALL, (unsigned char *)"95190737", 32, type);
+    cfg_set_by_id(CFG_ITEM_BCALL, (unsigned char *)"057388279951", 32, type);
     cfg_set_by_id(CFG_ITEM_WHITE_LIST, (unsigned char *) "95190737;95190738;01080287000;", 512, type);
 
     unsigned char auth[256];

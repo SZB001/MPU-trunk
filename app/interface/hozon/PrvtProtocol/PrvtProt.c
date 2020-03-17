@@ -45,6 +45,7 @@ description�� include the header file
 #include "gb32960_api.h"
 #include "hozon_SP_api.h"
 #include "hozon_PP_api.h"
+#include "hozon_ver_api.h"
 #include "shell_api.h"
 #include "PrvtProt_queue.h"
 #include "PrvtProt_shell.h"
@@ -952,11 +953,20 @@ void PrvtProt_defaultsettings(void)
 	cfg_set_para(CFG_ITEM_WAN_APN,(unsigned char *)"bjlenovo09.xfdz.njm2mapn",32);
 	cfg_set_para(CFG_ITEM_LOCAL_APN,(unsigned char *)"bjlenovo17.njm2mapn", 32);
 
-	//PP_rmtCfg_setCfgapn1(1,"tboxgw-uat.chehezhi.cn","21000");
-	//PP_rmtCfg_setCfgapn1(6,"tboxgw-uat.chehezhi.cn","22000");
+#ifdef HOZON_PRE
+	PP_rmtCfg_setCfgapn1(1,"tboxgw-pre.chehezhi.cn","21000");
+	PP_rmtCfg_setCfgapn1(6,"tboxgw-pre.chehezhi.cn","22000");
+#endif
 
+#ifdef HOZON_UAT
+	PP_rmtCfg_setCfgapn1(1,"tboxgw-uat.chehezhi.cn","21000");
+	PP_rmtCfg_setCfgapn1(6,"tboxgw-uat.chehezhi.cn","22000");
+#endif
+
+#ifdef HOZON_PRD
 	PP_rmtCfg_setCfgapn1(1,"tboxgw.chehezhi.cn","21000");
 	PP_rmtCfg_setCfgapn1(6,"tboxgw.chehezhi.cn","22000");
+#endif
 
 	unsigned char pkien = 1;
 	cfg_set_para(CFG_ITEM_EN_PKI, &pkien, 1);

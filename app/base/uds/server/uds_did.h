@@ -7,7 +7,7 @@
 #define DID_F1B0_SW_FIXED_VER "05.00.00"//固定版本号，过检版本号
 #define DID_F1B0_SW_UPGRADE_VER "05.02.00"
 
-#define DID_F191_HW_VERSION "H1.11"
+#define DID_F1BF_HW_VERSION "H1.10"
 
 int uds_did_get_wakup_src(unsigned char *did, unsigned int len);
 int uds_did_get_pow_voltage(unsigned char *did, unsigned int len);

@@ -25,13 +25,31 @@ author        wangzhiwei
 #include <sys/stat.h> 
 #include <dirent.h>
 #include <sys/inotify.h>  
+#include "hozon_ver_api.h"
 #include "curl_commshm.h"
+
+
+
+#ifdef HOZON_PER
+	#define GB_URL "https://file-pre.chehezhi.cn/fileApi/1.0/pickData"
+	#define CAN_URL "https://file-pre.chehezhi.cn/fileApi/1.0/uploadData"
+	#define LOG_URL "https://file-pre.chehezhi.cn/fileApi/1.0/uploadData"
+#endif
+
+#ifdef HOZON_UAT
+	#define GB_URL "https://file-uat.chehezhi.cn/fileApi/1.0/pickData"
+	#define CAN_URL "https://file-uat.chehezhi.cn/fileApi/1.0/uploadData"
+	#define LOG_URL "https://file-uat.chehezhi.cn/fileApi/1.0/uploadData"
+#endif
+
+#ifdef HOZON_PRD
+	#define GB_URL "https://file.chehezhi.cn/fileApi/1.0/pickData"
+	#define CAN_URL "https://file.chehezhi.cn/fileApi/1.0/uploadData"
+	#define LOG_URL "https://file.chehezhi.cn/fileApi/1.0/uploadData"
+#endif
 
 #define CAN_FILE_UPPATH "/media/sdcard/CanFileload/"
 #define LOG_FILE_UPPATH "/media/sdcard/log/"
-
-
-
 unsigned long curl_get_filesize(char *name);
 static int curl_Post_GbFile(char *name);
 static int curl_Post_CanFile(char *name);
@@ -619,7 +637,7 @@ int curl_Post_GbFile(char *name)
   	if(curl) 
 	{
     	/* what URL that receives this POST */ 
-    	curl_easy_setopt(curl, CURLOPT_URL, "https://file.chehezhi.cn/fileApi/1.0/pickData");
+    	curl_easy_setopt(curl, CURLOPT_URL, GB_URL);
 		
     	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
 		
@@ -728,7 +746,7 @@ int curl_Post_CanFile(char *name)
   	if(curl) 
 	{
     	/* what URL that receives this POST */ 
-    	curl_easy_setopt(curl, CURLOPT_URL, "https://file.chehezhi.cn/fileApi/1.0/uploadData");
+    	curl_easy_setopt(curl, CURLOPT_URL, CAN_URL);
 		
     	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
 		
@@ -833,7 +851,7 @@ int curl_Post_LogFile(char *name)
   	if(curl) 
 	{
     	/* what URL that receives this POST */ 
-    	curl_easy_setopt(curl, CURLOPT_URL, "https://file.chehezhi.cn/fileApi/1.0/uploadData");
+    	curl_easy_setopt(curl, CURLOPT_URL, LOG_URL);
 		
     	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
 		
