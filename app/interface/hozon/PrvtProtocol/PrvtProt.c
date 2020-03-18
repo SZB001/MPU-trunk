@@ -34,6 +34,7 @@ description�� include the header file
 #include "file.h"
 #include "init.h"
 #include "log.h"
+#include "uds.h"
 #include "list.h"
 #include "../sockproxy/sockproxy_rxdata.h"
 #include "../sockproxy/sockproxy_txdata.h"
@@ -916,6 +917,9 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 void PrvtProt_defaultsettings(void)
 {
 	clbt_cfg_set_default_para(UDEF_CFG_SET_SILENT);
+
+	set_factory_mode(1);
+
 	unsigned char logen = 0;
 	cfg_set_para(CFG_ITEM_LOG_ENABLE, &logen, sizeof(logen));
 
