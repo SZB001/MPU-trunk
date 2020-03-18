@@ -104,7 +104,7 @@ description�� macro definitions
 /***********�꺯��***********/
 typedef void (*PrvtProt_InitObj)(void);//��ʼ��
 typedef int (*PrvtProt_mainFuncObj)(void* x);//
-
+extern long PP_UpMsgCnt;
 /*******************************************************
 description�� struct definitions
 *******************************************************/

@@ -427,7 +427,8 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	}
 	PP_xcall[XcallType].activeflag = 0;
 	PP_xcall[XcallType].packResp.DisBody.expTime = PP_xcall[XcallType].expTime;
-	PP_xcall[XcallType].packResp.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_UpMsgCnt++;
+	PP_xcall[XcallType].packResp.DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 	PP_xcall[XcallType].packResp.DisBody.appDataProVer = 256;
 	PP_xcall[XcallType].packResp.DisBody.testFlag = 1;
 

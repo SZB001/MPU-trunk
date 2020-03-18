@@ -1117,7 +1117,8 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			PP_rmtCtrl.pack.DisBody.eventId =  CtrlSt_para->eventid;
 			PP_rmtCtrl.pack.DisBody.eventTime = PrvtPro_getTimestamp();
 			//PP_rmtCtrl.pack.DisBody.expTime   = PrvtPro_getTimestamp();
-			PP_rmtCtrl.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+			PP_UpMsgCnt++;
+			PP_rmtCtrl.pack.DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 			PP_rmtCtrl.pack.DisBody.appDataProVer = 256;
 			PP_rmtCtrl.pack.DisBody.testFlag = 1;
 

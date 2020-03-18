@@ -351,7 +351,8 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	//rmtVS->pack.DisBody.eventId = PP_AID_RMTCTRL + PP_MID_RMTCTRL_RESP;
 	rmtVS->pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	//rmtVS->pack.DisBody.expTime   = PrvtPro_getTimestamp();
-	rmtVS->pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_UpMsgCnt++;
+	rmtVS->pack.DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 
 	/*appdata*/
 	PrvtProtcfg_gpsData_t gpsDt;

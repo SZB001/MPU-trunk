@@ -582,7 +582,8 @@ static int PP_rmtCfg_checkRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCf
 	DisBody.eventId = 0;//主动上行数据，eventid为0
 	DisBody.eventTime = PrvtPro_getTimestamp();
 	DisBody.expTime   = PP_rmtCfg.state.expTime;
-	DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_UpMsgCnt++;
+	DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 	DisBody.appDataProVer = 256;
 	DisBody.testFlag = 1;
 	DisBody.appDataEncode = PP_APPDATA_ENCODING_UPER;
@@ -676,7 +677,8 @@ static int PP_rmtCfg_getRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg)
 	DisBody.eventId = 0;//主动上行数据，eventid为0
 	DisBody.eventTime = PrvtPro_getTimestamp();
 	DisBody.expTime   = PP_rmtCfg.state.expTime;
-	DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_UpMsgCnt++;
+	DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 	DisBody.appDataProVer = 256;
 	DisBody.testFlag = 1;
 	DisBody.appDataEncode = PP_APPDATA_ENCODING_UPER;
@@ -744,7 +746,8 @@ static int PP_rmtCfg_CfgEndRequest(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtC
 	DisBody.eventId = 0;//主动上行数据，eventid为0
 	DisBody.eventTime = PrvtPro_getTimestamp();
 	DisBody.expTime   = PP_rmtCfg.state.expTime;
-	DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_UpMsgCnt++;
+	DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 	DisBody.appDataProVer = 256;
 	DisBody.testFlag = 1;
 	DisBody.appDataEncode = PP_APPDATA_ENCODING_UPER;
@@ -821,7 +824,8 @@ static int PP_rmtCfg_ConnResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg,Pr
 	DisBody.mID = PP_MID_CONN_CFG_RESP;
 	DisBody.eventTime = PrvtPro_getTimestamp();
 	DisBody.expTime   = MsgDataBody->expTime;
-	DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_UpMsgCnt++;
+	DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 	DisBody.appDataProVer = 256;
 	DisBody.testFlag = 1;
 	DisBody.appDataEncode = PP_APPDATA_ENCODING_UPER;
@@ -895,7 +899,8 @@ static int PP_rmtCfg_ReadCfgResp(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmtCfg
 	DisBody.eventId = MsgDataBody->eventId;
 	DisBody.eventTime = PrvtPro_getTimestamp();
 	DisBody.expTime   = MsgDataBody->expTime;
-	DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_UpMsgCnt++;
+	DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 	DisBody.appDataProVer = 256;
 	DisBody.testFlag = 1;
 	DisBody.appDataEncode = PP_APPDATA_ENCODING_UPER;

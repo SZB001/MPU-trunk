@@ -79,6 +79,7 @@ static PrvtProt_heartbeat_t PP_heartbeat;
 static PrvtProt_task_t 	pp_task;
 static PrvtProt_TxInform_t HB_TxInform;
 static char pp_tboxsn[PP_TBOXSN_LEN];
+long PP_UpMsgCnt;
 
 typedef struct
 {
@@ -161,6 +162,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			PP_heartbeat.hbtaskflag = 1;
 			PP_heartbeat.IGNoldst = 0xff;
 			PP_heartbeat.IGNnewst = 0xff;
+			PP_UpMsgCnt = 0;
 		}
         break;
         case INIT_PHASE_RESTORE:
