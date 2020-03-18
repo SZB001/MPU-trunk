@@ -129,23 +129,8 @@ int app_shell_drcfg(int argc, const char **argv)
     }
     shellprintf("IMSI = %s\r\n", imeiimsi);
 
-    char mpusw[11] = {0};
-    len = sizeof(mpusw);
-    ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_MPUSW, mpusw, &len);
-    if(mpusw[0] == 0)
-    {
-        mpusw[0] = '0';
-    }
-    shellprintf("mpuSw = %s\r\n", mpusw);
-
-    char mcusw[11] = {0};
-    len = sizeof(mcusw);
-    ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_MCUSW, mcusw, &len);
-    if(mcusw[0] == 0)
-    {
-        mcusw[0] = '0';
-    }
-    shellprintf("mcuSw = %s\r\n", mcusw);
+    shellprintf("mpuSw = %s\r\n", DID_F1B0_SW_UPGRADE_VER);
+    shellprintf("mcuSw = %s\r\n", DID_F1B0_SW_UPGRADE_VER);
 
     char cfgver[256] = {0};
     getPP_rmtCfg_cfgVersion(cfgver);
