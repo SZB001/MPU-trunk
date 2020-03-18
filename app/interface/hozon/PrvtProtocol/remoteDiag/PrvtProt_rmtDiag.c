@@ -1452,7 +1452,8 @@ static int PP_rmtDiag_FaultCodeCleanResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_
 	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	PP_rmtDiag.pack.DisBody.eventId = rmtDiag->state.cleanfaulteventId;
 	PP_rmtDiag.pack.DisBody.expTime = rmtDiag->state.cleanfaultexpTime;
-	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_UpMsgCnt++;
+	PP_rmtDiag.pack.DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
 	PP_rmtDiag.pack.DisBody.testFlag = 1;
 
@@ -1519,7 +1520,8 @@ static int PP_rmtDiag_StopLogAcqResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *r
 	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	PP_rmtDiag.pack.DisBody.eventId = rmtDiag->state.StoplogeventId;
 	PP_rmtDiag.pack.DisBody.expTime = rmtDiag->state.StoplogexpTime;
-	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_UpMsgCnt++;
+	PP_rmtDiag.pack.DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
 	PP_rmtDiag.pack.DisBody.testFlag = 1;
 
@@ -1587,7 +1589,8 @@ static int PP_rmtDiag_LogAcqReqResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	PP_rmtDiag.pack.DisBody.eventId = rmtDiag->state.logeventId;
 	PP_rmtDiag.pack.DisBody.expTime = rmtDiag->state.logexpTime;
-	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_UpMsgCnt++;
+	PP_rmtDiag.pack.DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
 	PP_rmtDiag.pack.DisBody.testFlag = 1;
 
@@ -1663,7 +1666,8 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	PP_rmtDiag.pack.DisBody.eventId = rmtDiag->state.diageventId;
 	PP_rmtDiag.pack.DisBody.expTime = rmtDiag->state.diagexpTime;
-	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_UpMsgCnt++;
+	PP_rmtDiag.pack.DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
 	PP_rmtDiag.pack.DisBody.testFlag = 1;
 
@@ -1746,7 +1750,8 @@ static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
 	PP_rmtDiag.pack.DisBody.eventId = 0;//tsp未指定eventid，传0，已沟通
 	PP_rmtDiag.pack.DisBody.expTime = -1;
-	PP_rmtDiag.pack.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_UpMsgCnt++;
+	PP_rmtDiag.pack.DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
 	PP_rmtDiag.pack.DisBody.testFlag = 1;
 
