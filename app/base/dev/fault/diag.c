@@ -314,9 +314,9 @@ int dev_diag_get_emmc_status(void)
         return DIAG_EMMC_UMOUNT;    // umount
     }
 
-    total_bytes = (unsigned long long)(st_fs.f_blocks * st_fs.f_bsize);
-    free_bytes  = (unsigned long long)(st_fs.f_bfree * st_fs.f_bsize);
-    avail_bytes = (unsigned long long)(st_fs.f_bavail * st_fs.f_bsize);
+    total_bytes = (unsigned long long)st_fs.f_blocks * st_fs.f_bsize;
+    free_bytes  = (unsigned long long)st_fs.f_bfree * st_fs.f_bsize;
+    avail_bytes = (unsigned long long)st_fs.f_bavail * st_fs.f_bsize;
 
     if (((free_bytes >> 20) < 10) || ((avail_bytes >> 20) < 10)
         || ((total_bytes >> 20) < 10))             //if less than 10M
