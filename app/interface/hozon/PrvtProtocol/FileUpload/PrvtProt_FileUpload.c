@@ -212,7 +212,7 @@ static void *PP_FileUpload_main(void)
 		unsigned int i;
 		if( (1 == gb32960_gbCanbusActiveSt())		&& \
 			(0 == GetPP_rmtCtrl_fotaUpgrade()) 		&& \
-		    (DIAG_EMMC_OK == flt_get_by_id(EMMC)) 	&& \
+		    (DIAG_EMMC_OK == dev_diag_get_emmc_status()) 	&& \
 			(0 == get_factory_mode()) 				&& \
 			(1 == PP_rmtCfg_enable_dcEnabled()))
 		{

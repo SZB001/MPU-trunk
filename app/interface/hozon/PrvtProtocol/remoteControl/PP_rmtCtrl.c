@@ -133,6 +133,7 @@ static int PP_rmtCtrl_getIdleNode(void);
 static uint8_t PP_rmtCtrl_request(void);
 static uint8_t PP_rmtCtrl_end(void);
 static void PP_rmtCtrl_clear(void);
+static uint32_t PP_rmtCtrl_gpsconv(double dddmm);
 /******************************************************
 description： function code
 ******************************************************/
@@ -153,6 +154,7 @@ void PP_rmtCtrl_init(void)
 {
 	int i;
 	memset(&PP_rmtCtrl,0,sizeof(PrvtProt_rmtCtrl_t));
+	memset(&App_rmtCtrl,0,sizeof(PrvtProt_App_rmtCtrl_t));
 	PP_identificat_init();
 	PP_canSend_init();
 	for(i = 0;i < RMTCTRL_OBJ_MAX;i++)
@@ -1137,34 +1139,30 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			{
 				if(gpsDt.is_north)
 				{
-					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000);//纬度 x 1000000,当GPS信号无效时，值为0
+					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(PP_rmtCtrl_gpsconv(gpsDt.latitude)*10000);//纬度 x 1000000,当GPS信号无效时，值为0
 				}
 				else
 				{
-					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(gpsDt.latitude*10000*(-1));//纬度 x 1000000,当GPS信号无效时，值为0
+					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(PP_rmtCtrl_gpsconv(gpsDt.latitude)*10000*(-1));//纬度 x 1000000,当GPS信号无效时，值为0
 				}
 
 				if(gpsDt.is_east)
 				{
-					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000);//经度 x 1000000,当GPS信号无效时，值为0
+					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(PP_rmtCtrl_gpsconv(gpsDt.longitude)*10000);//经度 x 1000000,当GPS信号无效时，值为0
 				}
 				else
 				{
-					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//经度 x 1000000,当GPS信号无效时，值为0
+					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(PP_rmtCtrl_gpsconv(gpsDt.longitude)*10000*(-1));//经度 x 1000000,当GPS信号无效时，值为0
 				}
 			}
-			else
-			{
-				//App_rmtCtrl.CtrlResp.gpsPos.latitude  = 0;
-				//App_rmtCtrl.CtrlResp.gpsPos.longitude = 0;
-			}
+
 			App_rmtCtrl.CtrlResp.gpsPos.altitude = (long)(gpsDt.height);//高度（m）
 			if(App_rmtCtrl.CtrlResp.gpsPos.altitude > 10000)
 			{
 				App_rmtCtrl.CtrlResp.gpsPos.altitude = 10000;
 			}
 			App_rmtCtrl.CtrlResp.gpsPos.heading = (long)(gpsDt.direction);//车头方向角度，0为正北方向
-			App_rmtCtrl.CtrlResp.gpsPos.gpsSpeed = (long)(gpsDt.kms*10);//速度 x 10，单位km/h
+			App_rmtCtrl.CtrlResp.gpsPos.gpsSpeed = (long)(gpsDt.knots*10);//速度 x 10，单位km/h
 			App_rmtCtrl.CtrlResp.gpsPos.hdop = (long)(gpsDt.hdop*10);//水平精度因子 x 10
 			if(App_rmtCtrl.CtrlResp.gpsPos.hdop > 1000)
 			{
@@ -1220,31 +1218,21 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.dippedBeamStatus 	= gb_data_NearLampSt();//近光灯
 			App_rmtCtrl.CtrlResp.basicSt.mainBeamStatus 	= gb_data_HighbeamLampSt();//远光灯
 			App_rmtCtrl.CtrlResp.basicSt.hazardLightStus 	= gb_data_TwinFlashLampSt();//双闪灯
-			App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre	= PrvtProtCfg_TyrePre(1);/* 右前胎压 */
-			
-			App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp	= PrvtProtCfg_TyreTemp(1);/*右前温度*/
-			
+			App_rmtCtrl.CtrlResp.basicSt.frtRightTyrePre	= PrvtProtCfg_TyrePre(1);/* 右前胎压 */			
+			App_rmtCtrl.CtrlResp.basicSt.frtRightTyreTemp	= PrvtProtCfg_TyreTemp(1);/*右前温度*/	
 			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyrePre	= PrvtProtCfg_TyrePre(2);/* 左前胎压 */
-			
-			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp	= PrvtProtCfg_TyreTemp(2);	/* OPTIONAL */
-			
+			App_rmtCtrl.CtrlResp.basicSt.frontLeftTyreTemp	= PrvtProtCfg_TyreTemp(2);	/* OPTIONAL */	
 			App_rmtCtrl.CtrlResp.basicSt.rearRightTyrePre	= PrvtProtCfg_TyrePre(3)/* OPTIONAL */;
-			
-			App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp	= PrvtProtCfg_TyreTemp(3)	/* OPTIONAL */;
-			
+			App_rmtCtrl.CtrlResp.basicSt.rearRightTyreTemp	= PrvtProtCfg_TyreTemp(3)	/* OPTIONAL */;	
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyrePre	= PrvtProtCfg_TyrePre(4)/* OPTIONAL */;
-			
 			App_rmtCtrl.CtrlResp.basicSt.rearLeftTyreTemp	= PrvtProtCfg_TyreTemp(4)/* OPTIONAL */;
 			
 			long VehicleSOC;
 			VehicleSOC = PrvtProtCfg_vehicleSOC();
 			App_rmtCtrl.CtrlResp.basicSt.batterySOCExact 	= VehicleSOC * 100;
 			App_rmtCtrl.CtrlResp.basicSt.chargeRemainTim	= PrvtProtCfg_ACChargeRemainTime()/* OPTIONAL */;
-			
 			App_rmtCtrl.CtrlResp.basicSt.availableOdomtr	= PrvtProtCfg_ResidualOdometer();//续航里程;
-			
 			App_rmtCtrl.CtrlResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
-			
 			App_rmtCtrl.CtrlResp.basicSt.bookingChargeSt	= GetPP_ChargeCtrl_appointSt();
 			App_rmtCtrl.CtrlResp.basicSt.bookingChargeHour	= GetPP_ChargeCtrl_appointHour()	/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.bookingChargeMin	= GetPP_ChargeCtrl_appointMin()/* OPTIONAL */;
@@ -1252,13 +1240,9 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.chargeStatus		= gb_data_chargestatus()/* OPTIONAL */;
 			App_rmtCtrl.CtrlResp.basicSt.powerMode			= gb_data_powermode()/* OPTIONAL */;//0x1--纯电;0x2--混动;0x3--燃油
 			App_rmtCtrl.CtrlResp.basicSt.speed				= PrvtProtCfg_vehicleSpeed();
-			
 			App_rmtCtrl.CtrlResp.basicSt.totalOdometer		= PrvtProtCfg_TotalOdometer();
-			
 			App_rmtCtrl.CtrlResp.basicSt.batteryVoltage		= PrvtProtCfg_TotalVoltage();
-			
 			App_rmtCtrl.CtrlResp.basicSt.batteryCurrent		= PrvtProtCfg_TotalCurrent();
-			
 			App_rmtCtrl.CtrlResp.basicSt.batterySOCPrc 		= VehicleSOC;
 			App_rmtCtrl.CtrlResp.basicSt.dcStatus			= gb_data_dcdcstatus();
 			App_rmtCtrl.CtrlResp.basicSt.gearPosition		= gb_data_gearPosition();
@@ -1637,3 +1621,14 @@ void PP_rmtCtrl_showSleepPara(void)
 	log_o(LOG_HOZON, "PP_get_virtual_flag = %s",PP_get_virtual_flag()?"off":"on");
 }
 
+/* Convert dddmm.mmmm(double) To ddd.dd+(double)*/
+static uint32_t PP_rmtCtrl_gpsconv(double dddmm)
+{
+    int deg;
+    double min;
+
+    deg = dddmm / 100.0;
+    min = dddmm - deg * 100;
+
+    return (uint32_t)((deg + min / 60 + 0.5E-6) * 1000000);
+}

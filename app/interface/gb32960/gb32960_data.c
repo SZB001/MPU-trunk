@@ -5272,11 +5272,14 @@ uint16_t gb_data_batteryCurrent(void)
 */
 uint8_t gb_data_powermode(void)
 {
-	uint8_t mode;
+	uint8_t mode = GB_VEHITYPE_ELECT;
 
 	DAT_LOCK();
 
-	mode = gb_inf->vehi.vehi_type;
+	if(gb_inf)
+	{
+		mode = gb_inf->vehi.vehi_type;
+	}
 
 	DAT_UNLOCK();
 

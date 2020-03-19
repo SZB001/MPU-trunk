@@ -154,20 +154,12 @@ int app_shell_drcfg(int argc, const char **argv)
     char sgLinkAddr[33] = {0};
 	int	 sgPort;
     getPP_rmtCfg_certAddrPort(sgLinkAddr,&sgPort);
-    if(sgLinkAddr[0] == 0)
-    {
-        sgLinkAddr[0] = '0';
-    }
     shellprintf("SG LINK ADDR PKI = %s\r\n", sgLinkAddr);
     shellprintf("SG LINK PORT PKI = %d\r\n", sgPort);
 
     char bdlLinkAddr[33] = {0};
 	int	 bdlPort;
     getPP_rmtCfg_tspAddrPort(bdlLinkAddr,&bdlPort);
-    if(bdlLinkAddr[0] == 0)
-    {
-        bdlLinkAddr[0] = '0';
-    }
     shellprintf("BDL ADDR PKI = %s\r\n", bdlLinkAddr);
     shellprintf("BDL PORT PKI = %d\r\n", bdlPort);
 

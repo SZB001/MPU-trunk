@@ -1097,8 +1097,8 @@ static int PP_CertDL_do_EnableCertificate(PrvtProt_task_t *task)
 				log_o(LOG_HOZON, "enable certificate success\n");
 				PP_CertDL.state.CertEnflag = 1;
 				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_EN,&PP_CertDL.state.CertEnflag,1);
-				PP_CertDL.state.CertValid = 1;
-				(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
+				//PP_CertDL.state.CertValid = 1;
+				//(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
 				PP_CertRevoList.checkRevoReq = 1;//检查吊销列表
 				CertEnSt = PP_CERTEN_END;
 			}
@@ -1806,6 +1806,11 @@ unsigned char GetPP_CertDL_allowBDLink(void)
 			(0 == PP_CertDL_do_checkCertStatus()))
 	{
 		allowSt = 1;
+		if(0 == PP_CertDL.state.CertValid)
+		{
+			PP_CertDL.state.CertValid = 1;
+			(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
+		}
 	}
 
 	return allowSt;

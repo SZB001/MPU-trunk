@@ -1866,11 +1866,8 @@ void getPP_rmtCfg_tspAddrPort(char* addr,int* port)
 	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&rmt_APN1,&len);
 	pthread_mutex_unlock(&cfgdtmtx);
-	if(1 == rmt_APN1.apn1ConfigValid)
-	{
-		memcpy(addr,(char*)rmt_APN1.tspAddr,rmt_APN1.tspAddrlen);
-		*port = atoi((const char*)rmt_APN1.tspPort);
-	}
+	memcpy(addr,(char*)rmt_APN1.tspAddr,rmt_APN1.tspAddrlen);
+	*port = atoi((const char*)rmt_APN1.tspPort);
 }
 
 /*
@@ -1884,11 +1881,8 @@ void getPP_rmtCfg_certAddrPort(char* addr,int* port)
 	pthread_mutex_lock(&cfgdtmtx);
 	cfg_get_user_para(CFG_ITEM_HOZON_TSP_RMTCFG_APN1,&rmt_APN1,&len);
 	pthread_mutex_unlock(&cfgdtmtx);
-	if(1 == rmt_APN1.apn1ConfigValid)
-	{
-		memcpy(addr,(char*)rmt_APN1.certAddress,rmt_APN1.certAddresslen);
-		*port = atoi((const char*)rmt_APN1.certPort);
-	}
+	memcpy(addr,(char*)rmt_APN1.certAddress,rmt_APN1.certAddresslen);
+	*port = atoi((const char*)rmt_APN1.certPort);
 }
 
 /*无符号长整形转字符型*/

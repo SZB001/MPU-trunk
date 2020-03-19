@@ -184,9 +184,9 @@ static void *PP_CanMsgUL_main(void)
 		CanMsg_t *canMsgin;
 		long long currClctime;
 
-		if((1 == canCollectEnflag) && (DIAG_EMMC_OK == flt_get_by_id(EMMC)))
+		if((1 == canCollectEnflag) && \
+		   (DIAG_EMMC_OK == dev_diag_get_emmc_status()))
 		{
-		
 			if(dir_exists(PP_CANMSGUL_PATH) == 0 &&
 				dir_make_path(PP_CANMSGUL_PATH, S_IRUSR | S_IWUSR, false) != 0)
 			{

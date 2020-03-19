@@ -106,6 +106,8 @@ description�� function code
 void PP_VS_init(void)
 {
 	memset(&PP_rmtVS,0 , sizeof(PrvtProt_VS_t));
+	memset(&PP_VS_Pack,0 , sizeof(PrvtProt_pack_t));
+	memset(&PP_VS_appdata,0 , sizeof(PrvtProt_App_VS_t));
 	memcpy(PP_rmtVS.pack.Header.sign,"**",2);
 	PP_rmtVS.pack.Header.ver.Byte = 0x30;
 	PP_rmtVS.pack.Header.commtype.Byte = 0xe1;
@@ -382,13 +384,6 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 		{
 			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(PP_VS_gpsconv(gpsDt.longitude*10000)*(-1));
 		}
-		log_i(LOG_HOZON, "PP_appData.latitude = %ld",PP_VS_appdata.VSResp.gpsPos.latitude);
-		log_i(LOG_HOZON, "PP_appData.longitude = %ld",PP_VS_appdata.VSResp.gpsPos.longitude);
-	}
-	else
-	{
-		//PP_VS_appdata.VSResp.gpsPos.latitude  = 0;
-		//PP_VS_appdata.VSResp.gpsPos.longitude = 0;
 	}
 	
 	PP_VS_appdata.VSResp.gpsPos.altitude = (long)(gpsDt.height);
@@ -462,63 +457,47 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.hazardLightStus  = %ld",PP_VS_appdata.VSResp.basicSt.hazardLightStus);
 	PP_VS_appdata.VSResp.basicSt.frtRightTyrePre	= PrvtProtCfg_TyrePre(1)/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frtRightTyrePre  = %ld",PP_VS_appdata.VSResp.basicSt.frtRightTyrePre);
-	
 	PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp	= PrvtProtCfg_TyreTemp(1)/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.frtRightTyreTemp);
-
 	PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre	= PrvtProtCfg_TyrePre(2)/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre  = %ld",PP_VS_appdata.VSResp.basicSt.frontLeftTyrePre);
-
 	PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp	= PrvtProtCfg_TyreTemp(2)	/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.frontLeftTyreTemp);
-
 	PP_VS_appdata.VSResp.basicSt.rearRightTyrePre	= PrvtProtCfg_TyrePre(3)/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearRightTyrePre  = %ld",PP_VS_appdata.VSResp.basicSt.rearRightTyrePre);
-
 	PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp	= PrvtProtCfg_TyreTemp(3)	/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.rearRightTyreTemp);
-
 	PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre	= PrvtProtCfg_TyrePre(4)/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre  = %ld",PP_VS_appdata.VSResp.basicSt.rearLeftTyrePre);
-
 	PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp	= PrvtProtCfg_TyreTemp(4)/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp  = %ld",PP_VS_appdata.VSResp.basicSt.rearLeftTyreTemp);
+	
 	long VehicleSOC;
 	VehicleSOC = PrvtProtCfg_vehicleSOC();
 	PP_VS_appdata.VSResp.basicSt.batterySOCExact	= VehicleSOC * 100;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batterySOCExact  = %ld",PP_VS_appdata.VSResp.basicSt.batterySOCExact);
-	
 	PP_VS_appdata.VSResp.basicSt.chargeRemainTim	= PrvtProtCfg_ACChargeRemainTime()/* OPTIONAL */;
-
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.chargeRemainTim  = %ld",PP_VS_appdata.VSResp.basicSt.chargeRemainTim);
-
 	PP_VS_appdata.VSResp.basicSt.availableOdomtr	= PrvtProtCfg_ResidualOdometer();//续航里程
-
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.availableOdomtr  = %ld",PP_VS_appdata.VSResp.basicSt.availableOdomtr);
 	PP_VS_appdata.VSResp.basicSt.engineRunningTime	= 1/* OPTIONAL */;
 	PP_VS_appdata.VSResp.basicSt.bookingChargeSt	= GetPP_ChargeCtrl_appointSt();
 	PP_VS_appdata.VSResp.basicSt.bookingChargeHour	= GetPP_ChargeCtrl_appointHour()	/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.bookingChargeHour  = %ld",PP_VS_appdata.VSResp.basicSt.bookingChargeHour);
-
 	PP_VS_appdata.VSResp.basicSt.bookingChargeMin	= GetPP_ChargeCtrl_appointMin()/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.bookingChargeMin  = %ld",PP_VS_appdata.VSResp.basicSt.bookingChargeMin);
-
 	PP_VS_appdata.VSResp.basicSt.chargeMode			= PrvtProtCfg_chargeSt()/* OPTIONAL */;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.chargeMode  = %ld",PP_VS_appdata.VSResp.basicSt.chargeMode);
 	PP_VS_appdata.VSResp.basicSt.chargeStatus 		= gb_data_chargestatus();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.chargeStatus  = %ld",PP_VS_appdata.VSResp.basicSt.chargeStatus);
 	PP_VS_appdata.VSResp.basicSt.powerMode			= gb_data_powermode();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.powerMode  = %ld",PP_VS_appdata.VSResp.basicSt.powerMode);
-
 	PP_VS_appdata.VSResp.basicSt.speed				= PrvtProtCfg_vehicleSpeed();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.speed  = %ld",PP_VS_appdata.VSResp.basicSt.speed);
-
 	PP_VS_appdata.VSResp.basicSt.totalOdometer		= PrvtProtCfg_TotalOdometer();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.totalOdometer  = %ld",PP_VS_appdata.VSResp.basicSt.totalOdometer);
-
 	PP_VS_appdata.VSResp.basicSt.batteryVoltage		= PrvtProtCfg_TotalVoltage();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batteryVoltage  = %ld",PP_VS_appdata.VSResp.basicSt.batteryVoltage);
-
 	PP_VS_appdata.VSResp.basicSt.batteryCurrent		= PrvtProtCfg_TotalCurrent();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batteryCurrent  = %ld",PP_VS_appdata.VSResp.basicSt.batteryCurrent);
 	PP_VS_appdata.VSResp.basicSt.batterySOCPrc		= VehicleSOC;
