@@ -213,8 +213,16 @@ int PP_startengine_mainfunction(void *task)
 				}
 				else   //BDM 应答超时
 				{
-					log_o(LOG_HOZON,"timeout......");
-					PP_rmtengineCtrl.state.failtype = PP_RMTCTRL_VEHIUNLOCK;  //整车在锁门的情况下才许上高压电，开空调、座椅加热
+					if(PrvtProtCfg_doorlockSt() == 0)
+					{
+						PP_rmtengineCtrl.state.failtype = PP_RMTCTRL_VEHIUNLOCK;  //整车在锁门的情况下才许上高压电，开空调、座椅加热
+						log_o(LOG_HOZON,"The vehicle is not locked, and the power-on fails");
+					}
+					else
+					{
+						PP_rmtengineCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;  //BDM超时
+						log_o(LOG_HOZON,"BDM response timed out");
+					}
 					PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);   
 					PP_set_seat_requestpower_flag();  
 					PP_seatheating_ClearStatus();
@@ -263,14 +271,29 @@ int PP_startengine_mainfunction(void *task)
 	}
 	return res;
 }
-
+/*
+	*PP_get_powerst
+	*函数返回1表示上电成功
+	*函数返回2表示无意义
+	*函数返回3表示上电失败；空调和座椅加热根据这个判断上电的情况
+*/
 uint8_t PP_get_powerst()
 {
-	if((startengine_success_flag == 1)||(PP_rmtCtrl_cfg_RmtStartSt() == 1))
+	if(PP_rmtCtrl_cfg_RmtStartSt() == 1)
+	{
 		return 1;                       //返回1表示上电成功
-	return startengine_success_flag;    //高压电操作失败操作失败
+	}
+	else if(startengine_success_flag == 3)
+	{
+		return 3;                       //返回3表示上电失败
+	}
+	return 0;                           //返回无效值
 }
 
+void PP_clear_fail_flag(void)
+{
+	startengine_success_flag = 0;
+}
 uint8_t PP_startengine_start(void) 
 {
 	if(PP_rmtengineCtrl.state.req == 1)

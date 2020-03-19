@@ -488,4 +488,6 @@ extern int PP_rmtCtrl_vehicle_status_InformBt(unsigned char obj, unsigned char c
 extern void PP_rmtCtrl_settestflag(uint8_t flag);
 extern void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result);
 
+extern void PP_clear_fail_flag(void);
+
 #endif 

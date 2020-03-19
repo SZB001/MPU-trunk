@@ -143,6 +143,7 @@ int PP_seatheating_mainfunction(void *task)
 					else if(PP_get_powerst() == 3) //上高压电操作失败
 					{
 						log_i(LOG_HOZON,"Power failure failed to end the seat control");
+						PP_clear_fail_flag();
 						PP_rmtseatheatCtrl[i].state.failtype = PP_RMTCTRL_UPPOWERFAIL;
 						PP_rmtseatheatCtrl[i].state.req = 0;
 						PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;

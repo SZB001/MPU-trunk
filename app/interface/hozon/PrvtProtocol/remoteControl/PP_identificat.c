@@ -250,6 +250,11 @@ int PP_get_identificat_flag()
 	}
 }
 
+void PP_clear_identificat_time(void)
+{
+
+	valid_time = 0;//进入listen模式，认证有效时间清零，如有远控需再次认证
+}
 /******************************************************
 *函数名：PP_identificat_rcvdata
 

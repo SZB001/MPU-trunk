@@ -152,6 +152,7 @@ extern int getPP_rmtCfg_infoCollectCycle(void);
 extern void PP_rmtDiag_showPara(void);
 extern void PP_rmtDiag_mcuRTCweakup(void);
 extern void clearPP_rmtDiag_para(void);
+extern void PP_clear_identificat_time(void);
 extern uint8_t PP_rmtDiag_sleepflag(void);
 extern int PP_canSend_weakupVehicle(uint8_t type);
 extern void clearPP_canSend_virtualOnline(uint8_t type);

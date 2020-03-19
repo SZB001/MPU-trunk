@@ -338,6 +338,7 @@ void pm_st_s1e3(void)
             pm_set_state(PM_ST_SLEEP);
             log_o(LOG_PM, "-----------------going to sleep----------------");
             clearPP_rmtDiag_para();
+			PP_clear_identificat_time();
             fflush(stdout);
             len = sizeof(time);
             cfg_get_para(CFG_ITEM_RTC_WAKEUP_TIME, &time, &len);

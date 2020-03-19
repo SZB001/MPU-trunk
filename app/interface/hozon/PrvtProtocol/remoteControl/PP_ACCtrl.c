@@ -173,6 +173,7 @@ int PP_ACCtrl_mainfunction(void *task)
 				else if(PP_get_powerst() == 3) //上高压电操作失败
 				{
 					log_i(LOG_HOZON,"Power failure failed to end the air conditioning control");
+					PP_clear_fail_flag();
 					PP_rmtACCtrl.fail = 1;
 					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 					PP_rmtACCtrl.state.failtype = PP_RMTCTRL_UPPOWERFAIL;

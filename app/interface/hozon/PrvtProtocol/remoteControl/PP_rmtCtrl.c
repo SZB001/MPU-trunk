@@ -1152,13 +1152,11 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 				{
 					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(gpsDt.longitude*10000*(-1));//经度 x 1000000,当GPS信号无效时，值为0
 				}
-				//log_i(LOG_HOZON, "PP_appData.latitude = %lf",App_rmtCtrl.CtrlResp.gpsPos.latitude);
-				//log_i(LOG_HOZON, "PP_appData.longitude = %lf",App_rmtCtrl.CtrlResp.gpsPos.longitude);
 			}
 			else
 			{
-				App_rmtCtrl.CtrlResp.gpsPos.latitude  = 0;
-				App_rmtCtrl.CtrlResp.gpsPos.longitude = 0;
+				//App_rmtCtrl.CtrlResp.gpsPos.latitude  = 0;
+				//App_rmtCtrl.CtrlResp.gpsPos.longitude = 0;
 			}
 			App_rmtCtrl.CtrlResp.gpsPos.altitude = (long)(gpsDt.height);//高度（m）
 			if(App_rmtCtrl.CtrlResp.gpsPos.altitude > 10000)
