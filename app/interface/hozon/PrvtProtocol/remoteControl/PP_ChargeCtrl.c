@@ -237,7 +237,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 				{
 					if((tm_get_time() - PP_rmtChargeCtrl.state.waittime) < 3500)
 					{
-						if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1) //充电开启
+						if(PP_rmtCtrl_cfg_chargeSt() == PP_RMTCTRL_CFG_CHARGEING) //充电开启
 						{
 							log_o(LOG_HOZON,"start charge success");
 							PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); 
@@ -262,9 +262,9 @@ int PP_ChargeCtrl_mainfunction(void *task)
 						PP_rmtChargeCtrl.state.chargecmd = 0;
 					}
 				}
-				else
+				else 
 				{
-					if(PP_rmtCtrl_cfg_chargeOnOffSt() == 0) //充电关闭
+					if(PP_rmtCtrl_cfg_chargeSt() != PP_RMTCTRL_CFG_CHARGEING) //充电关闭
 					{
 						log_o(LOG_HOZON,"close charge success");
 						PP_rmtChargeCtrl.chargeOnOffFlag = 2;

@@ -30,7 +30,7 @@ author        wangzhiwei
 
 
 
-#ifdef HOZON_PER
+#ifdef HOZON_PRE
 	#define GB_URL "https://file-pre.chehezhi.cn/fileApi/1.0/pickData"
 	#define CAN_URL "https://file-pre.chehezhi.cn/fileApi/1.0/uploadData"
 	#define LOG_URL "https://file-pre.chehezhi.cn/fileApi/1.0/uploadData"
