@@ -109,7 +109,6 @@ void PP_seatheating_init(void)
 }
 
 
-
 int PP_seatheating_mainfunction(void *task)
 {
 	int res = 0;
@@ -144,7 +143,23 @@ int PP_seatheating_mainfunction(void *task)
 					{
 						log_i(LOG_HOZON,"Power failure failed to end the seat control");
 						PP_clear_fail_flag();
-						PP_rmtseatheatCtrl[i].state.failtype = PP_RMTCTRL_UPPOWERFAIL;
+						if(PrvtProtCfg_doorlockSt() == 0)
+						{
+							PP_rmtseatheatCtrl[i].state.failtype = PP_RMTCTRL_VEHIUNLOCK;
+						}
+						else if(PrvtProtCfg_vehicleSOC() <= 15)
+						{
+							PP_rmtseatheatCtrl[i].state.failtype = PP_RMTCTRL_LOWPOWER;
+						}
+						else if(PP_rmtCtrl_cfg_vehicleState() == 0)
+						{
+							PP_rmtseatheatCtrl[i].state.failtype = PP_RMTCTRL_ACCNOOFF;     //在on档
+						}
+						else
+						{
+							PP_rmtseatheatCtrl[i].state.failtype = PP_RMTCTRL_UPPOWERFAIL;
+						}
+						PP_seatheating_ClearStatus();
 						PP_rmtseatheatCtrl[i].state.req = 0;
 						PP_rmtseatheatCtrl[i].seatheat_success_flag = 0;
 						PP_rmtseatheatCtrl[i].state.CtrlSt = PP_SEATHEATING_END;	
@@ -368,7 +383,9 @@ int SetPP_seatheating_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBo
 				if((appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_MAINHEATOPEN)||\
 					(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_PASSENGERHEATOPEN))
 				{
+					PP_clear_fail_flag();
 					seat_requestpower_flag = 1;  //请求上电
+					
 				}
 			}
 			break;

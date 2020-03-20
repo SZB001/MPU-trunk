@@ -115,9 +115,9 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				else
 				{
 					PP_rmtautodoorCtrl.success_flag = 0;
-					PP_rmtautodoorCtrl.state.CtrlSt = PP_AUTODOORCTR_END;
 					PP_rmtautodoorCtrl.state.failtype = PP_RMTCTRL_ACCNOOFF;
 					log_o(LOG_HOZON," Vehicle status is on.........!");
+					PP_rmtautodoorCtrl.state.CtrlSt = PP_AUTODOORCTR_END;
 				}
 				PP_rmtautodoorCtrl.state.req = 0;
 			}

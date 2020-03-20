@@ -86,21 +86,23 @@ description： macro definitions
 
 
 //指令执行失败类型
-#define PP_RMTCTRL_NORMAL				0x00//
+#define PP_RMTCTRL_NORMAL				0x00//无意义
 #define PP_RMTCTRL_ACCNOOFF				0x01//power mode != OFF
 #define PP_RMTCTRL_UNKNOWCMD			0x02//unknow command
 #define PP_RMTCTRL_OTHERCMDEXECTING		0x03//Other instructions are executing
+#define PP_RMTCTRL_UPPOWERFAIL          0x04//上电失败
 #define PP_RMTCTRL_BCDMAUTHFAIL			0x05//bcm auth fail
 #define PP_RMTCTRL_TIMEOUTFAIL			0x06//command executed timeout
 #define PP_RMTCTRL_CHRGGUNUNCONNT		0x07//充电枪未连接
 #define PP_RMTCTRL_INVALID_ID			0x08//无效的预约ID
 #define PP_RMTCTRL_READYLIGHTON			0x09//运动模式
-#define PP_RMTCTRL_UPPOWERFAIL          0x04//上电失败
+#define PP_RMTCTRL_INSTRTIMEOUT         0x0A//指令超时
 #define PP_RMTCTRL_NOTENABLE            0x0B//远控没有使能 
 #define PP_RMTCTRL_FOTA_UPGRADE         0x0C//fota升级中  
-#define PP_RMTCTRL_INSTRTIMEOUT         0x0A//指令超时
 #define PP_RMTCTRL_VEHIUNLOCK           0x0D//整车未上锁
 #define PP_RMTCTRL_UNDOORCLOSE          0x0E//整车有门没有关
+#define PP_RMTCTRL_LOWPOWER             0x0F//SOC电量低于15%
+
 
 
 //蓝牙请求消息类型

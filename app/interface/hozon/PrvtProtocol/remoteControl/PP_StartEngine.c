@@ -86,20 +86,38 @@ int PP_startengine_mainfunction(void *task)
 {
 
 	int res = 0;
+	static unsigned long long pp_signal_waittime = 0; 
+	static int cnt = 0;
 	switch(start_engine_stage)
 	{
 		case PP_STARTENGINE_IDLE:
 		{
-			if(((PP_rmtengineCtrl.state.req == 1)&&(enginecation == PP_POWERON))   \
+			if(((PP_rmtengineCtrl.state.req == 1)&&(enginecation == PP_POWERON))   
 				|| (PP_get_seat_requestpower_flag() == 1 )||(PP_get_ac_requestpower_flag() == 1))
+			//if((PP_rmtengineCtrl.state.req == 1)&&(enginecation == PP_POWERON))
 			{
 				if(PP_rmtCtrl_cfg_RmtStartSt() == 0)   //上电走此流程
 				{
+					if((cnt < 5)&&(PrvtProtCfg_vehicleSOC() == 0))
+					{
+						if(tm_get_time() - pp_signal_waittime > 500)
+						{
+							pp_signal_waittime = tm_get_time();
+							if(PrvtProtCfg_vehicleSOC() == 0)
+							{
+								cnt++;
+								break;
+							}
+						}
+						else
+						{
+							break;
+						}
+					}
+					cnt = 0;
+					log_o(LOG_HOZON,"soc = %d,powermode = %d",PrvtProtCfg_vehicleSOC(),PP_rmtCtrl_cfg_vehicleState());
 					if((PrvtProtCfg_vehicleSOC()>15) && (PP_rmtCtrl_cfg_vehicleState() == 0))
 					{	
-						start_engine_stage = PP_STARTENGINE_REQSTART;
-						enginecation = PP_POWERON;
-						startengine_success_flag = 0;
 						if(PP_rmtengineCtrl.state.style == RMTCTRL_TSP)//tsp
 						{
 							PP_rmtCtrl_Stpara_t rmtCtrl_Stpara;
@@ -110,10 +128,13 @@ int PP_startengine_mainfunction(void *task)
 							rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;
 							res = PP_rmtCtrl_StInformTsp(&rmtCtrl_Stpara);
 						}
+						enginecation = PP_POWERON;
+						startengine_success_flag = 0;
+						start_engine_stage = PP_STARTENGINE_REQSTART;
 					}
 					else
 					{
-						log_o(LOG_HOZON," Vehicle status is on or the battery is below 15%");
+						log_o(LOG_HOZON,"Vehicle the battery soc is below Fifteen percent");
 						PP_rmtengineCtrl.state.failtype = PP_RMTCTRL_ACCNOOFF;
 						PP_set_seat_requestpower_flag();
 						PP_set_ac_requestpower_flag();
@@ -125,7 +146,7 @@ int PP_startengine_mainfunction(void *task)
 				{
 					startengine_success_flag = 1;  //上电成功
 					PP_Engine_time = tm_get_time();
-					log_o(LOG_HOZON,"Successfully powered on\n");
+					log_o(LOG_HOZON,"Successfully powered on");
 					PP_set_seat_requestpower_flag();
 					PP_set_ac_requestpower_flag();
 					start_engine_stage = PP_STARTENGINE_END;
@@ -133,6 +154,7 @@ int PP_startengine_mainfunction(void *task)
 			}
 			if((PP_rmtengineCtrl.state.req == 1)&&(enginecation == PP_POWEROFF)) //下电流程
 			{
+				
 				if(PP_rmtCtrl_cfg_RmtStartSt() == 1)
 				{
 					start_engine_stage = PP_STARTENGINE_REQSTART;
@@ -151,10 +173,10 @@ int PP_startengine_mainfunction(void *task)
 				else  //已经下电了
 				{
 					start_engine_stage = PP_STARTENGINE_END;
-					log_o(LOG_HOZON,"Successfully powered off\n");
+					log_o(LOG_HOZON,"Successfully powered off");
 					PP_set_seat_requestpower_flag();
 					PP_set_ac_requestpower_flag();
-					startengine_success_flag = 1;
+					startengine_success_flag = 2;
 				}
 			}
 			PP_rmtengineCtrl.state.req = 0;
@@ -193,7 +215,7 @@ int PP_startengine_mainfunction(void *task)
 							startengine_success_flag = 1;  //上电成功
 							PP_set_seat_requestpower_flag();
 							PP_set_ac_requestpower_flag();
-							log_o(LOG_HOZON,"Success on high voltage\n");
+							log_o(LOG_HOZON,"Success on high voltage");
 							start_engine_stage = PP_STARTENGINE_END;
 						}
 					}
@@ -206,7 +228,7 @@ int PP_startengine_mainfunction(void *task)
 							PP_set_ac_requestpower_flag();   //清除下电标志
 							PP_set_ac_remote_flag();//清除空调开标志
 							startengine_success_flag = 2;   //下电成功
-							log_o(LOG_HOZON,"Successful under high voltage\n");
+							log_o(LOG_HOZON,"Successful under high voltage");
 							start_engine_stage = PP_STARTENGINE_END;
 						}
 					}
@@ -225,9 +247,9 @@ int PP_startengine_mainfunction(void *task)
 					}
 					PP_can_send_data(PP_CAN_ENGINE,CAN_ENGINECLEAN,0);   
 					PP_set_seat_requestpower_flag();  
-					PP_seatheating_ClearStatus();
+					//PP_seatheating_ClearStatus();
 					PP_set_ac_requestpower_flag();
-					PP_ACCtrl_ClearStatus();
+					//PP_ACCtrl_ClearStatus();
 					startengine_success_flag = 3;   //操作失败
 					start_engine_stage = PP_STARTENGINE_END;
 				}

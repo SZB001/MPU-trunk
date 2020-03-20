@@ -689,8 +689,19 @@ int PP_get_dtc_time_result(uint8_t obj, PP_rmtDiag_faultcode_t *faultcode)
             {
                 response = response_arr->remote_diag_response[response_size].diag_response;
                 dtc_to_str(DTC_temp,response+byte_size);
-                
-                if((charcmp(DTC_temp, faultcode->diagcode, 5) == 0) && (faultcode->lowByte == *(response+byte_size+2)))/* Get DTC corresponding snapshot information */
+
+                log_buf_dump(LOG_REMOTE_DIAG, "DTC_temp", DTC_temp, 5);
+                log_buf_dump(LOG_REMOTE_DIAG, "faultcode->diagcode", faultcode->diagcode, 5);
+                log_i(LOG_REMOTE_DIAG, "faultcode->lowByte:%x, *(response+byte_size+2):%x", 
+                faultcode->lowByte, *(response+byte_size+2));
+
+                if((DTC_temp[0] == faultcode->diagcode[0])
+                &&(DTC_temp[1] == faultcode->diagcode[1])
+                &&(DTC_temp[2] == faultcode->diagcode[2])
+                &&(DTC_temp[3] == faultcode->diagcode[3])
+                &&(DTC_temp[4] == faultcode->diagcode[4])
+                &&(faultcode->lowByte == *(response+byte_size+2)))
+                //if((charcmp(DTC_temp, faultcode->diagcode, 5) == 0) && (faultcode->lowByte == *(response+byte_size+2)))/* Get DTC corresponding snapshot information */
                 {
                     byte_size = byte_size + 6;
                     byte_size += time_pos[obj];
@@ -709,10 +720,6 @@ int PP_get_dtc_time_result(uint8_t obj, PP_rmtDiag_faultcode_t *faultcode)
                 else
                 {
                     log_e(LOG_REMOTE_DIAG, "dtc does not match error!");
-                    log_buf_dump(LOG_REMOTE_DIAG, "DTC_temp", DTC_temp, 5);
-                    log_buf_dump(LOG_REMOTE_DIAG, "faultcode->diagcode", faultcode->diagcode, 5);
-                    log_i(LOG_REMOTE_DIAG, "faultcode->lowByte:%x, *(response+byte_size+1):%x", 
-                    faultcode->lowByte, *(response+byte_size+1));
                 }
                 break;
             }

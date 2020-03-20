@@ -200,6 +200,8 @@ int PP_doorLockCtrl_mainfunction(void *task)
 			     	}
 					else
 					{
+						//当门没有关闭的时候，上锁失败
+						usleep(1000*500);//检查五门的状态做一个500ms的延时
 						if((getgb_data_LFDoorOpenSt() != 0) || (getgb_data_RFDoorOpenSt() != 0) || 
 							(getgb_data_LRDoorOpenSt() != 0) || (getgb_data_RRDoorOpenSt() != 0) ||
 							(PP_rmtCtrl_cfg_bdmreardoorSt()!= 0))

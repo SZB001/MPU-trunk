@@ -230,12 +230,12 @@ int PP_ChargeCtrl_mainfunction(void *task)
 		break;
 		case PP_CHARGECTRL_RESPWAIT:
 		{
-			if((tm_get_time() - PP_rmtChargeCtrl.state.waittime) > 2500)
+			if((tm_get_time() - PP_rmtChargeCtrl.state.waittime) > 3000)
 			{
 				
 				if(PP_rmtChargeCtrl.state.chargecmd == PP_CHARGECTRL_OPEN)
 				{
-					if((tm_get_time() - PP_rmtChargeCtrl.state.waittime) < 3000)
+					if((tm_get_time() - PP_rmtChargeCtrl.state.waittime) < 3500)
 					{
 						if(PP_rmtCtrl_cfg_chargeOnOffSt() == 1) //充电开启
 						{
@@ -251,7 +251,8 @@ int PP_ChargeCtrl_mainfunction(void *task)
 					}
 					else//开启超时
 					{
-						log_e(LOG_HOZON,"Instruction execution timeout\n");
+						log_o(LOG_HOZON,"Instruction execution timeout\n");
+						log_o(LOG_HOZON,"PP_rmtCtrl_cfg_chargeOnOffSt = %d",PP_rmtCtrl_cfg_chargeOnOffSt());
 						PP_rmtChargeCtrl.appointCharging = 0;
 						PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0);//start命令清除
 						PP_rmtChargeCtrl.fail     = 1;

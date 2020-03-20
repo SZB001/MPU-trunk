@@ -172,18 +172,41 @@ int PP_ACCtrl_mainfunction(void *task)
 				}
 				else if(PP_get_powerst() == 3) //上高压电操作失败
 				{
-					log_i(LOG_HOZON,"Power failure failed to end the air conditioning control");
+					log_o(LOG_HOZON,"Power failure failed to end the air conditioning control");
 					PP_clear_fail_flag();
 					PP_rmtACCtrl.fail = 1;
-					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
-					PP_rmtACCtrl.state.failtype = PP_RMTCTRL_UPPOWERFAIL;
+					if(PrvtProtCfg_doorlockSt() == 0)//如果BDM没有任何报文发出来，开空调失败会回复未上锁
+					{
+						PP_rmtACCtrl.state.failtype = PP_RMTCTRL_VEHIUNLOCK;   //未上锁
+						log_i(LOG_HOZON,"PrvtProtCfg_doorlockSt() = %d",PrvtProtCfg_doorlockSt());
+						log_i(LOG_HOZON,"PP_RMTCTRL_VEHIUNLOCK");
+					}
+					else if(PrvtProtCfg_vehicleSOC() <= 15)
+					{
+						PP_rmtACCtrl.state.failtype = PP_RMTCTRL_LOWPOWER;     //电量低
+						log_i(LOG_HOZON,"PrvtProtCfg_vehicleSOC() = %d",PrvtProtCfg_vehicleSOC());
+						log_i(LOG_HOZON,"PP_RMTCTRL_LOWPOWER");
+					}
+					else if(PP_rmtCtrl_cfg_vehicleState() == 0)
+					{
+						PP_rmtACCtrl.state.failtype = PP_RMTCTRL_ACCNOOFF;     //在on档
+						log_i(LOG_HOZON,"PP_rmtCtrl_cfg_vehicleState() = %d",PP_rmtCtrl_cfg_vehicleState());
+						log_i(LOG_HOZON,"PP_RMTCTRL_ACCNOOFF");
+					}
+					else
+					{
+						PP_rmtACCtrl.state.failtype = PP_RMTCTRL_UPPOWERFAIL;     //上电失败
+						log_i(LOG_HOZON,"PP_RMTCTRL_UPPOWERFAIL");
+					}
+					PP_ACCtrl_ClearStatus();
 					PP_rmtACCtrl.state.req = 0;
+					PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 				}
 				else
 				{
 					if(PP_rmtACCtrl.state.accmd == PP_CLOSE_ACC)
 					{	//防止空调关闭指令多次下发
-						log_i(LOG_HOZON,"Prevent the air conditioner from being turned off multiple times");
+						log_o(LOG_HOZON,"Prevent the air conditioner from being turned off multiple times");
 						PP_rmtACCtrl.state.req = 0;
 						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 					}	
@@ -234,7 +257,7 @@ int PP_ACCtrl_mainfunction(void *task)
 					}
 					else//超时
 					{
-						log_e(LOG_HOZON,"Instruction execution timeout\n");
+						log_o(LOG_HOZON,"Instruction execution timeout\n");
 						PP_can_send_data(PP_CAN_ACCTRL,CAN_OPNEACCFIAL,0);  
 						acc_requestpower_flag = 2; //空调开启失败请求下电
 						PP_rmtACCtrl.fail     = 1;
@@ -419,6 +442,7 @@ int SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 						if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACOPEN)
 						{
 							PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
+							PP_clear_fail_flag();
 						}
 						else if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACCLOSE)
 						{
@@ -434,7 +458,9 @@ int SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 						PP_rmtACCtrl.state.style   = RMTCTRL_TSP;
 						if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_RMTCTRL_ACOPEN)
 						{
+							PP_clear_fail_flag();
 							acc_requestpower_flag = 1;  //请求上电
+							
 						}
 					}
 					else
@@ -537,7 +563,9 @@ int SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 				PP_rmtACCtrl.pack.DisBody.eventId = PP_rmtac_AppointBook[i].eventId; //eventid
 				PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
 				PP_rmtACCtrl.state.style   = RMTCTRL_TBOX;
+				PP_clear_fail_flag();
 				acc_requestpower_flag = 1;  //预约开空调时间到，请求上高压电
+				
 			}
 			break;
 			case RMTCTRL_SHELL:
@@ -557,6 +585,7 @@ int SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 						{
 							PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
 							log_o(LOG_HOZON,"PP_OPEN_ACC");
+							PP_clear_fail_flag();
 							acc_requestpower_flag = 1;  //预约开空调时间到，请求上高压电
 						}
 						else if(shell_actrl->cmd == PP_RMTCTRL_ACCLOSE)
