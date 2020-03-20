@@ -68,6 +68,7 @@ const unsigned char Snapshot_no[REMOTE_DIAG_ECU_NUM] =
 int comm_parsing_time(const uint8_t *did_value, RTCTIME *time);
 int vcu_parsing_time(const uint8_t *did_value, RTCTIME *time);
 int ehb_parsing_time(const uint8_t *did_value, RTCTIME *time);
+int LSB_parsing_time(const uint8_t *did_value, RTCTIME *time);
 
 PARSING_SINGLE_TIME parsing_time_arr[REMOTE_DIAG_ECU_NUM] = 
 {
@@ -81,7 +82,7 @@ PARSING_SINGLE_TIME parsing_time_arr[REMOTE_DIAG_ECU_NUM] =
     
     comm_parsing_time,//REMOTE_DIAG_FLC,
     comm_parsing_time,//REMOTE_DIAG_APA,
-    comm_parsing_time,//REMOTE_DIAG_ESCPluse,
+    LSB_parsing_time,//REMOTE_DIAG_ESCPluse,
     comm_parsing_time,//REMOTE_DIAG_EPS,
     ehb_parsing_time,//REMOTE_DIAG_EHB,
     
@@ -103,7 +104,7 @@ PARSING_SINGLE_TIME parsing_time_arr[REMOTE_DIAG_ECU_NUM] =
     NULL,//REMOTE_DIAG_TAP,
     comm_parsing_time,//REMOTE_DIAG_MFCP,
     
-    comm_parsing_time,//REMOTE_DIAG_TBOX,
+    LSB_parsing_time,//REMOTE_DIAG_TBOX,
     NULL,//REMOTE_DIAG_ACU,
     comm_parsing_time,//REMOTE_DIAG_PLG,
 };
@@ -499,9 +500,10 @@ static void HexToStr(unsigned char *pbDest, unsigned char *pbSrc, int nLen)
     pbDest[nLen * 2] = '\0';
 }
 
-static void dtc_to_str(unsigned char * dtc_str, unsigned char * DTC_temp)
+static void dtc_to_str(unsigned char * dtc_str, unsigned char * DTC)
 {
-    
+    unsigned char DTC_temp[3] = {0};
+    memcpy(DTC_temp, DTC, 3);
     dtc_str[0] = dtc_to_str_arr[(DTC_temp[0] & 0xC0)>>6];
     
     DTC_temp[0] = DTC_temp[0] & 0x3F;
@@ -598,15 +600,23 @@ int vcu_parsing_time(const uint8_t *did_value, RTCTIME *time)
         time->hour = did_value[5];
         time->min = did_value[6];
         time->sec = did_value[7];
+        log_i(LOG_REMOTE_DIAG, "time->year:%d", time->year);
+        log_i(LOG_REMOTE_DIAG, "time->mon:%d", time->mon);
+        log_i(LOG_REMOTE_DIAG, "time->mday:%d", time->mday);
+        log_i(LOG_REMOTE_DIAG, "time->hour:%d", time->hour);
+        log_i(LOG_REMOTE_DIAG, "time->min:%d", time->min);
+        log_i(LOG_REMOTE_DIAG, "time->sec:%d", time->sec);
     }
     else
     {
         memset(time, 0x00, sizeof(RTCTIME));
         ret = 1;
+        log_e(LOG_REMOTE_DIAG, "did do not match error!");
     }
     return ret;
 }
-int comm_parsing_time(const uint8_t *did_value, RTCTIME *time)
+
+int LSB_parsing_time(const uint8_t *did_value, RTCTIME *time)
 {
     int ret = 0;
     if((did_value[0] == 0xF0) || (did_value[1] == 0x20))
@@ -628,7 +638,35 @@ int comm_parsing_time(const uint8_t *did_value, RTCTIME *time)
     {
         memset(time, 0x00, sizeof(RTCTIME));
         ret = 1;
-        log_e(LOG_REMOTE_DIAG, "comm_parsing_time error!");
+        log_e(LOG_REMOTE_DIAG, "did do not match error!");
+    }
+    return ret;
+}
+
+
+int comm_parsing_time(const uint8_t *did_value, RTCTIME *time)
+{
+    int ret = 0;
+    if((did_value[0] == 0xF0) || (did_value[1] == 0x20))
+    {
+        time->year = (((unsigned short)did_value[2])<<8) + did_value[3];
+        time->mon = did_value[4];
+        time->mday = did_value[5];
+        time->hour = did_value[6];
+        time->min = did_value[7];
+        time->sec = did_value[8];
+        log_i(LOG_REMOTE_DIAG, "time->year:%d", time->year);
+        log_i(LOG_REMOTE_DIAG, "time->mon:%d", time->mon);
+        log_i(LOG_REMOTE_DIAG, "time->mday:%d", time->mday);
+        log_i(LOG_REMOTE_DIAG, "time->hour:%d", time->hour);
+        log_i(LOG_REMOTE_DIAG, "time->min:%d", time->min);
+        log_i(LOG_REMOTE_DIAG, "time->sec:%d", time->sec);
+    }
+    else
+    {
+        memset(time, 0x00, sizeof(RTCTIME));
+        ret = 1;
+        log_e(LOG_REMOTE_DIAG, "did do not match error!");
     }
     return ret;
 }
@@ -644,12 +682,19 @@ int ehb_parsing_time(const uint8_t *did_value, RTCTIME *time)
         time->hour = did_value[5];
         time->min = did_value[6];
         time->sec = did_value[7];
+        log_i(LOG_REMOTE_DIAG, "time->year:%d", time->year);
+        log_i(LOG_REMOTE_DIAG, "time->mon:%d", time->mon);
+        log_i(LOG_REMOTE_DIAG, "time->mday:%d", time->mday);
+        log_i(LOG_REMOTE_DIAG, "time->hour:%d", time->hour);
+        log_i(LOG_REMOTE_DIAG, "time->min:%d", time->min);
+        log_i(LOG_REMOTE_DIAG, "time->sec:%d", time->sec);
 
     }
     else
     {
         memset(time, 0x00, sizeof(RTCTIME));
         ret = 1;
+        log_e(LOG_REMOTE_DIAG, "did do not match error!");
     }
     return ret;
 }
@@ -672,7 +717,7 @@ int remote_diag_changetime(RTCTIME *time, uint32_t * timesec)
 
 int PP_get_dtc_time_result(uint8_t obj, PP_rmtDiag_faultcode_t *faultcode)
 {
-    int ret = 0;
+    int ret = 1;
     int response_size = 0;
     int byte_size = 2;/*apart from 59 04 XX XX XX 09 XX XX*/
     unsigned char DTC_temp[5] = {0};
@@ -700,8 +745,7 @@ int PP_get_dtc_time_result(uint8_t obj, PP_rmtDiag_faultcode_t *faultcode)
                 &&(DTC_temp[2] == faultcode->diagcode[2])
                 &&(DTC_temp[3] == faultcode->diagcode[3])
                 &&(DTC_temp[4] == faultcode->diagcode[4])
-                &&(faultcode->lowByte == *(response+byte_size+2)))
-                //if((charcmp(DTC_temp, faultcode->diagcode, 5) == 0) && (faultcode->lowByte == *(response+byte_size+2)))/* Get DTC corresponding snapshot information */
+                &&(faultcode->lowByte == *(response+byte_size+2)))/* Get DTC corresponding snapshot information */
                 {
                     byte_size = byte_size + 6;
                     byte_size += time_pos[obj];
@@ -711,6 +755,7 @@ int PP_get_dtc_time_result(uint8_t obj, PP_rmtDiag_faultcode_t *faultcode)
                     {
                         parsing_time_arr[obj](response+byte_size, &time);
                         remote_diag_changetime(&time, &(faultcode->diagTime));
+                        ret = 0;
                     }
                     else
                     {
@@ -721,11 +766,6 @@ int PP_get_dtc_time_result(uint8_t obj, PP_rmtDiag_faultcode_t *faultcode)
                 {
                     log_e(LOG_REMOTE_DIAG, "dtc does not match error!");
                 }
-                break;
-            }
-            else
-            {
-                break;
             }
 
             /* 读取之后就销毁 */
@@ -737,6 +777,10 @@ int PP_get_dtc_time_result(uint8_t obj, PP_rmtDiag_faultcode_t *faultcode)
                                    sizeof(remote_diag_response_t));
             }
         }
+    }
+    if(ret != 0)
+    {
+        log_e(LOG_REMOTE_DIAG, "PP_get_dtc_time_result error:ret:%d", ret);
     }
     return ret;
 }
