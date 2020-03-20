@@ -58,8 +58,7 @@ void PP_Mileagesync_init(void)
 
 
 int PP_Mileagesync_mainfunction(void *task)
-{
-	
+{	
 	static uint8_t w_flag = 0;
 	int i;
 	if(1 == dev_get_KL15_signal())  //IGN on
@@ -77,7 +76,6 @@ int PP_Mileagesync_mainfunction(void *task)
 				data[1] = (uint8_t)(new_mileage >> 8);
 				data[2] = (uint8_t)(new_mileage);
 				PP_can_send_mileage(data);
-				usleep(10);
 			}
 			old_mileage = new_mileage;
 			w_flag = 1;
@@ -95,5 +93,8 @@ int PP_Mileagesync_mainfunction(void *task)
 	
 	return 0;
 }
-
+uint32_t Get_Tbox_mileage(void)
+{
+	return old_mileage;
+}
 
