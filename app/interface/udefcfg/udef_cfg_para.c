@@ -17,6 +17,7 @@
 #include "file.h"
 #include "dev_api.h"
 #include "ble.h"
+#include "uds.h"
 #include "at.h"
 #define USER_CFG_PARA_BUF_LEN     5*1024
 
@@ -378,6 +379,9 @@ int clbt_cfg_dump_para(void )
         }
     }
     
+    unsigned char facmode;
+    facmode = get_factory_mode();
+    shellprintf(" %-32s : %u\r\n", "factory mode", facmode);
 
     char plbuff[256] = {0};
     char *bufftp;
