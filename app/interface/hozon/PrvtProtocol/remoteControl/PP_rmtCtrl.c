@@ -1139,20 +1139,20 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			{
 				if(gpsDt.is_north)
 				{
-					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(PP_rmtCtrl_gpsconv(gpsDt.latitude)*10000);//纬度 x 1000000,当GPS信号无效时，值为0
+					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(PP_rmtCtrl_gpsconv(gpsDt.latitude));//纬度 x 1000000,当GPS信号无效时，值为0
 				}
 				else
 				{
-					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(PP_rmtCtrl_gpsconv(gpsDt.latitude)*10000*(-1));//纬度 x 1000000,当GPS信号无效时，值为0
+					App_rmtCtrl.CtrlResp.gpsPos.latitude = (long)(PP_rmtCtrl_gpsconv(gpsDt.latitude)*(-1));//纬度 x 1000000,当GPS信号无效时，值为0
 				}
 
 				if(gpsDt.is_east)
 				{
-					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(PP_rmtCtrl_gpsconv(gpsDt.longitude)*10000);//经度 x 1000000,当GPS信号无效时，值为0
+					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(PP_rmtCtrl_gpsconv(gpsDt.longitude));//经度 x 1000000,当GPS信号无效时，值为0
 				}
 				else
 				{
-					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(PP_rmtCtrl_gpsconv(gpsDt.longitude)*10000*(-1));//经度 x 1000000,当GPS信号无效时，值为0
+					App_rmtCtrl.CtrlResp.gpsPos.longitude = (long)(PP_rmtCtrl_gpsconv(gpsDt.longitude)*(-1));//经度 x 1000000,当GPS信号无效时，值为0
 				}
 			}
 

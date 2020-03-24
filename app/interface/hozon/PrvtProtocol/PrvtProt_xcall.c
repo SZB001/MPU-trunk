@@ -454,28 +454,28 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	{
 		if(gpsDt.is_north)
 		{
-			Appdata_Xcall.gpsPos.latitude = (long)(PP_xcall_gpsconv(gpsDt.latitude)*10000);
+			Appdata_Xcall.gpsPos.latitude = (long)(PP_xcall_gpsconv(gpsDt.latitude));
 		}
 		else
 		{
-			Appdata_Xcall.gpsPos.latitude = (long)(PP_xcall_gpsconv(gpsDt.latitude)*10000*(-1));
+			Appdata_Xcall.gpsPos.latitude = (long)(PP_xcall_gpsconv(gpsDt.latitude)*(-1));
 		}
 
 		if(gpsDt.is_east)
 		{
-			Appdata_Xcall.gpsPos.longitude = (long)(PP_xcall_gpsconv(gpsDt.longitude)*10000);
+			Appdata_Xcall.gpsPos.longitude = (long)(PP_xcall_gpsconv(gpsDt.longitude));
 		}
 		else
 		{
-			Appdata_Xcall.gpsPos.longitude = (long)(PP_xcall_gpsconv(gpsDt.longitude)*10000*(-1));
+			Appdata_Xcall.gpsPos.longitude = (long)(PP_xcall_gpsconv(gpsDt.longitude)*(-1));
 		}
 		log_i(LOG_HOZON, "PP_appData.latitude = %lf",Appdata_Xcall.gpsPos.latitude);
 		log_i(LOG_HOZON, "PP_appData.longitude = %lf",Appdata_Xcall.gpsPos.longitude);
 	}
 	else
 	{
-		Appdata_Xcall.gpsPos.latitude  = 0;
-		Appdata_Xcall.gpsPos.longitude = 0;
+		//Appdata_Xcall.gpsPos.latitude  = 0;
+		//Appdata_Xcall.gpsPos.longitude = 0;
 	}
 
 	Appdata_Xcall.gpsPos.altitude = (long)gpsDt.height;

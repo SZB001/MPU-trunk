@@ -369,20 +369,20 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	{
 		if(gpsDt.is_north)
 		{
-			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(PP_VS_gpsconv(gpsDt.latitude)*10000);
+			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(PP_VS_gpsconv(gpsDt.latitude));
 		}
 		else
 		{
-			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(PP_VS_gpsconv(gpsDt.latitude)*10000*(-1));
+			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(PP_VS_gpsconv(gpsDt.latitude)*(-1));
 		}
 
 		if(gpsDt.is_east)
 		{
-			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(PP_VS_gpsconv(gpsDt.longitude)*10000);
+			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(PP_VS_gpsconv(gpsDt.longitude));
 		}
 		else
 		{
-			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(PP_VS_gpsconv(gpsDt.longitude*10000)*(-1));
+			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(PP_VS_gpsconv(gpsDt.longitude)*(-1));
 		}
 	}
 	
