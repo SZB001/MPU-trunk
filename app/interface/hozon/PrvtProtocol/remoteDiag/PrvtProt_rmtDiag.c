@@ -91,13 +91,6 @@ typedef struct
 }__attribute__((packed))  PP_rmtDiag_allFault_t;
 static PP_rmtDiag_allFault_t	PP_rmtDiag_allFault;
 
-static int sg_ecu_dtc_success_cnt = 0;
-static int sg_ecu_dtc_timeout_cnt = 0;
-static int pr_ecu_index = 0;   //ECU下标索引
-static int all_dtc_success_cnt = 0; //成功计数
-static int all_dtc_timeout_cnt = 0; //超时计数
-
-
 //static PrvtProt_TxInform_t 		diag_TxInform[PP_RMTDIAG_MAX_RESP];
 static PP_rmtDiag_datetime_t 	rmtDiag_datetime;
 static PP_rmtDiag_weekmask_t rmtDiag_weekmask[7] =
@@ -423,132 +416,6 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 	}
 }
 
-static void PP_rmtDiag_cleardtc_cnt(void)
-{
-	sg_ecu_dtc_success_cnt = 0;
-	sg_ecu_dtc_timeout_cnt = 0;
-}
-//获取一个ECU，所有DTC时间
-static int PP_rmtDiag_getdtc(uint8_t obj)
-{
-	int ret = 0;
-	static int level = 0;
-	static uint64_t lasttime_time;
-	int index = 0;
-	
-	index = sg_ecu_dtc_success_cnt + sg_ecu_dtc_timeout_cnt;
-	if(index >= PP_rmtDiag_Fault.faultNum)
-	{
-		index = 0;
-		sg_ecu_dtc_success_cnt = 0;
-		sg_ecu_dtc_timeout_cnt = 0;
-	}
-	switch(level)
-	{
-		case 0:
-		{
-			
-			setPPrmtDiagCfg_GetDTCTimeReq(obj,&PP_rmtDiag_Fault.faultcode[index]);
-			lasttime_time = tm_get_time();
-			PP_rmtDiag.state.faultdtcSt = 0;
-			ret = 0;
-			level = 1;
-		}
-		break;
-		case 1:
-		{
-			if(tm_get_time() - lasttime_time < 2000)  //每一个dtc两秒超时
-			{
-				if(1 == PP_rmtDiag.state.faultdtcSt)//查询完成
-				{
-					getPPrmtDiagCfg_Faultdtctime(obj,&PP_rmtDiag_Fault.faultcode[index]);
-					sg_ecu_dtc_success_cnt++;
-					ret = 1;
-					level = 0;
-				}
-			}
-			else
-			{
-				ret = 0;
-				sg_ecu_dtc_timeout_cnt++;
-				level = 0;
-			}
-		}
-		break;
-		default:
-		break;
-			
-	}
-	
-	return ret;
-}
-static void PP_rmtDiag_clearactivedtc_cnt(void)
-{
-	all_dtc_success_cnt = 0;
-	all_dtc_timeout_cnt = 0;
-	pr_ecu_index = 0;
-}
-
-//获取28个ECU，所有DTC时间
-static int PP_rmtDiag_getactivedtc(void)
-{
-	int ret = 0;
-	static int level = 0;
-	static uint64_t lasttime_time = 0;
-	int index = 0;              //DTC下标索引
-	
-	index = all_dtc_success_cnt + all_dtc_timeout_cnt;
-	if(all_dtc_success_cnt + all_dtc_timeout_cnt >= PP_rmtDiag_allFault.code[pr_ecu_index].faultNum)
-	{
-		pr_ecu_index++;
-		index = 0;
-		if(pr_ecu_index >= 27)
-		{
-			pr_ecu_index = 0;
-		}
-		all_dtc_success_cnt = 0;
-		all_dtc_timeout_cnt = 0;
-	}
-	switch(level)
-	{
-		case 0:
-		{
-			
-			PP_rmtDiag.state.faultdtcSt = 0;  //清除成功标志
-			//请求第ecu_index个ECU的第index个DTC的时间
-			setPPrmtDiagCfg_GetDTCTimeReq(pr_ecu_index,&PP_rmtDiag_allFault.code[pr_ecu_index].faultcode[index]);
-			lasttime_time = tm_get_time();
-			ret = 0;
-			level = 1;
-		}
-		break;
-		case 1:
-		{
-			if(tm_get_time() - lasttime_time < 2000)  //每一个dtc两秒超时
-			{
-				if(1 == PP_rmtDiag.state.faultdtcSt)//查询完成
-				{
-					getPPrmtDiagCfg_Faultdtctime(pr_ecu_index,&PP_rmtDiag_allFault.code[pr_ecu_index].faultcode[index]);
-					all_dtc_success_cnt++;
-					ret = 1;
-					level = 0;
-				}
-			}
-			else
-			{
-				all_dtc_timeout_cnt++;
-				ret = 0;
-				level = 0;
-			}
-		}
-		break;
-		default:
-		break;
-			
-	}
-	
-	return ret;
-}
 /******************************************************
 *鍑芥暟鍚嶏細PP_rmtDiag_do_wait
 
@@ -697,40 +564,14 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 					getPPrmtDiag_tboxFaultcode(&PP_rmtDiag_Fault);
 					log_o(LOG_HOZON, "PP_rmtDiag.state.diagType = %d and PP_rmtDiag_Fault.failNum = %d\n",PP_rmtDiag.state.diagType,PP_rmtDiag_Fault.faultNum);
 					PP_rmtDiag.state.result = PP_rmtDiag_Fault.sueecss;
-					PP_rmtDiag.state.dtcwaittime = tm_get_time();
 					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
-					PP_rmtDiag_cleardtc_cnt();
-					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_DTCEAIT;
+					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
 				}
 			}
 			else//超时
 			{
 				PP_rmtDiag.state.result = 0;
-				//PP_rmtDiag.state.dtcwaittime = tm_get_time();
 				PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_TIMEOUT;
-				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
-			}
-		}
-		break;
-		case PP_DIAGRESP_DTCEAIT:
-		{
-			static int cnt = 0;
-			if(tm_get_time() - PP_rmtDiag.state.dtcwaittime < 2000*PP_rmtDiag_Fault.faultNum)
-			{
-				if(PP_rmtDiag_getdtc(PP_rmtDiag.state.diagType) == 1)
-				{	
-					cnt++;
-					if(cnt == PP_rmtDiag_Fault.faultNum)
-					{
-						log_o(LOG_HOZON,"get dtc time success,ecu_number = %d,faultnum = %d",PP_rmtDiag.state.diagType,PP_rmtDiag_Fault.faultNum);
-						cnt = 0;
-						PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
-					}
-				}
-			}
-			else
-			{
-				log_o(LOG_HOZON,"get dtc time timeout,ecu_number = %d,faultnum = %d",PP_rmtDiag.state.diagType,PP_rmtDiag_Fault.faultNum);
 				PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
 			}
 		}
@@ -1323,11 +1164,11 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 						log_i(LOG_HOZON, "PP_rmtDiag_allFault.code[%d].sueecss = %d\n",i-1,PP_rmtDiag_allFault.code[i-1].sueecss);
 						log_i(LOG_HOZON, "PP_rmtDiag_allFault.code[%d].faultNum = %d\n",i-1,PP_rmtDiag_allFault.code[i-1].faultNum);
 					}
+					PP_rmtDiag_allFault.currdiagtype = PP_DIAG_VCU;
 					PP_rmtDiag.state.result = 1;
 					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
-					PP_rmtDiag.state.activeDiagdtcwait = tm_get_time();
-					PP_rmtDiag_clearactivedtc_cnt();
-					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUREYDTCWAIT;
+					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
 				}
 			}
 			else//超时
@@ -1335,50 +1176,6 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 				log_e(LOG_HOZON, "diag active report is timeout\n");
 				PP_rmtDiag.state.result = 0;
 				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_TIMEOUT;
-				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
-				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
-			}
-		}
-		break;
-		case PP_ACTIVEDIAG_QUREYDTCWAIT:
-		{
-			int dtcnum = 0;
-			static int cnt = 0;
-
-			if(!dev_get_KL15_signal())
-			{
-				log_e(LOG_HOZON, "ign status:off\n");
-				cnt = 0;
-				PP_rmtDiag.state.result = 0;
-				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_IGNOFF;
-				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
-				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
-				return 0;
-			}
-
-			for(i = 0 ;i < PP_DIAG_MAXECU ;i++)
-			{
-				dtcnum += PP_rmtDiag_allFault.code[i].faultNum; //统计28个ecu所有的dtc的个数
-				
-			}
-			//log_o(LOG_HOZON,"TBOX DTC num = %d",PP_rmtDiag_allFault.code[25].faultNum);
-			if(tm_get_time() - PP_rmtDiag.state.activeDiagdtcwait < dtcnum * 2000)
-			{
-			
-				if(PP_rmtDiag_getactivedtc() == 1)
-				{
-					cnt++;
-					if(cnt == dtcnum)
-					{
-						cnt = 0;
-						PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
-						PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
-					}
-				}
-			}
-			else//超时
-			{
-				log_e(LOG_HOZON, "diag active dtctime report is timeout\n");
 				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
 			}
@@ -1711,6 +1508,7 @@ static int PP_rmtDiag_DiagResponse(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmt
 			AppData_rmtDiag.DiagnosticResp.diagCode[i].faultCodeType  = rmtDiag_Fault->faultcode[faultUpdataCnt].faultCodeType;
 			AppData_rmtDiag.DiagnosticResp.diagCode[i].lowByte = rmtDiag_Fault->faultcode[faultUpdataCnt].lowByte;
 			AppData_rmtDiag.DiagnosticResp.diagCode[i].diagTime = rmtDiag_Fault->faultcode[faultUpdataCnt].diagTime;
+
 			AppData_rmtDiag.DiagnosticResp.diagcodenum++;
 			faultUpdataCnt++;
 
@@ -1783,7 +1581,6 @@ static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 
 	/*app data*/
 	memset(&AppData_rmtDiag.DiagnosticSt,0,sizeof(PP_DiagnosticStatus_t));
-	PP_rmtDiag_allFault.currdiagtype = PP_DIAG_VCU;
 	uint8_t index_i = 0;
 	uint8_t index_j = 0;
 	uint8_t diagType;
@@ -1806,10 +1603,9 @@ static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 
 				AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagCode[index_j].lowByte  = \
 						PP_rmtDiag_allFault.code[diagType-1].faultcode[PP_rmtDiag_allFault.rptfaultcnt[diagType-1]].lowByte;
-
 				AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagCode[index_j].diagTime = \
 						PP_rmtDiag_allFault.code[diagType-1].faultcode[PP_rmtDiag_allFault.rptfaultcnt[diagType-1]].diagTime;
-
+				
 				PP_rmtDiag_allFault.rptfaultcnt[diagType-1]++;
 				PP_rmtDiag_allFault.totalfaultCnt++;
 				AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagcodenum++;
@@ -1911,6 +1707,10 @@ static void PP_rmtDiag_send_cb(void * para)
 					log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
 				}
 			}
+			else
+			{
+				log_o(LOG_HOZON, "send active diag response ok\n");
+			}
 		}
 		break;
 		default:
@@ -2004,26 +1804,9 @@ void PP_rmtDiag_CleanFaultInform_cb(void)
 void PP_rmtDiag_queryInform_cb(void)
 {
 	PP_rmtDiag.state.faultquerySt = 1;
-	PP_rmtDiag.state.faultdtcSt = 1;
 	PP_rmtDiag_CleanFaultInform_cb();
 }
 
-
-/******************************************************
-*鍑芥暟鍚嶏細PP_rmtDiag_queryInform_cb
-
-*褰�  鍙傦細
-
-*杩斿洖鍊硷細
-
-*鎻�  杩帮細
-
-*澶�  娉細
-******************************************************/
-void PP_rmtDiag_querydtcInform_cb(void)   //获取DTC时间通知
-{
-	PP_rmtDiag.state.faultdtcSt = 1;
-}
 /******************************************************
 *PP_diag_rmtdiagtest
 
