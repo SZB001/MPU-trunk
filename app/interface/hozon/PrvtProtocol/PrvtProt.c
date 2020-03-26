@@ -918,6 +918,7 @@ void PrvtProt_defaultsettings(void)
 {
 	clbt_cfg_set_default_para(UDEF_CFG_SET_SILENT);
 
+	set_ble_ctl(1);
 	set_factory_mode(1);
 
 	unsigned char logen = 0;

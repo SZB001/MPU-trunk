@@ -310,12 +310,20 @@ static int BleShellGetName(int argc, const char **argv)
  *****************************************************************/
 static int BleShellGetMac(int argc, const char **argv)
 {
-    unsigned char aucMac[250] = {0};
+	int k;
+    unsigned char aucMac[32] = {0};
 	unsigned char ucLen = 0;
-	stBtApi.GetMac(aucMac, &ucLen);
-	log_i(LOG_BLE, "BleShellGetMac2= %d\r\n",ucLen);
-	printf("Mac = [%x:%x:%x:%x:%x:%x]\r\n",aucMac[0],aucMac[1],aucMac[2],aucMac[3],aucMac[4],aucMac[5]);
-    //PRINTFBUF(aucMac, ucLen);
+	if(YT_OK == BleGetMac(aucMac))
+	{
+		ucLen = 6;
+	}
+	shellprintf(" %-32s :","BLE MAC");
+    for(k = 0; k < ucLen; k++)
+    {	
+        shellprintf("%02X",aucMac[k]);
+    }
+    shellprintf("\r\n");
+
     return 0;
 }
 

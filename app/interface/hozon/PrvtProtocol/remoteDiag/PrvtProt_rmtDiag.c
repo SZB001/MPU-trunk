@@ -561,7 +561,10 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 				if(1 == PP_rmtDiag.state.faultquerySt)//查询完成
 				{
 					getPPrmtDiagCfg_Faultcode(PP_rmtDiag.state.diagType,&PP_rmtDiag_Fault);//读取故障码
-					getPPrmtDiag_tboxFaultcode(&PP_rmtDiag_Fault);
+					if(PP_DIAG_TYPE_TBOX == PP_rmtDiag.state.diagType)
+					{
+						getPPrmtDiag_tboxFaultcode(&PP_rmtDiag_Fault);
+					}
 					log_o(LOG_HOZON, "PP_rmtDiag.state.diagType = %d and PP_rmtDiag_Fault.failNum = %d\n",PP_rmtDiag.state.diagType,PP_rmtDiag_Fault.faultNum);
 					PP_rmtDiag.state.result = PP_rmtDiag_Fault.sueecss;
 					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
@@ -1161,6 +1164,10 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 					for(i=1;i <= PP_DIAG_MAXECU;i++)
 					{
 						getPPrmtDiagCfg_Faultcode(i,&PP_rmtDiag_allFault.code[i-1]);//读取故障码
+						if(PP_DIAG_TYPE_TBOX == i)
+						{
+							getPPrmtDiag_tboxFaultcode(&PP_rmtDiag_allFault.code[i-1]);
+						}
 						log_i(LOG_HOZON, "PP_rmtDiag_allFault.code[%d].sueecss = %d\n",i-1,PP_rmtDiag_allFault.code[i-1].sueecss);
 						log_i(LOG_HOZON, "PP_rmtDiag_allFault.code[%d].faultNum = %d\n",i-1,PP_rmtDiag_allFault.code[i-1].faultNum);
 					}

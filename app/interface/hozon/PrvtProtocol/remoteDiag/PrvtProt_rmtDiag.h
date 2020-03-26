@@ -26,7 +26,7 @@ description�� macro definitions
 #define PP_FAULTCODECLEAN_WAITTIME    	5000//5s
 #define PP_DIAGQUERYALL_WAITTIME	150000//150s
 /***********�꺯��***********/
-#define PP_DIAG_TBOX_INDEX	25
+#define PP_DIAG_TYPE_TBOX	26
 #define PP_DIAG_TBOX_CURRENTFAULT		0
 #define PP_DIAG_TBOX_HISTORYFAULT		1
 
