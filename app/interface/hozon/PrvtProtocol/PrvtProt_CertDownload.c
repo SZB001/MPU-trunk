@@ -1806,7 +1806,7 @@ unsigned char GetPP_CertDL_allowBDLink(void)
 			(0 == PP_CertDL_do_checkCertStatus()))
 	{
 		allowSt = 1;
-		if(0 == PP_CertDL.state.CertValid)
+		if(1 != PP_CertDL.state.CertValid)
 		{
 			PP_CertDL.state.CertValid = 1;
 			(void)cfg_set_user_para(CFG_ITEM_HOZON_TSP_CERT_VALID,&PP_CertDL.state.CertValid,1);
