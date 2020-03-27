@@ -97,7 +97,7 @@ static int create_webserver_socket(void)
         return -1; // TODO
     }
 
-    log_o(LOG_WSRV, "wsrv module create server socket success");
+    log_i(LOG_WSRV, "wsrv module create server socket success");
 
     return 0;
 }
@@ -253,7 +253,7 @@ int wsrv_init(INIT_PHASE phase)
             {
                 if(PP_LOCK_OK == setPP_lock_odcmtxlock(PP_LOCK_OTA_FOTAUPDATE))
                 {
-                    log_o(LOG_WSRV, "When Init, Get OTA Mode In, So Get Lock");
+                    log_i(LOG_WSRV, "When Init, Get OTA Mode In, So Get Lock");
                 }
                 else
                 {
@@ -358,7 +358,7 @@ void *wsrv_main(void)
                     }
                     else if(PM_MSG_RUNNING == msgheader.msgid)
                     {
-						log_o(LOG_WSRV, "kill otamaster");
+						log_i(LOG_WSRV, "kill otamaster");
                         system("killall -9 otamaster");
                     }
                     else if((PM_MSG_SLEEP == msgheader.msgid) ||
@@ -392,7 +392,7 @@ void *wsrv_main(void)
                         clients[i].fd = new_conn_fd;
                         memset(clients[i].req_buf, 0, WSRV_MAX_BUFF_SIZE);
 
-                        log_o(LOG_WSRV, "add client_fd[%d]=%d", i, clients[i].fd);
+                        log_i(LOG_WSRV, "add client_fd[%d]=%d", i, clients[i].fd);
                         break;
                     }
                 }

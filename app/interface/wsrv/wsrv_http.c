@@ -385,16 +385,16 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     //6:BDCM Authentication Fail
     unsigned int u32ModeFailReason = 0;
 
-    log_o(LOG_WSRV, "fd: %d, cmd: %s, args: %s, data: %s", *p_cli_fd, cmd_buf, args_buf, data_buf);
+    log_i(LOG_WSRV, "fd: %d, cmd: %s, args: %s, data: %s", *p_cli_fd, cmd_buf, args_buf, data_buf);
 
     if (1 == get_factory_mode())
     {
-        log_o(LOG_WSRV, "It Is In Factory Mode, Can Not Request Ota Cmd");
+        log_i(LOG_WSRV, "It Is In Factory Mode, Can Not Request Ota Cmd");
 
         if (0 == strcmp(cmd_buf, WSRV_CMD_RESETWD))
         {
             tm_start(restart_da_timer, WSRV_NO_ACK_TIMEOUT, TIMER_TIMEOUT_REL_ONCE);
-            log_o(LOG_WSRV, "In Factory Mode, Reset Watch Dog");
+            log_i(LOG_WSRV, "In Factory Mode, Reset Watch Dog");
         }
         
         shutdown(*p_cli_fd, SHUT_RDWR);
@@ -435,7 +435,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         }
         else
         {
-            log_o(LOG_WSRV, "OTA Get %s Version", dev_buf);
+            log_i(LOG_WSRV, "OTA Get %s Version", dev_buf);
 
             if(PP_LOCK_OK == setPP_lock_odcmtxlock(PP_LOCK_OTA_READECUVER))
             {
@@ -506,7 +506,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         extern int fota_upgrade(unsigned char *file_path);
 
         // TODO: analyse XML file and upgrade ecu
-        log_o(LOG_WSRV, " ######### cmd:%s arg:%s data:%s", cmd_buf, args_buf, data_buf);
+        log_i(LOG_WSRV, " ######### cmd:%s arg:%s data:%s", cmd_buf, args_buf, data_buf);
         
         sscanf(data_buf, "{\"config\":\"%s", file_path);
         
@@ -514,7 +514,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         {
             file_path[strlen((char *)file_path) - 2] = '/';
             file_path[strlen((char *)file_path) - 1] = 0;
-            log_o(LOG_WSRV, " ######### file_path:%s", file_path);
+            log_i(LOG_WSRV, " ######### file_path:%s", file_path);
         
             //call upgrade function
             fota_upgrade(file_path);
@@ -528,7 +528,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         extern int get_upgrade_result(unsigned char *name);
 
         upgraderesult = get_upgrade_result((unsigned char *)tmp_buf);
-        log_o(LOG_WSRV, "********** rcv get resault request, %d", upgraderesult);
+        log_i(LOG_WSRV, "********** rcv get resault request, %d", upgraderesult);
 
         // TODO: fake data
         if (0 == upgraderesult)
@@ -570,7 +570,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
         if(6 == sscanf(args_buf, "timestamp=%04d%02d%02dT%02d%02d%02dZ", &year, &mon, &mday, &hour, &min, &sec))
         {
-            log_o(LOG_WSRV, "OTA Set Alarm Time, %04d%02d%02dT%02d%02d%02dZ", year, mon, mday, hour, min, sec);
+            log_i(LOG_WSRV, "OTA Set Alarm Time, %04d%02d%02dT%02d%02d%02dZ", year, mon, mday, hour, min, sec);
             ret = tm_get_abstime(&abstime);
 
             timer_wake = wsrv_calc_wake_time(abstime, year, mon, mday, hour, min);
@@ -630,7 +630,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     
         //dev_set_from_mpu(MCU_CFG_ID_SYSMODE, &mode, sizeof(mode));
 
-        log_o(LOG_WSRV, "Get Cmd Gmobi MODEIN");
+        log_i(LOG_WSRV, "Get Cmd Gmobi MODEIN");
 
         if(!dev_get_KL15_signal())
         {
@@ -638,7 +638,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             if(0 == s32ret)
             {
                 s_u8BDCMAuthResult = 0;
-                log_o(LOG_WSRV, "Mode In Wait BDCM Auth");
+                log_i(LOG_WSRV, "Mode In Wait BDCM Auth");
             }
             else
             {
@@ -649,7 +649,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         else
         {
             s_u8BDCMAuthResult = 3;
-            log_o(LOG_WSRV, "It Is Not In Off, So Can Not Enter OTA mode");
+            log_i(LOG_WSRV, "It Is Not In Off, So Can Not Enter OTA mode");
         }
 
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
@@ -666,7 +666,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 s_u64OTAModeStartTime = tm_get_time();
                 s32ModeRet = 0;
 
-                log_o(LOG_WSRV, "Mode In BDCM Auth OK");
+                log_i(LOG_WSRV, "Mode In BDCM Auth OK");
             }
             else if(0 == u32AuthResult)
             {
@@ -680,7 +680,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 s32ModeRet = -1;
                 u32ModeFailReason = 4;
                 
-                log_o(LOG_WSRV, "Mode In BDCM Auth Fail");
+                log_i(LOG_WSRV, "Mode In BDCM Auth Fail");
             }
         }
         else if(1 == s_u8BDCMAuthResult)
@@ -697,7 +697,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                     SetPP_rmtCtrl_FOTA_endInform();
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     //clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
-                    log_o(LOG_WSRV, "Mode In Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
+                    log_i(LOG_WSRV, "Mode In Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
                     s32ModeRet = -1;
                     u32ModeFailReason = 5;
                     break;
@@ -708,17 +708,17 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                     SetPP_rmtCtrl_FOTA_endInform();
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     //clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
-                    log_o(LOG_WSRV, "Mode In Get Ota Fail Status %d", u8OtaFailSts);
+                    log_i(LOG_WSRV, "Mode In Get Ota Fail Status %d", u8OtaFailSts);
                     s32ModeRet = -1;
                     u32ModeFailReason = 6;
                     break;
                 }
 
-                log_o(LOG_WSRV, "Mode In Get Power Mode: %d", u8PowerMode);
+                log_i(LOG_WSRV, "Mode In Get Power Mode: %d", u8PowerMode);
                 if(2 == u8PowerMode)
                 {
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
-                    log_o(LOG_WSRV, "Mode In Success");
+                    log_i(LOG_WSRV, "Mode In Success");
 
                     //Save OTA Mode In state
                     otamodein = 1;
@@ -789,7 +789,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
             
                 s32ModeRet = 0;
 
-                log_o(LOG_WSRV, "Mode Out BDCM Auth OK");
+                log_i(LOG_WSRV, "Mode Out BDCM Auth OK");
             }
             else if(0 == u32AuthResult)
             {
@@ -802,7 +802,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 s32ModeRet = -1;
                 u32ModeFailReason = 4;
 
-                log_o(LOG_WSRV, "Mode Out BDCM Auth Fail");
+                log_i(LOG_WSRV, "Mode Out BDCM Auth Fail");
             }
         }
         else if(1 == s_u8BDCMAuthResult)
@@ -818,7 +818,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 {
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     //clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
-                    log_o(LOG_WSRV, "Mode Out Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
+                    log_i(LOG_WSRV, "Mode Out Wait BDM_PowerMode And BDM_TBOX_OTAModeFailSts Time Out");
                     s32ModeRet = -1;
                     u32ModeFailReason = 5;
                     break;
@@ -828,18 +828,18 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
                 {
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     //clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
-                    log_o(LOG_WSRV, "Mode Out Get Ota Fail Status %d", u8OtaFailSts);
+                    log_i(LOG_WSRV, "Mode Out Get Ota Fail Status %d", u8OtaFailSts);
                     s32ModeRet = -1;
                     u32ModeFailReason = 6;
                     break;
                 }
 
-                log_o(LOG_WSRV, "Mode Out Get Power Mode: %d", u8PowerMode);
+                log_i(LOG_WSRV, "Mode Out Get Power Mode: %d", u8PowerMode);
                 if(0 == u8PowerMode)
                 {
                     PP_can_send_data(PP_CAN_OTAREQ, 0x00, 0);
                     //clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
-                    log_o(LOG_WSRV, "Mode Out Success");
+                    log_i(LOG_WSRV, "Mode Out Success");
                     s32ModeRet = 1;
                 }
                 else
@@ -860,7 +860,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_UPGRADEMODEIN))
     {
-        log_o(LOG_WSRV, "Enable MCU Do Not Reset MPU");
+        log_i(LOG_WSRV, "Enable MCU Do Not Reset MPU");
         
         upg_set_status( DEV_UPG_BUSY );
     
@@ -869,7 +869,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_UPGRADEMODEOUT))
     {
-        log_o(LOG_WSRV, "Disable MCU Do Not Reset MPU");
+        log_i(LOG_WSRV, "Disable MCU Do Not Reset MPU");
 
         upg_set_status( DEV_UPG_IDLE );
     
@@ -880,7 +880,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     {
         //unsigned char u8Loop = 0;
 
-        log_o(LOG_WSRV, "Keep TBOX Alive And Let Vehicle Alive");
+        log_i(LOG_WSRV, "Keep TBOX Alive And Let Vehicle Alive");
         
         while(0 == PP_canSend_weakupVehicle(FOTA_VIRTUAL));
     
@@ -889,7 +889,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_WAKEOUT))
     {
-        log_o(LOG_WSRV, "Exit TBOX Alive And Let Vehicle Alive");
+        log_i(LOG_WSRV, "Exit TBOX Alive And Let Vehicle Alive");
         
         clearPP_canSend_virtualOnline(FOTA_VIRTUAL);
     
@@ -897,7 +897,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_HVOIN))
     {
-        log_o(LOG_WSRV, "High Voltage In");
+        log_i(LOG_WSRV, "High Voltage In");
 
         PP_can_send_data(PP_CAN_HV, 1, 0);
 
@@ -915,15 +915,15 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
             if(tm_get_time() - s_u64OTAModeStartTime > 5000)
             {
-                log_o(LOG_WSRV, "High Voltage In Wait VCU4_HVReady Time Out");
+                log_i(LOG_WSRV, "High Voltage In Wait VCU4_HVReady Time Out");
                 sprintf(body_buf, WSRV_HVOINRESULT_BODY, -1);
                 break;
             }
 
-            log_o(LOG_WSRV, "High Voltage In: %d", u8HVready);
+            log_i(LOG_WSRV, "High Voltage In: %d", u8HVready);
             if(0 == u8HVready)
             {
-                log_o(LOG_WSRV, "High Voltage In Success");
+                log_i(LOG_WSRV, "High Voltage In Success");
                 sprintf(body_buf, WSRV_HVOINRESULT_BODY, 1);//-1:fail 0:Doing 1;Success
             }
             else
@@ -936,7 +936,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     }
     else if (0 == strcmp(cmd_buf, WSRV_CMD_HVOOUT))
     {
-        log_o(LOG_WSRV, "High Voltage Out");
+        log_i(LOG_WSRV, "High Voltage Out");
 
         PP_can_send_data(PP_CAN_HV, 0, 0);
 
