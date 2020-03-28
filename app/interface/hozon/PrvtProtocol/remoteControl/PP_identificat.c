@@ -210,14 +210,14 @@ int PP_identificat_mainfunction()
 						log_o(LOG_HOZON,"TBOX and DBCM certification succeeded");
 						return PP_AUTH_SUCCESS;
 					}
-					else if(PP_rmtCtrl_cfg_AuthStatus() == 2)
-					{
-						log_o(LOG_HOZON,"BDM returns authentication failure !!!");
-						PP_stage = PP_stage_idle;
-						return PP_AUTH_FAIL;
-					}
-					else
-					{}
+					//else if(PP_rmtCtrl_cfg_AuthStatus() == 2)
+					//{
+					//	log_o(LOG_HOZON,"BDM returns authentication failure !!!");
+					//	PP_stage = PP_stage_idle;
+					//	return PP_AUTH_FAIL;
+					//}
+					//else
+					//{}
 				}
 				else//超时
 				{

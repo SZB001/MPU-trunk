@@ -28,6 +28,8 @@ void UDS_SRV_WriteDataByID(UDS_T *tUDS, uint8_t *p_u8PDU_Data, uint16_t u16PDU_D
         return;
     }
 
+    uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_RequestCorrectlyReceivedResponsePending);
+    
     ret = uds_diag_set_did_value(value, &p_u8PDU_Data[3], u16PDU_DLC - 3);
 
     if (ret != 0)

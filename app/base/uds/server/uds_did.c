@@ -658,7 +658,7 @@ int uds_did_get_vin(unsigned char *did, unsigned int len)
 int uds_did_set_vin(unsigned char *did, unsigned int len)
 {
     char VIN[18];
-
+    int ret = 0;
     memset(VIN, 0x00, 18);
     log_o(LOG_UDS, "uds set vin");
     if (DID_LEN_VIN != len)
@@ -667,6 +667,11 @@ int uds_did_set_vin(unsigned char *did, unsigned int len)
         return UDS_INVALID_PARA;
     }
     memcpy(VIN, did, len);
+    ret = cfg_set_user_para(CFG_ITEM_GB32960_VIN, VIN, 18);
+    if(ret)
+    {
+        return ret;
+    }
     gb_set_vin(VIN);
     
     return 0;
