@@ -493,7 +493,9 @@ int uds_diag_dev_esc_can_bus_miss(void)
 }
 int uds_diag_dev_ehb_can_bus_miss(void)
 {
-    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_EHB);
+    return 0;
+    /* 需修改为根据配置字，判断ECU存在才检测 */
+    //return get_can_node_miss_state(CAN_NODE_MISS_ITEM_EHB);
 }
 
 int uds_diag_dev_eacp_can_bus_miss(void)
@@ -508,7 +510,9 @@ int uds_diag_dev_ptc_can_bus_miss(void)
 
 int uds_diag_dev_plg_can_bus_miss(void)
 {
-    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_PLG);
+    return 0;
+    /* 需修改为根据配置字，判断ECU存在才检测 */
+    //return get_can_node_miss_state(CAN_NODE_MISS_ITEM_PLG);
 }
 
 int uds_diag_dev_clm_can_bus_miss(void)
@@ -523,7 +527,9 @@ int uds_diag_dev_bdcm_can_bus_miss(void)
 
 int uds_diag_dev_alm_can_bus_miss(void)
 {
-    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_ALM);
+    return 0;
+    /* 需修改为根据配置字，判断ECU存在才检测 */
+    //return get_can_node_miss_state(CAN_NODE_MISS_ITEM_ALM);
 }
 
 int uds_diag_dev_icu_can_bus_miss(void)
@@ -537,6 +543,8 @@ int uds_diag_dev_ihu_can_bus_miss(void)
 }
 int uds_diag_dev_tap_can_bus_miss(void)
 {
-    return get_can_node_miss_state(CAN_NODE_MISS_ITEM_TAP);
+    return 0;
+    /* 需修改为根据配置字，判断ECU存在才检测 */
+    //return get_can_node_miss_state(CAN_NODE_MISS_ITEM_TAP);
 }
 
