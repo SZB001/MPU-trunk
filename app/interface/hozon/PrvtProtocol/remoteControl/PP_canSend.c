@@ -34,6 +34,8 @@ static uint8_t virtual_request_falg = 0;
 static uint8_t sync_flag_440 = 1;  //上电起来同步一次
 static uint8_t sync_flag_445 = 1;  //上电起来同步一次
 
+static uint8_t sync_upgrade_flae = 0;
+
 static uint64_t lasttime_440;
 static uint64_t lasttime_445;
 
@@ -236,6 +238,21 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 ****************************************************/
 void PP_can_send_cycle(void)
 {
+	
+	if(sync_upgrade_flae == 1)
+	{
+		//主要用在刷写固件的时候后升级mcu导致mcu端的440 445 被清零
+		pthread_mutex_lock(&sync_mutex_440);
+		PP_can_unpack(old_ID440_data,can_data);
+		PP_send_cycle_ID440_to_mcu(can_data);
+		pthread_mutex_unlock(&sync_mutex_440);
+
+		pthread_mutex_lock(&sync_mutex_445);
+		PP_can_unpack(old_ID445_data,can_data);
+		PP_send_cycle_ID445_to_mcu(can_data);
+		pthread_mutex_unlock(&sync_mutex_445);
+		sync_upgrade_flae = 0;	
+	}
 	if(1 == scom_dev_openSt())
 	{
 		if(PP_rmtCtrl_cfg_RmtStartSt() == 0)//防止空调开启之后，高压电不是TBOX下的，导致一些状态不能恢复
@@ -262,6 +279,7 @@ void PP_can_send_cycle(void)
 				{
 					PP_can_unpack(old_ID440_data,can_data);
 					PP_send_cycle_ID440_to_mcu(can_data);
+					log_buf_dump(LOG_HOZON, "440_can", can_data, 8);
 					lasttime_440 = tm_get_time();
 					sync_cnt_440 ++;
 				}	
@@ -283,6 +301,7 @@ void PP_can_send_cycle(void)
 			  	{
 					PP_can_unpack(old_ID445_data,can_data);
 					PP_send_cycle_ID445_to_mcu(can_data);
+					log_buf_dump(LOG_HOZON, "445_can", can_data, 8);
 					lasttime_445 = tm_get_time();
 					sync_cnt_445++;
 				}
@@ -596,4 +615,8 @@ void clearPP_canSend_virtualOnline(uint8_t type)
 	{
 		PP_can_mcu_sleep();     //不需要保持唤醒
 	}
+}
+void PP_canSend_setupgrade_flag(void)
+{
+	sync_upgrade_flae = 1;
 }

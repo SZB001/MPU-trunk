@@ -61,6 +61,8 @@ static int tboxinfo_flag = 0;
 static int tspdiagnos_flag = 0;
 static int otaupdate_flag = 0;
 static int tsplogfile_flag = 0;
+
+static int  active_flag = 1;      //连上之后绑车激活同步一次
 static int appointment_sync = 1;  //连上之后充电预约同步一次
 
 extern int ecall_flag ;  //正在通话的标志
@@ -188,6 +190,7 @@ void tbox_ivi_link_init(void)
 {
 	signal_power = 0;   //HU每次连接上来，调用一次
 	signal_type = 0;
+	active_flag = 1;
 	appointment_sync = 1;
 	ihu_fault.ivi_net_faultflag = TBOX_HU_LINK_NORMAL;
 	ihu_fault.ivi_net_timestamp = tbox_ivi_getTimestamp();
@@ -406,7 +409,8 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 			Tbox__Net__TboxActiveState state;
 			tbox__net__tbox_active_state__init( &state );
 			TopMsg.message_type = TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_ACTIVESTATE_RESULT;
-			state.active_state = 1; 
+			state.active_state = PP_rmtCfg_enable_actived(); 
+			log_o(LOG_IVI,"state:%d",state.active_state);
 			TopMsg.tbox_activestate = &state ;	
 		}
 		break;
@@ -2048,7 +2052,7 @@ void *ivi_check(void)
 	static uint64_t lastfaulttime;
 	static uint64_t lastfotatime;
 	static uint8_t old_ivi_fault = 0;
-	uint8_t active_flag = 0;
+	
 	prctl(PR_SET_NAME, "IVI_CHECK");
 	lastfaulttime = tm_get_time();
 	while(1)
@@ -2097,9 +2101,11 @@ void *ivi_check(void)
 					}
 					lastsynctime = tm_get_time();
 				}
-				if((PP_rmtCfg_enable_actived() == 1)&&(active_flag == 0))  //判断TSP是否下发激活信息
+				
+				tbox_ivi_tsp_active();
+				if(active_flag == 1)  //判断TSP是否下发激活信息
 				{
-					active_flag = 1; //上电起来之后发一次绑车激活
+					active_flag = 0; //绑车激活状态清零
 					ivi_message_request( ivi_clients[0].fd ,TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_ACTIVESTATE_RESULT,NULL); //通知车机激活成功
 				}
 				if(tsplogfile_flag == 1)
@@ -2141,9 +2147,10 @@ void *ivi_check(void)
 				{
 					ivi_message_request(ivi_clients[0].fd ,TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS,NULL);
 				}
-				if((PP_rmtCfg_enable_actived() == 1)&&(active_flag == 0))  //判断TSP是否下发激活信息
+				tbox_ivi_tsp_active();
+				if(active_flag == 1)  //判断TSP是否下发激活信息
 				{
-					active_flag = 1; //上电起来之后发一次绑车激活
+					active_flag = 0; //上电起来之后发一次绑车激活
 					ivi_message_request( ivi_clients[0].fd ,TBOX__NET__MESSAGETYPE__RESPONSE_TBOX_ACTIVESTATE_RESULT,NULL); //通知车机激活成功
 				}
 				if(tsplogfile_flag == 1)
@@ -2338,6 +2345,18 @@ void tbox_ivi_ecall_key_deal(uint8_t dt)
 	}
 }
 
+void tbox_ivi_tsp_active(void)
+{
+	static uint8_t old_state = 0 , new_state = 0;
+	new_state = PP_rmtCfg_enable_actived();
+	if(old_state != new_state)
+	{
+		active_flag = 1;//需要给车机发送绑车激活
+		old_state = new_state;
+		log_o(LOG_IVI,"Status issued by TSP:%d",PP_rmtCfg_enable_actived());
+	}
+}
+
 uint8_t tbox_ivi_get_link_fault(uint64_t *timestamp)
 {
 	if(timestamp != NULL)
@@ -2346,3 +2365,5 @@ uint8_t tbox_ivi_get_link_fault(uint64_t *timestamp)
 	}
 	return ihu_fault.ivi_net_faultflag;
 }
+
+

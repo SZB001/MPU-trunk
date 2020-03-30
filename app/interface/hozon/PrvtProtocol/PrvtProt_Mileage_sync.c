@@ -39,10 +39,12 @@
 #include "PrvtProt_SigParse.h"
 #include "PrvtProt_Mileage_sync.h"
 
+static uint8_t sync_upgrade_mile = 0;
 static uint32_t old_mileage;
 static uint32_t new_mileage;
 uint8_t data[8] = {0};
 
+extern int scom_dev_openSt(void);
 
 void PP_Mileagesync_init(void)
 {
@@ -61,6 +63,16 @@ int PP_Mileagesync_mainfunction(void *task)
 {	
 	static uint8_t w_flag = 0;
 	int i;
+	
+	if(sync_upgrade_mile == 1)
+	{
+		data[0] = (uint8_t)(new_mileage >> 16);
+		data[1] = (uint8_t)(new_mileage >> 8);
+		data[2] = (uint8_t)(new_mileage);
+		PP_can_send_mileage(data);
+		sync_upgrade_mile = 0;
+	}
+	
 	if(1 == dev_get_KL15_signal())  //IGN on
 	{
 		if(1 == PrvtProt_SignParse_OdomtrUpdtSt())  //里程同步指令
@@ -96,5 +108,9 @@ int PP_Mileagesync_mainfunction(void *task)
 uint32_t Get_Tbox_mileage(void)
 {
 	return old_mileage;
+}
+void PP_Mileagesync_setupgradeflag(void)
+{
+	sync_upgrade_mile = 1;
 }
 

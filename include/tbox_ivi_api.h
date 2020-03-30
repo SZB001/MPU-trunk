@@ -172,6 +172,8 @@ extern void tbox_ivi_ecall_srs_deal(uint8_t dt);
 
 extern void tbox_ivi_ecall_key_deal(uint8_t dt);
 
+extern void tbox_ivi_tsp_active(void);
+
 extern void tbox_ivi_closesocket();
 
 extern void tbox_ivi_push_fota_informHU(uint8_t flag);
