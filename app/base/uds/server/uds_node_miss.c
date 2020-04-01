@@ -120,6 +120,7 @@ static void test_all_node_miss(void)
     if((0 == st_get(ST_ITEM_POW_VOLTAGE, (unsigned char *)&voltage, &length))
         &&(voltage >= low_voltage_threshold) 
         &&(voltage <= high_voltage_threshold)
+        &&(1 == dev_get_KL15_signal())
         &&(can2_busoff_status == 1))
     {
         for (node_num = CAN_NODE_MISS_ITEM_ACU; node_num < CAN_NODE_MISS_ITEM_NUM; node_num++)
