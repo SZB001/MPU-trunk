@@ -39,6 +39,7 @@ description�� include the header file
 #include "../sockproxy/sockproxy_rxdata.h"
 #include "../sockproxy/sockproxy_txdata.h"
 #include "../../support/protocol.h"
+#include "at_api.h"
 #include "cfg_api.h"
 #include "udef_cfg_api.h"
 #include "pm_api.h"
@@ -926,6 +927,8 @@ void PrvtProt_defaultsettings(void)
 
 	unsigned char wifien = 1;
 	cfg_set_para(CFG_ITEM_WIFI_SET, &wifien, sizeof(wifien));
+	cfg_set_para(CFG_ITEM_WIFI_SSID, (unsigned char *)DEFAULT_SSID, 32);
+    cfg_set_para(CFG_ITEM_WIFI_KEY, (unsigned char *)DEFAULT_PASSWORD, 32);
 
 	unsigned char sleep_mode = 3;
     cfg_set_para(CFG_ITEM_SLEEP_MODE, &sleep_mode, sizeof(sleep_mode));

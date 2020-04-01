@@ -12,7 +12,7 @@ author        wangqinglong
 #include "tbox_limit.h"
 
 #define DEFAULT_SSID            "hozon_tbox"
-#define DEFAULT_PASSWORD        "12345678"
+#define DEFAULT_PASSWORD        "HZ_abc12"
 
 typedef enum AT_MSG_EVENT
 {
