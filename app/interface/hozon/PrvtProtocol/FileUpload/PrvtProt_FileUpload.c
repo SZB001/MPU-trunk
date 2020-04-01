@@ -265,7 +265,6 @@ static int PP_FileUpload_Tspshell(int argc, const char **argv)
 	cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
 	shellprintf(" set canfile ok\r\n");
 
-
 	return 0;
 }
 
@@ -302,7 +301,7 @@ static void *PP_GbFileSend_main(void)
 			sprintf(buf+2,"%s%s",vin,tboxsn);
 			buf[37] = m_end;
 			sem_p(semid);
-			memcpy(addr,buf,sizeof(buf));
+			memcpy(addr,buf,38);
 			sem_v(semid);	
     	}
 		shmdt(addr);
@@ -368,7 +367,7 @@ static void *PP_CanFileSend_main(void)
 				sprintf(buf+5,"%s",vin);
 				buf[22] = m_end;
 				sem_p(semid);
-				memcpy(addr,buf,strlen(buf));
+				memcpy(addr,buf,23);
 				sem_v(semid);
 				log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");
 				PP_FileUL.signTrigFlag = 0;
@@ -387,7 +386,8 @@ static void *PP_CanFileSend_main(void)
 				sprintf(buf+5,"%s",vin);
 				buf[22] = m_end;
 				sem_p(semid);
-				memcpy(addr,buf,strlen(buf));
+				memcpy(addr,buf,23);
+				log_o(LOG_HOZON,"addr[4] = %d",addr[4]);
 				sem_v(semid);
 				//log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");	
 				PP_tsp_flag = 0;

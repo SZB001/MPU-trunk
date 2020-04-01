@@ -126,8 +126,6 @@ void InitPP_CanMsgUL_Parameter(void)
 
 	CanMsgUL.BaseClctime = tm_get_time();
 	CanMsgUL.BaseStatistictime = CanMsgUL.BaseClctime;
-	unsigned int cfglen = 1;
-	cfg_get_para(CFG_ITEM_EN_CANFILE, &canCollectEnflag, &cfglen);
 }
 
 /******************************************************
@@ -183,6 +181,8 @@ static void *PP_CanMsgUL_main(void)
 		long relTStamp;
 		CanMsg_t *canMsgin;
 		long long currClctime;
+		unsigned int cfglen = 1;
+		cfg_get_para(CFG_ITEM_EN_CANFILE, &canCollectEnflag, &cfglen);
 
 		if((1 == canCollectEnflag) && \
 		   (DIAG_EMMC_OK == dev_diag_get_emmc_status()))
@@ -359,7 +359,7 @@ void PP_CanMsgUL_datacollection(void *msg)
 	uint64_t	Lecurrtime;
 	CAN_MSG *	canMsg  = msg;
 	if((0 == dev_get_KL15_signal()) || (1 == get_factory_mode()) || \
-	   (0 == canCollectEnflag) 		|| (1 == GetPP_rmtCtrl_fotaUpgrade()))
+	   (1 != canCollectEnflag) 		|| (1 == GetPP_rmtCtrl_fotaUpgrade()))
 	{
 		return;
 	}
