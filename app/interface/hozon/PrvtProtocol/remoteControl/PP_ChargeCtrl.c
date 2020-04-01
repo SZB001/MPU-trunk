@@ -286,7 +286,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 		{
 			log_o(LOG_HOZON,"charge control end\n");
 			PP_ChargeCtrl_EndHandle(&PP_rmtChargeCtrl);
-			//PP_rmtChargeCtrl.state.chargecmd = 0;
+			PP_rmtChargeCtrl.state.chargecmd = 0;
 			clearPP_canSend_virtualOnline(CHARGE_VIRTUAL);//清除虚拟on线
 			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_CHRG);
 			PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_IDLE;

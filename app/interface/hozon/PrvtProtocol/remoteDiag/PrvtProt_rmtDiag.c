@@ -1053,6 +1053,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 			else
 			{
 				PP_rmtDiag.state.activeDiagFlag = 0;
+				PP_rmtDiag.state.sleepflag = 1;
 			}
 		}
 		break;
