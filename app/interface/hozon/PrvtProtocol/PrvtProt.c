@@ -310,6 +310,8 @@ static void *PrvtProt_main(void)
 				PP_heartbeat.hbtype = 1;//切换到正常通信心跳频率
 				PP_heartbeat.hbtaskflag = 1;
 			}
+			PP_heartbeat.IGNoldst = 0xff;
+			PP_heartbeat.IGNnewst = 0xff;
 		}
 
 		PP_CertDownload_mainfunction(&pp_task);

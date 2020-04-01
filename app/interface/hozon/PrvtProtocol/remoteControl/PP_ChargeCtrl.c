@@ -232,7 +232,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 		{
 			if((tm_get_time() - PP_rmtChargeCtrl.state.waittime) > 3000)
 			{
-				
+
 				if(PP_rmtChargeCtrl.state.chargecmd == PP_CHARGECTRL_OPEN)
 				{
 					if((tm_get_time() - PP_rmtChargeCtrl.state.waittime) < 3500)
@@ -251,7 +251,7 @@ int PP_ChargeCtrl_mainfunction(void *task)
 					}
 					else//开启超时
 					{
-						log_o(LOG_HOZON,"Instruction execution timeout\n");
+						log_o(LOG_HOZON,"open Instruction execution timeout\n");
 						log_o(LOG_HOZON,"PP_rmtCtrl_cfg_chargeOnOffSt = %d",PP_rmtCtrl_cfg_chargeOnOffSt());
 						PP_rmtChargeCtrl.appointCharging = 0;
 						PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0);//start命令清除
@@ -259,24 +259,34 @@ int PP_ChargeCtrl_mainfunction(void *task)
 						PP_rmtChargeCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_IDLE;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
-						//PP_rmtChargeCtrl.state.chargecmd = 0;
 					}
 				}
 				else 
 				{
-					if(PP_rmtCtrl_cfg_chargeSt() != PP_RMTCTRL_CFG_CHARGEING) //充电关闭
+					if((tm_get_time() - PP_rmtChargeCtrl.state.waittime) < 3500)
 					{
-						log_o(LOG_HOZON,"close charge success");
-						PP_rmtChargeCtrl.chargeOnOffFlag = 2;
+						if(PP_rmtCtrl_cfg_chargeSt() != PP_RMTCTRL_CFG_CHARGEING) //充电关闭
+						{
+							log_o(LOG_HOZON,"close charge success");
+							PP_rmtChargeCtrl.chargeOnOffFlag = 2;
+							PP_rmtChargeCtrl.appointCharging = 0;
+							PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);//如果充电超时
+							//PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); //stop命令不清除
+							PP_rmtChargeCtrl.fail     = 0;
+							//PP_rmtChargeCtrl.state.chargecmd = 0;
+							PP_stopflag = PP_ChargeCtrl_stopflag();
+							PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_IDLE;
+							PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
+						}	
+					}
+					else//关闭超时
+					{
+						log_o(LOG_HOZON,"close Instruction execution timeout\n");
 						PP_rmtChargeCtrl.appointCharging = 0;
-						PP_can_send_data(PP_CAN_CHAGER,CAN_CANCELAPPOINT,0);//如果充电超时
-						//PP_can_send_data(PP_CAN_CHAGER,CAN_CLEANCHARGE,0); //stop命令不清除
-						PP_rmtChargeCtrl.fail     = 0;
-						//PP_rmtChargeCtrl.state.chargecmd = 0;
-						PP_stopflag = PP_ChargeCtrl_stopflag();
+						PP_rmtChargeCtrl.fail     = 1;
+						PP_rmtChargeCtrl.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 						PP_rmtChargeCtrl.state.chargeSt = PP_CHARGESTATE_IDLE;
 						PP_rmtChargeCtrl.state.CtrlSt = PP_CHARGECTRL_END;
-						
 					}
 				}
 			}
@@ -878,7 +888,7 @@ void SetPP_ChargeCtrl_Awaken(void)
 #endif
 unsigned char GetPP_ChargeCtrl_Sleep(void)
 {
-	return PP_ChargeCtrl_Sleepflag;
+	return 1;
 }
 
 /*
