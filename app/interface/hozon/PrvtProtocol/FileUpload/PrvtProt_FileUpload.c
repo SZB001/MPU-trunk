@@ -186,9 +186,6 @@ int PP_FileUpload_run(void)
     {
         log_e(LOG_HOZON, "file upload pthread create failed, error: %s", strerror(errno));
     }
-	unsigned int cfglen;
-	cfglen = 1;
-	cfg_get_para(CFG_ITEM_EN_CANFILE, &canupload_en, &cfglen);
 	return 0;
 }
 
@@ -237,8 +234,12 @@ void PP_FileUpload_CanMsgRequest(int mintue)
 {
 	PP_tsp_flag = 1;
 	log_o(LOG_HOZON,"PP_tsp_flag  %d",mintue);
+	PP_tsp_time = 0;
 	PP_tsp_time = (uint16_t)mintue;
 	log_o(LOG_HOZON,"PP_tsp_flag  %d",mintue);
+	unsigned int canfile_en;
+	canfile_en = 1;
+	cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
 	log_o(LOG_HOZON,"TSP request upload can file");
 }
 
@@ -249,6 +250,7 @@ void PP_FileUpload_LogRequest(PP_log_upload_t log_para)
 	PP_up_log.log_start_time = log_para.log_start_time;  //开始上传日志的时间
 	PP_up_log.log_up_time = log_para.log_up_time;    //采集日志的时间
 	PP_up_log.log_eventId = log_para.log_eventId;
+	
 	log_o(LOG_HOZON,"TSP request upload log file");
 }
 
@@ -264,7 +266,6 @@ static int PP_FileUpload_Tspshell(int argc, const char **argv)
 	sscanf(argv[0], "%u", &canfile_en);
 	cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
 	shellprintf(" set canfile ok\r\n");
-
 	return 0;
 }
 
@@ -323,6 +324,7 @@ static void *PP_CanFileSend_main(void)
     prctl(PR_SET_NAME, "CANFILE_SEND");
 	char buf[200] = {0};
 	char vin[18] = {0};
+	struct timeval TSP_request_timestamp;
 	int semid = Commsem();
 	set_semvalue(semid);//初始化信号量值为1
 	while(1)
@@ -332,7 +334,11 @@ static void *PP_CanFileSend_main(void)
 		sleep(20);	
 		int shmid = GetShm(4096);
 		char *addr = shmat(shmid,NULL,0);
-
+		
+		unsigned int cfglen;
+		cfglen = 1;
+		cfg_get_para(CFG_ITEM_EN_CANFILE, &canupload_en, &cfglen);
+		
 		if(	(canupload_en == 1)					&& \
 			(dev_get_KL15_signal() == 1) 		&& \
 			(0 == GetPP_rmtCtrl_fotaUpgrade()) 	&& \
@@ -349,7 +355,7 @@ static void *PP_CanFileSend_main(void)
 					PP_FileUL.warnSign[obj].oldSt = PP_FileUL.warnSign[obj].newSt;
 					if(1 == PP_FileUL.warnSign[obj].newSt)
 					{
-						PP_FileUL.signTrigFlag = 1;
+						//PP_FileUL.signTrigFlag = 1;
 						break;
 					}
 				}
@@ -375,6 +381,7 @@ static void *PP_CanFileSend_main(void)
 			
 			if(PP_tsp_flag == 1)                   //平台请求触发
 			{
+				gettimeofday(&TSP_request_timestamp, NULL);  //故障触发时间戳
 				gb32960_getvin(vin);
 				memset(buf,0,sizeof(buf));
 				buf[0] = m_start;
@@ -397,7 +404,18 @@ static void *PP_CanFileSend_main(void)
 		{
 			PP_tsp_flag = 0;
 		}
-
+		
+		if(canupload_en == 1)  //
+		{
+			struct timeval nowtime_stamp;
+			gettimeofday(&nowtime_stamp, NULL);  
+			if(nowtime_stamp.tv_sec > TSP_request_timestamp.tv_sec + PP_tsp_time * 60 + 60)
+			{
+				unsigned int canfile_en;
+				canfile_en = 0;
+				cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
+			}
+		}
 		shmdt(addr);
 
 		//整车报文文件删除
@@ -482,9 +500,11 @@ static void *PP_LogFileSend_main(void)
 		shmdt(addr);	
 		if(start_flag == 1)
 		{
+			struct timeval nowtime_stamp;
+			gettimeofday(&nowtime_stamp, NULL); 
 			if(start_time == 0)
 			{
-				if(tm_get_time() - (up_timestamp.tv_sec + up_time) > 0)
+				if(nowtime_stamp.tv_sec - (up_timestamp.tv_sec + up_time) > 0)
 				{
 					en = 0;
     				cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1); //打开日志文件生成
@@ -493,7 +513,7 @@ static void *PP_LogFileSend_main(void)
 			}
 			else
 			{
-				if(tm_get_time() - (start_time+up_time) > 0)
+				if(nowtime_stamp.tv_sec - (start_time+up_time) > 0)
 				{
 					en = 0;
     				cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1); //打开日志文件生成

@@ -458,9 +458,9 @@ int clbt_cfg_set_default_para(UDEF_CFG_SET_TYPE type)
     strcpy((char *) gbvin, "00000000000000000");
     clbt_cfg_set_by_id(CFG_ITEM_GB32960_VIN, gbvin, 18, type);
     char gb_url[256] = {0};
-    strcpy((char *) gb_url, "47.102.130.222");
+    strcpy((char *) gb_url, UDEF_GB_ADDR);
     clbt_cfg_set_by_id(CFG_ITEM_GB32960_URL, gb_url, sizeof(gb_url), type);
-    tmp_short = 20000;
+    tmp_short = UDEF_GB_PORT;
     clbt_cfg_set_by_id(CFG_ITEM_GB32960_PORT, &tmp_short, sizeof(short), type);
     tmp_short = 0;
     clbt_cfg_set_by_id(CFG_ITEM_GB32960_REGINTV, &tmp_short, sizeof(short), type);

@@ -41,6 +41,7 @@ description�� include the header file
 #include "sockproxy_rxdata.h"
 #include "sockproxy_txdata.h"
 #include "../PrvtProtocol/PrvtProt_queue.h"
+#include "hozon_ver_api.h"
 #include "../PrvtProtocol/PrvtProt.h"
 #include "tboxsock.h"
 #include "sockproxy.h"
@@ -52,6 +53,20 @@ description�� global variable definitions
 /*******************************************************
 description�� static variable definitions
 *******************************************************/
+
+
+#ifdef HOZON_PRD
+#define TSP_URL_IP "172.16.10.204"
+#endif
+
+#ifdef HOZON_UAT
+#define TSP_URL_IP "172.16.20.237"
+#endif
+
+#ifdef HOZON_PRE
+#define TSP_URL_IP "60.12.185.130"
+#endif
+
 static sockproxy_stat_t sockSt;
 static pthread_mutex_t sendmtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ����̬��
 static pthread_mutex_t closemtx = 	PTHREAD_MUTEX_INITIALIZER;//��ʼ����̬��
@@ -409,6 +424,12 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 			return -1;
 		}
 
+#ifdef HOZON_PRE
+	log_e(LOG_HOZON, "pre does not support\n");
+	sleep(1);
+	return -1;
+#endif
+
 		switch(sockSt.linkSt)
 		{
 			case SOCKPROXY_CHECK_CERT:
@@ -574,9 +595,6 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 	int iRet = 0;
 	char	OnePath[64]="\0";
 	char	ScdPath[64]="\0";
-	char 	destIP[32];
-	struct 	hostent * he;
-	char 	**phe = NULL;
 
 	switch(sockSt.sglinkSt)
 	{
@@ -594,6 +612,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 		{
 			if(sockSt.state == PP_CLOSED)
 			{
+				#if 0
 				getPP_rmtCfg_certAddrPort(sockSt.sgLinkAddr,&sockSt.sgPort);
 				if((sockSt.sgLinkAddr[0] == 0) || (sockSt.sgPort == 0))
 				{
@@ -604,25 +623,21 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					sleep(1);
 					return -1;
 				}
-				
-				he=gethostbyname(sockSt.sgLinkAddr);
-				if(he == NULL)
+				#endif
+				/*port ipaddr*/
+				if(sockSt.apnType != 1)
 				{
-					log_e(LOG_SOCK_PROXY,"gethostbyname %s error\n",sockSt.sgLinkAddr);
-					sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
-					sockSt.waittime = tm_get_time();
-					sleep(1);
-					return -1;
+					#ifdef HOZON_UAT
+					{	
+						iRet = HzPortAddrCft(22000, 1,"47.102.130.222",NULL);
+					}
+					#endif
+				}
+				else
+				{
+					iRet = HzPortAddrCft(22000, 1,TSP_URL_IP,NULL);//TBOX端口地址配置初始化
 				}
 
-				for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
-				{
-					 inet_ntop(he->h_addrtype,*phe,destIP,sizeof(destIP));
-					 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
-					 break;
-				} 
-				/*port ipaddr*/
-				iRet = HzPortAddrCft(sockSt.sgPort, 1,destIP,NULL);//TBOX端口地址配置初始化
 				if(iRet != SOCKPROXY_SG_ADDR_INIT_SUCCESS)
 				{
 					log_e(LOG_SOCK_PROXY,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", iRet);
@@ -670,7 +685,8 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					return -1;
 				}
 				SgHzTboxSocketFd(&Sg_sockFd);
-				if((sockSt.apnType == 1) && (strncmp(destIP,"172.16",6) == 0))
+				
+				if(sockSt.apnType == 1)
 				{
 					struct ifreq nif;
 					memset(&nif,0x00,sizeof(nif));
@@ -765,9 +781,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 	int 	iRet = 0;
 	char	OnePath[64]="\0";
 	char	ScdPath[64]="\0";
-	char 	destIP[32];
-	struct 	hostent * he;
-	char 	**phe = NULL;
+	//char 	destIP[32];
 
 	switch(sockSt.BDLlinkSt)
 	{
@@ -785,6 +799,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 			if(sockSt.state == PP_CLOSED)
 			{
+				#if 0
 				getPP_rmtCfg_tspAddrPort(sockSt.BDLLinkAddr,&sockSt.BDLPort);
 				if((sockSt.BDLLinkAddr[0] == 0) || (sockSt.BDLPort == 0))
 				{
@@ -795,30 +810,18 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					sleep(1);
 					return -1;
 				}
-				
-				he=gethostbyname(sockSt.BDLLinkAddr);
-				if(he == NULL)
-				{
-					log_e(LOG_SOCK_PROXY,"gethostbyname %s error\n",sockSt.BDLLinkAddr);
-					sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-					sockSt.waittime = tm_get_time();
-					sockSt.dnserrcnt++;
-					if(sockSt.dnserrcnt >= 3)
-					{
-						//system("reboot");
-					}
-					sleep(1);
-					return -1;
-				}
-				sockSt.dnserrcnt = 0;
-				for( phe=he->h_addr_list ; NULL != *phe ; ++phe)
-				{
-					 inet_ntop(he->h_addrtype,*phe,destIP,sizeof(destIP));
-					 log_i(LOG_SOCK_PROXY,"%s\n",destIP);
-					 break;
-				}  
+				#endif
 				/*port ipaddr*/
-				iRet = HzPortAddrCft(sockSt.BDLPort, 1,destIP,NULL);
+				if(sockSt.apnType != 1)
+				{
+					#ifdef HOZON_UAT
+					iRet = HzPortAddrCft(21000, 1,"47.102.130.222",NULL);
+					#endif
+				}
+				else
+				{
+					iRet = HzPortAddrCft(21000, 1,TSP_URL_IP,NULL);
+				}
 				if(iRet != 1010)
 				{
 					log_e(LOG_SOCK_PROXY,"HzPortAddrCft error+++++++++++++++iRet[%d] \n", iRet);
@@ -879,7 +882,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 				/*Initiate a connection server request*/
 				HzTboxSocketFd(&SP_sockFd);
-				if((sockSt.apnType == 1) && (strncmp(destIP,"172.16",6) == 0))
+				if(sockSt.apnType == 1)
 				{
 					struct ifreq nif;
 					memset(&nif,0x00,sizeof(nif));
@@ -897,7 +900,6 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 						printf("setsockopt interface success \r\n");
 					}
 				}
-
 				iRet = HzTboxConnect(SP_sockFd);
 				if(iRet != 1230)
 				{

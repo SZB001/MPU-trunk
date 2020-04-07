@@ -144,6 +144,8 @@ extern void PP_can_send_mileage(uint8_t *dt);
 
 extern uint8_t PP_get_virtual_flag();
 
+extern void PP_canSend_collect(unsigned int can_id,uint8_t *dt);
+
 
 #endif
 

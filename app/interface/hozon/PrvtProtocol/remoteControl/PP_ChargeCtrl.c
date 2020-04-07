@@ -102,6 +102,7 @@ static int PP_stopflag = 0;
 static uint8_t PP_ChargeCtrl_Sleepflag = 0;
 //extern void pm_ring_wakeup(void);
 extern void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para);
+extern void pm_ring_wakeup(void);
 static void PP_ChargeCtrl_chargeStMonitor(void);
 static int PP_ChargeCtrl_stopflag(void);
 static int PP_ChargeCtrl_startHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge);
@@ -636,6 +637,7 @@ int SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBod
 			}
 			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_COMAND_APPOINTCHARGE)
 			{//预约
+				pm_ring_wakeup();//TSP下发预约的时候，唤醒mcu
 				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] << 24;
 				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[1] << 16;
 				appointId |= (uint32_t)appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[2] << 8;
@@ -674,6 +676,7 @@ int SetPP_ChargeCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBod
 			else if(appdatarmtCtrl_ptr->CtrlReq.rvcReqType == PP_COMAND_CANCELAPPOINTCHARGE)
 			{//取消预约
 				log_i(LOG_HOZON, "TSP cancel appointment\n");
+				pm_ring_wakeup();//TSP下发取消预约的时候，唤醒mcu
 				rmtCtrl_Stpara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 				rmtCtrl_Stpara.eventid = disptrBody_ptr->eventId;
 				rmtCtrl_Stpara.Resptype = PP_RMTCTRL_RVCSTATUSRESP;

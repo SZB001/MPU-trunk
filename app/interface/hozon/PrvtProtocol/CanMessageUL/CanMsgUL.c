@@ -191,6 +191,7 @@ static void *PP_CanMsgUL_main(void)
 				dir_make_path(PP_CANMSGUL_PATH, S_IRUSR | S_IWUSR, false) != 0)
 			{
 				log_e(LOG_HOZON, "create the path %s fail\n",PP_CANMSGUL_PATH);
+				sleep(1);
 			}
 			else
 			{
@@ -333,9 +334,12 @@ static void *PP_CanMsgUL_main(void)
 					log_i(LOG_HOZON, "\ncurrent timestamp 41: %d\n",tm_get_time());
 				}
 			}
+			usleep(PP_CANMSGUL_USSLEEPTIME);
 		}
-		
-		usleep(PP_CANMSGUL_USSLEEPTIME);
+		else
+		{
+			usleep(1000*PP_CANMSGUL_USSLEEPTIME);
+		}
     }
 
     return NULL;

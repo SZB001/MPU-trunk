@@ -215,6 +215,7 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 		can_data[1] = dt[1];
 		can_data[2] = dt[2];
 		PP_send_cycle_ID526_to_mcu(can_data);
+		PP_canSend_collect(CAN_ID_526,can_data);
 	}
 	else
 	{
@@ -231,6 +232,7 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 			}
 		}
 		PP_send_event_info_to_mcu(&canmsg_3D2);
+		PP_canSend_collect(CAN_ID_3D2,canmsg_3D2.data);
 	}
 }
 /***************************************************
@@ -245,11 +247,13 @@ void PP_can_send_cycle(void)
 		pthread_mutex_lock(&sync_mutex_440);
 		PP_can_unpack(old_ID440_data,can_data);
 		PP_send_cycle_ID440_to_mcu(can_data);
+		PP_canSend_collect(CAN_ID_440,can_data);
 		pthread_mutex_unlock(&sync_mutex_440);
 
 		pthread_mutex_lock(&sync_mutex_445);
 		PP_can_unpack(old_ID445_data,can_data);
 		PP_send_cycle_ID445_to_mcu(can_data);
+		PP_canSend_collect(CAN_ID_445,can_data);
 		pthread_mutex_unlock(&sync_mutex_445);
 		sync_upgrade_flae = 0;	
 	}
@@ -279,6 +283,7 @@ void PP_can_send_cycle(void)
 				{
 					PP_can_unpack(old_ID440_data,can_data);
 					PP_send_cycle_ID440_to_mcu(can_data);
+					PP_canSend_collect(CAN_ID_440,can_data);
 					log_buf_dump(LOG_HOZON, "440_can", can_data, 8);
 					lasttime_440 = tm_get_time();
 					sync_cnt_440 ++;
@@ -301,6 +306,7 @@ void PP_can_send_cycle(void)
 			  	{
 					PP_can_unpack(old_ID445_data,can_data);
 					PP_send_cycle_ID445_to_mcu(can_data);
+					PP_canSend_collect(CAN_ID_445,can_data);
 					log_buf_dump(LOG_HOZON, "445_can", can_data, 8);
 					lasttime_445 = tm_get_time();
 					sync_cnt_445++;
@@ -616,7 +622,25 @@ void clearPP_canSend_virtualOnline(uint8_t type)
 		PP_can_mcu_sleep();     //不需要保持唤醒
 	}
 }
+
 void PP_canSend_setupgrade_flag(void)
 {
 	sync_upgrade_flae = 1;
+}
+
+void PP_canSend_collect(unsigned int can_id,uint8_t *dt)
+{
+	CAN_MSG 	canMsg;
+	int i = 0;
+	canMsg.MsgID = can_id;
+	canMsg.isRx = 0;
+	canMsg.port = 2;
+	canMsg.len = 8;
+	for(i= 0; i< 8; i++)
+	{
+		canMsg.Data[i] = dt[i];
+	}
+	PP_CanMsgUL_datacollection(&canMsg);
+	
+	
 }

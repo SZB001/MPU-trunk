@@ -1,5 +1,20 @@
 /****************user data*******************/
 #include "udef_cfg_api.h"
+#include "hozon_ver_api.h"
+
+#ifdef HOZON_PRE
+#define UDEF_GB_ADDR    "60.12.185.130"
+#endif
+
+#ifdef HOZON_UAT
+#define UDEF_GB_ADDR    "47.102.130.222"
+#endif
+
+#ifdef HOZON_PRD
+#define UDEF_GB_ADDR    "101.132.79.244"
+#endif
+
+#define UDEF_GB_PORT    20000
 
 USER_CFG_TABLE_BEGIN()
 

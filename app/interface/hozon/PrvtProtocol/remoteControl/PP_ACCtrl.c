@@ -83,6 +83,9 @@ typedef struct {
 	uint16_t cmd;
 	uint8_t effectivestate;
 }ACCAppointSt;
+
+extern void pm_ring_wakeup(void);
+
 int AC_Shell_setctrl(int argc, const char **argv)
 {
 	ACCAppointSt acctrl;
@@ -490,6 +493,7 @@ int SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 						}
 						else
 						{
+							pm_ring_wakeup();//下发空调预约，唤醒一次mcu
 							PP_rmtac_AppointBook[index].id = appointId;
 							PP_rmtac_AppointBook[index].hour = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[4];
 							PP_rmtac_AppointBook[index].min = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[5];
@@ -528,6 +532,7 @@ int SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 						{
 							if(PP_rmtac_AppointBook[i].id == appointId)  //
 							{
+								pm_ring_wakeup();//TSP下发取消空调预约，唤醒一次mcu
 								PP_rmtac_AppointBook[i].validFlg  = 0;
 								log_i(LOG_HOZON, "cancel appointment success , ID = %d\n",PP_rmtac_AppointBook[i].id);
 								PP_rmtACCtrl.state.dataUpdata = 1;
