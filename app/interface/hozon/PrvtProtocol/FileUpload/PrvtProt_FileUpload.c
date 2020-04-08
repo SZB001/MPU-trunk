@@ -186,6 +186,25 @@ int PP_FileUpload_run(void)
     {
         log_e(LOG_HOZON, "file upload pthread create failed, error: %s", strerror(errno));
     }
+	
+	unsigned int cfglen;
+	unsigned int canfile_en;
+	cfglen = 1;
+	cfg_get_para(CFG_ITEM_EN_CANFILE, &canfile_en, &cfglen);
+	if(canfile_en == 1)
+	{
+		canfile_en = 0;
+		cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
+	}
+
+	unsigned char en;
+	cfg_get_para(CFG_ITEM_LOG_ENABLE, &en, &cfglen); 
+	if(en == 1)
+	{
+		en = 0;
+    	cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1); 
+	}
+	
 	return 0;
 }
 
@@ -432,7 +451,7 @@ static void *PP_LogFileSend_main(void)
 
 	int i;
 	char vin[18] = {0};
-	int en = 0;
+	unsigned char en = 0;
 	char cmd[200] = {0};
 	static int start_flag = 0;
 	static uint32_t start_time = 0;

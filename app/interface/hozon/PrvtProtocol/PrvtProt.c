@@ -618,6 +618,7 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
         	PP_heartbeat.timeoutCnt++;
 			if(0 != sockproxy_check_link_status())
 			{
+				log_e(LOG_HOZON, "heartbeat link is fault\n");
 				sockproxy_socketclose((int)(PP_SP_COLSE_PP));
 			}
 			PP_heartbeat.hbtasksleepflag = 1;
