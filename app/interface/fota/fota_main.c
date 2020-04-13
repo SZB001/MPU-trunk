@@ -37,26 +37,48 @@ extern int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz,
 
 //-1:fail 0:success 1:invalid 2:upgrading
 static int upgradeStatus = 1;
+
+static unsigned int upgradeErrCode = 0;
+
 unsigned char ecuName[10];
 
-int get_upgrade_result(unsigned char *name)
+int get_upgrade_result(unsigned char *name, unsigned int * ErrCode)
 {
     int temp = upgradeStatus;
 
     if (NULL != name)
-
     {
         memcpy(name, ecuName, sizeof(ecuName));
     }
 
-    if ((-1 == temp) ||
-        (0 == temp))
+    //When Get Upgrade Result, We Return Result And Reset Result
+    if (-1 == temp)
     {
         upgradeStatus = 1;
         memset(ecuName, 0, sizeof(ecuName));
+
+        *ErrCode = upgradeErrCode;
+        upgradeErrCode = 0;
     }
+    else if(0 == temp)
+    {
+        upgradeStatus = 1;
+        memset(ecuName, 0, sizeof(ecuName));
+
+        upgradeErrCode = 0;
+    }
+            
 
     return temp;
+}
+
+
+//Error Code: 0x0000xxyy
+//xx: SID
+//yy: Negative Response, If yy = FF, Means Wait Server Timeout
+void set_upgrade_result_errcode(unsigned int ErrCode)
+{
+    upgradeErrCode = ErrCode;
 }
 
 static void *fota_main(void)

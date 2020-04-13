@@ -52,7 +52,7 @@ struct fota_ecu
     int (*security)(uint8_t *seed, int *par, uint8_t *key, int ksz);
     int (*erase)(uint32_t addr, int size);
     int (*check1)(unsigned int);
-    int (*check2)(void);
+    int (*check2)(unsigned int);
     fota_t *fota;
     int valid;
 };

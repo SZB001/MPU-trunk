@@ -63,7 +63,7 @@ extern unsigned char PrvtProt_SignParse_HVReadySt(void);
 #define WSRV_VERSION_BODY           "{\"%s_sv\":\"%s\",\"%s_hv\":\"%s\",\"%s_blv\":\"%s\",\"%s_sn\":\"%s\",\"%s_partnum\":\"%s\",\"%s_supplier\":\"%s\"}"
 #define WSRV_GPS_BODY               "{\"la\":%lf,\"lo\":%lf}"
 #define WSRV_VIN_BODY               "{\"vin\":\"%s\"}"
-#define WSRV_ECURESULT_BODY         "{\"name\":\"%s\",\"result\":\"%s\"}"
+#define WSRV_ECURESULT_BODY         "{\"name\":\"%s\",\"result\":\"%s\",\"err\":%d}"
 #define WSRV_RTC_BODY               "{\"t\":\"%04d%02d%02dT%02d%02d%02dZ\"}"
 #define WSRV_MODEINRESULT_BODY      "{\"r\":%d,\"err\":%d}"
 #define WSRV_MODEOUTRESULT_BODY     "{\"r\":%d,\"err\":%d}"
@@ -525,23 +525,24 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     else if (0 == strcmp(cmd_buf, WSRV_CMD_ECURESULT))
     {
         int upgraderesult;
-        extern int get_upgrade_result(unsigned char *name);
+        unsigned int upgradeErrCode = 0;
+        extern int get_upgrade_result(unsigned char *name, unsigned int * ErrCode);
 
-        upgraderesult = get_upgrade_result((unsigned char *)tmp_buf);
+        upgraderesult = get_upgrade_result((unsigned char *)tmp_buf, &upgradeErrCode);
         log_i(LOG_WSRV, "********** rcv get resault request, %d", upgraderesult);
 
         // TODO: fake data
         if (0 == upgraderesult)
         {
-            sprintf(body_buf, WSRV_ECURESULT_BODY, tmp_buf, "success");
+            sprintf(body_buf, WSRV_ECURESULT_BODY, tmp_buf, "success", upgradeErrCode);
         }
         else if (2 == upgraderesult)
         {
-            sprintf(body_buf, WSRV_ECURESULT_BODY, tmp_buf, "upgrading");
+            sprintf(body_buf, WSRV_ECURESULT_BODY, tmp_buf, "upgrading", upgradeErrCode);
         }
         else if (-1 == upgraderesult)
         {
-            sprintf(body_buf, WSRV_ECURESULT_BODY, tmp_buf, "fail");
+            sprintf(body_buf, WSRV_ECURESULT_BODY, tmp_buf, "fail", upgradeErrCode);
         }
 
         if (ret < 0)

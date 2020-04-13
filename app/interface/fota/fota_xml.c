@@ -56,7 +56,7 @@ static int xml_load_ver(xml_node_t *ver_node, fota_ver_t *ver)
 extern int foton_security(uint8_t *seed, int *par, uint8_t *key, int keysz);
 extern int foton_erase(uint32_t addr, int size);
 extern int foton_check1(unsigned int crc);
-extern int foton_check2(void);
+extern int foton_check2(unsigned int crc);
 
 int xml_load_ecu(xml_node_t *ecu_node, fota_ecu_t *ecu)
 {

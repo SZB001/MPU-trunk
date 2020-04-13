@@ -46,10 +46,12 @@ static int uds_req_id;
 static UDS_T *uds_client;
 
 extern void uds_hold_client(int en);
+extern void set_upgrade_result_errcode(unsigned int ErrCode);
 
 static void fota_uds_callback(UDS_T *uds, int msg_id, int can_id, uint8_t *data, int len)
 {
     int next = uds_state, sid;
+    unsigned int errcode;
 
     pthread_mutex_lock(&uds_m);
 
@@ -74,6 +76,9 @@ static void fota_uds_callback(UDS_T *uds, int msg_id, int can_id, uint8_t *data,
                     {
                         //log_e(LOG_FOTA, "x33");
                         uds_code = -1;
+
+                        errcode = (uds_srv_id << 8) + 0xFF;
+                        set_upgrade_result_errcode(errcode);
                     }
 
                     next = UDS_STATE_OPEN;
@@ -110,6 +115,9 @@ static void fota_uds_callback(UDS_T *uds, int msg_id, int can_id, uint8_t *data,
                     uds_code = data[2];
                     uds_size = 0;
                     next = UDS_STATE_OPEN;
+
+                    errcode = (sid << 8) + uds_code;
+                    set_upgrade_result_errcode(errcode);
                 }
                 else if (uds_req_id != uds->can_id_fun && uds->can_id_res == can_id)
                 {

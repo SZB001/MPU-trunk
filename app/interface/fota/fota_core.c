@@ -40,6 +40,7 @@ extern int fota_uds_reset(void);
 extern int fota_uds_enter_diag_GW(void);
 extern int fota_uds_write_data_by_identifier(uint8_t *identifier, uint8_t *data, int len);
 extern int fota_uds_write_data_by_identifier_ex(uint8_t *identifier, uint8_t *data, int len);
+extern void set_upgrade_result_errcode(unsigned int ErrCode);
 
 #define FOTA_MAX_ECU_NAME_LEN     (16)
 
@@ -169,12 +170,15 @@ static int fota_ecu_download(fota_ver_t *ver, int erase)
     static image_t img;
     static char fpath[512];
     int i;
+    unsigned int errcode;
 
     strcpy(fpath, ver->ecu->fota->root);
     strcat(fpath, ver->fpath);
 
     if (ver->load(fpath, &img) != 0)
     {
+        errcode = 0x00FE;
+        set_upgrade_result_errcode(errcode);
         log_e(LOG_FOTA, "load image \"%s\" fail", fpath);
         return -1;
     }
@@ -237,7 +241,7 @@ static int fota_ecu_download(fota_ver_t *ver, int erase)
         }
     }
 
-    if (ver->ecu->check2 && ver->ecu->check2() != 0)
+    if (ver->ecu->check2 && ver->ecu->check2(img.scnt) != 0)
     {
         log_e(LOG_FOTA, "check download fail");
         return -1;
