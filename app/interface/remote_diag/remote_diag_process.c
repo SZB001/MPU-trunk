@@ -605,3 +605,19 @@ int remote_diag_process_start(char *remote_diag_msg, TCOM_MSG_HEADER msg)
     return ret;
 }
 
+/* 退出远程诊断流程
+   0：已成功退出
+   1：未成功退出*/
+int remote_diag_process_quit(void)
+{
+    remote_diag_state_t * rd_state = get_remote_diag_state_t();
+    if((rd_state->remote_diag_state != REMOTE_DIAG_IDLE)
+        && (rd_state->current_cmd_state != REMOTE_DIAG_CMD_NOT_START))
+    {
+        memset(rd_state, 0x00, sizeof(remote_diag_state_t));
+        uds_set_client_ex(0, 0, 0, 0, NULL);
+    }
+    
+    return 0;
+}
+

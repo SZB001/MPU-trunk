@@ -259,6 +259,7 @@ uint32_t remote_seed_To_Key(REMOTE_DIAG_ECUTYPE ecu_type, char       *c_seed, ch
 void remote_diag_update_timer(unsigned int interval);
 int remote_diag_precondition_check(void);
 remote_diag_precondition_sig_id *get_remote_diag_precondition_sig_id(void);
+int remote_diag_process_quit(void);
 
 
 #endif //__REMOTE_DIAG_H__

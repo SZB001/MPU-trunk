@@ -164,20 +164,44 @@ static void *remote_diag_main(void)
         {
             /* 处理其它模块发送的远程诊断请求 */
             case REMOTE_DIAG_REQUEST:
-                remote_diag_process_start(remote_diag_msg, msg);
+                if(0 == dev_get_KL15_signal())
+                {
+                    log_e(LOG_REMOTE_DIAG, "IG OFF, quit remote diag!");
+                    remote_diag_process_quit();/*IG OFF 停止远程诊断 */
+                }
+                else
+                {
+                    remote_diag_process_start(remote_diag_msg, msg);
+                }
                 break;
 
             /* 远程诊断响应 */
             case REMOTE_DIAG_UDS_RESPONSE:
             case REMOTE_DIAG_SET_MCU_RESPONSE:
             case REMOTE_DIAG_MCU_RESPONSE:
-                remote_diag_process(msg.msgid, remote_diag_msg, msg.msglen);/*逐次执行单个命令 */
+                if(0 == dev_get_KL15_signal())
+                {
+                    log_e(LOG_REMOTE_DIAG, "IG OFF, quit remote diag!");
+                    remote_diag_process_quit();/*IG OFF 停止远程诊断 */
+                }
+                else
+                {
+                    remote_diag_process(msg.msgid, remote_diag_msg, msg.msglen);/*逐次执行单个命令 */
+                }
                 break;
 
             /* 请求超时 */
             case REMOTE_DIAG_REQUEST_TIMEOUT:
-                log_o(LOG_REMOTE_DIAG, "remote diag get REMOTE_DIAG_REQUEST_TIMEOUT");
-                remote_diag_timeout_process(remote_diag_msg, msg.msglen);
+                if(0 == dev_get_KL15_signal())
+                {
+                    log_e(LOG_REMOTE_DIAG, "IG OFF, quit remote diag!");
+                    remote_diag_process_quit();/*IG OFF 停止远程诊断 */
+                }
+                else
+                {
+                    log_o(LOG_REMOTE_DIAG, "remote diag get REMOTE_DIAG_REQUEST_TIMEOUT");
+                    remote_diag_timeout_process(remote_diag_msg, msg.msglen);
+                }
                 break;
 
             /* 喂狗消息 */
