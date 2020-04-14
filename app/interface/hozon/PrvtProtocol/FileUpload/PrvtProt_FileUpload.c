@@ -83,6 +83,7 @@ static void PP_CanFile_delfile(void);
 static int PP_FileUpload_escapeData(uint8_t *datain,int datainlen,uint8_t *dataout,int *dataoutlen);
 static int PP_FileUpload_nm_callback(NET_TYPE type, NM_STATE_MSG nmmsg);
 static unsigned char PP_FileUpload_signTrigSt(unsigned char obj);
+static void PP_FileUpload_set_log(unsigned char en);
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
@@ -191,7 +192,7 @@ int PP_FileUpload_run(void)
 	unsigned int canfile_en;
 	cfglen = 1;
 	cfg_get_para(CFG_ITEM_EN_CANFILE, &canfile_en, &cfglen);
-	if(canfile_en == 1)
+	if(canfile_en != 0)
 	{
 		canfile_en = 0;
 		cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
@@ -199,10 +200,10 @@ int PP_FileUpload_run(void)
 
 	unsigned char en;
 	cfg_get_para(CFG_ITEM_LOG_ENABLE, &en, &cfglen); 
-	if(en == 1)
+	if(en != 0)
 	{
 		en = 0;
-    	cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1); 
+    	PP_FileUpload_set_log(en); 
 	}
 	
 	return 0;
@@ -473,7 +474,7 @@ static void *PP_LogFileSend_main(void)
     		if((PP_up_log.log_flag == 1) && (PP_up_log.log_stop_flag == 0))
     		{
     			en = 1;
-    			cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1); //打开日志文件生成
+    			PP_FileUpload_set_log(en); //打开日志文件生成
     			memset(cmd,0,sizeof(cmd));
 				sprintf(cmd,"rm -rf %s","/media/sdcard/log/*");
 				system(cmd);
@@ -505,7 +506,7 @@ static void *PP_LogFileSend_main(void)
 			else if((PP_up_log.log_flag == 1) && (PP_up_log.log_stop_flag == 1))
 			{
 				en = 0;
-    			cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1); //打开日志文件生成
+    			PP_FileUpload_set_log(en); //打开日志文件生成
 				sem_p(semid);
 				addr[0] = m_start;
 				addr[1] = 0x03;     //代表log触发
@@ -526,7 +527,7 @@ static void *PP_LogFileSend_main(void)
 				if(nowtime_stamp.tv_sec - (up_timestamp.tv_sec + up_time) > 0)
 				{
 					en = 0;
-    				cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1); //打开日志文件生成
+    				PP_FileUpload_set_log(en); //打开日志文件生成
     				start_flag = 0;
 				}
 			}
@@ -535,7 +536,7 @@ static void *PP_LogFileSend_main(void)
 				if(nowtime_stamp.tv_sec - (start_time+up_time) > 0)
 				{
 					en = 0;
-    				cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1); //打开日志文件生成
+    				PP_FileUpload_set_log(en); //打开日志文件生成
     				start_flag = 0;
 				}
 			}
@@ -1075,4 +1076,37 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 	return trigSt;
 }
 
+/*
+ * 开启/关闭 log 采集存储
+*/
+static void PP_FileUpload_set_log(unsigned char en)
+{
+    if (en && !bfile_exists("/dev/mmcblk0p1"))
+    {
+       	log_e(LOG_HOZON,"set log,eMMC has not been formated!!!\r\n");
+        return;
+    }
+
+    if (en && !path_exists(COM_LOG_DIR) &&
+        dir_make_path(COM_LOG_DIR, S_IRUSR | S_IWUSR | S_IXUSR, false) != 0)
+    {
+        log_e(LOG_HOZON," make log directory(%s) failed\r\n", COM_LOG_DIR);
+        return;
+    }
+
+    if (cfg_set_para(CFG_ITEM_LOG_ENABLE, &en, 1) != 0)
+    {
+        log_e(LOG_HOZON," save log configuration failed!\r\n");
+        return;
+    }
+
+    log_save_ctrl(en ? dev_get_reboot_cnt() : 0, COM_LOG_DIR);
+
+    if (en)
+    {
+        dev_print_softver_delay();
+    }
+
+	log_o(LOG_HOZON," set log success\r\n");
+}
 
