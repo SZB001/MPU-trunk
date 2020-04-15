@@ -1406,7 +1406,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 #if 1
     if(gbinf->warntest)
     {
-        warnbit |= 1;
+        warnbit |= 0x7ffff;
         warnlvl  = 3;
     }
 #endif
