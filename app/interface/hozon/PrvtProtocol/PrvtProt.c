@@ -928,7 +928,7 @@ void PrvtProt_defaultsettings(void)
 	unsigned char logen = 0;
 	cfg_set_para(CFG_ITEM_LOG_ENABLE, &logen, sizeof(logen));
 
-	unsigned char wifien = 1;
+	unsigned char wifien = 0;
 	cfg_set_para(CFG_ITEM_WIFI_SET, &wifien, sizeof(wifien));
 	cfg_set_para(CFG_ITEM_WIFI_SSID, (unsigned char *)DEFAULT_SSID, 32);
     cfg_set_para(CFG_ITEM_WIFI_KEY, (unsigned char *)DEFAULT_PASSWORD, 32);
