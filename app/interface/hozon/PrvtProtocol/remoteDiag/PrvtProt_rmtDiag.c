@@ -567,7 +567,7 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 					}
 					log_o(LOG_HOZON, "PP_rmtDiag.state.diagType = %d and PP_rmtDiag_Fault.failNum = %d\n",PP_rmtDiag.state.diagType,PP_rmtDiag_Fault.faultNum);
 					PP_rmtDiag.state.result = PP_rmtDiag_Fault.sueecss;
-					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
+					PP_rmtDiag.state.failureType = PP_rmtDiag_Fault.failureType;
 					PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_QUERYUPLOAD;
 				}
 			}
@@ -1040,7 +1040,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 				if(0 == PP_rmtCfg_enable_dtcEnabled())
 				{
 					log_o(LOG_HOZON, "remote diag func unenable\n");
-					PP_rmtDiag.state.result = 0;
+					PP_rmtDiag.state.activediagresult = 0;
 					PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_DIAGUNENABLE;
 					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
@@ -1099,7 +1099,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 				if(PP_LOCK_ERR_FOTAREADVER == mtxlockst)
 				{
 					log_e(LOG_HOZON, "In the fota ecu diag\n");
-					PP_rmtDiag.state.result = 0;
+					PP_rmtDiag.state.activediagresult = 0;
 					PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_FOTAECUDIAG;
 					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
@@ -1107,7 +1107,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 				else if(PP_LOCK_ERR_FOTAUPDATE == mtxlockst)
 				{
 					log_e(LOG_HOZON, "In the fota upgrade\n");
-					PP_rmtDiag.state.result = 0;
+					PP_rmtDiag.state.activediagresult = 0;
 					PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_FOTAING;
 					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
@@ -1115,7 +1115,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 				else
 				{
 					log_e(LOG_HOZON, "other diag ing\n");
-					PP_rmtDiag.state.result = 0;
+					PP_rmtDiag.state.activediagresult = 0;
 					PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_DIAGEVTCONFLICT;
 					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
@@ -1138,7 +1138,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 				else
 				{
 					log_e(LOG_HOZON,"vehicle speed > 5km/h,exit active diag\n");
-					PP_rmtDiag.state.result = 0;
+					PP_rmtDiag.state.activediagresult = 0;
 					PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_VEHISPEED;
 					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
@@ -1151,7 +1151,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 			if(!dev_get_KL15_signal())
 			{
 				log_e(LOG_HOZON, "ign status:off\n");
-				PP_rmtDiag.state.result = 0;
+				PP_rmtDiag.state.activediagresult = 0;
 				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_IGNOFF;
 				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
@@ -1173,7 +1173,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 						log_i(LOG_HOZON, "PP_rmtDiag_allFault.code[%d].faultNum = %d\n",i-1,PP_rmtDiag_allFault.code[i-1].faultNum);
 					}
 					PP_rmtDiag_allFault.currdiagtype = PP_DIAG_VCU;
-					PP_rmtDiag.state.result = 1;
+					PP_rmtDiag.state.activediagresult = 1;
 					PP_rmtDiag.state.failureType = PP_RMTDIAG_ERROR_NONE;
 					PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
@@ -1182,7 +1182,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 			else//超时
 			{
 				log_e(LOG_HOZON, "diag active report is timeout\n");
-				PP_rmtDiag.state.result = 0;
+				PP_rmtDiag.state.activediagresult = 0;
 				PP_rmtDiag.state.failureType  = PP_RMTDIAG_ERROR_TIMEOUT;
 				PP_rmtDiag.state.activeDiagdelaytime = tm_get_time();
 				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_QUERYUPLOAD;
@@ -1212,7 +1212,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 
 				if(ret ==1)//all数据打包发送完成
 				{
-					if(1 == PP_rmtDiag.state.result)//诊断成功
+					if(1 == PP_rmtDiag.state.activediagresult)//诊断成功
 					{
 						rmtDiag_datetime.diagflag = rmtDiag_weekmask[tm_wday].mask;
 						if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
@@ -1596,9 +1596,18 @@ static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 	{
 		AppData_rmtDiag.DiagnosticSt.diagobjnum++;
 		AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].diagType = diagType;//
-		AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].result = PP_rmtDiag_allFault.code[diagType-1].sueecss;
-		AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].failureType = PP_rmtDiag.state.failureType;
-		if((1 == PP_rmtDiag.state.result) && (PP_rmtDiag_allFault.code[diagType-1].faultNum > 0))
+		if(1 == PP_rmtDiag.state.activediagresult)
+		{
+			AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].result = PP_rmtDiag_allFault.code[diagType-1].sueecss;
+			AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].failureType = PP_rmtDiag_allFault.code[diagType-1].failureType;
+		}
+		else
+		{
+			AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].result = 0;
+			AppData_rmtDiag.DiagnosticSt.diagStatus[index_i].failureType = PP_rmtDiag.state.failureType;
+		}
+		
+		if((1 == PP_rmtDiag.state.activediagresult) && (PP_rmtDiag_allFault.code[diagType-1].faultNum > 0))
 		{
 			for(index_j = 0;index_j < 255;index_j++)
 			{
@@ -1627,7 +1636,6 @@ static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 				else
 				{//数据量大时，分多次上报，当前待上报数据打包完
 					PP_rmtDiag_allFault.totalfaultCnt = 0;
-					//PP_rmtDiag_allFault.currdiagtype = diagType;
 					if(PP_rmtDiag_allFault.rptfaultcnt[diagType-1] < PP_rmtDiag_allFault.code[diagType-1].faultNum)
 					{
 						PP_rmtDiag_allFault.currdiagtype = diagType;

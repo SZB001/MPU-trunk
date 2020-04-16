@@ -164,6 +164,7 @@ typedef struct
 	//uint32_t effectiveTime;
 	//uint32_t sizeLimit;
 	uint8_t  result;//�ɼ�����֪ͨ״̬
+	uint8_t	 activediagresult;
 	uint8_t  failureType;//�ɼ�����ʧ������
 	char     fileName[255];//�ɼ������ļ���
 	uint8_t  diagrespSt;
