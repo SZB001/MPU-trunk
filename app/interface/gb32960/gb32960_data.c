@@ -1010,7 +1010,7 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 
     /* total curr, scale 0.1V, offset -1000A */
     tmp = gbinf->vehi.info[GB_VINF_CURRENT] ?
-          (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_CURRENT])->value + 1000) * 10: 0xffff;
+          (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_CURRENT])->value *(-1) + 1000) * 10: 0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
 
@@ -5260,7 +5260,7 @@ uint16_t gb_data_batteryCurrent(void)
 	if (gb_inf && gb_inf->vehi.info[GB_VINF_CURRENT])
 	{
 		temp = gb_inf->vehi.info[GB_VINF_CURRENT] ?
-				(dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_CURRENT])->value + 1000) * 10: 0xffff;
+				(dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_CURRENT])->value*(-1) + 1000) * 10: 0xffff;
 	}
 	DAT_UNLOCK();
 
