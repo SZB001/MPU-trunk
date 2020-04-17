@@ -462,7 +462,7 @@ int clbt_cfg_set_default_para(UDEF_CFG_SET_TYPE type)
     clbt_cfg_set_by_id(CFG_ITEM_GB32960_URL, gb_url, sizeof(gb_url), type);
     tmp_short = UDEF_GB_PORT;
     clbt_cfg_set_by_id(CFG_ITEM_GB32960_PORT, &tmp_short, sizeof(short), type);
-    tmp_short = 0;
+    tmp_short = 10;
     clbt_cfg_set_by_id(CFG_ITEM_GB32960_REGINTV, &tmp_short, sizeof(short), type);
     tmp_short = 10;
     clbt_cfg_set_by_id(CFG_ITEM_GB32960_INTERVAL, &tmp_short, sizeof(short), type);
