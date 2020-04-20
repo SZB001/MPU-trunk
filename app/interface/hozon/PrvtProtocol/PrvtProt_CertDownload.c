@@ -81,6 +81,7 @@ typedef struct
 	uint16_t 			Cnt;
 	uint8_t				BDLink;
 	uint64_t 			delaywaittime;
+	uint64_t			filecheckTimer;
 }__attribute__((packed))  PP_CertDL_t;
 
 typedef struct
@@ -199,6 +200,7 @@ static int PP_CertDL_generateCipher(void);
 static int PP_CertDL_generateCsrKey(void);
 static int PP_CertDL_checkCertOutofdate(char* path);
 static int PP_CertDL_checkCertrevoked(char* path);
+static int PP_CertDL_fileSize(char* filename);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -235,6 +237,7 @@ void PP_CertDownload_init(void)
 	//PP_checkCertSt.checkStFlag = 1;
 	PP_checkCertSt.ExpTime = 0;
 	PP_checkCertSt.checkSDKVerflag = 1;
+	PP_CertDL.filecheckTimer = 0;
 }
 
 /******************************************************
@@ -280,14 +283,19 @@ int PP_CertDownload_mainfunction(void *task)
 		}
 	}
 
-	if(1 == pp_certDL_IGNnewSt)//IGN ON
+	if((0 == PP_CertDL.filecheckTimer) || \
+					((tm_get_time() - PP_CertDL.filecheckTimer) > 5000))
 	{
-		if(DIAG_EMMC_OK == dev_diag_get_emmc_status())//emmc挂载成功
+		if(1 == pp_certDL_IGNnewSt)//IGN ON
 		{
-			PP_CertDL_checkCertExist();
-			PP_CertDL_checkCertKeyExist();
-			PP_CertDL_checkCertCsrExist();
-			PP_CertDL_checkCipherExist();
+			if(DIAG_EMMC_OK == dev_diag_get_emmc_status())//emmc挂载成功
+			{
+				PP_CertDL_checkCertExist();
+				PP_CertDL_checkCertKeyExist();
+				PP_CertDL_checkCertCsrExist();
+				PP_CertDL_checkCipherExist();
+				PP_CertDL.filecheckTimer = tm_get_time();
+			}
 		}
 	}
 
@@ -1943,18 +1951,27 @@ static int PP_CertDL_checkCertCsrExist(void)
 static int PP_CertDL_checkCipherExist(void)
 {
 	int cipher_exist_flag = 0;
+	int filesize;
 
 	pthread_mutex_lock(&checkcertmtx);
 	
-	if(access(PP_CERTDL_CIPHER_PATH,F_OK) == 0)//密文存在
-	{
+	filesize = PP_CertDL_fileSize(PP_CERTDL_CIPHER_PATH);
+	if((307 == filesize) || (308 == filesize))
+	{//密文大小为307或308byte
 		cipher_exist_flag = 1;
+		filesize = PP_CertDL_fileSize(COM_SDCARD_DIR_PKI_CIPHER);
+	    if((307 != filesize) && (308 != filesize))//检查备份路径下密文文件不存在
+		{
+			log_e(LOG_HOZON, "sdcard cipher lost,recover from usrdata!\n");
+			file_copy(PP_CERTDL_CIPHER_PATH,COM_SDCARD_DIR_PKI_CIPHER);//备份文件到emmc
+		}
 	}
 	else
 	{
-		if(access(COM_SDCARD_DIR_PKI_CIPHER,F_OK) == 0)//检查备份路径下密文存在
+		filesize = PP_CertDL_fileSize(COM_SDCARD_DIR_PKI_CIPHER);
+		if((307 == filesize) || (308 == filesize))
 		{
-			log_i(LOG_HOZON, "cipher lost,recover from sdcard!\n");
+			log_e(LOG_HOZON, "usrdata cipher lost,recover from sdcard!\n");
 			file_copy(COM_SDCARD_DIR_PKI_CIPHER,PP_CERTDL_CIPHER_PATH);//备份路径还原密文
 			cipher_exist_flag = 1;
 		}
@@ -2161,29 +2178,61 @@ static int PP_CertDL_generateCipher(void)
         return -1;
 	}
 
-	if(access(PP_CERTDL_CIPHER_PATH,F_OK) != 0)//检查密文文件不存在
+	pthread_mutex_lock(&checkcertmtx);
+	int filesize;
+	filesize = PP_CertDL_fileSize(PP_CERTDL_CIPHER_PATH);
+	if((307 == filesize) || (308 == filesize))//检查密文文件存在
 	{
-		if(access(COM_SDCARD_DIR_PKI_CIPHER,F_OK) != 0)//检查备份路径下密文文件不存在
+		filesize = PP_CertDL_fileSize(COM_SDCARD_DIR_PKI_CIPHER);
+	    if((307 != filesize) && (308 != filesize))//检查备份路径下密文文件不存在
 		{
-			iRet = HzTboxSnSimEncInfo(PP_CertDL_SN,PP_CertDL_ICCID,"/usrdata/pem/aeskey.txt", \
-					PP_CERTDL_CIPHER_PATH, &datalen);
-			if(iRet != 3520)
-			{
-				log_e(LOG_HOZON,"HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
-				return -1;
-			}
-
 			file_copy(PP_CERTDL_CIPHER_PATH,COM_SDCARD_DIR_PKI_CIPHER);//备份文件到emmc
-			//log_i(LOG_HOZON,"------------------tbox_ciphers_info--------------------%d\n", datalen);
+		}
+		pthread_mutex_unlock(&checkcertmtx);//解锁
+		return 0;
+	}
+
+	filesize = PP_CertDL_fileSize(COM_SDCARD_DIR_PKI_CIPHER);//检查备份路径
+	if((307 == filesize) || (308 == filesize))//检查密文文件存在
+	{
+		file_copy(COM_SDCARD_DIR_PKI_CIPHER,PP_CERTDL_CIPHER_PATH);//备份路径还原密文
+		pthread_mutex_unlock(&checkcertmtx);//解锁
+		return 0;
+	}
+
+	iRet = HzTboxSnSimEncInfo(PP_CertDL_SN,PP_CertDL_ICCID,"/usrdata/pem/aeskey.txt", \
+			PP_CERTDL_CIPHER_PATH, &datalen);
+	if(iRet != 3520)
+	{
+		log_e(LOG_HOZON,"HzTboxSnSimEncInfo error+++++++++++++++iRet[%d] \n", iRet);
+		pthread_mutex_unlock(&checkcertmtx);//解锁
+		return -1;
+	}
+
+	filesize = PP_CertDL_fileSize(PP_CERTDL_CIPHER_PATH);
+	if((307 == filesize) || (308 == filesize))//检查密文文件存在
+	{
+		file_copy(PP_CERTDL_CIPHER_PATH,COM_SDCARD_DIR_PKI_CIPHER);//备份文件到emmc
+		filesize = PP_CertDL_fileSize(COM_SDCARD_DIR_PKI_CIPHER);
+	    if((307 == filesize) || (308 == filesize))//检查备份密文文件正常
+		{
+			pthread_mutex_unlock(&checkcertmtx);//解锁
+			return 0;
 		}
 		else
 		{
-			file_copy(COM_SDCARD_DIR_PKI_CIPHER,PP_CERTDL_CIPHER_PATH);//备份路径还原密文
+			log_e(LOG_HOZON,"backup cipher error,filesize:%d\n",filesize);
+			PP_CertDL_deleteCipher();
+			pthread_mutex_unlock(&checkcertmtx);//解锁
+			return -1;
 		}
-		
 	}
-
-	return 0;
+	else
+	{
+		log_e(LOG_HOZON,"generate cipher error,filesize:%d\n",filesize);
+		pthread_mutex_unlock(&checkcertmtx);//解锁
+		return -1;
+	}
 }
 
 /*
@@ -2341,6 +2390,26 @@ int PP_CertDL_getCipher(char* cipher,int* len)
 	fclose(fp);
 
 	return 0;
+}
+
+
+/*
+* 检查文件大小
+*/
+static int PP_CertDL_fileSize(char* filename)
+{
+	struct stat filebuf;
+	int result;
+
+	result = stat(filename,&filebuf);
+	if(result != 0)
+	{
+		return -1;
+	}
+	else
+	{
+		return filebuf.st_size;
+	}
 }
 
 /*
