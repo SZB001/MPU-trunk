@@ -56,15 +56,16 @@ description�� static variable definitions
 
 
 #ifdef HOZON_PRD
-#define TSP_URL_IP "172.16.10.204"
+#define TSP_URL_PRI_IP "172.16.10.204"
 #endif
 
 #ifdef HOZON_UAT
-#define TSP_URL_IP "172.16.20.237"
+#define TSP_URL_PUB_IP "47.102.130.222"
+#define TSP_URL_PRI_IP "172.16.20.237"
 #endif
 
 #ifdef HOZON_PRE
-#define TSP_URL_IP "60.12.185.130"
+#define TSP_URL_PUB_IP "60.12.185.130"
 #endif
 
 static sockproxy_stat_t sockSt;
@@ -627,15 +628,23 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 				/*port ipaddr*/
 				if(sockSt.apnType != 1)
 				{
-					#ifdef HOZON_UAT
-					{	
-						iRet = HzPortAddrCft(22000, 1,"47.102.130.222",NULL);
-					}
+					#ifdef HOZON_PRD
+					log_e(LOG_SOCK_PROXY,"Single apn is not supported in the PRD environment\n");
+					sleep(1);
+					return -1;
 					#endif
+
+					iRet = HzPortAddrCft(22000, 1,TSP_URL_PUB_IP,NULL);
+
 				}
 				else
 				{
-					iRet = HzPortAddrCft(22000, 1,TSP_URL_IP,NULL);//TBOX端口地址配置初始化
+					#ifdef HOZON_PRE
+					log_e(LOG_SOCK_PROXY,"Double apn is not supported in the PRE environment\n");
+					sleep(1);
+					return -1;
+					#endif
+					iRet = HzPortAddrCft(22000, 1,TSP_URL_PRI_IP,NULL);//TBOX端口地址配置初始化
 				}
 
 				if(iRet != SOCKPROXY_SG_ADDR_INIT_SUCCESS)
@@ -814,13 +823,22 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 				/*port ipaddr*/
 				if(sockSt.apnType != 1)
 				{
-					#ifdef HOZON_UAT
-					iRet = HzPortAddrCft(21000, 1,"47.102.130.222",NULL);
+					#ifdef HOZON_PRD
+					log_e(LOG_SOCK_PROXY,"Single apn is not supported in the PRD environment\n");
+					sleep(1);
+					return -1;
 					#endif
+					iRet = HzPortAddrCft(21000, 1,TSP_URL_PUB_IP,NULL);
 				}
 				else
 				{
-					iRet = HzPortAddrCft(21000, 1,TSP_URL_IP,NULL);
+					#ifdef HOZON_PRE
+					log_e(LOG_SOCK_PROXY,"Double apn is not supported in the PRE environment\n");
+					sleep(1);
+					return -1;
+					#endif
+
+					iRet = HzPortAddrCft(21000, 1,TSP_URL_PRI_IP,NULL);
 				}
 				if(iRet != 1010)
 				{
