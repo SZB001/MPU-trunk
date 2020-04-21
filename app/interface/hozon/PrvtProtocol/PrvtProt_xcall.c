@@ -75,14 +75,6 @@ static PrvtProt_pack_t 		PP_Xcall_Pack;
 
 static PrvtProt_xcall_t	PP_xcall[PP_XCALL_MAX];
 
-static PrvtProt_App_Xcall_t	Appdata_Xcall =
-{
-	/*xcallType engineSt totalOdoMr	gps{gpsSt latitude longitude altitude heading gpsSpeed hdop}   srsSt  updataTime	battSOCEx*/
-		0,		0xff,	 0,		       {0,    0,       0,       0,        0,       0,       0  },	1,		0,			 0
-};
-
-//static PrvtProt_TxInform_t Xcall_TxInform[PP_XCALL_MAX];
-
 /*******************************************************
 description�� function declaration
 *******************************************************/
@@ -401,6 +393,9 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 {
 	int msgdatalen;
 	int res = 0;
+	PrvtProt_App_Xcall_t	Appdata_Xcall;
+	static long PP_xcall_latitude  = 0;
+	static long PP_xcall_longitude = 0;
 
 	/* header */
 	memcpy(PP_xcall[XcallType].packResp.Header.sign,"**",2);
@@ -469,13 +464,13 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 		{
 			Appdata_Xcall.gpsPos.longitude = (long)(PP_xcall_gpsconv(gpsDt.longitude)*(-1));
 		}
-		log_i(LOG_HOZON, "PP_appData.latitude = %lf",Appdata_Xcall.gpsPos.latitude);
-		log_i(LOG_HOZON, "PP_appData.longitude = %lf",Appdata_Xcall.gpsPos.longitude);
+		PP_xcall_latitude = Appdata_Xcall.gpsPos.latitude;
+		PP_xcall_longitude = Appdata_Xcall.gpsPos.longitude;
 	}
 	else
 	{
-		//Appdata_Xcall.gpsPos.latitude  = 0;
-		//Appdata_Xcall.gpsPos.longitude = 0;
+		Appdata_Xcall.gpsPos.latitude  = PP_xcall_latitude;
+		Appdata_Xcall.gpsPos.longitude = PP_xcall_longitude;
 	}
 
 	Appdata_Xcall.gpsPos.altitude = (long)gpsDt.height;
@@ -484,8 +479,8 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 		Appdata_Xcall.gpsPos.altitude = 10000;
 	}
 	Appdata_Xcall.gpsPos.heading = (long)gpsDt.direction;
-	Appdata_Xcall.gpsPos.gpsSpeed = (long)gpsDt.knots*10;
-	Appdata_Xcall.gpsPos.hdop = (long)gpsDt.hdop*10;
+	Appdata_Xcall.gpsPos.gpsSpeed = (long)(gpsDt.knots*10);
+	Appdata_Xcall.gpsPos.hdop = (long)(gpsDt.hdop*10);
 	if(Appdata_Xcall.gpsPos.hdop > 1000)
 	{
 		Appdata_Xcall.gpsPos.hdop = 1000;

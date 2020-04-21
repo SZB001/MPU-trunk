@@ -77,10 +77,10 @@ typedef struct
 	long xcallType;//ÀàĐÍ  1-µÀÂ·¾ÈÔ®   2-½ô¼±¾ÈÔ®£¨ecall£©  3-400µç»°½øÏß
 	long engineSt;//Æô¶¯×´̀¬£»1-Ï¨»đ£»2-Æô¶¯
 	long totalOdoMr;//Àï³̀ÓĐĐ§·¶Î§£º0 - 1000000£¨km£©
-	PrvtProt_Rvsposition_t gpsPos;//³µÁ¾¾ÈÔ®Î»ÖĂ
 	long srsSt;//°²È«ÆøÄ̉×´̀¬ 1- Ơư³££»2 - µ¯³ö
 	long updataTime;//Êư¾ƯÊ±¼ä´Á
 	long battSOCEx;//³µÁ¾µç³ØÊ£ÓàµçÁ¿£º0-10000£¨0%-100%£©
+	PrvtProt_Rvsposition_t gpsPos;//³µÁ¾¾ÈÔ®Î»ÖĂ
 }PrvtProt_App_Xcall_t;
 /******union definitions*****/
 

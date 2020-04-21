@@ -1161,7 +1161,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			{
 				App_rmtCtrl.CtrlResp.gpsPos.altitude = 10000;
 			}
-			App_rmtCtrl.CtrlResp.gpsPos.heading = (long)(gpsDt.direction);//车头方向角度，0为正北方向
+			App_rmtCtrl.CtrlResp.gpsPos.heading = (long)gpsDt.direction;//车头方向角度，0为正北方向
 			App_rmtCtrl.CtrlResp.gpsPos.gpsSpeed = (long)(gpsDt.knots*10);//速度 x 10，单位km/h
 			App_rmtCtrl.CtrlResp.gpsPos.hdop = (long)(gpsDt.hdop*10);//水平精度因子 x 10
 			if(App_rmtCtrl.CtrlResp.gpsPos.hdop > 1000)

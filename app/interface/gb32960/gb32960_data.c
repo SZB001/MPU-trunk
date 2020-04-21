@@ -3394,57 +3394,72 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     {
         for (j = 32; j < GB32960_MAXWARN; j++)
         {
-            if (gbinf->warn[i][j] &&	\
-            		dbc_get_signal_from_id(gbinf->warn[i][j])->value)
-            {
-            	warnvalue = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
-            	if(j == 0x50)//制冷不工作原因
-            	{
-					warn_code = 0x50 + (warnvalue - 1) -32;
-					vs_warn[0x50 + (warnvalue - 1) -32] = 1;
-    	        	buf[len++] = warn_code >> 8;
-    	        	buf[len++] = warn_code;
-    	        	(*warnnum_ptr)++;
-    	        	ac_warnflag=1;
-            	}
-            	else if(j == 0x47)//制热不响应原因
-            	{
-					warn_code = 0x55 + warnvalue -32;
-					vs_warn[0x55 + warnvalue -32] = 1;
-    	        	buf[len++] = warn_code >> 8;
-    	        	buf[len++] = warn_code;
-    	        	(*warnnum_ptr)++;
-    	        	ac_warnflag=1;
-					Abnormalheat_warnflag = 1;
-            	}
-            	else
-            	{
-                	buf[len++] = gb_alarmCode[j].code >> 8;
-                	buf[len++] = gb_alarmCode[j].code;
-                	(*warnnum_ptr)++;
-
-					if (gbinf->warn[i][j] &&
-					(dbc_get_signal_from_id(gbinf->warn[i][j])->value ||
-					(gbinf->warn[3][j] &&
-					dbc_get_signal_from_id(gbinf->warn[3][j])->value)))
-					{
-						vs_warn[j-32] = 1;
-					}
-            	}
-
-				if(Ext_gb_use_dbc_warnlvl[j-32])
-                {
-                	warnlvl  = i + 1;
-                }
-				else
+			if(0x22 == j)//EPS扭矩传感器故障 0--故障;1--正常
+			{
+				if(gbinf->warn[i][j] &&	\
+						(0 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
 				{
-					if (gbinf->warn[i][j] &&	\
-            				(dbc_get_signal_from_id(gbinf->warn[i][j])->value > warnlvltemp))
+					buf[len++] = gb_alarmCode[j].code >> 8;
+					buf[len++] = gb_alarmCode[j].code;
+					(*warnnum_ptr)++;
+					vs_warn[j-32] = 1;
+					warnlvl  = i + 1;
+				}
+			}
+			else
+			{
+				if (gbinf->warn[i][j] &&	\
+						dbc_get_signal_from_id(gbinf->warn[i][j])->value)
+				{
+					warnvalue = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
+					if(j == 0x50)//制冷不工作原因
 					{
-						warnlvltemp = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
+						warn_code = 0x50 + (warnvalue - 1) -32;
+						vs_warn[0x50 + (warnvalue - 1) -32] = 1;
+						buf[len++] = warn_code >> 8;
+						buf[len++] = warn_code;
+						(*warnnum_ptr)++;
+						ac_warnflag=1;
+					}
+					else if(j == 0x47)//制热不响应原因
+					{
+						warn_code = 0x55 + warnvalue -32;
+						vs_warn[0x55 + warnvalue -32] = 1;
+						buf[len++] = warn_code >> 8;
+						buf[len++] = warn_code;
+						(*warnnum_ptr)++;
+						ac_warnflag=1;
+						Abnormalheat_warnflag = 1;
+					}
+					else
+					{
+						buf[len++] = gb_alarmCode[j].code >> 8;
+						buf[len++] = gb_alarmCode[j].code;
+						(*warnnum_ptr)++;
+
+						if (gbinf->warn[i][j] &&
+						(dbc_get_signal_from_id(gbinf->warn[i][j])->value ||
+						(gbinf->warn[3][j] &&
+						dbc_get_signal_from_id(gbinf->warn[3][j])->value)))
+						{
+							vs_warn[j-32] = 1;
+						}
+					}
+
+					if(Ext_gb_use_dbc_warnlvl[j-32])
+					{
+						warnlvl  = i + 1;
+					}
+					else
+					{
+						if (gbinf->warn[i][j] &&	\
+								(dbc_get_signal_from_id(gbinf->warn[i][j])->value > warnlvltemp))
+						{
+							warnlvltemp = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
+						}
 					}
 				}
-            }
+			}
         }
     }
 
@@ -3543,7 +3558,6 @@ static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime
     uint32_t len = 0;
     RTCTIME time;
 
-    //can_get_time(uptime, &time);
 	tm_get_abstime(&time);
 
     buf[len++] = time.year - 2000;
@@ -3551,7 +3565,7 @@ static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime
     buf[len++] = time.mday;
     buf[len++] = time.hour;
     buf[len++] = time.min;
-    buf[len++] = time.sec;
+    buf[len++] = time.sec - 1;
 
     len += gb_data_save_vehi(gbinf, buf + len);
 
@@ -4103,7 +4117,7 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
         case DBC_EVENT_FINISHED:
             if (gb_rld && arg1 == 0)
             {
-                int i,j;
+                int i;
 
 				//for (i = 0; i < gb_rld->batt.cell_cnt && gb_rld->batt.cell[i]; i++);
 
@@ -4123,15 +4137,12 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 
                 gb_inf = gb_rld;
 
-                for (i = 0; i < GB_MAX_WARN_INFO; i++)
+                for (i = 0; i < 32; i++)
                 {
-					for(j = 0;j < 3;j++)
-					{
-						if (gb_inf->warn[j][i] != 0)
-                    	{
-                        	dbc_set_signal_flag(gb_inf->warn[j][i], gb_warnflag);
-                    	}
-					}
+					if (gb_inf->warn[2][i] != 0)
+                    {
+                        dbc_set_signal_flag(gb_inf->warn[2][i], gb_warnflag);
+                    }
                 }
 
                 ERR_LOCK();

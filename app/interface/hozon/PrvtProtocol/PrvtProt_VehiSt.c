@@ -391,7 +391,7 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	{
 		PP_VS_appdata.VSResp.gpsPos.altitude = 10000;
 	}
-	PP_VS_appdata.VSResp.gpsPos.heading = (long)(gpsDt.direction);
+	PP_VS_appdata.VSResp.gpsPos.heading = (long)gpsDt.direction;
 	PP_VS_appdata.VSResp.gpsPos.gpsSpeed = (long)(gpsDt.knots*10);
 	PP_VS_appdata.VSResp.gpsPos.hdop = (long)(gpsDt.hdop*10);
 	if(PP_VS_appdata.VSResp.gpsPos.hdop > 1000)
