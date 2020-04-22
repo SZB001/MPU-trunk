@@ -286,7 +286,7 @@ int PP_CertDownload_mainfunction(void *task)
 	if((0 == PP_CertDL.filecheckTimer) || \
 					((tm_get_time() - PP_CertDL.filecheckTimer) > 5000))
 	{
-		if(1 == pp_certDL_IGNnewSt)//IGN ON
+		//if(1 == pp_certDL_IGNnewSt)//IGN ON
 		{
 			if(DIAG_EMMC_OK == dev_diag_get_emmc_status())//emmc挂载成功
 			{

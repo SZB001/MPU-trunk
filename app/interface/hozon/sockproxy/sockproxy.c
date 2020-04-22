@@ -56,6 +56,7 @@ description�� static variable definitions
 
 
 #ifdef HOZON_PRD
+#define TSP_URL_PUB_IP "101.132.79.244"
 #define TSP_URL_PRI_IP "172.16.10.204"
 #endif
 
@@ -66,6 +67,7 @@ description�� static variable definitions
 
 #ifdef HOZON_PRE
 #define TSP_URL_PUB_IP "60.12.185.130"
+#define TSP_URL_PRI_IP "60.12.185.130"
 #endif
 
 static sockproxy_stat_t sockSt;

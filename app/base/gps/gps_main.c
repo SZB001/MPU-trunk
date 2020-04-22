@@ -232,8 +232,7 @@ static void *gps_main(void)
         }
 
         ret = select(max_fd + 1, &fds, NULL, NULL, NULL);
-
-        if (ret)
+        if (ret > 0)
         {
             if (FD_ISSET(gps_fd, &fds))
             {
@@ -256,10 +255,7 @@ static void *gps_main(void)
                 {
                     if (MPU_MID_TIMER == msgheader.sender)
                     {
-                        if(dev_get_KL15_signal())
-                        {
-                            gps_dev_timeout(msgheader.msgid);
-                        }
+                        gps_dev_timeout(msgheader.msgid);
                     }
                     else if (MPU_MID_MID_PWDG == msgheader.msgid)
                     {
@@ -278,7 +274,7 @@ static void *gps_main(void)
                     {
                         gps_dev_close();
 						//gps_reset_eph_dld_ctl_par();
-                        gps_fd = -1;
+                        //gps_fd = -1;
 					
                     }
 
