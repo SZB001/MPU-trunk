@@ -3565,7 +3565,7 @@ static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime
     buf[len++] = time.mday;
     buf[len++] = time.hour;
     buf[len++] = time.min;
-    buf[len++] = time.sec - 1;
+    buf[len++] = time.sec;
 
     len += gb_data_save_vehi(gbinf, buf + len);
 
@@ -4276,11 +4276,14 @@ static void gb_data_periodic(gb_info_t *gbinf, int intv, uint32_t uptime)
 static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 {
     //static int canact = 0;
+	static int counter = 0;
 
     switch (event)
     {
         case CAN_EVENT_ACTIVE:
             canact = 1;
+			counter = 0;
+			log_o(LOG_GB32960,"CAN_EVENT_ACTIVE!!!\n");
             break;
 
         case CAN_EVENT_SLEEP:
@@ -4291,7 +4294,7 @@ static int gb_data_can_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 
         case CAN_EVENT_DATAIN:
 		{
-			static int counter = 0;
+			//static int counter = 0;
 			CAN_MSG *msg = (CAN_MSG *)arg1;
 
 			while (canact && gb_inf && arg2--)

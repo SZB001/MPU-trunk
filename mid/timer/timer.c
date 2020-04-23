@@ -286,6 +286,7 @@ int tm_get_abstime(RTCTIME *abstime)
     }
 
     gettimeofday(&tv, &tz);
+    tv.tv_sec = tv.tv_sec -1;
     localtime_r(&tv.tv_sec, &timenow);
 
     abstime->msec  = tv.tv_usec / 1000;

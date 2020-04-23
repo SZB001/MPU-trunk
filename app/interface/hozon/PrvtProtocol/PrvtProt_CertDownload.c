@@ -578,6 +578,10 @@ static void PP_CertDL_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_DL_pack_t* rxPa
 
 					PP_CertRevoList.checkRevoFlag = 1;
 				}
+				else
+				{
+					log_e(LOG_HOZON, "revocation list is null\n");
+				}
 			}
 			else
 			{
