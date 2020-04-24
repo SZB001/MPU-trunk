@@ -1060,7 +1060,7 @@ static int gb_do_receive(gb_stat_t *state)
                     res = dev_syn_time(&time , TSP_TIME_SOURCE);
                     if(0 == res)
                     {
-                        log_i(LOG_GB32960, "time-calibration succeed");
+                        log_o(LOG_GB32960, "time-calibration success\n");
                     }
                 }
                 else

@@ -739,11 +739,6 @@ static uint16_t   gb_datintv;
 //#define GROUP_SIZE(inf)     RDUP_DIV((inf)->batt.cell_cnt, 200)
 #define GROUP_SIZE(inf)     RDUP_DIV(1, 200)
 
-
-static uint8_t gb_engineSt = 2;//Ϩ��
-static long    gb_totalOdoMr = 0;//�ܼ����
-static long    gb_vehicleSOC = 0;//����
-static long    gb_vehicleSpeed = 0;//�ٶ�
 static int canact = 0;
 
 static uint32_t gb_data_save_VehiBasestationPos(gb_info_t *gbinf, uint8_t *buf);
@@ -957,7 +952,6 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
     {
         tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_STATE])->value;
         buf[len++] = gbinf->vehi.state_tbl[tmp] ? gbinf->vehi.state_tbl[tmp] : 0xff;
-        gb_engineSt = gbinf->vehi.state_tbl[tmp] ? gbinf->vehi.state_tbl[tmp] : 0xff;
     }
     else
     {
@@ -976,22 +970,15 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
     }
 
     /* vehicle type */
-    //if (gbinf->vehi.info[GB_VINF_VEHIMODE])
-    //{
-    //    tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_VEHIMODE])->value;
-    //    buf[len++] = gbinf->vehi.mode_tbl[tmp] ? gbinf->vehi.mode_tbl[tmp] : 0xff;
-    //}
-    //else
-    {
-        buf[len++] = gbinf->vehi.vehi_type;
-    }
+	{
+    	buf[len++] = gbinf->vehi.vehi_type;
+	}
 
     /* vehicle speed, scale 0.1km/h */
     tmp = gbinf->vehi.info[GB_VINF_SPEED] ?
           dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SPEED])->value * 10 : 0xffff;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
-    gb_vehicleSpeed = tmp;
 
     /* odograph, scale 0.1km */
     tmp = gbinf->vehi.info[GB_VINF_ODO] ?
@@ -1000,7 +987,6 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = tmp >> 16;
     buf[len++] = tmp >> 8;
     buf[len++] = tmp;
-    gb_totalOdoMr = tmp;
 
     /* total voltage, scale 0.1V */
     tmp = gbinf->vehi.info[GB_VINF_VOLTAGE] ?
@@ -1016,9 +1002,8 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 
     /* total SOC */
     tmp = gbinf->vehi.info[GB_VINF_SOC] ?
-          dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value : 0xff;
+          (dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value + 0.5) : 0xff;
     buf[len++] = tmp;
-    gb_vehicleSOC = tmp;
 
     /* DCDC state */
     if (gbinf->vehi.info[GB_VINF_DCDC])
@@ -2135,8 +2120,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = voltage/100;//12V 蓄电池电压
     if(gbinf->vehi.info[GB_VINF_SOC])
     {
-    	tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value;
-    	tmp = 100*tmp;
+    	tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value * 100;
     	buf[len++] = tmp >> 8;
     	buf[len++] = tmp;
     }
@@ -2237,17 +2221,10 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
         }
     }
 
-    //if(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])////加速度z
-    //{
-    //	tmp = (dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_ASPEED_Z])->value + 40.95) * 100;
-    //	buf[len++] = tmp >> 8;
-    //	buf[len++] = tmp;
-    //}
-    //else
-    {
-    	 buf[len++] = 0xff;
-    	 buf[len++] = 0xff;
-    }
+	{
+    	buf[len++] = 0xff;
+    	buf[len++] = 0xff;
+	}
 
     for(i = 0;i<4;i++)
     {
@@ -2499,15 +2476,6 @@ static uint32_t gb_data_save_ComponentSt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-#if 0
-	if(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETSPEED])//
-	{
-		tmp = (dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_MTRTARGETSPEED])->value + 16000) * 2;
-		buf[len++] = tmp >> 8;
-		buf[len++] = tmp;
-	}
-	else
-#endif
 	{
 		 buf[len++] = 0xff;
 		 buf[len++] = 0xff;
@@ -4619,7 +4587,7 @@ long gb_data_vehicleSOC(void)
 	DAT_LOCK();
 	if(gb_inf && gb_inf->vehi.info[GB_VINF_SOC])
 	{
-		soc = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_SOC])->value;
+		soc = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_SOC])->value + 0.5;
 	}
 	DAT_UNLOCK();
 
