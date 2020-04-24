@@ -570,18 +570,10 @@ static int PP_shell_showpldata(int argc, const char **argv)
 
     len = 19;
     cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN, showbuff, &len);
-    if(showbuff[0]== 0)
-    {
-        showbuff[0] = '0';
-    }
     shellprintf("TBOX SN = %s\r\n", showbuff);
 
     memset(showbuff, 0, sizeof(showbuff));
     PP_rmtCfg_getIccid((uint8_t*)showbuff);
-    if(showbuff[0] == 0)
-    {
-        showbuff[0] = '0';
-    }
     shellprintf("TBOX ICCID = %s\r\n", showbuff);
 
     //memset(showbuff, 0, sizeof(showbuff));

@@ -64,19 +64,11 @@ int app_shell_drcfg(int argc, const char **argv)
 
     len = sizeof(vin);
     ret |= cfg_get_user_para(CFG_ITEM_GB32960_VIN, vin, &len);
-    if(vin[0] == 0)
-    {
-        vin[0] = '0';
-    }
     shellprintf("vehicle VIN = %s\r\n", vin);
 
     char tboxsn[19] = {0};
     len = sizeof(tboxsn);
     ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN, tboxsn, &len);
-    if(tboxsn[0]== 0)
-    {
-        tboxsn[0] = '0';
-    }
     shellprintf("TBOX SN = %s\r\n", tboxsn);
 
     uint32_t tboxid;
@@ -107,26 +99,14 @@ int app_shell_drcfg(int argc, const char **argv)
     shellprintf("SIM STATUS = %s\r\n", 1 == dev_diag_get_sim_status() ? "normal" : "fault");
     char iccid[21] = {0};
     PP_rmtCfg_getIccid((uint8_t*)iccid);
-    if(iccid[0] == 0)
-    {
-        iccid[0] = '0';
-    }
     shellprintf("TBOX ICCID = %s\r\n", iccid);
     char imeiimsi[16] = {0};
     memset(imeiimsi, 0, sizeof(imeiimsi));
     at_get_imei((char *)imeiimsi);
-    if(imeiimsi[0] == 0)
-    {
-        imeiimsi[0] = '0';
-    }
     shellprintf("IMEI = %s\r\n", imeiimsi);
 
     memset(imeiimsi, 0, sizeof(imeiimsi));
     at_get_imsi((char *)imeiimsi);
-    if(imeiimsi[0] == 0)
-    {
-        imeiimsi[0] = '0';
-    }
     shellprintf("IMSI = %s\r\n", imeiimsi);
 
     shellprintf("mpuSw = %s\r\n", DID_F1B0_SW_UPGRADE_VER);
@@ -134,18 +114,10 @@ int app_shell_drcfg(int argc, const char **argv)
 
     char cfgver[256] = {0};
     getPP_rmtCfg_cfgVersion(cfgver);
-    if(cfgver[0] == 0)
-    {
-        cfgver[0] = '0';
-    }
     shellprintf("TSP remote config version = %s\r\n", cfgver);
 
     len = sizeof(url.url);
     ret |= cfg_get_user_para(CFG_ITEM_GB32960_URL, url.url, &len);
-    if(url.url[0] == 0)
-    {
-        url.url[0] = '0';
-    }
     shellprintf("TSP ADDR NO PKI = %s\r\n", url.url);
     len = sizeof(url.port);
     ret |= cfg_get_user_para(CFG_ITEM_GB32960_PORT, &url.port, &len);
@@ -179,19 +151,11 @@ int app_shell_drcfg(int argc, const char **argv)
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_DBC_PATH, buff, &len);
-    if(buff[0] == 0)
-    {
-        buff[0] = '0';
-    }
     shellprintf("DBC PATH CONFIG = %s\r\n", buff);
 
     char certSn[32] = {0};
     len = sizeof(certSn);
     ret |= cfg_get_user_para(CFG_ITEM_HOZON_TSP_CERT,certSn,&len);
-    if(certSn[0] == 0)
-    {
-        certSn[0] = '0';
-    }
     shellprintf("CERT FILE = %s\r\n", certSn);
     len = 1;
     uint8_t EnFlag;
@@ -201,19 +165,11 @@ int app_shell_drcfg(int argc, const char **argv)
     char localAPN[32] = {0};
     len = sizeof(localAPN);
     ret |= cfg_get_para(CFG_ITEM_LOCAL_APN,localAPN,&len);
-    if(localAPN[0] == 0)
-    {
-        localAPN[0] = '0';
-    }
     shellprintf("LOCAL APN = %s\r\n", localAPN);
 
     char wanAPN[32] = {0};
     len = sizeof(wanAPN);
     ret |= cfg_get_para(CFG_ITEM_WAN_APN,wanAPN,&len);
-    if(wanAPN[0] == 0)
-    {
-        wanAPN[0] = '0';
-    }
     shellprintf("WAN APN = %s\r\n", wanAPN);
 
     uint64_t timestamp;
@@ -244,10 +200,6 @@ int app_shell_drcfg(int argc, const char **argv)
     char blename[50] = {0};
     len = sizeof(blename);
     ret |= cfg_get_para(CFG_ITEM_BLE_NAME,blename,&len);
-    if(blename[0] == 0)
-    {
-        blename[0] = '0';
-    }
     shellprintf("BLE NAME = %s\r\n", blename);
 
     char bleaddr[32] = {0};
@@ -452,37 +404,21 @@ int app_shell_drcfg(int argc, const char **argv)
     len = 32;
     memset(xcall, 0, sizeof(xcall));
     cfg_get_para(CFG_ITEM_ICALL, (unsigned char *)xcall, &len);
-    if(xcall[0] == 0)
-    {
-        xcall[0] = '0';
-    }
     shellprintf("ICALL = %s\r\n", xcall);
 
     len = 32;
     memset(xcall, 0, sizeof(xcall));
     cfg_get_para(CFG_ITEM_BCALL, (unsigned char *)xcall, &len);
-    if(xcall[0] == 0)
-    {
-        xcall[0] = '0';
-    }
     shellprintf("BCALL = %s\r\n", xcall);
 
     len = 32;
     memset(xcall, 0, sizeof(xcall));
     cfg_get_para(CFG_ITEM_ECALL, (unsigned char *)xcall, &len);
-    if(xcall[0] == 0)
-    {
-        xcall[0] = '0';
-    }
     shellprintf("ECALL = %s\r\n", xcall);
 
     len = sizeof(buff);
     memset(buff, 0, sizeof(buff));
     cfg_get_para(CFG_ITEM_WHITE_LIST, (unsigned char *)buff, &len);
-    if(buff[0] == 0)
-    {
-        buff[0] = '0';
-    }
     shellprintf("WHITE LIST = %s\r\n", buff);
 
     shellprintf("INTEST MPU SOFTWARE VERSION = %s\r\n", dev_get_version());

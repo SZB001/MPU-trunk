@@ -116,9 +116,6 @@ description�� function code
 void PP_rmtCfg_init(void)
 {
 	memset(&PP_rmtCfg,0 , sizeof(PrvtProt_rmtCfg_t));
-
-	PP_rmtCfg.state.avtivecheckflag = 0;
-	PP_rmtCfg.state.iccidValid = 0;
 	PP_rmtCfg.state.CfgSt = PP_RMTCFG_CFG_IDLE;
 }
 
@@ -436,17 +433,11 @@ static int PP_rmtCfg_do_checkConfig(PrvtProt_task_t *task,PrvtProt_rmtCfg_t *rmt
 		rmtCfg->state.avtivecheckflag = 1;
 	}
 
-	(void)PrvtProtCfg_get_iccid((char *)(iccid));
-	if(0 == PP_rmtCfg_is_empty(iccid,21))
-	{
-		rmtCfg->state.iccidValid = 1;
-	}
-
 	switch(rmtCfg->state.CfgSt)
 	{
 		case PP_RMTCFG_CFG_IDLE:
 		{
-			if(((1 == rmtCfg->state.iccidValid) && ((tm_get_time() - rmtCfg->state.delaytime) >= 15000)) || \
+			if(((1 == PP_rmtCfg_getIccid(iccid)) && ((tm_get_time() - rmtCfg->state.delaytime) >= 15000)) || \
 					((tm_get_time() - rmtCfg->state.delaytime) >= 30000))
 			{
 				if((1 == rmtCfg->state.req) && (rmtCfg->state.reqCnt < PP_RETRANSMIT_TIMES))

@@ -73,7 +73,6 @@ typedef struct
 	uint64_t period;
 	uint8_t waitSt;
 	uint64_t waittime;
-	uint8_t iccidValid;
 	uint64_t delaytime;
 	uint8_t  avtivecheckflag;
 
