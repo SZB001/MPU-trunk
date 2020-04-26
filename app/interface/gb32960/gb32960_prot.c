@@ -707,9 +707,15 @@ static int gb_do_wait(gb_stat_t *state)
 
 static int gb_do_login(gb_stat_t *state)
 {
+    uint8_t iccid[21] = {0};
     if (state->online)
     {
         return 0;
+    }
+
+    if(1 != PP_rmtCfg_getIccid(iccid))
+    {
+        return -1;
     }
 
     if (state->waittime == 0 || tm_get_time() - state->waittime > GB_LOGIN_INTV)
