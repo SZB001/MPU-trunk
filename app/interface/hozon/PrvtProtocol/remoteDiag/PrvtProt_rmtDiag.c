@@ -190,7 +190,9 @@ int PP_rmtDiag_mainfunction(void *task)
 		IGNoldSt = IGNnewSt;
 		if(1 == IGNnewSt)//IGN ON
 		{
-			PP_rmtDiag.state.activeDiagFlag = 1;
+			PP_rmtDiag.state.activeDiagFlag = PP_ACTIVEDIAG_SELFDIAG;
+			PP_rmtDiag.state.activeDiagEveId = 0;
+			PP_rmtDiag.state.activeDiagexpTime = -1;
 			PP_rmtDiag.state.sleepflag = 0;
 		}
 	}
@@ -313,19 +315,39 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 	{
 		case PP_MID_DIAG_REQ://
 		{
-			if((0 == PP_rmtDiag.state.diagReq) && (PP_DIAGRESP_IDLE == PP_rmtDiag.state.diagrespSt))
-			{
-				log_o(LOG_HOZON, "receive remote diag request\n");
-				PP_rmtDiag.state.diagReq 	 = 1;
-				PP_rmtDiag.state.diagType 	 = Appdata.DiagnosticReq.diagType;
-				PP_rmtDiag.state.diageventId = MsgDataBody.eventId;
-				PP_rmtDiag.state.diagexpTime = MsgDataBody.expTime;
-				PP_rmtDiag.state.waittime = tm_get_time();
-				PP_rmtDiag.state.sleepflag   = 0;
+			if(0xff == Appdata.DiagnosticReq.diagType)
+			{//诊断全部ecu
+				if((0 == PP_rmtDiag.state.activeDiagFlag) && \
+					(PP_ACTIVEDIAG_IDLE == PP_rmtDiag.state.activeDiagSt))
+				{
+					log_o(LOG_HOZON, "receive remote diag req of all ECU\n");
+					PP_rmtDiag.state.activeDiagFlag = PP_ACTIVEDIAG_TSPDIAG;
+					PP_rmtDiag.state.activeDiagEveId = MsgDataBody.eventId;
+					PP_rmtDiag.state.activeDiagexpTime = MsgDataBody.expTime;
+					PP_rmtDiag.state.sleepflag = 0;
+				}
+				else
+				{
+					log_e(LOG_HOZON, "Diagnosis of a all ECU is ongoing\n");
+				}
 			}
 			else
-			{
-				log_e(LOG_HOZON, "repeat diag request\n");
+			{//诊断单个ecu
+				if((0 == PP_rmtDiag.state.diagReq) && \
+						(PP_DIAGRESP_IDLE == PP_rmtDiag.state.diagrespSt))
+				{
+					log_o(LOG_HOZON, "receive remote diag req of signal ECU\n");
+					PP_rmtDiag.state.diagReq 	 = 1;
+					PP_rmtDiag.state.diagType 	 = Appdata.DiagnosticReq.diagType;
+					PP_rmtDiag.state.diageventId = MsgDataBody.eventId;
+					PP_rmtDiag.state.diagexpTime = MsgDataBody.expTime;
+					PP_rmtDiag.state.waittime = tm_get_time();
+					PP_rmtDiag.state.sleepflag   = 0;
+				}
+				else
+				{
+					log_e(LOG_HOZON, "Diagnosis of a single ECU is ongoing\n");
+				}
 			}
 		}
 		break;
@@ -1033,10 +1055,10 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 	{
 		case PP_ACTIVEDIAG_IDLE:
 		{
-			if((1 == PP_rmtDiag.state.activeDiagFlag) && \
-								(0 == PP_rmtDiag.state.mcurtcflag))
+			if(((0 == PP_rmtDiag.state.mcurtcflag) &&	\
+				(PP_ACTIVEDIAG_SELFDIAG == PP_rmtDiag.state.activeDiagFlag)) ||	\
+				(PP_ACTIVEDIAG_TSPDIAG  == PP_rmtDiag.state.activeDiagFlag))
 			{
-				PP_rmtDiag.state.activeDiagFlag = 0;
 				if(0 == PP_rmtCfg_enable_dtcEnabled())
 				{
 					log_o(LOG_HOZON, "remote diag func unenable\n");
@@ -1063,26 +1085,35 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 			time_t timep;
 			struct tm *localdatetime;
 
-			time(&timep);
-			localdatetime = localtime(&timep);//取得当地时间
-			log_i(LOG_HOZON,"%d-%d-%d ",(1900+localdatetime->tm_year), \
-					(1 +localdatetime->tm_mon), localdatetime->tm_mday);
-			log_i(LOG_HOZON,"%s %d:%d:%d\n", wday[localdatetime->tm_wday], \
-					localdatetime->tm_hour, localdatetime->tm_min, localdatetime->tm_sec);
-			tm_wday = localdatetime->tm_wday;
-			tm_datetime = (1900+localdatetime->tm_year) * 10000 + (1 +localdatetime->tm_mon) * 100 + localdatetime->tm_mday;
-			if((rmtDiag_datetime.diagflag & rmtDiag_weekmask[tm_wday].mask) && \
-					(rmtDiag_datetime.datetime == tm_datetime))
-			{//已上传过故障码
-				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_END;
-				log_i(LOG_HOZON,"The fault code has been uploaded today\n");
-				log_o(LOG_HOZON,"uploaded date : %d\n",rmtDiag_datetime.datetime);
+			if(PP_ACTIVEDIAG_SELFDIAG  == PP_rmtDiag.state.activeDiagFlag)
+			{
+				time(&timep);
+				localdatetime = localtime(&timep);//取得当地时间
+				log_i(LOG_HOZON,"%d-%d-%d ",(1900+localdatetime->tm_year), \
+						(1 +localdatetime->tm_mon), localdatetime->tm_mday);
+				log_i(LOG_HOZON,"%s %d:%d:%d\n", wday[localdatetime->tm_wday], \
+						localdatetime->tm_hour, localdatetime->tm_min, localdatetime->tm_sec);
+				tm_wday = localdatetime->tm_wday;
+				tm_datetime = (1900+localdatetime->tm_year) * 10000 + (1 +localdatetime->tm_mon) * 100 + localdatetime->tm_mday;
+				if((rmtDiag_datetime.diagflag & rmtDiag_weekmask[tm_wday].mask) && \
+						(rmtDiag_datetime.datetime == tm_datetime))
+				{//已上传过故障码
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_END;
+					log_i(LOG_HOZON,"The fault code has been uploaded today\n");
+					log_o(LOG_HOZON,"uploaded date : %d\n",rmtDiag_datetime.datetime);
+				}
+				else
+				{
+					log_o(LOG_HOZON,"self-diag,start to daig report\n");
+					PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKOTACOND;
+				}
 			}
 			else
 			{
-				log_o(LOG_HOZON,"start to daig report\n");
+				log_o(LOG_HOZON,"tsp-diag,start to daig report\n");
 				PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_CHECKOTACOND;
 			}
+			
 		}
 		break;
 		case PP_ACTIVEDIAG_CHECKOTACOND:
@@ -1212,7 +1243,8 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 
 				if(ret ==1)//all数据打包发送完成
 				{
-					if(1 == PP_rmtDiag.state.activediagresult)//诊断成功
+					if((1 == PP_rmtDiag.state.activediagresult) && \
+					   (PP_ACTIVEDIAG_SELFDIAG  == PP_rmtDiag.state.activeDiagFlag))//主动诊断成功
 					{
 						rmtDiag_datetime.diagflag = rmtDiag_weekmask[tm_wday].mask;
 						if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
@@ -1238,6 +1270,7 @@ static int PP_rmtDiag_do_DiagActiveReport(PrvtProt_task_t *task)
 		case PP_ACTIVEDIAG_END:
 		{
 			clearPP_lock_odcmtxlock(PP_LOCK_DIAG_ACTIVE);
+			PP_rmtDiag.state.activeDiagFlag = 0;
 			PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
 			PP_rmtDiag.state.sleepflag = 1;
 		}
@@ -1580,8 +1613,8 @@ static int PP_remotDiagnosticStatus(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rm
 	memcpy(PP_rmtDiag.pack.DisBody.aID,"140",3);
 	PP_rmtDiag.pack.DisBody.mID = PP_MID_DIAG_STATUS;
 	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
-	PP_rmtDiag.pack.DisBody.eventId = 0;//tsp未指定eventid，传0，已沟通
-	PP_rmtDiag.pack.DisBody.expTime = -1;
+	PP_rmtDiag.pack.DisBody.eventId = PP_rmtDiag.state.activeDiagEveId;//若主动触发(eventid=0)
+	PP_rmtDiag.pack.DisBody.expTime = PP_rmtDiag.state.activeDiagexpTime;
 	PP_UpMsgCnt++;
 	PP_rmtDiag.pack.DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
 	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
@@ -1763,7 +1796,8 @@ void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 	{
 		log_o(LOG_HOZON, " diag fault code active report request\n");
 		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
-		PP_rmtDiag.state.activeDiagFlag = 1;
+		PP_rmtDiag.state.activeDiagFlag = diagType;
+		PP_rmtDiag.state.activeDiagEveId = diagType - 1;
 		rmtDiag_datetime.diagflag = 0;
 		if(cfg_set_user_para(CFG_ITEM_HOZON_TSP_DIAGFLAG, &rmtDiag_datetime.diagflag, 1))
 		{

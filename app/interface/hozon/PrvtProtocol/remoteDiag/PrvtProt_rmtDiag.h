@@ -23,7 +23,7 @@ description�� macro definitions
 
 #define PP_DIAGPWRON_WAITTIME    	5000//5s
 #define PP_DIAGQUERY_WAITTIME    	5000//5s
-#define PP_FAULTCODECLEAN_WAITTIME    	5000//5s
+#define PP_FAULTCODECLEAN_WAITTIME  5000//5s
 #define PP_DIAGQUERYALL_WAITTIME	150000//150s
 /***********�꺯��***********/
 #define PP_DIAG_TYPE_TBOX	26
@@ -35,6 +35,9 @@ description�� macro definitions
 
 #define PP_DIAG_TBOX_HULINKFAULTCODE	"T0004"
 #define PP_DIAG_TBOX_HULINKFAULTLOWBYTE	0
+
+#define PP_ACTIVEDIAG_SELFDIAG		1
+#define PP_ACTIVEDIAG_TSPDIAG		2
 
 /*******************************************************
 description�� struct definitions
@@ -179,6 +182,8 @@ typedef struct
 	uint64_t activeDiagdtcwait;
 	uint64_t activeDiagdelaytime;
 	uint8_t	 activeDiagWeek;
+	long	 activeDiagEveId;
+	long	 activeDiagexpTime;
 
 	uint8_t  LogAcqRespSt;
 	uint8_t  LogAcqReq;
