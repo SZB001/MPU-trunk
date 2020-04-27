@@ -45,7 +45,6 @@ static uint8_t sync_cnt_445;
 static pthread_mutex_t sync_mutex_440 = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t sync_mutex_445 = PTHREAD_MUTEX_INITIALIZER;
 
-extern unsigned char GetPP_CertDL_CertValid(void);
 extern void pm_ring_wakeup(void);
 
 int PP_canSend_init(void)

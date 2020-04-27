@@ -128,6 +128,7 @@ static void PrvtPro_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,in
 static int PrvtPro_do_wait(PrvtProt_task_t *task);
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len);
 static void PP_HB_send_cb(void * para);
+static void PrvtProt_do_HBSwitchHandle(void);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -269,51 +270,7 @@ static void *PrvtProt_main(void)
 		log_set_level(LOG_GB32960, LOG_DEBUG);
 		log_set_level(LOG_UPER_ECDC, LOG_DEBUG);
 #endif
-		if(!gb32960_gbCanbusActiveSt())
-		{
-			PP_heartbeat.IGNnewst = dev_get_KL15_signal();
-			if(PP_heartbeat.IGNoldst != PP_heartbeat.IGNnewst)
-			{
-				PP_heartbeat.IGNoldst = PP_heartbeat.IGNnewst;
-				if(1 == PP_heartbeat.IGNnewst)//IGN ON
-				{
-					log_o(LOG_HOZON, "ign on,switch to normal heart rate\n");
-					int hbtimeout;
-					hbtimeout = getPP_rmtCfg_heartbeatTimeout();
-					if(0 != hbtimeout)
-					{
-						PP_heartbeat.period = hbtimeout;
-					}
-					PP_heartbeat.hbtype = 1;//切换到正常通信心跳频率
-				}
-				else
-				{
-					log_o(LOG_HOZON, "ign off,switch to sleep heart rate\n");
-					//PP_heartbeat.period = PP_HEART_BEAT_TIME_SLEEP;
-					PP_heartbeat.hbtype = 2;//切换到休眠状态心跳频率
-				}
-
-				PP_heartbeat.hbtaskflag = 1;
-			}
-		}
-		else
-		{
-			if(1 != PP_heartbeat.hbtype)
-			{
-				log_o(LOG_HOZON, "can msg on,switch to normal heart rate\n");
-				int hbtimeout;
-				hbtimeout = getPP_rmtCfg_heartbeatTimeout();
-				if(0 != hbtimeout)
-				{
-					PP_heartbeat.period = hbtimeout;
-				}
-				PP_heartbeat.hbtype = 1;//切换到正常通信心跳频率
-				PP_heartbeat.hbtaskflag = 1;
-			}
-			PP_heartbeat.IGNoldst = 0xff;
-			PP_heartbeat.IGNnewst = 0xff;
-		}
-
+		PrvtProt_do_HBSwitchHandle();
 		PP_CertDownload_mainfunction(&pp_task);
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||
@@ -630,6 +587,65 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
     }
 
 	return -1;
+}
+
+/******************************************************
+*PrvtProt_do_HBSwitchHandle
+
+*��  �Σ�void
+
+*����ֵ��void
+
+*��  ������������
+
+*��  ע��心跳频率切换设置处理
+******************************************************/
+static void PrvtProt_do_HBSwitchHandle(void)
+{
+	if(!gb32960_gbCanbusActiveSt())
+	{
+		PP_heartbeat.IGNnewst = dev_get_KL15_signal();
+		if(PP_heartbeat.IGNoldst != PP_heartbeat.IGNnewst)
+		{
+			PP_heartbeat.IGNoldst = PP_heartbeat.IGNnewst;
+			if(1 == PP_heartbeat.IGNnewst)//IGN ON
+			{
+				log_o(LOG_HOZON, "ign on,switch to normal heart rate\n");
+				int hbtimeout;
+				hbtimeout = getPP_rmtCfg_heartbeatTimeout();
+				if(0 != hbtimeout)
+				{
+					PP_heartbeat.period = hbtimeout;
+				}
+				PP_heartbeat.hbtype = 1;//切换到正常通信心跳频率
+			}
+			else
+			{
+				log_o(LOG_HOZON, "ign off,switch to sleep heart rate\n");
+				//PP_heartbeat.period = PP_HEART_BEAT_TIME_SLEEP;
+				PP_heartbeat.hbtype = 2;//切换到休眠状态心跳频率
+			}
+
+			PP_heartbeat.hbtaskflag = 1;
+		}
+	}
+	else
+	{
+		if(1 != PP_heartbeat.hbtype)
+		{
+			log_o(LOG_HOZON, "can msg on,switch to normal heart rate\n");
+			int hbtimeout;
+			hbtimeout = getPP_rmtCfg_heartbeatTimeout();
+			if(0 != hbtimeout)
+			{
+				PP_heartbeat.period = hbtimeout;
+			}
+			PP_heartbeat.hbtype = 1;//切换到正常通信心跳频率
+			PP_heartbeat.hbtaskflag = 1;
+		}
+		PP_heartbeat.IGNoldst = 0xff;
+		PP_heartbeat.IGNnewst = 0xff;
+	}
 }
 
 /******************************************************
