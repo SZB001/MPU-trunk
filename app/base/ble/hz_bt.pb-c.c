@@ -1144,7 +1144,7 @@ const ProtobufCMessageDescriptor user_info__descriptor =
   (ProtobufCMessageInit) user_info__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor ack__field_descriptors[3] =
+static const ProtobufCFieldDescriptor ack__field_descriptors[4] =
 {
   {
     "msg_type",
@@ -1182,16 +1182,29 @@ static const ProtobufCFieldDescriptor ack__field_descriptors[3] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "failure_reasons",
+    4,
+    PROTOBUF_C_LABEL_NONE,
+    PROTOBUF_C_TYPE_INT32,
+    0,   /* quantifier_offset */
+    offsetof(ACK, failure_reasons),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned ack__field_indices_by_name[] = {
   1,   /* field[1] = ack_state */
   2,   /* field[2] = execution_result */
+  3,   /* field[3] = failure_reasons */
   0,   /* field[0] = msg_type */
 };
 static const ProtobufCIntRange ack__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 3 }
+  { 0, 4 }
 };
 const ProtobufCMessageDescriptor ack__descriptor =
 {
@@ -1201,7 +1214,7 @@ const ProtobufCMessageDescriptor ack__descriptor =
   "ACK",
   "",
   sizeof(ACK),
-  3,
+  4,
   ack__field_descriptors,
   ack__field_indices_by_name,
   1,  ack__number_ranges,

@@ -79,7 +79,11 @@ static struct timeval log_timestamp;
 static unsigned int log_starttime = 0;
 static unsigned short log_uptime = 0;
 static char log_eventId[20] = {0};
-static int eventid = 0;
+static char can_eventId[20] = {0};
+
+static int logeventid = 0;
+static int caneventid = 0;
+
 
 
 /**
@@ -703,13 +707,21 @@ int curl_Post_CanFile(char *name)
    				CURLFORM_COPYNAME, "aid",  
    				CURLFORM_COPYCONTENTS, "140",  
    				CURLFORM_END);
-   
-    /********************配置参数vin*********************/
+
+	 /********************配置参数vin*********************/
 	curl_formadd(&formpost,  
    				&lastptr,  
    				CURLFORM_COPYNAME, "vin",  
    				CURLFORM_COPYCONTENTS, vin, 
    				CURLFORM_END);
+	 
+    /********************配置参数eventid*********************/
+	curl_formadd(&formpost,  
+   				&lastptr,  
+   				CURLFORM_COPYNAME, "eventid",  
+   				CURLFORM_COPYCONTENTS, can_eventId, 
+   				CURLFORM_END);
+	
    /********************配置参数mid*********************/
    curl_formadd(&formpost,  
    				&lastptr,  
@@ -1383,7 +1395,12 @@ int main(int argc, char *argv[])
 			{
 				printf("Vehicle can upload request\n");
 
-				strncpy(vin,addr+5,TBOX_VIN_LENGTH);  //获取VIN
+				caneventid = (((unsigned int)addr[5] <<24) |((unsigned int)addr[6] <<16) |
+									((unsigned int)addr[7] << 8) | (unsigned int)addr[8]);
+
+				sprintf(can_eventId, "%lu", (long)caneventid);  //获取eventid
+				
+				strncpy(vin,addr+9,TBOX_VIN_LENGTH);  //获取VIN
 
 				if(addr[2] == 0x01) //故障触发整车报文上传
 				{
@@ -1452,7 +1469,7 @@ int main(int argc, char *argv[])
 					//采集日志时长
 					log_uptime =  ((unsigned short)addr[7] <<8) | ((unsigned short)addr[8]);
 
-					eventid = (((unsigned int)addr[9] <<24) |((unsigned int)addr[10] <<16) |
+					logeventid = (((unsigned int)addr[9] <<24) |((unsigned int)addr[10] <<16) |
 									((unsigned int)addr[11] <<8) | (unsigned int)addr[12]);
 
 					strncpy(vin,addr+13,17);
@@ -1461,9 +1478,9 @@ int main(int argc, char *argv[])
 
 					printf("log_uptime = %d ",log_uptime);
 					
-					printf("eventid = %d\n",eventid);
+					printf("eventid = %d\n",logeventid);
 					
-					sprintf(log_eventId, "%lu", (long)eventid);
+					sprintf(log_eventId, "%lu", (long)logeventid);
 				}
 				else if(addr[2] == 0x02)
 				{

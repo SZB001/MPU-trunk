@@ -825,7 +825,7 @@ static void *ble_main(void)
 						log_i(LOG_BLE, "respbt.cmd_state.state = %d", respbt.cmd_state.state);
 						log_i(LOG_BLE, "respbt.msg_type = %d", respbt.msg_type);
 	 					//if ((g_hz_protocol.hz_send.ack.msg_type ==  (respbt.msg_type)) && (g_hz_protocol.hz_send.ack.state == respbt.cmd))
-	 					if((respbt.msg_type >= 1)&&(respbt.msg_type <= 6))
+	 					if((respbt.msg_type >= 1)&&(respbt.msg_type <= 7))
 	 					{
 	 						g_hz_protocol.hz_send.msg_type = APPLICATION_HEADER__MESSAGE_TYPE__ACK;
 							log_i(LOG_BLE,"1g_hz_protocol.hz_send.msg_type = %d",g_hz_protocol.hz_send.msg_type);
@@ -940,10 +940,11 @@ static void *ble_main(void)
 						}
 						else
 						{
-							stBtApi.Init();
-							g_BleMember.ucTransStatus = BLE_INIT_STATUS;
+							
 							if (BT_AUTH_FAIL == bt_get_auth_flag())
 							{
+							    stBtApi.Init();
+								g_BleMember.ucTransStatus = BLE_INIT_STATUS;  
 						    	stBtApi.LinkDrop();
 								g_BleMember.ucConnStatus = BLE_MSG_DISCONNECT;
 								log_e(LOG_BLE, "cmd fail1");
@@ -953,6 +954,19 @@ static void *ble_main(void)
 								ble_second_cmd_init();
 								log_i(LOG_BLE, "data err1");
 								
+							}
+							else
+							{
+								PrvtProt_respbt_t respbt;
+								bt_info_state_t 	  vihe_info;
+								respbt.cmd_state.msg_type = 0x7; 
+								respbt.cmd_state.state = 16; 
+								respbt.cmd_state.execution_result = 2; 
+								respbt.cmd_state.failure_reasons = 0x10; 
+								g_hz_protocol.hz_send.msg_type = APPLICATION_HEADER__MESSAGE_TYPE__ACK;
+								log_i(LOG_BLE,"unknow err",g_hz_protocol.hz_send.msg_type);
+	 							bt_send_cmd_pack(respbt.cmd_state,vihe_info, g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
+								stBtApi.Send(g_stBt_Data.aucTxPack, &g_stBt_Data.ulTxLen);
 							}
 						}
 

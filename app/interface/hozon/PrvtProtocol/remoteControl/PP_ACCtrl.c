@@ -444,16 +444,22 @@ int SetPP_ACCtrl_Request(char ctrlstyle,void *appdatarmtCtrl,void *disptrBody)
 						PP_rmtACCtrl.CtrlPara.reqType = appdatarmtCtrl_ptr->CtrlReq.rvcReqType;
 						if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACOPEN)
 						{
+							PP_rmtACCtrl.state.req = 1;
 							PP_rmtACCtrl.state.accmd = PP_OPEN_ACC;
 							PP_clear_fail_flag();
 						}
 						else if(PP_rmtACCtrl.CtrlPara.reqType == PP_RMTCTRL_ACCLOSE)
 						{
+							PP_rmtACCtrl.state.req = 1;
 							PP_rmtACCtrl.state.accmd = PP_CLOSE_ACC;
 							
 						}
 						else   //设置温度
 						{
+							if((PP_rmtCtrl_cfg_ACOnOffSt() == 1)&&(PP_rmtCtrl_cfg_RmtStartSt() == 1))
+							{
+								PP_rmtACCtrl.state.req = 1;
+							}
 							PP_rmtACCtrl.state.accmd = PP_SETH_ACC;
 							temp = appdatarmtCtrl_ptr->CtrlReq.rvcReqParams[0] ;
 							

@@ -139,8 +139,9 @@ int PP_autodoorCtrl_mainfunction(void *task)
 		break;
 		case PP_AUTODOORCTR_RESPWAIT://执行等待车控响应
 		{
-			if((tm_get_time() - PP_Respwaittime) > 300)
+			if((tm_get_time() - PP_Respwaittime) > 320)
 			{
+				PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
 				if((tm_get_time() - PP_Respwaittime) < 15000)
 				{
 					if(PP_rmtautodoorCtrl.state.autodoorcmd == PP_AUTODOOR_OPEN) // 等待打开尾门结果
@@ -148,7 +149,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 						if(PP_rmtCtrl_cfg_bdmreardoorSt() == 1) //尾门状态2，尾门开启成功
 						{
 							log_o(LOG_HOZON,"autodoor open successed!");
-							PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
+							//PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
 							PP_rmtautodoorCtrl.success_flag = 1;
 							PP_rmtautodoorCtrl.state.CtrlSt = PP_AUTODOORCTR_END;
 						}
@@ -158,7 +159,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 						if(PP_rmtCtrl_cfg_bdmreardoorSt() == 0) //尾门状态1，尾门关闭成功
 						{
 							log_o(LOG_HOZON,"autodoor close successed!");
-							PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
+							//PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
 							PP_rmtautodoorCtrl.success_flag = 1;
 							PP_rmtautodoorCtrl.state.CtrlSt = PP_AUTODOORCTR_END;
 						}
@@ -168,7 +169,7 @@ int PP_autodoorCtrl_mainfunction(void *task)
 				{
 					log_o(LOG_HOZON,"BDM response timed out");
 					PP_rmtautodoorCtrl.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
-					PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
+					//PP_can_send_data(PP_CAN_AUTODOOR,CAN_CLEANAUTODOOR,0);
 					PP_rmtautodoorCtrl.success_flag = 0;
 					PP_rmtautodoorCtrl.state.CtrlSt = PP_AUTODOORCTR_END;
 				}
@@ -199,7 +200,8 @@ int PP_autodoorCtrl_mainfunction(void *task)
 			}
 			else//蓝牙
 			{
-				PP_rmtCtrl_inform_tb(BT_ELECTRIC_DOOR_RESP,PP_rmtautodoorCtrl.state.autodoorcmd,PP_rmtautodoorCtrl.success_flag);
+				PP_rmtCtrl_inform_tb(BT_ELECTRIC_DOOR_RESP,PP_rmtautodoorCtrl.state.autodoorcmd,PP_rmtautodoorCtrl.success_flag, \
+					PP_rmtautodoorCtrl.state.failtype);
 			}
 			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_AUTODOOR);//释放锁
 			PP_rmtautodoorCtrl.state.CtrlSt = PP_AUTODOORCTRL_IDLE;

@@ -13,6 +13,7 @@
 #include "log.h"
 #include "PPrmtCtrl_cfg.h"
 #include "scom_api.h"
+#include "dev_api.h"
 #include <pthread.h>
 #include "hozon_PP_api.h"
 #include "PP_canSend.h"
@@ -235,12 +236,26 @@ void PP_canSend_setbit(unsigned int id,uint8_t bit,uint8_t bitl,uint8_t data,uin
 		PP_canSend_collect(CAN_ID_3D2,canmsg_3D2.data);
 	}
 }
+void PP_canSend_resend(void)
+{
+	static char IGNnewSt,IGNoldSt = 0;
+
+	IGNnewSt = dev_get_KL15_signal();
+	if(IGNoldSt != IGNnewSt)
+	{
+		IGNoldSt = IGNnewSt;
+		if(1 == IGNnewSt)//IGN ON
+		{
+			sync_upgrade_flae = 1;
+		}
+	}
+}
 /***************************************************
 		广播440 445报文
 ****************************************************/
 void PP_can_send_cycle(void)
 {
-	
+	PP_canSend_resend();
 	if(sync_upgrade_flae == 1)
 	{
 		//主要用在刷写固件的时候后升级mcu导致mcu端的440 445 被清零
@@ -338,8 +353,12 @@ void PP_can_mcu_awaken(void)
 ***************************************/
 void PP_can_mcu_sleep(void)
 {
-	PP_send_virtual_on_to_mcu(0);
-	 log_o(LOG_HOZON,
+	uint8_t i = 0;
+	for(i = 0 ;i < 3 ;i++)
+	{
+		PP_send_virtual_on_to_mcu(0);
+	}
+	log_o(LOG_HOZON,
   			"############### send virtual on to mcu:0 #################");
 }
 
@@ -641,6 +660,5 @@ void PP_canSend_collect(unsigned int can_id,uint8_t *dt)
 		canMsg.Data[i] = dt[i];
 	}
 	PP_CanMsgUL_datacollection(&canMsg);
-	
 	
 }

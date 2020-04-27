@@ -1116,6 +1116,7 @@ static void PP_ChargeCtrl_EndHandle(PrvtProt_rmtChargeCtrl_t* pp_rmtCharge)
 			else
 			{
 				respbt.cmd_state.execution_result = BT_FAIL;  //ִ执行失败
+				respbt.cmd_state.failure_reasons = pp_rmtCharge->failtype;
 				respbt.failtype = 0;
 			}
 			msghdr.sender    = MPU_MID_HOZON_PP;

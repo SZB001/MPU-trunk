@@ -112,10 +112,11 @@ struct  _ACK
   int32_t msg_type;
   int32_t ack_state;
   int32_t execution_result;
+  int32_t failure_reasons;
 };
 #define ACK__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&ack__descriptor) \
-    , 0, 0, 0 }
+    , 0, 0, 0, 0 }
 
 
 struct  _VehicleDoor

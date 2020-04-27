@@ -238,7 +238,8 @@ int PP_sunroofctrl_mainfunction(void *task)
 			}
 			else if(PP_rmtsunroofCtrl.state.style ==  RMTCTRL_BLUETOOTH) //蓝牙
 			{
-				PP_rmtCtrl_inform_tb(BT_PANORAMIC_SUNROOF_RESP,PP_rmtsunroofCtrl.state.sunroofcmd,PP_rmtsunroofCtrl.success_flag);
+				PP_rmtCtrl_inform_tb(BT_PANORAMIC_SUNROOF_RESP,PP_rmtsunroofCtrl.state.sunroofcmd,PP_rmtsunroofCtrl.success_flag,  \
+					PP_rmtsunroofCtrl.state.failtype);
 			}
 			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_SUNROOF);//释放锁
 			PP_rmtsunroofCtrl.state.CtrlSt = PP_SUNROOFCTRL_IDLE;

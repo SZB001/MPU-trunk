@@ -259,7 +259,8 @@ int PP_doorLockCtrl_mainfunction(void *task)
 			}
 			else//蓝牙
 			{
-				PP_rmtCtrl_inform_tb(BT_VEhICLE_DOOR_RESP,PP_rmtdoorCtrl.state.doorcmd,PP_rmtdoorCtrl.success_flag);
+				PP_rmtCtrl_inform_tb(BT_VEhICLE_DOOR_RESP,PP_rmtdoorCtrl.state.doorcmd,PP_rmtdoorCtrl.success_flag,   \
+					PP_rmtdoorCtrl.state.failtype);
 			}
 			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_DOORLOCK);//释放锁
 			PP_rmtdoorCtrl.state.CtrlSt = PP_DOORLOCKCTRL_IDLE;

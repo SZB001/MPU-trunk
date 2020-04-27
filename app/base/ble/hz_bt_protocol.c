@@ -149,9 +149,13 @@ int bt_ack_response_set(bt_send_t        *src, uint8_t *buf, size_t *bufsz)
 	response->ack_state = src->ack.state;
 	response->msg_type = src->ack.msg_type;
 	response->execution_result = src->ack.execution_result;
+	response->failure_reasons = src->ack.failure_reasons;
 
-	log_i(LOG_BLE, "src->ack.state = %d",src->msg_type);
+	log_i(LOG_BLE, "src->ack.state = %d",src->ack.state);
 	log_i(LOG_BLE, "src->ack.msg_type =%d",src->ack.msg_type);
+	log_i(LOG_BLE, "src->ack.execution_result =%d",src->ack.execution_result);
+	log_i(LOG_BLE, "src->ack.failure_reasons =%d",src->ack.failure_reasons);
+	
    
 	len = ack__get_packed_size(response);
 	if (len > *bufsz)
@@ -672,8 +676,10 @@ int bt_send_cmd_pack(bt_ack_t state, bt_info_state_t indata,  uint8_t *out, size
 
 	if (APPLICATION_HEADER__MESSAGE_TYPE__ACK == g_hz_protocol.hz_send.msg_type) 
 	{
+		g_hz_protocol.hz_send.ack.msg_type = state.msg_type;
 		g_hz_protocol.hz_send.ack.state = state.state;
 		g_hz_protocol.hz_send.ack.execution_result = state.execution_result;
+		g_hz_protocol.hz_send.ack.failure_reasons = state.failure_reasons;
 	}
 	else if (APPLICATION_HEADER__MESSAGE_TYPE__Vehicle_Infor == g_hz_protocol.hz_send.msg_type) 
 	{

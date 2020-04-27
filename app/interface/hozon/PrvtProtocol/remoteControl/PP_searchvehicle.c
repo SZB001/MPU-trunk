@@ -189,7 +189,8 @@ int PP_searchvehicle_mainfunction(void *task)
 			}
 			else//蓝牙
 			{
-				PP_rmtCtrl_inform_tb(BT_REMOTE_FIND_CAR_RESP,PP_rmtsearchvehicle.state.serachcmd,PP_rmtsearchvehicle.success_flag);
+				PP_rmtCtrl_inform_tb(BT_REMOTE_FIND_CAR_RESP,PP_rmtsearchvehicle.state.serachcmd,PP_rmtsearchvehicle.success_flag,  \
+					PP_rmtsearchvehicle.state.failtype);
 			}
 			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_SEARCHVEHI);//释放锁
 			PP_rmtsearchvehicle.state.CtrlSt = PP_SEARCHVEHICLE_IDLE;

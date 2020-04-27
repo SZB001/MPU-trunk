@@ -140,6 +140,7 @@ typedef struct
 	int32_t msg_type;
 	int32_t state;
 	int32_t execution_result;
+	int32_t failure_reasons;
 } bt_ack_t;
 typedef struct
 {

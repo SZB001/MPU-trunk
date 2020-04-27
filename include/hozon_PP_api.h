@@ -76,6 +76,12 @@ typedef struct
 	uint32_t log_eventId;
 }PP_log_upload_t;
 
+typedef struct
+{
+	uint16_t PP_tsp_time;
+	uint32_t PP_tsp_eventId;
+}PP_can_upload_t;
+
 typedef enum
 {
     PP_MSG_SOCKET = 1,//MPU_MID_GB32960,
@@ -162,7 +168,7 @@ extern void PP_netstatus_run(void);
 extern uint8_t PP_netstatus_pubilcfaultsts(uint64_t *timestamp);
 extern void PP_identificat_readESK(uint8_t *esk);
 extern void PP_CanMsgUL_datacollection(void *msg);
-extern void PP_FileUpload_CanMsgRequest(int mintue);
+extern void PP_FileUpload_CanMsgRequest(PP_can_upload_t can_para);
 extern void PP_FileUpload_LogRequest(PP_log_upload_t log_para);
 extern int sockproxy_nm_apncardtype(void);
 #endif

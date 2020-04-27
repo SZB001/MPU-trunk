@@ -60,8 +60,8 @@ extern unsigned char PP_rmtCtrl_cfg_CrashOutputSt(void);
 static PP_FileUpload_t PP_FileUL;
 
 static int PP_tsp_flag = 0;
-static uint16_t PP_tsp_time = 0;
 
+static PP_can_upload_t pp_up_can;
 static int canupload_en = 0;
 	
 static PP_log_upload_t PP_up_log;
@@ -250,13 +250,13 @@ static void *PP_FileUpload_main(void)
     return NULL;
 }
 
-void PP_FileUpload_CanMsgRequest(int mintue)
+void PP_FileUpload_CanMsgRequest(PP_can_upload_t can_para)
 {
 	PP_tsp_flag = 1;
-	log_o(LOG_HOZON,"PP_tsp_flag  %d",mintue);
-	PP_tsp_time = 0;
-	PP_tsp_time = (uint16_t)mintue;
-	log_o(LOG_HOZON,"PP_tsp_flag  %d",mintue);
+	log_o(LOG_HOZON,"PP_tsp_flag  %d",can_para.PP_tsp_time);
+	pp_up_can.PP_tsp_time = can_para.PP_tsp_time;
+	pp_up_can.PP_tsp_eventId = can_para.PP_tsp_eventId;
+	
 	unsigned int canfile_en;
 	canfile_en = 1;
 	cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
@@ -390,10 +390,14 @@ static void *PP_CanFileSend_main(void)
 				buf[2] = 0x01;
 				buf[3] = 0;     //故障触发第3、4字节填0补充
 				buf[4] = 0;
-				sprintf(buf+5,"%s",vin);
-				buf[22] = m_end;
+				buf[5] = 0;     //eventid四个字节
+				buf[6] = 0;
+				buf[7] = 0;
+				buf[8] = 0;
+				sprintf(buf+9,"%s",vin);
+				buf[26] = m_end;
 				sem_p(semid);
-				memcpy(addr,buf,23);
+				memcpy(addr,buf,27);
 				sem_v(semid);
 				log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");
 				PP_FileUL.signTrigFlag = 0;
@@ -407,16 +411,18 @@ static void *PP_CanFileSend_main(void)
 				buf[0] = m_start;
 				buf[1] = 0x02;
 				buf[2] = 0x02;
-				//buf[3] = 5;  //无效值
-				buf[3] = (char)(PP_tsp_time >> 8);
-				buf[4] = (char)PP_tsp_time;
-				sprintf(buf+5,"%s",vin);
-				buf[22] = m_end;
+				buf[3] = (char)(pp_up_can.PP_tsp_time >> 8);
+				buf[4] = (char)pp_up_can.PP_tsp_time;
+				buf[5] = (char)(pp_up_can.PP_tsp_eventId >> 24);     //eventid四个字节
+				buf[6] = (char)(pp_up_can.PP_tsp_eventId >> 16);
+				buf[7] = (char)(pp_up_can.PP_tsp_eventId >> 8);
+				buf[8] = (char)(pp_up_can.PP_tsp_eventId );
+				sprintf(buf+9,"%s",vin);
+				buf[26] = m_end;
 				sem_p(semid);
-				memcpy(addr,buf,23);
+				memcpy(addr,buf,27);
 				log_o(LOG_HOZON,"addr[4] = %d",addr[4]);
 				sem_v(semid);
-				//log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");	
 				PP_tsp_flag = 0;
 			}
 		}
@@ -429,7 +435,7 @@ static void *PP_CanFileSend_main(void)
 		{
 			struct timeval nowtime_stamp;
 			gettimeofday(&nowtime_stamp, NULL);  
-			if(nowtime_stamp.tv_sec > TSP_request_timestamp.tv_sec + PP_tsp_time * 60 + 60)
+			if(nowtime_stamp.tv_sec > TSP_request_timestamp.tv_sec + pp_up_can.PP_tsp_time * 60 + 60)
 			{
 				unsigned int canfile_en;
 				canfile_en = 0;

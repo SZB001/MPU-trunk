@@ -430,7 +430,10 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		{
 			//TAP 向 TCU 请求车辆进行 CAN 总线报文采集
 			log_o(LOG_HOZON, "rcv Can bus message collect request\n");
-			PP_FileUpload_CanMsgRequest(Appdata.CanBusMessageCollectReq.durationTime);
+			PP_can_upload_t can_para;
+			can_para.PP_tsp_eventId =  MsgDataBody.eventId;
+			can_para.PP_tsp_time = Appdata.CanBusMessageCollectReq.durationTime;
+			PP_FileUpload_CanMsgRequest(can_para);
 		}
 		break;
 		default:

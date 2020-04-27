@@ -263,6 +263,7 @@ typedef struct
 	int32_t msg_type;
 	int32_t state;
 	int32_t execution_result;
+	int32_t failure_reasons;
 } bt_ack_t;
 
 typedef struct
@@ -488,7 +489,7 @@ extern unsigned char GetPP_rmtCtrl_Sleep(void);
 extern void PP_rmtCtrl_showSleepPara(void);
 extern int PP_rmtCtrl_vehicle_status_InformBt(unsigned char obj, unsigned char cmd);
 extern void PP_rmtCtrl_settestflag(uint8_t flag);
-extern void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result);
+extern void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result,uint8_t fial_reason);
 
 extern void PP_clear_fail_flag(void);
 

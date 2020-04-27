@@ -15,6 +15,7 @@ typedef struct
 	uint64_t period;
 	uint8_t waitSt;
 	uint64_t waittime;
+	uint8_t failtype;
 	char style;//·½Ê½£ºtsp-1£»2-À¶ÑÀ
 }__attribute__((packed))  PP_bluetoothStart_t; 
 extern void PP_bluetoothstart_init(void);

@@ -697,7 +697,7 @@ void PP_rmtCtrl_BluetoothCtrlReq(unsigned char obj, unsigned char cmd)
 //type  :回复蓝牙的消息类型
 //cmd   :回复蓝牙的命令
 //result:回复TBOX执行的结果
-void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
+void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result,uint8_t fail_reason)
 {
 	TCOM_MSG_HEADER msghdr;
 	PrvtProt_respbt_t respbt;
@@ -707,10 +707,12 @@ void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
 	{
 		respbt.cmd_state.execution_result = BT_SUCCESS;
 		respbt.cmd_state.state = cmd;  
+		respbt.cmd_state.failure_reasons = 0x10;  //成功默认
 	}
 	else           //蓝牙执行失败
 	{
 		respbt.cmd_state.execution_result = BT_FAIL;
+		respbt.cmd_state.failure_reasons = fail_reason;
 		switch(type)
 		{
 			case BT_VEhICLE_DOOR_RESP:
@@ -736,7 +738,18 @@ void PP_rmtCtrl_inform_tb(uint8_t type,uint8_t cmd,uint8_t result)
 			break;
 			case BT_CHARGE_RESP:  
 			{
-				respbt.cmd_state.state = PP_rmtCtrl_cfg_chargeOnOffSt() ? 2 : 1;
+				if(PP_rmtCtrl_cfg_chargeSt() == 2)
+				{
+					respbt.cmd_state.state = 3;
+				}
+				else if(PP_rmtCtrl_cfg_chargeSt() == 1)
+				{
+					respbt.cmd_state.state = 2;
+				}
+				else
+				{
+					respbt.cmd_state.state = 1;
+				}
 			} 
 			break;
 			case BT_POWER_CONTROL_RESP:
@@ -1019,8 +1032,19 @@ int PP_rmtCtrl_vehicle_status_InformBt(unsigned char obj, unsigned char cmd)
 	/**********************vihe_charge****************************/
 	respbt.state.vihe_charge.charge_reservation = GetPP_ChargeCtrl_appointSt()? 2 : 1;
 	log_i(LOG_HOZON,"charge_reservation = %d",respbt.state.vihe_charge.charge_reservation);
-	
-	respbt.state.vihe_charge.charge_state = PP_rmtCtrl_cfg_chargeOnOffSt() ? 2 : 1;
+	if(PP_rmtCtrl_cfg_chargeSt() == 2)
+	{
+		respbt.state.vihe_charge.charge_state = 3;
+	}
+	else if(PP_rmtCtrl_cfg_chargeSt() == 1)
+	{
+		respbt.state.vihe_charge.charge_state = 2;
+
+	}
+	else
+	{
+		respbt.state.vihe_charge.charge_state = 1;
+	}
 	log_i(LOG_HOZON,"charge_state = %d",respbt.state.vihe_charge.charge_state);
 	
 	respbt.state.vihe_charge.remaining_charge_hour = PP_rmtCtrl_cfg_chargeOnOffSt() ? gb_data_ACChargeRemainTime()/60 :0;

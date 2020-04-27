@@ -105,6 +105,7 @@ int PP_bluetoothstart_mainfunction(void *task)
 					log_o(LOG_HOZON," Vehicle status is on.........!");
 					PP_bluetoothstart.state.req = 0;
 					PP_bluetoothstart.success_flag = 0;
+					PP_bluetoothstart.state.failtype = PP_RMTCTRL_ACCNOOFF;
 					PP_bluetoothstart.state.CtrlSt = PP_BLUETOOTHSTARTL_END;
 				}	
 			}
@@ -142,6 +143,7 @@ int PP_bluetoothstart_mainfunction(void *task)
 					log_o(LOG_HOZON,"BDM response timed out");
 					PP_can_send_data(PP_CAN_BLUESTART,CAN_BLUECLEAN,0);
 					PP_bluetoothstart.success_flag = 0;
+					PP_bluetoothstart.state.failtype = PP_RMTCTRL_TIMEOUTFAIL;
 					PP_bluetoothstart.state.CtrlSt = PP_BLUETOOTHSTARTL_END;
 				}
 			}
@@ -149,7 +151,8 @@ int PP_bluetoothstart_mainfunction(void *task)
 		break;
 		case PP_BLUETOOTHSTARTL_END:
 		{
-			PP_rmtCtrl_inform_tb(BT_POWER_CONTROL_RESP,PP_bluetoothstart.state.cmd,PP_bluetoothstart.success_flag);
+			PP_rmtCtrl_inform_tb(BT_POWER_CONTROL_RESP,PP_bluetoothstart.state.cmd,PP_bluetoothstart.success_flag,\
+				PP_bluetoothstart.state.failtype);
 			clearPP_lock_odcmtxlock(PP_LOCK_VEHICTRL_RMTSTART);//释放锁
 			PP_bluetoothstart.state.CtrlSt = PP_BLUETOOTHSTART_IDLE;
 		}
