@@ -101,20 +101,17 @@ int dev_syn_time(RTCTIME *time, SYN_TIME_SOURCE src)
             allowed = 1;
             break;
 
-        // TSP or GNSS is allowed
+        // TSP
         case TSP_TIME_SOURCE:
-            if (GNSS_TIME_SOURCE != last_syn.src)
+            allowed = 1;
+            break;
+
+        // GNSS
+        case GNSS_TIME_SOURCE:
+            if (TSP_TIME_SOURCE != last_syn.src)
             {
                 allowed = 1;
             }
-
-            dev_time_sync = true;
-            break;
-
-        // only GNSS is allowed
-        case GNSS_TIME_SOURCE:
-            allowed = 1;
-            dev_time_sync = true;
             break;
         case NTP_TIME_SOURCE:
             if((GNSS_TIME_SOURCE != last_syn.src) && \
@@ -122,13 +119,11 @@ int dev_syn_time(RTCTIME *time, SYN_TIME_SOURCE src)
             {
                 allowed = 1;
             }
-            dev_time_sync = true;
             break;
     }
 
     if (allowed)
     {
-        last_syn.src = src;
         memcpy((char *) &last_syn.time, time, sizeof(RTCTIME));
         pthread_mutex_unlock(&dev_time_mutex);
 
@@ -139,10 +134,14 @@ int dev_syn_time(RTCTIME *time, SYN_TIME_SOURCE src)
 
         if (MCU_RTC_TIME_SOURCE != src)
         {
-            scom_tl_send_frame(SCOM_TL_CMD_SET_TIME, SCOM_TL_SINGLE_FRAME, 0, (unsigned char *) time,
-                               sizeof(RTCTIME));
+            if(0 != scom_tl_send_frame(SCOM_TL_CMD_SET_TIME, SCOM_TL_SINGLE_FRAME, 0, (unsigned char *) time,
+                               sizeof(RTCTIME)))
+            {
+                log_e(LOG_DEV, "set time to mcu rtc failed\n");
+            }
         }
-
+        last_syn.src = src;
+        dev_time_sync = true;
         return 0;
     }
 
@@ -187,16 +186,16 @@ bool dev_is_time_syn(void)
 }
 
 /**********************************************
-** function:     dev_is_syn_by_gps
- * description:  whether system time is synced by gps
+** function:     dev_last_syn_src
+ * description:   
  * input:        none
  * output:       none
- * return:       true indicates time is sync by gps;
- *               others indicates time is ont sync by gps;
+ * return:       
+ *              
 ***********************************************/
-bool dev_is_syn_by_gps(void)
+unsigned char dev_last_syn_src(void)
 {
-    return last_syn.src == GNSS_TIME_SOURCE ? true : false;
+    return last_syn.src;
 }
 
 

@@ -43,6 +43,7 @@ description�� include the header file
 #include "cfg_api.h"
 #include "udef_cfg_api.h"
 #include "pm_api.h"
+#include "dev_time.h"
 #include "dev_api.h"
 #include "gb32960_api.h"
 #include "hozon_SP_api.h"
@@ -762,6 +763,8 @@ void PrvtPro_ShowPara(void)
 	log_o(LOG_HOZON, "     	  public parameters 	  ");
 	log_o(LOG_HOZON, "/******************************/");
 	log_o(LOG_HOZON, "IGN status = %s\n",dev_get_KL15_signal()?"on":"off");
+	log_o(LOG_HOZON, "sync time status: %s,current sync time src = %d\n",	\
+								dev_is_time_syn()?"true":"false",dev_last_syn_src());
 	PP_rmtDiag_showPara();
 	log_o(LOG_HOZON, "tboxid = %d\n",pp_task.tboxid);
 	log_o(LOG_HOZON, "tboxsn = %s\n",pp_tboxsn);

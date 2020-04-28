@@ -25,7 +25,7 @@ void dev_time_init(void);
 int  dev_req_time(void);
 int  dev_syn_time(RTCTIME *time, SYN_TIME_SOURCE src);
 bool dev_is_time_syn(void);
-bool dev_is_syn_by_gps(void);//lbk add 20180512
+unsigned char dev_last_syn_src(void);
 
 
 int dev_cmp_basetime(RTCTIME *base, RTCTIME *time);

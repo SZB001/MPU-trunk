@@ -156,9 +156,13 @@ static int PP_VS_do_checksock(PrvtProt_task_t *task)
 {
 	if(1 == sockproxy_socketState())//socket open
 	{
-
 		return 0;
 	}
+	else
+	{
+		PP_rmtVS.state.req = PP_VS_NOREQ;
+	}
+	
 	return -1;
 }
 
@@ -275,11 +279,6 @@ static int PP_VS_do_wait(PrvtProt_task_t *task)
 static int PP_VS_do_VehiStMainfunction(PrvtProt_task_t *task)
 {
 	int idlenode;
-	if(1 != sockproxy_socketState())//socket not open
-	{
-		PP_rmtVS.state.req = PP_VS_NOREQ;
-		return 0;
-	}
 
 	switch(PP_rmtVS.state.req)
 	{
