@@ -262,12 +262,14 @@ void PP_can_send_cycle(void)
 		PP_can_unpack(old_ID440_data,can_data);
 		PP_send_cycle_ID440_to_mcu(can_data);
 		PP_canSend_collect(CAN_ID_440,can_data);
+		log_buf_dump(LOG_HOZON, "440_can", can_data, 8);
 		pthread_mutex_unlock(&sync_mutex_440);
 
 		pthread_mutex_lock(&sync_mutex_445);
 		PP_can_unpack(old_ID445_data,can_data);
 		PP_send_cycle_ID445_to_mcu(can_data);
 		PP_canSend_collect(CAN_ID_445,can_data);
+		log_buf_dump(LOG_HOZON, "445_can", can_data, 8);
 		pthread_mutex_unlock(&sync_mutex_445);
 		sync_upgrade_flae = 0;	
 	}

@@ -212,7 +212,15 @@ int PP_ACCtrl_mainfunction(void *task)
 						log_o(LOG_HOZON,"Prevent the air conditioner from being turned off multiple times");
 						PP_rmtACCtrl.state.req = 0;
 						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
-					}	
+					}
+					if(PP_rmtACCtrl.state.accmd == PP_SETH_ACC)  //空调没有设置温度，直接返回未知错误
+					{
+						PP_rmtACCtrl.state.req = 0;
+						PP_rmtACCtrl.fail     = 1;
+						PP_rmtACCtrl.state.failtype = PP_RMTCTRL_FAIL;
+						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
+					}
+					//PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 				}
 			}
 		}

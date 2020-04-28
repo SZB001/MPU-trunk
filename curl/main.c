@@ -718,7 +718,7 @@ int curl_Post_CanFile(char *name)
     /********************配置参数eventid*********************/
 	curl_formadd(&formpost,  
    				&lastptr,  
-   				CURLFORM_COPYNAME, "eventid",  
+   				CURLFORM_COPYNAME, "eventId",  
    				CURLFORM_COPYCONTENTS, can_eventId, 
    				CURLFORM_END);
 	
@@ -830,7 +830,7 @@ int curl_Post_LogFile(char *name)
    curl_formadd(&formpost,  
    				&lastptr,  
    				CURLFORM_COPYNAME, "mid",  
-   				CURLFORM_COPYCONTENTS, "10",  
+   				CURLFORM_COPYCONTENTS, "11",  
    				CURLFORM_END);
   
    /********************配置参数eventId*********************/

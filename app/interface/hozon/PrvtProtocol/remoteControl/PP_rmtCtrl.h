@@ -102,8 +102,7 @@ description： macro definitions
 #define PP_RMTCTRL_VEHIUNLOCK           0x0D//整车未上锁
 #define PP_RMTCTRL_UNDOORCLOSE          0x0E//整车有门没有关
 #define PP_RMTCTRL_LOWPOWER             0x0F//SOC电量低于15%
-
-
+#define PP_RMTCTRL_FAIL                 0xFE//未知错误
 
 //蓝牙请求消息类型
 #define BT_VEhICLE_DOOR_REQ       0x03 //车门锁
