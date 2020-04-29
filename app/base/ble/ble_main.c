@@ -824,6 +824,7 @@ static void *ble_main(void)
 					    log_i(LOG_BLE, "respbt.execution_result = %d", respbt.cmd_state.execution_result);
 						log_i(LOG_BLE, "respbt.cmd_state.state = %d", respbt.cmd_state.state);
 						log_i(LOG_BLE, "respbt.msg_type = %d", respbt.msg_type);
+						respbt.cmd_state.msg_type = respbt.msg_type;
 	 					//if ((g_hz_protocol.hz_send.ack.msg_type ==  (respbt.msg_type)) && (g_hz_protocol.hz_send.ack.state == respbt.cmd))
 	 					if((respbt.msg_type >= 1)&&(respbt.msg_type <= 7))
 	 					{

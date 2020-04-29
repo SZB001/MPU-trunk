@@ -270,7 +270,7 @@ void PP_FileUpload_LogRequest(PP_log_upload_t log_para)
 	PP_up_log.log_start_time = log_para.log_start_time;  //开始上传日志的时间
 	PP_up_log.log_up_time = log_para.log_up_time;    //采集日志的时间
 	PP_up_log.log_eventId = log_para.log_eventId;
-	
+	PP_up_log.log_stop_flag = log_para.log_stop_flag;
 	log_o(LOG_HOZON,"TSP request upload log file");
 }
 
