@@ -140,8 +140,15 @@ int dev_syn_time(RTCTIME *time, SYN_TIME_SOURCE src)
                 log_e(LOG_DEV, "set time to mcu rtc failed\n");
             }
         }
+
+        if((TSP_TIME_SOURCE == src)  || \
+           (GNSS_TIME_SOURCE == src) || \
+           (NTP_TIME_SOURCE == src))
+        {
+            dev_time_sync = true;          
+        }
+
         last_syn.src = src;
-        dev_time_sync = true;
         return 0;
     }
 
