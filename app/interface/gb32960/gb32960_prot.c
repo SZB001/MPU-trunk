@@ -75,6 +75,8 @@ typedef struct
     int caltimewait;
     uint64_t caltimewaittime;
     uint8_t calflag;
+    long long req_cal_tm;
+    long long res_cal_tm;
 } gb_stat_t;
 
 typedef struct
@@ -785,6 +787,7 @@ static int gb_do_caltime(gb_stat_t *state)
         }
         else
         {
+            state->req_cal_tm = tm_get_time();
             state->caltimewait = 1;
             state->caltimewaittime = tm_get_time();
         }
@@ -1044,6 +1047,9 @@ static int gb_do_receive(gb_stat_t *state)
                     break;
                 }
             #endif
+                state->res_cal_tm = tm_get_time();
+                log_o(LOG_GB32960, "request and response time difference:%dms\n", \
+                                                (state->res_cal_tm - state->req_cal_tm));
                 if (ack != 0x01)
                 {
                     log_e(LOG_GB32960, "time-calibration is rejected!");
