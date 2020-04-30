@@ -125,7 +125,6 @@ void PP_xcall_init(void)
 		PP_xcall[i].packResp.DisBody.testFlag = 1;
 		PP_xcall[i].Type = i + 1;
 		PP_xcall[i].state.req = 0;
-
 	}
 }
 
@@ -540,8 +539,12 @@ static void PP_xcall_send_cb(void * para)
 ******************************************************/
 void PP_xcall_SetXcallReq(unsigned char req)
 {
-
-	PP_xcall[(req-1)].state.req = 1;
+	if(req > PP_XCALL_MAX)
+	{
+		log_e(LOG_HOZON, "req para error,req para mast < %d",PP_XCALL_MAX);
+		return;
+	}
+	PP_xcall[req-1].state.req = 1;
 }
 
 /*
