@@ -1113,13 +1113,22 @@ int hz_protocol_process(unsigned char *pucInData,unsigned int *pulInLen,unsigned
 	log_i(LOG_BLE, "pucInData[9] = %x",pucInData[9]);
 	log_i(LOG_BLE, "pucInData[8] = %x",pucInData[8]);
 	log_i(LOG_BLE, "bufsz = %x\r\n",bufsz);
-
+	if(*pulInLen >= (bufsz + 20))
+	{
+		*pulInLen = (bufsz + 20);
+	}
+	else
+	{
+		log_e(LOG_BLE, "hz_protocol_process *pulInLen short");
+		return YT_ERR;
+	}
+	#if 0
 	if (bufsz != (*pulInLen - 20 ))
 	{
 		log_e(LOG_BLE, "hz_protocol_process len sum err");
 		return YT_ERR;
 	}
-
+	#endif
 	if (0 != strncmp((const char *)pucInData,"#START*", 7))
 	{
 		log_e(LOG_BLE, "hz_protocol_process Head fail");

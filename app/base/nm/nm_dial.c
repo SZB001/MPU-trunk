@@ -852,41 +852,113 @@ return:       none
 ****************************************************************/
 static void nm_dial_set_dns(NM_NET_INFO *phndl)
 {
-    char command[200];
+    char pub_command[200];
+	char pri_command[200];
 	char dns_name[50] = {0};
-    memset(command, 0, sizeof(command));
 
-    if (phndl->pri_dns_addr.s_addr)
+    if(phndl->type == NM_PUBLIC_NET) //
     {
-        snprintf(command, sizeof(command), "echo 'nameserver %s' >> /etc/resolv.conf",
-                 inet_ntoa(phndl->pri_dns_addr));
-		snprintf(dns_name, sizeof(dns_name), "nameserver %s",inet_ntoa(phndl->pri_dns_addr));
-		if(nm_dial_check_dns(dns_name) == 0)
-		{
-			nm_sys_call(command);
-		}
+        if(phndl->pri_dns_addr.s_addr)
+        {
+            memset(pub_command, 0, sizeof(pub_command));
+            snprintf(pub_command, sizeof(pub_command), "echo 'nameserver %s' > /etc/resolv.conf",
+                    inet_ntoa(phndl->pri_dns_addr));         //公网DNS
+            nm_sys_call(pub_command);
+
+            if(phndl->sec_dns_addr.s_addr)
+            {
+                memset(pub_command, 0, sizeof(pub_command));
+                snprintf(pub_command, sizeof(pub_command), "echo 'nameserver %s' >> /etc/resolv.conf",
+                        inet_ntoa(phndl->sec_dns_addr));
+                nm_sys_call(pub_command);
+            }
+        }
+        else if(phndl->sec_dns_addr.s_addr)
+        {
+            memset(pub_command, 0, sizeof(pub_command));
+            snprintf(pub_command, sizeof(pub_command), "echo 'nameserver %s' > /etc/resolv.conf",
+                    inet_ntoa(phndl->sec_dns_addr));         //公网DNS
+            nm_sys_call(pub_command);
+        }
+        else
+        {}
+
+        if(nm_net_info[NM_PRIVATE_NET].pri_dns_addr.s_addr)
+        {
+            memset(pri_command, 0, sizeof(pri_command));
+            snprintf(pri_command, sizeof(pri_command), "echo 'nameserver %s' >> /etc/resolv.conf",
+                inet_ntoa(nm_net_info[NM_PRIVATE_NET].pri_dns_addr)); //私网DNS
+            nm_sys_call(pri_command);
+        }
+        
+        if(nm_net_info[NM_PRIVATE_NET].sec_dns_addr.s_addr)
+        {
+            memset(pri_command, 0, sizeof(pri_command));
+            snprintf(pri_command, sizeof(pri_command), "echo 'nameserver %s' >> /etc/resolv.conf",
+                inet_ntoa(nm_net_info[NM_PRIVATE_NET].sec_dns_addr)); //私网DNS
+            nm_sys_call(pri_command);
+        }
     }
-	
-	if (phndl->sec_dns_addr.s_addr)
+    else if(phndl->type == NM_PRIVATE_NET)
     {
-        snprintf(command, sizeof(command), "echo 'nameserver %s' >> /etc/resolv.conf",
-                  inet_ntoa(phndl->sec_dns_addr));
-		memset(dns_name,0,sizeof(dns_name));
-		snprintf(dns_name, sizeof(dns_name), "nameserver %s",inet_ntoa(phndl->sec_dns_addr));
-		if(nm_dial_check_dns(dns_name) == 0)
-		{
-			nm_sys_call(command);
-		}
-     }
+        if(phndl->pri_dns_addr.s_addr)
+        {
+            memset(dns_name,0,sizeof(dns_name));
+            snprintf(dns_name, sizeof(dns_name), "nameserver %s",inet_ntoa(phndl->pri_dns_addr));
+            if(nm_dial_check_dns(dns_name) == 0)
+            {
+                memset(pri_command, 0, sizeof(pri_command));
+                snprintf(pri_command, sizeof(pri_command), "echo 'nameserver %s' >> /etc/resolv.conf",
+                    inet_ntoa(phndl->pri_dns_addr)); //私网DNS 
+                nm_sys_call(pri_command);
+            }
+            
+        }
+        
+        if(phndl->sec_dns_addr.s_addr)
+        {
+            memset(dns_name,0,sizeof(dns_name));
+            snprintf(dns_name, sizeof(dns_name), "nameserver %s",inet_ntoa(phndl->sec_dns_addr));
+            if(nm_dial_check_dns(dns_name) == 0)
+            {
+                memset(pri_command, 0, sizeof(pri_command));
+                snprintf(pri_command, sizeof(pri_command), "echo 'nameserver %s' >> /etc/resolv.conf",
+                    inet_ntoa(phndl->sec_dns_addr)); //私网DNS 
+                nm_sys_call(pri_command);
+            }
+        }
+    }
+    else
+    {}
 	 
-	 if((!(phndl->sec_dns_addr.s_addr)) && (!(phndl->pri_dns_addr.s_addr)))	
+	if((!(phndl->sec_dns_addr.s_addr)) && (!(phndl->pri_dns_addr.s_addr)))	
     {
-    	
-        snprintf(command, sizeof(command), "echo 'nameserver 114.114.114.114' > /etc/resolv.conf");
-        nm_sys_call(command);
+    	if(phndl->type == NM_PUBLIC_NET)
+        {
+            memset(pub_command, 0, sizeof(pub_command));
+            snprintf(pub_command, sizeof(pub_command), "echo 'nameserver 114.114.114.114' > /etc/resolv.conf");
+            nm_sys_call(pub_command);
 
-        snprintf(command, sizeof(command), "echo 'nameserver 180.76.76.76' >> /etc/resolv.conf");
-        nm_sys_call(command);
+            memset(pub_command, 0, sizeof(pub_command));
+            snprintf(pub_command, sizeof(pub_command), "echo 'nameserver 180.76.76.76' >> /etc/resolv.conf");
+            nm_sys_call(pub_command);
+        }
+
+        if(nm_net_info[NM_PRIVATE_NET].pri_dns_addr.s_addr)
+        {
+            memset(pri_command, 0, sizeof(pri_command));
+            snprintf(pri_command, sizeof(pri_command), "echo 'nameserver %s' >> /etc/resolv.conf",
+                inet_ntoa(nm_net_info[NM_PRIVATE_NET].pri_dns_addr)); //私网DNS
+            nm_sys_call(pri_command);
+        }
+        
+        if(nm_net_info[NM_PRIVATE_NET].sec_dns_addr.s_addr)
+        {
+            memset(pri_command, 0, sizeof(pri_command));
+            snprintf(pri_command, sizeof(pri_command), "echo 'nameserver %s' >> /etc/resolv.conf",
+                inet_ntoa(nm_net_info[NM_PRIVATE_NET].sec_dns_addr)); //私网DNS
+            nm_sys_call(pri_command);
+        }
     }
 }
 

@@ -98,7 +98,7 @@ int PP_startengine_mainfunction(void *task)
 			{
 				if(PP_rmtCtrl_cfg_RmtStartSt() == 0)   //上电走此流程
 				{
-					if((cnt < 5)&&(PrvtProtCfg_vehicleSOC() == 0))
+					if((cnt < 10)&&(PrvtProtCfg_vehicleSOC() == 0))
 					{
 						if(tm_get_time() - pp_signal_waittime > 500)
 						{
