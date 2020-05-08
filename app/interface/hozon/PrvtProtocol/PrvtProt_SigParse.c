@@ -92,6 +92,57 @@ int PrvtProt_data_parse_surfix(int sigid, const char *sfx)
     return 5;
 }
 
+/*
+ *	EHB故障及有效性
+  */
+unsigned char PrvtProt_SignParse_EHBFaiSt(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_EHBFAIST] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_EHBFAIST])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
+
+/*
+ *	系统故障灯-限功率
+  */
+unsigned char PrvtProt_SignParse_VCUPwrTriLvl(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_VCUPWRTRILVL] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_VCUPWRTRILVL])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
+
+/*
+ *	系统故障灯-限功率
+  */
+unsigned char PrvtProt_SignParse_VCUSysLightSt(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_VCUSYSLIGHTST] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_VCUSYSLIGHTST])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
+
+/*
+ *	当前最高放电故障等级
+  */
+unsigned char PrvtProt_SignParse_BMSDisChgFlt(void)
+{
+	unsigned char st;
+	pthread_mutex_lock(&datatx);
+	st = PP_canSign.rmtCtrlSign.info[PP_CANSIGN_BMSDISCHGFLT] ?
+				 dbc_get_signal_from_id(PP_canSign.rmtCtrlSign.info[PP_CANSIGN_BMSDISCHGFLT])->value: 0x0;
+	pthread_mutex_unlock(&datatx);
+	return st;
+}
 
 /*
  *	ESC Brake Warning Lamp sts

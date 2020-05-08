@@ -2,12 +2,10 @@
 #define __GB32960_API_H__
 
 
-
-#define GB32960_EXWARN 57
-#define GB32960_VSWARN  (GB32960_EXWARN + 2)
+#define GB32960_VSWARN  (57 + 2)
 
 #define GB32960_GLWARN 32
-#define GB32960_MAXWARN (GB32960_EXWARN + GB32960_GLWARN + 2)
+#define GB32960_MAXWARN (57 + GB32960_GLWARN + 2)
 
 //存在两个告警信号出现二对一的情况
 #define tempdiffWARN 					0//温度差异报警
@@ -277,6 +275,7 @@ extern long getgb_data_LRDoorOpenSt(void);
 extern long getgb_data_RRDoorOpenSt(void);
 extern uint8_t gb_data_perReportPack(uint8_t *data,int *len);
 extern int gb32960_gbCanbusActiveSt(void);
+extern long gb_data_BMSInterLockSt(void);
 extern long gb_data_BMSCommFaultSt(void);
 extern long gb_data_GasPedalFault(void);
 extern long gb_data_BattTempRiseFast(void);

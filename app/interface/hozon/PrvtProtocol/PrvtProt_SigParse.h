@@ -61,7 +61,11 @@ description�� macro definitions
 #define PP_CANSIGN_AVHLAMPREQ           0x25//AVH Lamp Req
 #define PP_CANSIGN_EGSMERRST            0x26//EGSM故障状态
 #define PP_CANSIGN_ESCBRAKEWARNMAMP     0x27//ESC Brake Warning Lamp
-#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_ESCBRAKEWARNMAMP + 1)
+#define PP_CANSIGN_BMSDISCHGFLT         0x28//当前最高放电故障等级
+#define PP_CANSIGN_VCUSYSLIGHTST        0x29//系统故障灯-限功率
+#define PP_CANSIGN_VCUPWRTRILVL         0x2A//动力系统故障等级
+#define PP_CANSIGN_EHBFAIST             0x2B//EHBS故障及有效性
+#define PP_MAX_RMTCTRL_CANSIGN_INFO   (PP_CANSIGN_EHBFAIST + 1)
 /***********�꺯��***********/
 
 
@@ -122,4 +126,8 @@ extern unsigned char PrvtProt_SignParse_DiagSts(void);
 extern unsigned char PrvtProt_SignParse_AVHLampSts(void);
 extern unsigned char PrvtProt_SignParse_EGSMErrSt(void);
 extern unsigned char PrvtProt_SignParse_BkWarnLampSt(void);
+extern unsigned char PrvtProt_SignParse_BMSDisChgFlt(void);
+extern unsigned char PrvtProt_SignParse_VCUSysLightSt(void);
+extern unsigned char PrvtProt_SignParse_VCUPwrTriLvl(void);
+extern unsigned char PrvtProt_SignParse_EHBFaiSt(void);
 #endif 

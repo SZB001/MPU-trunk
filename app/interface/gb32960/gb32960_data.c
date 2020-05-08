@@ -3364,15 +3364,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
         {
 			if(0x22 == j)//EPS扭矩传感器故障 0--故障;1--正常
 			{
-				if(gbinf->warn[i][j] &&	\
-						(0 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
-				{
-					buf[len++] = gb_alarmCode[j].code >> 8;
-					buf[len++] = gb_alarmCode[j].code;
-					(*warnnum_ptr)++;
-					vs_warn[j-32] = 1;
-					warnlvl  = i + 1;
-				}
+				continue;//去掉eps扭矩传感器信号故障
 			}
 			else
 			{
@@ -5331,10 +5323,7 @@ uint8_t gb_data_dcdcstatus(void)
 	DAT_LOCK();
 	if(gb_inf && gb_inf->vehi.info[GB_VINF_DCDC])
     {
-        if(1 == dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_DCDC])->value)
-		{
-			dcst = 1;
-		}
+		dcst = dbc_get_signal_from_id(gb_inf->vehi.info[GB_VINF_DCDC])->value;
 	}
 	DAT_UNLOCK();
 
@@ -5512,6 +5501,25 @@ long gb_data_EPBLampSt(void)
 	if(gb_inf && gb_inf->event.info[GB_EVT_EPBLAMP_ON])
 	{
 		st = dbc_get_signal_from_id(gb_inf->event.info[GB_EVT_EPBLAMP_ON])->value;
+	}
+
+	DAT_UNLOCK();
+
+	return st;
+}
+
+/*
+* 动力电池环路互锁
+*/
+long gb_data_BMSInterLockSt(void)
+{
+	long st = 0;
+
+	DAT_LOCK();
+
+	if(gb_inf && gb_inf->warn[2][0x3F])
+	{
+		st = dbc_get_signal_from_id(gb_inf->warn[2][0x3F])->value;
 	}
 
 	DAT_UNLOCK();

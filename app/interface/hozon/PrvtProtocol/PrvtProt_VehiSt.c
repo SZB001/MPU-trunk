@@ -501,7 +501,7 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batteryCurrent  = %ld",PP_VS_appdata.VSResp.basicSt.batteryCurrent);
 	PP_VS_appdata.VSResp.basicSt.batterySOCPrc		= VehicleSOC;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.batterySOCPrc  = %ld",PP_VS_appdata.VSResp.basicSt.batterySOCPrc);
-	PP_VS_appdata.VSResp.basicSt.dcStatus			= gb_data_dcdcstatus();
+	PP_VS_appdata.VSResp.basicSt.dcStatus			= (gb_data_dcdcstatus() == 0x1)?1:0;
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.dcStatus  = %ld",PP_VS_appdata.VSResp.basicSt.dcStatus);
 	PP_VS_appdata.VSResp.basicSt.gearPosition		= gb_data_gearPosition();
 	log_i(LOG_HOZON, "PP_VS_appdata.VSResp.basicSt.gearPosition  = %ld",PP_VS_appdata.VSResp.basicSt.gearPosition);

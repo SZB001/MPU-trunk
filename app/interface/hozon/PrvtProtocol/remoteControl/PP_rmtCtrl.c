@@ -1268,7 +1268,7 @@ int PP_rmtCtrl_StInformTsp(PP_rmtCtrl_Stpara_t *CtrlSt_para)
 			App_rmtCtrl.CtrlResp.basicSt.batteryVoltage		= PrvtProtCfg_TotalVoltage();
 			App_rmtCtrl.CtrlResp.basicSt.batteryCurrent		= PrvtProtCfg_TotalCurrent();
 			App_rmtCtrl.CtrlResp.basicSt.batterySOCPrc 		= VehicleSOC;
-			App_rmtCtrl.CtrlResp.basicSt.dcStatus			= gb_data_dcdcstatus();
+			App_rmtCtrl.CtrlResp.basicSt.dcStatus			= (gb_data_dcdcstatus() == 0x1)?1:0;
 			App_rmtCtrl.CtrlResp.basicSt.gearPosition		= gb_data_gearPosition();
 			App_rmtCtrl.CtrlResp.basicSt.insulationRstance	= gb_data_insulationResistance();
 			if(App_rmtCtrl.CtrlResp.basicSt.insulationRstance > 60000)

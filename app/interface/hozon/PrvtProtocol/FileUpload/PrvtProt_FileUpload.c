@@ -125,6 +125,7 @@ void InitPP_FileUpload_Parameter(void)
 			PP_FileUL.pkgnum = infoCollectCycle;
 		}
 	}
+	PP_FileUL.ignonDlyTime = tm_get_time();
 }
 
 /******************************************************
@@ -350,21 +351,23 @@ static void *PP_CanFileSend_main(void)
 	while(1)
     {	
 		unsigned char obj;
+		int shmid;
+		char *addr;
+		unsigned int cfglen = 1;
 
-		sleep(20);	
-		int shmid = GetShm(4096);
-		char *addr = shmat(shmid,NULL,0);
-		
-		unsigned int cfglen;
-		cfglen = 1;
+		sleep(1);	
+		shmid = GetShm(4096);
+		addr = shmat(shmid,NULL,0);
 		cfg_get_para(CFG_ITEM_EN_CANFILE, &canupload_en, &cfglen);
 		
-		if(	(canupload_en == 1)					&& \
-			(dev_get_KL15_signal() == 1) 		&& \
-			(0 == GetPP_rmtCtrl_fotaUpgrade()) 	&& \
+		if(	(canupload_en == 1)						&& \
+			(dev_get_KL15_signal() == 1) 			&& \
+			(0 == GetPP_rmtCtrl_fotaUpgrade()) 		&& \
 			(0 == PP_netstatus_pubilcfaultsts(NULL)) && \
-			(1 == PP_FileUL.network) 			&& \
-			(0 == get_factory_mode()))
+			(1 == PP_FileUL.network) 				&& \
+			(0 == get_factory_mode())				&& \
+			((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME) \
+		  )
 		{
 			//整车报文文件上传
 			for(obj = 0;obj < PP_CANFILEUL_SIGN_WARN_MAX;obj++)
@@ -375,7 +378,7 @@ static void *PP_CanFileSend_main(void)
 					PP_FileUL.warnSign[obj].oldSt = PP_FileUL.warnSign[obj].newSt;
 					if(1 == PP_FileUL.warnSign[obj].newSt)
 					{
-						//PP_FileUL.signTrigFlag = 1;
+						PP_FileUL.signTrigFlag = 1;
 						break;
 					}
 				}
@@ -429,6 +432,10 @@ static void *PP_CanFileSend_main(void)
 		else
 		{
 			PP_tsp_flag = 0;
+			if(dev_get_KL15_signal() == 0)
+			{
+				PP_FileUL.ignonDlyTime = tm_get_time();
+			}
 		}
 		
 		if(canupload_en == 1)  //
@@ -907,7 +914,7 @@ static int PP_FileUpload_nm_callback(NET_TYPE type, NM_STATE_MSG nmmsg)
 }
 
 /*
-* 获取网络状态
+* 获取can触发信号状态
 */
 static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 {
@@ -915,85 +922,89 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 	unsigned char tempVal;
 	switch(obj)
 	{
-		case PP_CANFILEUL_SIGN_VCU5SYSFLT:
+		case PP_CANFILEUL_SIGN_VCU5SYSFLT://系统故障状态
 		{
 			trigSt = PrvtProt_SignParse_SysFaultSt();
 		}
 		break;
-		case PP_CANFILEUL_SIGN_BMSCOMMFLT:
+		case PP_CANFILEUL_SIGN_BMSDISCHGFLT://当前最高放电故障等级
 		{
-			trigSt = gb_data_BMSCommFaultSt();
+			trigSt = ((PrvtProt_SignParse_BMSDisChgFlt() == 0x7) || \
+					  (PrvtProt_SignParse_BMSDisChgFlt() == 0x8))?1:0;
 		}
 		break;
-		case PP_CANFILEUL_SIGN_GASPEDELFLT:
+		case PP_CANFILEUL_SIGN_BMSINTERLOCKST://高压环路互锁故障
 		{
-			trigSt = gb_data_GasPedalFault();
+			trigSt = gb_data_BMSInterLockSt()?1:0;
 		}
 		break;
-		case PP_CANFILEUL_SIGN_MCU2FLTLVL:
+		case PP_CANFILEUL_SIGN_MCU2FLTLVL://mcu故障
 		{
-			trigSt = (PrvtProt_SignParse_Mcu2FltLvl() == 0x3)?1:0;
+			trigSt = ((PrvtProt_SignParse_Mcu2FltLvl() == 0x2) || \
+					  (PrvtProt_SignParse_Mcu2FltLvl() == 0x3))?1:0;
 		}
 		break;
-		case PP_CANFILEUL_SIGN_TEMPRISEFAST:
+		case PP_CANFILEUL_SIGN_TEMPRISEFAST://电池温升过快故障
 		{
 			trigSt = (gb_data_BattTempRiseFast() == 0x3)?1:0;
 		}
 		break;
-		case PP_CANFILEUL_SIGN_CELLOVERTEMP:
+		case PP_CANFILEUL_SIGN_CELLOVERTEMP://电池高温报警
 		{
 			trigSt = (gb_data_cellOverTemp() == 0x3)?1:0;
 		}
 		break;
-		case PP_CANFILEUL_SIGN_UNDERVOLT:
+		case PP_CANFILEUL_SIGN_UNDERVOLT://低压报警
 		{
 			tempVal = gb_data_underVoltSts();
 			trigSt = ((tempVal == 0x2) || (tempVal == 0x3))?1:0;
 		}
 		break;
-		case PP_CANFILEUL_SIGN_OVERCURRENT:
+		case PP_CANFILEUL_SIGN_VCUSYSLGHT://系统故障灯-限功率
 		{
-			trigSt = (PrvtProt_SignParse_overCurrSt() == 0x3)?1:0;
+			trigSt = (PrvtProt_SignParse_VCUSysLightSt() == 0x1)?1:0;
 		}
 		break;
-		case PP_CANFILEUL_SIGN_ISOISUPER:
+		case PP_CANFILEUL_SIGN_ISOISUPER://绝缘故障
 		{
 			trigSt = (gb_data_IsolSuperSts() == 0x3)?1:0;
 		}
 		break;
-		case PP_CANFILEUL_SIGN_TEMPDIFF:
+		case PP_CANFILEUL_SIGN_TEMPDIFF://温度差异报警
 		{
 			trigSt = (gb_data_tempDiffSts() == 0x3)?1:0;
 		}
 		break;
-		case PP_CANFILEUL_SIGN_BMS7DIAGSTS:
+		case PP_CANFILEUL_SIGN_BMS7DIAGSTS://动力电池系统故障
 		{
 			trigSt = (PrvtProt_SignParse_DiagSts() == 0x3)?1:0;
 		}
 		break;
-		case PP_CANFILEUL_SIGN_EGSMERR://
+		case PP_CANFILEUL_SIGN_EGSMERR://EGSM故障
 		{
 			trigSt = PrvtProt_SignParse_EGSMErrSt();
 		}
 		break;
-		case PP_CANFILEUL_SIGN_BRAKEWARNLAMP://
+		case PP_CANFILEUL_SIGN_VCUPWRTRFAILVL://动力系统故障等级
 		{
-			trigSt = (PrvtProt_SignParse_BkWarnLampSt() != 0)?1:0;
+			trigSt = ((PrvtProt_SignParse_VCUPwrTriLvl() == 0x2) || \
+					  (PrvtProt_SignParse_VCUPwrTriLvl() == 0x3))?1:0;
 		}
 		break;
-		case PP_CANFILEUL_SIGN_AVHLAMPREQ://
+		case PP_CANFILEUL_SIGN_DCDCWORKST://DCDC工作状态
 		{
-			trigSt = (PrvtProt_SignParse_AVHLampSts() == 0x1)?1:0;
-		}
-		break;
-		case PP_CANFILEUL_SIGN_EPBSTLAMPREQ:
-		{
-			trigSt = (gb_data_EPBLampSt() == 0x2)?1:0;
+			trigSt = (gb_data_dcdcstatus() == 0x2)?1:0;
 		}
 		break;
 		case PP_CANFILEUL_SIGN_EHBFAIL://
+		{
+			trigSt = PrvtProt_SignParse_EHBFaiSt()?1:0;
+		}
 		break;
-		case PP_CANFILEUL_SIGN_ESCLFAILIND://
+		case PP_CANFILEUL_SIGN_ESCWARNLAMP://
+		{
+			trigSt = (PrvtProt_SignParse_BkWarnLampSt() == 0x1)?1:0;
+		}
 		break;
 		case PP_CANFILEUL_SIGN_RLTYREPRESS://左后
 		{
@@ -1059,22 +1070,12 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 			trigSt = gb_data_tyreLeakWarnSts(1);
 		}
 		break;
-		case PP_CANFILEUL_SIGN_BDMSYSFAIL:
-		{
-			trigSt = (gb_data_BDMSysFail() != 0)?1:0;
-		}
-		break;
-		case PP_CANFILEUL_SIGN_AIRBAGFAIL:
-		{
-			trigSt = (gb_data_AirBagFailSts() == 0x2)?1:0;
-		}
-		break;
-		case PP_CANFILEUL_SIGN_CRASHOUTPUT:
+		case PP_CANFILEUL_SIGN_CRASHOUTPUT://碰撞状态输出
 		{
 			trigSt = PP_rmtCtrl_cfg_CrashOutputSt();
 		}
 		break;
-		case PP_CANFILEUL_SIGN_EPSELESTRFAIL:
+		case PP_CANFILEUL_SIGN_EPSELESTRFAIL://eps工作状态
 		{
 			trigSt = (gb_data_EPSFaultSts() == 0x1)?1:0;
 		}
