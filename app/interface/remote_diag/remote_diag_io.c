@@ -104,7 +104,7 @@ PARSING_SINGLE_TIME parsing_time_arr[REMOTE_DIAG_ECU_NUM] =
     NULL,//REMOTE_DIAG_TAP,
     comm_parsing_time,//REMOTE_DIAG_MFCP,
     
-    LSB_parsing_time,//REMOTE_DIAG_TBOX,
+    comm_parsing_time,//REMOTE_DIAG_TBOX,
     NULL,//REMOTE_DIAG_ACU,
     comm_parsing_time,//REMOTE_DIAG_PLG,
 };

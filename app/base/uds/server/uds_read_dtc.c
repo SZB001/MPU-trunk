@@ -325,6 +325,24 @@ static signed int DTCSnapshotRecordNumberAndDTCRecordIsValid
                 break;
             }
         }
+        else
+        {
+            DTC = ChangeDTCtoInt(uds_diag_get_dtc(j));
+
+            if ((DTC == DTCRecord) && ((DTC_index[j] == *number) || (*number == 0xFF)))
+            {
+                if (*number == 0xFF)
+                {
+                    GetDTCSnapshotRecordNumber();
+                    *number = DTC_index[j];
+                }
+
+                //uds_diag_get_freeze(j, DIDptr, len, DIDnumber);
+                result = 1;
+                break;
+            }
+
+        }
     }
 
     return result;
@@ -348,10 +366,23 @@ static void ReportDTCSnapshotRecordByDTCNumber(UDS_T *tUDS, uint16_t u16PDU_DLC,
     DTCSnapshotRecordNumber = p_u8PDU_Data[5];
     len = sizeof(DIDBuf);
 
-    if (DTCSnapshotRecordNumberAndDTCRecordIsValid(&DTCSnapshotRecordNumber, DTC, DIDBuf, &len,
+    if (-1 == DTCSnapshotRecordNumberAndDTCRecordIsValid(&DTCSnapshotRecordNumber, DTC, DIDBuf, &len,
             &DIDnumber))
     {
         uds_negative_response(tUDS, p_u8PDU_Data[0], NRC_RequestOutOfRange);
+        return;
+    }
+    else if (1 == DTCSnapshotRecordNumberAndDTCRecordIsValid(&DTCSnapshotRecordNumber, DTC, DIDBuf,
+             &len,
+             &DIDnumber))
+    {
+        Ar_u8RePDU_DATA[i++] =  p_u8PDU_Data[0] + POS_RESPOND_SID_MASK ;
+        Ar_u8RePDU_DATA[i++] =  p_u8PDU_Data[1] ;
+        Ar_u8RePDU_DATA[i++] =  p_u8PDU_Data[2] ;
+        Ar_u8RePDU_DATA[i++] =  p_u8PDU_Data[3] ;
+        Ar_u8RePDU_DATA[i++] =  p_u8PDU_Data[4] ;
+        Ar_u8RePDU_DATA[i++] =  0x00;
+        uds_positive_response(tUDS, tUDS->can_id_res, i, Ar_u8RePDU_DATA);
         return;
     }
 

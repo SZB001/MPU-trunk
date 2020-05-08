@@ -75,8 +75,8 @@ int uds_did_get_time(unsigned char *did, unsigned int len)
     did[4] = bcd2bin_2dit(time.min);
     did[5] = bcd2bin_2dit(time.sec);*/
     
-    did[0] = time.year%256;
-	did[1] = time.year/256;
+    did[0] = time.year/256;
+	did[1] = time.year%256;
     did[2] = time.mon;
     did[3] = time.mday;
     did[4] = time.hour;
@@ -913,10 +913,9 @@ int uds_did_get_odometer_reading(unsigned char *did, unsigned int len)
     }
     vehicle_odograph = gb_data_vehicleOdograph();
 
-    did[0] = (vehicle_odograph & 0xff000000) << 24;
-    did[1] = (vehicle_odograph & 0x00ff0000) << 16;
-    did[2] = (vehicle_odograph & 0x0000ff00) << 8;
-    did[3] = (vehicle_odograph & 0x000000ff);
+    did[0] = (vehicle_odograph & 0x00FF0000) >> 16;
+    did[1] = (vehicle_odograph & 0x0000FF00) >> 8;
+    did[2] = (vehicle_odograph & 0x000000FF);
     return 0;
 }
 
