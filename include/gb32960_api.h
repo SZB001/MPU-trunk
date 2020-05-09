@@ -2,10 +2,10 @@
 #define __GB32960_API_H__
 
 
-#define GB32960_VSWARN  (57 + 2)
+#define GB32960_VSWARN  (57 + 2 + 13)
 
 #define GB32960_GLWARN 32
-#define GB32960_MAXWARN (57 + GB32960_GLWARN + 2)
+#define GB32960_MAXWARN (GB32960_GLWARN + GB32960_VSWARN)
 
 //存在两个告警信号出现二对一的情况
 #define tempdiffWARN 					0//温度差异报警
@@ -42,7 +42,7 @@
 #define reserveWARN31					31//
 #define batt12vlowvolWARN               32//12V 蓄电池电压过低 报警
 #define epsfaultWARN                    33//EPS 故障 报警
-#define epstorquesensorWARN             34//EPS 扭矩传感器信号故障报警
+#define ACUcrashoutputWARN              34//气囊弹出报警
 #define mcuIGBTVovercurrentWARN         35//MCU IGBT 驱动电路过流故障（V 相） 报警
 #define mcuIGBTWovercurrentWARN         36//MCU IGBT 驱动电路过流故障（W 相） 报警
 #define mcupowermoduleWARN              37//MCU 电源模块故障 报警
@@ -98,7 +98,21 @@
 #define ptcpumpfaultWARN                87//制热不响应原因-PTC 水泵故障
 #define watervalvefaultWARN             88//制热不响应原因-三通水阀故障
 
-#define GB32960_API_FAULTNUM (watervalvefaultWARN + 1)
+#define egsmerrorstWARN					89//EGSM故障状态
+#define vcusysfltlghtstWARN				90//VCU系统故障
+#define bmsdischgactivefcWARN			91//高压放电故障
+#define bmsovercurrstWARN				92//总电流过流报警
+#define ehbfailedstWARN					93//EHB电子液压制动故障
+#define flraccsysfaiWARN				94//ACC自适应巡航系统故障
+#define flraebfailinfoWARN				95//AEB自动紧急制动
+#define flcstatusWARN					96//前视摄像头故障
+#define apaworkstschWARN				97//APA自动泊车系统故障
+#define bmsdiagstWARN					98//动力电池系统故障
+#define vcusystemwarnlghtstWARN			99//功率系统故障
+#define mcufaultlevelWARN				100//MCU故障状态
+#define vcupwrtrainfailevelWARN			101//动力系统故障
+
+#define GB32960_API_FAULTNUM 			(vcupwrtrainfailevelWARN + 1)
 
 typedef union
 {
@@ -139,7 +153,7 @@ typedef union
 		unsigned char reservewarn31;//
 		unsigned char batt12vlowvolwarn;//12V 蓄电池电压过低 报警
 		unsigned char epsfaultwarn;//EPS 故障 报警
-		unsigned char epstorquesensorwarn;//EPS 扭矩传感器信号故障报警
+		unsigned char acucrashoutputwarn;//气囊弹出报警
 		unsigned char mcuIGBTVovercurrentwarn;//MCU IGBT 驱动电路过流故障（V 相） 报警
 		unsigned char mcuIGBTWovercurrentwarn;//MCU IGBT 驱动电路过流故障（W 相） 报警
 		unsigned char mcupowermodulewarn;//MCU 电源模块故障 报警
@@ -194,6 +208,20 @@ typedef union
 		unsigned char hothvfaultwarn;   //制热不响应原因-HV 故障
 		unsigned char ptcpumpfaultwarn;   //制热不响应原因-PTC 水泵故障
 		unsigned char watervalvefaultwarn; //制热不响应原因-三通水阀故障
+
+		unsigned char egsmerrorstwarn;//EGSM故障状态
+		unsigned char vcusysfltlghtstwarn;//VCU系统故障
+		unsigned char bmsdischgactivefcwarn;//高压放电故障
+		unsigned char bmsovercurrstwarn;//总电流过流报警
+		unsigned char ehbfailedstwarn;//EHB电子液压制动故障
+		unsigned char flraccsysfaiwarn;//ACC自适应巡航系统故障
+		unsigned char flraebfailinfowarn;//AEB自动紧急制动
+		unsigned char flcstatuswarn;//前视摄像头故障
+		unsigned char apaworkstschwarn;//APA自动泊车系统故障
+		unsigned char bmsdiagstwarn;//动力电池系统故障
+		unsigned char vcusystemwarnlghtstwarn;//功率系统故障
+		unsigned char mcufaultlevelwarn;//MCU故障状态
+		unsigned char vcupwrtrainfailevelwarn;//动力系统故障
 	}type; /**/
 }gb32960_api_fault_t;
 

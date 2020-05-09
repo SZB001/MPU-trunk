@@ -24,6 +24,14 @@ NS_ :
 BS_:
 
 BU_: ACU BDCM EPS BMS MCU VCU1 CDU TBOX EHB ESC Tester IHU PLG PTC EACP CLM ICU TAP ALM
+BO_ 698 APA_Fr02_2BA: 8 APA
+ SG_ EXTAPAWorkStsCH_@2WG7063 : 39|3@0+ (1,0) [0|7] ""  VCU,EPS,ESC,ICU,IHU
+BO_ 234 FLC_Fr01_0EA: 8 FLC
+ SG_ EXTFLCStatus_@2WG7162 : 44|2@0+ (1,0) [0|3] ""  FLR
+BO_ 522 FLR_Fr03_0x20A: 8 FLR
+ SG_ EXTFLRAEBFailinfo_@2WG7161 : 31|2@0+ (1,0) [0|3] ""  ESC,ICU,IHU
+BO_ 537 FLR_Fr02_0x219: 8 FLR
+ SG_ EXTFLRACCSysFailure_@2WG7060 : 7|2@0+ (1,0) [0|3] ""  ESC,FLC,ICU
 BO_ 1266 BTM_Fr01_4F2: 8 BTM
  SG_ BTM01ChargingCmd_@2WR1020 : 9|2@0+(1,0)[0|3] "" TBOX
 BO_ 563 ACU_Fr01_233: 8 ACU
@@ -31,6 +39,7 @@ BO_ 563 ACU_Fr01_233: 8 ACU
  SG_ ACUDrvSeatBeltRSt_@2WGF044 : 5|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ ACUAirBagFailSts_@2WG722D : 1|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ ACUCrashOutputSts_@2WGE009 : 15|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ EXTACUCrashOutputSts_@2WG7222 : 15|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ ACU节点丢失_@2N001 : 15|2@0+(1,0)[0|3] "" Vector__XXX
 BO_ 825 BDM_Fr01_339: 8 BDCM
  SG_ BDMAlarmMode_@2WG704C : 2|3@0+(1,0)[0|7] "" Vector__XXX
@@ -128,7 +137,7 @@ BO_ 225 EPS_Fr02_0E1: 8 EPS
  SG_ EPSFailSts_@2WG724E : 21|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ EPSFr02MsgCounter : 55|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ EPSFr02Checksum : 63|8@0+(1,0)[0|255] "" Vector__XXX
- SG_ EPSDriveSteerTorqueValid_@2WG7222 : 15|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ EPSDriveSteerTorqueValid : 15|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ EPS节点丢失_@2N006 : 15|1@0+(1,0)[0|1] "" Vector__XXX
 BO_ 481 EPS_Fr03_1E1: 8 EPS
  SG_ EPS_CalibratedStatus_@2WGF043 : 7|1@0+ (1,0) [0|1] "" Vector__XXX
@@ -171,6 +180,7 @@ BO_ 646 BMS_Fr06_286: 8 BMS
  SG_ BMS6PosBattContSts_@2WGE00E : 9|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS6NegBattContSts_@2WGE00F : 11|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS6dischgActiveFltCategory_@2WR1028 : 35|4@0+(1,0)[0|15] "" Vector__XXX
+ SG_ EXTBMS6dischgActiveFltCategory_@2WG725D : 35|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ BMS6chgActiveFltCategory : 39|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ BMS6DCChargeContSts_@2WGE011 : 47|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS6InterlockSts_@2WG703F : 55|2@0+(1,0)[0|3] "" Vector__XXX
@@ -195,10 +205,12 @@ BO_ 631 BMS_Fr07_277: 8 BMS
  SG_ BMS7UnderVoltageSts_@2WG7203 : 11|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7UnderSOCSts_@2WG7204 : 13|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7OverCurrentSts_@2WR1023 : 15|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ EXTBMS7OverCurrentSts_@2WG725E : 15|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7IsolSuperSts_@2WG720B : 17|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ ExtBMS7IsolSuperSts_@2WG723A : 17|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7TempDiffSts_@2WG7200 : 19|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7DiagSts_@2WR1024 : 21|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ EXTBMS7DiagSts_@2WG7064 : 21|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7CellConsistencySts_@2WG720A : 23|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ ExtBMS7CellConsistencySts_@2WG703E : 23|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS7BatteryState : 25|2@0+(1,0)[0|3] "" Vector__XXX
@@ -221,7 +233,7 @@ BO_ 1001 BMS_Fr09_3E9: 8 BMS
  SG_ BMS9QuiChgPileOutputCur : 23|16@0+(0.05,-1600)[0|600] "A" Vector__XXX
  SG_ BMS9QuiChgCC_@2WGE01A : 45|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ BMS9AliveCounter : 51|4@0+(1,0)[0|15] "" Vector__XXX
- SG_ BMS9DCChargeRemainTime : 39|10@0+(1,0)[0|1023] "min" Vector__XXX
+ SG_ BMS9DCChargeRemainTime_@2WG300C : 39|10@0+(1,0)[0|1023] "min" Vector__XXX
 BO_ 666 BMS_Fr10_29A: 8 BMS
  SG_ BMS10RequestOutputMode_@2WGE025 : 7|8@0+(1,0)[0|255] "" Vector__XXX
  SG_ BMS10RequestOutputCurrent : 15|16@0+(0.05,0)[0|400] "A" Vector__XXX
@@ -245,6 +257,7 @@ BO_ 170 MCU_Fr01_0AA: 8 MCU
  SG_ MCU节点丢失_@2N004 : 39|16@0+(0.05,-1024)[-1024|1024] "Nm" Vector__XXX
 BO_ 187 MCU_Fr02_0BB: 8 MCU
  SG_ MCU2FaultLevel_@2WR1022 : 2|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ EXTMCU2FaultLevel_@2WG7066 : 2|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ MCU2MotorBlockWarning : 4|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ MCU22OpenProtionLockFault_@2WG7238 : 5|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ MCU2CoolingSystemFault : 6|1@0+(1,0)[0|1] "" Vector__XXX
@@ -365,6 +378,7 @@ BO_ 850 VCU_Fr02_352: 8 VCU1
  SG_ VCU2ControlHVDischarge : 1|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ VCU2HVILAttach : 5|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU2PwrTrainFailureLevel_@2WR102A : 7|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ EXTVCU2PwrTrainFailureLevel_@2WG7067 : 7|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ VCU2HVLoadRTPwr : 15|16@0+(1,0)[0|65534] "w" Vector__XXX
  SG_ VCU2DCDCPowerLimit : 31|8@0+(0.01,0)[0|2.54] "Kw" Vector__XXX
  SG_ VCU2DCDCOutputVolCom : 39|10@0+(0.05,0)[0|51.15] "V" Vector__XXX
@@ -456,12 +470,14 @@ BO_ 778 PCM_Fr01_30A: 8 MCU
 BO_ 547 VCU_Fr05_223: 8 VCU1
  SG_ VCU5GearboxPosDisplay_@2WG1009 : 3|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ VCU5SystemWarningLightSts_@2WR1029 : 5|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ EXTVCU5SystemWarningLightSts_@2WG7265 : 5|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU5EnergyRecLevelSts : 7|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ VCU5PNLelFault_@2WG7233 : 8|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ ExtVCU5PNLelFault_@2WG7234 : 8|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU5SOCWarningLightSts_@2WG723D : 11|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU5BatElecDisFtWarnLtSt_@2WG7020 : 13|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU5SysFaultsWarnLtSts_@2WR1021 : 14|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ EXTVCU5SysFaultsWarnLtSts_@2WG725C : 14|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ VCU5AuthStatus : 19|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ VCU5ResidualOdometer_@2WGF02F : 31|16@0+(1,0)[0|1024] "Km" Vector__XXX
  SG_ VCU5LBattVoltage : 55|8@0+(0.1,0)[0|18] "V" Vector__XXX
@@ -534,6 +550,7 @@ BO_ 456 EHB_Fr02_1C8: 8 EHB
  SG_ EHBFr02MsgCounter : 55|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ EHBFr02Checksum : 63|8@0+(1,0)[0|255] "" Vector__XXX
  SG_ EHBFailedState_@2WR102B : 2|1@0+ (1,0) [0|1] ""  VCU,MCU,ESC,ICU
+ SG_ EXTEHBFailedState_@2WG715F : 2|1@0+ (1,0) [0|1] ""  VCU,MCU,ESC,ICU
 BO_ 229 ESC_Fr01_0E5: 8 ESC
  SG_ ABSFail_@2WG720D : 6|1@0+(1,0)[0|1] "" Vector__XXX
  SG_ ExtABSFail_@2WG7248 : 6|1@0+(1,0)[0|1] "" Vector__XXX
@@ -753,6 +770,7 @@ BO_ 517 ESC_Fr03_205: 8 ESC
  SG_ AVHLampReq_@2WR1025 : 34|2@0+(1,0)[0|3] "" Vector__XXX
 BO_ 531 EGSM_Fr01_213: 8 EGSM
  SG_ EGSMErrorSts_@2WR1026 : 7|1@0+(1,0)[0|1] "" Vector__XXX
+ SG_ EXTEGSMErrorSts_@2WG705B : 7|1@0+(1,0)[0|1] "" Vector__XXX
 
 BA_DEF_  "HSBaudrate" ENUM  "50000","100000","125000","250000","500000","1000000";
 BA_DEF_  "MSBaudrate" ENUM  "50000","100000","125000","250000","500000","1000000";

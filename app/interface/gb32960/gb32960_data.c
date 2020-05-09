@@ -54,7 +54,8 @@ static gb_PackPerSecond_t  gb_PPS;
 #define GB_SUPPLEMENTARY_DATA_BCN2			0x09//单体电压号2
 #define GB_SUPPLEMENTARY_DATA_AUTOST		0x0A//空调auto状态
 #define GB_SUPPLEMENTARY_DATA_ACFLTRVLID	0x0B//空调滤芯值有效性
-#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_ACFLTRVLID + 1)
+#define GB_SUPPLEMENTARY_DATA_DCCHGRTIME	0x0C//直流充电剩余时间
+#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_DCCHGRTIME + 1)
 
 #if GB_EXT
 /* event information index */
@@ -476,99 +477,30 @@ typedef struct
 }gb_alarmCode_t;
 
 static gb_alarmCode_t	gb_alarmCode[GB_MAX_WARN_INFO] =
-{
-	{0x0000},//0~31,国标告警
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0000},
-	{0x0001},//国标扩展告警
-	{0x0002},
-	{0x0003},
-	{0x0004},
-	{0x0005},
-	{0x0006},
-	{0x0007},
-	{0x0008},
-	{0x0009},
-	{0x000A},
-	{0x000B},
-	{0x000C},
-	{0x000D},
-	{0x000E},
-	{0x000F},
-	{0x0010},
-	{0x0010},
-	{0x0011},
-	{0x0012},
-	{0x0013},
-	{0x0014},
-	{0x0015},
-	{0x0016},//���س����Ƿѹ�澯
-	//{0x0016},//���س����Ƿѹ�澯
-	{0x0017},
-	{0x0018},
-	{0x0019},
-	{0x001A},//电机异常告警
-	{0x001B},//动力电池单体电压过压保护
-	{0x001C},//动力电池单体电压欠压保护故障
-	{0x001D},
-	{0x001E},
-	{0x001F},
-	{0x0020},//动力电池温度过高保护故障
-	{0x0021},
-	{0x0022},
-	{0x0023},
-	{0x0024},
-	{0x0025},
-	{0x0026},//与MCU通讯丢失
-	{0x0027},
-	{0x0028},
-	{0x0029},
-	{0x002A},
-	{0x002B},
-	{0x002C},
-	{0x002D},
-	{0x002E},
-	{0x002F},
-	{0x0030},
-	{0x0031},
-	{0x0032},
-	{0x0033},
-	{0x0034},
-	{0x0035},
-	{0x0036},
-	{0x0037},
-	{0x0038},
-	{0x0039},
-	{0x001A},//电机异常告警
+{//0~31,国标告警
+	{0x0000},{0x0000},{0x0000},{0x0000},{0x0000},
+	{0x0000},{0x0000},{0x0000},{0x0000},{0x0000},
+	{0x0000},{0x0000},{0x0000},{0x0000},{0x0000},
+	{0x0000},{0x0000},{0x0000},{0x0000},{0x0000},
+	{0x0000},{0x0000},{0x0000},{0x0000},{0x0000},
+	{0x0000},{0x0000},{0x0000},{0x0000},{0x0000},
+	{0x0000},{0x0000},
+	//国标扩展告警
+	{0x0001},{0x0002},{0x0003},{0x0004},{0x0005},
+	{0x0006},{0x0007},{0x0008},{0x0009},{0x000A},
+	{0x000B},{0x000C},{0x000D},{0x000E},{0x000F},
+	{0x0010},{0x0010},{0x0011},{0x0012},{0x0013},
+	{0x0014},{0x0015},{0x0016},{0x0017},{0x0018},
+	{0x0019},{0x001A},{0x001B},{0x001C},{0x001D},
+	{0x001E},{0x001F},{0x0020},{0x0021},{0x0022},
+	{0x0023},{0x0024},{0x0025},{0x0026},{0x0027},
+	{0x0028},{0x0029},{0x002A},{0x002B},{0x002C},
+	{0x002D},{0x002E},{0x002F},{0x0030},{0x0031},
+	{0x0032},{0x0033},{0x0034},{0x0035},{0x0036},
+	{0x0037},{0x0038},{0x0039},{0x001A},{0x003A},
+	{0x003B},{0x003C},{0x003D},{0x003E},{0x003F},
+	{0x0040},{0x0041},{0x0042},{0x0043},{0x0044},
+	{0x0045},{0x0046}
 };
 
 #endif
@@ -658,7 +590,7 @@ gb32960_api_extwarn_indextable_t	gb32960_api_extwarn_indextable[GB32960_VSWARN] 
 {
 	{32,32},//12v蓄电池电压过低
 	{33,33},//EPS 故障 
-	{34,34},//EPS 扭矩传感器信号故障
+	{34,34},//气囊弹出报警
 	{35,35},//MCU IGBT 驱动电路过流故障（V 相）
 	{36,36},//MCU IGBT 驱动电路过流故障（W 相）
 	{37,37},//MCU 电源模块故障 
@@ -715,6 +647,19 @@ gb32960_api_extwarn_indextable_t	gb32960_api_extwarn_indextable[GB32960_VSWARN] 
 	{87,86},//制热不响应原因-HV 故障
 	{88,87},//制热不响应原因-PTC 水泵故障
 	{89,88},//制热不响应原因-三通水阀故障
+	{91,89},//EGSM故障状态
+	{92,90},//VCU系统故障
+	{93,91},//高压放电故障
+	{94,92},//总电流过流报警
+	{95,93},//EHB电子液压制动故障
+	{96,94},//ACC自适应巡航系统故障
+	{97,95},//AEB自动紧急制动
+	{98,96},//前视摄像头故障
+	{99,97},//APA自动泊车系统故障
+	{100,98},//动力电池系统故障
+	{101,99},//功率系统故障
+	{102,100},//MCU故障状态
+	{103,101},//动力系统故障
 };
 
 static gb_info_t  gb_infmem[2];
@@ -2041,9 +1986,23 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     }
 
     /* 充电信息 */
-    if(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])//剩余充电时间
+    if((gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME]) && \
+	   (gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])		&& \
+	   (gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_DCCHGRTIME]))
 	{
-    	tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])->value;
+		if(2 == dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])->value)
+		{//快充
+			tmp = dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_DCCHGRTIME])->value;
+		}
+		else if(6 == dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])->value)
+		{//慢充
+			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])->value;
+		}
+		else
+		{
+			tmp = 0xffff;
+		}
+
 		buf[len++] = tmp >> 8;
 		buf[len++] = tmp;
 	}
@@ -2389,7 +2348,8 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		 buf[len++] = 0xff;
 	}
 
-	if(gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_ACFLTRVLID])
+	if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_ACFLTRVLID]) && \
+	   (!dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_ACFLTRVLID])->value))
 	{
 		if(gbinf->gb_VSExt.info[GB_VS_ACFLTRVALUE])//
 		{
@@ -3347,7 +3307,9 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 		1,1,0,1,1,1,1,0,0,1,
 		0,0,0,1,1,1,1,0,0,1,
 		1,1,1,0,1,0,1,0,1,0,
-		0,0,0,0,0,0,0,0,0
+		0,0,0,0,0,0,0,0,0,1,
+		1,0,1,1,1,1,1,0,0,1,
+		0,0
     };
 	
     /* data type : warn extend information */
@@ -3362,9 +3324,33 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     {
         for (j = 32; j < GB32960_MAXWARN; j++)
         {
-			if(0x22 == j)//EPS扭矩传感器故障 0--故障;1--正常
+			if(0x63 == j)//高压放电故障
 			{
-				continue;//去掉eps扭矩传感器信号故障
+				if(gbinf->warn[i][j] && \
+				   (0x6 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
+				{
+					buf[len++] = gb_alarmCode[j].code >> 8;
+					buf[len++] = gb_alarmCode[j].code;
+					(*warnnum_ptr)++;
+					vs_warn[j-32] = 1;
+					if(warnlvltemp < 1)
+					{
+						warnlvltemp = 1;
+					}
+				}
+			}
+			else if(0x5D == j)//高压放电故障
+			{
+				if(gbinf->warn[i][j] && \
+				   ((0x7 == dbc_get_signal_from_id(gbinf->warn[i][j])->value) || \
+				   	(0x8 == dbc_get_signal_from_id(gbinf->warn[i][j])->value)))
+				{
+					buf[len++] = gb_alarmCode[j].code >> 8;
+					buf[len++] = gb_alarmCode[j].code;
+					(*warnnum_ptr)++;
+					vs_warn[j-32] = 1;
+					warnlvltemp = 3;
+				}
 			}
 			else
 			{
