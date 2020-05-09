@@ -961,8 +961,8 @@ void PrvtProt_defaultsettings(void)
 	unsigned char otamodein = 0;
     cfg_set_para(CFG_ITEM_EN_OTAMODEIN, &otamodein, sizeof(otamodein));
 
-	cfg_set_para(CFG_ITEM_BCALL,(unsigned char *)"057388279951",32);
-	cfg_set_para(CFG_ITEM_ECALL,(unsigned char *)"057388279950",32);
+	cfg_set_para(CFG_ITEM_BCALL,CFG_BCALLNO_DFLT,32);
+	cfg_set_para(CFG_ITEM_ECALL,CFG_ECALLNO_DFLT,32);
 
 	PP_rmtCfg_setCfgEnable(1,1);
 	PP_rmtCfg_setCfgEnable(2,1);
@@ -982,8 +982,8 @@ void PrvtProt_defaultsettings(void)
 	PP_rmtCfg_setCfgEnable(16,1);
 
 	cfg_set_para(CFG_ITEM_INTEST_HW, "H1.11", 32);
-	cfg_set_para(CFG_ITEM_WAN_APN,(unsigned char *)"bjlenovo09.xfdz.njm2mapn",32);
-	cfg_set_para(CFG_ITEM_LOCAL_APN,(unsigned char *)"bjlenovo17.njm2mapn", 32);
+	cfg_set_para(CFG_ITEM_WAN_APN,CFG_WAN_APN,32);
+	cfg_set_para(CFG_ITEM_LOCAL_APN,CFG_LOCAL_APN,32);
 
 #ifdef HOZON_PRE
 	PP_rmtCfg_setCfgapn1(1,"tboxgw-pre.chehezhi.cn","21000");
