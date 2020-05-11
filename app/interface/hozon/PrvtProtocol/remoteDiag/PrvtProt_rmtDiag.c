@@ -1833,6 +1833,11 @@ static void PP_rmtDiag_send_cb(void * para)
 			}
 		}
 		break;
+		case PP_MID_DIAG_FAULTCODECLEANRESP:
+		{
+			log_o(LOG_HOZON, "send clean fault code response ok\n");
+		}
+		break;
 		default:
 		break;
 	}
@@ -1880,6 +1885,14 @@ void PP_diag_SetdiagReq(unsigned char diagType,unsigned char reqtype)
 		{
 			log_e(LOG_GB32960, "save rmtDiag_datetime.datetime failed\n");
 		}
+	}
+	else if(2 == reqtype)
+	{
+		log_o(LOG_HOZON, "test clean all fault request\n");
+		PP_rmtDiag.state.cleanECU = 0;
+		PP_rmtDiag.state.cleanallfaultflag = 1;
+		PP_rmtDiag.state.cleanfaulteventId = 0;
+		PP_rmtDiag.state.cleanfaultexpTime = 0;
 	}
 	else//test
 	{
