@@ -131,6 +131,7 @@ static int PP_rmtDiag_FaultCodeCleanResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_
 static void getPPrmtDiag_tboxFaultcode(PP_rmtDiag_Fault_t *rmtDiag_Fault);
 static int PP_rmtDiag_LogAcqReqResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
 static int PP_rmtDiag_StopLogAcqResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
+static void PP_rmtDiag_do_allFaultCodeClean(PrvtProt_task_t *task);
 /******************************************************
 description锛� function code
 ******************************************************/
@@ -209,6 +210,7 @@ int PP_rmtDiag_mainfunction(void *task)
 	if(1 == sockproxy_socketState())//socket open
 	{
 		PP_rmtDiag_do_DiagActiveReport((PrvtProt_task_t*)task);//主动诊断上报
+		PP_rmtDiag_do_allFaultCodeClean((PrvtProt_task_t*)task);
 	}
 
 	return res;
@@ -230,6 +232,24 @@ static int PP_rmtDiag_do_checksock(PrvtProt_task_t *task)
 	if(1 == sockproxy_socketState())//socket open
 	{
 		return 0;
+	}
+	else
+	{
+		PP_rmtDiag.state.diagReq = 0;
+		PP_rmtDiag.state.diagrespSt = PP_DIAGRESP_IDLE;
+		PP_rmtDiag.state.ImageAcquisitionReq = 0;
+		PP_rmtDiag.state.ImageAcqRespSt = PP_IMAGEACQRESP_IDLE;
+		PP_rmtDiag.state.LogAcqReq = 0;
+		PP_rmtDiag.state.LogAcqRespSt = PP_LOGACQRESP_IDLE;
+		PP_rmtDiag.state.StopLogAcqReq = 0;
+		PP_rmtDiag.state.StopLogAcqSt = PP_STOPLOG_IDLE;
+		PP_rmtDiag.state.cleanfaultReq = 0;
+		PP_rmtDiag.state.cleanfaultSt = PP_FAULTCODECLEAN_IDLE;
+		PP_rmtDiag.state.activeDiagSt = PP_ACTIVEDIAG_IDLE;
+		PP_rmtDiag.state.activeDiagFlag = 0;
+		PP_rmtDiag.state.cleanECU = 0;
+		PP_rmtDiag.state.cleanallfaultflag = 0;
+		PP_rmtDiag.state.sleepflag = 1;
 	}
 
 	return -1;
@@ -410,11 +430,23 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 		break;
 		case PP_MID_DIAG_FAULTCODECLEAN:
 		{
-			if(PP_FAULTCODECLEAN_IDLE == PP_rmtDiag.state.cleanfaultSt)
+			if((PP_FAULTCODECLEAN_IDLE == PP_rmtDiag.state.cleanfaultSt) && \
+			   (0 == PP_rmtDiag.state.cleanfaultReq))
 			{
 				log_o(LOG_HOZON, "rcv clean fault request\n");
-				PP_rmtDiag.state.cleanfaultReq = 1;
-				PP_rmtDiag.state.cleanfaultType = Appdata.FaultCodeClearanceReq.diagType;
+				if(0xff == Appdata.FaultCodeClearanceReq.diagType)
+				{
+					log_o(LOG_HOZON, "clean all fault request\n");
+					PP_rmtDiag.state.cleanECU = 0;
+					PP_rmtDiag.state.cleanallfaultflag = 1;
+				}
+				else
+				{
+					log_o(LOG_HOZON, "clean signal ecu fault request\n");
+					PP_rmtDiag.state.cleanfaultReq = 1;
+					PP_rmtDiag.state.cleanfaultType = Appdata.FaultCodeClearanceReq.diagType;
+				}
+
 				PP_rmtDiag.state.cleanfaulteventId = MsgDataBody.eventId;
 				PP_rmtDiag.state.cleanfaultexpTime = MsgDataBody.expTime;
 				PP_rmtDiag.state.faultcleanwaittime = tm_get_time();
@@ -644,6 +676,42 @@ static int PP_rmtDiag_do_checkrmtDiag(PrvtProt_task_t *task)
 	}
 
 	return 0;
+}
+
+/******************************************************
+*PP_rmtDiag_do_allFaultCodeClean
+
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*鎻�  杩帮細
+
+*澶�  娉細 清所有ecu故障码
+******************************************************/
+static void PP_rmtDiag_do_allFaultCodeClean(PrvtProt_task_t *task)
+{
+	if(1 == PP_rmtDiag.state.cleanallfaultflag)
+	{
+		if((PP_FAULTCODECLEAN_IDLE == PP_rmtDiag.state.cleanfaultSt) && \
+			   (0 == PP_rmtDiag.state.cleanfaultReq))
+		{
+			PP_rmtDiag.state.cleanECU++;
+			if(PP_rmtDiag.state.cleanECU <= PP_DIAG_MAXECU)
+			{
+				PP_rmtDiag.state.cleanfaultReq = 1;
+				PP_rmtDiag.state.cleanfaultType = PP_rmtDiag.state.cleanECU;
+				log_o(LOG_HOZON, "clean ecu %d fault code\n",PP_rmtDiag.state.cleanECU);
+			}
+			else
+			{
+				log_o(LOG_HOZON, "clean all ecu fault code finish\n");
+				PP_rmtDiag.state.cleanECU = 0;
+				PP_rmtDiag.state.sleepflag = 1;
+				PP_rmtDiag.state.cleanallfaultflag = 0;
+			}
+		}
+	}
 }
 
 /******************************************************
