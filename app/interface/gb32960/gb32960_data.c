@@ -1443,7 +1443,8 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     //电池温升过快故障
     for(i = 0; i < 3; i++)
     {
-		if(gbinf->warn[i][0x36] && dbc_get_signal_from_id(gbinf->warn[i][0x36])->value)
+		if(gbinf->gb_alarmFault.info[GB_AF_BATTRISEFAST] && \
+						dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_BATTRISEFAST])->value)
 		{
 			//battheatsfastwarn = 1;
 			faultCode = gb_alarmFaultCode[GB_AF_BATTRISEFAST].code;
