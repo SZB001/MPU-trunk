@@ -1389,6 +1389,14 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 					}
 				}
 			}
+			else if(0xd == j)//制动系统故障
+			{
+				if(gbinf->warn[i][j] && \
+								(1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
+				{
+					gb_warning[i][j] = 1;
+				}
+			}
 			else
 			{
 				if(gbinf->warn[i][j] && dbc_get_signal_from_id(gbinf->warn[i][j])->value)
