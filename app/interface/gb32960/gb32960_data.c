@@ -1354,7 +1354,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     uint32_t len = 0, i, j, warnbit = 0, warnlvl = 0,warnlvltemp = 0,otherwarnlvl = 0;
     uint8_t* warnlvl_ptr;
     uint8_t gb_warn[32] = {0};
-    uint8_t gb_warning[3][32] = {{0,0,0}};
+    uint8_t gb_warning[3][32] = {{0},{0},{0}};
     const char gb_use_dbc_warnlvl[32] =
     {
     	0,0,0,0,0,
@@ -1371,44 +1371,49 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     {
         if(2 == dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_DCDC])->value)
         {
-        	gb_warning[2][14] = 1;
+        	gb_warning[2][0xe] = 1;
         }
     }
-
-   if(dev_get_KL15_signal())
-   {
-	    for(i = 0; i < 3; i++)
-	    {
-			if(gbinf->warn[i][0x10] && dbc_get_signal_from_id(gbinf->warn[i][0x10])->value)
-			{
-				gb_warning[2][16] = 1;
-			}
-	    }
-   }
 
     for(i = 0; i < 3; i++)
     {
         for(j = 0; j < 32; j++)
         {
-            if((gbinf->warn[i][j] && dbc_get_signal_from_id(gbinf->warn[i][j])->value) || \
-            		gb_warning[i][j])
-            // index 3,as a relevance channel,if the is two canid used for on warning
-            {
-            	gb_warn[j] = 1;
-                warnbit |= 1 << j;
-                if(gb_use_dbc_warnlvl[j])
-                {
-                	warnlvl  = i + 1;
-                }
-                else
-                {
-                	if(gbinf->warn[i][j] &&	\
-                	            (dbc_get_signal_from_id(gbinf->warn[i][j])->value > warnlvltemp))
-                	{
-                		warnlvltemp = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
-                	}
-                }
-            }
+			if(0x10 == j)//高压互锁状态故障
+			{
+				if(dev_get_KL15_signal())
+				{
+					if(gbinf->warn[i][j] && dbc_get_signal_from_id(gbinf->warn[i][j])->value)
+					{
+						gb_warning[i][j] = 1;
+					}
+				}
+			}
+			else
+			{
+				if(gbinf->warn[i][j] && dbc_get_signal_from_id(gbinf->warn[i][j])->value)
+				{
+					gb_warning[i][j] = 1;
+				}
+			}
+
+			if(gb_warning[i][j])
+			{
+				gb_warn[j] = 1;
+				warnbit |= 1 << j;
+				if(gb_use_dbc_warnlvl[j])
+				{
+					warnlvl  = i + 1;
+				}
+				else
+				{
+					if(gbinf->warn[i][j] &&	\
+								(dbc_get_signal_from_id(gbinf->warn[i][j])->value > warnlvltemp))
+					{
+						warnlvltemp = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
+					}
+				}
+			}
         }
     }
 
