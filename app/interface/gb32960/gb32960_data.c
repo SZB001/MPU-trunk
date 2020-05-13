@@ -1466,7 +1466,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 			buf[len++] = faultCode >> 8;
 			buf[len++] = faultCode;
 			*battFaultNum_ptr = 1;
-			otherwarnlvl = 3;
+			otherwarnlvl = dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_BATTRISEFAST])->value;
 		}
     }
 
@@ -3358,6 +3358,19 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 				if(gbinf->warn[i][j] && \
 				   ((0x7 == dbc_get_signal_from_id(gbinf->warn[i][j])->value) || \
 				   	(0x8 == dbc_get_signal_from_id(gbinf->warn[i][j])->value)))
+				{
+					buf[len++] = gb_alarmCode[j].code >> 8;
+					buf[len++] = gb_alarmCode[j].code;
+					(*warnnum_ptr)++;
+					vs_warn[j-32] = 1;
+					warnlvltemp = 3;
+				}
+			}
+			else if(0x21 == j)//EPS故障
+			{
+				if(gbinf->warn[i][j] && \
+				   ((0x1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value) || \
+				   	(0x2 == dbc_get_signal_from_id(gbinf->warn[i][j])->value)))
 				{
 					buf[len++] = gb_alarmCode[j].code >> 8;
 					buf[len++] = gb_alarmCode[j].code;
