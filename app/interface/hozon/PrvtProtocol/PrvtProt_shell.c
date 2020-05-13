@@ -13,11 +13,14 @@ description�� include the header file
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include  <errno.h>
+#include <errno.h>
 #include <sys/times.h>
 #include "timer.h"
 #include "log.h"
 #include "at.h"
+#include "cfg_api.h"
+#include "dev_api.h"
+
 #include "shell_api.h"
 #include "hozon_PP_api.h"
 #include "PrvtProt_xcall.h"
@@ -47,6 +50,8 @@ description�� function declaration
 /*Static function declaration*/
 static int PP_shell_setXcallReq(int argc, const char **argv);
 static int PP_shell_SetRmtCfgReq(int argc, const char **argv);
+static int PP_shell_SetEsk(int argc, const char **argv);
+
 static int PP_shell_SetRmtCtrlReq(int argc, const char **argv);
 static int PP_shell_SetRmtVSReq(int argc, const char **argv);
 static int PP_shell_SetTboxid(int argc, const char **argv);
@@ -86,6 +91,10 @@ void PrvtProt_shell_init(void)
                                             "set HOZON PrvtProt remote config request");
 	shell_cmd_register("hozon_setRmtCtrlReq", PP_shell_SetRmtCtrlReq, \
                                             "set HOZON PrvtProt remote control request");
+
+	shell_cmd_register("hozon_setesk", PP_shell_SetEsk, \
+                                            "set HOZON PrvtProt remote esk");
+	
 	shell_cmd_register("hozon_setRmtVSReq", PP_shell_SetRmtVSReq, \
                                             "set HOZON PrvtProt remote VS request");
 	shell_cmd_register("hozon_settboxid", PP_shell_SetTboxid, "set HOZON tboxid");
@@ -262,6 +271,60 @@ static int PP_shell_SetRmtCtrlReq(int argc, const char **argv)
 	sscanf(argv[1], "%u", &rmtCtrlReqtype);
 
 	PP_rmtCtrl_SetCtrlReq((uint8_t)rmtCtrlReq,rmtCtrlReqtype);
+    sleep(1);
+    return 0;
+}
+
+static int PP_shell_SetEsk(int argc, const char **argv)
+{
+
+	unsigned  char esk[16] = {0};
+	int i = 0;
+	char temp ;
+	if(argc != 1) 
+    {
+        shellprintf(" usage: hozon_setesk <Please use hexadecimal without separator>\r\n");
+		shellprintf(" usage: shell_cli.bin hozon_setesk 1536C28961D6403F9AE7264BD9967E75\r\n");
+        return -1;
+    }
+	for(i=0;argv[0][i] != '\0';i++);
+	log_o(LOG_HOZON,"i = %d",i);
+	if( i != 32)
+	{
+		shellprintf(" You only entered %d characters,You must entered 32 characters\r\n",i);
+		shellprintf(" usage: shell_cli.bin hozon_setesk 1536C28961D6403F9AE7264BD9967E75\r\n");
+        return -1;
+	}
+	
+	log_o(LOG_HOZON,"esk = %s",argv[0]);
+	
+	for(i=0;i<16;i++)
+	{
+		temp = argv[0][0+2*i];
+		if(( temp >= '0')&&(temp <= '9'))
+		{
+			esk[i] = (temp - 48) * 16;
+		}
+		else if(( temp >= 'A')&&(temp <= 'F'))
+		{
+			esk[i] = (temp - 65 + 10) * 16;
+		}
+
+		temp = argv[0][1+2*i];
+		if(( temp >= '0')&&(temp <= '9'))
+		{
+			esk[i] += (temp - 48) ;
+		}
+		else if(( temp >= 'A')&&(temp <= 'F'))
+		{
+			esk[i] += (temp - 65 + 10) ;
+		}
+	
+		log_o(LOG_HOZON,"esk[%d] = %x",i,esk[i]);
+	}
+	
+	cfg_set_para(CFG_ITEM_DID_ESK, esk, 16);
+
     sleep(1);
     return 0;
 }

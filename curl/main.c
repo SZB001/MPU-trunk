@@ -56,7 +56,7 @@ static int curl_Post_CanFile(char *name);
 static int curl_Post_LogFile(char *name);
 
 //static void curl_CanFile_pkgzip(char *name);
-static void curl_CanFile_handler(void);
+static void curl_CanFile_handler(char type);
 static void curl_LogFile_handler(void);
 
 static int curl_timestamp_ultoa(unsigned long value, char *string, int radix);
@@ -74,6 +74,8 @@ static pthread_t curl_can_tid;
 static pthread_t curl_log_tid;
 static short canfile_upload_time = 0;
 static int before_flag = 0;
+
+static struct timeval timestamp_0;
 static struct timeval timestamp;
 static struct timeval log_timestamp;
 static unsigned int log_starttime = 0;
@@ -84,8 +86,7 @@ static char can_eventId[20] = {0};
 static int logeventid = 0;
 static int caneventid = 0;
 
-
-
+static int Fault_trigger_cnt = 0;
 /**
      * @brief    时间戳转化字符串
      * @param[in] file_name.
@@ -135,7 +136,7 @@ int curl_timestamp_ultoa(unsigned long value, char *string, int radix)
      * @param[in] file_name.
      * @return    unsigned long, bytes.
 */
-static void curl_CanFile_handler(void)
+static void curl_CanFile_handler(char type)
 {
 	int ret;
 	char file_name[80] = {0};
@@ -162,6 +163,10 @@ static void curl_CanFile_handler(void)
 	strcpy(zipfile_name,CAN_FILE_UPPATH);
 	strcat(zipfile_name,vin);
 	strcat(zipfile_name,"_");
+	if(type == 1) //故障触发整车报文上传
+	{
+		strcat(zipfile_name,"alarmCan_");
+	}
 	strncat(zipfile_name,stringVal,sizeof(stringVal));
 	strcat(zipfile_name,".zip");    //zip文件的时间就是触发时候的时间戳
 	
@@ -219,7 +224,6 @@ static void curl_CanFile_handler(void)
 					fgets(buf,CURL_BUF_SIZE,fp);
 					
 					//ret = fread(buf, 1, BUF_SIZE, fp);
-
 
 					ret = zipWriteInFileInZip(zfile,buf,strlen(buf));
 
@@ -1248,9 +1252,9 @@ static void *curl_candata_main(void)
 		/*****************故障触发前10分钟的处理**********************/
 		if(before_flag == 1)   
 		{
-			if(can_memory[2] == 0x01) 
+			if(can_memory[2] == 0x01)        //故障触发
 			{
-				curl_canfile_handle_before_time();       //前十分钟文件
+				curl_canfile_handle_before_time();       //前五分钟文件
 				
 				before_flag = 0;
 			}
@@ -1262,18 +1266,36 @@ static void *curl_candata_main(void)
 		
 		if(can_memory[1] == 0x02)
 		{
-			
-			curl_canfile_handle_after_time();//拷贝需要上传的文件到另外一个文件
-
-			gettimeofday(&now_timestamp, NULL);  //故障触发时间戳
-			
-			if(now_timestamp.tv_sec > timestamp.tv_sec + canfile_upload_time*60 + 60)
 			{
-				memset(can_memory,0,CURL_BUF_SIZE);
-				
-				curl_CanFile_handler();
+				curl_canfile_handle_after_time();//拷贝需要上传的文件到另外一个文件
 
-				printf("canfile finished\n");
+				gettimeofday(&now_timestamp, NULL);  //故障触发时间戳
+			
+				if(now_timestamp.tv_sec > timestamp.tv_sec + canfile_upload_time*60 + 60)
+				{
+				
+					curl_CanFile_handler(can_memory[2]);
+
+					Fault_trigger_cnt = 0;
+
+					printf("canfile finished\n");
+
+					memset(can_memory,0,CURL_BUF_SIZE);
+				}
+			}
+
+			if(can_memory[2] == 0x01)        //故障触发
+			{
+				gettimeofday(&now_timestamp, NULL);  //故障触发时间戳
+
+				if(now_timestamp.tv_sec > timestamp_0.tv_sec + 15 *60 +60)
+				{
+					curl_CanFile_handler(can_memory[2]);
+					
+					Fault_trigger_cnt = 0;
+
+					memset(can_memory,0,CURL_BUF_SIZE);
+				}
 			}
 			
 		}	
@@ -1384,7 +1406,6 @@ int main(int argc, char *argv[])
 			
 				strncpy(gb_memory,addr,CURL_BUF_SIZE);
 				
-				//curl_get_tboxgbpara(gb_memory);         //得到终端的VIN、TBOXSN
 				strncpy(vin,addr + 2,TBOX_VIN_LENGTH);  //获取VIN
 		
 				strncpy(tboxsn,addr+2+TBOX_VIN_LENGTH,TBOX_SN_LENGTH);//获取TBOXSN
@@ -1404,11 +1425,17 @@ int main(int argc, char *argv[])
 
 				if(addr[2] == 0x01) //故障触发整车报文上传
 				{
+					
+					Fault_trigger_cnt++;
+
+					if(Fault_trigger_cnt == 1)
+					{
+						gettimeofday(&timestamp_0, NULL);  //第一次故障触发时间
+							
+					}
 					gettimeofday(&timestamp, NULL);  //故障触发时间戳
 
 					strncpy(can_memory,addr,CURL_BUF_SIZE);
-					
-					//curl_canfile_handle_before_time();       //前十分钟文件
 					
 					before_flag = 1;
 
@@ -1486,6 +1513,8 @@ int main(int argc, char *argv[])
 				{
 					//停止采集日志
 					memset(log_memory,0,sizeof(log_memory));
+
+					curl_LogFile_handler(); //平台下发停止采集的时候，上传之前已经采集到的日志
 				}
 				memset(addr,0,4096);         //清掉共享内存	
 			}

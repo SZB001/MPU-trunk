@@ -135,6 +135,7 @@ void HU_data_write(uint8_t *data,int len,SP_sendInform_cb sendInform_cb,void *cb
 		else
 		{
 			 log_e(LOG_IVI, "BIG ERROR: no buffer to use.");
+			 HU_data_init();
 		}
 	}
 	else

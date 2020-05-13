@@ -1971,10 +1971,12 @@ void *ivi_main(void)
 					{
 						if (num > 0)
 			            {
+			            	pthread_mutex_lock(&send_mutex);
 			                ihu_client.lasthearttime = tm_get_time();
 			                rx_msg[0].used += num;
 			                log_buf_dump(LOG_IVI, "tcp recv", rx_msg[0].data, rx_msg[0].used);
 			                ivi_msg_decodex(&rx_msg[0], ivi_tcp_protobuf_process, 0);
+							pthread_mutex_unlock(&send_mutex);
 			            }
 						else if(num == 0)
 						{
@@ -2019,27 +2021,30 @@ void *ivi_txmain(void)
 	{
 		usleep(5000);
 		pthread_mutex_lock(&send_mutex);
-		if ((rpt = HU_data_get_pack()) != NULL)
+		if((ivi_clients[0].fd > 0) || (ihu_client.states == 1))
 		{
-			log_i(LOG_IVI, "start to send to HU");
-			//HU_data_ack_pack();
-			res = HzTboxSvrDataSend((char*)rpt->msgdata,rpt->msglen);
-			if(res != 1260)
+			if ((rpt = HU_data_get_pack()) != NULL)
 			{
-				log_e(LOG_IVI,"HzTboxSvrDataSend error+++++++++++++++iRet[%d] \n", res);
-				ihu_client.close_syscall_count = 1;
-				tbox_ivi_closesocket();
-				memset(&ihu_client,0,sizeof(ihu_client));
-				ihu_client.close_syscall_count = 0;
-				log_o(LOG_IVI,"HzTboxSvrClose+++++++++++++++ \n");
-				
+				log_i(LOG_IVI, "start to send to HU");
+				//HU_data_ack_pack();
+				res = HzTboxSvrDataSend((char*)rpt->msgdata,rpt->msglen);
+				if(res != 1260)
+				{
+					log_e(LOG_IVI,"HzTboxSvrDataSend error+++++++++++++++iRet[%d] \n", res);
+					ihu_client.close_syscall_count = 1;
+					tbox_ivi_closesocket();
+					memset(&ihu_client,0,sizeof(ihu_client));
+					ihu_client.close_syscall_count = 0;
+					log_o(LOG_IVI,"HzTboxSvrClose+++++++++++++++ \n");
+					HU_data_put_send(rpt);
+				}
+				else
+				{
+					log_buf_dump(LOG_IVI, "tcp send", rpt->msgdata, rpt->msglen);
+					log_i(LOG_IVI,">>>>> HzTboxDataSend end >>>>>");
+					HU_data_put_send(rpt);
+				}
 			}
-			else
-			{
-				log_buf_dump(LOG_IVI, "tcp send", rpt->msgdata, rpt->msglen);
-				log_i(LOG_IVI,">>>>> HzTboxDataSend end >>>>>");
-				HU_data_put_send(rpt);
-			}	
 		}
 		pthread_mutex_unlock(&send_mutex);
 	}

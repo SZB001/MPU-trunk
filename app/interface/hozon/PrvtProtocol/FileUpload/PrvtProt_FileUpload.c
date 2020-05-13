@@ -65,6 +65,9 @@ static PP_can_upload_t pp_up_can;
 static int canupload_en = 0;
 	
 static PP_log_upload_t PP_up_log;
+
+//static int can_file_flag = 0;
+
 /*Static function declaration*/
 static void *PP_FileUpload_main(void);
 static void *PP_GbFileSend_main(void);
@@ -253,15 +256,35 @@ static void *PP_FileUpload_main(void)
 
 void PP_FileUpload_CanMsgRequest(PP_can_upload_t can_para)
 {
-	PP_tsp_flag = 1;
-	log_o(LOG_HOZON,"PP_tsp_flag  %d",can_para.PP_tsp_time);
-	pp_up_can.PP_tsp_time = can_para.PP_tsp_time;
-	pp_up_can.PP_tsp_eventId = can_para.PP_tsp_eventId;
-	
-	unsigned int canfile_en;
-	canfile_en = 1;
-	cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
-	log_o(LOG_HOZON,"TSP request upload can file");
+
+	if(can_para.PP_tsp_time == 65535)    //平台下发采集时间为65535表示要打开can报文事实采集功能
+	{
+		unsigned int canfile_en;
+		canfile_en = 1;
+		//can_file_flag = 1;
+		cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
+		log_o(LOG_HOZON,"Start collecting fact can message data");
+	}
+	else if(can_para.PP_tsp_time == 0) //平台下发采集时间为0表示要关闭can报文事实采集功能
+	{
+		unsigned int canfile_en;
+		canfile_en = 0;
+		//can_file_flag = 0;
+		cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
+		log_o(LOG_HOZON,"Stop collecting fact can message data");
+	}
+	else
+	{
+		PP_tsp_flag = 1;
+		log_o(LOG_HOZON,"PP_tsp_flag  %d",can_para.PP_tsp_time);
+		pp_up_can.PP_tsp_time = can_para.PP_tsp_time;
+		pp_up_can.PP_tsp_eventId = can_para.PP_tsp_eventId;
+		
+		unsigned int canfile_en;
+		canfile_en = 1;
+		cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
+		log_o(LOG_HOZON,"Start collecting fact can message data");
+	}
 }
 
 void PP_FileUpload_LogRequest(PP_log_upload_t log_para)
@@ -449,6 +472,7 @@ static void *PP_CanFileSend_main(void)
 				cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
 			}
 		}
+		
 		shmdt(addr);
 
 		//整车报文文件删除
