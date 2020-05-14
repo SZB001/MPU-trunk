@@ -27,7 +27,7 @@ author        liuzhongwen
 #include "shell_api.h"
 
 #define COM_APP_VER_LEN            (32)
-#define COM_APP_MAIN_VER           "MPU_J311HZCOMM003[A-60]"
+#define COM_APP_MAIN_VER           "MPU_J311HZCOMM003[A-61]"
 #define COM_APP_SYS_VER            (COM_APP_MAIN_VER "\\" __DATE__ "\\" __TIME__)
 
 #define COM_HW_VER                 "INP01"

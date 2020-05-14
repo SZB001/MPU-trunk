@@ -66,7 +66,8 @@ static int canupload_en = 0;
 	
 static PP_log_upload_t PP_up_log;
 
-//static int can_file_flag = 0;
+static int can_file_flag = 0;
+static int shell_open_flag = 0;
 
 /*Static function declaration*/
 static void *PP_FileUpload_main(void);
@@ -193,6 +194,7 @@ int PP_FileUpload_run(void)
     }
 	
 	unsigned int cfglen;
+	#if 0
 	unsigned int canfile_en;
 	cfglen = 1;
 	cfg_get_para(CFG_ITEM_EN_CANFILE, &canfile_en, &cfglen);
@@ -201,7 +203,7 @@ int PP_FileUpload_run(void)
 		canfile_en = 0;
 		cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
 	}
-
+	#endif
 	unsigned char en;
 	cfg_get_para(CFG_ITEM_LOG_ENABLE, &en, &cfglen); 
 	if(en != 0)
@@ -261,7 +263,7 @@ void PP_FileUpload_CanMsgRequest(PP_can_upload_t can_para)
 	{
 		unsigned int canfile_en;
 		canfile_en = 1;
-		//can_file_flag = 1;
+		can_file_flag = 1;
 		cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
 		log_o(LOG_HOZON,"Start collecting fact can message data");
 	}
@@ -269,7 +271,7 @@ void PP_FileUpload_CanMsgRequest(PP_can_upload_t can_para)
 	{
 		unsigned int canfile_en;
 		canfile_en = 0;
-		//can_file_flag = 0;
+		can_file_flag = 0;
 		cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
 		log_o(LOG_HOZON,"Stop collecting fact can message data");
 	}
@@ -309,7 +311,16 @@ static int PP_FileUpload_Tspshell(int argc, const char **argv)
 
 	sscanf(argv[0], "%u", &canfile_en);
 	cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
+	if(canfile_en == 1)
+	{	
+		shell_open_flag = 1;
+	}
+	else
+	{
+		shell_open_flag = 0;
+	}
 	shellprintf(" set canfile ok\r\n");
+
 	return 0;
 }
 
@@ -461,7 +472,7 @@ static void *PP_CanFileSend_main(void)
 			}
 		}
 		
-		if(canupload_en == 1)  //
+		if((canupload_en == 1) && (can_file_flag == 0) && (shell_open_flag = 0))
 		{
 			struct timeval nowtime_stamp;
 			gettimeofday(&nowtime_stamp, NULL);  
