@@ -1360,7 +1360,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     	0,0,0,0,0,
 		0,0,0,0,0,
 		0,0,1,1,1,
-		0,1,0,0,0,
+		0,0,0,0,0,
 		0,0,0,0,0,
 		0,0,0,0,0,
 		0,0
@@ -1454,21 +1454,18 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 
     //uint8_t battheatsfastwarn = 0;
     //电池温升过快故障
-    for(i = 0; i < 3; i++)
-    {
-		if(gbinf->gb_alarmFault.info[GB_AF_BATTRISEFAST] && \
-						dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_BATTRISEFAST])->value)
-		{
-			//battheatsfastwarn = 1;
-			faultCode = gb_alarmFaultCode[GB_AF_BATTRISEFAST].code;
-			buf[len++] = faultCode >> 24;
-			buf[len++] = faultCode >> 16;
-			buf[len++] = faultCode >> 8;
-			buf[len++] = faultCode;
-			*battFaultNum_ptr = 1;
-			otherwarnlvl = dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_BATTRISEFAST])->value;
-		}
-    }
+	if(gbinf->gb_alarmFault.info[GB_AF_BATTRISEFAST] && \
+					dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_BATTRISEFAST])->value)
+	{
+		//battheatsfastwarn = 1;
+		faultCode = gb_alarmFaultCode[GB_AF_BATTRISEFAST].code;
+		buf[len++] = faultCode >> 24;
+		buf[len++] = faultCode >> 16;
+		buf[len++] = faultCode >> 8;
+		buf[len++] = faultCode;
+		*battFaultNum_ptr = 1;
+		otherwarnlvl = dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_BATTRISEFAST])->value;
+	}
 
     buf[len++] = 0;     /* motor fault */
     buf[len++] = 0;     /* engin fault */

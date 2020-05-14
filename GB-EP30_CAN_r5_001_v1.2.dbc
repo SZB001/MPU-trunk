@@ -183,7 +183,8 @@ BO_ 646 BMS_Fr06_286: 8 BMS
  SG_ EXTBMS6dischgActiveFltCategory_@2WG725D : 35|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ BMS6chgActiveFltCategory : 39|4@0+(1,0)[0|15] "" Vector__XXX
  SG_ BMS6DCChargeContSts_@2WGE011 : 47|2@0+(1,0)[0|3] "" Vector__XXX
- SG_ BMS6InterlockSts_@2WG703F : 55|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ BMS6InterlockSts_@2WG7210 : 55|2@0+(1,0)[0|3] "" Vector__XXX
+ SG_ EXTBMS6InterlockSts_@2WG703F : 55|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS6ElectronicLockFlt : 49|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ BMS6presentActivityFault : 63|8@0+(1,0)[0|128] "" Vector__XXX
  SG_ BMS6ChargeFlt : 52|2@0+(1,0)[0|3] "" Vector__XXX
@@ -371,7 +372,7 @@ BO_ 200 VCU_Fr01_0C8: 8 VCU1
  SG_ VCU1Checksum : 63|8@0+(1,0)[0|255] "" Vector__XXX
  SG_ VCU1�ڵ㶪ʧ_@2N005 : 63|8@0+(1,0)[0|255] "" Vector__XXX
 BO_ 850 VCU_Fr02_352: 8 VCU1
- SG_ VCU2IntegHVIL_@2WG7210 : 4|1@0+ (1,0) [0|0] ""  Vector__XXX
+ SG_ VCU2IntegHVIL : 4|1@0+ (1,0) [0|0] ""  Vector__XXX
  SG_ VCU2presentActivityFault : 55|8@0+(1,0)[0|128] "" Vector__XXX
  SG_ VCU2ControlHVDischarge : 1|2@0+(1,0)[0|3] "" Vector__XXX
  SG_ VCU2HVILAttach : 5|1@0+(1,0)[0|1] "" Vector__XXX
