@@ -200,6 +200,8 @@ typedef struct
 	long	 StoplogeventId;
 	long	 StoplogexpTime;
 	PP_rmtDiag_logReqResp_t StopLogResp;
+	long	 canAcqeventId;
+	long	 canAcqexpTime;
 
 	uint8_t  cleanfaultSt;
 	uint8_t  cleanfaultReq;

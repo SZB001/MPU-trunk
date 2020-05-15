@@ -132,6 +132,7 @@ static void getPPrmtDiag_tboxFaultcode(PP_rmtDiag_Fault_t *rmtDiag_Fault);
 static int PP_rmtDiag_LogAcqReqResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
 static int PP_rmtDiag_StopLogAcqResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
 static void PP_rmtDiag_do_allFaultCodeClean(PrvtProt_task_t *task);
+static int PP_rmtDiag_canAcqResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag);
 /******************************************************
 description锛� function code
 ******************************************************/
@@ -465,7 +466,10 @@ static void PP_rmtDiag_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack
 			PP_can_upload_t can_para;
 			can_para.PP_tsp_eventId =  MsgDataBody.eventId;
 			can_para.PP_tsp_time = Appdata.CanBusMessageCollectReq.durationTime;
+			PP_rmtDiag.state.canAcqeventId = MsgDataBody.eventId;
+			PP_rmtDiag.state.canAcqexpTime = MsgDataBody.expTime;
 			PP_FileUpload_CanMsgRequest(can_para);
+			PP_rmtDiag_canAcqResp(task,&PP_rmtDiag);
 		}
 		break;
 		default:
@@ -1415,6 +1419,71 @@ static int PP_rmtDiag_FaultCodeCleanResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_
 	PP_TxInform[idlenode].eventtime = tm_get_time();
 	PP_TxInform[idlenode].idleflag = 1;
 	PP_TxInform[idlenode].description = "diag cleanfaultcode response";
+	SP_data_write(PP_rmtDiag_Pack.Header.sign, \
+			PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&PP_TxInform[idlenode]);
+
+	return 0;
+}
+
+/******************************************************
+*PP_rmtDiag_canAcqResp
+
+*褰�  鍙傦細
+
+*杩斿洖鍊硷細
+
+*鎻�  杩帮細
+
+*澶�  娉細
+******************************************************/
+static int PP_rmtDiag_canAcqResp(PrvtProt_task_t *task,PrvtProt_rmtDiag_t *rmtDiag)
+{
+	int msgdatalen;
+	//int i;
+	int idlenode;
+	
+	memset(&PP_rmtDiag_Pack,0 , sizeof(PrvtProt_pack_t));
+	/* header */
+	memcpy(PP_rmtDiag.pack.Header.sign,"**",2);
+	PP_rmtDiag.pack.Header.commtype.Byte = 0xe1;
+	PP_rmtDiag.pack.Header.ver.Byte = 0x30;
+	PP_rmtDiag.pack.Header.opera = 0x02;
+	PP_rmtDiag.pack.Header.ver.Byte = task->version;
+	PP_rmtDiag.pack.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+	PP_rmtDiag.pack.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	memcpy(&PP_rmtDiag_Pack, &PP_rmtDiag.pack.Header, sizeof(PrvtProt_pack_Header_t));
+
+	/* disbody */
+	memcpy(PP_rmtDiag.pack.DisBody.aID,"140",3);
+	PP_rmtDiag.pack.DisBody.mID = PP_MID_DIAG_CANACQRESP;
+	PP_rmtDiag.pack.DisBody.eventTime = PrvtPro_getTimestamp();
+	PP_rmtDiag.pack.DisBody.eventId = rmtDiag->state.canAcqeventId;
+	PP_rmtDiag.pack.DisBody.expTime = rmtDiag->state.canAcqexpTime;
+	PP_UpMsgCnt++;
+	PP_rmtDiag.pack.DisBody.ulMsgCnt = PP_UpMsgCnt;	/* OPTIONAL */
+	PP_rmtDiag.pack.DisBody.appDataProVer = 256;
+	PP_rmtDiag.pack.DisBody.testFlag = 1;
+
+	/*appdata*/
+	
+
+	if(0 != PrvtPro_msgPackageEncoding(ECDC_RMTDIAG_CANACQRESP,PP_rmtDiag_Pack.msgdata,&msgdatalen,\
+									   &PP_rmtDiag.pack.DisBody,NULL))
+	{
+		log_e(LOG_HOZON, "encode error\n");
+		return -1;
+	}
+
+	PP_rmtDiag_Pack.totallen = 18 + msgdatalen;
+	PP_rmtDiag_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
+
+	idlenode = PP_getIdleNode();
+	PP_TxInform[idlenode].aid = PP_AID_DIAG;
+	PP_TxInform[idlenode].mid = PP_MID_DIAG_CANACQRESP;
+	PP_TxInform[idlenode].pakgtype = PP_TXPAKG_SIGTIME;
+	PP_TxInform[idlenode].eventtime = tm_get_time();
+	PP_TxInform[idlenode].idleflag = 1;
+	PP_TxInform[idlenode].description = "can acq response";
 	SP_data_write(PP_rmtDiag_Pack.Header.sign, \
 			PP_rmtDiag_Pack.totallen,PP_rmtDiag_send_cb,&PP_TxInform[idlenode]);
 

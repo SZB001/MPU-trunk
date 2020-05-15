@@ -60,6 +60,7 @@ typedef enum
 	ECDC_RMTDIAG_CLEANFAULTRESP,//remote clean fault code response
 	ECDC_RMTDIAG_LOGACQRESP,//remote log acq response
 	ECDC_RMTDIAG_STOPLOGACQRESP,//remote stop log acq response
+	ECDC_RMTDIAG_CANACQRESP,//remote can acq response
 
 	/*FOTA INFO PUSH*/
 	ECDC_FIP_REQ,//request
