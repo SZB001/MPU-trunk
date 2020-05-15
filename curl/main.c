@@ -87,6 +87,7 @@ static int logeventid = 0;
 static int caneventid = 0;
 
 static int Fault_trigger_cnt = 0;
+static int can_flag = 0;
 /**
      * @brief    时间戳转化字符串
      * @param[in] file_name.
@@ -741,7 +742,14 @@ int curl_Post_CanFile(char *name)
 	
 	/********************配置参数timestamp*********************/
 	char timestamp[11] = {0};
-	strncpy(timestamp,name+sizeof("/media/sdcard/CanFileload/LUZAGAAEP30A00701_")-1,10);
+	if(can_flag == 1)
+	{
+		strncpy(timestamp,name+sizeof("/media/sdcard/CanFileload/LUZAGAAEP30A00701_alarmCan_")-1,10);
+	}
+	else if (can_flag == 2)
+	{
+		strncpy(timestamp,name+sizeof("/media/sdcard/CanFileload/LUZAGAAEP30A00701_")-1,10);
+	}
 	curl_formadd(&formpost,  
    				&lastptr,  
    				CURLFORM_COPYNAME, "timestamp",  
@@ -1428,6 +1436,8 @@ int main(int argc, char *argv[])
 					
 					Fault_trigger_cnt++;
 
+					can_flag = 1;
+					
 					if(Fault_trigger_cnt == 1)
 					{
 						gettimeofday(&timestamp_0, NULL);  //第一次故障触发时间
@@ -1449,6 +1459,7 @@ int main(int argc, char *argv[])
 					
 					gettimeofday(&now_timestamp, NULL);  //故障触发时间戳
 
+					can_flag = 2;
 					if(before_flag == 1)
 					{
 						if((now_timestamp.tv_sec >timestamp.tv_sec) &&  \
