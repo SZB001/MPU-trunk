@@ -286,16 +286,13 @@ int PP_CertDownload_mainfunction(void *task)
 	if((0 == PP_CertDL.filecheckTimer) || \
 					((tm_get_time() - PP_CertDL.filecheckTimer) > 5000))
 	{
-		//if(1 == pp_certDL_IGNnewSt)//IGN ON
+		if(DIAG_EMMC_OK == dev_diag_get_emmc_status())//emmc挂载成功
 		{
-			if(DIAG_EMMC_OK == dev_diag_get_emmc_status())//emmc挂载成功
-			{
-				PP_CertDL_checkCertExist();
-				PP_CertDL_checkCertKeyExist();
-				PP_CertDL_checkCertCsrExist();
-				PP_CertDL_checkCipherExist();
-				PP_CertDL.filecheckTimer = tm_get_time();
-			}
+			PP_CertDL_checkCertExist();
+			PP_CertDL_checkCertKeyExist();
+			PP_CertDL_checkCertCsrExist();
+			PP_CertDL_checkCipherExist();
+			PP_CertDL.filecheckTimer = tm_get_time();
 		}
 	}
 
@@ -2244,6 +2241,7 @@ static int PP_CertDL_generateCipher(void)
 */
 void PP_CertDL_deleteCipher(void)
 {
+	pthread_mutex_lock(&checkcertmtx);
 	if(access(COM_SDCARD_DIR_PKI_CIPHER,F_OK) == 0)//检查备份路径下密文文件存在
 	{
 		file_delete(COM_SDCARD_DIR_PKI_CIPHER);
@@ -2253,6 +2251,25 @@ void PP_CertDL_deleteCipher(void)
 	{
 		file_delete(PP_CERTDL_CIPHER_PATH);
 	}
+	pthread_mutex_unlock(&checkcertmtx);
+}
+
+/*
+* 删去证书
+*/
+void PP_CertDL_deleteCert(void)
+{
+	pthread_mutex_lock(&checkcertmtx);
+	if(access(COM_SDCARD_DIR_PKI_CERT,F_OK) == 0)//检查备份路径下密文文件存在
+	{
+		file_delete(COM_SDCARD_DIR_PKI_CERT);
+	}
+
+	if(access(PP_CERTDL_CERTPATH,F_OK) == 0)//检查密文文件存在
+	{
+		file_delete(PP_CERTDL_CERTPATH);
+	}
+	pthread_mutex_unlock(&checkcertmtx);
 }
 
 /*

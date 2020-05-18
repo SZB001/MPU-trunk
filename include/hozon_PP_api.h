@@ -171,4 +171,6 @@ extern void PP_CanMsgUL_datacollection(void *msg);
 extern void PP_FileUpload_CanMsgRequest(PP_can_upload_t can_para);
 extern void PP_FileUpload_LogRequest(PP_log_upload_t log_para);
 extern int sockproxy_nm_apncardtype(void);
+extern void PP_CertDL_deleteCipher(void);
+extern void PP_CertDL_deleteCert(void);
 #endif

@@ -1115,6 +1115,11 @@ static int gb_do_config(gb_stat_t *state, gb_cfg_t *cfg)
             break;
 
         case GB_CFG_VIN:
+            if((strcmp(cfg->vin,"00000000000000000") == 0))
+            {//设置vin 17个0,删去旧证书文件
+                PP_CertDL_deleteCert();
+            }
+
             if (cfg_set_user_para(CFG_ITEM_GB32960_VIN, cfg->vin, sizeof(cfg->vin)))
             {
                 log_e(LOG_GB32960, "save vin failed");
