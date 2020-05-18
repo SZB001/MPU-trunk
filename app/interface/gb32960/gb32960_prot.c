@@ -993,18 +993,9 @@ static int gb_do_receive(gb_stat_t *state)
                 }
 
                 state->online = 1;
-
-                if (state->login)
-                {
-                    gb_data_flush_sending();
-                    gb_data_flush_realtm();
-                }
-                else
-                {
-                    //gb_data_clear_report();
-                    gb_data_clear_error();
-                    state->login = 1;
-                }
+                state->login  = 1;
+                gb_data_flush_sending();
+                gb_data_flush_realtm();
 
                 if (++gb_regseq > 65531)
                 {
