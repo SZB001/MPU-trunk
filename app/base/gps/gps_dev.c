@@ -21,6 +21,7 @@
 #include "gpio.h"
 #include "shell_api.h"
 #include "at_api.h"
+#include "../at/at_stat.h"
 
 static GPS_DEV gps_dev;
 static unsigned char gps_fix_status = GPS_UNCONNECTED;
@@ -235,13 +236,18 @@ void gps_dev_ubx_init(void)
  ****************************************************************/
 void gps_dev_timeout(unsigned int time_id)
 {
+    static AT_STAT_T last_at_stat = AT_OFF_ST;
     switch (time_id)
     {
         case GPS_MSG_ID_DATA_TIMER:
             log_e(LOG_GPS, "GPS data timer is timeout!");
             gps_dev_reset();
-            gps_set_fix_status(GPS_ERROR);
-
+            if(last_at_stat >= AT_NORM_IDLE_ST)
+            {
+                gps_set_fix_status(GPS_ERROR);
+                log_e(LOG_GPS, "at module has been initialized, GPS module error!");
+            }
+            last_at_stat = at_get_stat();
             if (0 != tm_start(gps_dev.data_timer, GPS_TIMEOUT_4S, TIMER_TIMEOUT_REL_ONCE))
             {
                 log_e(LOG_GPS, "start GPS_MSG_ID_TIMER error");
