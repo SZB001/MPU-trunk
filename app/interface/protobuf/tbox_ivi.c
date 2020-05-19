@@ -2063,9 +2063,11 @@ void *ivi_check(void)
 	while(1)
 	{	
 		usleep(5000);
+
+		tbox_ivi_check_soskey();
 		/****************************安全气囊**************************************/
 		tbox_ivi_ecall_srs_deal(tbox_ivi_ecall_srs());   //安全气囊拨打ecall处理
-		tbox_ivi_ecall_key_deal(tbox_ivi_ecall_key()); 	 //按键拨打ecall处理
+		//tbox_ivi_ecall_key_deal(tbox_ivi_ecall_key()); 	 //按键拨打ecall处理
 		/*****************************车机连接错误*********************************/
 		if(tm_get_time() - lastfaulttime > 10000)
 		{
@@ -2285,11 +2287,7 @@ uint8_t tbox_ivi_ecall_srs(void)
 	return flag;
 }
 
-/**
-     * @brief    顶灯按键触发管理.
-     * @param[in] void.
-     * @return    uint8_t.
-*/
+#if 0
 uint8_t tbox_ivi_ecall_key(void)
 {
 	uint8_t flag = 0;
@@ -2303,6 +2301,7 @@ uint8_t tbox_ivi_ecall_key(void)
 	}
 	return flag;
 }
+#endif
 
 void tbox_ivi_ecall_srs_deal(uint8_t dt)
 {
@@ -2327,6 +2326,7 @@ void tbox_ivi_ecall_srs_deal(uint8_t dt)
 		}
 	}
 }
+#if 0
 void tbox_ivi_ecall_key_deal(uint8_t dt)
 {
 	static uint8_t key_sos_newflag ;
@@ -2349,7 +2349,7 @@ void tbox_ivi_ecall_key_deal(uint8_t dt)
 		}
 	}
 }
-
+#endif
 void tbox_ivi_tsp_active(void)
 {
 	static uint8_t old_state = 0 , new_state = 0;
@@ -2371,4 +2371,50 @@ uint8_t tbox_ivi_get_link_fault(uint64_t *timestamp)
 	return ihu_fault.ivi_net_faultflag;
 }
 
-
+void tbox_ivi_check_soskey(void)
+{
+	static uint64_t sosdown_time = 0;
+	static uint64_t sosup_time = 0;
+	static uint64_t sostime_diff = 0;
+	static uint8_t key_sos_newflag  = 0;
+	static uint8_t key_sos_oldflag = 0;
+	
+	key_sos_newflag = flt_get_by_id(SOSBTN);
+	if(key_sos_newflag != key_sos_oldflag)
+	{
+		key_sos_oldflag = key_sos_newflag;
+		if(key_sos_newflag == 2)   //sos按键按下
+		{
+			sosdown_time = tm_get_time();
+		}
+		if(key_sos_newflag == 1)
+		{
+			if(sosdown_time == 0)
+			{
+				return ;
+			}
+			sosup_time = tm_get_time();
+			sostime_diff = sosup_time - sosdown_time;
+			log_o(LOG_HOZON,"sosup_time = %ld",sosup_time);
+			log_o(LOG_HOZON,"sosdown_time = %ld",sosdown_time);
+			log_o(LOG_HOZON,"sostime_diff = %ld",sostime_diff);
+		
+			if( (sostime_diff > 2000) && (sostime_diff < 20000))
+			{
+				memset(&callrequest,0 ,sizeof(ivi_callrequest));
+				callrequest.call_type = ECALL_YTPE;
+				callrequest.call_action = START_YTPE;
+				if((ivi_clients[0].fd > 0) || (hu_pki_en == 1))
+				{
+					//下发远程诊断命令
+					ivi_remotediagnos_request_send( ivi_clients[0].fd ,0);
+				}
+				log_o(LOG_IVI, "SOS trigger by the key!!!!!");
+			}
+			else if(sostime_diff > 20000) 
+			{
+				system("reboot");    //长按10s重启
+			}
+		}
+	}	
+}

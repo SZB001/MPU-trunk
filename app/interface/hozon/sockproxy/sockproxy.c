@@ -31,6 +31,8 @@ description�� include the header file
 #include "shell_api.h"
 #include "dev_api.h"
 #include "sock_api.h"
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include "gb32960_api.h"
 #include "nm_api.h"
 #include "../../support/protocol.h"
@@ -40,6 +42,7 @@ description�� include the header file
 #include "at.h"
 #include "sockproxy_rxdata.h"
 #include "sockproxy_txdata.h"
+#include "../../../base/ble/cm256/ql_nslookup.h"
 #include "../PrvtProtocol/PrvtProt_queue.h"
 #include "hozon_ver_api.h"
 #include "../PrvtProtocol/PrvtProt.h"
@@ -102,6 +105,8 @@ static void sockproxy_testTask(void);
 static int PP_shell_setPKIenable(int argc, const char **argv);
 static int sockproxy_get_link_status(void);
 static int sockproxy_nm_callback(NET_TYPE type, NM_STATE_MSG nmmsg);
+
+extern void nm_get_dns_ip(char *dns);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -598,7 +603,10 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 	int iRet = 0;
 	char	OnePath[64]="\0";
 	char	ScdPath[64]="\0";
-
+	
+	#ifdef HOZON_DNS
+	char 	destIP[128];
+	#endif
 	switch(sockSt.sglinkSt)
 	{
 		case SOCKPROXY_SGLINK_INIT:
@@ -615,7 +623,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 		{
 			if(sockSt.state == PP_CLOSED)
 			{
-				#if 0
+				#ifdef HOZON_DNS
 				getPP_rmtCfg_certAddrPort(sockSt.sgLinkAddr,&sockSt.sgPort);
 				if((sockSt.sgLinkAddr[0] == 0) || (sockSt.sgPort == 0))
 				{
@@ -627,6 +635,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					return -1;
 				}
 				#endif
+				
 				/*port ipaddr*/
 				if(sockSt.apnType != 1)
 				{
@@ -646,7 +655,32 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					sleep(1);
 					return -1;
 					#endif
+					
+					#ifdef HOZON_DNS
+					hostaddr_info_u tsp_ip;
+					char dns_server_ip[80];
+					nm_get_dns_ip(dns_server_ip);
+					memset(&tsp_ip,0,sizeof(tsp_ip));
+					QL_nslookup(sockSt.sgLinkAddr,dns_server_ip,QUERY_IPV4_E,&tsp_ip);
+					if(tsp_ip.addr_cnt == 0)  //域名解析失败
+					{
+						log_e(LOG_SOCK_PROXY,"QL_nslookup %s error\n",sockSt.sgLinkAddr);
+						sockSt.sglinkSt = SOCKPROXY_SGLINK_INIT;
+						sockSt.waittime = tm_get_time();
+						sleep(1);
+						return -1;
+					}
+					int i = 0;
+					for(i=0;i<tsp_ip.addr_cnt;i++)
+					{
+						inet_ntop(AF_INET, &tsp_ip.addr[i].s_addr, destIP, sizeof(destIP));
+						log_o(LOG_HOZON,"destIP = %s",destIP);
+						break;
+					}
+					iRet = HzPortAddrCft(22000, 1,destIP,NULL);//TBOX端口地址配置初始化
+					#else
 					iRet = HzPortAddrCft(22000, 1,TSP_URL_PRI_IP,NULL);//TBOX端口地址配置初始化
+					#endif
 				}
 
 				if(iRet != SOCKPROXY_SG_ADDR_INIT_SUCCESS)
@@ -682,7 +716,6 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 						sleep(1);
 						return -1;
 					}
-
 					close(fd);
 				}
 
@@ -778,8 +811,6 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
     return 0;
 }
 
-
-
 /******************************************************
 *��������sockproxy_BDLink
 *��  �Σ�void
@@ -792,8 +823,11 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 	int 	iRet = 0;
 	char	OnePath[64]="\0";
 	char	ScdPath[64]="\0";
-	//char 	destIP[32];
 
+	#ifdef HOZON_DNS
+	char 	destIP[32];
+	#endif
+	
 	switch(sockSt.BDLlinkSt)
 	{
 		case SOCKPROXY_BDLLINK_INIT:
@@ -810,7 +844,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 			if(sockSt.state == PP_CLOSED)
 			{
-				#if 0
+				#ifdef HOZON_DNS
 				getPP_rmtCfg_tspAddrPort(sockSt.BDLLinkAddr,&sockSt.BDLPort);
 				if((sockSt.BDLLinkAddr[0] == 0) || (sockSt.BDLPort == 0))
 				{
@@ -822,6 +856,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					return -1;
 				}
 				#endif
+	
 				/*port ipaddr*/
 				if(sockSt.apnType != 1)
 				{
@@ -840,7 +875,30 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 					return -1;
 					#endif
 
+					#ifdef HOZON_DNS
+					hostaddr_info_u tsp_ip;
+					char dns_server_ip[80];
+					nm_get_dns_ip(dns_server_ip);
+					QL_nslookup(sockSt.BDLLinkAddr,dns_server_ip,QUERY_IPV4_E,&tsp_ip);
+					if(tsp_ip.addr_cnt == 0)  //域名解析失败
+					{
+						log_e(LOG_SOCK_PROXY,"QL_nslookup %s error\n",sockSt.BDLLinkAddr);
+						sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+						sockSt.waittime = tm_get_time();
+						sleep(1);
+						return -1;
+					}
+					int i = 0;
+					for(i=0;i<tsp_ip.addr_cnt;i++)
+					{
+						inet_ntop(AF_INET, &tsp_ip.addr[i].s_addr, destIP, sizeof(destIP));
+						log_o(LOG_HOZON,"destIP = %s",destIP);
+						break;
+					}
+					iRet = HzPortAddrCft(21000, 1,destIP,NULL);
+					#else
 					iRet = HzPortAddrCft(21000, 1,TSP_URL_PRI_IP,NULL);
+					#endif
 				}
 				if(iRet != 1010)
 				{
@@ -902,6 +960,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 				/*Initiate a connection server request*/
 				HzTboxSocketFd(&SP_sockFd);
+			
 				if(sockSt.apnType == 1)
 				{
 					struct ifreq nif;
@@ -920,6 +979,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 						printf("setsockopt interface success \r\n");
 					}
 				}
+				
 				iRet = HzTboxConnect(SP_sockFd);
 				if(iRet != 1230)
 				{

@@ -719,6 +719,23 @@ static void nm_dial_add_default_route(NM_NET_INFO *phndl)
 
     nm_dcom_status = 1;
 }
+static void nm_dial_add_route(NM_NET_INFO *phndl)
+{
+    char command[200];
+	char command1[200];
+    memset(command, 0, sizeof(command));
+	memset(command1, 0, sizeof(command1));
+
+    /*add defaut route as the public route*/
+	
+	sprintf(command,"ip route add %s ",inet_ntoa(phndl->pri_dns_addr));
+	sprintf(command1,"via %s dev %s ",inet_ntoa(phndl->gw_addr),phndl->interface);
+	strcat(command,command1);
+    
+	nm_sys_call(command);
+
+    nm_dcom_status = 1;
+}
 
 #if 0
 
@@ -1076,8 +1093,11 @@ static int nm_dial_get_conf(NM_NET_INFO *phndl)
     if (NM_PRIVATE_NET == phndl->type && 0 != strlen(nm_net_info[NM_PUBLIC_NET].apn))
     {
         /*set dns config in the first */
-        nm_dial_set_dns(phndl);
 
+		nm_dial_add_route(phndl);
+		
+        nm_dial_set_dns(phndl);
+		
         #if 0
         /*add PRIVATE net DNS ip to route*/
         nm_dial_add_dns_route(phndl);
@@ -1830,4 +1850,8 @@ int nm_register_status_changed(nm_status_changed callback)
     nm_tbl.used_num++;
     pthread_mutex_unlock(&nm_regtbl_mutex);
     return 0;
+}
+void nm_get_dns_ip(char *dns)
+{
+	strcpy(dns,inet_ntoa(nm_net_info[0].pri_dns_addr));
 }

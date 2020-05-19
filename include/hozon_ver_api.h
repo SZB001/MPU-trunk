@@ -6,4 +6,7 @@
 #define HOZON_PRD
 
 
+/************Whether DNS is enabled or not***********/
+#define HOZON_DNS
+
 #endif

@@ -184,5 +184,7 @@ extern uint8_t tbox_ivi_signal_type(void);
 
 extern uint8_t tbox_ivi_signal_power(void);
 
+extern void tbox_ivi_check_soskey(void);
+
 #endif
 

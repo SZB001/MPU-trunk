@@ -472,7 +472,7 @@ static void *PP_CanFileSend_main(void)
 			}
 		}
 		
-		if((canupload_en == 1) && (can_file_flag == 0) && (shell_open_flag = 0))
+		if((canupload_en == 1) && (can_file_flag == 0) && (shell_open_flag == 0))
 		{
 			struct timeval nowtime_stamp;
 			gettimeofday(&nowtime_stamp, NULL);  
@@ -684,7 +684,7 @@ static void PP_CanFile_delfile(void)
 	}
 	else
 	{
-		log_i(LOG_HOZON,"size = %lf",size);
+		//log_i(LOG_HOZON,"size = %lf",size);
 	}
 }
 
