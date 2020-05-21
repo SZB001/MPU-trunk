@@ -23,16 +23,16 @@
 #define DTC_MISSING_VCU1                        "C11100"
 #define DTC_MISSING_EPS                         "C11200"
 #define DTC_MISSING_ESC                         "C11300"
-#define DTC_MISSING_EHB                         "C11400"
+//#define DTC_MISSING_EHB                         "C11400"
 #define DTC_MISSING_EACP                        "C11500"
 #define DTC_MISSING_PTC                         "C11600"
-#define DTC_MISSING_PLG                         "C11700"
+//#define DTC_MISSING_PLG                         "C11700"
 #define DTC_MISSING_CLM                         "C11800"
 #define DTC_MISSING_BDCM                        "C11900"
-#define DTC_MISSING_ALM                         "C12000"
+//#define DTC_MISSING_ALM                         "C12000"
 #define DTC_MISSING_ICU                         "C12100"
 #define DTC_MISSING_IHU                         "C12200"
-#define DTC_MISSING_TAP                         "C12300"
+//#define DTC_MISSING_TAP                         "C12300"
 
 
 

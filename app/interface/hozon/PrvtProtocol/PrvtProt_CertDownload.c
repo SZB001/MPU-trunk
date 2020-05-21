@@ -2241,7 +2241,6 @@ static int PP_CertDL_generateCipher(void)
 */
 void PP_CertDL_deleteCipher(void)
 {
-	pthread_mutex_lock(&checkcertmtx);
 	if(access(COM_SDCARD_DIR_PKI_CIPHER,F_OK) == 0)//检查备份路径下密文文件存在
 	{
 		file_delete(COM_SDCARD_DIR_PKI_CIPHER);
@@ -2251,7 +2250,6 @@ void PP_CertDL_deleteCipher(void)
 	{
 		file_delete(PP_CERTDL_CIPHER_PATH);
 	}
-	pthread_mutex_unlock(&checkcertmtx);
 }
 
 /*
