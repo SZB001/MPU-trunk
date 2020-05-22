@@ -421,7 +421,7 @@ int clbt_cfg_dump_para(void )
     shellprintf(" %-32s :","cipher");
     for(k = 0; k < len; k++)
     {	
-        shellprintf("_%u",*bufftp);
+        shellprintf("_%02X",*bufftp);
         bufftp++;
     }
     shellprintf("\r\n");
