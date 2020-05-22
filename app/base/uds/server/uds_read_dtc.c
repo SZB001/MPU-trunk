@@ -45,16 +45,16 @@ static unsigned int DTC_index[DIAG_ITEM_NUM] = {
     1,//DTC_NUM_MISSING_VCU1,
     1,//DTC_NUM_MISSING_EPS,
     1,//DTC_NUM_MISSING_ESC,
-    1,//DTC_NUM_MISSING_EHB,
+//    1,//DTC_NUM_MISSING_EHB,
     1,//DTC_NUM_MISSING_EACP,
     1,//DTC_NUM_MISSING_PTC,
-    1,//DTC_NUM_MISSING_PLG,
+//    1,//DTC_NUM_MISSING_PLG,
     1,//DTC_NUM_MISSING_CLM,
     1,//DTC_NUM_MISSING_BDCM,
-    1,//DTC_NUM_MISSING_ALM,
+//    1,//DTC_NUM_MISSING_ALM,
     1,//DTC_NUM_MISSING_ICU,
     1,//DTC_NUM_MISSING_IHU,
-    1,//DTC_NUM_MISSING_TAP,
+//    1,//DTC_NUM_MISSING_TAP,
 } ;
 
 static uint32_t ChangeDTCtoInt(uint8_t *dtcchar)
