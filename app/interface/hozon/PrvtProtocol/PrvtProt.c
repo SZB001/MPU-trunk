@@ -69,6 +69,7 @@ description�� include the header file
 #include "../../base/uds/server/uds_did.h"
 #include "FileUpload/PrvtProt_FileUpload.h"
 #include "CanMessageUL/CanMsgUL.h"
+#include "PrvtProt_mpuAbnor.h"
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -194,6 +195,7 @@ int PrvtProt_init(INIT_PHASE phase)
 		  	InitPP_lock_parameter();
 			InitPP_FileUpload_Parameter();
 			InitPP_CanMsgUL_Parameter();
+			InitPrvtPro_mpuAbnor();
 		}
         break;
     }
@@ -273,6 +275,7 @@ static void *PrvtProt_main(void)
 #endif
 		PrvtProt_do_HBSwitchHandle();
 		PP_CertDownload_mainfunction(&pp_task);
+		PrvtPro_mpuAbnorHandle();
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
@@ -861,7 +864,7 @@ long PP_rmtCtrl_usTimestamp(void)
 void PrvtPro_SettboxId(char obj,unsigned int tboxid)
 {
 	log_o(LOG_HOZON, "set tboxid = %d\n",tboxid);
-
+PrvtPro_mpureboottest();
 	if(0 == obj)
 	{
 		pp_task.tboxid = tboxid;
