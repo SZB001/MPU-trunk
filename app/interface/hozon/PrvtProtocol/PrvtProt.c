@@ -1005,6 +1005,7 @@ void PrvtProt_defaultsettings(void)
 
 	unsigned char pkien = 1;
 	cfg_set_para(CFG_ITEM_EN_PKI, &pkien, 1);
+	pkien = 0;
 	cfg_set_para(CFG_ITEM_EN_HUPKI,&pkien, 1);
 }
 

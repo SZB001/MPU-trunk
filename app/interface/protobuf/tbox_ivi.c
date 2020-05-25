@@ -1674,7 +1674,7 @@ int ivi_init(INIT_PHASE phase)
 
         case INIT_PHASE_OUTSIDE:
             {
-            	unsigned int cfglen;
+            	//unsigned int cfglen;
             	tbox_shell_init();
                 ret = tm_create(TIMER_REL, IVI_MSG_GPS_EVENT, MPU_MID_IVI, &ivi_timer);
 
@@ -1683,13 +1683,14 @@ int ivi_init(INIT_PHASE phase)
                     log_e(LOG_IVI, "create timer IVI_MSG_GPS_EVENT failed ret=0x%08x", ret);
                     return ret;
                 }
-				cfglen = 1;
-				ret |= cfg_get_para(CFG_ITEM_EN_HUPKI, &hu_pki_en, &cfglen);
-				log_o(LOG_IVI,"hu_pki_en = %d",hu_pki_en);
+				//cfglen = 1;
+				//ret |= cfg_get_para(CFG_ITEM_EN_HUPKI, &hu_pki_en, &cfglen);
+				hu_pki_en = 0;
 				if(hu_pki_en == 1)
 				{
 					HU_data_init();
 				}
+				log_o(LOG_IVI,"hu_pki_en = %d",hu_pki_en);
                 break;
             }
     }
