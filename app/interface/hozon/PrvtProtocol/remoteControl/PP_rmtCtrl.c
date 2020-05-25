@@ -1562,7 +1562,8 @@ int SetPP_rmtCtrl_FOTA_startInform(void)
 		SetPP_ChargeCtrl_appointPara();
 		PP_rmtCtrl.fotaAuthReq = 1;
 		PP_rmtCtrl.fotaUpgradeSt = 1;
-		PP_rmtCtrl.fotaAuthResult = 0;
+		PP_rmtCtrl.fotaAuthResult = 0; 
+		PP_FileUpload_set_log(1);
 		sockproxy_socketclose((int)(PP_SP_COLSE_OTA));
 	}
 	else
@@ -1595,6 +1596,7 @@ int SetPP_rmtCtrl_FOTA_endInform(void)
 {
 	int res = 0;
 	PP_rmtCtrl.fotaUpgradeSt = 0;
+	PP_FileUpload_set_log(0);
 	clearPP_lock_odcmtxlock(PP_LOCK_OTA_FOTAUPDATE);
 	return res;
 }

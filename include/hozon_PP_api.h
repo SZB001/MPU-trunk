@@ -173,4 +173,5 @@ extern void PP_FileUpload_LogRequest(PP_log_upload_t log_para);
 extern int sockproxy_nm_apncardtype(void);
 extern void PP_CertDL_deleteCipher(void);
 extern void PP_CertDL_deleteCert(void);
+extern void PP_FileUpload_set_log(unsigned char en);
 #endif

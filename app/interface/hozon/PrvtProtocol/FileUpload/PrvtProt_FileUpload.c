@@ -87,7 +87,7 @@ static void PP_CanFile_delfile(void);
 static int PP_FileUpload_escapeData(uint8_t *datain,int datainlen,uint8_t *dataout,int *dataoutlen);
 static int PP_FileUpload_nm_callback(NET_TYPE type, NM_STATE_MSG nmmsg);
 static unsigned char PP_FileUpload_signTrigSt(unsigned char obj);
-static void PP_FileUpload_set_log(unsigned char en);
+//static void PP_FileUpload_set_log(unsigned char en);
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
@@ -205,6 +205,7 @@ int PP_FileUpload_run(void)
 	}
 	#endif
 	unsigned char en;
+	cfglen = 1;
 	cfg_get_para(CFG_ITEM_LOG_ENABLE, &en, &cfglen); 
 	if(en != 0)
 	{
@@ -1125,7 +1126,7 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 /*
  * 开启/关闭 log 采集存储
 */
-static void PP_FileUpload_set_log(unsigned char en)
+void PP_FileUpload_set_log(unsigned char en)
 {
     if (en && !bfile_exists("/dev/mmcblk0p1"))
     {
