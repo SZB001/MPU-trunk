@@ -1366,6 +1366,17 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 		0,0
     };
 
+	const char gb_ign[32] =
+    {
+    	0,0,0,0,0,
+		0,0,0,0,0,
+		0,0,0,1,0,
+		1,1,1,0,0,
+		0,0,0,0,0,
+		0,0,0,0,0,
+		0,0
+    };
+
     /* DCDC state */
     if (gbinf->vehi.info[GB_VINF_DCDC])//dcdc为3级报警，客户提供
     {
@@ -1379,27 +1390,21 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     {
         for(j = 0; j < 32; j++)
         {
-			if(0x10 == j)//高压互锁状态故障
+			if(0xd == j)//制动系统故障
 			{
 				if(dev_get_KL15_signal())
 				{
-					if(gbinf->warn[i][j] && dbc_get_signal_from_id(gbinf->warn[i][j])->value)
+					if(gbinf->warn[i][j] && \
+									(1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
 					{
 						gb_warning[i][j] = 1;
 					}
 				}
 			}
-			else if(0xd == j)//制动系统故障
-			{
-				if(gbinf->warn[i][j] && \
-								(1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
-				{
-					gb_warning[i][j] = 1;
-				}
-			}
 			else
 			{
-				if(gbinf->warn[i][j] && dbc_get_signal_from_id(gbinf->warn[i][j])->value)
+				if((gb_ign[j]?dev_get_KL15_signal():1)	&& \
+					(gbinf->warn[i][j] && dbc_get_signal_from_id(gbinf->warn[i][j])->value))
 				{
 					gb_warning[i][j] = 1;
 				}
@@ -3322,6 +3327,18 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 		1,0,1,1,1,1,1,0,0,1,
 		0,0
     };
+
+	const char Ext_gb_ign[GB32960_VSWARN] =
+    {
+    	0,1,0,1,1,1,1,1,1,1,
+		1,1,0,0,0,0,0,0,0,0,
+		0,0,0,1,1,1,0,0,0,0,
+		0,0,0,0,0,0,1,0,0,0,
+		0,0,0,0,0,1,0,0,0,0,
+		0,0,0,0,0,0,0,0,1,0,
+		1,0,0,0,0,0,0,0,0,0,
+		1,0
+    };
 	
     /* data type : warn extend information */
     buf[len++] = 0x94;
@@ -3335,7 +3352,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     {
         for (j = 32; j < GB32960_MAXWARN; j++)
         {
-			if(0x63 == j)//高压放电故障
+			if(0x63 == j)//APA自动泊车系统故障
 			{
 				if(gbinf->warn[i][j] && \
 				   (0x6 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
@@ -3365,7 +3382,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 			}
 			else if(0x21 == j)//EPS故障
 			{
-				if(gbinf->warn[i][j] && \
+				if(dev_get_KL15_signal() && gbinf->warn[i][j] && \
 				   ((0x1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value) || \
 				   	(0x2 == dbc_get_signal_from_id(gbinf->warn[i][j])->value)))
 				{
@@ -3378,8 +3395,8 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 			}
 			else
 			{
-				if (gbinf->warn[i][j] &&	\
-						dbc_get_signal_from_id(gbinf->warn[i][j])->value)
+				if((Ext_gb_ign[j]?dev_get_KL15_signal():1)	&& \
+						(gbinf->warn[i][j] && dbc_get_signal_from_id(gbinf->warn[i][j])->value))
 				{
 					warnvalue = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
 					if(j == 0x50)//制冷不工作原因
