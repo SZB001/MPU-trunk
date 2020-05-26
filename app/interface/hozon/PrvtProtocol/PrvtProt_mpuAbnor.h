@@ -58,5 +58,5 @@ description�� function External declaration
 *******************************************************/
 extern void InitPrvtPro_mpuAbnor(void);
 extern void PrvtPro_mpuAbnorHandle(void);
-void PrvtPro_mpureboottest(void);
+extern void PrvtPro_mpureboottest(void);
 #endif 

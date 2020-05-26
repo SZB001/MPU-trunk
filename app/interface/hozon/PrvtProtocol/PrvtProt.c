@@ -864,7 +864,7 @@ long PP_rmtCtrl_usTimestamp(void)
 void PrvtPro_SettboxId(char obj,unsigned int tboxid)
 {
 	log_o(LOG_HOZON, "set tboxid = %d\n",tboxid);
-PrvtPro_mpureboottest();
+
 	if(0 == obj)
 	{
 		pp_task.tboxid = tboxid;
