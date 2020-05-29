@@ -66,7 +66,6 @@ description�� macro definitions
 
 /***********�꺯��***********/
 #define sockproxy_getURL(x)			gb32960_getURL(x)
-#define sockproxy_SkipSockCheck() 	(!gb32960_networkSt())
 #define sockproxy_getsuspendSt() 	0//gb32960_getsuspendSt()
 
 /*******************************************************

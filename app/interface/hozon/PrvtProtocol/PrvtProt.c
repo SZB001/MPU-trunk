@@ -291,7 +291,8 @@ static void *PrvtProt_main(void)
 		}
 
 		PP_sleepflag = PP_heartbeat.hbtasksleepflag &&	\
-					   GetPP_rmtCtrl_Sleep();
+					   GetPP_rmtCtrl_Sleep()		&&	\
+					   GetPrvtPro_mpuAbnorsleepSt();
     }
 	(void)res;
     return NULL;
@@ -1073,6 +1074,7 @@ void SetPrvtProt_Awaken(int type)
 			PP_heartbeat.hbtasksleepflag = 0;
 			PP_hbtaskmpurtcwakeuptestflag++;
 			PP_heartbeat.timer = tm_get_time();
+			ClearPrvtPro_mpuAbnorsleep();
 		}
 		break;
 		default:

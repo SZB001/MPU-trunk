@@ -371,9 +371,9 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		}
 		
 		sockproxy_getURL(&state->sock_addr);
-		if(sockproxy_SkipSockCheck() || !state->sock_addr.port || !state->sock_addr.url[0])
+		if(!sockSt.network || !state->sock_addr.port || !state->sock_addr.url[0])
 		{
-			//log_e(LOG_SOCK_PROXY, "state.network = %d",sockproxy_SkipSockCheck());
+			sleep(1);
 			return -1;
 		}
 
@@ -425,74 +425,74 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 	}
 	else
 	{
+#ifdef HOZON_PRE
+		log_e(LOG_HOZON, "pre does not support\n");
+		sleep(1);
+		return -1;
+#endif
 		if(1 != sockSt.network)
 		{
 			log_e(LOG_HOZON, "network is not ok\n");
 			sleep(1);
-			return -1;
 		}
-
-#ifdef HOZON_PRE
-	log_e(LOG_HOZON, "pre does not support\n");
-	sleep(1);
-	return -1;
-#endif
-
-		switch(sockSt.linkSt)
+		else
 		{
-			case SOCKPROXY_CHECK_CERT:
+			switch(sockSt.linkSt)
 			{
-				if((0 == sockSt.sleepFlag) && (0 == GetPP_rmtCtrl_fotaUpgrade()))
+				case SOCKPROXY_CHECK_CERT:
 				{
-					if(sockSt.cancelRcvphreadFlag)
+					if((0 == sockSt.sleepFlag) && (0 == GetPP_rmtCtrl_fotaUpgrade()))
 					{
-						sockSt.cancelRcvphreadFlag = 0;
-						log_i(LOG_HOZON, "thread sockproxy_rcvmain not exist\n");
-						pthread_attr_init(&rcvta);
-						pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_JOINABLE);
-						pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
-						log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
-					}
+						if(sockSt.cancelRcvphreadFlag)
+						{
+							sockSt.cancelRcvphreadFlag = 0;
+							log_i(LOG_HOZON, "thread sockproxy_rcvmain not exist\n");
+							pthread_attr_init(&rcvta);
+							pthread_attr_setdetachstate(&rcvta, PTHREAD_CREATE_JOINABLE);
+							pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
+							log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
+						}
 
-					if(GetPP_CertDL_allowBDLink() == 0)//
-					{//建立单向连接
-						log_o(LOG_HOZON, "Cert inValid,set up sglink\n");
-						sockSt.waittime = tm_get_time();
-						sockSt.sglinkSt =  SOCKPROXY_SGLINK_INIT;
-						sockSt.linkSt = SOCKPROXY_SETUP_SGLINK;
+						if(GetPP_CertDL_allowBDLink() == 0)//
+						{//建立单向连接
+							log_o(LOG_HOZON, "Cert inValid,set up sglink\n");
+							sockSt.waittime = tm_get_time();
+							sockSt.sglinkSt =  SOCKPROXY_SGLINK_INIT;
+							sockSt.linkSt = SOCKPROXY_SETUP_SGLINK;
+						}
+						else
+						{//建立双向连接
+							log_o(LOG_HOZON, "Cert Valid,set up BDLlink\n");
+							sockSt.waittime = tm_get_time();
+							sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
+							sockSt.linkSt = SOCKPROXY_SETUP_BDLLINK;
+						}
+					}
+				}
+				break;
+				case SOCKPROXY_SETUP_SGLINK:
+				{
+					if(sockproxy_sgLink(state) < 0)
+					{//sg 退出
+						sockSt.linkSt = SOCKPROXY_CHECK_CERT;
 					}
 					else
-					{//建立双向连接
-						log_o(LOG_HOZON, "Cert Valid,set up BDLlink\n");
-						sockSt.waittime = tm_get_time();
-						sockSt.BDLlinkSt = SOCKPROXY_BDLLINK_INIT;
-						sockSt.linkSt = SOCKPROXY_SETUP_BDLLINK;
+					{}
+				}
+				break;
+				case SOCKPROXY_SETUP_BDLLINK:
+				{
+					if(sockproxy_BDLink(state) < 0)
+					{//BDL 退出
+						sockSt.linkSt = SOCKPROXY_CHECK_CERT;
 					}
+					else
+					{}
 				}
+				break;
+				default:
+				break;
 			}
-			break;
-			case SOCKPROXY_SETUP_SGLINK:
-			{
-				if(sockproxy_sgLink(state) < 0)
-				{//sg 退出
-					sockSt.linkSt = SOCKPROXY_CHECK_CERT;
-				}
-				else
-				{}
-			}
-			break;
-			case SOCKPROXY_SETUP_BDLLINK:
-			{
-				if(sockproxy_BDLink(state) < 0)
-				{//BDL 退出
-					sockSt.linkSt = SOCKPROXY_CHECK_CERT;
-				}
-				else
-				{}
-			}
-			break;
-			default:
-			break;
 		}
 	}
 
@@ -545,12 +545,8 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		{
 			if(sockSt.state == PP_OPENED)
 			{
-				//if((tm_get_time() - sockSt.sleepwaittime) > 3000)
-				{
-					//log_i(LOG_HOZON, "start to sleep\n");
-					sockSt.sleepwaittimeoutcnt = 0;
-					sockSt.sleepFlag = 1;
-				}
+				sockSt.sleepwaittimeoutcnt = 0;
+				sockSt.sleepFlag = 1;
 			}
 			else
 			{
@@ -560,10 +556,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 					{
 						sockSt.sleepwaittimeoutcnt++;
 						sockSt.sleepFlag = 1;
-					}
-					else
-					{
-						sockSt.sleepFlag = 0;
+						sockSt.sleepwaittime = tm_get_time();
 					}
 				}
 				else
@@ -1478,7 +1471,6 @@ void Setsocketproxy_Awaken(void)
 ******************************************************/
 char sockproxy_Sleep(void)
 {
-
 	return sockSt.sleepFlag;
 }
 
@@ -1666,7 +1658,8 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 */
 static void sockproxy_nm_dial_recall(void)
 {
-	static char IGNnewSt,IGNoldSt = 0;
+	static char IGNnewSt=0xff;
+	static char IGNoldSt=0xff;
 
 	IGNnewSt = dev_get_KL15_signal();
 	if(IGNoldSt != IGNnewSt)
@@ -1680,7 +1673,7 @@ static void sockproxy_nm_dial_recall(void)
 
 	if(1 == IGNnewSt)//IGN ON
 	{
-		if(sockproxy_SkipSockCheck())
+		if(1 != sockSt.network)
 		{
 			if((tm_get_time() - sockSt.recalltimer) >= 30000)
 			{
