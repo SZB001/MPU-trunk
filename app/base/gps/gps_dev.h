@@ -10,6 +10,7 @@
 
 #include "init.h"
 #include <time.h>
+#include <stdint.h>
 
 #define GPS_NMEA_PORT   "/dev/smd7"
 #define GPS_UART_PORT   "/dev/ttyHSL1"
@@ -40,5 +41,7 @@ extern int gps_dev_ubx_import_ehpemeris(const char *file);
 int gps_get_ubx_init_sta(void);
 
 
+uint8_t set_gps_send_atcmd_state(uint8_t is_success);
 
+uint8_t get_gps_send_atcmd_state(void);
 #endif

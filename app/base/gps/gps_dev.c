@@ -41,6 +41,17 @@ static unsigned char ubx_init_tbl[] =
 	
 static unsigned char ubx_ephemeris_data[8 * 1024];
 
+uint8_t gps_send_atcmd_state = 0;
+uint8_t set_gps_send_atcmd_state(uint8_t is_success)
+{
+    gps_send_atcmd_state = is_success;
+    return 0;
+}
+
+uint8_t get_gps_send_atcmd_state(void)
+{
+    return gps_send_atcmd_state;
+}
 
 /****************************************************************
  function:       gps_sleep_available
@@ -160,6 +171,7 @@ int gps_dev_close(void)
     }
     else if (GNSS_4G_MODULE == GNSS_TYPE)
     {
+        tm_stop(gps_dev.data_timer);
     }
 
     return 0;
@@ -190,9 +202,23 @@ void gps_dev_reset(void)
     }
     else if (GNSS_4G_MODULE == GNSS_TYPE)
     {
-        at_disable_gps();
-        at_enable_gps();
-        log_o(LOG_GPS, "reset inner gps");
+        if(1 == at_get_at_lock())
+        {
+            set_gps_send_atcmd_state(0);
+            log_o(LOG_GPS, "at query be locked, can't reset inner gps");
+        }
+        else
+        {
+            at_disable_gps();
+            at_enable_gps();
+            set_gps_send_atcmd_state(1);
+            log_o(LOG_GPS, "reset inner gps");
+        }
+        
+        if (0 != tm_start(gps_dev.data_timer, GPS_TIMEOUT_4S, TIMER_TIMEOUT_REL_ONCE))
+        {
+            log_e(LOG_GPS, "start GPS_MSG_ID_TIMER error");
+        }
     }
 }
 
@@ -240,19 +266,14 @@ void gps_dev_timeout(unsigned int time_id)
     switch (time_id)
     {
         case GPS_MSG_ID_DATA_TIMER:
-            log_e(LOG_GPS, "GPS data timer is timeout!");
-            gps_dev_reset();
-            if(last_at_stat >= AT_NORM_IDLE_ST)
+            log_o(LOG_GPS, "GPS data timer is timeout!");
+            if((last_at_stat >= AT_NORM_IDLE_ST) && (get_gps_send_atcmd_state()))
             {
                 gps_set_fix_status(GPS_ERROR);
                 log_e(LOG_GPS, "at module has been initialized, GPS module error!");
             }
+            gps_dev_reset();
             last_at_stat = at_get_stat();
-            if (0 != tm_start(gps_dev.data_timer, GPS_TIMEOUT_4S, TIMER_TIMEOUT_REL_ONCE))
-            {
-                log_e(LOG_GPS, "start GPS_MSG_ID_TIMER error");
-                return;
-            }
 
             break;
 
