@@ -196,6 +196,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			InitPP_FileUpload_Parameter();
 			InitPP_CanMsgUL_Parameter();
 			InitPrvtPro_mpuAbnor();
+			wifi_disable();//上电默认关闭wifi
 		}
         break;
     }

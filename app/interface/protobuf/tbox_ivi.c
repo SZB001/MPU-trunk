@@ -2414,7 +2414,8 @@ void tbox_ivi_check_soskey(void)
 			}
 			else if(sostime_diff > 20000) 
 			{
-				system("reboot");    //长按10s重启
+				//system("reboot");    //长按10s重启
+				//pm_send_evt(MPU_MID_NM, PM_EVT_RESTART_4G_REQ);
 			}
 		}
 	}	

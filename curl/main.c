@@ -1484,8 +1484,6 @@ int main(int argc, char *argv[])
 					
 				}
 				
-				//curl_get_tboxcanpara(can_memory);
-				
 				memset(addr,0,4096);         //清掉共享内存	
 				
 			}

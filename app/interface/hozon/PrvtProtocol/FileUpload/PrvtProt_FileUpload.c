@@ -66,7 +66,7 @@ static int canupload_en = 0;
 	
 static PP_log_upload_t PP_up_log;
 
-static int can_file_flag = 0;
+//static int can_file_flag = 0;
 static int shell_open_flag = 0;
 
 /*Static function declaration*/
@@ -263,16 +263,20 @@ void PP_FileUpload_CanMsgRequest(PP_can_upload_t can_para)
 	if(can_para.PP_tsp_time == 65535)    //平台下发采集时间为65535表示要打开can报文事实采集功能
 	{
 		unsigned int canfile_en;
+		unsigned int can_file_flag;
 		canfile_en = 1;
 		can_file_flag = 1;
+		cfg_set_para(CFG_ITEM_EN_STARTFLAG, (unsigned char *)&can_file_flag, 1);
 		cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
 		log_o(LOG_HOZON,"Start collecting fact can message data");
 	}
 	else if(can_para.PP_tsp_time == 0) //平台下发采集时间为0表示要关闭can报文事实采集功能
 	{
 		unsigned int canfile_en;
+		unsigned int can_file_flag;
 		canfile_en = 0;
 		can_file_flag = 0;
+		cfg_set_para(CFG_ITEM_EN_STARTFLAG, (unsigned char *)&can_file_flag, 1);
 		cfg_set_para(CFG_ITEM_EN_CANFILE, (unsigned char *)&canfile_en, 1);
 		log_o(LOG_HOZON,"Stop collecting fact can message data");
 	}
@@ -472,7 +476,9 @@ static void *PP_CanFileSend_main(void)
 				PP_FileUL.ignonDlyTime = tm_get_time();
 			}
 		}
-		
+		unsigned int can_file_flag;
+		unsigned int len = 1;
+		cfg_get_para(CFG_ITEM_EN_STARTFLAG, (unsigned char *)&can_file_flag, &len);
 		if((canupload_en == 1) && (can_file_flag == 0) && (shell_open_flag == 0))
 		{
 			struct timeval nowtime_stamp;
