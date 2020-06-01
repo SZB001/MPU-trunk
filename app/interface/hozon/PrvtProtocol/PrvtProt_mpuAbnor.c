@@ -49,6 +49,7 @@ description�� include the header file
 #include "hozon_PP_api.h"
 #include "hozon_ver_api.h"
 #include "shell_api.h"
+#include "scom_api.h"
 #include "PrvtProt_queue.h"
 #include "PrvtProt_shell.h"
 #include "PrvtProt_cfg.h"
@@ -95,6 +96,7 @@ void InitPrvtPro_mpuAbnor(void)
 	PP_mpuAbnor.pwrontimer = tm_get_time();
 	PP_mpuAbnor.cycreboottsktimer = tm_get_time();
 	PP_mpuAbnor.sleepflag = 1;
+	PP_mpuAbnor.mpurebootreqtype = 0;
 	cfglen = 4;
 	cfg_get_para(CFG_ITEM_MPUREBOOT_DATE,&PP_mpuAbnor.datetime,&cfglen);//读取重启日期
 	cfglen = 1;
@@ -120,11 +122,13 @@ void PrvtPro_mpuAbnorHandle(void)
 		if(1 == PrvtPro_check_icciderr())
 		{
 			PP_mpuAbnor.mpurebootflag = 1;
+			PP_mpuAbnor.mpurebootreqtype = PP_MPUABNOR_RESET_TYPE_ICCID;
 		}
 #if 0
 		if(1 == PrvtPro_mpucycleReboot())
 		{
 			PP_mpuAbnor.mpurebootflag = 1;
+			PP_mpuAbnor.mpurebootreqtype = PP_MPUABNOR_RESET_TYPE_CYC;
 		}
 #endif
 		if(1 == PP_mpuAbnor.mpurebootflag)
@@ -151,6 +155,7 @@ static void PrvtPro_mpureboot(void)
 	time_t timep;
 	struct tm *localdatetime;
     uint32_t tm_datetime;
+	SCOM_HEART_T  heart_data;
 
 	time(&timep);
 	localdatetime = localtime(&timep);//取得当地时间
@@ -167,8 +172,21 @@ static void PrvtPro_mpureboot(void)
 		PP_mpuAbnor.datetime = tm_datetime;
 		cfg_set_para(CFG_ITEM_MPUREBOOT_DATE, &PP_mpuAbnor.datetime, 4);
 		log_o(LOG_HOZON,"today,the %d time to reboot mpu\n",PP_mpuAbnor.reboottimes);
-		//sleep(1);
-		system("reboot");
+		if(PP_mpuAbnor.mpurebootreqtype == PP_MPUABNOR_RESET_TYPE_CYC)
+		{
+			pm_ring_wakeup();//唤醒mcu
+			sleep(3);
+			heart_data.pwdg = 0xfffffffe;
+			memset(heart_data.version, 0, sizeof(heart_data.version));
+            upg_get_mcu_upg_ver((unsigned char *)heart_data.version,
+                                      sizeof(heart_data.version));
+			scom_tl_send_msg(SCOM_TL_CMD_HEARTBEAT, (unsigned char *)&heart_data, sizeof(heart_data));
+		}
+		else
+		{
+			sleep(1);
+			system("reboot");
+		}
 	}
 	else
 	{
@@ -179,7 +197,7 @@ static void PrvtPro_mpureboot(void)
 			PP_mpuAbnor.datetime = tm_datetime;
 			cfg_set_para(CFG_ITEM_MPUREBOOT_DATE, &PP_mpuAbnor.datetime, 4);
 			log_o(LOG_HOZON,"today,the %d time to reboot mpu\n",PP_mpuAbnor.reboottimes);
-			//sleep(1);
+			sleep(1);
 			system("reboot");
 		}
 		else

@@ -35,6 +35,12 @@ description�� struct definitions
 description�� typedef definitions
 *******************************************************/
 /******enum definitions******/
+typedef enum
+{
+	PP_MPUABNOR_RESET_TYPE_UNKNOW = 0,//
+	PP_MPUABNOR_RESET_TYPE_ICCID,
+	PP_MPUABNOR_RESET_TYPE_CYC
+} PP_MPUABNOR_RESET_TYPE;//״̬��
 
 /*****struct definitions*****/
 typedef struct 
@@ -42,6 +48,7 @@ typedef struct
 	//char IGNoldst;
 	char IGNnewst;
 	char mpurebootflag;
+	char mpurebootreqtype;
 	uint64_t iccidchktimer;
 
 	uint32_t datetime;
