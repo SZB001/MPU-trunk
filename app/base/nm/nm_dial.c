@@ -14,6 +14,7 @@ author        liuzhongwen
 #include "cfg_api.h"
 #include "nm_api.h"
 #include "at.h"
+#include "hozon_ver_api.h"
 #include "nm_dial.h"
 #include "pm_api.h"
 
@@ -1093,9 +1094,9 @@ static int nm_dial_get_conf(NM_NET_INFO *phndl)
     if (NM_PRIVATE_NET == phndl->type && 0 != strlen(nm_net_info[NM_PUBLIC_NET].apn))
     {
         /*set dns config in the first */
-
+		#ifdef HOZON_DNS
 		nm_dial_add_route(phndl);
-		
+		#endif
         nm_dial_set_dns(phndl);
 		
         #if 0

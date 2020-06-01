@@ -97,6 +97,7 @@ void InitPrvtPro_mpuAbnor(void)
 	PP_mpuAbnor.cycreboottsktimer = tm_get_time();
 	PP_mpuAbnor.sleepflag = 1;
 	PP_mpuAbnor.mpurebootreqtype = 0;
+	PP_mpuAbnor.mpurtcwakeupflag = 0;
 	cfglen = 4;
 	cfg_get_para(CFG_ITEM_MPUREBOOT_DATE,&PP_mpuAbnor.datetime,&cfglen);//读取重启日期
 	cfglen = 1;
@@ -272,8 +273,9 @@ static int PrvtPro_mpucycleReboot(void)
 	{
 		PP_mpuAbnor.cycreboottsktimer = tm_get_time();
 
-		if((0 == PP_mpuAbnor.IGNnewst)	&& \
-		(0 == gb32960_gbCanbusActiveSt()))//IGN OFF && can bus inactive
+		if((0 == PP_mpuAbnor.IGNnewst)			&& \
+		   (0 == gb32960_gbCanbusActiveSt())	&& \
+		   (1 == PP_mpuAbnor.mpurtcwakeupflag))//IGN OFF && can bus inactive
 		{
 			time(&timep);
 			localdatetime = localtime(&timep);//取得当地时间
@@ -288,6 +290,13 @@ static int PrvtPro_mpucycleReboot(void)
 			else
 			{
 				PP_mpuAbnor.sleepflag = 1;
+			}
+		}
+		else
+		{
+			if(1 == PP_mpuAbnor.IGNnewst)
+			{
+				PP_mpuAbnor.mpurtcwakeupflag = 0;
 			}
 		}
 	}
@@ -310,5 +319,6 @@ int GetPrvtPro_mpuAbnorsleepSt(void)
 void ClearPrvtPro_mpuAbnorsleep(void)
 {
 	PP_mpuAbnor.sleepflag = 0;
+	PP_mpuAbnor.mpurtcwakeupflag = 1;
 }
 

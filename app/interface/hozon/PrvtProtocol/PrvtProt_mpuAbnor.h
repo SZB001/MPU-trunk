@@ -48,6 +48,7 @@ typedef struct
 	//char IGNoldst;
 	char IGNnewst;
 	char mpurebootflag;
+	char mpurtcwakeupflag;
 	char mpurebootreqtype;
 	uint64_t iccidchktimer;
 
