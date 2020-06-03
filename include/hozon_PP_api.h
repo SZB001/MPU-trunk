@@ -38,6 +38,7 @@
 #define BLUETOOTH_VIRTUAL 2
 #define RMTDIAG_VIRTUAL   3
 #define CHARGE_VIRTUAL    4
+#define SMALLBATT_RCHRG   5
 
 #define VRITUAL_ON  1
 #define VIRTUAL_OFF 0
@@ -174,4 +175,5 @@ extern int sockproxy_nm_apncardtype(void);
 extern void PP_CertDL_deleteCipher(void);
 extern void PP_CertDL_deleteCert(void);
 extern void PP_FileUpload_set_log(unsigned char en);
+extern void setPrvtPro_SBattRechrgSleep(void);
 #endif

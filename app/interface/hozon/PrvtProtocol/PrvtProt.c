@@ -70,6 +70,7 @@ description�� include the header file
 #include "FileUpload/PrvtProt_FileUpload.h"
 #include "CanMessageUL/CanMsgUL.h"
 #include "PrvtProt_mpuAbnor.h"
+#include "PrvtProt_SBattRechrg.h"
 #include "PrvtProt.h"
 
 /*******************************************************
@@ -197,6 +198,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			InitPP_CanMsgUL_Parameter();
 			InitPrvtPro_mpuAbnor();
 			wifi_disable();//上电默认关闭wifi
+			InitPrvtPro_SBattRechrg();
 		}
         break;
     }
@@ -277,6 +279,7 @@ static void *PrvtProt_main(void)
 		PrvtProt_do_HBSwitchHandle();
 		PP_CertDownload_mainfunction(&pp_task);
 		PrvtPro_mpuAbnorHandle();
+		PrvtPro_SBattRechrgHandle();
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
@@ -293,7 +296,8 @@ static void *PrvtProt_main(void)
 
 		PP_sleepflag = PP_heartbeat.hbtasksleepflag &&	\
 					   GetPP_rmtCtrl_Sleep()		&&	\
-					   GetPrvtPro_mpuAbnorsleepSt();
+					   GetPrvtPro_mpuAbnorsleepSt() &&	\
+					   GetPrvtPro_SBattRechrgSleepSt();
     }
 	(void)res;
     return NULL;
@@ -1075,7 +1079,8 @@ void SetPrvtProt_Awaken(int type)
 			PP_heartbeat.hbtasksleepflag = 0;
 			PP_hbtaskmpurtcwakeuptestflag++;
 			PP_heartbeat.timer = tm_get_time();
-			ClearPrvtPro_mpuAbnorsleep();
+			setPrvtPro_mpuAbnorWakeup();
+			setPrvtPro_SBattRechrgWakeup();
 		}
 		break;
 		default:

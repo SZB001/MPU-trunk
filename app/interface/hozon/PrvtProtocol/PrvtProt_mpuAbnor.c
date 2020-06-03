@@ -58,7 +58,7 @@ description�� include the header file
 /*******************************************************
 description�� global variable definitions
 *******************************************************/
-
+extern void pm_ring_wakeup(void);
 /*******************************************************
 description�� static variable definitions
 *******************************************************/
@@ -125,7 +125,7 @@ void PrvtPro_mpuAbnorHandle(void)
 			PP_mpuAbnor.mpurebootflag = 1;
 			PP_mpuAbnor.mpurebootreqtype = PP_MPUABNOR_RESET_TYPE_ICCID;
 		}
-#if 0
+#if 1
 		if(1 == PrvtPro_mpucycleReboot())
 		{
 			PP_mpuAbnor.mpurebootflag = 1;
@@ -309,14 +309,14 @@ static int PrvtPro_mpucycleReboot(void)
 */
 int GetPrvtPro_mpuAbnorsleepSt(void)
 {
-	//return PP_mpuAbnor.sleepflag;
-	return 1;
+	return PP_mpuAbnor.sleepflag;
+	//return 1;
 }
 
 /*
 	唤醒
 */
-void ClearPrvtPro_mpuAbnorsleep(void)
+void setPrvtPro_mpuAbnorWakeup(void)
 {
 	PP_mpuAbnor.sleepflag = 0;
 	PP_mpuAbnor.mpurtcwakeupflag = 1;
