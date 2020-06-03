@@ -18,7 +18,7 @@ description�� macro definitions
 /**********�꿪�ض���*********/
 
 /**********�곣������*********/
-#define	 PP_SBRC_SLEEPTIME	60
+#define	 PP_SBRC_SLEEPTIME	(30*60)
 
 
 
