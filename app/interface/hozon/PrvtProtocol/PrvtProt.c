@@ -198,7 +198,7 @@ int PrvtProt_init(INIT_PHASE phase)
 			InitPP_CanMsgUL_Parameter();
 			InitPrvtPro_mpuAbnor();
 			wifi_disable();//上电默认关闭wifi
-			InitPrvtPro_SBattRechrg();
+			//InitPrvtPro_SBattRechrg();
 		}
         break;
     }
@@ -279,7 +279,7 @@ static void *PrvtProt_main(void)
 		PrvtProt_do_HBSwitchHandle();
 		PP_CertDownload_mainfunction(&pp_task);
 		PrvtPro_mpuAbnorHandle();
-		PrvtPro_SBattRechrgHandle();
+		//PrvtPro_SBattRechrgHandle();
 
 		res = 	PrvtPro_do_checksock(&pp_task) ||
 				PrvtPro_do_rcvMsg(&pp_task) ||
@@ -949,6 +949,7 @@ void PrvtProt_Settboxsn(const char *tboxsn)
 void PrvtProt_defaultsettings(void)
 {
 	clbt_cfg_set_default_para(UDEF_CFG_SET_SILENT);
+	PP_CertDL_deleteCipher();
 
 	set_ble_ctl(1);
 	set_factory_mode(1);
