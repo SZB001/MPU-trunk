@@ -107,6 +107,8 @@ static int sockproxy_get_link_status(void);
 static int sockproxy_nm_callback(NET_TYPE type, NM_STATE_MSG nmmsg);
 
 extern void nm_get_dns_ip(char *dns);
+
+extern void nm_dial_add_ip_route(char *ip);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -670,8 +672,10 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 						log_o(LOG_HOZON,"destIP = %s",destIP);
 						break;
 					}
+					nm_dial_add_ip_route(destIP);
 					iRet = HzPortAddrCft(22000, 1,destIP,NULL);//TBOX端口地址配置初始化
 					#else
+					nm_dial_add_ip_route(TSP_URL_PRI_IP);
 					iRet = HzPortAddrCft(22000, 1,TSP_URL_PRI_IP,NULL);//TBOX端口地址配置初始化
 					#endif
 				}
@@ -722,7 +726,8 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 					return -1;
 				}
 				SgHzTboxSocketFd(&Sg_sockFd);
-				
+
+				#if 0
 				if(sockSt.apnType == 1)
 				{
 					struct ifreq nif;
@@ -741,6 +746,7 @@ static int sockproxy_sgLink(sockproxy_stat_t *state)
 						printf("setsockopt interface success \r\n");
 					}
 				}
+				#endif
 				/*Initiate a connection server request*/
 				iRet = SgHzTboxConnect(Sg_sockFd);
 				if(iRet != SOCKPROXY_SG_CONN_SUCCESS)
@@ -888,8 +894,10 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 						log_o(LOG_HOZON,"destIP = %s",destIP);
 						break;
 					}
+					nm_dial_add_ip_route(destIP);
 					iRet = HzPortAddrCft(21000, 1,destIP,NULL);
 					#else
+					nm_dial_add_ip_route(TSP_URL_PRI_IP);
 					iRet = HzPortAddrCft(21000, 1,TSP_URL_PRI_IP,NULL);
 					#endif
 				}
@@ -953,7 +961,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 
 				/*Initiate a connection server request*/
 				HzTboxSocketFd(&SP_sockFd);
-			
+				#if 0
 				if(sockSt.apnType == 1)
 				{
 					struct ifreq nif;
@@ -972,7 +980,7 @@ static int sockproxy_BDLink(sockproxy_stat_t *state)
 						printf("setsockopt interface success \r\n");
 					}
 				}
-				
+				#endif
 				iRet = HzTboxConnect(SP_sockFd);
 				if(iRet != 1230)
 				{

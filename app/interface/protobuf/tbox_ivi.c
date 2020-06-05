@@ -449,6 +449,7 @@ void ivi_message_request(int fd ,Tbox__Net__Messagetype id,void *para)
 			cfg_get_user_para(CFG_ITEM_HOZON_TSP_TBOXSN,tboxsn,&len);
 			tboxinfo.pdid = tboxsn;
 			TopMsg.tbox_info = &tboxinfo;
+			log_o(LOG_IVI,"tboxinfo......");
 		}
 		break;
 		case TBOX__NET__MESSAGETYPE__REQUEST_IHU_CHARGEAPPOINTMENTSTS:
@@ -1095,6 +1096,7 @@ void ivi_msg_response_send( int fd ,Tbox__Net__Messagetype id)
 			{
 				tboxinfo_flag = 1;
 				tboxinfo.iccid  = "00000000000000000000";
+				return ;
 			}
 			//获取SIM卡IMEI
 			at_get_imei(imei);

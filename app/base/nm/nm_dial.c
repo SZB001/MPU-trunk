@@ -900,7 +900,7 @@ static void nm_dial_set_dns(NM_NET_INFO *phndl)
         }
         else
         {}
-
+		#if 0
         if(nm_net_info[NM_PRIVATE_NET].pri_dns_addr.s_addr)
         {
             memset(pri_command, 0, sizeof(pri_command));
@@ -916,6 +916,7 @@ static void nm_dial_set_dns(NM_NET_INFO *phndl)
                 inet_ntoa(nm_net_info[NM_PRIVATE_NET].sec_dns_addr)); //私网DNS
             nm_sys_call(pri_command);
         }
+		#endif
     }
     else if(phndl->type == NM_PRIVATE_NET)
     {
@@ -961,7 +962,7 @@ static void nm_dial_set_dns(NM_NET_INFO *phndl)
             snprintf(pub_command, sizeof(pub_command), "echo 'nameserver 180.76.76.76' >> /etc/resolv.conf");
             nm_sys_call(pub_command);
         }
-
+		#if 0
         if(nm_net_info[NM_PRIVATE_NET].pri_dns_addr.s_addr)
         {
             memset(pri_command, 0, sizeof(pri_command));
@@ -977,6 +978,7 @@ static void nm_dial_set_dns(NM_NET_INFO *phndl)
                 inet_ntoa(nm_net_info[NM_PRIVATE_NET].sec_dns_addr)); //私网DNS
             nm_sys_call(pri_command);
         }
+		#endif
     }
 }
 
@@ -1097,7 +1099,7 @@ static int nm_dial_get_conf(NM_NET_INFO *phndl)
 		#ifdef HOZON_DNS
 		nm_dial_add_route(phndl);
 		#endif
-        nm_dial_set_dns(phndl);
+        //nm_dial_set_dns(phndl);
 		
         #if 0
         /*add PRIVATE net DNS ip to route*/
@@ -1856,3 +1858,17 @@ void nm_get_dns_ip(char *dns)
 {
 	strcpy(dns,inet_ntoa(nm_net_info[0].pri_dns_addr));
 }
+
+void nm_dial_add_ip_route(char *ip)
+{
+   char command[200];
+    memset(command, 0, sizeof(command));
+
+    /*add defaut route as the public route*/
+    snprintf(command, sizeof(command), "ip route add %s via %s dev %s", ip,inet_ntoa(nm_net_info[0].gw_addr),
+             nm_net_info[0].interface);
+    nm_sys_call(command);
+
+    nm_dcom_status = 1;
+}
+
