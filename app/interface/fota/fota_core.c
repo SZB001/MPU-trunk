@@ -79,12 +79,12 @@ static ECU_NAME_2_UDSID_t s_atECUName2UDSID[] = {{"vcu",  0x7E2, 0x7EA, 0x7DF},
                                                  {"acu",  0x746, 0x756, 0x7DF},
                                                  {"plg",  0x764, 0x774, 0x7DF},};
 
-int fota_ecu_get_ver(unsigned char *name, char *s_ver,    int *s_siz, 
-                                               char *h_ver,    int *h_siz,
-                                               char *bl_ver,   int *bl_siz,
-                                               char *sn,       int *sn_siz,
-                                               char *partnum,  int *partnum_siz,
-                                               char *supplier, int *supplier_siz)
+int fota_ecu_get_ver(unsigned char *name, uint8_t *s_ver,    int32_t *s_siz, 
+                                               uint8_t *h_ver,    int32_t *h_siz,
+                                               uint8_t *bl_ver,   int32_t *bl_siz,
+                                               uint8_t *sn,       int32_t *sn_siz,
+                                               uint8_t *partnum,  int32_t *partnum_siz,
+                                               uint8_t *supplier, int32_t *supplier_siz)
 {
     if (memcmp(name, "gw", 2) == 0)
     {
@@ -94,12 +94,12 @@ int fota_ecu_get_ver(unsigned char *name, char *s_ver,    int *s_siz,
             return -1;
         }
 
-        fota_uds_get_version_gw((uint8_t *)s_ver,    s_siz, 
-                                (uint8_t *)h_ver,    h_siz, 
-                                (uint8_t *)bl_ver,   bl_siz, 
-                                (uint8_t *)sn,       sn_siz,
-                                (uint8_t *)partnum,  partnum_siz,
-                                (uint8_t *)supplier, supplier_siz);
+        fota_uds_get_version_gw(s_ver,    s_siz, 
+                                h_ver,    h_siz, 
+                                bl_ver,   bl_siz, 
+                                sn,       sn_siz,
+                                partnum,  partnum_siz,
+                                supplier, supplier_siz);
     }
     else
     {
@@ -127,12 +127,12 @@ int fota_ecu_get_ver(unsigned char *name, char *s_ver,    int *s_siz,
                 return -1;
             }
             
-            fota_uds_get_version((uint8_t *)s_ver,    s_siz, 
-                                 (uint8_t *)h_ver,    h_siz, 
-                                 (uint8_t *)bl_ver,   bl_siz, 
-                                 (uint8_t *)sn,       sn_siz,
-                                 (uint8_t *)partnum,  partnum_siz,
-                                 (uint8_t *)supplier, supplier_siz);
+            fota_uds_get_version(s_ver,    s_siz, 
+                                 h_ver,    h_siz, 
+                                 bl_ver,   bl_siz, 
+                                 sn,       sn_siz,
+                                 partnum,  partnum_siz,
+                                 supplier, supplier_siz);
         }
         else
         {
@@ -288,7 +288,8 @@ static int fota_ecu_upgrade_GW(fota_ecu_t *ecu, fota_ver_t *ver)
 		buf[1] = '\x00';
 	    if (fota_uds_write_data_by_identifier((uint8_t *)"\x74\x00", buf, 2) != 0)
 	    {
-	        log_e(LOG_FOTA, "write data by identifier 74 00 27 00 to ECU(%s) fail", ecu->name);
+	        log_e(LOG_FOTA, "write data by identifier 74 00 %02X 00 to ECU(%s) fail", 
+                buf[0], ecu->name);
 	        return -1;
 	    }
 
@@ -303,7 +304,8 @@ static int fota_ecu_upgrade_GW(fota_ecu_t *ecu, fota_ver_t *ver)
 
     if (fota_uds_write_data_by_identifier((uint8_t *)"\x74\x00", buf, 2) != 0)
     {
-        log_e(LOG_FOTA, "write data by identifier 74 00 27 01 to ECU(%s) fail", ecu->name);
+        log_e(LOG_FOTA, "write data by identifier 74 00 %02X 01 to ECU(%s) fail",
+            buf[0], ecu->name);
         return -1;
     }
 

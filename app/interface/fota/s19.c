@@ -116,7 +116,7 @@ static const unsigned int crc32tab[] =
 extern int fota_uds_request(int bc, int sid, int sub, uint8_t *data, int len, int timeout);
 extern int fota_uds_result(uint8_t *buf, int siz);
 
-
+#if 0
 static unsigned int crc32(const unsigned char *buf, unsigned int size)
 {
     unsigned int i, crc;
@@ -130,6 +130,7 @@ static unsigned int crc32(const unsigned char *buf, unsigned int size)
 
     return crc;
 }
+#endif
 
 unsigned int crc16tab[256] =
 {

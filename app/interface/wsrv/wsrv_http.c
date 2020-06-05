@@ -8,14 +8,16 @@ author        chenyin
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <sys/socket.h>
+
 #include "log.h"
-#include "wsrv_api.h"
+#include "wsrv_cfg.h"
+#include "wsrv_type.h"
 #include "wsrv_http.h"
 #include "tcom_api.h"
 #include "timer.h"
 #include "dev_api.h"
 #include "cfg_api.h"
-//#include "geely_api.h"
 #include "scom_msg_def.h"
 #include "scom_tl.h"
 #include "gps_api.h"
@@ -102,12 +104,12 @@ typedef enum
 #define RSP_500_HEADER  "HTTP/1.1 500 Server Internal Error\r\nServer: tbox_webserver/Linux\r\nDate: %sContent-Type: text/html\r\nContent-Length: %d\r\n\r\n"
 #define RSP_500_HTML    "<html><head></head><body>500 Server Internal Error<br/>please check your network!</body></html>\r\n"
 
-extern int fota_ecu_get_ver(unsigned char *name, char *s_ver, int *s_siz, 
-                                                      char *h_ver, int *h_siz, 
-                                                      char *bl_ver,   int *bl_siz,
-                                                      char *sn, int *sn_siz,
-                                                      char *partnum,  int *partnum_siz,
-                                                      char *supplier, int *supplier_siz);
+extern int fota_ecu_get_ver(unsigned char *name, uint8_t *s_ver, int *s_siz, 
+                                                      uint8_t *h_ver, int *h_siz, 
+                                                      uint8_t *bl_ver,   int *bl_siz,
+                                                      uint8_t *sn, int *sn_siz,
+                                                      uint8_t *partnum,  int *partnum_siz,
+                                                      uint8_t *supplier, int *supplier_siz);
 extern int PP_send_virtual_on_to_mcu(unsigned char on);
 extern unsigned char PrvtProt_SignParse_OtaFailSts(void);
 extern void PrvtProt_gettboxsn(char *tboxsn);
@@ -333,6 +335,26 @@ unsigned int wsrv_Get_WakeTime(void)
     return u32WsrvWakeTime;
 }
 
+static void ByteToHexStr(const uint8_t *pDataBuf, const uint32_t BufLen,
+    char *pHexStr, uint32_t *pStrLen)
+{
+    const char cindex[] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                            '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+    uint32_t i = 0;
+    uint32_t j = 0;
+
+    for(i = 0; i < BufLen; i ++)
+    {
+        pHexStr[j] = cindex[(pDataBuf[i] >> 4)];
+        pHexStr[j + 1] = cindex[(pDataBuf[i] & 0xF)];
+
+        j += 2;
+    }
+
+    *pStrLen = j;
+}
+
 static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_buf)
 {
     //0:BDCM Auth Doing 1:BDCM Auth Success 2:BDCM Auth Fail
@@ -353,15 +375,17 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     char s_ver[64] = {0};
     char h_ver[64] = {0};
     char bl_ver[64] = {0};
-    char sn[19] = {0};
+    uint8_t sn[10] = {0};
+    char sn_str[21];
+    uint32_t sn_strlen = sizeof(sn_str);
     char partnum[64] = {0};
     char supplier[64] = {0};
-    int s_len;
-    int h_len;
-    int bl_len;
-    int sn_len;
-    int partnum_len;
-    int supplier_len;
+    int s_len = sizeof(s_ver);
+    int h_len = sizeof(h_ver);
+    int bl_len = sizeof(bl_ver);
+    int sn_len = sizeof(sn);
+    int partnum_len = sizeof(partnum);
+    int supplier_len = sizeof(supplier);
     unsigned int timer_wake;
     RTCTIME abstime;
     int len = 0;
@@ -439,16 +463,18 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
             if(PP_LOCK_OK == setPP_lock_odcmtxlock(PP_LOCK_OTA_READECUVER))
             {
-                ret = fota_ecu_get_ver((unsigned char *)dev_buf, s_ver,    &s_len, 
-                                                                 h_ver,    &h_len, 
-                                                                 bl_ver,   &bl_len,
+                ret = fota_ecu_get_ver((unsigned char *)dev_buf, (uint8_t *)s_ver,    &s_len, 
+                                                                 (uint8_t *)h_ver,    &h_len, 
+                                                                 (uint8_t *)bl_ver,   &bl_len,
                                                                  sn,       &sn_len, 
-                                                                 partnum,  &partnum_len, 
-                                                                 supplier, &supplier_len);
+                                                                 (uint8_t *)partnum,  &partnum_len, 
+                                                                 (uint8_t *)supplier, &supplier_len);
+                memset(sn_str, '\0', sn_strlen);
+                ByteToHexStr(sn, sn_len, sn_str, &sn_strlen);
                 sprintf(body_buf, WSRV_VERSION_BODY, dev_buf, s_ver, 
                                                      dev_buf, h_ver, 
                                                      dev_buf, bl_ver, 
-                                                     dev_buf, sn,
+                                                     dev_buf, sn_str,
                                                      dev_buf, partnum,
                                                      dev_buf, supplier);
 

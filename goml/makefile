@@ -8,7 +8,7 @@ TARGETNAME := goml.bin
 
 
 CCXXFLAGS = -DDEBUG -g
-OFLAGS = -L $(TARGET_PATH_R) -llog -lfile -ldir -lshm -lmd5 -ldev_rw -lpthread -lrt
+OFLAGS = -L $(TARGET_PATH_R) -lfile -ldir -lshm -lmd5 -ldev_rw -lpthread -lrt -llog
 
 #INCLUDES =
 #CCXXFLAGS =

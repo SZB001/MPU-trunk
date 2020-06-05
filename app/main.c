@@ -31,7 +31,7 @@
 #include "uds_node_miss.h"
 #include "remote_diag_api.h"
 #include "ble.h"
-#include "wsrv_api.h"
+#include "wsrv_rte.h"
 #include "udef_cfg_api.h"
 
 static void signal_PIPE_handler(void);

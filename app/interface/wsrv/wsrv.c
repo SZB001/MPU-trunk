@@ -4,8 +4,12 @@ description:  the source file of tbox web server implementation
 date:         2018/08/08
 author        chenyin
 ****************************************************************/
+#include <netinet/in.h>
+
 #include "com_app_def.h"
-#include "wsrv_api.h"
+#include "wsrv_def.h"
+#include "wsrv_cfg.h"
+#include "wsrv_type.h"
 #include "wsrv_http.h"
 #include "tcom_api.h"
 #include "timer.h"
@@ -18,6 +22,9 @@ author        chenyin
 #include "pm_api.h"
 #include "../hozon/PrvtProtocol/PrvtProt.h"
 #include "../hozon/PrvtProtocol/PrvtProt_lock.h"
+
+#define TIMER_WSRV_RECREATE     MPU_MID_WSRV
+#define TIMER_WSRV_RESTART_DA   (MPU_MID_WSRV + 1)
 
 static pthread_t wsrv_tid;
 static unsigned char msgbuf[TCOM_MAX_MSG_LEN];

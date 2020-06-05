@@ -8,8 +8,6 @@ author        chenyin
 #ifndef __WSRV_HTTP_H__
 #define __WSRV_HTTP_H__
 
-#include "wsrv_api.h"
-
 int wsrv_http_handle(WSRV_CLIENT *cli);
 
 #endif

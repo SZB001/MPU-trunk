@@ -430,13 +430,23 @@ int fota_uds_prog_post(void)
 int fota_uds_read_data_by_identifier(uint8_t *identifier, uint8_t *data, int *len)
 {
     uint8_t ret = -1;
+    uint32_t DataLen;
 
     ret = fota_uds_request(0, 0x22, 0, identifier, 2, 2);
 
     if (0 == ret)
     {
-        *len = uds_size - 2;
-        memcpy(data, uds_data + 2, uds_size - 2);
+        DataLen = uds_size - 2;
+        if(DataLen >  *len)
+        {
+            log_w(LOG_FOTA, "Data truncated %dB -> %dB.", DataLen, *len);
+        }
+        else
+        {
+            *len = DataLen;
+        }
+    
+        memcpy(data, uds_data + 2, *len);
     }
 
     return ret;
@@ -499,12 +509,12 @@ int fota_uds_reset(void)
     return fota_uds_request(0, 0x11, 0x01, NULL, 0, 2);
 }
 
-int fota_uds_get_version_gw(uint8_t *s_ver,           int *s_siz, 
-                                   uint8_t *h_ver,    int *h_siz, 
-                                   uint8_t *bl_ver,   int *bl_siz, 
-                                   uint8_t *sn,       int *sn_siz,
-                                   uint8_t *partnum,  int *partnum_siz,
-                                   uint8_t *supplier, int *supplier_siz)
+int fota_uds_get_version_gw(uint8_t *s_ver,            int32_t *s_siz, 
+                                   uint8_t *h_ver,    int32_t *h_siz, 
+                                   uint8_t *bl_ver,   int32_t *bl_siz, 
+                                   uint8_t *sn,       int32_t *sn_siz,
+                                   uint8_t *partnum,  int32_t *partnum_siz,
+                                   uint8_t *supplier, int32_t *supplier_siz)
 {
     fota_uds_enter_diag_GW();
 
@@ -520,12 +530,12 @@ int fota_uds_get_version_gw(uint8_t *s_ver,           int *s_siz,
     return 0;
 }
 
-int fota_uds_get_version(uint8_t *s_ver,           int *s_siz, 
-                               uint8_t *h_ver,    int *h_siz, 
-                               uint8_t *bl_ver,   int *bl_siz, 
-                               uint8_t *sn,       int *sn_siz,
-                               uint8_t *partnum,  int *partnum_siz,
-                               uint8_t *supplier, int *supplier_siz)
+int fota_uds_get_version(uint8_t *s_ver,           int32_t *s_siz, 
+                               uint8_t *h_ver,    int32_t *h_siz, 
+                               uint8_t *bl_ver,   int32_t *bl_siz, 
+                               uint8_t *sn,       int32_t *sn_siz,
+                               uint8_t *partnum,  int32_t *partnum_siz,
+                               uint8_t *supplier, int32_t *supplier_siz)
 {
     fota_uds_read_data_by_identifier((uint8_t *)"\xF1\x8C", sn, sn_siz);
     fota_uds_read_data_by_identifier((uint8_t *)"\xF1\xC0", s_ver, s_siz);
