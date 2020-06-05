@@ -2381,6 +2381,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 		buf[len++] = 0xff;
 	}
 
+	buf[len++] = 0xff;//预留1
 	buf[len++] = 0xff;//预留2
 	buf[len++] = 0xff;//预留3
 	buf[len++] = 0xff;
