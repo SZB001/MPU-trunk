@@ -7,6 +7,6 @@
 
 
 /************Whether DNS is enabled or not***********/
-//#define HOZON_DNS
+#define HOZON_DNS
 
 #endif
