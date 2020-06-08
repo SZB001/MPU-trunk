@@ -1371,7 +1371,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     	0,0,0,0,0,
 		0,0,0,0,0,
 		0,0,1,1,1,
-		0,0,0,0,0,
+		0,1,0,0,0,
 		0,0,0,0,0,
 		0,0,0,0,0,
 		0,0
@@ -1398,6 +1398,17 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 									(2 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
 				{
 					gb_warning[i][j] = 1;
+				}
+			}
+			else if(0x10 == j)//高压环路状态故障
+			{
+				if(dev_get_KL15_signal())
+				{
+					if(gbinf->warn[i][j] && \
+									(1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
+					{
+						gb_warning[i][j] = 1;
+					}
 				}
 			}
 			else
@@ -4094,7 +4105,7 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 		3,3,3,3,3,
 		3,3,0,0,0,
 		3,3,1,2,2,
-		3,1,3,0,0,
+		3,2,3,0,0,
 		0,0,0,0,0,
 		0,0,0,0,0,
 		0,0
@@ -4193,7 +4204,7 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 							}
 							else if(2 == gb_high_warn_trig_type[i])
 							{
-								if(0xd == i)
+								if((0xd == i) || (0x10 == i))
 								{
 									if(1 == dbc_get_signal_value((int)arg1))
 									{
