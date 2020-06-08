@@ -662,6 +662,17 @@ gb32960_api_extwarn_indextable_t	gb32960_api_extwarn_indextable[GB32960_VSWARN] 
 	{103,101},//动力系统故障
 };
 
+const char gb_ign[32] =
+{
+	0,0,0,0,0,
+	0,0,0,0,0,
+	0,0,0,1,0,
+	1,1,1,0,0,
+	0,0,0,0,0,
+	0,0,0,0,0,
+	0,0
+};
+
 static gb_info_t  gb_infmem[2];
 static gb_info_t *gb_inf;
 static gb_pack_t  gb_datamem[GB_MAX_REPORT];
@@ -1366,26 +1377,6 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 		0,0
     };
 
-	const char gb_ign[32] =
-    {
-    	0,0,0,0,0,
-		0,0,0,0,0,
-		0,0,0,1,0,
-		1,1,1,0,0,
-		0,0,0,0,0,
-		0,0,0,0,0,
-		0,0
-    };
-
-    /* DCDC state */
-    if (gbinf->vehi.info[GB_VINF_DCDC])//dcdc为3级报警，客户提供
-    {
-        if(2 == dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_DCDC])->value)
-        {
-        	gb_warning[2][0xe] = 1;
-        }
-    }
-
     for(i = 0; i < 3; i++)
     {
         for(j = 0; j < 32; j++)
@@ -1399,6 +1390,14 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 					{
 						gb_warning[i][j] = 1;
 					}
+				}
+			}
+			else if(0xe == j)//dcdc state
+			{
+				if(gbinf->warn[i][j] && \
+									(2 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
+				{
+					gb_warning[i][j] = 1;
 				}
 			}
 			else
@@ -4087,6 +4086,19 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 {
     static gb_info_t *gb_rld = NULL;
     int ret = 0;
+	int i;
+	static int gb_warn_id[32] = {0};
+
+	const char gb_high_warn_trig_type[32] =
+	{
+		3,3,3,3,3,
+		3,3,0,0,0,
+		3,3,1,2,2,
+		3,1,3,0,0,
+		0,0,0,0,0,
+		0,0,0,0,0,
+		0,0
+	};
 
     switch (event)
     {
@@ -4105,24 +4117,6 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
         case DBC_EVENT_FINISHED:
             if (gb_rld && arg1 == 0)
             {
-                int i;
-
-				//for (i = 0; i < gb_rld->batt.cell_cnt && gb_rld->batt.cell[i]; i++);
-
-				//if (i < gb_rld->batt.cell_cnt)
-				//{
-				//	log_e(LOG_GB32960, "battery cell defined in dbc is not incorrect");
-				//	break;
-				//}
-
-				//for (i = 0; i < gb_rld->batt.temp_cnt && gb_rld->batt.temp[i]; i++);
-
-				//if (i < gb_rld->batt.temp_cnt)
-				//{
-				//	log_e(LOG_GB32960, "temperature defined in dbc is not incorrect");
-				//	break;
-				//}
-
                 gb_inf = gb_rld;
 
                 for (i = 0; i < 32; i++)
@@ -4130,6 +4124,7 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 					if (gb_inf->warn[2][i] != 0)
                     {
                         dbc_set_signal_flag(gb_inf->warn[2][i], gb_warnflag);
+						gb_warn_id[i] = gb_inf->warn[2][i];
                     }
                 }
 
@@ -4183,8 +4178,56 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
                 dbc_get_signal_lastval((int)arg1) == 0 &&
                 dbc_get_signal_value((int)arg1) != 0)
             {
-                log_e(LOG_GB32960, "warnning triggered");
-                gb_inf->warntrig = 1;
+				for(i = 0; i < 32; i++)
+				{
+					if((int)arg1 == gb_warn_id[i])
+					{
+						if((gb_ign[i]?dev_get_KL15_signal():1)	&& \
+											dbc_get_signal_value((int)arg1))
+						{
+							if(1 == gb_high_warn_trig_type[i])
+							{
+								log_e(LOG_GB32960, "warnning triggered");
+								gb_inf->warntrig = 1;
+								break;
+							}
+							else if(2 == gb_high_warn_trig_type[i])
+							{
+								if(0xd == i)
+								{
+									if(1 == dbc_get_signal_value((int)arg1))
+									{
+										log_e(LOG_GB32960, "warnning triggered");
+										gb_inf->warntrig = 1;
+										break;
+									}
+								}
+								else if(0xe == i)//dcdc state
+								{
+									if(2 == dbc_get_signal_value((int)arg1))
+									{
+										log_e(LOG_GB32960, "warnning triggered");
+										gb_inf->warntrig = 1;
+										break;
+									}
+								}
+								else
+								{}
+							}
+							else if(3 == gb_high_warn_trig_type[i])
+							{
+								if(3 == dbc_get_signal_value((int)arg1))
+								{
+									log_e(LOG_GB32960, "warnning triggered");
+									gb_inf->warntrig = 1;
+									break;
+								}
+							}
+							else
+							{}
+						}			
+					}
+				}
             }
         break;
         default:

@@ -19,7 +19,7 @@ author        liuzhongwen
 #define CFG_WAN_APN         "bjlenovo09.xfdz.njm2mapn"    
 #define CFG_LOCAL_APN       "bjlenovo17.njm2mapn"      
 
-#define CFG_PARA_DBC_PATH   "/usrdata/dbc/GB-EP30_CAN_r5_001_v1.3.dbc"
+#define CFG_PARA_DBC_PATH   "/usrdata/dbc/GB-EP30_CAN_r5_001_v1.4.dbc"
 
 #define CFG_BCALLNO_DFLT    "057388279951"
 #define CFG_ECALLNO_DFLT    "057388279950"
