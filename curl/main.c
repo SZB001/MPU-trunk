@@ -493,6 +493,8 @@ static void curl_LogFile_handler(void)
 		if (ret != ZIP_OK) 
 		{
 			printf("zipCloseFileInZip error\n");
+			sprintf(cmd,"rm -rf %s",zipfile_name);
+			system(cmd);
 			sleep(1);
 			return;
 		}
@@ -1423,13 +1425,16 @@ int main(int argc, char *argv[])
 			else if(addr[1] == 0x02)
 			{
 				printf("Vehicle can upload request\n");
-
-				caneventid = (((unsigned int)addr[5] <<24) |((unsigned int)addr[6] <<16) |
+				
+				if((addr[2] == 0x01) || (addr[2] == 0x02))
+				{
+					caneventid = (((unsigned int)addr[5] <<24) |((unsigned int)addr[6] <<16) |
 									((unsigned int)addr[7] << 8) | (unsigned int)addr[8]);
 
-				sprintf(can_eventId, "%lu", (long)caneventid);  //获取eventid
+					sprintf(can_eventId, "%lu", (long)caneventid);  //获取eventid
 				
-				strncpy(vin,addr+9,TBOX_VIN_LENGTH);  //获取VIN
+					strncpy(vin,addr+9,TBOX_VIN_LENGTH);  //获取VIN
+				}
 
 				if(addr[2] == 0x01) //故障触发整车报文上传
 				{
@@ -1482,6 +1487,17 @@ int main(int argc, char *argv[])
 
 					strncpy(can_memory,addr,CURL_BUF_SIZE);	
 					
+				}
+				else if(addr[2] == 0x03) //故障触发
+				{
+					curl_CanFile_handler(1);
+					memset(can_memory,0,sizeof(can_memory));
+					
+				}
+				else if(addr[2] == 0x04)
+				{
+					curl_CanFile_handler(2);
+					memset(can_memory,0,sizeof(can_memory));
 				}
 				
 				memset(addr,0,4096);         //清掉共享内存	

@@ -4,7 +4,7 @@
 
 #define GB32960_THREAD   1//�����Ƿ񵥶������߳� 1-�� 0-����
 #define GB32960_SOCKPROXY   1//�����Ƿ�ʹ��socket����(�Ƿ�������ģ�鴴��socket��·) 1-�� 0-����
-
+#define GB32960_IGNONDLYTIME     8000
 #define gb32960_rcvMsg(buf,buflen) RdSockproxyData_Queue(SP_GB,buf,buflen)
 
 typedef enum

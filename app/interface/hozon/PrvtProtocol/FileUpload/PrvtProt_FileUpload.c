@@ -69,6 +69,13 @@ static PP_log_upload_t PP_up_log;
 //static int can_file_flag = 0;
 static int shell_open_flag = 0;
 
+static int fault_ignoff_flag = 0;
+static uint64_t fault_trigger_time = 0;
+
+static int tsp_ignoff_flag = 0;
+static uint64_t tsp_trigger_time = 0;
+
+
 /*Static function declaration*/
 static void *PP_FileUpload_main(void);
 static void *PP_GbFileSend_main(void);
@@ -398,14 +405,17 @@ static void *PP_CanFileSend_main(void)
 		shmid = GetShm(4096);
 		addr = shmat(shmid,NULL,0);
 		cfg_get_para(CFG_ITEM_EN_CANFILE, &canupload_en, &cfglen);
-		
+
+		if(dev_get_KL15_signal() == 0)
+		{
+			PP_FileUL.ignonDlyTime = tm_get_time();
+		}
+
 		if(	(canupload_en == 1)						&& \
-			(dev_get_KL15_signal() == 1) 			&& \
 			(0 == GetPP_rmtCtrl_fotaUpgrade()) 		&& \
 			(0 == PP_netstatus_pubilcfaultsts(NULL)) && \
 			(1 == PP_FileUL.network) 				&& \
-			(0 == get_factory_mode())				&& \
-			((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME) \
+			(0 == get_factory_mode())  \
 		  )
 		{
 			//整车报文文件上传
@@ -443,6 +453,8 @@ static void *PP_CanFileSend_main(void)
 				sem_v(semid);
 				log_o(LOG_HOZON,"PP_CanFileSend_main sem_v");
 				PP_FileUL.signTrigFlag = 0;
+				fault_trigger_time = tm_get_time();
+				fault_ignoff_flag = 1;
 			}
 			
 			if(PP_tsp_flag == 1)                   //平台请求触发
@@ -466,15 +478,49 @@ static void *PP_CanFileSend_main(void)
 				log_o(LOG_HOZON,"addr[4] = %d",addr[4]);
 				sem_v(semid);
 				PP_tsp_flag = 0;
+				tsp_trigger_time = tm_get_time();
+				tsp_ignoff_flag = 1;
 			}
 		}
 		else
 		{
 			PP_tsp_flag = 0;
-			if(dev_get_KL15_signal() == 0)
+			
+		}
+		if(dev_get_KL15_signal() == 0)
+		{			
+			if(fault_ignoff_flag == 1)
 			{
-				PP_FileUL.ignonDlyTime = tm_get_time();
+				if(tm_get_time() - fault_trigger_time < 5 * 60 * 1000 )
+				{
+					memset(buf,0,sizeof(buf)); //立即上传can报文
+					buf[0] = m_start;
+					buf[1] = 0x02;
+					buf[2] = 0x03;//立即上传
+					buf[26] = m_end;
+					sem_p(semid);
+					memcpy(addr,buf,27);
+					sem_v(semid);
+					fault_ignoff_flag = 0;	
+				}
 			}
+
+			if(tsp_ignoff_flag == 1)
+			{
+				if(tm_get_time() - tsp_trigger_time < pp_up_can.PP_tsp_time *1000 )
+				{
+					memset(buf,0,sizeof(buf)); //立即上传can报文
+					buf[0] = m_start;
+					buf[1] = 0x02;
+					buf[2] = 0x04;//立即上传
+					buf[26] = m_end;
+					sem_p(semid);
+					memcpy(addr,buf,27);
+					sem_v(semid);
+					tsp_ignoff_flag = 0;	
+				}
+			}
+				
 		}
 		unsigned int can_file_flag;
 		unsigned int len = 1;
@@ -962,11 +1008,19 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 {
 	unsigned char trigSt = 0;
 	unsigned char tempVal;
+
 	switch(obj)
 	{
 		case PP_CANFILEUL_SIGN_VCU5SYSFLT://系统故障状态
 		{
-			trigSt = PrvtProt_SignParse_SysFaultSt();
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				trigSt = PrvtProt_SignParse_SysFaultSt();
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_BMSDISCHGFLT://当前最高放电故障等级
@@ -982,8 +1036,15 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 		break;
 		case PP_CANFILEUL_SIGN_MCU2FLTLVL://mcu故障
 		{
-			trigSt = ((PrvtProt_SignParse_Mcu2FltLvl() == 0x2) || \
-					  (PrvtProt_SignParse_Mcu2FltLvl() == 0x3))?1:0;
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				trigSt = ((PrvtProt_SignParse_Mcu2FltLvl() == 0x2) || \
+									(PrvtProt_SignParse_Mcu2FltLvl() == 0x3))?1:0;
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_TEMPRISEFAST://电池温升过快故障
@@ -1004,7 +1065,14 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 		break;
 		case PP_CANFILEUL_SIGN_VCUSYSLGHT://系统故障灯-限功率
 		{
-			trigSt = (PrvtProt_SignParse_VCUSysLightSt() == 0x1)?1:0;
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				trigSt = (PrvtProt_SignParse_VCUSysLightSt() == 0x1)?1:0;
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_ISOISUPER://绝缘故障
@@ -1024,13 +1092,27 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 		break;
 		case PP_CANFILEUL_SIGN_EGSMERR://EGSM故障
 		{
-			trigSt = PrvtProt_SignParse_EGSMErrSt();
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				trigSt = PrvtProt_SignParse_EGSMErrSt();
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_VCUPWRTRFAILVL://动力系统故障等级
 		{
-			trigSt = ((PrvtProt_SignParse_VCUPwrTriLvl() == 0x2) || \
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				trigSt = ((PrvtProt_SignParse_VCUPwrTriLvl() == 0x2) || \
 					  (PrvtProt_SignParse_VCUPwrTriLvl() == 0x3))?1:0;
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_DCDCWORKST://DCDC工作状态
@@ -1040,23 +1122,51 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 		break;
 		case PP_CANFILEUL_SIGN_EHBFAIL://
 		{
-			trigSt = PrvtProt_SignParse_EHBFaiSt()?1:0;
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				trigSt = PrvtProt_SignParse_EHBFaiSt()?1:0;
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_ESCWARNLAMP://
 		{
-			trigSt = (PrvtProt_SignParse_BkWarnLampSt() == 0x1)?1:0;
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				trigSt = (PrvtProt_SignParse_BkWarnLampSt() == 0x1)?1:0;
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_RLTYREPRESS://左后
 		{
-			tempVal = gb_data_tyrePressWarnSts(2);
-			trigSt = ((tempVal == 0x2) || (tempVal == 0x3))?1:0;
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				tempVal = gb_data_tyrePressWarnSts(2);
+				trigSt = ((tempVal == 0x2) || (tempVal == 0x3))?1:0;
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_RLTYRETEMP:
 		{
-			trigSt = gb_data_tyreHighTempWarnSts(2);
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				trigSt = gb_data_tyreHighTempWarnSts(2);
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_RLTYREQUCIKLK:
@@ -1066,13 +1176,27 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 		break;
 		case PP_CANFILEUL_SIGN_RRTYREPRESS://右后
 		{
-			tempVal = gb_data_tyrePressWarnSts(3);
-			trigSt = ((tempVal == 0x2) || (tempVal == 0x3))?1:0;
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				tempVal = gb_data_tyrePressWarnSts(3);
+				trigSt = ((tempVal == 0x2) || (tempVal == 0x3))?1:0;
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_RRTYRETEMP:
 		{
-			trigSt = gb_data_tyreHighTempWarnSts(3);
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				trigSt = gb_data_tyreHighTempWarnSts(3);
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_RRTYREQUCIKLK:
@@ -1082,13 +1206,27 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 		break;
 		case PP_CANFILEUL_SIGN_FLTYREPRESS://左前
 		{
-			tempVal = gb_data_tyrePressWarnSts(0);
-			trigSt = ((tempVal == 0x2) || (tempVal == 0x3))?1:0;
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				tempVal = gb_data_tyrePressWarnSts(0);
+				trigSt = ((tempVal == 0x2) || (tempVal == 0x3))?1:0;
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_FLTYRETEMP:
 		{
-			trigSt = gb_data_tyreHighTempWarnSts(0);
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				trigSt = gb_data_tyreHighTempWarnSts(0);
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_FLTYREQUCIKLK:
@@ -1098,13 +1236,28 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 		break;
 		case PP_CANFILEUL_SIGN_FRTYREPRESS://右前
 		{
-			tempVal = gb_data_tyrePressWarnSts(1);
-			trigSt = ((tempVal == 0x2) || (tempVal == 0x3))?1:0;
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				tempVal = gb_data_tyrePressWarnSts(1);
+				trigSt = ((tempVal == 0x2) || (tempVal == 0x3))?1:0;
+			}
+			else
+			{
+				trigSt = 0;
+			}
+			
 		}
 		break;
 		case PP_CANFILEUL_SIGN_FRTYRETEMP:
 		{
-			trigSt = gb_data_tyreHighTempWarnSts(1);
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				trigSt = gb_data_tyreHighTempWarnSts(1);
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		case PP_CANFILEUL_SIGN_FRTYREQUCIKLK:
@@ -1119,7 +1272,14 @@ static unsigned char PP_FileUpload_signTrigSt(unsigned char obj)
 		break;
 		case PP_CANFILEUL_SIGN_EPSELESTRFAIL://eps工作状态
 		{
-			trigSt = (gb_data_EPSFaultSts() == 0x1)?1:0;
+			if((tm_get_time() - PP_FileUL.ignonDlyTime) >= PP_FILEUPLOAD_IGNONDLYTIME)
+			{
+				trigSt = (gb_data_EPSFaultSts() == 0x1)?1:0;
+			}
+			else
+			{
+				trigSt = 0;
+			}
 		}
 		break;
 		default:

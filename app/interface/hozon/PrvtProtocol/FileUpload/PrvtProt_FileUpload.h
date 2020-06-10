@@ -20,7 +20,7 @@ description�� macro definitions
 #define PP_FILEUPLOAD_DATALEN       1350
 #define PP_FILEUPLOAD_MAXPKG        120
 
-#define PP_FILEUPLOAD_IGNONDLYTIME     6000
+#define PP_FILEUPLOAD_IGNONDLYTIME     8000
 
 #define PP_FILEUPLOAD_PATH      "/media/sdcard/fileUL/"
 #define PP_CANFILEUPLOAD_PATH   "/media/sdcard/CanMsgFileUL/"

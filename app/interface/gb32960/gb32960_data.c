@@ -521,31 +521,12 @@ typedef struct
 static gb_alarmFaultCode_t gb_alarmFaultCode[GB_MAX_AF_INFO] =
 {
 		{1001},
-
-		{4001},
-		{4002},
-		{4003},
-		{4004},
-		{4005},
-		{4006},
-		{4007},
-		{4008},
-		{4009},
-		{4010},
-		{4011},
-		{4012},
-		{4013},
-		{4014},
-		{4015},
-		{4016},
-		{4017},
-		{4018},
-		{4019},
-		{4020},
-		{4021},
-		{4022},
-		{4023},
-		{4024}
+		//other fault
+		{4001},{4002},{4003},{4004},{4005},
+		{4006},{4007},{4008},{4009},{4010},
+		{4011},{4012},{4013},{4014},{4015},
+		{4016},{4017},{4018},{4019},{4020},
+		{4021},{4022},{4023},{4024}
 };
 
 /* fuel cell information structure */
@@ -664,12 +645,9 @@ gb32960_api_extwarn_indextable_t	gb32960_api_extwarn_indextable[GB32960_VSWARN] 
 
 const char gb_ign[32] =
 {
-	0,0,0,0,0,
-	0,0,0,0,0,
-	0,0,0,1,0,
-	1,1,1,0,0,
-	0,0,0,0,0,
-	0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,
+	0,0,0,1,0,1,1,1,0,0,
+	0,0,0,0,0,0,0,0,0,0,
 	0,0
 };
 
@@ -687,6 +665,7 @@ static int        gb_pendflag;
 static pthread_mutex_t gb_errmtx;
 static pthread_mutex_t gb_datmtx;
 static uint16_t   gb_datintv;
+static uint64_t   gb_ignontime;
 
 #define ERR_LOCK()          pthread_mutex_lock(&gb_errmtx)
 #define ERR_UNLOCK()        pthread_mutex_unlock(&gb_errmtx)
@@ -1368,12 +1347,9 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     uint8_t gb_warning[3][32] = {{0},{0},{0}};
     const char gb_use_dbc_warnlvl[32] =
     {
-    	0,0,0,0,0,
-		0,0,0,0,0,
-		0,0,1,1,1,
-		0,1,0,0,0,
-		0,0,0,0,0,
-		0,0,0,0,0,
+    	0,0,0,0,0,0,0,0,0,0,
+		0,0,1,1,1,0,1,0,0,0,
+		0,0,0,0,0,0,0,0,0,0,
 		0,0
     };
 
@@ -1381,9 +1357,9 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     {
         for(j = 0; j < 32; j++)
         {
-			if(0xd == j)//制动系统故障
+			if((0xd == j) || (0x10 == j))//制动系统故障|| 高压环路状态故障
 			{
-				if(dev_get_KL15_signal())
+				if((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME)
 				{
 					if(gbinf->warn[i][j] && \
 									(1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
@@ -1400,20 +1376,9 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 					gb_warning[i][j] = 1;
 				}
 			}
-			else if(0x10 == j)//高压环路状态故障
-			{
-				if(dev_get_KL15_signal())
-				{
-					if(gbinf->warn[i][j] && \
-									(1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
-					{
-						gb_warning[i][j] = 1;
-					}
-				}
-			}
 			else
 			{
-				if((gb_ign[j]?dev_get_KL15_signal():1)	&& \
+				if((gb_ign[j]?((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME):1) && \
 					(gbinf->warn[i][j] && dbc_get_signal_from_id(gbinf->warn[i][j])->value))
 				{
 					gb_warning[i][j] = 1;
@@ -1519,45 +1484,48 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 			}
 		}
 
-    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
+		if((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME)
 		{
-			if(0x02 == dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])->value)
+			if(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
 			{
-				faultCode = gb_alarmFaultCode[GB_AF_FLTYRELOWPRESSUREWARN + 6*i].code;
-				buf[len++] = faultCode >> 24;
-				buf[len++] = faultCode >> 16;
-				buf[len++] = faultCode >> 8;
-				buf[len++] = faultCode;
-				*otherFaultNum_ptr += 1;
-				otherwarnlvl = 1;
+				if(0x02 == dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])->value)
+				{
+					faultCode = gb_alarmFaultCode[GB_AF_FLTYRELOWPRESSUREWARN + 6*i].code;
+					buf[len++] = faultCode >> 24;
+					buf[len++] = faultCode >> 16;
+					buf[len++] = faultCode >> 8;
+					buf[len++] = faultCode;
+					*otherFaultNum_ptr += 1;
+					otherwarnlvl = 1;
+				}
 			}
-		}
 
-    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
-		{
-			if(0x03 == dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])->value)
+			if(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])
 			{
-				faultCode = gb_alarmFaultCode[GB_AF_FLTYREHIGHPRESSUREWARN + 6*i].code;
-				buf[len++] = faultCode >> 24;
-				buf[len++] = faultCode >> 16;
-				buf[len++] = faultCode >> 8;
-				buf[len++] = faultCode;
-				*otherFaultNum_ptr += 1;
-				otherwarnlvl = 1;
+				if(0x03 == dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*i])->value)
+				{
+					faultCode = gb_alarmFaultCode[GB_AF_FLTYREHIGHPRESSUREWARN + 6*i].code;
+					buf[len++] = faultCode >> 24;
+					buf[len++] = faultCode >> 16;
+					buf[len++] = faultCode >> 8;
+					buf[len++] = faultCode;
+					*otherFaultNum_ptr += 1;
+					otherwarnlvl = 1;
+				}
 			}
-		}
 
-    	if(gbinf->gb_alarmFault.info[GB_AF_FLTYREHIGHTEMPWARN + 6*i])
-		{
-			if(dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYREHIGHTEMPWARN + 6*i])->value)
+			if(gbinf->gb_alarmFault.info[GB_AF_FLTYREHIGHTEMPWARN + 6*i])
 			{
-				faultCode = gb_alarmFaultCode[GB_AF_FLTYREHIGHTEMPWARN + 6*i].code;
-				buf[len++] = faultCode >> 24;
-				buf[len++] = faultCode >> 16;
-				buf[len++] = faultCode >> 8;
-				buf[len++] = faultCode;
-				*otherFaultNum_ptr += 1;
-				otherwarnlvl = 1;
+				if(dbc_get_signal_from_id(gbinf->gb_alarmFault.info[GB_AF_FLTYREHIGHTEMPWARN + 6*i])->value)
+				{
+					faultCode = gb_alarmFaultCode[GB_AF_FLTYREHIGHTEMPWARN + 6*i].code;
+					buf[len++] = faultCode >> 24;
+					buf[len++] = faultCode >> 16;
+					buf[len++] = faultCode >> 8;
+					buf[len++] = faultCode;
+					*otherFaultNum_ptr += 1;
+					otherwarnlvl = 1;
+				}
 			}
 		}
 
@@ -3342,13 +3310,13 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 	const char Ext_gb_ign[GB32960_VSWARN] =
     {
     	0,1,0,1,1,1,1,1,1,1,
-		1,1,0,0,0,0,0,0,0,0,
+		1,1,0,1,0,0,0,0,0,0,
 		0,0,0,1,1,1,0,0,0,0,
 		0,0,0,0,0,0,1,0,0,0,
-		0,0,0,0,0,1,0,0,0,0,
-		0,0,0,0,0,0,0,0,1,0,
-		1,0,0,0,0,0,0,0,0,0,
-		1,0
+		0,0,0,0,0,0,0,0,0,0,
+		0,0,0,0,0,0,0,0,1,1,
+		1,0,0,1,0,0,0,0,0,1,
+		1,1
     };
 	
     /* data type : warn extend information */
@@ -3408,7 +3376,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 			}
 			else if(0x21 == j)//EPS故障
 			{
-				if(dev_get_KL15_signal() && gbinf->warn[i][j] && \
+				if(((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME) && gbinf->warn[i][j] && \
 				   ((0x1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value) || \
 				   	(0x2 == dbc_get_signal_from_id(gbinf->warn[i][j])->value)))
 				{
@@ -3421,7 +3389,7 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 			}
 			else
 			{
-				if((Ext_gb_ign[j]?dev_get_KL15_signal():1)	&& \
+				if((Ext_gb_ign[j]?((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME):1)	&& \
 						(gbinf->warn[i][j] && dbc_get_signal_from_id(gbinf->warn[i][j])->value))
 				{
 					warnvalue = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
@@ -3571,6 +3539,10 @@ static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime
     uint32_t len = 0;
     RTCTIME time;
 
+	if(0 == dev_get_KL15_signal())
+	{
+		gb_ignontime = tm_get_time();
+	}
 	tm_get_abstime(&time);
 
     buf[len++] = time.year - 2000;
@@ -4208,7 +4180,7 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 				{
 					if((int)arg1 == gb_warn_id[i])
 					{
-						if((gb_ign[i]?dev_get_KL15_signal():1)	&& \
+						if((gb_ign[i]?((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME):1) && \
 											dbc_get_signal_value((int)arg1))
 						{
 							if(1 == gb_high_warn_trig_type[i])
@@ -4554,6 +4526,7 @@ int gb_data_init(INIT_PHASE phase)
 				h_nw_type = 0;
 				QL_MCM_NW_Client_Init(&h_nw_type);
 				memset(&base_info, 0, sizeof(QL_MCM_NW_REG_STATUS_INFO_T));
+				gb_ignontime = tm_get_time();
             }
 			break;
     }
