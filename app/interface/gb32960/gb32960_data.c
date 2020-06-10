@@ -3363,7 +3363,22 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
     {
         for (j = 32; j < GB32960_MAXWARN; j++)
         {
-			if(0x63 == j)//APA自动泊车系统故障
+			if(0x4c == j)//防盗入侵报警
+			{
+				if(gbinf->warn[i][j] && \
+				   (0x4 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
+				{
+					buf[len++] = gb_alarmCode[j].code >> 8;
+					buf[len++] = gb_alarmCode[j].code;
+					(*warnnum_ptr)++;
+					vs_warn[j-32] = 1;
+					if(warnlvltemp < 1)
+					{
+						warnlvltemp = 1;
+					}
+				}
+			}
+			else if(0x63 == j)//APA自动泊车系统故障
 			{
 				if(gbinf->warn[i][j] && \
 				   (0x6 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))

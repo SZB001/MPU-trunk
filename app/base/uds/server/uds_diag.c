@@ -72,11 +72,12 @@ PP_rmtDiag_NodeFault_t * get_PP_rmtDiag_NodeFault_t(void)
     }
 
     tboxFault = 0;
-    for(i=0;i<DIAG_ITEM_NUM;i++)
+    for(i=0;i<DTC_NUM_MISSING_ACU;i++)
     {
         if((1 == dtc_confirmed[i]) && (1 == dtc_current[i]))
         {
             tboxFault = 1;
+            break;
         }
     }
     g_PP_rmtDiag_NodeFault.tboxFault = tboxFault;
