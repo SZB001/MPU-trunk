@@ -3539,10 +3539,6 @@ static uint32_t gb_data_save_all(gb_info_t *gbinf, uint8_t *buf, uint32_t uptime
     uint32_t len = 0;
     RTCTIME time;
 
-	if(0 == dev_get_KL15_signal())
-	{
-		gb_ignontime = tm_get_time();
-	}
 	tm_get_abstime(&time);
 
     buf[len++] = time.year - 2000;
@@ -5953,3 +5949,15 @@ uint8_t gb_data_perPack(uint8_t *data,int *len)
 
 	return 0;
 }
+
+/*
+* 清参数
+*/
+void clrgb_data_para(void)
+{
+	if(0 == dev_get_KL15_signal())
+	{
+		gb_ignontime = tm_get_time();
+	}
+}
+

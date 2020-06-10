@@ -56,4 +56,5 @@ extern int gb_data_get_intv(void);
 extern void gb_data_set_pendflag(int flag);
 extern uint8_t gb_data_perPack(uint8_t *data,int *len);
 extern uint8_t gb_data_perPackValid(void);
+extern void clrgb_data_para(void);
 #endif

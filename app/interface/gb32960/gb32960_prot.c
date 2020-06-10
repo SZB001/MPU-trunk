@@ -1583,6 +1583,7 @@ static void *gb_main(void)
                 state.calflag = 1;
             }
         }
+        clrgb_data_para();
 		
         res = gb_do_checksock(&state) ||	//检查连接
               gb_do_receive(&state)   ||	//socket 接收
