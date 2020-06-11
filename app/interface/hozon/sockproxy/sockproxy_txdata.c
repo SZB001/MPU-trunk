@@ -1,13 +1,13 @@
 /******************************************************
-ÎÄ¼þÃû£º	sockproxy_txdata.c
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	sockproxy_txdata.c
 
-ÃèÊö£º	ÆóÒµË½ÓÐÐ­Òé£¨Õã½­ºÏÖÚ£©	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ÒµË½ï¿½ï¿½Ð­ï¿½é£¨ï¿½ã½­ï¿½ï¿½ï¿½Ú£ï¿½	
 Data			Vasion			author
 2018/1/10		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 #include <stdint.h>
 #include <string.h>
@@ -32,11 +32,11 @@ description£º include the header file
 #include "sockproxy_txdata.h"
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 
 static SP_Send_t  SP_datamem[SP_MAX_SENDQUEUE];
@@ -44,27 +44,27 @@ static list_t     SP_free_lst;
 static list_t     SP_realtm_lst;
 static list_t     SP_trans_lst;
 
-static pthread_mutex_t SP_txmtx = PTHREAD_MUTEX_INITIALIZER;//³õÊ¼»¯¾²Ì¬Ëø
+static pthread_mutex_t SP_txmtx = PTHREAD_MUTEX_INITIALIZER;//ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½Ì¬ï¿½ï¿½
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
 /*Static function declaration*/
 static void SP_data_clearqueue(void);
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 /******************************************************
-*º¯ÊýÃû£ºSP_data_init
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SP_data_init
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º³õÊ¼»¯
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void SP_data_init(void)
 {
@@ -72,15 +72,15 @@ void SP_data_init(void)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºSP_data_clearqueue
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SP_data_clearqueue
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void SP_data_clearqueue(void)
 {
@@ -98,15 +98,15 @@ static void SP_data_clearqueue(void)
 }
 
 /******************************************************
-*º¯ÊýÃû£ºSP_data_write
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SP_data_write
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void SP_data_write(uint8_t *data,int len,SP_sendInform_cb sendInform_cb,void *cb_para)
 {
@@ -147,15 +147,15 @@ void SP_data_write(uint8_t *data,int len,SP_sendInform_cb sendInform_cb,void *cb
 }
 
 /******************************************************
-*º¯ÊýÃû£ºSP_data_get_pack
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SP_data_get_pack
 
-*ÐÎ  ²Î£ºvoid
+*ï¿½ï¿½  ï¿½Î£ï¿½void
 
-*·µ»ØÖµ£ºvoid
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½void
 
-*Ãè  Êö£º
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
 
-*±¸  ×¢£º
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 SP_Send_t *SP_data_get_pack(void)
 {
@@ -197,4 +197,11 @@ void SP_data_ack_pack(void)
     }
 
     pthread_mutex_unlock(&SP_txmtx);
+}
+
+void SP_data_showNodeCount(void)
+{
+	log_o(LOG_HOZON, "free node num:%d\n",list_count(&SP_free_lst));
+	log_o(LOG_HOZON, "realtm node num:%d\n",list_count(&SP_realtm_lst));
+	log_o(LOG_HOZON, "trans node num:%d\n",list_count(&SP_trans_lst));
 }

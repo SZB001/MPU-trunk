@@ -1713,6 +1713,7 @@ void sockproxy_showParameters(void)
 	log_o(LOG_SOCK_PROXY, "sockSt.sgLinkAddr = %s\n",sockSt.sgLinkAddr);
 	log_o(LOG_SOCK_PROXY, "sockSt.sgPort = %d\n",sockSt.sgPort);
 	log_o(LOG_SOCK_PROXY, "sockSt.pkiEnFlag = %d\n",sockSt.pkiEnFlag);
+	SP_data_showNodeCount();
 }
 
 #ifdef SOCKPROXY_TEST

@@ -60,4 +60,5 @@ extern SP_Send_t *SP_data_get_pack(void);
 extern void SP_data_put_back(SP_Send_t *pack);
 extern void SP_data_put_send(SP_Send_t *pack);
 extern void SP_data_ack_pack(void);
+extern void SP_data_showNodeCount(void);
 #endif 
