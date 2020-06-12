@@ -1,118 +1,155 @@
 /******************************************************
-ÎÄ¼þÃû£º	
-ÃèÊö£º	ºÏÖÚtsp¶Ô½ÓsocketÁ´Â·µÄ½¨Á¢¡¢¶Ï¿ª¡¢ÊÕ/·¢Êý¾Ý´¦Àí	
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½ï¿½tspï¿½Ô½ï¿½socketï¿½ï¿½Â·ï¿½Ä½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½	
 Data			Vasion			author
 2019/4/17		V1.0			liujian
 *******************************************************/
 
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+#include  <errno.h>
+#include <sys/times.h>
+#include <sys/time.h>
+#include "timer.h"
+#include <sys/prctl.h>
+#include "dir.h"
+#include <sys/types.h>
+#include <sysexits.h>	/* for EX_* exit codes */
+#include <assert.h>	/* for assert(3) */
+#include "log.h"
 #include "sockproxy_rxdata.h"
 
 /*******************************************************
-description£º function declaration
+descriptionï¿½ï¿½ function declaration
 *******************************************************/
 /*Global function declaration*/
 
 /*Static function declaration*/
+static pthread_mutex_t wrmtx = 	PTHREAD_MUTEX_INITIALIZER;
 static sockProxyObj_t SPObj[SP_MAX];
 
 /*******************************************************
-description£º global variable definitions
+descriptionï¿½ï¿½ global variable definitions
 *******************************************************/
 
 /*******************************************************
-description£º static variable definitions
+descriptionï¿½ï¿½ static variable definitions
 *******************************************************/
 static void ClrSockproxyData_Queue(void);
 
 /******************************************************
-description£º function code
+descriptionï¿½ï¿½ function code
 ******************************************************/
 
 /******************************************************
-*º¯ÊýÃû£ºSockproxyData_Init
-*ÐÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£º
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½SockproxyData_Init
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 void SockproxyData_Init(void)
 {
-	ClrSockproxyData_Queue();//Çå»º´æ¶ÓÁÐ
+	pthread_mutex_lock(&wrmtx);
+	ClrSockproxyData_Queue();
+	pthread_mutex_unlock(&wrmtx);
 }
 
 
 /******************************************************
-*º¯ÊýÃû£ºWrSockproxyData_Queue
-*ÐÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£ºÐ´Êý¾Ýµ½Êý¾Ý¶ÓÁÐ
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½WrSockproxyData_Queue
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½Ýµï¿½ï¿½ï¿½ï¿½Ý¶ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int WrSockproxyData_Queue(unsigned char  obj,unsigned char* data,int len)
 {
 	int Lng;
 	
-	if(len > SP_DATA_LNG) return -1;
+	if(len > SP_DATA_LNG)
+	{
+		log_e(LOG_SOCK_PROXY, "rcv data is too long\n");
+		return -1;
+	}
 	
+	pthread_mutex_lock(&wrmtx);
+
+	if(1 == SPObj[obj].SPCache[SPObj[obj].HeadLabel].NonEmptyFlg)
+	{
+		pthread_mutex_unlock(&wrmtx);
+		log_e(LOG_SOCK_PROXY, "rcv buff is full\n");
+		return -1;
+	}
+
 	for(Lng = 0U;Lng< len;Lng++)
 	{
 		SPObj[obj].SPCache[SPObj[obj].HeadLabel].data[Lng] = data[Lng];
 	}
 	SPObj[obj].SPCache[SPObj[obj].HeadLabel].len = len;
-	SPObj[obj].SPCache[SPObj[obj].HeadLabel].NonEmptyFlg = 1U;/*ÖÃ·Ç¿Õ±êÖ¾*/
+	SPObj[obj].SPCache[SPObj[obj].HeadLabel].NonEmptyFlg = 1U;/*ï¿½Ã·Ç¿Õ±ï¿½Ö¾*/
 	SPObj[obj].HeadLabel++;
 	if(SP_QUEUE_LNG == SPObj[obj].HeadLabel)
 	{
 		SPObj[obj].HeadLabel = 0U;
 	}
 	
+	pthread_mutex_unlock(&wrmtx);
 	return 0;
 }
 
 
 /******************************************************
-*º¯ÊýÃû£ºRdSockproxyData_Queue
-*ÐÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£º¶ÁÈ¡Êý¾Ý
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½RdSockproxyData_Queue
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 int RdSockproxyData_Queue(unsigned char  obj,unsigned char* data,int len)
 {	
 	int Lng;
-	if(0U == SPObj[obj].SPCache[SPObj[obj].TialLabel].NonEmptyFlg) 
-	{
-		return 0;//ÎÞÊý¾Ý
-	}
-		
+
 	if(SPObj[obj].SPCache[SPObj[obj].TialLabel].len > len) 
 	{
-		return -1;//Òç³ö´íÎó
+		log_e(LOG_SOCK_PROXY, "read buff is small\n");
+		return -1;
+	}
+
+	pthread_mutex_lock(&wrmtx);
+	if(0U == SPObj[obj].SPCache[SPObj[obj].TialLabel].NonEmptyFlg) 
+	{
+		pthread_mutex_unlock(&wrmtx);
+		return 0;
 	}
 
 	for(Lng = 0U;Lng < SPObj[obj].SPCache[SPObj[obj].TialLabel].len;Lng++)
 	{
 		data[Lng] =SPObj[obj].SPCache[SPObj[obj].TialLabel].data[Lng];
 	}
-	SPObj[obj].SPCache[SPObj[obj].TialLabel].NonEmptyFlg = 0U;	/*Çå·Ç¿Õ±êÖ¾*/
+	SPObj[obj].SPCache[SPObj[obj].TialLabel].NonEmptyFlg = 0U;	/*ï¿½ï¿½Ç¿Õ±ï¿½Ö¾*/
 		
 	SPObj[obj].TialLabel++;
 	if(SP_QUEUE_LNG == SPObj[obj].TialLabel)
 	{
 		SPObj[obj].TialLabel = 0U;
 	}
+	pthread_mutex_unlock(&wrmtx);
 	return Lng;
 }
 
 /******************************************************
-*º¯ÊýÃû£ºClrUnlockLogCache_Queue
-*ÐÎ  ²Î£º
-*·µ»ØÖµ£º
-*Ãè  Êö£ºÇåÊý¾Ý¶ÓÁÐ
-*±¸  ×¢£º
+*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ClrUnlockLogCache_Queue
+*ï¿½ï¿½  ï¿½Î£ï¿½
+*ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
+*ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¶ï¿½ï¿½ï¿½
+*ï¿½ï¿½  ×¢ï¿½ï¿½
 ******************************************************/
 static void ClrSockproxyData_Queue(void) 
 {

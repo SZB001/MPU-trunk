@@ -132,6 +132,7 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task);
 static void PrvtPro_makeUpPack(PrvtProt_pack_t *RxPack,uint8_t* input,int len);
 static void PP_HB_send_cb(void * para);
 static void PrvtProt_do_HBSwitchHandle(void);
+static int PP_hbTimeValueRngProc(int time);
 /******************************************************
 description�� function code
 ******************************************************/
@@ -328,6 +329,7 @@ static int PrvtPro_do_checksock(PrvtProt_task_t *task)
 		//PP_heartbeat.state = 0;
 		PP_heartbeat.hbtaskflag = 0;
 		PP_heartbeat.hbtasksleepflag = 1;
+		PP_queue_Init();
 	}
 
 	return -1;
@@ -580,17 +582,18 @@ static int PrvtPro_do_wait(PrvtProt_task_t *task)
     {
         if (PP_heartbeat.waitSt == 1)
         {
+			log_e(LOG_HOZON, "heartbeat timeout");
         	PP_heartbeat.waitSt = 0;
         	//PP_heartbeat.state = 0;//
         	PP_heartbeat.timeoutCnt++;
 			if(0 != sockproxy_check_link_status())
 			{
 				log_e(LOG_HOZON, "heartbeat link is fault\n");
+				PP_heartbeat.timeoutCnt = 0;
 				sockproxy_socketclose((int)(PP_SP_COLSE_PP));
 			}
 			PP_heartbeat.hbtasksleepflag = 1;
 			PP_heartbeat.hbtimeoutflag = 1;
-            log_e(LOG_HOZON, "heartbeat timeout");
         }
         else
         {}
@@ -625,7 +628,7 @@ static void PrvtProt_do_HBSwitchHandle(void)
 				hbtimeout = getPP_rmtCfg_heartbeatTimeout();
 				if(0 != hbtimeout)
 				{
-					PP_heartbeat.period = hbtimeout;
+					PP_heartbeat.period = PP_hbTimeValueRngProc(hbtimeout);
 				}
 				PP_heartbeat.hbtype = 1;//切换到正常通信心跳频率
 			}
@@ -648,7 +651,7 @@ static void PrvtProt_do_HBSwitchHandle(void)
 			hbtimeout = getPP_rmtCfg_heartbeatTimeout();
 			if(0 != hbtimeout)
 			{
-				PP_heartbeat.period = hbtimeout;
+				PP_heartbeat.period = PP_hbTimeValueRngProc(hbtimeout);
 			}
 			PP_heartbeat.hbtype = 1;//切换到正常通信心跳频率
 			PP_heartbeat.hbtaskflag = 1;
@@ -703,7 +706,7 @@ static int PrvtProt_do_heartbeat(PrvtProt_task_t *task)
 	{
 		PP_heartbeat.timeoutCnt = 0;
 		log_i(LOG_HOZON, "heartbeat timeout too much!close socket\n");
-		//sockproxy_socketclose((int)(PP_SP_COLSE_PP));
+		sockproxy_socketclose((int)(PP_SP_COLSE_PP));
 	}
 	return 0;
 }
@@ -1147,4 +1150,16 @@ int PP_getIdleNode(void)
 unsigned int PP_hbTimeoutStatus(void)
 {
 	return PP_heartbeat.hbtimeoutflag;
+}
+
+/*心跳周期时间取值限制处理*/
+static int PP_hbTimeValueRngProc(int time)
+{
+	if((time < PP_HEART_BEAT_TIME) || \
+		(time >= 300))
+	{
+		time = PP_HEART_BEAT_TIME;
+	}
+
+	return time;
 }

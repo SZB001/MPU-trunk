@@ -454,6 +454,8 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 							pthread_create(&rcvtid, &rcvta, (void *)sockproxy_rcvmain, NULL);
 							log_i(LOG_HOZON, "rcvtid = %d\n",rcvtid);
 						}
+						
+						SockproxyData_Init();
 
 						if(GetPP_CertDL_allowBDLink() == 0)//
 						{//建立单向连接

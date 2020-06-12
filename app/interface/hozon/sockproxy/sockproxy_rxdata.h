@@ -1,34 +1,34 @@
 /******************************************************
-ÎÄ¼þÃû£º	
-ÃèÊö£º	ºÏÖÚtsp¶Ô½ÓsocketÁ´Â·µÄ½¨Á¢¡¢¶Ï¿ª¡¢ÊÕ/·¢Êý¾Ý´¦Àí
+ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½	
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½ï¿½tspï¿½Ô½ï¿½socketï¿½ï¿½Â·ï¿½Ä½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½
 Data			  Vasion			author
 2019/04/17		   V1.0			    liujian
 *******************************************************/
 #ifndef		__SOCK_PROXY_RX_DATA_H
 #define		__SOCK_PROXY_RX_DATA_H
 /*******************************************************
-description£º include the header file
+descriptionï¿½ï¿½ include the header file
 *******************************************************/
 
 
 /*******************************************************
-description£º macro definitions
+descriptionï¿½ï¿½ macro definitions
 *******************************************************/
-/**********ºê¿ª¹Ø¶¨Òå*********/
+/**********ï¿½ê¿ªï¿½Ø¶ï¿½ï¿½ï¿½*********/
 
 
-/**********ºê³£Á¿¶¨Òå*********/
-#define SP_DATA_LNG  1456U/*Êý¾Ý¶ÓÁÐÖÐÊý¾Ý³¤*/
-#define SP_QUEUE_LNG  10U/*Êý¾Ý¶ÓÁÐ³¤*/
+/**********ï¿½ê³£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*********/
+#define SP_DATA_LNG  1456U/*ï¿½ï¿½ï¿½Ý¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý³ï¿½*/
+#define SP_QUEUE_LNG  20U/*ï¿½ï¿½ï¿½Ý¶ï¿½ï¿½Ð³ï¿½*/
 
-/***********ºêº¯Êý***********/
+/***********ï¿½êº¯ï¿½ï¿½***********/
 
 /*******************************************************
-description£º struct definitions
+descriptionï¿½ï¿½ struct definitions
 *******************************************************/
 
 /*******************************************************
-description£º typedef definitions
+descriptionï¿½ï¿½ typedef definitions
 *******************************************************/
 /******enum definitions******/
 typedef enum
@@ -41,26 +41,26 @@ typedef enum
 /*****struct definitions*****/
 typedef struct
 {
-	unsigned char  NonEmptyFlg;	/*Êý¾Ý·Ç¿Õ±êÖ¾*/
-	int	  len;/*Êý¾Ý³¤*/
-	unsigned char  data[SP_DATA_LNG];/*Êý¾Ý*/
-}sockProxyCache_t;/*Êý¾Ý¶ÓÁÐ½á¹¹Ìå*/
+	unsigned char  NonEmptyFlg;	/*ï¿½ï¿½ï¿½Ý·Ç¿Õ±ï¿½Ö¾*/
+	int	  len;/*ï¿½ï¿½ï¿½Ý³ï¿½*/
+	unsigned char  data[SP_DATA_LNG];/*ï¿½ï¿½ï¿½ï¿½*/
+}sockProxyCache_t;/*ï¿½ï¿½ï¿½Ý¶ï¿½ï¿½Ð½á¹¹ï¿½ï¿½*/
 
 typedef struct
 {
-	unsigned char  HeadLabel;/*Í·±êÇ©*/
-	unsigned char  TialLabel;/*Î²±êÇ©*/
+	unsigned char  HeadLabel;/*Í·ï¿½ï¿½Ç©*/
+	unsigned char  TialLabel;/*Î²ï¿½ï¿½Ç©*/
 	sockProxyCache_t SPCache[SP_QUEUE_LNG];
-}sockProxyObj_t;/*½ÓÊÕ¶ÔÏó½á¹¹Ìå*/
+}sockProxyObj_t;/*ï¿½ï¿½ï¿½Õ¶ï¿½ï¿½ï¿½á¹¹ï¿½ï¿½*/
 
 /******union definitions*****/
 
 /*******************************************************
-description£º variable External declaration
+descriptionï¿½ï¿½ variable External declaration
 *******************************************************/
 
 /*******************************************************
-description£º function External declaration
+descriptionï¿½ï¿½ function External declaration
 *******************************************************/
 extern void SockproxyData_Init(void);
 extern int WrSockproxyData_Queue(unsigned char  obj,unsigned char* data,int len);
