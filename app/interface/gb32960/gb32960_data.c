@@ -651,6 +651,17 @@ const char gb_ign[32] =
 	0,0
 };
 
+const char gb_high_warn_trig_type[32] =
+{
+	3,3,3,3,3,
+	3,3,0,0,0,
+	3,3,1,2,2,
+	3,2,3,0,0,
+	0,0,0,0,0,
+	0,0,0,0,0,
+	0,0
+};
+
 static gb_info_t  gb_infmem[2];
 static gb_info_t *gb_inf;
 static gb_pack_t  gb_datamem[GB_MAX_REPORT];
@@ -1344,6 +1355,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     uint32_t len = 0, i, j, warnbit = 0, warnlvl = 0,warnlvltemp = 0,otherwarnlvl = 0;
     uint8_t* warnlvl_ptr;
     uint8_t gb_warn[32] = {0};
+	static uint8_t gb_warn_30sTrigFlag[32] = {0};
     uint8_t gb_warning[3][32] = {{0},{0},{0}};
     const char gb_use_dbc_warnlvl[32] =
     {
@@ -1357,21 +1369,28 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
     {
         for(j = 0; j < 32; j++)
         {
+			if(!gbinf->warn[i][j]) continue;
 			if((0xd == j) || (0x10 == j))//制动系统故障|| 高压环路状态故障
 			{
-				if((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME)
+				if(((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME) && \
+						 (1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
 				{
-					if(gbinf->warn[i][j] && \
-									(1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
+					gb_warning[i][j] = 1;
+					if(!gb_warn_30sTrigFlag[j])
 					{
-						gb_warning[i][j] = 1;
+						log_e(LOG_GB32960, "warnning triggered");
+						gbinf->warntrig = 1;
+						gb_warn_30sTrigFlag[j] = 1;
 					}
+				}
+				else
+				{
+					gb_warn_30sTrigFlag[j] = 0;
 				}
 			}
 			else if(0xe == j)//dcdc state
 			{
-				if(gbinf->warn[i][j] && \
-									(2 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
+				if(2 == dbc_get_signal_from_id(gbinf->warn[i][j])->value)
 				{
 					gb_warning[i][j] = 1;
 				}
@@ -1379,14 +1398,29 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 			else
 			{
 				if((gb_ign[j]?((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME):1) && \
-					(gbinf->warn[i][j] && dbc_get_signal_from_id(gbinf->warn[i][j])->value))
+						dbc_get_signal_from_id(gbinf->warn[i][j])->value)
 				{
 					gb_warning[i][j] = 1;
+					if(gb_ign[j] && (!gb_warn_30sTrigFlag[j]))
+					{
+						if((3 == gb_high_warn_trig_type[j]) && \
+						   (3 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
+						{
+							log_e(LOG_GB32960, "warnning triggered");
+							gbinf->warntrig = 1;
+							gb_warn_30sTrigFlag[j] = 1;	
+						}
+					}
+				}
+				else
+				{
+					gb_warn_30sTrigFlag[j] = 0;
 				}
 			}
 
 			if(gb_warning[i][j])
 			{
+				gb_warning[i][j] = 0;
 				gb_warn[j] = 1;
 				warnbit |= 1 << j;
 				if(gb_use_dbc_warnlvl[j])
@@ -1395,8 +1429,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 				}
 				else
 				{
-					if(gbinf->warn[i][j] &&	\
-								(dbc_get_signal_from_id(gbinf->warn[i][j])->value > warnlvltemp))
+					if(dbc_get_signal_from_id(gbinf->warn[i][j])->value > warnlvltemp)
 					{
 						warnlvltemp = dbc_get_signal_from_id(gbinf->warn[i][j])->value;
 					}
@@ -4082,17 +4115,6 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
     int ret = 0;
 	int i;
 	static int gb_warn_id[32] = {0};
-
-	const char gb_high_warn_trig_type[32] =
-	{
-		3,3,3,3,3,
-		3,3,0,0,0,
-		3,3,1,2,2,
-		3,2,3,0,0,
-		0,0,0,0,0,
-		0,0,0,0,0,
-		0,0
-	};
 
     switch (event)
     {
