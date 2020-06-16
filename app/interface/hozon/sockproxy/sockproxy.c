@@ -98,7 +98,7 @@ static int sockproxy_do_send(sockproxy_stat_t *state);
 static void *sockproxy_socketmain(void);
 static int sockproxy_sgLink(sockproxy_stat_t *state);
 static int sockproxy_BDLink(sockproxy_stat_t *state);
-static void sockproxy_nm_dial_recall(void);
+//static void sockproxy_nm_dial_recall(void);
 #ifdef SOCKPROXY_TEST
 static void sockproxy_testTask(void);
 #endif
@@ -581,7 +581,7 @@ static int sockproxy_do_checksock(sockproxy_stat_t *state)
 		sockSt.sleepwaittimeoutcnt = 0;
 	}
 
-	sockproxy_nm_dial_recall();//重新拨号
+	//sockproxy_nm_dial_recall();//重新拨号
 #ifdef SOCKPROXY_TEST
 	sockproxy_testTask();
 #endif
@@ -1666,6 +1666,7 @@ static void sockproxy_privMakeupMsg(uint8_t *data,int len)
 /*
 *	重新拨号
 */
+#if 0
 static void sockproxy_nm_dial_recall(void)
 {
 	static char IGNnewSt=0xff;
@@ -1697,6 +1698,7 @@ static void sockproxy_nm_dial_recall(void)
 		}
 	}
 }
+#endif
 
 /*
 *	显示参数
