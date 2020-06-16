@@ -900,7 +900,7 @@ static void nm_dial_set_dns(NM_NET_INFO *phndl)
         }
         else
         {}
-		#if 0
+#if 0
         if(nm_net_info[NM_PRIVATE_NET].pri_dns_addr.s_addr)
         {
             memset(pri_command, 0, sizeof(pri_command));
@@ -916,8 +916,9 @@ static void nm_dial_set_dns(NM_NET_INFO *phndl)
                 inet_ntoa(nm_net_info[NM_PRIVATE_NET].sec_dns_addr)); //私网DNS
             nm_sys_call(pri_command);
         }
-		#endif
+#endif
     }
+#if 0
     else if(phndl->type == NM_PRIVATE_NET)
     {
         if(phndl->pri_dns_addr.s_addr)
@@ -947,6 +948,7 @@ static void nm_dial_set_dns(NM_NET_INFO *phndl)
             }
         }
     }
+#endif
     else
     {}
 	 
@@ -962,7 +964,7 @@ static void nm_dial_set_dns(NM_NET_INFO *phndl)
             snprintf(pub_command, sizeof(pub_command), "echo 'nameserver 180.76.76.76' >> /etc/resolv.conf");
             nm_sys_call(pub_command);
         }
-		#if 0
+#if 0
         if(nm_net_info[NM_PRIVATE_NET].pri_dns_addr.s_addr)
         {
             memset(pri_command, 0, sizeof(pri_command));
@@ -978,7 +980,7 @@ static void nm_dial_set_dns(NM_NET_INFO *phndl)
                 inet_ntoa(nm_net_info[NM_PRIVATE_NET].sec_dns_addr)); //私网DNS
             nm_sys_call(pri_command);
         }
-		#endif
+#endif
     }
 }
 
