@@ -337,7 +337,6 @@ void pm_st_s1e3(void)
             unsigned int time = 0, len;
             pm_set_state(PM_ST_SLEEP);
             log_o(LOG_PM, "-----------------going to sleep----------------");
-            setPrvtPro_SBattRechrgSleep();
             clearPP_rmtDiag_para();
 			PP_clear_identificat_time();
             fflush(stdout);

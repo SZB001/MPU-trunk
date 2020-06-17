@@ -297,8 +297,7 @@ static void *PrvtProt_main(void)
 
 		PP_sleepflag = PP_heartbeat.hbtasksleepflag &&	\
 					   GetPP_rmtCtrl_Sleep()		&&	\
-					   GetPrvtPro_mpuAbnorsleepSt() &&	\
-					   GetPrvtPro_SBattRechrgSleepSt();
+					   GetPrvtPro_mpuAbnorsleepSt();
     }
 	(void)res;
     return NULL;
@@ -797,6 +796,7 @@ void PrvtPro_ShowPara(void)
 	log_o(LOG_SOCK_PROXY, "PrvtProt sleep = %d\n",GetPrvtProt_Sleep());
 	log_o(LOG_HOZON, "PP_heartbeat.hbtasksleepflag = %d",PP_heartbeat.hbtasksleepflag);
 	log_o(LOG_HOZON, "GetPP_rmtCtrl_Sleep = %d",GetPP_rmtCtrl_Sleep());
+	log_o(LOG_HOZON, "mpu Abnor sleep = %d",GetPrvtPro_mpuAbnorsleepSt());
 	PP_rmtCtrl_showSleepPara();
 	log_o(LOG_HOZON, "/*****************data over*****************/");
 	log_o(LOG_HOZON, "/*************show cert download*************/");
@@ -1084,7 +1084,6 @@ void SetPrvtProt_Awaken(int type)
 			PP_hbtaskmpurtcwakeuptestflag++;
 			PP_heartbeat.timer = tm_get_time();
 			setPrvtPro_mpuAbnorWakeup();
-			setPrvtPro_SBattRechrgWakeup();
 		}
 		break;
 		default:

@@ -871,8 +871,8 @@ return:       none
 static void nm_dial_set_dns(NM_NET_INFO *phndl)
 {
     char pub_command[200];
-	char pri_command[200];
-	char dns_name[50] = {0};
+	//char pri_command[200];
+	//char dns_name[50] = {0};
 
     if(phndl->type == NM_PUBLIC_NET) //
     {
