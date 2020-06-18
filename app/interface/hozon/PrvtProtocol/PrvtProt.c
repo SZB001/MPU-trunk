@@ -1162,3 +1162,24 @@ static int PP_hbTimeValueRngProc(int time)
 
 	return time;
 }
+
+/*
+	直接发送心跳
+*/
+void PrvtProt_sendheartbeat(void)
+{
+	PrvtProt_pack_t PP_PackHeader_HB;
+
+	memset(&PP_PackHeader_HB,0 , sizeof(PrvtProt_pack_t));
+	memcpy(PP_PackHeader_HB.Header.sign,"**",2);
+	PP_PackHeader_HB.Header.ver.Byte = 0x30;
+	PP_PackHeader_HB.Header.commtype.Byte = 0x70;
+	PP_PackHeader_HB.Header.opera = 0x01;
+	PP_PackHeader_HB.Header.ver.Byte = pp_task.version;
+	PP_PackHeader_HB.Header.nonce  = PrvtPro_BSEndianReverse(pp_task.nonce);
+	PP_PackHeader_HB.Header.tboxid = PrvtPro_BSEndianReverse(pp_task.tboxid);
+	PP_PackHeader_HB.msgdata[0] = PP_heartbeat.hbtype;
+	PP_PackHeader_HB.Header.msglen = PrvtPro_BSEndianReverse((long)19);
+
+	sockproxy_MsgSend(PP_PackHeader_HB.Header.sign,19,NULL);
+}

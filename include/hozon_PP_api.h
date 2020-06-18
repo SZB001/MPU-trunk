@@ -176,4 +176,5 @@ extern void PP_CertDL_deleteCipher(void);
 extern void PP_CertDL_deleteCert(void);
 extern void PP_FileUpload_set_log(unsigned char en);
 extern void setPrvtPro_SBattRechrgSleep(void);
+extern void PrvtProt_sendheartbeat(void);
 #endif
