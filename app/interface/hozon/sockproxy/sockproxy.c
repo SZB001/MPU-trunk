@@ -1174,6 +1174,13 @@ static int sockproxy_do_send(sockproxy_stat_t *state)
 	SP_Send_t *rpt;
 	char pakgtype;
 	int res = 0;
+
+	if((PP_OPENED != sockSt.state) && \
+				(PP_CLOSE_WAIT != sockSt.state))
+	{
+		return 0;
+	}
+
 	if ((rpt = SP_data_get_pack()) != NULL)
 	{
 		if(rpt->Inform_cb_para != NULL)
