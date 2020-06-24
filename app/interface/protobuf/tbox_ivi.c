@@ -17,6 +17,7 @@
 #include "msg_parse.h"
 #include "tbox_ivi_api.h"
 #include "log.h"
+#include "pm_api.h"
 #include "tcom_api.h"
 #include "gb32960_api.h"
 #include "hozon_PP_api.h"
@@ -805,7 +806,6 @@ void ivi_callstate_response_send(int fd  )
 			icall_flag = 0;
 		}
 		audio_setup_aic3104();
-		log_o(LOG_IVI,"reset ICAll");
 		log_o(LOG_IVI,"disconnected call");
 	}
 	
@@ -1730,14 +1730,16 @@ void *ivi_main(void)
 		ret = tbox_ivi_create_tcp_socket();
 		if( ret != 0 )
 		{
-			if (tcp_fd < 0)
+			if (tcp_fd > 0)
 			{
 		   		close(tcp_fd);
+				
 		    	tcp_fd = -1;
 
 		    	log_e(LOG_IVI,"tbox_ivi_create_tcp_socket failed!!!");
 
-		    	return NULL;
+				pm_send_evt(MPU_MID_NM, PM_EVT_RESTART_4G_REQ);
+		    	//return NULL;
 			 }
 		}
 	}

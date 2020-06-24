@@ -5882,12 +5882,9 @@ long gb_data_tyrePressWarnSts(unsigned char obj)
 
 	DAT_LOCK();
 
-	if(gb_inf)
+	if(gb_inf && gb_inf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*obj])
 	{
-		if(gb_inf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*obj])
-		{
-			st = dbc_get_signal_from_id(gb_inf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*obj])->value;
-		}
+		st = dbc_get_signal_from_id(gb_inf->gb_alarmFault.info[GB_AF_FLTYRELOWPRESSUREWARN + 6*obj])->value;
 	}
 
 	DAT_UNLOCK();
@@ -5904,12 +5901,9 @@ long gb_data_tyreHighTempWarnSts(unsigned char obj)
 
 	DAT_LOCK();
 
-	if(gb_inf)
+	if(gb_inf && gb_inf->gb_alarmFault.info[GB_AF_FLTYREHIGHTEMPWARN + 6*obj])
 	{
-		if(gb_inf->gb_alarmFault.info[GB_AF_FLTYREHIGHTEMPWARN + 6*obj])
-		{
-			st = dbc_get_signal_from_id(gb_inf->gb_alarmFault.info[GB_AF_FLTYREHIGHTEMPWARN + 6*obj])->value;
-		}
+		st = dbc_get_signal_from_id(gb_inf->gb_alarmFault.info[GB_AF_FLTYREHIGHTEMPWARN + 6*obj])->value;
 	}
 
 	DAT_UNLOCK();
@@ -5926,12 +5920,9 @@ long gb_data_tyreLeakWarnSts(unsigned char obj)
 
 	DAT_LOCK();
 
-	if(gb_inf)
+	if(gb_inf && gb_inf->gb_alarmFault.info[GB_AF_FLTYRELEAK + 6*obj])
 	{
-		if(gb_inf->gb_alarmFault.info[GB_AF_FLTYRELEAK + 6*obj])
-		{
-			st = dbc_get_signal_from_id(gb_inf->gb_alarmFault.info[GB_AF_FLTYRELEAK + 6*obj])->value;
-		}
+		st = dbc_get_signal_from_id(gb_inf->gb_alarmFault.info[GB_AF_FLTYRELEAK + 6*obj])->value;
 	}
 
 	DAT_UNLOCK();
@@ -5976,6 +5967,20 @@ uint8_t gb_data_perPack(uint8_t *data,int *len)
 }
 
 /*
+电池单体最大温度
+*/
+long gb_data_maxtemp(void)
+{
+	long maxtem = 0;
+	DAT_LOCK();
+	if(gb_inf && gb_inf->extr[GB_XINF_MAXT])
+	{
+		maxtem = dbc_get_signal_from_id(gb_inf->extr[GB_XINF_MAXT])->value;
+	}
+	DAT_UNLOCK();
+	return maxtem;
+}
+/*
 * 清参数
 */
 void clrgb_data_para(void)
@@ -5990,9 +5995,7 @@ uint32_t gb_data_gpslongitude(void)
 {
 	uint32_t longitude;
 	DAT_LOCK();
-	
 	longitude = longitudeBak;
-
 	DAT_UNLOCK();
 
 	return longitude;
@@ -6002,9 +6005,7 @@ uint32_t gb_data_gpslatitude(void)
 {
 	uint32_t latitude;
 	DAT_LOCK();
-	
 	latitude = latitudeBak;
-
 	DAT_UNLOCK();
 
 	return latitude;
@@ -6014,9 +6015,7 @@ unsigned int gb_data_gpsnorth(void)
 {
 	unsigned int north;
 	DAT_LOCK();
-	
 	north = gps_north;
-
 	DAT_UNLOCK();
 
 	return north;
@@ -6026,9 +6025,7 @@ unsigned int gb_data_gpseast(void)
 {
 	unsigned int east;
 	DAT_LOCK();
-	
 	east = gps_east;
-
 	DAT_UNLOCK();
 
 	return east;

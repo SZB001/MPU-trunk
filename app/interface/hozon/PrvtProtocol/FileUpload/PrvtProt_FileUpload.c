@@ -556,8 +556,6 @@ static void *PP_LogFileSend_main(void)
 	unsigned char en = 0;
 	char cmd[200] = {0};
 	static int start_flag = 0;
-	//static uint32_t start_time = 0;
-	//static uint16_t up_time = 0;
 	struct timeval up_timestamp;
 	int semid = Commsem();
 	set_semvalue(semid);//初始化信号量值为1
@@ -623,28 +621,12 @@ static void *PP_LogFileSend_main(void)
 		{
 			struct timeval nowtime_stamp;
 			gettimeofday(&nowtime_stamp, NULL); 
-			//if(start_time == 0)
-			//{
-				if((nowtime_stamp.tv_sec - up_timestamp.tv_sec)  > PP_up_log.log_up_time)
-				{
-					en = 0;
-    				PP_FileUpload_set_log(en); //打开日志文件生成
-    				start_flag = 0;
-				}
-			//}
-			//else
-			//{
-			//	if((nowtime_stamp.tv_sec - PP_up_log.log_start_time) > PP_up_log.log_up_time)
-			//	{
-			//		log_o(LOG_HOZON,"nowtime_stamp.tv_sec = %ld",nowtime_stamp.tv_sec);
-			//		log_o(LOG_HOZON,"nowtime_stamp.tv_sec = %ld",PP_up_log.log_start_time);
-			//		log_o(LOG_HOZON,"nowtime_stamp.tv_sec = %ld",PP_up_log.log_up_time);
-			//		en = 0;
-			//		log_o(LOG_HOZON,"log22222");
-    		//		PP_FileUpload_set_log(en); //打开日志文件生成
-    		//		start_flag = 0;
-			//	}
-			//}
+			if((nowtime_stamp.tv_sec - up_timestamp.tv_sec)  > PP_up_log.log_up_time)
+			{
+				en = 0;
+    			PP_FileUpload_set_log(en); //打开日志文件生成
+    			start_flag = 0;
+			}	
 		}
     }
 

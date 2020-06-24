@@ -322,4 +322,5 @@ extern uint32_t gb_data_gpslongitude(void);
 extern uint32_t gb_data_gpslatitude(void);
 extern unsigned int gb_data_gpsnorth(void);
 extern unsigned int gb_data_gpseast(void);
+extern long gb_data_maxtemp(void);
 #endif
