@@ -37,6 +37,7 @@ description�� include the header file
 #include "list.h"
 #include "../sockproxy/sockproxy_txdata.h"
 #include "../../support/protocol.h"
+#include "gb32960_api.h"
 #include "hozon_SP_api.h"
 #include "shell_api.h"
 #include "PrvtProt_shell.h"
@@ -393,8 +394,6 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	int msgdatalen;
 	int res = 0;
 	PrvtProt_App_Xcall_t	Appdata_Xcall;
-	static long PP_xcall_latitude  = 0;
-	static long PP_xcall_longitude = 0;
 
 	/* header */
 	memcpy(PP_xcall[XcallType].packResp.Header.sign,"**",2);
@@ -446,30 +445,13 @@ static int PP_xcall_xcallResponse(PrvtProt_task_t *task,unsigned char XcallType)
 	Appdata_Xcall.gpsPos.gpsTimestamp = PrvtPro_getTimestamp();
 	if(Appdata_Xcall.gpsPos.gpsSt == 1)
 	{
-		if(gpsDt.is_north)
-		{
-			Appdata_Xcall.gpsPos.latitude = (long)(PP_xcall_gpsconv(gpsDt.latitude));
-		}
-		else
-		{
-			Appdata_Xcall.gpsPos.latitude = (long)(PP_xcall_gpsconv(gpsDt.latitude)*(-1));
-		}
-
-		if(gpsDt.is_east)
-		{
-			Appdata_Xcall.gpsPos.longitude = (long)(PP_xcall_gpsconv(gpsDt.longitude));
-		}
-		else
-		{
-			Appdata_Xcall.gpsPos.longitude = (long)(PP_xcall_gpsconv(gpsDt.longitude)*(-1));
-		}
-		PP_xcall_latitude = Appdata_Xcall.gpsPos.latitude;
-		PP_xcall_longitude = Appdata_Xcall.gpsPos.longitude;
+		Appdata_Xcall.gpsPos.latitude = gpsDt.is_north?(long)(PP_xcall_gpsconv(gpsDt.latitude)):(long)(PP_xcall_gpsconv(gpsDt.latitude)*(-1));
+		Appdata_Xcall.gpsPos.longitude = gpsDt.is_east?(long)(PP_xcall_gpsconv(gpsDt.longitude)):(long)(PP_xcall_gpsconv(gpsDt.longitude)*(-1));
 	}
 	else
 	{
-		Appdata_Xcall.gpsPos.latitude  = PP_xcall_latitude;
-		Appdata_Xcall.gpsPos.longitude = PP_xcall_longitude;
+		Appdata_Xcall.gpsPos.latitude  = gb_data_gpsnorth()?(long)gb_data_gpslatitude():(long)((-1)*gb_data_gpslatitude());
+		Appdata_Xcall.gpsPos.longitude = gb_data_gpseast()?(long)gb_data_gpslongitude():(long)((-1)*gb_data_gpslongitude());
 	}
 
 	Appdata_Xcall.gpsPos.altitude = (long)gpsDt.height;

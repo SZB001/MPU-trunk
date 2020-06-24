@@ -318,4 +318,8 @@ extern long gb_data_BDMSysFail(void);
 extern long gb_data_AirBagFailSts(void);
 extern long gb_data_EPSFaultSts(void);
 extern long gb_data_EPBLampSt(void);
+extern uint32_t gb_data_gpslongitude(void);
+extern uint32_t gb_data_gpslatitude(void);
+extern unsigned int gb_data_gpsnorth(void);
+extern unsigned int gb_data_gpseast(void);
 #endif

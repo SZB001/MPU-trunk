@@ -366,23 +366,13 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 
 	if(PP_VS_appdata.VSResp.gpsPos.gpsSt == 1)
 	{
-		if(gpsDt.is_north)
-		{
-			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(PP_VS_gpsconv(gpsDt.latitude));
-		}
-		else
-		{
-			PP_VS_appdata.VSResp.gpsPos.latitude = (long)(PP_VS_gpsconv(gpsDt.latitude)*(-1));
-		}
-
-		if(gpsDt.is_east)
-		{
-			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(PP_VS_gpsconv(gpsDt.longitude));
-		}
-		else
-		{
-			PP_VS_appdata.VSResp.gpsPos.longitude = (long)(PP_VS_gpsconv(gpsDt.longitude)*(-1));
-		}
+		PP_VS_appdata.VSResp.gpsPos.latitude = gpsDt.is_north?(long)(PP_VS_gpsconv(gpsDt.latitude)):(long)(PP_VS_gpsconv(gpsDt.latitude)*(-1));
+		PP_VS_appdata.VSResp.gpsPos.longitude = gpsDt.is_east?(long)(PP_VS_gpsconv(gpsDt.longitude)):(long)(PP_VS_gpsconv(gpsDt.longitude)*(-1));
+	}
+	else
+	{
+		PP_VS_appdata.VSResp.gpsPos.latitude  = gb_data_gpsnorth()?(long)gb_data_gpslatitude():(long)((-1)*gb_data_gpslatitude());
+		PP_VS_appdata.VSResp.gpsPos.longitude = gb_data_gpseast()?(long)gb_data_gpslongitude():(long)((-1)*gb_data_gpslongitude());
 	}
 	
 	PP_VS_appdata.VSResp.gpsPos.altitude = (long)(gpsDt.height);

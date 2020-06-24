@@ -677,6 +677,10 @@ static pthread_mutex_t gb_errmtx;
 static pthread_mutex_t gb_datmtx;
 static uint16_t   gb_datintv;
 static uint64_t   gb_ignontime;
+static uint32_t  longitudeBak = 0;
+static uint32_t  latitudeBak  = 0;
+static unsigned int gps_north = 0;
+static unsigned int gps_east = 0;
 
 #define ERR_LOCK()          pthread_mutex_lock(&gb_errmtx)
 #define ERR_UNLOCK()        pthread_mutex_unlock(&gb_errmtx)
@@ -1645,9 +1649,6 @@ static uint32_t gb_data_save_gps(gb_info_t *gbinf, uint8_t *buf)
     uint32_t len = 0;
     GPS_DATA gpsdata;
 
-    static uint32_t  longitudeBak = 0;
-    static uint32_t  latitudeBak  = 0;
-
     /* data type : location data */
     buf[len++] = GB_DATA_LOCATION;
 
@@ -1658,6 +1659,8 @@ static uint32_t gb_data_save_gps(gb_info_t *gbinf, uint8_t *buf)
     if (gps_get_fix_status() == 2)
     {
         gps_get_snap(&gpsdata);
+		gps_north = gpsdata.is_north;
+		gps_east  = gpsdata.is_east;
         longitudeBak = gb_data_gpsconv(gpsdata.longitude);
         latitudeBak  = gb_data_gpsconv(gpsdata.latitude);
         buf[len++]   = (gpsdata.is_north ? 0 : 0x02) | (gpsdata.is_east ? 0 : 0x04);
@@ -5115,7 +5118,7 @@ uint8_t gb_data_rearLeftTyrePre(void)
  */
 uint8_t gb_data_frontRightTyreTemp(void)
 {
-	uint8_t temperature = 0;
+	uint8_t temperature = 0 + 50;
 
 	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_RFTYRETEMP])//
@@ -5132,7 +5135,7 @@ uint8_t gb_data_frontRightTyreTemp(void)
  */
 uint8_t gb_data_frontLeftTyreTemp(void)
 {
-	uint8_t temperature = 0;
+	uint8_t temperature = 0 + 50;
 
 	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_LFTYRETEMP])//
@@ -5149,7 +5152,7 @@ uint8_t gb_data_frontLeftTyreTemp(void)
  */
 uint8_t gb_data_rearRightTyreTemp(void)
 {
-	uint8_t temperature = 0;
+	uint8_t temperature = 0 + 50;
 
 	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_RRTYRETEMP])//
@@ -5166,7 +5169,7 @@ uint8_t gb_data_rearRightTyreTemp(void)
  */
 uint8_t gb_data_rearLeftTyreTemp(void)
 {
-	uint8_t temperature = 0;
+	uint8_t temperature = 0 + 50;
 
 	DAT_LOCK();
 	if(gb_inf && gb_inf->gb_VSExt.info[GB_VS_LRTYRETEMP])//
@@ -5981,5 +5984,53 @@ void clrgb_data_para(void)
 	{
 		gb_ignontime = tm_get_time();
 	}
+}
+
+uint32_t gb_data_gpslongitude(void)
+{
+	uint32_t longitude;
+	DAT_LOCK();
+	
+	longitude = longitudeBak;
+
+	DAT_UNLOCK();
+
+	return longitude;
+}
+
+uint32_t gb_data_gpslatitude(void)
+{
+	uint32_t latitude;
+	DAT_LOCK();
+	
+	latitude = latitudeBak;
+
+	DAT_UNLOCK();
+
+	return latitude;
+}
+
+unsigned int gb_data_gpsnorth(void)
+{
+	unsigned int north;
+	DAT_LOCK();
+	
+	north = gps_north;
+
+	DAT_UNLOCK();
+
+	return north;
+}
+
+unsigned int gb_data_gpseast(void)
+{
+	unsigned int east;
+	DAT_LOCK();
+	
+	east = gps_east;
+
+	DAT_UNLOCK();
+
+	return east;
 }
 
