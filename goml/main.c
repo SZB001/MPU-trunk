@@ -17,12 +17,22 @@ author        chenyin
 #include "dir.h"
 #include "file.h"
 #include "shm.h"
+#include "wsrv_def.h"
 
-#define GOM_STARTUP_TIME    3
-#define GMOBI_OM            "otamaster"
-#define GMOBI_OM_DIR        "/sbin"
+#define GOML_POLLING_INTERVAL 1   /*Unit: s*/
+#define GOML_DA_STARTUP_TIME    3   /*Unit: s*/
+#define GOML_DA_NAME_MAX        32
 
-pid_t gom_pid = -1;
+#define GOML_SUB_DA_DIR     "/sbin"
+#define GOML_SUB_DA         "otamaster"     /*长度 < GOML_DA_NAME_MAX*/
+#define GOML_MASTER_DA_DIR  "/usrapp/current/data/image"
+#define GOML_MASTER_DA      "otamasterv4"     /*长度 < GOML_DA_NAME_MAX*/
+
+static pid_t gom_pid = -1;
+
+static void *pGomlShmAddr = NULL;
+static char GomlDaName[GOML_DA_NAME_MAX];
+static const char *pGomlDaFilePath = NULL;
 
 /****************************************************************
 function:     appl_start_gom
@@ -47,7 +57,7 @@ int appl_start_gom(void)
         {
             char *args[] =
             {
-                GMOBI_OM,       /* argv[0], programme name. */
+                GomlDaName,       /* argv[0], program name. */
                 NULL               /* list of argument must finished by NULL.  */
             };
 
@@ -57,10 +67,10 @@ int appl_start_gom(void)
                 return 1;
             }
 
-            if (execvp(GMOBI_OM_DIR"/"GMOBI_OM, args) < 0)
+            if (execvp(pGomlDaFilePath, args) < 0)
             {
-                log_e(LOG_GOML, "execvp failed,bin:%s,error:%s",
-                      GMOBI_OM_DIR"/"GMOBI_OM, strerror(errno));
+                log_e(LOG_GOML, "execvp failed, bin:%s, error:%s",
+                      pGomlDaFilePath, strerror(errno));
                 return 1;
             }
         }
@@ -76,7 +86,7 @@ int appl_start_gom(void)
             /*
             wait for gmobi otamaster start up.
             */
-            sleep(GOM_STARTUP_TIME);
+            sleep(GOML_DA_STARTUP_TIME);
 
             /*
             check gmobi otamaster start up state.
@@ -94,11 +104,11 @@ int appl_start_gom(void)
 
             if (ret <= 0)
             {
-                log_e(LOG_GOML, "%s not start up\n", GMOBI_OM);
+                log_e(LOG_GOML, "%s not start up\n", pGomlDaFilePath);
                 return 1;
             }
 
-            log_o(LOG_GOML, "%s is running\n", GMOBI_OM);
+            log_o(LOG_GOML, "%s is running\n", pGomlDaFilePath);
             
             //wait for child to finished
             wait(&statchild);
@@ -130,15 +140,55 @@ int main(int argc, char **argv)
 {
     int ret;
     static int startup_cnt   = 0;
+    uint8_t shm_rdbuf[WSRV_GOML_SHM_SIZE];
+
+    pGomlShmAddr = shm_create(WSRV_GOML_SHM_NAME, O_CREAT | O_TRUNC | O_RDWR,
+        WSRV_GOML_SHM_SIZE);
+    if( NULL == pGomlShmAddr )
+    {
+        log_e(LOG_GOML, "create shm failed\r\n");
+    }
+
+    memset(GomlDaName, '\0', sizeof(GomlDaName));
+
+    while(1)
+    {
+        ret = shm_read(pGomlShmAddr, shm_rdbuf, WSRV_GOML_SHM_SIZE);
+        if(ret == 0)
+        {
+            if(strncmp((const char *)shm_rdbuf, WSRV_GOML_OTACTRL_IHU,
+                strlen(WSRV_GOML_OTACTRL_IHU)) == 0)
+            {
+                strcpy(GomlDaName, GOML_SUB_DA);
+                pGomlDaFilePath = GOML_SUB_DA_DIR"/"GOML_SUB_DA;
+                break;
+            }
+
+            if(strncmp((const char *)shm_rdbuf, WSRV_GOML_OTACTRL_TBOX,
+                strlen(WSRV_GOML_OTACTRL_TBOX)) == 0)
+            {
+                strcpy(GomlDaName, GOML_MASTER_DA);
+                pGomlDaFilePath = GOML_MASTER_DA_DIR"/"GOML_MASTER_DA;
+                break;
+            }
+        }
+        else
+        {
+            log_e(LOG_GOML, "read shm failed\r\n");
+        }
+        sleep(GOML_POLLING_INTERVAL);
+    }
 
 start_gom:
-    if (file_exists(GMOBI_OM_DIR"/"GMOBI_OM))
+    log_o(LOG_GOML, "OTACtrl=%s", shm_rdbuf);
+    log_o(LOG_GOML, "startup %s", pGomlDaFilePath);
+    if (file_exists(pGomlDaFilePath))
     {
         startup_cnt++;
         ret = appl_start_gom();
         if (0 != ret)
         {
-            log_e(LOG_GOML, "start %s failed, ret:0x%08x", GMOBI_OM, ret);            
+             log_e(LOG_GOML, "start %s failed, ret:0x%08x", pGomlDaFilePath, ret);
 
             if(startup_cnt <= 2)
             {

@@ -58,6 +58,7 @@ static RTCTIME g_tWsrvAlarmTime = {0};
 #define WSRV_CMD_HVOIN              "hvoin"
 #define WSRV_CMD_HVOINRESULT        "hvoinresult"
 #define WSRV_CMD_HVOOUT             "hvoout"
+#define WSRV_CMD_BATTERYINFO        "batteryinfo"
 
 extern unsigned char PrvtProt_SignParse_HVReadySt(void);
 
@@ -74,6 +75,7 @@ extern unsigned char PrvtProt_SignParse_HVReadySt(void);
 #define WSRV_UPGRADEMODEOUT_BODY    "{\"r\":%d}"
 #define WSRV_WAKE_BODY              "{\"r\":%d}"
 #define WSRV_HVOINRESULT_BODY       "{\"r\":%d}"
+#define WSRV_BATTERYINFO            "{\"soc\":%d,\"charging\":%d}"
 
 
 /* web server http */
@@ -372,14 +374,14 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
     unsigned char file_path[64] = {0};
 
     unsigned int cfg_len;
-    char s_ver[64] = {0};
-    char h_ver[64] = {0};
-    char bl_ver[64] = {0};
-    uint8_t sn[10] = {0};
-    char sn_str[21];
+    char s_ver[WSRV_F1C0_SW_LEN_MAX + 1] = {0};
+    char h_ver[WSRV_F191_HW_LEN_MAX + 1] = {0};
+    char bl_ver[WSRV_F180_BL_LEN_MAX + 1] = {0};
+    uint8_t sn[WSRV_F18C_SN_LEN_MAX + 1] = {0};
+    char sn_str[2 * WSRV_F18C_SN_LEN_MAX + 1];
     uint32_t sn_strlen = sizeof(sn_str);
-    char partnum[64] = {0};
-    char supplier[64] = {0};
+    char partnum[WSRV_F187_PN_LEN_MAX + 1] = {0};
+    char supplier[WSRV_F18A_SP_LEN_MAX + 1] = {0};
     int s_len = sizeof(s_ver);
     int h_len = sizeof(h_ver);
     int bl_len = sizeof(bl_ver);
@@ -966,6 +968,19 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         log_i(LOG_WSRV, "High Voltage Out");
 
         PP_can_send_data(PP_CAN_HV, 0, 0);
+
+        set_normal_information(rsp_buf, body_buf, MIME_JSON);
+    }
+    else if (0 == strcmp(cmd_buf, WSRV_CMD_BATTERYINFO))
+    {
+        int32_t BatSoc;
+        int32_t BatCharging;
+    
+        log_i(LOG_WSRV, "Battery info");
+        BatSoc = gb_data_vehicleSOC();
+        BatCharging = gb_data_chargestatus();
+
+        sprintf(body_buf, WSRV_BATTERYINFO, BatSoc, BatCharging);
 
         set_normal_information(rsp_buf, body_buf, MIME_JSON);
     }

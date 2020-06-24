@@ -22,6 +22,8 @@ author        chenyin
 #include "pm_api.h"
 #include "../hozon/PrvtProtocol/PrvtProt.h"
 #include "../hozon/PrvtProtocol/PrvtProt_lock.h"
+#include "shm.h"
+#include "uds.h"
 
 #define TIMER_WSRV_RECREATE     MPU_MID_WSRV
 #define TIMER_WSRV_RESTART_DA   (MPU_MID_WSRV + 1)
@@ -33,7 +35,8 @@ recreate_timer; // if create_webserver_socket() faild, after WSRV_RECREATE_INTER
 timer_t restart_da_timer;
 static int sock_tcp_fd = -1;
 static WSRV_CLIENT clients[WSRV_MAX_CLIENT_NUM];
-//static pthread_mutex_t wsrv_mutex;
+
+static void *pWsrvShmAddr = NULL;
 
 static int set_socket_nonblock(int fd)
 {
@@ -214,6 +217,8 @@ int wsrv_init(INIT_PHASE phase)
     int i = 0;
     unsigned int len;
     unsigned char otamodein;
+    uint8_t shm_wrbuf[WSRV_GOML_SHM_SIZE];
+    const char *pOtaCtrlStr;
 
     switch (phase)
     {
@@ -223,6 +228,11 @@ int wsrv_init(INIT_PHASE phase)
                 clients[i].fd = -1;
             }
 
+            pWsrvShmAddr = shm_create(WSRV_GOML_SHM_NAME, O_CREAT | O_TRUNC | O_RDWR, WSRV_GOML_SHM_SIZE);
+            if(pWsrvShmAddr == NULL)
+            {
+                log_e(LOG_WSRV, "create shm failed.");
+            }
             break;
 
         case INIT_PHASE_RESTORE:
@@ -267,6 +277,22 @@ int wsrv_init(INIT_PHASE phase)
                     log_e(LOG_WSRV, "When Init, Get OTA Mode In, But Other Task Doing, So Can Not Get Lock");
                 }
             }
+
+            /*Notify goml to start carota DA*/
+            memset(shm_wrbuf, '\0', sizeof(shm_wrbuf));
+            if(get_ota_ctl())
+            {
+                /*TBOX Master*/
+                pOtaCtrlStr = WSRV_GOML_OTACTRL_TBOX;
+            }
+            else
+            {
+                /*IHU Master*/
+                pOtaCtrlStr = WSRV_GOML_OTACTRL_IHU;
+            }
+            strcpy((char *)shm_wrbuf, pOtaCtrlStr);
+            shm_write(pWsrvShmAddr, shm_wrbuf, WSRV_GOML_SHM_SIZE);
+            log_i(LOG_WSRV, "OTACtrl = %s", pOtaCtrlStr);
 
             break;
     }

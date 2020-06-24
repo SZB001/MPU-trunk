@@ -77,7 +77,9 @@ static ECU_NAME_2_UDSID_t s_atECUName2UDSID[] = {{"vcu",  0x7E2, 0x7EA, 0x7DF},
                                                  {"tap",  0x785, 0x795, 0x7DF},
                                                  {"mfcp", 0x782, 0x792, 0x7DF},
                                                  {"acu",  0x746, 0x756, 0x7DF},
-                                                 {"plg",  0x764, 0x774, 0x7DF},};
+                                                 {"plg",  0x764, 0x774, 0x7DF},
+                                                 {"gw",   0x762, 0x772, 0x7DF},
+                                                 {"btm",  0x767, 0x777, 0x7DF},};
 
 int fota_ecu_get_ver(unsigned char *name, uint8_t *s_ver,    int32_t *s_siz, 
                                                uint8_t *h_ver,    int32_t *h_siz,
@@ -86,59 +88,41 @@ int fota_ecu_get_ver(unsigned char *name, uint8_t *s_ver,    int32_t *s_siz,
                                                uint8_t *partnum,  int32_t *partnum_siz,
                                                uint8_t *supplier, int32_t *supplier_siz)
 {
-    if (memcmp(name, "gw", 2) == 0)
+    unsigned char u8MaxECUCount = sizeof(s_atECUName2UDSID) / sizeof(ECU_NAME_2_UDSID_t);
+    unsigned char u8Loop = 0;
+
+    for(u8Loop = 0; u8Loop < u8MaxECUCount; u8Loop++)
     {
-        if (fota_uds_open(0, 0x7DF, 0x772, 0x762) != 0)
+        if(memcmp(name, s_atECUName2UDSID[u8Loop].au8ECUName, strlen((char *)s_atECUName2UDSID[u8Loop].au8ECUName)) == 0)
+        {
+            log_o(LOG_FOTA, "Get ECU Information: name %s, PID = 0x%x, RID = 0x%x,", s_atECUName2UDSID[u8Loop].au8ECUName, 
+                                                                                     s_atECUName2UDSID[u8Loop].u32PhyID,
+                                                                                     s_atECUName2UDSID[u8Loop].u32ResID);
+            break;
+        }
+    }
+
+    if(u8Loop < u8MaxECUCount)
+    {
+        if (fota_uds_open(1, s_atECUName2UDSID[u8Loop].u32FunID, 
+                             s_atECUName2UDSID[u8Loop].u32ResID, 
+                             s_atECUName2UDSID[u8Loop].u32PhyID) != 0)
         {
             log_e(LOG_FOTA, "open UDS for ECU(%s) fail", name);
             return -1;
         }
-
-        fota_uds_get_version_gw(s_ver,    s_siz, 
-                                h_ver,    h_siz, 
-                                bl_ver,   bl_siz, 
-                                sn,       sn_siz,
-                                partnum,  partnum_siz,
-                                supplier, supplier_siz);
+        
+        fota_uds_get_version(s_ver,    s_siz, 
+                             h_ver,    h_siz, 
+                             bl_ver,   bl_siz, 
+                             sn,       sn_siz,
+                             partnum,  partnum_siz,
+                             supplier, supplier_siz);
     }
     else
     {
-        unsigned char u8MaxECUCount = sizeof(s_atECUName2UDSID) / sizeof(ECU_NAME_2_UDSID_t);
-        unsigned char u8Loop = 0;
-
-        for(u8Loop = 0; u8Loop < u8MaxECUCount; u8Loop++)
-        {
-            if(memcmp(name, s_atECUName2UDSID[u8Loop].au8ECUName, strlen((char *)s_atECUName2UDSID[u8Loop].au8ECUName)) == 0)
-            {
-                log_o(LOG_FOTA, "Get ECU Information: name %s, PID = 0x%x, RID = 0x%x,", s_atECUName2UDSID[u8Loop].au8ECUName, 
-                                                                                         s_atECUName2UDSID[u8Loop].u32PhyID,
-                                                                                         s_atECUName2UDSID[u8Loop].u32ResID);
-                break;
-            }
-        }
-
-        if(u8Loop < u8MaxECUCount)
-        {
-            if (fota_uds_open(1, s_atECUName2UDSID[u8Loop].u32FunID, 
-                                 s_atECUName2UDSID[u8Loop].u32ResID, 
-                                 s_atECUName2UDSID[u8Loop].u32PhyID) != 0)
-            {
-                log_e(LOG_FOTA, "open UDS for ECU(%s) fail", name);
-                return -1;
-            }
-            
-            fota_uds_get_version(s_ver,    s_siz, 
-                                 h_ver,    h_siz, 
-                                 bl_ver,   bl_siz, 
-                                 sn,       sn_siz,
-                                 partnum,  partnum_siz,
-                                 supplier, supplier_siz);
-        }
-        else
-        {
-            log_e(LOG_FOTA, "Can Not Find ECU(%s) Information UDS.", name);
-            return -1;
-        }
+        log_e(LOG_FOTA, "Can Not Find ECU(%s) Information UDS.", name);
+        return -1;
     }
 
     fota_uds_close();
