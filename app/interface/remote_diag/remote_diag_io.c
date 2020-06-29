@@ -29,7 +29,7 @@ const unsigned char Snapshot_no[REMOTE_DIAG_ECU_NUM] =
 {
     0,//REMOTE_DIAG_ALL = 0,//
     
-    0,//REMOTE_DIAG_VCU,//
+    1,//REMOTE_DIAG_VCU,//
     0,//REMOTE_DIAG_BMS,//
     1,//REMOTE_DIAG_MCUp,
     1,//REMOTE_DIAG_OBCp,
@@ -62,7 +62,6 @@ const unsigned char Snapshot_no[REMOTE_DIAG_ECU_NUM] =
     1,//REMOTE_DIAG_TBOX,
     0,//REMOTE_DIAG_ACU,
     1,//REMOTE_DIAG_PLG,
-
 };
 
 int comm_parsing_time(const uint8_t *did_value, RTCTIME *time);
@@ -74,39 +73,39 @@ PARSING_SINGLE_TIME parsing_time_arr[REMOTE_DIAG_ECU_NUM] =
 {
     NULL,//REMOTE_DIAG_ALL = 0,//
     
-    vcu_parsing_time,//REMOTE_DIAG_VCU,//
+    comm_parsing_time,//REMOTE_DIAG_VCU,//
     NULL,//REMOTE_DIAG_BMS,//
     comm_parsing_time,//REMOTE_DIAG_MCUp,
     comm_parsing_time,//REMOTE_DIAG_OBCp,
-    comm_parsing_time,//REMOTE_DIAG_FLR,
+    NULL,//REMOTE_DIAG_FLR,
     
-    comm_parsing_time,//REMOTE_DIAG_FLC,
-    comm_parsing_time,//REMOTE_DIAG_APA,
-    LSB_parsing_time,//REMOTE_DIAG_ESCPluse,
-    comm_parsing_time,//REMOTE_DIAG_EPS,
-    ehb_parsing_time,//REMOTE_DIAG_EHB,
+    NULL,//REMOTE_DIAG_FLC,
+    NULL,//REMOTE_DIAG_APA,
+    NULL,//REMOTE_DIAG_ESCPluse,
+    NULL,//REMOTE_DIAG_EPS,
+    NULL,//REMOTE_DIAG_EHB,
     
     NULL,//REMOTE_DIAG_BDCM,
-    comm_parsing_time,//REMOTE_DIAG_GW,
-    comm_parsing_time,//REMOTE_DIAG_LSA,
-    comm_parsing_time,//REMOTE_DIAG_CLM,
-    comm_parsing_time,//REMOTE_DIAG_PTC,
+    NULL,//REMOTE_DIAG_GW,
+    NULL,//REMOTE_DIAG_LSA,
+    NULL,//REMOTE_DIAG_CLM,
+    NULL,//REMOTE_DIAG_PTC,
     
-    comm_parsing_time,//REMOTE_DIAG_EACP,
-    comm_parsing_time,//REMOTE_DIAG_EGSM,
-    comm_parsing_time,//REMOTE_DIAG_ALM,
+    NULL,//REMOTE_DIAG_EACP,
+    NULL,//REMOTE_DIAG_EGSM,
+    NULL,//REMOTE_DIAG_ALM,
     NULL,//REMOTE_DIAG_WPC,
-    comm_parsing_time,//REMOTE_DIAG_IHU,
+    NULL,//REMOTE_DIAG_IHU,
     
-    comm_parsing_time,//REMOTE_DIAG_ICU,
-    comm_parsing_time,//REMOTE_DIAG_IRS,
-    comm_parsing_time,//REMOTE_DIAG_DVR,
+    NULL,//REMOTE_DIAG_ICU,
+    NULL,//REMOTE_DIAG_IRS,
+    NULL,//REMOTE_DIAG_DVR,
     NULL,//REMOTE_DIAG_TAP,
-    comm_parsing_time,//REMOTE_DIAG_MFCP,
+    NULL,//REMOTE_DIAG_MFCP,
     
     comm_parsing_time,//REMOTE_DIAG_TBOX,
     NULL,//REMOTE_DIAG_ACU,
-    comm_parsing_time,//REMOTE_DIAG_PLG,
+    NULL,//REMOTE_DIAG_PLG,
 };
 
 const unsigned int time_pos[REMOTE_DIAG_ECU_NUM] = 
@@ -115,7 +114,7 @@ const unsigned int time_pos[REMOTE_DIAG_ECU_NUM] =
     
     4,//REMOTE_DIAG_VCU,//
     0,//REMOTE_DIAG_BMS,//
-    39,//REMOTE_DIAG_MCUp,
+    53,//REMOTE_DIAG_MCUp,
     7,//REMOTE_DIAG_OBCp,
     15,//REMOTE_DIAG_FLR,
     
@@ -241,7 +240,7 @@ static void str_to_dtc(unsigned char * dtc, unsigned char * dtc_str)
 int parsing_remote_diag_msg(char * remote_diag_msg, TCOM_MSG_HEADER msg, remote_diag_request_arr_t * remote_diag_request_arr)
 {
     int res = 0;
-    shellprintf("remote diag get msg:%s", remote_diag_msg);
+    //shellprintf("remote diag get msg:%s", remote_diag_msg);
     unsigned int mlen = msg.msglen;
 
     unsigned char request_msg[DIAG_REQUEST_LEN];
@@ -665,6 +664,7 @@ int comm_parsing_time(const uint8_t *did_value, RTCTIME *time)
     else
     {
         memset(time, 0x00, sizeof(RTCTIME));
+        time->year = 1970;
         ret = 1;
         log_e(LOG_REMOTE_DIAG, "did do not match error!");
     }
@@ -710,7 +710,15 @@ int remote_diag_changetime(RTCTIME *time, uint32_t * timesec)
     tm.tm_min = time->min;
     tm.tm_sec = time->sec;
 
-    *timesec = mktime(&tm);
+    time_t ret_time = mktime(&tm);
+    if(ret_time < 0)
+    {
+        *timesec = 0;
+    }
+    else
+    {
+        *timesec = ret_time;
+    }
     
     return 0;
 }
@@ -751,6 +759,7 @@ int PP_get_dtc_time_result(uint8_t obj, PP_rmtDiag_faultcode_t *faultcode)
                     byte_size += time_pos[obj];
                     RTCTIME time;
                     memset(&time, 0x00, sizeof(RTCTIME));
+                    faultcode->diagTime = 0;
                     if(parsing_time_arr[obj] != NULL)
                     {
                         parsing_time_arr[obj](response+byte_size, &time);
