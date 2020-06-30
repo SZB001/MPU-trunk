@@ -1689,7 +1689,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0;
     int i;
-    int tmp = 0;
+    int32_t tmp = 0;
 
     /* data type : location data */
     buf[len++] = 0x91;//��Ϣ���ͱ�־
@@ -2109,7 +2109,15 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
     buf[len++] = voltage/100;//12V 蓄电池电压
     if(gbinf->vehi.info[GB_VINF_SOC])
     {
-    	tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value * 100;
+    	tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_SOC])->value;
+		if(255 == tmp)
+		{
+			tmp = 0xffff;
+		}
+		else
+		{
+			tmp = tmp*100;
+		}
     	buf[len++] = tmp >> 8;
     	buf[len++] = tmp;
     }
@@ -2409,7 +2417,7 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 static uint32_t gb_data_save_VehiPosExt(gb_info_t *gbinf, uint8_t *buf)
 {
     uint32_t len = 0;
-    int tmp = 0;
+    int32_t tmp = 0;
 	GPS_DATA gps_snap;
 
 	gps_get_snap(&gps_snap);
