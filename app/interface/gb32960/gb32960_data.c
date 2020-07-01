@@ -1374,7 +1374,7 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
         for(j = 0; j < 32; j++)
         {
 			if(!gbinf->warn[i][j]) continue;
-			if((0xd == j) || (0x10 == j))//制动系统故障|| 高压环路状态故障
+			if(0xd == j) //制动系统故障
 			{
 				if(((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME) && \
 						 (1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
@@ -1390,6 +1390,58 @@ static uint32_t gb_data_save_warn(gb_info_t *gbinf, uint8_t *buf)
 				else
 				{
 					gb_warn_30sTrigFlag[j] = 0;
+				}
+			}
+			else if(0x10 == j)//高压环路状态故障
+			{
+				if(((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME) && \
+						 (dbc_get_signal_from_id(gbinf->warn[i][j])->value))
+				{
+					gb_warning[i][j] = 1;
+					if(!gb_warn_30sTrigFlag[j])
+					{
+						log_e(LOG_GB32960, "warnning triggered");
+						gbinf->warntrig = 1;
+						gb_warn_30sTrigFlag[j] = 1;
+					}
+				}
+				else
+				{
+					gb_warn_30sTrigFlag[j] = 0;
+				}
+				
+				static char gb_majorloopwarn_TrigFlag = 0;
+				if(((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME) && \
+						 (!dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_MAJORLOOP])->value))
+				{
+					gb_warning[i][j] = 1;
+					if(!gb_majorloopwarn_TrigFlag)
+					{
+						log_e(LOG_GB32960, "warnning triggered");
+						gbinf->warntrig = 1;
+						gb_majorloopwarn_TrigFlag = 1;
+					}
+				}
+				else
+				{
+					gb_majorloopwarn_TrigFlag = 0;
+				}
+
+				static char gb_dcbuswarn_TrigFlag = 0;
+				if(((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME) && \
+						 (!dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_DCBUS])->value))
+				{
+					gb_warning[i][j] = 1;
+					if(!gb_dcbuswarn_TrigFlag)
+					{
+						log_e(LOG_GB32960, "warnning triggered");
+						gbinf->warntrig = 1;
+						gb_dcbuswarn_TrigFlag = 1;
+					}
+				}
+				else
+				{
+					gb_dcbuswarn_TrigFlag = 0;
 				}
 			}
 			else if(0xe == j)//dcdc state
@@ -4220,9 +4272,32 @@ static int gb_data_dbc_cb(uint32_t event, uint32_t arg1, uint32_t arg2)
 							}
 							else if(2 == gb_high_warn_trig_type[i])
 							{
-								if((0xd == i) || (0x10 == i))
+								if(0xd == i)
 								{
 									if(1 == dbc_get_signal_value((int)arg1))
+									{
+										log_e(LOG_GB32960, "warnning triggered");
+										gb_inf->warntrig = 1;
+										break;
+									}
+								}
+								else if(0x10 == i)
+								{
+									if(dbc_get_signal_value((int)arg1))
+									{
+										log_e(LOG_GB32960, "warnning triggered");
+										gb_inf->warntrig = 1;
+										break;
+									}
+
+									if(!dbc_get_signal_from_id(gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_MAJORLOOP])->value)
+									{
+										log_e(LOG_GB32960, "warnning triggered");
+										gb_inf->warntrig = 1;
+										break;
+									}
+
+									if(!dbc_get_signal_from_id(gb_inf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_DCBUS])->value)
 									{
 										log_e(LOG_GB32960, "warnning triggered");
 										gb_inf->warntrig = 1;
