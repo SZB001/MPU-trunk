@@ -487,6 +487,7 @@ static void *PP_CanFileSend_main(void)
 			PP_tsp_flag = 0;
 			
 		}
+		
 		if(dev_get_KL15_signal() == 0)
 		{			
 			if(fault_ignoff_flag == 1)
@@ -507,7 +508,7 @@ static void *PP_CanFileSend_main(void)
 
 			if(tsp_ignoff_flag == 1)
 			{
-				if(tm_get_time() - tsp_trigger_time < pp_up_can.PP_tsp_time *1000 )
+				if(tm_get_time() - tsp_trigger_time < pp_up_can.PP_tsp_time*60 *1000 )
 				{
 					memset(buf,0,sizeof(buf)); //立即上传can报文
 					buf[0] = m_start;

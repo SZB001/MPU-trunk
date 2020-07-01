@@ -217,7 +217,7 @@ int PP_ACCtrl_mainfunction(void *task)
 					{
 						PP_rmtACCtrl.state.req = 0;
 						PP_rmtACCtrl.fail     = 1;
-						PP_rmtACCtrl.state.failtype = PP_RMTCTRL_FAIL;
+						PP_rmtACCtrl.state.failtype = PP_RMTCTRL_NOTRMODE;
 						PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
 					}
 					//PP_rmtACCtrl.state.CtrlSt = PP_ACCTRL_END;
