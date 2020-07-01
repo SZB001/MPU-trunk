@@ -2072,13 +2072,31 @@ static uint32_t gb_data_save_VSExt(gb_info_t *gbinf, uint8_t *buf)
 	   (gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])		&& \
 	   (gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_DCCHGRTIME]))
 	{
-		if(2 == dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])->value)
+		char fschargest,chrgguncnctlist;
+		fschargest = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])->value;
+		if(2 == fschargest)
 		{//快充
 			tmp = dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_DCCHGRTIME])->value;
 		}
-		else if(6 == dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_FSCHARGEST])->value)
+		else if(1 == fschargest)
 		{//慢充
 			tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])->value;
+		}
+		else if(6 == fschargest)
+		{
+			chrgguncnctlist = dbc_get_signal_from_id(gbinf->gb_ConpSt.info[GB_CMPT_CHRGGUNCNCTLI])->value;
+			if(1 == chrgguncnctlist)
+			{//慢充
+				tmp = dbc_get_signal_from_id(gbinf->gb_VSExt.info[GB_VS_REMAINCHRGTIME])->value;
+			}
+			else if(2 == chrgguncnctlist)
+			{//快充
+				tmp = dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_DCCHGRTIME])->value;
+			}
+			else
+			{
+				tmp = 0xffff;
+			}
 		}
 		else
 		{
