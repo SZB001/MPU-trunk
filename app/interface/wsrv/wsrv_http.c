@@ -375,6 +375,7 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
 
     unsigned int cfg_len;
     char s_ver[WSRV_F1C0_SW_LEN_MAX + 1] = {0};
+    char h_ver_incfg[32] = {0};    /* See CFG_ITEM_INTEST_HW in cfg_para_def.h */
     char h_ver[WSRV_F191_HW_LEN_MAX + 1] = {0};
     char bl_ver[WSRV_F180_BL_LEN_MAX + 1] = {0};
     uint8_t sn[WSRV_F18C_SN_LEN_MAX + 1] = {0};
@@ -438,13 +439,13 @@ static int process_cmd(int *p_cli_fd, char *cmd_buf, char *args_buf, char *data_
         sscanf(args_buf, "dev=%s", dev_buf);
 
         if (0 == strcmp(dev_buf, "tbox"))
-        {
-            memcpy(h_ver, "00.00", 5);
-        
-            memcpy(s_ver, DID_F1B0_SW_UPGRADE_VER, sizeof(DID_F1B0_SW_UPGRADE_VER));
-            //memcpy(h_ver, DID_F191_HW_VERSION, sizeof(DID_F191_HW_VERSION));
-            cfg_len = 32;
-            cfg_get_para(CFG_ITEM_INTEST_HW, h_ver, &cfg_len);
+        {        
+            memcpy(s_ver, DID_F1B0_SW_UPGRADE_VER, WSRV_F1C0_SW_LEN_MAX);
+            
+            cfg_len = sizeof(h_ver_incfg);
+            cfg_get_para(CFG_ITEM_INTEST_HW, h_ver_incfg, &cfg_len);
+            memcpy(h_ver, h_ver_incfg, WSRV_F191_HW_LEN_MAX);
+            
             PrvtProt_gettboxsn((char *)sn);
             memcpy(partnum, DID_F187_SPARE_PART_NO, sizeof(DID_F187_SPARE_PART_NO));
             memcpy(supplier, DID_F18A_SUPPLIER_IDENTIFIER, sizeof(DID_F18A_SUPPLIER_IDENTIFIER));
