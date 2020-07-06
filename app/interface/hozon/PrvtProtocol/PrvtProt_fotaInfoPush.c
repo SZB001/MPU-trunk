@@ -38,6 +38,7 @@ description�� include the header file
 #include "../sockproxy/sockproxy_txdata.h"
 #include "../../support/protocol.h"
 #include "hozon_SP_api.h"
+#include "hozon_PP_api.h"
 #include "tbox_ivi_api.h"
 #include "shell_api.h"
 #include "PrvtProt_shell.h"
@@ -71,6 +72,11 @@ typedef struct
 	uint8_t					pushst;
 	uint8_t 				waitSt;
 	uint64_t 				waittime;
+
+	long					fotaTskeventId;
+	long					fotaTskexpTime;
+	uint8_t					fotataskrespflag;
+	uint8_t					fotataskstatus;
 }__attribute__((packed))  PP_FotaInfoPush_t;
 
 static PrvtProt_pack_t 			PP_FIP_Pack;
@@ -89,6 +95,7 @@ static void PP_FIP_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int
 static int PP_FIP_do_wait(PrvtProt_task_t *task);
 static int PP_FIP_do_checkInfoPush(PrvtProt_task_t *task);
 static int PP_FIP_Response(PrvtProt_task_t *task);
+static int PP_FIP_FotaTaskResponse(PrvtProt_task_t *task);
 
 static void PP_FIP_send_cb(void * para);
 /******************************************************
@@ -244,6 +251,14 @@ static void PP_FIP_RxMsgHandle(PrvtProt_task_t *task,PrvtProt_pack_t* rxPack,int
 			tbox_ivi_push_fota_informHU(Appdata.fotaNotice);
 		}
 		break;
+		case PP_MID_OTA_FOTATASKREQ:
+		{
+			PP_FotaInfoPush.fotaTskeventId = MsgDataBody.eventId;
+			PP_FotaInfoPush.fotaTskexpTime = MsgDataBody.expTime;
+			log_o(LOG_HOZON, "recv fota task request\n");
+			//fota接口A(Appdata.fotaTask);
+		}
+		break;
 		default:
 		break;
 	}
@@ -283,6 +298,12 @@ static int PP_FIP_do_checkInfoPush(PrvtProt_task_t *task)
 		PP_FotaInfoPush.resptspflag = 0;
 		PP_FIP_Response(task);
 	}
+	
+	if(1 == PP_FotaInfoPush.fotataskrespflag)
+	{
+		PP_FotaInfoPush.fotataskrespflag = 0;
+		PP_FIP_FotaTaskResponse(task);
+	}
 
 	return 0;
 }
@@ -294,7 +315,7 @@ static int PP_FIP_do_checkInfoPush(PrvtProt_task_t *task)
 
 *����ֵ��
 
-*��  ����xcall response
+*��  ����
 
 *��  ע��
 ******************************************************/
@@ -344,6 +365,67 @@ static int PP_FIP_Response(PrvtProt_task_t *task)
 	PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
 	PP_TxInform[idlenode].idleflag = 1;
 	PP_TxInform[idlenode].description = "the result of fota info push inform";
+	SP_data_write(PP_FIP_Pack.Header.sign,PP_FIP_Pack.totallen,PP_FIP_send_cb,&PP_TxInform[idlenode]);
+
+	return res;
+}
+
+/******************************************************
+*PP_FIP_FotaTaskResponse
+
+*��  �Σ�
+
+*����ֵ��
+
+*��  ����
+
+*��  ע��
+******************************************************/
+static int PP_FIP_FotaTaskResponse(PrvtProt_task_t *task)
+{
+	int msgdatalen;
+	int res = 0;
+
+	/* header */
+	memcpy(PP_FotaInfoPush.packResp.Header.sign,"**",2);
+	PP_FotaInfoPush.packResp.Header.commtype.Byte = 0xe1;
+	PP_FotaInfoPush.packResp.Header.ver.Byte = 0x30;
+	PP_FotaInfoPush.packResp.Header.opera = 0x02;
+	PP_FotaInfoPush.packResp.Header.ver.Byte = task->version;
+	PP_FotaInfoPush.packResp.Header.nonce  = PrvtPro_BSEndianReverse((uint32_t)task->nonce);
+	PP_FotaInfoPush.packResp.Header.tboxid = PrvtPro_BSEndianReverse((uint32_t)task->tboxid);
+	memcpy(&PP_FIP_Pack, &PP_FotaInfoPush.packResp.Header, sizeof(PrvtProt_pack_Header_t));
+
+	/* disbody */
+	memcpy(PP_FotaInfoPush.packResp.DisBody.aID,"180",3);
+	PP_FotaInfoPush.packResp.DisBody.mID = PP_MID_OTA_FOTATASKRESP;
+	PP_FotaInfoPush.packResp.DisBody.eventId = PP_FotaInfoPush.fotaTskeventId;
+	PP_FotaInfoPush.packResp.DisBody.eventTime = PrvtPro_getTimestamp();
+	PP_FotaInfoPush.packResp.DisBody.expTime   = PP_FotaInfoPush.fotaTskexpTime;
+	PP_FotaInfoPush.packResp.DisBody.ulMsgCnt++;	/* OPTIONAL */
+	PP_FotaInfoPush.packResp.DisBody.appDataProVer = 256;
+	PP_FotaInfoPush.packResp.DisBody.testFlag = 1;
+
+	/*appdata*/
+	Appdata_FIP.taskStatus = PP_FotaInfoPush.fotataskstatus;
+
+	if(0 != PrvtPro_msgPackageEncoding(ECDC_FIP_TASKRESP,PP_FIP_Pack.msgdata,&msgdatalen,\
+									   &PP_FotaInfoPush.packResp.DisBody,&Appdata_FIP))
+	{
+		log_e(LOG_HOZON, "encode error\n");
+		return -1;
+	}
+
+	PP_FIP_Pack.totallen = 18 + msgdatalen;
+	PP_FIP_Pack.Header.msglen = PrvtPro_BSEndianReverse((long)(18 + msgdatalen));
+
+	int idlenode;
+	idlenode = PP_getIdleNode();
+	PP_TxInform[idlenode].aid = PP_AID_OTAINFOPUSH;
+	PP_TxInform[idlenode].mid = PP_MID_OTA_FOTATASKRESP;
+	PP_TxInform[idlenode].pakgtype = PP_TXPAKG_CONTINUE;
+	PP_TxInform[idlenode].idleflag = 1;
+	PP_TxInform[idlenode].description = "the result of fota task";
 	SP_data_write(PP_FIP_Pack.Header.sign,PP_FIP_Pack.totallen,PP_FIP_send_cb,&PP_TxInform[idlenode]);
 
 	return res;
@@ -414,4 +496,22 @@ void PP_FIP_InfoPush_cb(uint8_t st)
 		default:
 		break;
 	}
+}
+
+/******************************************************
+*PP_FIP_fotataskresp_cb
+
+*��  �Σ�
+
+*����ֵ��
+
+*
+
+*��  ע��
+******************************************************/
+void PP_FIP_fotataskresp_cb(uint8_t st)
+{
+	log_o(LOG_HOZON, "fota task response\n");
+	PP_FotaInfoPush.fotataskrespflag = 1;
+	PP_FotaInfoPush.fotataskstatus 	 = st;
 }

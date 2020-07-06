@@ -524,4 +524,14 @@ FotaNoticeRespInfo ::= SEQUENCE --mid = 2
 	noticeStatus 		INTEGER(0..255) -- 
 }
 
+FotaTaskReqInfo ::= SEQUENCE --mid = 3
+{
+	fotaTask 			INTEGER(0..255) -- 
+}
+
+FotaTaskRespInfo ::= SEQUENCE --mid = 4
+{
+	taskStatus 			INTEGER(0..255) -- 
+}
+
 END

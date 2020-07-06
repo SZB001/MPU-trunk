@@ -93,6 +93,8 @@ description�� macro definitions
 //MID
 #define PP_MID_OTA_INFOPUSHREQ 		1//request
 #define PP_MID_OTA_INFOPUSHRESP 	2//response
+#define PP_MID_OTA_FOTATASKREQ 		3//request
+#define PP_MID_OTA_FOTATASKRESP 	4//response
 
 
 #define PP_TXPAKG_FAIL 	(-1)//���ķ���ʧ��

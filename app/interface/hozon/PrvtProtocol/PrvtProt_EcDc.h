@@ -65,6 +65,8 @@ typedef enum
 	/*FOTA INFO PUSH*/
 	ECDC_FIP_REQ,//request
     ECDC_FIP_RESP,//response
+	ECDC_FIP_TASKREQ,//request
+    ECDC_FIP_TASKRESP,//response
 	ECDC_APP_MID_MAX
 } ECDC_APP_MID_TYPE;//Ӧ������
 /*****struct definitions*****/

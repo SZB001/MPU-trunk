@@ -39,6 +39,9 @@ typedef struct
 	long fotaNotice;
 	long sid;
 	long noticeStatus;
+
+	long fotaTask;
+	long taskStatus;
 }PrvtProt_App_FIP_t;
 /******union definitions*****/
 

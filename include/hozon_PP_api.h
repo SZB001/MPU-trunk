@@ -139,6 +139,7 @@ extern int PP_CertDL_getCipher(char* cipher,int* len);
 extern uint8_t PP_rmtCfg_getIccid(uint8_t* iccid);
 extern uint8_t  GetPP_Wake_Sleep();
 extern void PP_FIP_InfoPush_cb(uint8_t st);
+extern void PP_FIP_fotataskresp_cb(uint8_t st);
 extern uint8_t PP_rmtCfg_enable_actived(void);
 extern uint8_t PP_rmtCfg_enable_remotecontorl(void);
 extern uint8_t PP_rmtCfg_enable_icall(void);

@@ -66,6 +66,8 @@ description�� include the header file
 #include "CanBusMessageCollectReqInfo.h"
 #include "FotaNoticeReqInfo.h"
 #include "FotaNoticeRespInfo.h"
+#include "FotaTaskReqInfo.h"
+#include "FotaTaskRespInfo.h"
 
 #include "per_encoder.h"
 #include "per_decoder.h"
@@ -128,6 +130,8 @@ static asn_TYPE_descriptor_t *pduType_GIAG_FaultCodeCleanResp = &asn_DEF_FaultCo
 static asn_TYPE_descriptor_t *pduType_GIAG_CanBusMsgCollReq = &asn_DEF_CanBusMessageCollectReqInfo;
 static asn_TYPE_descriptor_t *pduType_OTA_FotaNoticeReq = &asn_DEF_FotaNoticeReqInfo;
 static asn_TYPE_descriptor_t *pduType_OTA_FotaNoticeResp = &asn_DEF_FotaNoticeRespInfo;
+static asn_TYPE_descriptor_t *pduType_OTA_FotaTaskReq  = &asn_DEF_FotaTaskReqInfo;
+static asn_TYPE_descriptor_t *pduType_OTA_FotaTaskResp = &asn_DEF_FotaTaskRespInfo;
 
 static uint8_t tboxAppdata[PP_ECDC_DATA_LEN];
 static int tboxAppdataLen;
@@ -1240,6 +1244,24 @@ int PrvtPro_msgPackageEncoding(uint8_t type,uint8_t *msgData,int *msgDataLen, \
 				}
 			}
 			break;
+			case ECDC_FIP_TASKRESP:
+			{
+				log_i(LOG_UPER_ECDC, "encode:appdata fota task response\n");
+				PrvtProt_App_FIP_t *FIPTaskResp_ptr = (PrvtProt_App_FIP_t*)appchoice;
+				FotaTaskRespInfo_t FIPTaskResp;
+
+				memset(&FIPTaskResp,0 , sizeof(FotaTaskRespInfo_t));
+				FIPTaskResp.taskStatus = FIPTaskResp_ptr->taskStatus;
+				log_i(LOG_UPER_ECDC, "FIPTaskResp.taskStatus = %d\n",FIPTaskResp.taskStatus);
+
+				ec = uper_encode(pduType_OTA_FotaTaskResp,(void *) &FIPTaskResp,PrvtPro_writeout,&key);
+				if(ec.encoded  == -1)
+				{
+					log_e(LOG_UPER_ECDC, "encode:appdata fota task response fail\n");
+					return -1;
+				}
+			}
+			break;
 			default:
 			{
 				log_e(LOG_UPER_ECDC, "unknow application request");
@@ -1958,6 +1980,25 @@ int PrvtPro_decodeMsgData(uint8_t *LeMessageData,int LeMessageDataLen,void *DisB
 					app_FIP_ptr->fotaNotice = FotaNoticeReq.fotaNotice;
 					log_i(LOG_UPER_ECDC, "app_FIP_ptr->fotaNotice = %ld\n",app_FIP_ptr->fotaNotice);
 				}
+				else if(PP_MID_OTA_FOTATASKREQ == MID)
+				{
+					FotaTaskReqInfo_t	FotaTaskReq;
+					FotaTaskReqInfo_t *FotaTaskReq_ptr = &FotaTaskReq;
+
+					memset(&FotaTaskReq,0 , sizeof(FotaTaskReqInfo_t));
+					dc = uper_decode(asn_codec_ctx,pduType_OTA_FotaTaskReq,(void *) &FotaTaskReq_ptr, \
+							 &LeMessageData[LeMessageData[0]],LeMessageDataLen - LeMessageData[0],0,0);
+					if(dc.code  != RC_OK)
+					{
+						log_e(LOG_UPER_ECDC,   "Could not decode fota task push Req data Frame\n");
+						return -1;
+					}
+
+					app_FIP_ptr->fotaTask = FotaTaskReq.fotaTask;
+					log_i(LOG_UPER_ECDC, "app_FIP_ptr->fotaTask = %ld\n",app_FIP_ptr->fotaTask);
+				}
+				else
+				{}
 			}
 			break;
 			default:
