@@ -146,7 +146,7 @@ int scom_tl_send_frame(unsigned char msg_type, unsigned char frame_type,
     unsigned char cs = 0;
     unsigned int msg_len;
     SCOM_TL_MSG_HDR msg_hdr;
-    unsigned char omsg[512];
+    unsigned char omsg[3072];   /* expand to 3072 to deal with "Long UDS msg" */
 
     if(0 == scom_dev_openSt())
     {

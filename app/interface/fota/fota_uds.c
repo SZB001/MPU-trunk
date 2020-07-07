@@ -222,12 +222,6 @@ int fota_uds_request(int bc, int sid, int sub, uint8_t *data, int len, int timeo
         return -1;
     }
 
-    if (len + 2 > 1024)
-    {
-        log_e(LOG_FOTA, "data is too long");
-        return -1;
-    }
-
     tmp[0] = sid;
 
     if (sub)
@@ -240,6 +234,16 @@ int fota_uds_request(int bc, int sid, int sub, uint8_t *data, int len, int timeo
     {
         memcpy(tmp + 1, data, len);
         len += 1;
+    }
+
+     /** 
+      * Limit length of data tx by CanTp to 2050
+      * eg. 36h tx data 2048B
+      */
+    if (len > 2050)
+    {
+        log_e(LOG_FOTA, "data is too long");
+        return -1;
     }
 
     memset(&time, 0, sizeof(time));

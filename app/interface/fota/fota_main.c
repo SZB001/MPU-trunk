@@ -245,6 +245,49 @@ static int fota_test_ver(int argc, const char **argv)
     return 0;
 }
 
+static int fota_udstest(int argc, const char **argv)
+{
+    uint32_t i, port, txlen;
+    uint8_t txbuf[3072] = {0};
+
+    for(i = 0; i < argc; i ++)
+    {
+        shellprintf("argv[%d]=%s\r\n", i, argv[i]);
+    }
+
+    if(argc != 2)
+    {
+        shellprintf(" usage: fotaudstest <port> <len>\r\n");
+        shellprintf("     example: udstest 1 100\r\n");
+        shellprintf("     \"Open(port 1) -> Diag (tx 100B) -> Close\".\r\n");
+        return -1;
+    }
+
+    if(sscanf(argv[0], "%d", &port) < 1)
+    {
+        shellprintf("arg: port error.\r\n");
+        return -1;
+    }
+
+    if(sscanf(argv[1], "%d", &txlen) < 1)
+    {
+        shellprintf("arg: len error.\r\n");
+        return -1;
+    }
+
+    if(fota_uds_open(port, 0x7DF, 0x7CA, 0x7C2) != 0)
+    {
+        shellprintf("fota_uds_open() error.\r\n");
+        return -1;
+    }
+
+    fota_uds_request(0, 0x36, 0x0, txbuf, txlen + 1, 5);
+
+    fota_uds_close();
+
+    return 0;
+}
+
 
 int fota_init(int phase)
 {
@@ -263,6 +306,8 @@ int fota_init(int phase)
         case INIT_PHASE_OUTSIDE:
             ret |= shell_cmd_register("fotatst", fota_test, "test FOTA");
             ret |= shell_cmd_register("fotatstver", fota_test_ver, "test FOTA read version");
+
+            ret |= shell_cmd_register("fotaudstest", fota_udstest, "test FOTA uds tx length");
             break;
     }
 
