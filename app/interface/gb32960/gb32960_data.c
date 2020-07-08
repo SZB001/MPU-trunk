@@ -47,7 +47,7 @@ static gb_PackPerSecond_t  gb_PPS;
 #define GB_SUPPLEMENTARY_DATA_OUTTEMP		0x02//室外温度值有效性
 #define GB_SUPPLEMENTARY_DATA_INTEMP		0x03//室内温度值有效性
 #define GB_SUPPLEMENTARY_DATA_OUTLETTEMP	0x04//出风口温度值有效性
-#define GB_SUPPLEMENTARY_DATA_BPAV			0x05//制动踏板踩下信号有效性
+#define GB_SUPPLEMENTARY_DATA_BPAV			0x05//制动踏板踩下信号有效性，EHB信号
 #define GB_SUPPLEMENTARY_DATA_BPDQ			0x06//制动踏板位移量有效性
 #define GB_SUPPLEMENTARY_DATA_BTSN			0x07//温度探头号
 #define GB_SUPPLEMENTARY_DATA_BCN1			0x08//单体电压号1
@@ -55,7 +55,9 @@ static gb_PackPerSecond_t  gb_PPS;
 #define GB_SUPPLEMENTARY_DATA_AUTOST		0x0A//空调auto状态
 #define GB_SUPPLEMENTARY_DATA_ACFLTRVLID	0x0B//空调滤芯值有效性
 #define GB_SUPPLEMENTARY_DATA_DCCHGRTIME	0x0C//直流充电剩余时间
-#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_DCCHGRTIME + 1)
+#define GB_SUPPLEMENTARY_DATA_BRKVALID		0x0D//制动踏板有效性,vcu信号
+#define GB_SUPPLEMENTARY_DATA_BRKST			0x0E//制动踏板状态
+#define GB_MAX_SUPPLEMENTARY_DATA   (GB_SUPPLEMENTARY_DATA_BRKST + 1)
 
 #if GB_EXT
 /* event information index */
@@ -1044,9 +1046,9 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 	buf[len++] = tmp;
 
     /* break pad value */
-	if((gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV]) && \
-		(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV])->value))
-	{
+	if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV] && \
+		   (1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV])->value))
+	{//非全系车使用EHB信号
 		if(gbinf->vehi.info[GB_VINF_BRKPAD])
 		{
 			tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value;
@@ -1065,9 +1067,34 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 		}
 	}
 	else
-	{
-		tmp = 0xff;
+	{	
+		if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BRKVALID] && \
+		   (1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BRKVALID])->value))
+		{//全系车使用vcu信号
+			if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BRKST])
+			{
+				tmp = dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BRKST])->value;
+				if(tmp == 0)
+				{
+					tmp = 0x65;
+				}
+				else
+				{
+					tmp = 0;
+				}
+			}
+			else
+			{
+				tmp = 0xff;
+			}
+		}
+		else
+		{
+			tmp = 0xff;
+		}
 	}
+
+
 	buf[len++] = tmp;
 
     return len;
