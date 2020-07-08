@@ -1,8 +1,9 @@
 #ifndef __GB32960_API_H__
 #define __GB32960_API_H__
 
+#define GB32960_VSWARN_EXT_200708		13//新增13个扩展告警，不映射到企标上报
 
-#define GB32960_VSWARN  (57 + 2 + 13)
+#define GB32960_VSWARN  (57 + 2 + 13 + GB32960_VSWARN_EXT_200708)
 
 #define GB32960_GLWARN 32
 #define GB32960_MAXWARN (GB32960_GLWARN + GB32960_VSWARN)
@@ -112,11 +113,12 @@
 #define mcufaultlevelWARN				100//MCU故障状态
 #define vcupwrtrainfailevelWARN			101//动力系统故障
 
-#define GB32960_API_FAULTNUM 			(vcupwrtrainfailevelWARN + 1)
+#define GB32960_VS_WARN_NUM 			(vcupwrtrainfailevelWARN + 1)//企标车辆状态协议上报告警数
+#define GB32960_WARN_NUM 				(GB32960_MAXWARN - 2)
 
 typedef union
 {
-	unsigned char warn[GB32960_API_FAULTNUM];/* */
+	unsigned char warn[GB32960_WARN_NUM];/* */
 	struct
 	{
 		unsigned char tempdiffwarn;//温度差异报警
@@ -222,6 +224,7 @@ typedef union
 		unsigned char vcusystemwarnlghtstwarn;//功率系统故障
 		unsigned char mcufaultlevelwarn;//MCU故障状态
 		unsigned char vcupwrtrainfailevelwarn;//动力系统故障
+		unsigned char warn_ext_200708[13];
 	}type; /**/
 }gb32960_api_fault_t;
 

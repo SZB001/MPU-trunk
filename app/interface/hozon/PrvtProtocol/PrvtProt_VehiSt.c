@@ -542,7 +542,7 @@ static int PP_VS_VehiStatusResp(PrvtProt_task_t *task,PrvtProt_VS_t *rmtVS)
 	{
 		log_i(LOG_HOZON, "read warn status\n");
 		PP_VS_appdata.VSResp.ExtSt.alertSize = 0;//
-		for(i = 0;i < GB32960_API_FAULTNUM;i++)
+		for(i = 0;i < GB32960_VS_WARN_NUM;i++)
 		{
 			if(gb_fault.warn[i])
 			{

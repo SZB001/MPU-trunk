@@ -502,7 +502,9 @@ static gb_alarmCode_t	gb_alarmCode[GB_MAX_WARN_INFO] =
 	{0x0037},{0x0038},{0x0039},{0x001A},{0x003A},
 	{0x003B},{0x003C},{0x003D},{0x003E},{0x003F},
 	{0x0040},{0x0041},{0x0042},{0x0043},{0x0044},
-	{0x0045},{0x0046}
+	{0x0045},{0x0046},{0x0047},{0x0048},{0x0049},
+	{0x004A},{0x004B},{0x004C},{0x004D},{0x004E},
+	{0x004F},{0x0050},{0x0051},{0x0052},{0x0053}
 };
 
 #endif
@@ -643,6 +645,19 @@ gb32960_api_extwarn_indextable_t	gb32960_api_extwarn_indextable[GB32960_VSWARN] 
 	{101,99},//功率系统故障
 	{102,100},//MCU故障状态
 	{103,101},//动力系统故障
+	{0x68,102},
+	{0x69,103},
+	{0x6A,104},
+	{0x6B,105},
+	{0x6C,106},
+	{0x6D,107},
+	{0x6E,108},
+	{0x6F,109},
+	{0x70,110},
+	{0x71,111},
+	{0x72,112},
+	{0x73,113},
+	{0x74,114}
 };
 
 const char gb_ign[32] =
@@ -3445,7 +3460,8 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 		1,1,1,0,1,0,1,0,1,0,
 		0,0,0,0,0,0,0,0,0,1,
 		1,0,1,1,1,1,1,0,0,1,
-		0,0
+		0,0,1,1,1,0,1,1,1,1,
+		1,1,1,1,1
     };
 
 	const char Ext_gb_ign[GB32960_VSWARN] =
@@ -3457,7 +3473,8 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 		0,0,0,0,0,0,0,0,0,0,
 		0,0,0,0,0,0,0,0,1,1,
 		1,0,0,1,0,0,0,0,0,1,
-		1,1
+		1,1,1,1,1,1,1,1,1,1,
+		1,1,1,1,1
     };
 	
     /* data type : warn extend information */
@@ -3520,6 +3537,18 @@ static uint32_t gb_data_save_warnExt(gb_info_t *gbinf, uint8_t *buf)
 				if(((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME) && gbinf->warn[i][j] && \
 				   ((0x1 == dbc_get_signal_from_id(gbinf->warn[i][j])->value) || \
 				   	(0x2 == dbc_get_signal_from_id(gbinf->warn[i][j])->value)))
+				{
+					buf[len++] = gb_alarmCode[j].code >> 8;
+					buf[len++] = gb_alarmCode[j].code;
+					(*warnnum_ptr)++;
+					vs_warn[j-32] = 1;
+					warnlvltemp = 3;
+				}
+			}
+			else if(0x6B == j)//P档控制器故障
+			{
+				if(((tm_get_time() - gb_ignontime) > GB32960_IGNONDLYTIME) && gbinf->warn[i][j] && \
+				   (0x2 == dbc_get_signal_from_id(gbinf->warn[i][j])->value))
 				{
 					buf[len++] = gb_alarmCode[j].code >> 8;
 					buf[len++] = gb_alarmCode[j].code;
@@ -5576,7 +5605,7 @@ char getgb_data_warnSt(void)
 
 	DAT_LOCK();
 
-	for(i= 0;i < GB32960_API_FAULTNUM;i++)
+	for(i= 0;i < GB32960_WARN_NUM;i++)
 	{
 		if(1== gb_fault.warn[i])
 		{
