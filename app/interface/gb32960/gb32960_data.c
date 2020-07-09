@@ -1061,12 +1061,12 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 	buf[len++] = tmp;
 
     /* break pad value */
-	if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV] && \
-		   (1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BPAV])->value))
-	{//非全系车使用EHB信号
-		if(gbinf->vehi.info[GB_VINF_BRKPAD])
+	if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BRKVALID] && \
+		(1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BRKVALID])->value))
+	{
+		if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BRKST])
 		{
-			tmp = dbc_get_signal_from_id(gbinf->vehi.info[GB_VINF_BRKPAD])->value;
+			tmp = dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BRKST])->value;
 			if(tmp == 0)
 			{
 				tmp = 0x65;
@@ -1082,34 +1082,9 @@ static uint32_t gb_data_save_vehi(gb_info_t *gbinf, uint8_t *buf)
 		}
 	}
 	else
-	{	
-		if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BRKVALID] && \
-		   (1 == dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BRKVALID])->value))
-		{//全系车使用vcu信号
-			if(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BRKST])
-			{
-				tmp = dbc_get_signal_from_id(gbinf->gb_SupData.info[GB_SUPPLEMENTARY_DATA_BRKST])->value;
-				if(tmp == 0)
-				{
-					tmp = 0x65;
-				}
-				else
-				{
-					tmp = 0;
-				}
-			}
-			else
-			{
-				tmp = 0xff;
-			}
-		}
-		else
-		{
-			tmp = 0xff;
-		}
+	{
+		tmp = 0xff;
 	}
-
-
 	buf[len++] = tmp;
 
     return len;

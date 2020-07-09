@@ -80,8 +80,8 @@ BO_ 1077 MCU_Fr06_435: 8 MCU
  SG_ MCU6TempIGBTShr : 1|1@0+ (1,0) [0|1] ""  TBOX
  SG_ MCU6TempIGBTHiLim_@2WG7271 : 0|1@0+ (1,0) [0|1] ""  TBOX
 BO_ 520 VCU_Fr0D_208: 8 VCU
- SG_ VCUBrkPedalAppliedValid_@2WG300D : 61|1@0+ (1,0) [0|0] ""  ESC
- SG_ VCUBrkPedalApplied_@2WG300E : 60|1@0+ (1,0) [0|0] ""  ESC
+ SG_ VCUBrkPedalAppliedValid_@2WG300D : 61|1@0+ (1,0) [0|1] ""  ESC
+ SG_ VCUBrkPedalApplied_@2WG300E : 60|1@0+ (1,0) [0|1] ""  ESC
  SG_ VCUitactqBrkMaxRecTqNm : 7|14@0+ (1,-16000) [-16000|0] "Nm"  ESC,EHB
  SG_ VCUitactqTarRgnTqNm : 9|14@0+ (1,-16000) [-16000|0] "Nm"  ESC,EHB
  SG_ VCUitactqCoastdwnRecTqNm : 27|14@0+ (1,-16000) [-16000|0] "Nm"  ESC,EHB
