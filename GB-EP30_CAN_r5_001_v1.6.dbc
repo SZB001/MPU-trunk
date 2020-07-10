@@ -25,8 +25,8 @@ BS_:
 
 BU_: ACU BDCM EPS BMS MCU VCU1 CDU TBOX EHB ESC Tester IHU PLG PTC EACP CLM ICU TAP ALM
 BO_ 520 VCU_Fr0D_208: 8 VCU
- SG_ VCUBrkPedalAppliedValid_@2WG300D : 61|1@0+ (1,0) [0|1] ""  ESC
- SG_ VCUBrkPedalApplied_@2WG300E : 60|1@0+ (1,0) [0|1] ""  ESC
+ SG_ VCUBrkPedalAppliedValid_@1WG300D : 61|1@0+ (1,0) [0|1] ""  ESC
+ SG_ VCUBrkPedalApplied_@1WG300E : 60|1@0+ (1,0) [0|1] ""  ESC
  SG_ VCUitactqBrkMaxRecTqNm : 7|14@0+ (1,-16000) [-16000|0] "Nm"  ESC,EHB
  SG_ VCUitactqTarRgnTqNm : 9|14@0+ (1,-16000) [-16000|0] "Nm"  ESC,EHB
  SG_ VCUitactqCoastdwnRecTqNm : 27|14@0+ (1,-16000) [-16000|0] "Nm"  ESC,EHB
